@@ -788,7 +788,8 @@ private template fqnType(T,
                 ~ (attrs & FA.trusted ? " @trusted" : "")
                 ~ (attrs & FA.safe ? " @safe" : "")
                 ~ (attrs & FA.nogc ? " @nogc" : "")
-                ~ (attrs & FA.return_ ? " return" : "");
+                ~ (attrs & FA.return_ ? " return" : "")
+                ~ (attrs & FA.live ? " @live" : "");
     }
 
     string addQualifiers(string typeString,
@@ -1422,6 +1423,11 @@ if (isCallable!func)
             enum val = "val" ~ (name == "val" ? "_" : "");
             enum ptr = "ptr" ~ (name == "ptr" ? "_" : "");
             mixin("
+                enum hasDefaultArg = (PT[i .. i+1] " ~ args ~ ") { return true; };
+            ");
+            static if (is(typeof(hasDefaultArg())))
+            {
+                mixin("
                 // workaround scope escape check, see
                 // https://issues.dlang.org/show_bug.cgi?id=16582
                 // should use return scope once available
@@ -1432,10 +1438,9 @@ if (isCallable!func)
                     auto " ~ val ~ " = " ~ args ~ "[0];
                     auto " ~ ptr ~ " = &" ~ val ~ ";
                     return *" ~ ptr ~ ";
-                };
-            ");
-            static if (is(typeof(get())))
+                };");
                 enum Get = get();
+            }
             else
                 alias Get = void;
                 // If default arg doesn't exist, returns void instead.
@@ -1481,6 +1486,17 @@ if (isCallable!func)
     alias Voids = ParameterDefaults!func;
     static assert(Voids.length == 12);
     static foreach (V; Voids) static assert(is(V == void));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=20182
+@safe pure nothrow @nogc unittest
+{
+    struct S
+    {
+        this(ref S) {}
+    }
+
+    static assert(__traits(compiles, ParameterDefaults!(S.__ctor)));
 }
 
 /**
@@ -4823,7 +4839,7 @@ Returns class instance alignment.
 template classInstanceAlignment(T)
 if (is(T == class))
 {
-    alias classInstanceAlignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum classInstanceAlignment = __traits(classInstanceAlignment, T);
 }
 
 ///
@@ -5195,15 +5211,53 @@ enum isAssignable(Lhs, Rhs = Lhs) = isRvalueAssignable!(Lhs, Rhs) && isLvalueAss
 
 /**
 Returns `true` iff an rvalue of type `Rhs` can be assigned to a variable of
-type `Lhs`
+type `Lhs`.
 */
 enum isRvalueAssignable(Lhs, Rhs = Lhs) = __traits(compiles, { lvalueOf!Lhs = rvalueOf!Rhs; });
 
+///
+@safe unittest
+{
+    struct S1
+    {
+        void opAssign(S1);
+    }
+
+    struct S2
+    {
+        void opAssign(ref S2);
+    }
+
+    static assert( isRvalueAssignable!(long, int));
+    static assert(!isRvalueAssignable!(int, long));
+    static assert( isRvalueAssignable!S1);
+    static assert(!isRvalueAssignable!S2);
+}
+
 /**
 Returns `true` iff an lvalue of type `Rhs` can be assigned to a variable of
-type `Lhs`
+type `Lhs`.
 */
 enum isLvalueAssignable(Lhs, Rhs = Lhs) = __traits(compiles, { lvalueOf!Lhs = lvalueOf!Rhs; });
+
+///
+@safe unittest
+{
+    struct S1
+    {
+        void opAssign(S1);
+    }
+
+    struct S2
+    {
+        void opAssign(ref S2);
+    }
+
+    static assert( isLvalueAssignable!(long, int));
+    static assert(!isLvalueAssignable!(int, long));
+    static assert( isLvalueAssignable!S1);
+    static assert( isLvalueAssignable!S2);
+}
 
 @safe unittest
 {
@@ -6095,7 +6149,7 @@ template BuiltinTypeOf(T)
             alias X = OriginalType!T;
         static if (__traits(isArithmetic, X) && !is(X == __vector) ||
                 __traits(isStaticArray, X) || is(X == E[], E) ||
-                __traits(isAssociativeArray, X))
+                __traits(isAssociativeArray, X) || is(X == typeof(null)))
             alias BuiltinTypeOf = X;
         else
             static assert(0);
@@ -6117,7 +6171,13 @@ enum bool isBoolean(T) = __traits(isUnsigned, T) && is(T : bool);
     static assert( isBoolean!bool);
     enum EB : bool { a = true }
     static assert( isBoolean!EB);
-    static assert(!isBoolean!(SubTypeOf!bool));
+
+    struct SubTypeOfBool
+    {
+        bool val;
+        alias val this;
+    }
+    static assert(!isBoolean!(SubTypeOfBool));
 }
 
 @safe unittest
@@ -6994,6 +7054,18 @@ enum bool isArray(T) = isStaticArray!T || isDynamicArray!T;
  */
 enum bool isAssociativeArray(T) = __traits(isAssociativeArray, T);
 
+///
+@safe unittest
+{
+    struct S;
+
+    static assert( isAssociativeArray!(int[string]));
+    static assert( isAssociativeArray!(S[S]));
+    static assert(!isAssociativeArray!(string[]));
+    static assert(!isAssociativeArray!S);
+    static assert(!isAssociativeArray!(int[4]));
+}
+
 @safe unittest
 {
     struct Foo
@@ -7037,6 +7109,7 @@ enum bool isBuiltinType(T) = is(BuiltinTypeOf!T) && !isAggregateType!T;
     static assert( isBuiltinType!string);
     static assert( isBuiltinType!(int[]));
     static assert( isBuiltinType!(C[string]));
+    static assert( isBuiltinType!(typeof(null)));
     static assert(!isBuiltinType!C);
     static assert(!isBuiltinType!U);
     static assert(!isBuiltinType!S);
@@ -7049,6 +7122,7 @@ enum bool isBuiltinType(T) = is(BuiltinTypeOf!T) && !isAggregateType!T;
  */
 enum bool isSIMDVector(T) = is(T : __vector(V[N]), V, size_t N);
 
+///
 @safe unittest
 {
     static if (is(__vector(float[4])))
@@ -7065,6 +7139,20 @@ enum bool isSIMDVector(T) = is(T : __vector(V[N]), V, size_t N);
  * Detect whether type `T` is a pointer.
  */
 enum bool isPointer(T) = is(T == U*, U) && __traits(isScalar, T);
+
+///
+@safe unittest
+{
+    void fun();
+
+    static assert( isPointer!(int*));
+    static assert( isPointer!(int function()));
+    static assert(!isPointer!int);
+    static assert(!isPointer!string);
+    static assert(!isPointer!(typeof(null)));
+    static assert(!isPointer!(typeof(fun)));
+    static assert(!isPointer!(int delegate()));
+}
 
 @safe unittest
 {
@@ -8835,6 +8923,27 @@ enum bool allSameType(Ts...) =
 */
 enum ifTestable(T, alias pred = a => a) = __traits(compiles, { if (pred(T.init)) {} });
 
+///
+@safe unittest
+{
+    class C;
+    struct S1;
+    struct S2
+    {
+        T opCast(T)() const;
+    }
+
+    static assert( ifTestable!bool);
+    static assert( ifTestable!int);
+    static assert( ifTestable!(S1*));
+    static assert( ifTestable!(typeof(null)));
+    static assert( ifTestable!(int[]));
+    static assert( ifTestable!(int[string]));
+    static assert( ifTestable!S2);
+    static assert( ifTestable!C);
+    static assert(!ifTestable!S1);
+}
+
 @safe unittest
 {
     import std.meta : AliasSeq, allSatisfy;
@@ -8986,4 +9095,44 @@ enum isCopyable(S) = __traits(isCopyable, S);
     static assert(isCopyable!C1);
     static assert(isCopyable!int);
     static assert(isCopyable!(int[]));
+}
+
+/**
+ * The parameter type deduced by IFTI when an expression of type T is passed as
+ * an argument to a template function.
+ *
+ * For all types other than pointer and slice types, `DeducedParameterType!T`
+ * is the same as `T`. For pointer and slice types, it is `T` with the
+ * outer-most layer of qualifiers dropped.
+ */
+package(std) template DeducedParameterType(T)
+{
+    static if (is(T == U*, U) || is(T == U[], U))
+        alias DeducedParameterType = Unqual!T;
+    else
+        alias DeducedParameterType = T;
+}
+
+@safe unittest
+{
+    static assert(is(DeducedParameterType!(const(int)) == const(int)));
+    static assert(is(DeducedParameterType!(const(int[2])) == const(int[2])));
+
+    static assert(is(DeducedParameterType!(const(int*)) == const(int)*));
+    static assert(is(DeducedParameterType!(const(int[])) == const(int)[]));
+}
+
+@safe unittest
+{
+    static struct NoCopy
+    {
+        @disable this(this);
+    }
+
+    static assert(is(DeducedParameterType!NoCopy == NoCopy));
+}
+
+@safe unittest
+{
+    static assert(is(DeducedParameterType!(inout(int[])) == inout(int)[]));
 }

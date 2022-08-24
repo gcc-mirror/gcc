@@ -44,7 +44,7 @@ public:
     : T (t1, t2, t3) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return 0;
   }
@@ -59,7 +59,7 @@ public:
     : m_vectors_per_tuple (vectors_per_tuple) {}
 
   unsigned int
-  vectors_per_tuple () const OVERRIDE
+  vectors_per_tuple () const override
   {
     return m_vectors_per_tuple;
   }
@@ -78,13 +78,13 @@ public:
     : multi_vector_function (vectors_per_tuple) {}
 
   tree
-  memory_scalar_type (const function_instance &fi) const OVERRIDE
+  memory_scalar_type (const function_instance &fi) const override
   {
     return fi.scalar_type (0);
   }
 
   machine_mode
-  memory_vector_mode (const function_instance &fi) const OVERRIDE
+  memory_vector_mode (const function_instance &fi) const override
   {
     machine_mode mode = fi.vector_mode (0);
     if (m_vectors_per_tuple != 1)
@@ -103,19 +103,19 @@ public:
     : m_memory_type (memory_type) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   tree
-  memory_scalar_type (const function_instance &) const OVERRIDE
+  memory_scalar_type (const function_instance &) const override
   {
     return scalar_types[type_suffixes[m_memory_type].vector_type];
   }
 
   machine_mode
-  memory_vector_mode (const function_instance &fi) const OVERRIDE
+  memory_vector_mode (const function_instance &fi) const override
   {
     machine_mode mem_mode = type_suffixes[m_memory_type].vector_mode;
     machine_mode reg_mode = fi.vector_mode (0);
@@ -145,13 +145,13 @@ public:
   CONSTEXPR truncating_store (scalar_int_mode to_mode) : m_to_mode (to_mode) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_MEMORY;
   }
 
   tree
-  memory_scalar_type (const function_instance &fi) const OVERRIDE
+  memory_scalar_type (const function_instance &fi) const override
   {
     /* In truncating stores, the signedness of the memory element is defined
        to be the same as the signedness of the vector element.  The signedness
@@ -163,7 +163,7 @@ public:
   }
 
   machine_mode
-  memory_vector_mode (const function_instance &fi) const OVERRIDE
+  memory_vector_mode (const function_instance &fi) const override
   {
     poly_uint64 nunits = GET_MODE_NUNITS (fi.vector_mode (0));
     return aarch64_sve_data_mode (m_to_mode, nunits).require ();
@@ -205,7 +205,7 @@ public:
     : rtx_code_function_base (code_for_sint, code_for_uint, unspec_for_fp) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.map_to_rtx_codes (m_code_for_sint, m_code_for_uint,
 			       m_unspec_for_fp);
@@ -225,7 +225,7 @@ public:
     : rtx_code_function_base (code_for_sint, code_for_uint, unspec_for_fp) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Rotate the inputs into their normal order, but continue to make _m
        functions merge with what was originally the first vector argument.  */
@@ -279,7 +279,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.map_to_unspecs (m_unspec_for_sint, m_unspec_for_uint,
 			     m_unspec_for_fp);
@@ -301,7 +301,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Rotate the inputs into their normal order, but continue to make _m
        functions merge with what was originally the first vector argument.  */
@@ -329,7 +329,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (CODE (unspec_for (e), e.vector_mode (0)));
   }
@@ -386,7 +386,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     int unspec = unspec_for (e);
     insn_code icode;
@@ -421,7 +421,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     int unspec = unspec_for (e);
     insn_code icode;
@@ -451,7 +451,7 @@ class code_for_mode_function : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (CODE_FOR_MODE (e.vector_mode (N)));
   }
@@ -477,7 +477,7 @@ public:
   CONSTEXPR fixed_insn_function (insn_code code) : m_code (code) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (m_code);
   }
@@ -519,7 +519,7 @@ public:
   CONSTEXPR binary_permute (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_sve (m_unspec, e.vector_mode (0));
     return e.use_exact_insn (icode);
@@ -547,7 +547,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     int unspec = (!e.type_suffix (0).integer_p ? m_unspec_for_fp
@@ -576,7 +576,7 @@ public:
     : m_code (code), m_wide_unspec (wide_unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     machine_mode elem_mode = GET_MODE_INNER (mode);
@@ -610,7 +610,7 @@ public:
   CONSTEXPR unary_count (rtx_code code) : m_code (code) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* The md patterns treat the operand as an integer.  */
     machine_mode mode = aarch64_sve_int_mode (e.vector_mode (0));
@@ -636,7 +636,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Suffix 0 determines the predicate mode, suffix 1 determines the
        scalar mode and signedness.  */

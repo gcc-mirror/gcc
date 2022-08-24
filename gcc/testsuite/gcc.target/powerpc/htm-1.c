@@ -12,14 +12,21 @@ main (void)
 {
   long i;
   unsigned long mask = 0;
+  unsigned long retry_count = 0;
 
 repeat:
   if (__builtin_tbegin (0))
     {
       mask++;
+      retry_count = 0;
     }
   else
-    abort();
+    {
+      /* Retry a limited number of times before aborting.  */
+      if (retry_count++ < 10)
+	goto repeat;
+      abort ();
+    }
 
   if (mask == 1)
     {

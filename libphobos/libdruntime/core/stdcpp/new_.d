@@ -26,7 +26,7 @@ extern (C++, "std")
     struct nothrow_t {}
 
     ///
-    enum align_val_t : size_t { defaultAlignment = __STDCPP_DEFAULT_NEW_ALIGNMENT__ };
+    enum align_val_t : size_t { defaultAlignment = __STDCPP_DEFAULT_NEW_ALIGNMENT__ }
 
     ///
     class bad_alloc : exception

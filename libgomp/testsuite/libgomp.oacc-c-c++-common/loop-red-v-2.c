@@ -17,7 +17,8 @@ int main ()
   int q = 0,  h = 0;
   int vectorsize;
 
-#pragma acc parallel vector_length(32) copy(q) copy(ondev) copyout(vectorsize)
+#define VL 32
+#pragma acc parallel vector_length(VL) copy(q) copy(ondev)
   /* { dg-note {variable 't' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
   /* { dg-note {variable 'ix' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
   {
@@ -46,8 +47,14 @@ int main ()
 	t += val;
       }
     q = t;
-    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
+  vectorsize = VL;
+#ifdef ACC_DEVICE_TYPE_radeon
+  /* AMD GCN uses the autovectorizer for the vector dimension: the use
+     of a function call in vector-partitioned code in this test is not
+     currently supported.  */
+  vectorsize = 1;
+#endif
 
   for (ix = 0; ix < N; ix++)
     {

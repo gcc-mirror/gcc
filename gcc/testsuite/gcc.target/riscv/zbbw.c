@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zbb -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc_zbb -mabi=lp64" } */
 
 int
 clz (int i)

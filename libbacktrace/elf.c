@@ -40,7 +40,12 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <unistd.h>
 
 #ifdef HAVE_DL_ITERATE_PHDR
-#include <link.h>
+ #ifdef HAVE_LINK_H
+  #include <link.h>
+ #endif
+ #ifdef HAVE_SYS_LINK_H
+  #include <sys/link.h>
+ #endif
 #endif
 
 #include "backtrace.h"
@@ -1796,7 +1801,7 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 	      /* An uncompressed block.  */
 
 	      /* If we've read ahead more than a byte, back up.  */
-	      while (bits > 8)
+	      while (bits >= 8)
 		{
 		  --pin;
 		  bits -= 8;

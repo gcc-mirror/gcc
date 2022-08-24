@@ -1,12 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice9254b.d(17): Error: Using the result of a comma expression is not allowed
-fail_compilation/ice9254b.d(17): Error: Using the result of a comma expression is not allowed
-fail_compilation/ice9254b.d(17): Error: Using the result of a comma expression is not allowed
-fail_compilation/ice9254b.d(17): Error: Using the result of a comma expression is not allowed
-fail_compilation/ice9254b.d(17): Error: Using the result of a comma expression is not allowed
-fail_compilation/ice9254b.d(17): Error: invalid `foreach` aggregate `false`
+fail_compilation/ice9254b.d(17): Error: using the result of a comma expression is not allowed
+fail_compilation/ice9254b.d(17): Error: using the result of a comma expression is not allowed
+fail_compilation/ice9254b.d(17): Error: using the result of a comma expression is not allowed
+fail_compilation/ice9254b.d(17): Error: using the result of a comma expression is not allowed
+fail_compilation/ice9254b.d(17): Error: using the result of a comma expression is not allowed
+fail_compilation/ice9254b.d(17): Error: invalid `foreach` aggregate `false` of type `bool`
 ---
 */
 

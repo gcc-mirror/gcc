@@ -1482,6 +1482,9 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
     default:;
     }
   expr = resolve_nondeduced_context (expr, complain);
+  if (!mark_single_function (expr, complain))
+    return error_mark_node;
+
   {
     tree probe = expr;
 
@@ -2089,7 +2092,7 @@ can_convert_tx_safety (tree to, tree from)
 }
 
 /* Return true iff FROM can convert to TO by dropping noexcept.
-   This is just a subroutine of of fnptr_conv_p.  */
+   This is just a subroutine of fnptr_conv_p.  */
 
 static bool
 noexcept_conv_p (tree to, tree from)

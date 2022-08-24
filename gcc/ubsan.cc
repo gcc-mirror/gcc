@@ -638,27 +638,44 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
   return var;
 }
 
-/* Instrument the __builtin_unreachable call.  We just call the libubsan
-   routine instead.  */
+/* Shared between *build_builtin_unreachable.  */
+
+tree
+sanitize_unreachable_fn (tree *data, location_t loc)
+{
+  tree fn = NULL_TREE;
+  bool san = sanitize_flags_p (SANITIZE_UNREACHABLE);
+  if (san
+      ? (flag_sanitize_trap & SANITIZE_UNREACHABLE)
+      : flag_unreachable_traps)
+    {
+      fn = builtin_decl_explicit (BUILT_IN_TRAP);
+      *data = NULL_TREE;
+    }
+  else if (san)
+    {
+      /* Call ubsan_create_data first as it initializes SANITIZER built-ins.  */
+      *data = ubsan_create_data ("__ubsan_unreachable_data", 1, &loc,
+				 NULL_TREE, NULL_TREE);
+      fn = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
+      *data = build_fold_addr_expr_loc (loc, *data);
+    }
+  else
+    {
+      fn = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
+      *data = NULL_TREE;
+    }
+  return fn;
+}
+
+/* Rewrite a gcall to __builtin_unreachable for -fsanitize=unreachable.  Called
+   by the sanopt pass.  */
 
 bool
 ubsan_instrument_unreachable (gimple_stmt_iterator *gsi)
 {
-  gimple *g;
   location_t loc = gimple_location (gsi_stmt (*gsi));
-
-  if (flag_sanitize_undefined_trap_on_error)
-    g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  else
-    {
-      tree data = ubsan_create_data ("__ubsan_unreachable_data", 1, &loc,
-				     NULL_TREE, NULL_TREE);
-      data = build_fold_addr_expr_loc (loc, data);
-      tree fn
-	= builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
-      g = gimple_build_call (fn, 1, data);
-    }
-  gimple_set_location (g, loc);
+  gimple *g = gimple_build_builtin_unreachable (loc);
   gsi_replace (gsi, g, false);
   return false;
 }
@@ -719,7 +736,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
 
   /* Generate __ubsan_handle_out_of_bounds call.  */
   *gsi = gsi_after_labels (then_bb);
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & SANITIZE_BOUNDS)
     g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -827,13 +844,14 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
     set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
 
   /* Put the ubsan builtin call into the newly created BB.  */
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & ((check_align ? SANITIZE_ALIGNMENT + 0 : 0)
+			    | (check_null ? SANITIZE_NULL + 0 : 0)))
     g = gimple_build_call (builtin_decl_implicit (BUILT_IN_TRAP), 0);
   else
     {
       enum built_in_function bcode
-	= (flag_sanitize_recover & ((check_align ? SANITIZE_ALIGNMENT : 0)
-				    | (check_null ? SANITIZE_NULL : 0)))
+	= (flag_sanitize_recover & ((check_align ? SANITIZE_ALIGNMENT + 0 : 0)
+				    | (check_null ? SANITIZE_NULL + 0 : 0)))
 	  ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1
 	  : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1_ABORT;
       tree fn = builtin_decl_implicit (bcode);
@@ -942,8 +960,8 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
   gimple *g;
 
   /* See if we can discard the check.  */
-  if (TREE_CODE (size) != INTEGER_CST
-      || integer_all_onesp (size))
+  if (TREE_CODE (size) == INTEGER_CST
+      && integer_all_onesp (size))
     /* Yes, __builtin_object_size couldn't determine the
        object size.  */;
   else if (TREE_CODE (offset) == INTEGER_CST
@@ -997,7 +1015,7 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
 	}
 
       /* Generate __ubsan_handle_type_mismatch call.  */
-      if (flag_sanitize_undefined_trap_on_error)
+      if (flag_sanitize_trap & SANITIZE_OBJECT_SIZE)
 	g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
       else
 	{
@@ -1143,7 +1161,7 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
     }
 
   /* Put the ubsan builtin call into the newly created BB.  */
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & SANITIZE_POINTER_OVERFLOW)
     g = gimple_build_call (builtin_decl_implicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -1184,12 +1202,9 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
       gimple_set_location (g, loc);
       gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
 
-      gimple_seq seq = NULL;
-      tree t = gimple_build (&seq, loc, NOP_EXPR, ssizetype, off);
-      t = gimple_build (&seq, loc, GE_EXPR, boolean_type_node,
-			t, ssize_int (0));
-      gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-      g = gimple_build_cond (NE_EXPR, t, boolean_false_node,
+      tree t = gimple_build (&gsi, true, GSI_SAME_STMT,
+			     loc, NOP_EXPR, ssizetype, off);
+      g = gimple_build_cond (GE_EXPR, t, ssize_int (0),
 			     NULL_TREE, NULL_TREE);
     }
   gimple_set_location (g, loc);
@@ -1521,7 +1536,7 @@ tree
 ubsan_build_overflow_builtin (tree_code code, location_t loc, tree lhstype,
 			      tree op0, tree op1, tree *datap)
 {
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & SANITIZE_SI_OVERFLOW)
     return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
 
   tree data;
@@ -1744,7 +1759,8 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
     }
 
   gsi2 = gsi_after_labels (then_bb);
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & (TREE_CODE (type) == BOOLEAN_TYPE
+			    ? SANITIZE_BOOL : SANITIZE_ENUM))
     g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -1907,7 +1923,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
   if (integer_zerop (t))
     return NULL_TREE;
 
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & SANITIZE_FLOAT_CAST)
     fn = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -1977,7 +1993,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	  gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
 	  *gsi = gsi_after_labels (then_bb);
-	  if (flag_sanitize_undefined_trap_on_error)
+	  if (flag_sanitize_trap & SANITIZE_NONNULL_ATTRIBUTE)
 	    g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
 	  else
 	    {
@@ -2033,7 +2049,7 @@ instrument_nonnull_return (gimple_stmt_iterator *gsi)
       gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
       *gsi = gsi_after_labels (then_bb);
-      if (flag_sanitize_undefined_trap_on_error)
+      if (flag_sanitize_trap & SANITIZE_RETURNS_NONNULL_ATTRIBUTE)
 	g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
       else
 	{
@@ -2123,6 +2139,8 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
 	   || TREE_CODE (inner) == RESULT_DECL)
 	  && DECL_REGISTER (inner))
 	return;
+      if (t == inner && !is_global_var (t))
+	return;
       base = inner;
     }
   else if (TREE_CODE (inner) == MEM_REF)
@@ -2160,14 +2178,14 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   if (decl_p)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
-  if (compute_builtin_object_size (base_addr, 0, &sizet))
+  if (compute_builtin_object_size (base_addr, OST_DYNAMIC, &sizet))
     ;
   else if (optimize)
     {
       if (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION)
 	loc = input_location;
-      /* Generate __builtin_object_size call.  */
-      sizet = builtin_decl_explicit (BUILT_IN_OBJECT_SIZE);
+      /* Generate __builtin_dynamic_object_size call.  */
+      sizet = builtin_decl_explicit (BUILT_IN_DYNAMIC_OBJECT_SIZE);
       sizet = build_call_expr_loc (loc, sizet, 2, base_addr,
 				   integer_zero_node);
       sizet = force_gimple_operand_gsi (gsi, sizet, false, NULL_TREE, true,
@@ -2219,7 +2237,13 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
 	}
     }
 
-  if (bos_stmt && gimple_call_builtin_p (bos_stmt, BUILT_IN_OBJECT_SIZE))
+  if (DECL_P (base)
+      && decl_function_context (base) == current_function_decl
+      && !TREE_ADDRESSABLE (base))
+    mark_addressable (base);
+
+  if (bos_stmt
+      && gimple_call_builtin_p (bos_stmt, BUILT_IN_DYNAMIC_OBJECT_SIZE))
     ubsan_create_edge (bos_stmt);
 
   /* We have to emit the check.  */
@@ -2274,7 +2298,7 @@ instrument_builtin (gimple_stmt_iterator *gsi)
 	  gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
 	  *gsi = gsi_after_labels (then_bb);
-	  if (flag_sanitize_undefined_trap_on_error)
+	  if (flag_sanitize_trap & SANITIZE_BUILTIN)
 	    g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
 	  else
 	    {
@@ -2324,7 +2348,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return sanitize_flags_p ((SANITIZE_NULL | SANITIZE_SI_OVERFLOW
 				| SANITIZE_BOOL | SANITIZE_ENUM
@@ -2336,7 +2360,7 @@ public:
 				| SANITIZE_BUILTIN));
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_ubsan
 

@@ -297,6 +297,11 @@ enum chain_type
 
 typedef struct chain
 {
+  chain (chain_type t) : type (t), op (ERROR_MARK), rslt_type (NULL_TREE),
+    ch1 (NULL), ch2 (NULL), length (0), init_seq (NULL), fini_seq (NULL),
+    has_max_use_after (false), all_always_accessed (false), combined (false),
+    inv_store_elimination (false) {}
+
   /* Type of the chain.  */
   enum chain_type type;
 
@@ -362,6 +367,9 @@ enum ref_step_type
 
 struct component
 {
+  component (bool es) : comp_step (RS_ANY), eliminate_store_p (es),
+    next (NULL) {}
+
   /* The references in the component.  */
   auto_vec<dref> refs;
 
@@ -698,7 +706,7 @@ pcom_worker::release_chain (chain_p chain)
   if (chain->fini_seq)
     gimple_seq_discard (chain->fini_seq);
 
-  free (chain);
+  delete chain;
 }
 
 /* Frees CHAINS.  */
@@ -723,7 +731,7 @@ release_components (struct component *comps)
   for (act = comps; act; act = next)
     {
       next = act->next;
-      XDELETE (act);
+      delete act;
     }
 }
 
@@ -1023,9 +1031,8 @@ pcom_worker::split_data_refs_to_components ()
       comp = comps[ca];
       if (!comp)
 	{
-	  comp = XCNEW (struct component);
-	  comp->refs.create (comp_size[ca]);
-	  comp->eliminate_store_p = eliminate_store_p;
+	  comp = new component (eliminate_store_p);
+	  comp->refs.reserve_exact (comp_size[ca]);
 	  comps[ca] = comp;
 	}
 
@@ -1142,7 +1149,7 @@ pcom_worker::filter_suitable_components (struct component *comps)
 	  *comp = act->next;
 	  FOR_EACH_VEC_ELT (act->refs, i, ref)
 	    free (ref);
-	  XDELETE (act);
+	  delete act;
 	}
     }
 
@@ -1255,11 +1262,9 @@ add_ref_to_chain (chain_p chain, dref ref)
 static chain_p
 make_invariant_chain (struct component *comp)
 {
-  chain_p chain = XCNEW (struct chain);
+  chain_p chain = new struct chain (CT_INVARIANT);
   unsigned i;
   dref ref;
-
-  chain->type = CT_INVARIANT;
 
   chain->all_always_accessed = true;
 
@@ -1280,9 +1285,8 @@ make_invariant_chain (struct component *comp)
 static chain_p
 make_rooted_chain (dref ref, enum chain_type type)
 {
-  chain_p chain = XCNEW (struct chain);
+  chain_p chain = new struct chain (type);
 
-  chain->type = type;
   chain->refs.safe_push (ref);
   chain->all_always_accessed = ref->always_accessed;
   ref->distance = 0;
@@ -1373,7 +1377,6 @@ gphi *
 pcom_worker::find_looparound_phi (dref ref, dref root)
 {
   tree name, init, init_ref;
-  gphi *phi = NULL;
   gimple *init_stmt;
   edge latch = loop_latch_edge (m_loop);
   struct data_reference init_dr;
@@ -1391,14 +1394,19 @@ pcom_worker::find_looparound_phi (dref ref, dref root)
   if (!name)
     return NULL;
 
+  tree entry_vuse = NULL_TREE;
+  gphi *phi = NULL;
   for (psi = gsi_start_phis (m_loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = psi.phi ();
-      if (PHI_ARG_DEF_FROM_EDGE (phi, latch) == name)
+      gphi *p = psi.phi ();
+      if (PHI_ARG_DEF_FROM_EDGE (p, latch) == name)
+	phi = p;
+      else if (virtual_operand_p (gimple_phi_result (p)))
+	entry_vuse = PHI_ARG_DEF_FROM_EDGE (p, loop_preheader_edge (m_loop));
+      if (phi && entry_vuse)
 	break;
     }
-
-  if (gsi_end_p (psi))
+  if (!phi || !entry_vuse)
     return NULL;
 
   init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (m_loop));
@@ -1425,6 +1433,30 @@ pcom_worker::find_looparound_phi (dref ref, dref root)
 
   if (!valid_initializer_p (&init_dr, ref->distance + 1, root->ref))
     return NULL;
+
+  /* Make sure nothing clobbers the location we re-use the initial value
+     from.  */
+  if (entry_vuse != gimple_vuse (init_stmt))
+    {
+      ao_ref ref;
+      ao_ref_init (&ref, init_ref);
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
+      tree vdef = entry_vuse;
+      do
+	{
+	  gimple *def = SSA_NAME_DEF_STMT (vdef);
+	  if (limit-- == 0 || gimple_code (def) == GIMPLE_PHI)
+	    return NULL;
+	  if (stmt_may_clobber_ref_p_1 (def, &ref))
+	    /* When the stmt is an assign to init_ref we could in theory
+	       use its RHS for the initial value of the looparound PHI
+	       we replace in prepare_initializers_chain, but we have
+	       no convenient place to store this info at the moment.  */
+	    return NULL;
+	  vdef = gimple_vuse (def);
+	}
+      while (vdef != gimple_vuse (init_stmt));
+    }
 
   return phi;
 }
@@ -2873,8 +2905,7 @@ pcom_worker::combine_chains (chain_p ch1, chain_p ch2)
   if (swap)
     std::swap (ch1, ch2);
 
-  new_chain = XCNEW (struct chain);
-  new_chain->type = CT_COMBINATION;
+  new_chain = new struct chain (CT_COMBINATION);
   new_chain->op = op;
   new_chain->ch1 = ch1;
   new_chain->ch2 = ch2;
@@ -3483,8 +3514,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool
-  gate (function *)
+  bool
+  gate (function *) final override
   {
     if (flag_predictive_commoning != 0)
       return true;
@@ -3498,8 +3529,8 @@ public:
     return false;
   }
 
-  virtual unsigned int
-  execute (function *fun)
+  unsigned int
+  execute (function *fun) final override
   {
     bool allow_unroll_p = flag_predictive_commoning != 0;
     return run_tree_predictive_commoning (fun, allow_unroll_p);

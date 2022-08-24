@@ -3,8 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build linux && (arm64 || riscv64 || arm64be || nios2 || riscv)
-// +build linux
-// +build arm64 riscv64 arm64be nios2 riscv
 
 package unix
 

@@ -1,4 +1,4 @@
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/std11863conv.d
 // EXTRA_FILES: imports/std11863bitmanip.d imports/std11863format.d
 

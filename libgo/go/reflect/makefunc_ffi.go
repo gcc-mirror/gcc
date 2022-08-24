@@ -5,6 +5,7 @@
 package reflect
 
 import (
+	"internal/goarch"
 	"unsafe"
 )
 
@@ -37,7 +38,7 @@ func ffiCallbackGo(results unsafe.Pointer, params unsafe.Pointer, impl *makeFunc
 		typedmemmove(rt, p, *(*unsafe.Pointer)(ap))
 		v := Value{rt, p, flag(rt.Kind()) | flagIndir}
 		in = append(in, v)
-		ap = (unsafe.Pointer)(uintptr(ap) + ptrSize)
+		ap = (unsafe.Pointer)(uintptr(ap) + goarch.PtrSize)
 	}
 
 	out := impl.call(in)

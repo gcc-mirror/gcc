@@ -3,7 +3,8 @@
    Exercise -Wdangling-pointer for escaping stores of addreses of auto
    variables.
    { dg-do compile }
-   { dg-options "-O0 -Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-O0 -Wall -ftrack-macro-expansion=0" }
+   { dg-require-effective-target alloca } */
 
 void* alloca (__SIZE_TYPE__);
 

@@ -79,10 +79,12 @@ public enum CustomFloatFlags
     none = 0
 }
 
+private enum isIEEEQuadruple = floatTraits!real.realFormat == RealFormat.ieeeQuadruple;
+
 private template CustomFloatParams(uint bits)
 {
     enum CustomFloatFlags flags = CustomFloatFlags.ieee
-                ^ ((bits == 80) ? CustomFloatFlags.storeNormalized : CustomFloatFlags.none);
+                ^ ((bits == 80 && !isIEEEQuadruple) ? CustomFloatFlags.storeNormalized : CustomFloatFlags.none);
     static if (bits ==  8) alias CustomFloatParams = CustomFloatParams!( 4,  3, flags);
     static if (bits == 16) alias CustomFloatParams = CustomFloatParams!(10,  5, flags);
     static if (bits == 32) alias CustomFloatParams = CustomFloatParams!(23,  8, flags);
@@ -367,11 +369,36 @@ private:
 public:
     static if (precision == 64) // CustomFloat!80 support hack
     {
-        ulong significand;
-        enum ulong significand_max = ulong.max;
-        mixin(bitfields!(
-            T_exp , "exponent", exponentWidth,
-            bool  , "sign"    , flags & flags.signed ));
+        static if (isIEEEQuadruple)
+        {
+        // Only use highest 64 significand bits from 112 explicitly stored
+        align (1):
+            enum ulong significand_max = ulong.max;
+            version (LittleEndian)
+            {
+                private ubyte[6] _padding; // 48-bit of padding
+                ulong significand;
+                mixin(bitfields!(
+                    T_exp , "exponent", exponentWidth,
+                    bool  , "sign"    , flags & flags.signed ));
+            }
+            else
+            {
+                mixin(bitfields!(
+                    T_exp , "exponent", exponentWidth,
+                    bool  , "sign"    , flags & flags.signed ));
+                ulong significand;
+                private ubyte[6] _padding; // 48-bit of padding
+            }
+        }
+        else
+        {
+            ulong significand;
+            enum ulong significand_max = ulong.max;
+            mixin(bitfields!(
+                T_exp , "exponent", exponentWidth,
+                bool  , "sign"    , flags & flags.signed ));
+        }
     }
     else
     {
@@ -631,23 +658,28 @@ public:
         auto x = F(0.125);
         assert(x.get!float == 0.125F);
         assert(x.get!double == 0.125);
+        assert(x.get!real == 0.125L);
 
         x -= 0.0625;
         assert(x.get!float == 0.0625F);
         assert(x.get!double == 0.0625);
+        assert(x.get!real == 0.0625L);
 
         x *= 2;
         assert(x.get!float == 0.125F);
         assert(x.get!double == 0.125);
+        assert(x.get!real == 0.125L);
 
         x /= 4;
         assert(x.get!float == 0.03125);
         assert(x.get!double == 0.03125);
+        assert(x.get!real == 0.03125L);
 
         x = 0.5;
         x ^^= 4;
         assert(x.get!float == 1 / 16.0F);
         assert(x.get!double == 1 / 16.0);
+        assert(x.get!real == 1 / 16.0L);
     }
 }
 

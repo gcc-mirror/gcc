@@ -160,7 +160,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   };
 
   /// @{
-  /// @relates perm_options
+  /// @relates perms
   constexpr perms
   operator&(perms __x, perms __y) noexcept
   {
@@ -353,6 +353,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
+
+  bool remove(const path&, error_code&) noexcept;
+  uintmax_t remove_all(const path&);
+  uintmax_t remove_all(const path&, error_code&);
 
 /// @}
 } // namespace filesystem

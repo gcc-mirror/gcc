@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build aix || darwin || dragonfly || freebsd || hurd || netbsd || openbsd || solaris
-// +build aix darwin dragonfly freebsd hurd netbsd openbsd solaris
+//go:build aix || darwin || dragonfly || netbsd || openbsd || solaris
 
 package syscall
 
 import (
+	"runtime"
 	"unsafe"
 )
 
@@ -49,6 +49,7 @@ func runtime_AfterForkInChild()
 // For the same reason compiler does not race instrument it.
 // The calls to RawSyscall are okay because they are assembly
 // functions that do not grow the stack.
+//
 //go:norace
 func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr *ProcAttr, sys *SysProcAttr, pipe int) (pid int, err Errno) {
 	// Declare all variables at top in case any
@@ -143,21 +144,16 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// User and groups
 	if cred := sys.Credential; cred != nil {
 		ngroups := len(cred.Groups)
-		var groups *Gid_t
+		var groups unsafe.Pointer
 		if ngroups > 0 {
 			gids := make([]Gid_t, ngroups)
 			for i, v := range cred.Groups {
 				gids[i] = Gid_t(v)
 			}
-			groups = &gids[0]
+			groups = unsafe.Pointer(&gids[0])
 		}
 		if !cred.NoSetGroups {
-			err2 := setgroups(ngroups, groups)
-			if err2 == nil {
-				err1 = 0
-			} else {
-				err1 = err2.(Errno)
-			}
+			err1 = raw_setgroups(ngroups, groups)
 			if err1 != 0 {
 				goto childerror
 			}
@@ -185,11 +181,19 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// Pass 1: look for fd[i] < i and move those up above len(fd)
 	// so that pass 2 won't stomp on an fd it needs later.
 	if pipe < nextfd {
-		err1 = raw_dup2(pipe, nextfd)
-		if err1 != 0 {
-			goto childerror
+		switch runtime.GOOS {
+		case "netbsd":
+			err1 = raw_dup3(pipe, nextfd, O_CLOEXEC)
+			if err1 != 0 {
+				goto childerror
+			}
+		default:
+			err1 = raw_dup2(pipe, nextfd)
+			if err1 != 0 {
+				goto childerror
+			}
+			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
 		}
-		raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
 		pipe = nextfd
 		nextfd++
 	}
@@ -198,11 +202,19 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 			if nextfd == pipe { // don't stomp on pipe
 				nextfd++
 			}
-			err1 = raw_dup2(fd[i], nextfd)
-			if err1 != 0 {
-				goto childerror
+			switch runtime.GOOS {
+			case "netbsd":
+				err1 = raw_dup3(fd[i], nextfd, O_CLOEXEC)
+				if err1 != 0 {
+					goto childerror
+				}
+			default:
+				err1 = raw_dup2(fd[i], nextfd)
+				if err1 != 0 {
+					goto childerror
+				}
+				raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
 			}
-			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
 			fd[i] = nextfd
 			nextfd++
 		}

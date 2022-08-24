@@ -1013,7 +1013,7 @@ nds32_expand_builtin_impl (tree exp,
       /* Both v3s and v3f toolchains define TARGET_FPU_SINGLE.  */
       if (!TARGET_FPU_SINGLE)
 	{
-	  error ("this builtin function is only available "
+	  error ("this built-in function is only available "
 		 "on the v3s or v3f toolchain");
 	  return NULL_RTX;
 	}
@@ -1025,7 +1025,7 @@ nds32_expand_builtin_impl (tree exp,
       /* Only v3f toolchain defines TARGET_FPU_DOUBLE.  */
       if (!TARGET_FPU_DOUBLE)
 	{
-	  error ("this builtin function is only available "
+	  error ("this built-in function is only available "
 		 "on the v3f toolchain");
 	  return NULL_RTX;
 	}
@@ -1040,7 +1040,7 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_SBUP:
       if (TARGET_ISA_V3M)
 	{
-	  error ("this builtin function not support "
+	  error ("this built-in function not support "
 		 "on the v3m toolchain");
 	  return NULL_RTX;
 	}

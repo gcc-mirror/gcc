@@ -44,7 +44,6 @@ enum class TOK : unsigned char
     leftCurly,
     rightCurly,
     colon,
-    negate,
     semicolon,
     dotDotDot,
     endOfFile,
@@ -53,30 +52,22 @@ enum class TOK : unsigned char
     assert_,
     true_,
     false_,
-    array,
-    call,
-    address,
-    type,
     throw_,
     new_,
     delete_,
-    star,
     variable,
     slice,
     version_,
     module_,
     dollar,
     template_,
-    declaration,
     typeof_,
     pragma_,
     typeid_,
-    uadd,
-    remove,
     comment,
 
     // Operators
-    lessThan,       // 54
+    lessThan,
     greaterThan,
     lessOrEqual,
     greaterOrEqual,
@@ -84,10 +75,9 @@ enum class TOK : unsigned char
     notEqual,
     identity,
     notIdentity,
-    index,
     is_,
 
-    leftShift,      // 64
+    leftShift,
     rightShift,
     leftShiftAssign,
     rightShiftAssign,
@@ -122,7 +112,7 @@ enum class TOK : unsigned char
     orOr,
 
     // Numeric literals
-    int32Literal,   // 104,
+    int32Literal,
     uns32Literal,
     int64Literal,
     uns64Literal,
@@ -136,20 +126,19 @@ enum class TOK : unsigned char
     imaginary80Literal,
 
     // Char constants
-    charLiteral,    // 116,
+    charLiteral,
     wcharLiteral,
     dcharLiteral,
 
     // Leaf operators
-    identifier,     // 119,
+    identifier,
     string_,
-    hexadecimalString,
     this_,
     super_,
     error,
 
     // Basic types
-    void_,          // 127
+    void_,
     int8,
     uns8,
     int16,
@@ -175,7 +164,7 @@ enum class TOK : unsigned char
     bool_,
 
     // Aggregates
-    struct_,        // 151
+    struct_,
     class_,
     interface_,
     union_,
@@ -207,7 +196,7 @@ enum class TOK : unsigned char
     immutable_,
 
     // Statements
-    if_,            // 181
+    if_,
     else_,
     while_,
     for_,
@@ -233,7 +222,7 @@ enum class TOK : unsigned char
     onScopeSuccess,
 
     // Contracts
-    invariant_,     // 205
+    invariant_,
 
     // Testing
     unittest_,
@@ -243,7 +232,7 @@ enum class TOK : unsigned char
     ref_,
     macro_,
 
-    parameters,     // 210
+    parameters,
     traits,
     pure_,
     nothrow_,
@@ -265,6 +254,8 @@ enum class TOK : unsigned char
     arrow,      // ->
     colonColon, // ::
     wchar_tLiteral,
+    endOfLine,  // \n, \r, \u2028, \u2029
+    whitespace,
 
     // C only keywords
     inline_,
@@ -287,8 +278,11 @@ enum class TOK : unsigned char
     _Thread_local_,
 
     // C only extended keywords
-    cdecl,
+    _import,
+    cdecl_,
     declspec,
+    stdcall,
+    pragma,
     attribute__,
 
     MAX,

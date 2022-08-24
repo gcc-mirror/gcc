@@ -504,7 +504,10 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
     cl_optimization_stream_out (ob, &bp, TREE_OPTIMIZATION (expr));
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    bp_pack_var_len_unsigned (&bp, CONSTRUCTOR_NELTS (expr));
+    {
+      bp_pack_enum (&bp, clobber_kind, CLOBBER_LAST, CLOBBER_KIND (expr));
+      bp_pack_var_len_unsigned (&bp, CONSTRUCTOR_NELTS (expr));
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION)
       /* Don't stream these when passing things to a different target.  */

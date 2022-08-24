@@ -104,9 +104,9 @@ package body Ada.Strings.Text_Buffers.Unbounded is
             --  forget to add corresponding assignment statement below.
             Dummy : array (1 .. 0) of Buffer_Type :=
               [others =>
-                 [Indentation  => <>, Indent_Pending => <>, UTF_8_Length => <>,
+                 (Indentation  => <>, Indent_Pending => <>, UTF_8_Length => <>,
                   UTF_8_Column => <>, All_7_Bits => <>, All_8_Bits => <>,
-                  List         => <>, Last_Used => <>]];
+                  List         => <>, Last_Used => <>)];
          begin
             Buffer.Indentation    := Defaulted.Indentation;
             Buffer.Indent_Pending := Defaulted.Indent_Pending;

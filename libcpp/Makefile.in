@@ -252,10 +252,13 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	  --keyword=cpp_warning:3 \
 	  --keyword=cpp_pedwarning:3 \
 	  --keyword=cpp_warning_syshdr:3 \
+	  --keyword=cpp_warning_at:4 \
+	  --keyword=cpp_pedwarning_at:4 \
 	  --keyword=cpp_error_with_line:5 \
 	  --keyword=cpp_warning_with_line:5 \
 	  --keyword=cpp_pedwarning_with_line:5 \
 	  --keyword=cpp_warning_with_line_syshdr:5 \
+	  --keyword=cpp_error_at:4 \
 	  --keyword=cpp_errno:3 \
 	  --keyword=SYNTAX_ERROR --keyword=SYNTAX_ERROR2 \
 	  --copyright-holder="Free Software Foundation, Inc." \

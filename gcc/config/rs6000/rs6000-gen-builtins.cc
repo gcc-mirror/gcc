@@ -93,6 +93,8 @@ along with GCC; see the file COPYING3.  If not see
      lxvrze   Needs special handling for load-rightmost, zero-extended
      endian   Needs special handling for endianness
      ibmld    Restrict usage to the case when TFmode is IBM-128
+     ibm128   Restrict usage to the case where __ibm128 is supported or
+              if ibmld
 
    An example stanza might look like this:
 
@@ -392,6 +394,7 @@ struct attrinfo
   bool islxvrze;
   bool isendian;
   bool isibmld;
+  bool isibm128;
 };
 
 /* Fields associated with a function prototype (bif or overload).  */
@@ -492,8 +495,7 @@ struct typemap
    maps tokens from a fntype string to a tree type.  For example,
    in "si_ftype_hi" we would map "si" to "intSI_type_node" and
    map "hi" to "intHI_type_node".  */
-#define TYPE_MAP_SIZE 86
-static typemap type_map[TYPE_MAP_SIZE] =
+static typemap type_map[] =
   {
     { "bi",		"bool_int" },
     { "bv16qi",		"bool_V16QI" },
@@ -506,7 +508,9 @@ static typemap type_map[TYPE_MAP_SIZE] =
     { "df",		"double" },
     { "di",		"long_long_integer" },
     { "hi",		"intHI" },
-    { "if",		"ibm128_float" },
+    { "if",		"ibm128_float_type_node "
+			"? ibm128_float_type_node "
+			": long_double" },
     { "ld",		"long_double" },
     { "lg",		"long_integer" },
     { "pbv16qi",	"ptr_bool_V16QI" },
@@ -519,7 +523,6 @@ static typemap type_map[TYPE_MAP_SIZE] =
     { "pdf",		"ptr_double" },
     { "pdi",		"ptr_long_long_integer" },
     { "phi",		"ptr_intHI" },
-    { "pif",		"ptr_ibm128_float" },
     { "pld",		"ptr_long_double" },
     { "plg",		"ptr_long_integer" },
     { "pqi",		"ptr_intQI" },
@@ -1439,6 +1442,8 @@ parse_bif_attrs (attrinfo *attrptr)
 	  attrptr->isendian = 1;
 	else if (!strcmp (attrname, "ibmld"))
 	  attrptr->isibmld = 1;
+	else if (!strcmp (attrname, "ibm128"))
+	  attrptr->isibm128 = 1;
 	else
 	  {
 	    diag (oldpos, "unknown attribute.\n");
@@ -1472,14 +1477,15 @@ parse_bif_attrs (attrinfo *attrptr)
 	"ldvec = %d, stvec = %d, reve = %d, pred = %d, htm = %d, "
 	"htmspr = %d, htmcr = %d, mma = %d, quad = %d, pair = %d, "
 	"mmaint = %d, no32bit = %d, 32bit = %d, cpu = %d, ldstmask = %d, "
-	"lxvrse = %d, lxvrze = %d, endian = %d, ibmdld= %d.\n",
+	"lxvrse = %d, lxvrze = %d, endian = %d, ibmdld = %d, ibm128 = %d.\n",
 	attrptr->isinit, attrptr->isset, attrptr->isextract,
 	attrptr->isnosoft, attrptr->isldvec, attrptr->isstvec,
 	attrptr->isreve, attrptr->ispred, attrptr->ishtm, attrptr->ishtmspr,
 	attrptr->ishtmcr, attrptr->ismma, attrptr->isquad, attrptr->ispair,
 	attrptr->ismmaint, attrptr->isno32bit, attrptr->is32bit,
 	attrptr->iscpu, attrptr->isldstmask, attrptr->islxvrse,
-	attrptr->islxvrze, attrptr->isendian, attrptr->isibmld);
+	attrptr->islxvrze, attrptr->isendian, attrptr->isibmld,
+	attrptr->isibm128);
 #endif
 
   return PC_OK;
@@ -2255,20 +2261,20 @@ write_decls (void)
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define PPC_MAXRESTROPNDS 3\n");
-  fprintf (header_file, "struct GTY((user)) bifdata\n");
+  fprintf (header_file, "struct GTY(()) bifdata\n");
   fprintf (header_file, "{\n");
-  fprintf (header_file, "  const char *bifname;\n");
-  fprintf (header_file, "  bif_enable enable;\n");
+  fprintf (header_file, "  const char *GTY((skip(\"\"))) bifname;\n");
+  fprintf (header_file, "  bif_enable GTY((skip(\"\"))) enable;\n");
   fprintf (header_file, "  tree fntype;\n");
-  fprintf (header_file, "  insn_code icode;\n");
+  fprintf (header_file, "  insn_code GTY((skip(\"\"))) icode;\n");
   fprintf (header_file, "  int  nargs;\n");
   fprintf (header_file, "  int  bifattrs;\n");
   fprintf (header_file, "  int  restr_opnd[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  restriction restr[PPC_MAXRESTROPNDS];\n");
+  fprintf (header_file, "  restriction GTY((skip(\"\"))) restr[PPC_MAXRESTROPNDS];\n");
   fprintf (header_file, "  int  restr_val1[PPC_MAXRESTROPNDS];\n");
   fprintf (header_file, "  int  restr_val2[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  const char *attr_string;\n");
-  fprintf (header_file, "  rs6000_gen_builtins assoc_bif;\n");
+  fprintf (header_file, "  const char *GTY((skip(\"\"))) attr_string;\n");
+  fprintf (header_file, "  rs6000_gen_builtins GTY((skip(\"\"))) assoc_bif;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define bif_init_bit\t\t(0x00000001)\n");
@@ -2294,6 +2300,7 @@ write_decls (void)
   fprintf (header_file, "#define bif_lxvrze_bit\t\t(0x00100000)\n");
   fprintf (header_file, "#define bif_endian_bit\t\t(0x00200000)\n");
   fprintf (header_file, "#define bif_ibmld_bit\t\t(0x00400000)\n");
+  fprintf (header_file, "#define bif_ibm128_bit\t\t(0x00800000)\n");
   fprintf (header_file, "\n");
   fprintf (header_file,
 	   "#define bif_is_init(x)\t\t((x).bifattrs & bif_init_bit)\n");
@@ -2341,23 +2348,19 @@ write_decls (void)
 	   "#define bif_is_endian(x)\t((x).bifattrs & bif_endian_bit)\n");
   fprintf (header_file,
 	   "#define bif_is_ibmld(x)\t((x).bifattrs & bif_ibmld_bit)\n");
+  fprintf (header_file,
+	   "#define bif_is_ibm128(x)\t((x).bifattrs & bif_ibm128_bit)\n");
   fprintf (header_file, "\n");
 
-  /* #### Cannot mark this as a GC root because only pointer types can
-     be marked as GTY((user)) and be GC roots.  All trees in here are
-     kept alive by other globals, so not a big deal.  Alternatively,
-     we could change the enum fields to ints and cast them in and out
-     to avoid requiring a GTY((user)) designation, but that seems
-     unnecessarily gross.  */
   fprintf (header_file,
-	   "extern bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
+	   "extern GTY(()) bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
 
-  fprintf (header_file, "struct GTY((user)) ovlddata\n");
+  fprintf (header_file, "struct GTY(()) ovlddata\n");
   fprintf (header_file, "{\n");
-  fprintf (header_file, "  const char *bifname;\n");
-  fprintf (header_file, "  rs6000_gen_builtins bifid;\n");
+  fprintf (header_file, "  const char *GTY((skip(\"\"))) bifname;\n");
+  fprintf (header_file, "  rs6000_gen_builtins GTY((skip(\"\"))) bifid;\n");
   fprintf (header_file, "  tree fntype;\n");
-  fprintf (header_file, "  ovlddata *next;\n");
+  fprintf (header_file, "  ovlddata *GTY((skip(\"\"))) next;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "struct ovldrecord\n");
@@ -2367,14 +2370,7 @@ write_decls (void)
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file,
-	   "/* #### Cannot mark this as a GC root because only pointer\n"
-	   "   types can be marked as GTY((user)) and be GC roots.  All\n"
-	   "   trees in here are kept alive by other globals, so not a big\n"
-	   "   deal.  Alternatively, we could change the enum fields to ints\n"
-	   "   and cast them in and out to avoid requiring a GTY((user))\n"
-	   "   designation, but that seems unnecessarily gross.  */\n");
-  fprintf (header_file,
-	   "extern ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
+	   "extern GTY(()) ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
   fprintf (header_file, "extern ovldrecord rs6000_overload_info[];\n\n");
 
   fprintf (header_file, "extern void rs6000_init_generated_builtins ();\n\n");
@@ -2383,33 +2379,6 @@ write_decls (void)
   fprintf (header_file,
 	   "extern tree rs6000_builtin_decl (unsigned, "
 	   "bool ATTRIBUTE_UNUSED);\n\n");
-  fprintf (header_file,
-	   "extern void gt_ggc_mx (bifdata *bd);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (bifdata *bd);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (bifdata *bd, gt_pointer_operator op, "
-	   "void *cookie);\n");
-  fprintf (header_file,
-	   "extern void gt_ggc_mx (ovlddata *od);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (ovlddata *od);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (ovlddata *od, gt_pointer_operator op, "
-	   "void *cookie);\n");
-}
-
-/* Callback functions used for generating trees for function types.  */
-void
-write_extern_fntype (char *str)
-{
-  fprintf (header_file, "extern GTY(()) tree %s;\n", str);
-}
-
-void
-write_fntype (char *str)
-{
-  fprintf (init_file, "tree %s;\n", str);
 }
 
 /* Comparator for bsearch on the type map.  */
@@ -2425,8 +2394,10 @@ write_type_node (char *tok, bool indent)
 {
   if (indent)
     fprintf (init_file, "  ");
-  typemap *entry = (typemap *) bsearch (tok, type_map, TYPE_MAP_SIZE,
-					sizeof (typemap), typemap_cmp);
+  typemap *entry
+    = (typemap *) bsearch (tok, type_map,
+			   sizeof type_map / sizeof type_map[0],
+			   sizeof (typemap), typemap_cmp);
   if (!entry)
     fatal ("Type map is inconsistent.");
   fprintf (init_file, "%s_type_node", entry->value);
@@ -2452,12 +2423,17 @@ write_fntype_init (char *str)
   /* Avoid side effects of strtok on the original string by using a copy.  */
   char *buf = strdup (str);
 
-  if (tf_found)
-    fprintf (init_file, "  if (float128_type_node)\n  ");
-  else if (dfp_found)
-    fprintf (init_file, "  if (dfloat64_type_node)\n  ");
+  if (tf_found || dfp_found)
+    fprintf (init_file, "  tree %s = NULL_TREE;\n", buf);
+  else
+    fprintf (init_file, "  tree ");
 
-  fprintf (init_file, "  %s\n    = build_function_type_list (", buf);
+  if (tf_found)
+    fprintf (init_file, "  if (float128_type_node)\n    ");
+  else if (dfp_found)
+    fprintf (init_file, "  if (dfloat64_type_node)\n    ");
+
+  fprintf (init_file, "%s\n    = build_function_type_list (", buf);
   tok = strtok (buf, "_");
   write_type_node (tok, tf_found || dfp_found);
   tok = strtok (0, "_");
@@ -2491,8 +2467,6 @@ write_header_file (void)
 
   write_decls ();
 
-  /* Write function type list declarators to the header file.  */
-  rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_extern_fntype);
   fprintf (header_file, "\n");
   fprintf (header_file, "\n#endif\n");
 
@@ -2572,6 +2546,8 @@ write_bif_static_init (void)
 	fprintf (init_file, " | bif_endian_bit");
       if (bifp->attrs.isibmld)
 	fprintf (init_file, " | bif_ibmld_bit");
+      if (bifp->attrs.isibm128)
+	fprintf (init_file, " | bif_ibm128_bit");
       fprintf (init_file, ",\n");
       fprintf (init_file, "      /* restr_opnd */\t{%d, %d, %d},\n",
 	       bifp->proto.restr_opnd[0], bifp->proto.restr_opnd[1],
@@ -2846,9 +2822,6 @@ write_init_file (void)
   write_bif_static_init ();
   write_ovld_static_init ();
 
-  rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_fntype);
-  fprintf (init_file, "\n");
-
   fprintf (init_file, "void\n");
   fprintf (init_file, "rs6000_init_generated_builtins ()\n");
   fprintf (init_file, "{\n");
@@ -2867,33 +2840,6 @@ write_init_file (void)
   write_init_ovld_table ();
 
   fprintf (init_file, "}\n\n");
-
-  fprintf (init_file,
-	   "void gt_ggc_mx (bifdata *bd)\n");
-  fprintf (init_file,
-	   "{\n  gt_ggc_mx (bd->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (bifdata *bd)\n");
-  fprintf (init_file,
-	   "{\n  gt_pch_nx (bd->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (bifdata *bd, gt_pointer_operator op, "
-	   "void *cookie)\n");
-  fprintf (init_file,
-	   "{\n  op(&(bd->fntype), NULL, cookie);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_ggc_mx (ovlddata *od)\n");
-  fprintf (init_file,
-	   "{\n  gt_ggc_mx (od->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (ovlddata *od)\n");
-  fprintf (init_file,
-	   "{\n  gt_pch_nx (od->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (ovlddata *od, gt_pointer_operator op, "
-	   "void *cookie)\n");
-  fprintf (init_file,
-	   "{\n  op(&(od->fntype), NULL, cookie);\n}\n");
 
   return 1;
 }

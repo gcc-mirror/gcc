@@ -218,7 +218,7 @@ class SmartPtrIterator(Iterator):
         return ('get()', val)
 
 class SharedPointerPrinter:
-    "Print a shared_ptr or weak_ptr"
+    "Print a shared_ptr, weak_ptr, atomic<shared_ptr>, or atomic<weak_ptr>"
 
     def __init__ (self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -228,9 +228,22 @@ class SharedPointerPrinter:
     def children (self):
         return SmartPtrIterator(self.pointer)
 
+    # Return the _Sp_counted_base<>* that holds the refcounts.
+    def _get_refcounts (self):
+        if self.typename == 'std::atomic':
+            # A tagged pointer is stored as uintptr_t.
+            ptr_val = self.val['_M_refcount']['_M_val']['_M_i']
+            ptr_val = ptr_val - (ptr_val % 2) # clear lock bit
+            ptr_type = find_type(self.val['_M_refcount'].type, 'pointer')
+            return ptr_val.cast(ptr_type)
+        return self.val['_M_refcount']['_M_pi']
+
     def to_string (self):
         state = 'empty'
-        refcounts = self.val['_M_refcount']['_M_pi']
+        refcounts = self._get_refcounts()
+        targ = self.val.type.template_argument(0)
+        targ = strip_versioned_namespace(str(targ))
+
         if refcounts != 0:
             usecount = refcounts['_M_use_count']
             weakcount = refcounts['_M_weak_count']
@@ -238,7 +251,7 @@ class SharedPointerPrinter:
                 state = 'expired, weak count %d' % weakcount
             else:
                 state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
-        return '%s<%s> (%s)' % (self.typename, str(self.val.type.template_argument(0)), state)
+        return '%s<%s> (%s)' % (self.typename, targ, state)
 
 def _tuple_impl_get(val):
     "Return the tuple element stored in a _Tuple_impl<N, T> base class."
@@ -598,9 +611,9 @@ class StdTuplePrinter:
             # the value "as is".
             fields = impl.type.fields ()
             if len (fields) < 1 or fields[0].name != "_M_head_impl":
-                return ('[%d]' % self.count, impl)
+                return ('[%d]' % (self.count - 1), impl)
             else:
-                return ('[%d]' % self.count, impl['_M_head_impl'])
+                return ('[%d]' % (self.count - 1), impl['_M_head_impl'])
 
     def __init__ (self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -1518,41 +1531,122 @@ class StdCmpCatPrinter:
 class StdErrorCodePrinter:
     "Print a std::error_code or std::error_condition"
 
-    _errno_categories = None # List of categories that use errno values
+    _system_is_posix = None  # Whether std::system_category() use errno values.
 
     def __init__ (self, typename, val):
         self.val = val
         self.typename = strip_versioned_namespace(typename)
         # Do this only once ...
-        if StdErrorCodePrinter._errno_categories is None:
-            StdErrorCodePrinter._errno_categories = ['generic']
+        if StdErrorCodePrinter._system_is_posix is None:
             try:
                 import posix
-                StdErrorCodePrinter._errno_categories.append('system')
+                StdErrorCodePrinter._system_is_posix = True
             except ImportError:
-                pass
+                StdErrorCodePrinter._system_is_posix = False
 
     @staticmethod
-    def _category_name(cat):
-        "Call the virtual function that overrides std::error_category::name()"
-        gdb.set_convenience_variable('__cat', cat)
-        return gdb.parse_and_eval('$__cat->name()').string()
+    def _find_errc_enum(name):
+        typ = gdb.lookup_type(name)
+        if typ is not None and typ.code == gdb.TYPE_CODE_ENUM:
+            return typ
+        return None
+
+    @classmethod
+    def _find_standard_errc_enum(cls, name):
+        for ns in ['', _versioned_namespace]:
+            try:
+                qname = 'std::{}{}'.format(ns, name)
+                return cls._find_errc_enum(qname)
+            except RuntimeError:
+                pass
+
+    @classmethod
+    def _match_net_ts_category(cls, cat):
+        net_cats = ['stream', 'socket', 'ip::resolver']
+        for c in net_cats:
+            func = c + '_category()'
+            for ns in ['', _versioned_namespace]:
+                ns = 'std::{}experimental::net::v1'.format(ns)
+                sym = gdb.lookup_symbol('{}::{}::__c'.format(ns, func))[0]
+                if sym is not None:
+                    if cat == sym.value().address:
+                        name = 'net::' + func
+                        enum = cls._find_errc_enum('{}::{}_errc'.format(ns, c))
+                        return (name, enum)
+        return (None, None)
+
+    @classmethod
+    def _category_info(cls, cat):
+        "Return details of a std::error_category"
+
+        name = None
+        enum = None
+        is_errno = False
+
+        # Try these first, or we get "warning: RTTI symbol not found" when
+        # using cat.dynamic_type on the local class types for Net TS categories.
+        func, enum = cls._match_net_ts_category(cat)
+        if func is not None:
+            return (None, func, enum, is_errno)
+
+        # This might give a warning for a program-defined category defined as
+        # a local class, but there doesn't seem to be any way to avoid that.
+        typ = cat.dynamic_type.target()
+        # Shortcuts for the known categories defined by libstdc++.
+        if typ.tag.endswith('::generic_error_category'):
+            name = 'generic'
+            is_errno = True
+        if typ.tag.endswith('::system_error_category'):
+            name = 'system'
+            is_errno = cls._system_is_posix
+        if typ.tag.endswith('::future_error_category'):
+            name = 'future'
+            enum = cls._find_standard_errc_enum('future_errc')
+        if typ.tag.endswith('::io_error_category'):
+            name = 'io'
+            enum = cls._find_standard_errc_enum('io_errc')
+
+        if name is None:
+            try:
+                # Want to call std::error_category::name() override, but it's
+                # unsafe: https://sourceware.org/bugzilla/show_bug.cgi?id=28856
+                # gdb.set_convenience_variable('__cat', cat)
+                # return '"%s"' % gdb.parse_and_eval('$__cat->name()').string()
+                pass
+            except:
+                pass
+        return (name, typ.tag, enum, is_errno)
+
+    @staticmethod
+    def _unqualified_name(name):
+        "Strip any nested-name-specifier from NAME to give an unqualified name"
+        return name.split('::')[-1]
 
     def to_string (self):
         value = self.val['_M_value']
-        category = self._category_name(self.val['_M_cat'])
-        strval = str(value)
+        cat = self.val['_M_cat']
+        name, alt_name, enum, is_errno = self._category_info(cat)
         if value == 0:
-            default_cats = {'error_code':'system', 'error_condition':'generic'}
-            unqualified = self.typename.split('::')[-1]
-            if category == default_cats[unqualified]:
+            default_cats = { 'error_code' : 'system',
+                             'error_condition' : 'generic' }
+            if name == default_cats[self._unqualified_name(self.typename)]:
                 return self.typename + ' = { }' # default-constructed value
-        if value > 0 and category in StdErrorCodePrinter._errno_categories:
+
+        strval = str(value)
+        if is_errno and value != 0:
             try:
                 strval = errno.errorcode[int(value)]
             except:
                 pass
-        return '%s = {"%s": %s}' % (self.typename, category, strval)
+        elif enum is not None:
+            strval = self._unqualified_name(str(value.cast(enum)))
+
+        if name is not None:
+            name = '"%s"' % name
+        else:
+            name = alt_name
+        return '%s = {%s: %s}' % (self.typename, name, strval)
+
 
 class StdRegexStatePrinter:
     "Print a state node in the NFA for a std::regex"
@@ -1581,6 +1675,94 @@ class StdRegexStatePrinter:
         if v is not None and self.val['_M_' + v] is not None:
             s = "{}, {}={}".format(s, v, self.val['_M_' + v])
         return "{%s}" % (s)
+
+class StdSpanPrinter:
+    "Print a std::span"
+
+    class iterator(Iterator):
+        def __init__(self, begin, size):
+            self.count = 0
+            self.begin = begin
+            self.size = size
+
+        def __iter__ (self):
+            return self
+
+        def __next__ (self):
+            if self.count == self.size:
+                raise StopIteration
+
+            count = self.count
+            self.count = self.count + 1
+            return '[%d]' % count, (self.begin + count).dereference()
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+        if val.type.template_argument(1) == gdb.parse_and_eval('static_cast<std::size_t>(-1)'):
+            self.size = val['_M_extent']['_M_extent_value']
+        else:
+            self.size = val.type.template_argument(1)
+
+    def to_string(self):
+        return '%s of length %d' % (self.typename, self.size)
+
+    def children(self):
+        return self.iterator(self.val['_M_ptr'], self.size)
+
+    def display_hint(self):
+        return 'array'
+
+class StdInitializerListPrinter:
+    "Print a std::initializer_list"
+
+    def __init__(self, typename, val):
+        self.typename = typename
+        self.val = val
+        self.size = val['_M_len']
+
+    def to_string(self):
+        return '%s of length %d' % (self.typename, self.size)
+
+    def children(self):
+        return StdSpanPrinter.iterator(self.val['_M_array'], self.size)
+
+    def display_hint(self):
+        return 'array'
+
+class StdAtomicPrinter:
+    "Print a std:atomic"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+        self.shptr_printer = None
+        self.value_type = self.val.type.template_argument(0)
+        if self.value_type.tag is not None:
+            typ = strip_versioned_namespace(self.value_type.tag)
+            if typ.startswith('std::shared_ptr<') or typ.startswith('std::weak_ptr<'):
+                impl = val['_M_impl']
+                self.shptr_printer = SharedPointerPrinter(typename, impl)
+                self.children = self._shptr_children
+
+    def _shptr_children(self):
+        return SmartPtrIterator(self.shptr_printer.pointer)
+
+    def to_string(self):
+        if self.shptr_printer is not None:
+            return self.shptr_printer.to_string()
+
+        if self.value_type.code == gdb.TYPE_CODE_INT:
+            val = self.val['_M_i']
+        elif self.value_type.code == gdb.TYPE_CODE_FLT:
+            val = self.val['_M_fp']
+        elif self.value_type.code == gdb.TYPE_CODE_PTR:
+            val = self.val['_M_b']['_M_p']
+        elif self.value_type.code == gdb.TYPE_CODE_BOOL:
+            val = self.val['_M_base']['_M_i']
+        else:
+            val = self.val['_M_i']
+        return '%s<%s> = { %s }' % (self.typename, str(self.value_type), val)
 
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
@@ -1822,7 +2004,7 @@ class FilteringTypePrinter(object):
         self.enabled = True
 
     class _recognizer(object):
-        "The recognizer class for TemplateTypePrinter."
+        "The recognizer class for FilteringTypePrinter."
 
         def __init__(self, match, name):
             self.match = match
@@ -1984,8 +2166,6 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::__cxx11::', 'basic_string', StdStringPrinter)
     libstdcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
     libstdcxx_printer.add_container('std::', 'deque', StdDequePrinter)
-    libstdcxx_printer.add_version('std::', 'error_code', StdErrorCodePrinter)
-    libstdcxx_printer.add_version('std::', 'error_condition', StdErrorCodePrinter)
     libstdcxx_printer.add_container('std::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::__cxx11::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::', 'map', StdMapPrinter)
@@ -2001,6 +2181,12 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'unique_ptr', UniquePointerPrinter)
     libstdcxx_printer.add_container('std::', 'vector', StdVectorPrinter)
     # vector<bool>
+
+    if hasattr(gdb.Value, 'dynamic_type'):
+        libstdcxx_printer.add_version('std::', 'error_code',
+                                      StdErrorCodePrinter)
+        libstdcxx_printer.add_version('std::', 'error_condition',
+                                      StdErrorCodePrinter)
 
     # Printer registrations for classes compiled with -D_GLIBCXX_DEBUG.
     libstdcxx_printer.add('std::__debug::bitset', StdBitsetPrinter)
@@ -2042,6 +2228,10 @@ def build_libstdcxx_dictionary ():
                                   Tr1UnorderedMapPrinter)
     libstdcxx_printer.add_version('std::tr1::', 'unordered_multiset',
                                   Tr1UnorderedSetPrinter)
+
+    libstdcxx_printer.add_version('std::', 'initializer_list',
+                                  StdInitializerListPrinter)
+    libstdcxx_printer.add_version('std::', 'atomic', StdAtomicPrinter)
 
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',
@@ -2094,6 +2284,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'partial_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
+    libstdcxx_printer.add_version('std::', 'span', StdSpanPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)

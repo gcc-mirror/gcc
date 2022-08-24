@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "target.h"
+#include "tree-ssa-loop-niter.h"
 
 /* This file implements dead store elimination.
 
@@ -91,7 +93,9 @@ static bitmap need_eh_cleanup;
 static bitmap need_ab_cleanup;
 
 /* STMT is a statement that may write into memory.  Analyze it and
-   initialize WRITE to describe how STMT affects memory.
+   initialize WRITE to describe how STMT affects memory.  When
+   MAY_DEF_OK is true then the function initializes WRITE to what
+   the stmt may define.
 
    Return TRUE if the statement was analyzed, FALSE otherwise.
 
@@ -99,7 +103,7 @@ static bitmap need_ab_cleanup;
    can be achieved by analyzing more statements.  */
 
 static bool
-initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
+initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 {
   /* It's advantageous to handle certain mem* functions.  */
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
@@ -142,6 +146,32 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
 
 	default:
 	  break;
+	}
+    }
+  else if (is_gimple_call (stmt)
+	   && gimple_call_internal_p (stmt))
+    {
+      switch (gimple_call_internal_fn (stmt))
+	{
+	case IFN_LEN_STORE:
+	  ao_ref_init_from_ptr_and_size
+	      (write, gimple_call_arg (stmt, 0),
+	       int_const_binop (MINUS_EXPR,
+				gimple_call_arg (stmt, 2),
+				gimple_call_arg (stmt, 4)));
+	  return true;
+	case IFN_MASK_STORE:
+	  /* We cannot initialize a must-def ao_ref (in all cases) but we
+	     can provide a may-def variant.  */
+	  if (may_def_ok)
+	    {
+	      ao_ref_init_from_ptr_and_size
+		  (write, gimple_call_arg (stmt, 0),
+		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 2))));
+	      return true;
+	    }
+	  break;
+	default:;
 	}
     }
   else if (tree lhs = gimple_get_lhs (stmt))
@@ -403,10 +433,56 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
   int first_live = bitmap_first_set_bit (live);
   *trim_head = first_live - first_orig;
 
-  /* If more than a word remains, then make sure to keep the
-     starting point at least word aligned.  */
-  if (last_live - first_live > UNITS_PER_WORD)
-    *trim_head &= ~(UNITS_PER_WORD - 1);
+  /* If REF is aligned, try to maintain this alignment if it reduces
+     the number of (power-of-two sized aligned) writes to memory.  */
+  unsigned int align_bits;
+  unsigned HOST_WIDE_INT bitpos;
+  if ((*trim_head || *trim_tail)
+      && last_live - first_live >= 2
+      && ao_ref_alignment (ref, &align_bits, &bitpos)
+      && align_bits >= 32
+      && bitpos == 0
+      && align_bits % BITS_PER_UNIT == 0)
+    {
+      unsigned int align_units = align_bits / BITS_PER_UNIT;
+      if (align_units > 16)
+	align_units = 16;
+      while ((first_live | (align_units - 1)) > (unsigned int)last_live)
+	align_units >>= 1;
+
+      if (*trim_head)
+	{
+	  unsigned int pos = first_live & (align_units - 1);
+	  for (unsigned int i = 1; i <= align_units; i <<= 1)
+	    {
+	      unsigned int mask = ~(i - 1);
+	      unsigned int bytes = align_units - (pos & mask);
+	      if (wi::popcount (bytes) <= 1)
+		{
+		  *trim_head &= mask;
+		  break;
+		}
+	    }
+	}
+
+      if (*trim_tail)
+	{
+	  unsigned int pos = last_live & (align_units - 1);
+	  for (unsigned int i = 1; i <= align_units; i <<= 1)
+	    {
+	      int mask = i - 1;
+	      unsigned int bytes = (pos | mask) + 1;
+	      if ((last_live | mask) > (last_live + *trim_tail))
+		break;
+	      if (wi::popcount (bytes) <= 1)
+		{
+		  unsigned int extra = (last_live | mask) - last_live;
+		  *trim_tail -= extra;
+		  break;
+		}
+	    }
+	}
+    }
 
   if ((*trim_head || *trim_tail)
       && dump_file && (dump_flags & TDF_DETAILS))
@@ -850,6 +926,17 @@ dse_optimize_redundant_stores (gimple *stmt)
     }
 }
 
+/* Return whether PHI contains ARG as an argument.  */
+
+static bool
+contains_phi_arg (gphi *phi, tree arg)
+{
+  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+    if (gimple_phi_arg_def (phi, i) == arg)
+      return true;
+  return false;
+}
+
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT that writes to REF, classify it
    according to downstream uses and defs.  Sets *BY_CLOBBER_P to true
@@ -901,8 +988,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	return DSE_STORE_LIVE;
 
       auto_vec<gimple *, 10> defs;
-      gimple *first_phi_def = NULL;
-      gimple *last_phi_def = NULL;
+      gphi *first_phi_def = NULL;
+      gphi *last_phi_def = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
@@ -925,8 +1012,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		{
 		  defs.safe_push (use_stmt);
 		  if (!first_phi_def)
-		    first_phi_def = use_stmt;
-		  last_phi_def = use_stmt;
+		    first_phi_def = as_a <gphi *> (use_stmt);
+		  last_phi_def = as_a <gphi *> (use_stmt);
 		}
 	    }
 	  /* If the statement is a use the store is not dead.  */
@@ -982,7 +1069,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	 just pretend the stmt makes itself dead.  Otherwise fail.  */
       if (defs.is_empty ())
 	{
-	  if (ref_may_alias_global_p (ref))
+	  if (ref_may_alias_global_p (ref, false))
 	    return DSE_STORE_LIVE;
 
 	  if (by_clobber_p)
@@ -998,6 +1085,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  use_operand_p use_p;
 	  tree vdef = (gimple_code (def) == GIMPLE_PHI
 		       ? gimple_phi_result (def) : gimple_vdef (def));
+	  gphi *phi_def;
 	  /* If the path to check starts with a kill we do not need to
 	     process it further.
 	     ???  With byte tracking we need only kill the bytes currently
@@ -1014,7 +1102,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    {
 	      /* But if the store is to global memory it is definitely
 		 not dead.  */
-	      if (ref_may_alias_global_p (ref))
+	      if (ref_may_alias_global_p (ref, false))
 		return DSE_STORE_LIVE;
 	      defs.unordered_remove (i);
 	    }
@@ -1031,7 +1119,31 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 			   && bitmap_bit_p (visited,
 					    SSA_NAME_VERSION
 					      (PHI_RESULT (use_stmt))))))
-	    defs.unordered_remove (i);
+	    {
+	      defs.unordered_remove (i);
+	      if (def == first_phi_def)
+		first_phi_def = NULL;
+	      else if (def == last_phi_def)
+		last_phi_def = NULL;
+	    }
+	  /* If def is a PHI and one of its arguments is another PHI node still
+	     in consideration we can defer processing it.  */
+	  else if ((phi_def = dyn_cast <gphi *> (def))
+		   && ((last_phi_def
+			&& phi_def != last_phi_def
+			&& contains_phi_arg (phi_def,
+					     gimple_phi_result (last_phi_def)))
+		       || (first_phi_def
+			   && phi_def != first_phi_def
+			   && contains_phi_arg
+				(phi_def, gimple_phi_result (first_phi_def)))))
+	    {
+	      defs.unordered_remove (i);
+	      if (phi_def == first_phi_def)
+		first_phi_def = NULL;
+	      else if (phi_def == last_phi_def)
+		last_phi_def = NULL;
+	    }
 	  else
 	    ++i;
 	}
@@ -1190,10 +1302,12 @@ dse_optimize_call (gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	{
 	  tree arg = access_node.get_call_arg (stmt);
 
-	  if (!arg)
+	  if (!arg || !POINTER_TYPE_P (TREE_TYPE (arg)))
 	    return false;
 
-	  if (integer_zerop (arg) && flag_delete_null_pointer_checks)
+	  if (integer_zerop (arg)
+	      && !targetm.addr_space.zero_address_valid
+		    (TYPE_ADDR_SPACE (TREE_TYPE (arg))))
 	    continue;
 
 	  ao_ref ref;
@@ -1242,8 +1356,10 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 
   ao_ref ref;
   /* If this is not a store we can still remove dead call using
-     modref summary.  */
-  if (!initialize_ao_ref_for_dse (stmt, &ref))
+     modref summary.  Note we specifically allow ref to be initialized
+     to a conservative may-def since we are looking for followup stores
+     to kill all of it.  */
+  if (!initialize_ao_ref_for_dse (stmt, &ref, true))
     {
       dse_optimize_call (gsi, live_bytes);
       return;
@@ -1312,6 +1428,23 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	  return;
 	}
     }
+  else if (is_gimple_call (stmt)
+	   && gimple_call_internal_p (stmt))
+    {
+      switch (gimple_call_internal_fn (stmt))
+	{
+	case IFN_LEN_STORE:
+	case IFN_MASK_STORE:
+	  {
+	    enum dse_store_status store_status;
+	    store_status = dse_classify_store (&ref, stmt, false, live_bytes);
+	    if (store_status == DSE_STORE_DEAD)
+	      delete_dead_or_redundant_call (gsi, "dead");
+	    return;
+	  }
+	default:;
+	}
+    }
 
   bool by_clobber_p = false;
 
@@ -1377,7 +1510,8 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
       gimple_call_set_lhs (stmt, NULL_TREE);
       update_stmt (stmt);
     }
-  else
+  else if (!stmt_could_throw_p (fun, stmt)
+	   || fun->can_delete_dead_exceptions)
     delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
 					 need_ab_cleanup);
 }
@@ -1405,9 +1539,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dse (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_dse != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_dse (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dse != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_dse
 
@@ -1415,6 +1549,8 @@ unsigned int
 pass_dse::execute (function *fun)
 {
   unsigned todo = 0;
+  bool released_def = false;
+
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_ab_cleanup = BITMAP_ALLOC (NULL);
   auto_sbitmap live_bytes (param_dse_max_object_size);
@@ -1457,6 +1593,7 @@ pass_dse::execute (function *fun)
 		  if (gsi_remove (&gsi, true) && need_eh_cleanup)
 		    bitmap_set_bit (need_eh_cleanup, bb->index);
 		  release_defs (stmt);
+		  released_def = true;
 		}
 	    }
 	  if (gsi_end_p (gsi))
@@ -1478,6 +1615,7 @@ pass_dse::execute (function *fun)
 		}
 	      remove_phi_node (&si, true);
 	      removed_phi = true;
+	      released_def = true;
 	    }
 	  else
 	    gsi_next (&si);
@@ -1502,6 +1640,9 @@ pass_dse::execute (function *fun)
 
   BITMAP_FREE (need_eh_cleanup);
   BITMAP_FREE (need_ab_cleanup);
+
+  if (released_def)
+    free_numbers_of_iterations_estimates (fun);
 
   return todo;
 }

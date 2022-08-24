@@ -127,22 +127,6 @@ package Exp_Ch6 is
    function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 
-   function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Returns True if functions returning the type use
-   --  build-in-place protocols. For inherently limited types, this must be
-   --  True in >= Ada 2005, and must be False in Ada 95. For other types, it
-   --  can be True or False, and the decision should be based on efficiency,
-   --  and should be the same for all language versions, so that mixed-dialect
-   --  programs will work.
-   --
-   --  For inherently limited types in Ada 2005, True means that calls will
-   --  actually be build-in-place in all cases. For other types, build-in-place
-   --  will be used when possible, but we need to make a copy in some
-   --  cases. For example, for "X := F(...);" if F can see X, or if F can
-   --  propagate exceptions, we need to store its result in a temp in general,
-   --  and copy the temp into X. Also, for "return Global_Var;" Global_Var
-   --  needs to be copied into the function result object.
-
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E denotes a function, generic
    --  function, or access-to-function type for which
@@ -154,6 +138,15 @@ package Exp_Ch6 is
    --  Ada 2005 (AI-318-02): Returns True if N denotes a call to a function
    --  that requires handling as a build-in-place call (possibly qualified or
    --  converted).
+
+   function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Returns True if functions returning the type use
+   --  build-in-place protocols. For inherently limited types, this must be
+   --  True in >= Ada 2005 and must be False in Ada 95.
+
+   function Is_Build_In_Place_Return_Object (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True is E is a return object of a function
+   --  that uses build-in-place protocols.
 
    function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
    --  Predicate to recognize stubbed procedures and null procedures, which
@@ -271,5 +264,8 @@ package Exp_Ch6 is
    --  an expression containing a call displacing the pointer to the BIP object
    --  to reference the secondary dispatch table of an interface; otherwise
    --  return Empty.
+
+private
+   pragma Inline (Is_Build_In_Place_Return_Object);
 
 end Exp_Ch6;

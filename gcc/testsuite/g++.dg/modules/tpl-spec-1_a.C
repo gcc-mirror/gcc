@@ -19,4 +19,4 @@ template <> int foo<int> (int y)
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo<int>'} module } }
 // { dg-final { scan-lang-dump {Pending specialization '::foo<int>' entity:[0-9]* section:. keyed to '::foo'} module } }
 
-// { dg-final { scan-assembler {_Z3fooIiEiT_:} } }
+// { dg-final { scan-assembler {_ZW3TPL3fooIiEiT_:} } }

@@ -24,7 +24,7 @@ fail_compilation/diag10862.d(74): Error: assignment cannot be used as a conditio
 fail_compilation/diag10862.d-mixin-77(77): Error: assignment cannot be used as a condition, perhaps `==` was meant?
 fail_compilation/diag10862.d-mixin-78(78): Error: assignment cannot be used as a condition, perhaps `==` was meant?
 fail_compilation/diag10862.d-mixin-79(79): Error: assignment cannot be used as a condition, perhaps `==` was meant?
-fail_compilation/diag10862.d-mixin-80(80): Error: Using the result of a comma expression is not allowed
+fail_compilation/diag10862.d-mixin-80(80): Error: using the result of a comma expression is not allowed
 fail_compilation/diag10862.d-mixin-80(80): Error: assignment cannot be used as a condition, perhaps `==` was meant?
 fail_compilation/diag10862.d-mixin-83(83): Error: `a + b` is not an lvalue and cannot be modified
 fail_compilation/diag10862.d-mixin-84(84): Error: undefined identifier `c`

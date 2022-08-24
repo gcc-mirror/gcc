@@ -315,10 +315,10 @@ The following is a typical example of use:
 .. code-block:: ada
 
   type List is private with
-      Iterable => (First        => First_Cursor,
-                   Next         => Advance,
-                   Has_Element  => Cursor_Has_Element,
-                  [Element      => Get_Element]);
+      Iterable => (First       => First_Cursor,
+                   Next        => Advance,
+                   Has_Element => Cursor_Has_Element,
+                  [Element     => Get_Element]);
 
 * The value denoted by ``First`` must denote a primitive operation of the
   container type that returns a ``Cursor``, which must a be a type declared in

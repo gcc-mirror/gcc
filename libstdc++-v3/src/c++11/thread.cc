@@ -24,6 +24,7 @@
 
 
 #define _GLIBCXX_THREAD_ABI_COMPAT 1
+#define _GLIBCXX_THREAD_IMPL 1
 #include <memory> // include this first so <thread> can use shared_ptr
 #include <thread>
 #include <system_error>

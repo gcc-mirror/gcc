@@ -89,11 +89,12 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/algorithm/mutation.d std/algorithm/package.d \
 	std/algorithm/searching.d std/algorithm/setops.d \
 	std/algorithm/sorting.d std/array.d std/ascii.d std/base64.d \
-	std/bigint.d std/bitmanip.d std/compiler.d std/complex.d \
-	std/concurrency.d std/container/array.d std/container/binaryheap.d \
-	std/container/dlist.d std/container/package.d std/container/rbtree.d \
-	std/container/slist.d std/container/util.d std/conv.d std/csv.d \
-	std/datetime/date.d std/datetime/interval.d std/datetime/package.d \
+	std/bigint.d std/bitmanip.d std/checkedint.d std/compiler.d \
+	std/complex.d std/concurrency.d std/container/array.d \
+	std/container/binaryheap.d std/container/dlist.d \
+	std/container/package.d std/container/rbtree.d std/container/slist.d \
+	std/container/util.d std/conv.d std/csv.d std/datetime/date.d \
+	std/datetime/interval.d std/datetime/package.d \
 	std/datetime/stopwatch.d std/datetime/systime.d \
 	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
 	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
@@ -129,7 +130,7 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/experimental/typecons.d std/file.d std/format/internal/floats.d \
 	std/format/internal/read.d std/format/internal/write.d \
 	std/format/package.d std/format/read.d std/format/spec.d \
-	std/format/write.d std/functional.d std/getopt.d \
+	std/format/write.d std/functional.d std/getopt.d std/int128.d \
 	std/internal/attributes.d std/internal/cstring.d \
 	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
 	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \

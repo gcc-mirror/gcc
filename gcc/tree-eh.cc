@@ -2176,7 +2176,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_lower_eh
 
@@ -3295,8 +3295,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_exceptions != 0; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_exceptions != 0; }
+  unsigned int execute (function *) final override
     {
       refactor_eh_r (gimple_body (current_function_decl));
       return 0;
@@ -3497,8 +3497,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_exceptions != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_exceptions != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_lower_resx
 
@@ -3922,8 +3922,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun) { return fun->eh->region_tree != NULL; }
-  virtual unsigned int execute (function *);
+  bool gate (function *fun) final override
+  {
+    return fun->eh->region_tree != NULL;
+  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_lower_eh_dispatch
 
@@ -4859,13 +4862,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_cleanup_eh (m_ctxt); }
-  virtual bool gate (function *fun)
+  opt_pass * clone () final override { return new pass_cleanup_eh (m_ctxt); }
+  bool gate (function *fun) final override
     {
       return fun->eh != NULL && fun->eh->region_tree != NULL;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_cleanup_eh
 

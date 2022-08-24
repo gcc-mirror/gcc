@@ -43,7 +43,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
-#define __cpp_lib_allocator_traits_is_always_equal 201411
+#define __cpp_lib_allocator_traits_is_always_equal 201411L
 
   /// @cond undocumented
   struct __allocator_traits_base
@@ -661,6 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __rhs; }
     };
 
+  /// @cond undocumented
 #if __cplusplus < 201703L
   template<typename _Alloc>
     inline void
@@ -818,7 +819,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __a.deallocate(__a.allocate(1u), 1u);
     };
 #endif
+  /// @endcond
 #endif // C++11
+
+  /// @cond undocumented
 
   /**
    * Destroy a range of objects using the supplied allocator.  For
@@ -849,6 +853,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Destroy(__first, __last);
     }
+  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

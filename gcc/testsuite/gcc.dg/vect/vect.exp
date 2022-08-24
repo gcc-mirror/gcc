@@ -121,7 +121,7 @@ et-dg-runtest dg-runtest [lsort \
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-ffast-math"
 et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/fast-math-\[ipsv\]*.\[cS\]]] \
+	[glob -nocomplain $srcdir/$subdir/fast-math-\[ipsvc\]*.\[cS\]]] \
 	"" $DEFAULT_VECTCFLAGS
 
 # -ffast-math SLP tests

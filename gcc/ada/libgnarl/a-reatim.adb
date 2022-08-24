@@ -30,8 +30,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
 with System.Tasking;
-with Unchecked_Conversion;
 
 package body Ada.Real_Time with
   SPARK_Mode => Off
@@ -128,7 +128,7 @@ is
       type Duration_Rep is range -(2 ** 63) .. +((2 ** 63 - 1));
 
       function To_Integer is
-        new Unchecked_Conversion (Duration, Duration_Rep);
+        new Ada.Unchecked_Conversion (Duration, Duration_Rep);
    begin
       return Integer
                (To_Integer (Duration (Left)) / To_Integer (Duration (Right)));

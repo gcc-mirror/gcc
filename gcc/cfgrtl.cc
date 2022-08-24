@@ -235,7 +235,7 @@ delete_insn_and_edges (rtx_insn *insn)
 {
   bool purge = false;
 
-  if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
+  if (NONDEBUG_INSN_P (insn) && BLOCK_FOR_INSN (insn))
     {
       basic_block bb = BLOCK_FOR_INSN (insn);
       if (BB_END (bb) == insn)
@@ -483,7 +483,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_free_cfg
 
@@ -778,6 +778,29 @@ rtl_split_block (basic_block bb, void *insnp)
   return new_bb;
 }
 
+/* Return true if LOC1 and LOC2 are equivalent for
+   unique_locus_on_edge_between_p purposes.  */
+
+static bool
+loc_equal (location_t loc1, location_t loc2)
+{
+  if (loc1 == loc2)
+    return true;
+
+  expanded_location loce1 = expand_location (loc1);
+  expanded_location loce2 = expand_location (loc2);
+
+  if (loce1.line != loce2.line
+      || loce1.column != loce2.column
+      || loce1.data != loce2.data)
+    return false;
+  if (loce1.file == loce2.file)
+    return true;
+  return (loce1.file != NULL
+	  && loce2.file != NULL
+	  && filename_cmp (loce1.file, loce2.file) == 0);
+}
+
 /* Return true if the single edge between blocks A and B is the only place
    in RTL which holds some unique locus.  */
 
@@ -796,7 +819,7 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
   while (insn != end && (!NONDEBUG_INSN_P (insn) || !INSN_HAS_LOCATION (insn)))
     insn = PREV_INSN (insn);
 
-  if (insn != end && INSN_LOCATION (insn) == goto_locus)
+  if (insn != end && loc_equal (INSN_LOCATION (insn), goto_locus))
     return false;
 
   /* Then scan block B forward.  */
@@ -808,7 +831,7 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
 	insn = NEXT_INSN (insn);
 
       if (insn != end && INSN_HAS_LOCATION (insn)
-	  && INSN_LOCATION (insn) == goto_locus)
+	  && loc_equal (INSN_LOCATION (insn), goto_locus))
 	return false;
     }
 
@@ -1663,8 +1686,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	 add also edge from asm goto bb to target.  */
       if (asm_goto_edge)
 	{
-	  new_edge->probability = new_edge->probability.apply_scale (1, 2);
-	  jump_block->count = jump_block->count.apply_scale (1, 2);
+	  new_edge->probability /= 2;
+	  jump_block->count /= 2;
 	  edge new_edge2 = make_edge (new_edge->src, target,
 				      e->flags & ~EDGE_FALLTHRU);
 	  new_edge2->probability = probability - new_edge->probability;
@@ -3675,7 +3698,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       cfg_layout_initialize (0);
       return 0;
@@ -3714,7 +3737,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_outof_cfg_layout_mode
 
@@ -4067,7 +4090,7 @@ fixup_reorder_chain (void)
 		     && (!NONDEBUG_INSN_P (insn) || !INSN_HAS_LOCATION (insn)))
 		insn = PREV_INSN (insn);
 	      if (insn != end
-		  && INSN_LOCATION (insn) == e->goto_locus)
+		  && loc_equal (INSN_LOCATION (insn), e->goto_locus))
 		continue;
 	      if (simplejump_p (BB_END (e->src))
 		  && !INSN_HAS_LOCATION (BB_END (e->src)))
@@ -4089,7 +4112,7 @@ fixup_reorder_chain (void)
 		  while (insn != end && !NONDEBUG_INSN_P (insn))
 		    insn = NEXT_INSN (insn);
 		  if (insn != end && INSN_HAS_LOCATION (insn)
-		      && INSN_LOCATION (insn) == e->goto_locus)
+		      && loc_equal (INSN_LOCATION (insn), e->goto_locus))
 		    continue;
 		}
 	      nb = split_edge (e);

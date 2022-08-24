@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zbb -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc_zbb -mabi=lp64" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 /* RV64 only*/
 unsigned int rol(unsigned int rs1, unsigned int rs2)

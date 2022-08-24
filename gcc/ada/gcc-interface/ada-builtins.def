@@ -1,7 +1,7 @@
 /* This file contains the definitions for the builtins exclusively used
    in the GNU Ada compiler.
 
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,3 +28,4 @@ along with GCC; see the file COPYING3.  If not see
 DEF_ADA_BUILTIN        (BUILT_IN_EXPECT, "expect", BT_FN_BOOL_BOOL_BOOL, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_ADA_BUILTIN        (BUILT_IN_LIKELY, "likely", BT_FN_BOOL_BOOL, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_ADA_BUILTIN        (BUILT_IN_UNLIKELY, "unlikely", BT_FN_BOOL_BOOL, ATTR_CONST_NOTHROW_LEAF_LIST)
+DEF_ADA_BUILTIN        (BUILT_IN_RETURN_SLOT, "return_slot", BT_FN_PTR_SSIZE, ATTR_CONST_NOTHROW_LEAF_LIST)

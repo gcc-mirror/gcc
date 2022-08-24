@@ -340,6 +340,13 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
       pp_string (PP, pp_buffer (PP)->digit_buffer);		\
     }								\
   while (0)
+#define pp_vrange(PP, R)					\
+  do								\
+    {								\
+      vrange_printer vrange_pp (PP);				\
+      (R)->accept (vrange_pp);					\
+    }								\
+  while (0)
 #define pp_double(PP, F)       pp_scalar (PP, "%f", F)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 

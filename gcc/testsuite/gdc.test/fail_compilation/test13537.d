@@ -57,4 +57,3 @@ void gun() @system
 @safe:
 void abc(ref int x) { }
 void def(const ref int x) { }
-

@@ -191,7 +191,7 @@ package body Sinfo.Utils is
    function End_Location (N : Node_Id) return Source_Ptr is
       L : constant Valid_Uint := End_Span (N);
    begin
-      return Source_Ptr (Int (Sloc (N)) + UI_To_Int (L));
+      return Sloc (N) + Source_Ptr (UI_To_Int (L));
    end End_Location;
 
    --------------------
@@ -214,7 +214,7 @@ package body Sinfo.Utils is
    procedure Set_End_Location (N : Node_Id; S : Source_Ptr) is
    begin
       Set_End_Span (N,
-        UI_From_Int (Int (S) - Int (Sloc (N))));
+        UI_From_Int (Int (S - Sloc (N))));
    end Set_End_Location;
 
    --------------------------

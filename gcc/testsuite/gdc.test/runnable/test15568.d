@@ -55,4 +55,3 @@ unittest
 
     a.foo(c, null, false);
 }
-

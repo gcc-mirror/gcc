@@ -78,7 +78,7 @@ contains
     !$acc loop collapse(2) gang private(t1) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i=0,255
       do j=1,256
         t1 = (i * 256 + j) * 97
@@ -96,14 +96,14 @@ contains
     real, intent(out) :: res(:)
 
     !$acc parallel copyout(res) num_gangs(64) num_workers(64)
-    ! { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
+    ! { dg-warning "using .num_workers \\(32\\)., ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
 
     !$acc loop gang ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i=0,255
       !$acc loop worker private(t1) ! { dg-line l_loop[incr c_loop] }
       ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-      ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+      ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
       do j=1,256
         t1 = (i * 256 + j) * 99
         res(i * 256 + j) = t1
@@ -120,14 +120,14 @@ contains
     real, intent(out) :: res(:)
 
     !$acc parallel copyout(res) num_gangs(64) num_workers(64)
-    ! { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
+    ! { dg-warning "using .num_workers \\(32\\)., ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
 
     !$acc loop gang worker ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i=0,255
       !$acc loop vector private(t1) ! { dg-line l_loop[incr c_loop] }
       ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-      ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+      ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
       do j=1,256
         t1 = (i * 256 + j) * 101
         res(i * 256 + j) = t1
@@ -144,12 +144,12 @@ contains
     real, intent(out) :: res(:)
 
     !$acc parallel copyout(res) num_gangs(64) num_workers(64)
-    ! { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
+    ! { dg-warning "using .num_workers \\(32\\)., ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
 
     !$acc loop collapse(2) gang worker vector private(t1) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i=0,255
       do j=1,256
         t1 = (i * 256 + j) * 103

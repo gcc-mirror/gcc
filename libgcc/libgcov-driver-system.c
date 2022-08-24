@@ -261,7 +261,8 @@ allocate_filename_struct (struct gcov_filename *gf)
 
 static int
 gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
-			  struct gcov_filename *gf)
+			  struct gcov_filename *gf,
+			  int mode)
 {
   int append_slash = 0;
   const char *fname = gi_ptr->filename;
@@ -309,7 +310,7 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 
   gf->filename = replace_filename_variables (gf->filename);
 
-  if (!gcov_open (gf->filename))
+  if (!gcov_open (gf->filename, mode))
     {
       /* Open failed likely due to missed directory.
          Create directory and retry to open file. */
@@ -318,7 +319,7 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
           fprintf (stderr, "profiling:%s:Skip\n", gf->filename);
           return -1;
         }
-      if (!gcov_open (gf->filename))
+      if (!gcov_open (gf->filename, mode))
         {
           fprintf (stderr, "profiling:%s:Cannot open\n", gf->filename);
           return -1;

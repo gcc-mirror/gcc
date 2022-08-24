@@ -9,4 +9,4 @@ int foo(void)
 {
   char b[100];
   return bar(b);
-} /* { dg-warning "An unconditional trap is added" } */
+} /* { dg-warning "an unconditional trap is added" } */

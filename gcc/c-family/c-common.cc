@@ -284,9 +284,11 @@ int c_inhibit_evaluation_warnings;
    be generated.  */
 bool in_late_binary_op;
 
-/* Whether lexing has been completed, so subsequent preprocessor
-   errors should use the compiler's input_location.  */
-bool done_lexing = false;
+/* Depending on which phase of processing we are in, we may need
+   to prefer input_location to libcpp's locations.  (Specifically,
+   after the C++ lexer is done lexing tokens, but prior to calling
+   cpp_finish (), we need to do so.  */
+bool override_libcpp_locations;
 
 /* Information about how a function name is generated.  */
 struct fname_var_t
@@ -537,6 +539,10 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
   { "__is_nothrow_assignable", RID_IS_NOTHROW_ASSIGNABLE, D_CXXONLY },
   { "__is_nothrow_constructible", RID_IS_NOTHROW_CONSTRUCTIBLE, D_CXXONLY },
+  { "__reference_constructs_from_temporary", RID_REF_CONSTRUCTS_FROM_TEMPORARY,
+					D_CXXONLY },
+  { "__reference_converts_from_temporary", RID_REF_CONVERTS_FROM_TEMPORARY,
+					D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
@@ -602,8 +608,7 @@ const struct c_common_resword c_common_reswords[] =
   { "null_resettable",	RID_NULL_RESETTABLE,	D_OBJC },
 };
 
-const unsigned int num_c_common_reswords =
-  sizeof c_common_reswords / sizeof (struct c_common_resword);
+const unsigned int num_c_common_reswords = ARRAY_SIZE (c_common_reswords);
 
 /* Return identifier for address space AS.  */
 
@@ -2009,12 +2014,12 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
   enum tree_code code;
   enum tree_code_class cl;
 
+ restart:
   /* X may be NULL if it is the operand of an empty statement expression
      ({ }).  */
   if (x == NULL)
     return;
 
- restart:
   code = TREE_CODE (x);
   cl = TREE_CODE_CLASS (code);
 
@@ -3174,7 +3179,11 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
   else if (real1 && real2
 	   && (DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
 	       || DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1)))))
-    return NULL_TREE;
+    {
+      type = *restype_ptr;
+      primop0 = op0;
+      primop1 = op1;
+    }
 
   else if (real1 && real2
 	   && (TYPE_PRECISION (TREE_TYPE (primop0))
@@ -4274,6 +4283,8 @@ c_common_nodes_and_builtins (void)
       sprintf (name, "__int%d__", int_n_data[i].bitsize);
       record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), name,
 			   int_n_trees[i].signed_type);
+      ridpointers[RID_FIRST_INT_N + i]
+	= DECL_NAME (TYPE_NAME (int_n_trees[i].signed_type));
 
       sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
       record_builtin_type (RID_MAX, name, int_n_trees[i].unsigned_type);
@@ -4476,9 +4487,7 @@ c_common_nodes_and_builtins (void)
 
   /* Make fileptr_type_node a distinct void * type until
      FILE type is defined.  Likewise for const struct tm*.  */
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node
       = build_variant_type_copy (builtin_structptr_types[i].base);
 
@@ -5592,7 +5601,7 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
       firstarg = 1;
       if (!closure)
 	check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[0],
-					  firstarg);
+					  firstarg, OPT_Wnonnull);
     }
 
   tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
@@ -5611,7 +5620,7 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
   if (a != NULL_TREE)
     for (int i = firstarg; i < nargs; i++)
       check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
-					i + 1);
+					i + 1, OPT_Wnonnull);
   else
     {
       /* Walk the argument list.  If we encounter an argument number we
@@ -5627,7 +5636,8 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 
 	  if (a != NULL_TREE)
 	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
-					      argarray[i], i + 1);
+					      argarray[i], i + 1,
+					      OPT_Wnonnull);
 	}
     }
   return ctx.warned_p;
@@ -6064,8 +6074,8 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   /* Check for errors in format strings.  */
 
   if (warn_format || warn_suggest_attribute_format)
-    check_function_format (fntype, TYPE_ATTRIBUTES (fntype), nargs, argarray,
-			   arglocs);
+    check_function_format (fndecl ? fndecl : fntype, TYPE_ATTRIBUTES (fntype), nargs,
+			   argarray, arglocs);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
@@ -6095,14 +6105,16 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 
 /* Generic argument checking recursion routine.  PARAM is the argument to
    be checked.  PARAM_NUM is the number of the argument.  CALLBACK is invoked
-   once the argument is resolved.  CTX is context for the callback.  */
+   once the argument is resolved.  CTX is context for the callback.
+   OPT is the warning for which this is done.  */
 void
 check_function_arguments_recurse (void (*callback)
 				  (void *, tree, unsigned HOST_WIDE_INT),
 				  void *ctx, tree param,
-				  unsigned HOST_WIDE_INT param_num)
+				  unsigned HOST_WIDE_INT param_num,
+				  opt_code opt)
 {
-  if (warning_suppressed_p (param))
+  if (opt != OPT_Wformat_ && warning_suppressed_p (param))
     return;
 
   if (CONVERT_EXPR_P (param)
@@ -6111,7 +6123,8 @@ check_function_arguments_recurse (void (*callback)
     {
       /* Strip coercion.  */
       check_function_arguments_recurse (callback, ctx,
-					TREE_OPERAND (param, 0), param_num);
+					TREE_OPERAND (param, 0), param_num,
+					opt);
       return;
     }
 
@@ -6148,7 +6161,8 @@ check_function_arguments_recurse (void (*callback)
 	      if (i == format_num)
 		{
 		  check_function_arguments_recurse (callback, ctx,
-						    inner_arg, param_num);
+						    inner_arg, param_num,
+						    opt);
 		  found_format_arg = true;
 		  break;
 		}
@@ -6170,10 +6184,10 @@ check_function_arguments_recurse (void (*callback)
 	  /* Check both halves of the conditional expression.  */
 	  check_function_arguments_recurse (callback, ctx,
 					    TREE_OPERAND (param, 1),
-					    param_num);
+					    param_num, opt);
 	  check_function_arguments_recurse (callback, ctx,
 					    TREE_OPERAND (param, 2),
-					    param_num);
+					    param_num, opt);
 	  return;
 	}
     }
@@ -6603,6 +6617,20 @@ c_option_controlling_cpp_diagnostic (enum cpp_warning_reason reason)
   return 0;
 }
 
+/* Return TRUE if the given option index corresponds to a diagnostic
+   issued by libcpp.  Linear search seems fine for now.  */
+bool
+c_option_is_from_cpp_diagnostics (int option_index)
+{
+  for (auto entry = cpp_reason_option_codes; entry->reason != CPP_W_NONE;
+       ++entry)
+    {
+      if (entry->option_code == option_index)
+	return true;
+    }
+  return false;
+}
+
 /* Callback from cpp_diagnostic for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
@@ -6655,7 +6683,7 @@ c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
     default:
       gcc_unreachable ();
     }
-  if (done_lexing)
+  if (override_libcpp_locations)
     richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
@@ -8142,15 +8170,16 @@ check_missing_format_attribute (tree ltype, tree rtype)
 void
 set_underlying_type (tree x)
 {
-  if (x == error_mark_node)
+  if (x == error_mark_node || TREE_TYPE (x) == error_mark_node)
     return;
   if (DECL_IS_UNDECLARED_BUILTIN (x) && TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
     }
-  else if (TREE_TYPE (x) != error_mark_node
-	   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
+  else if (DECL_ORIGINAL_TYPE (x))
+    gcc_checking_assert (TYPE_NAME (TREE_TYPE (x)) == x);
+  else
     {
       tree tt = TREE_TYPE (x);
       DECL_ORIGINAL_TYPE (x) = tt;
@@ -9096,7 +9125,7 @@ test_fold_for_warn ()
 /* Run all of the selftests within this file.  */
 
 static void
-c_common_c_tests ()
+c_common_cc_tests ()
 {
   test_fold_for_warn ();
 }
@@ -9106,12 +9135,12 @@ c_common_c_tests ()
 void
 c_family_tests (void)
 {
-  c_common_c_tests ();
-  c_format_c_tests ();
-  c_indentation_c_tests ();
-  c_pretty_print_c_tests ();
+  c_common_cc_tests ();
+  c_format_cc_tests ();
+  c_indentation_cc_tests ();
+  c_pretty_print_cc_tests ();
   c_spellcheck_cc_tests ();
-  c_diagnostic_c_tests ();
+  c_diagnostic_cc_tests ();
   c_opt_problem_cc_tests ();
 }
 

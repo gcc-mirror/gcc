@@ -2083,11 +2083,11 @@ rich_location::rich_location (line_maps *set, location_t loc,
   m_ranges (),
   m_column_override (0),
   m_have_expanded_location (false),
-  m_fixit_hints (),
   m_seen_impossible_fixit (false),
   m_fixits_cannot_be_auto_applied (false),
-  m_path (NULL),
-  m_escape_on_output (false)
+  m_escape_on_output (false),
+  m_fixit_hints (),
+  m_path (NULL)
 {
   add_range (loc, SHOW_RANGE_WITH_CARET, label);
 }

@@ -379,7 +379,7 @@ sreal_verify_negative_division (void)
 
 /* Run all of the selftests within this file.  */
 
-void sreal_c_tests ()
+void sreal_cc_tests ()
 {
   sreal_verify_basics ();
   sreal_verify_arithmetics ();

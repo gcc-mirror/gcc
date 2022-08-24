@@ -5,8 +5,8 @@
 package runtime
 
 import (
+	"internal/goarch"
 	"runtime/internal/atomic"
-	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -219,7 +219,7 @@ type eface struct {
 	data  unsafe.Pointer
 }
 
-func efaceOf(ep *interface{}) *eface {
+func efaceOf(ep *any) *eface {
 	return (*eface)(unsafe.Pointer(ep))
 }
 
@@ -265,6 +265,8 @@ func efaceOf(ep *interface{}) *eface {
 // so I can't see them ever moving. If we did want to start moving data
 // in the GC, we'd need to allocate the goroutine structs from an
 // alternate arena. Using guintptr doesn't make that problem any worse.
+// Note that pollDesc.rg, pollDesc.wg also store g in uintptr form,
+// so they would need to be updated too if g's start moving.
 type guintptr uintptr
 
 //go:nosplit
@@ -551,7 +553,7 @@ const (
 	// tlsSlots is the number of pointer-sized slots reserved for TLS on some platforms,
 	// like Windows.
 	tlsSlots = 6
-	tlsSize  = tlsSlots * sys.PtrSize
+	tlsSize  = tlsSlots * goarch.PtrSize
 )
 
 type m struct {
@@ -576,7 +578,6 @@ type m struct {
 	throwing    int32
 	preemptoff  string // if != "", keep curg running on this m
 	locks       int32
-	softfloat   int32
 	dying       int32
 	profilehz   int32
 	spinning    bool // m is out of work and is actively looking for work
@@ -585,14 +586,13 @@ type m struct {
 	printlock   int8
 	incgo       bool   // m is executing a cgo call
 	freeWait    uint32 // if == 0, safe to free g0 and delete m (atomic)
-	fastrand    [2]uint32
+	fastrand    uint64
 	needextram  bool
 	traceback   uint8
 	ncgocall    uint64 // number of cgo calls in total
 	ncgo        int32  // number of cgo calls currently in progress
 	// Not for gccgo: cgoCallersUse uint32      // if non-zero, cgoCallers in use temporarily
 	// Not for gccgo: cgoCallers    *cgoCallers // cgo traceback if crashing in cgo call
-	doesPark      bool // non-P running threads: sysmon and newmHandoff never use .park
 	park          note
 	alllink       *m // on allm
 	schedlink     muintptr
@@ -608,16 +608,6 @@ type m struct {
 	startingtrace bool
 	syscalltick   uint32
 	freelink      *m // on sched.freem
-
-	// mFixup is used to synchronize OS related m state
-	// (credentials etc) use mutex to access. To avoid deadlocks
-	// an atomic.Load() of used being zero in mDoFixupFn()
-	// guarantees fn is nil.
-	mFixup struct {
-		lock mutex
-		used uint32
-		fn   func(bool) bool
-	}
 
 	// these are here because they are too large to be on the stack
 	// of low-level NOSPLIT functions.
@@ -667,8 +657,7 @@ type p struct {
 	pcache      pageCache
 	raceprocctx uintptr
 
-	// gccgo has only one size of defer.
-	deferpool    []*_defer
+	deferpool    []*_defer // pool of available defer structs (see panic.go)
 	deferpoolbuf [32]*_defer
 
 	// Cache of goroutine ids, amortizes accesses to runtime·sched.goidgen.
@@ -789,6 +778,12 @@ type p struct {
 	// Race context used while executing timer functions.
 	// Not for gccgo: timerRaceCtx uintptr
 
+	// scannableStackSizeDelta accumulates the amount of stack space held by
+	// live goroutines (i.e. those eligible for stack scanning).
+	// Flushed to gcController.scannableStackSize once scannableStackSizeSlack
+	// or -scannableStackSizeSlack is reached.
+	scannableStackSizeDelta int64
+
 	// preempt is set to indicate that this P should be enter the
 	// scheduler ASAP (regardless of what G is running on it).
 	preempt bool
@@ -863,10 +858,6 @@ type schedt struct {
 	sysmonwait uint32
 	sysmonnote note
 
-	// While true, sysmon not ready for mFixup calls.
-	// Accessed atomically.
-	sysmonStarting uint32
-
 	// safepointFn should be called on each P at the next GC
 	// safepoint if p.runSafePointFn is set.
 	safePointFn   func(*p)
@@ -884,6 +875,8 @@ type schedt struct {
 	// with the rest of the runtime.
 	sysmonlock mutex
 
+	_ uint32 // for alignment
+
 	// timeToRun is a distribution of scheduling latencies, defined
 	// as the sum of time a G spends in the _Grunnable state before
 	// it transitions to _Grunning.
@@ -900,7 +893,7 @@ const (
 	_SigPanic                // if the signal is from the kernel, panic
 	_SigDefault              // if the signal isn't explicitly requested, don't monitor it
 	_SigGoExit               // cause all runtime procs to exit (only used on Plan 9).
-	_SigSetStack             // add SA_ONSTACK to libc handler
+	_SigSetStack             // Don't explicitly install handler, but add SA_ONSTACK to existing libc handler
 	_SigUnblock              // always unblock; see blockableSig
 	_SigIgn                  // _SIG_DFL action is to ignore the signal
 )
@@ -935,7 +928,7 @@ func extendRandom(r []byte, n int) {
 			w = 16
 		}
 		h := memhash(unsafe.Pointer(&r[n-w]), uintptr(nanotime()), uintptr(w))
-		for i := 0; i < sys.PtrSize && n < len(r); i++ {
+		for i := 0; i < goarch.PtrSize && n < len(r); i++ {
 			r[n] = byte(h)
 			n++
 			h >>= 8
@@ -944,7 +937,6 @@ func extendRandom(r []byte, n int) {
 }
 
 // A _defer holds an entry on the list of deferred calls.
-// If you add a field here, add code to clear it in freedefer.
 // This struct must match the code in Defer_statement::defer_struct_type
 // in the compiler.
 // Some defers will be allocated on the stack and some on the heap.

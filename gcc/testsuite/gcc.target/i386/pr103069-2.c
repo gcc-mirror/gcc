@@ -40,12 +40,12 @@ FUNC_ATOMIC_RELAX (char, xor)
   TYPE c = 11, d = 101;	\
   res = relax_##TYPE##_##OP##_fetch (&a, b); \
   exp = f_##TYPE##_##OP##_fetch (&c, d);  \
-  if (res != exp) \
+  if (res != exp || a != c) \
     abort (); \
   a = c = 21, b = d = 92; \
   res = relax_##TYPE##_fetch_##OP (&a, b); \
   exp = f_##TYPE##_fetch_##OP (&c, d);  \
-  if (res != exp) \
+  if (res != exp || a != c) \
     abort (); \
 }
 

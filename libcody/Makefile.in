@@ -66,11 +66,11 @@ clean:: Makefile
 
 # FIXME: Delete
 revision.stamp: $(srcdir)/.
-	@revision=$$(git -C $(srcdir) rev-parse HEAD 2>/dev/null) ;\
+	@revision=`git -C $(srcdir) rev-parse HEAD 2>/dev/null` ;\
 	if test -n "$$revision" ;\
 	then revision=git-$$revision ;\
 	  if git -C $(srcdir) status --porcelain 2>/dev/null | grep -vq '^  ' ;\
-	  then revision+=M ;\
+	  then revision=$${revision}M ;\
 	  fi ;\
 	else revision=unknown ;\
 	fi ;\

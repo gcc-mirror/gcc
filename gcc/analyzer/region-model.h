@@ -224,6 +224,7 @@ public:
   virtual void visit_compound_svalue (const compound_svalue *) {}
   virtual void visit_conjured_svalue (const conjured_svalue *) {}
   virtual void visit_asm_output_svalue (const asm_output_svalue *) {}
+  virtual void visit_const_fn_result_svalue (const const_fn_result_svalue *) {}
 
   virtual void visit_region (const region *) {}
 };
@@ -242,6 +243,12 @@ class region_model_manager
 public:
   region_model_manager (logger *logger = NULL);
   ~region_model_manager ();
+
+  /* call_string consolidation.  */
+  const call_string &get_empty_call_string () const
+  {
+    return m_empty_call_string;
+  }
 
   /* svalue consolidation.  */
   const svalue *get_or_create_constant_svalue (tree cst_expr);
@@ -276,12 +283,17 @@ public:
   const svalue *get_or_create_compound_svalue (tree type,
 					       const binding_map &map);
   const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
-					       const region *id_reg);
+					       const region *id_reg,
+					       const conjured_purge &p);
   const svalue *
   get_or_create_asm_output_svalue (tree type,
 				   const gasm *asm_stmt,
 				   unsigned output_idx,
 				   const vec<const svalue *> &inputs);
+  const svalue *
+  get_or_create_const_fn_result_svalue (tree type,
+					tree fndecl,
+					const vec<const svalue *> &inputs);
 
   const svalue *maybe_get_char_from_string_cst (tree string_cst,
 						tree byte_offset_cst);
@@ -318,6 +330,12 @@ public:
 					function *fun);
   const region *get_symbolic_region (const svalue *sval);
   const string_region *get_region_for_string (tree string_cst);
+  const region *get_bit_range (const region *parent, tree type,
+			       const bit_range &bits);
+  const var_arg_region *get_var_arg_region (const frame_region *parent,
+					    unsigned idx);
+
+  const region *get_unknown_symbolic_region (tree region_type);
 
   const region *
   get_region_for_unexpected_tree_code (region_model_context *ctxt,
@@ -341,6 +359,8 @@ public:
   void end_checking_feasibility (void) { m_checking_feasibility = false; }
 
   logger *get_logger () const { return m_logger; }
+
+  void dump_untracked_regions () const;
 
 private:
   bool too_complex_p (const complexity &c) const;
@@ -366,6 +386,8 @@ private:
 					      const vec<const svalue *> &inputs);
 
   logger *m_logger;
+
+  const call_string m_empty_call_string;
 
   unsigned m_next_region_id;
   root_region m_root_region;
@@ -434,6 +456,10 @@ private:
 		   asm_output_svalue *> asm_output_values_map_t;
   asm_output_values_map_t m_asm_output_values_map;
 
+  typedef hash_map<const_fn_result_svalue::key_t,
+		   const_fn_result_svalue *> const_fn_result_values_map_t;
+  const_fn_result_values_map_t m_const_fn_result_values_map;
+
   bool m_checking_feasibility;
 
   /* "Dynamically-allocated" svalue instances.
@@ -471,6 +497,9 @@ private:
   typedef hash_map<tree, string_region *> string_map_t;
   string_map_t m_string_map;
 
+  consolidation_map<bit_range_region> m_bit_range_regions;
+  consolidation_map<var_arg_region> m_var_arg_regions;
+
   store_manager m_store_mgr;
 
   bounded_ranges_manager *m_range_mgr;
@@ -481,7 +510,7 @@ private:
   auto_delete_vec<region> m_managed_dynamic_regions;
 };
 
-struct append_ssa_names_cb_data;
+struct append_regions_cb_data;
 
 /* Helper class for handling calls to functions with known behavior.
    Implemented in region-model-impl-calls.c.  */
@@ -492,6 +521,7 @@ public:
   call_details (const gcall *call, region_model *model,
 		region_model_context *ctxt);
 
+  region_model_manager *get_manager () const;
   region_model_context *get_ctxt () const { return m_ctxt; }
   uncertainty_t *get_uncertainty () const;
   tree get_lhs_type () const { return m_lhs_type; }
@@ -600,6 +630,7 @@ class region_model
   void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
   void impl_call_memset (const call_details &cd);
+  void impl_call_putenv (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strchr (const call_details &cd);
   void impl_call_strcpy (const call_details &cd);
@@ -607,6 +638,12 @@ class region_model
   void impl_call_operator_new (const call_details &cd);
   void impl_call_operator_delete (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
+
+  /* Implemented in varargs.cc.  */
+  void impl_call_va_start (const call_details &cd);
+  void impl_call_va_copy (const call_details &cd);
+  void impl_call_va_arg (const call_details &cd);
+  void impl_call_va_end (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);
@@ -644,7 +681,7 @@ class region_model
 			    region_model_context *ctxt);
   const frame_region *get_current_frame () const { return m_current_frame; }
   function * get_current_function () const;
-  void pop_frame (const region *result_dst,
+  void pop_frame (tree result_lvalue,
 		  const svalue **out_result,
 		  region_model_context *ctxt);
   int get_stack_depth () const;
@@ -672,8 +709,6 @@ class region_model
   void zero_fill_region (const region *reg);
   void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
-  void copy_region (const region *dst_reg, const region *src_reg,
-		    region_model_context *ctxt);
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;
@@ -698,6 +733,7 @@ class region_model
 					  region_model_context *ctxt);
 
   tree get_representative_tree (const svalue *sval) const;
+  tree get_representative_tree (const region *reg) const;
   path_var
   get_representative_path_var (const svalue *sval,
 			       svalue_set *visited) const;
@@ -744,10 +780,9 @@ class region_model
   tree get_fndecl_for_call (const gcall *call,
 			    region_model_context *ctxt);
 
-  void get_ssa_name_regions_for_current_frame
-    (auto_vec<const decl_region *> *out) const;
-  static void append_ssa_names_cb (const region *base_reg,
-				   struct append_ssa_names_cb_data *data);
+  void get_regions_for_current_frame (auto_vec<const decl_region *> *out) const;
+  static void append_regions_cb (const region *base_reg,
+				 struct append_regions_cb_data *data);
 
   const svalue *get_store_value (const region *reg,
 				 region_model_context *ctxt) const;
@@ -813,10 +848,13 @@ class region_model
   const svalue *check_for_poison (const svalue *sval,
 				  tree expr,
 				  region_model_context *ctxt) const;
+  const region * get_region_for_poisoned_expr (tree expr) const;
 
   void check_dynamic_size_for_taint (enum memory_space mem_space,
 				     const svalue *size_in_bytes,
 				     region_model_context *ctxt) const;
+  void check_dynamic_size_for_floats (const svalue *size_in_bytes,
+				      region_model_context *ctxt) const;
 
   void check_region_for_taint (const region *reg,
 			       enum access_direction dir,
@@ -831,6 +869,15 @@ class region_model
 			       region_model_context *ctxt) const;
   void check_region_for_read (const region *src_reg,
 			      region_model_context *ctxt) const;
+  void check_region_size (const region *lhs_reg, const svalue *rhs_sval,
+			  region_model_context *ctxt) const;
+  void check_region_bounds (const region *reg, enum access_direction dir,
+			    region_model_context *ctxt) const;
+
+  void check_call_args (const call_details &cd) const;
+  void check_external_function_for_access_attr (const gcall *call,
+						tree callee_fndecl,
+						region_model_context *ctxt) const;
 
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
@@ -863,6 +910,10 @@ class region_model_context
      Return true if the diagnostic was stored, or false if it was deleted.  */
   virtual bool warn (pending_diagnostic *d) = 0;
 
+  /* Hook for clients to add a note to the last previously stored pending diagnostic.
+     Takes ownership of the pending_node (or deletes it).  */
+  virtual void add_note (pending_note *pn) = 0;
+
   /* Hook for clients to be notified when an SVAL that was reachable
      in a previous state is no longer live, so that clients can emit warnings
      about leaks.  */
@@ -885,6 +936,13 @@ class region_model_context
   virtual void on_condition (const svalue *lhs,
 			     enum tree_code op,
 			     const svalue *rhs) = 0;
+
+  /* Hook for clients to be notified when the condition that
+     SVAL is within RANGES is added to the region model.
+     Similar to on_condition, but for use when handling switch statements.
+     RANGES is non-empty.  */
+  virtual void on_bounded_ranges (const svalue &sval,
+				  const bounded_ranges &ranges) = 0;
 
   /* Hooks for clients to be notified when an unknown change happens
      to SVAL (in response to a call to an unknown function).  */
@@ -925,6 +983,9 @@ class region_model_context
   virtual bool get_taint_map (sm_state_map **out_smap,
 			      const state_machine **out_sm,
 			      unsigned *out_sm_idx) = 0;
+
+  /* Get the current statement, if any.  */
+  virtual const gimple *get_stmt () const = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -932,49 +993,56 @@ class region_model_context
 class noop_region_model_context : public region_model_context
 {
 public:
-  bool warn (pending_diagnostic *) OVERRIDE { return false; }
-  void on_svalue_leak (const svalue *) OVERRIDE {}
+  bool warn (pending_diagnostic *) override { return false; }
+  void add_note (pending_note *pn) override;
+  void on_svalue_leak (const svalue *) override {}
   void on_liveness_change (const svalue_set &,
-			   const region_model *) OVERRIDE {}
-  logger *get_logger () OVERRIDE { return NULL; }
+			   const region_model *) override {}
+  logger *get_logger () override { return NULL; }
   void on_condition (const svalue *lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
-		     const svalue *rhs ATTRIBUTE_UNUSED) OVERRIDE
+		     const svalue *rhs ATTRIBUTE_UNUSED) override
+  {
+  }
+  void on_bounded_ranges (const svalue &,
+			  const bounded_ranges &) override
   {
   }
   void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,
-			  bool is_mutable ATTRIBUTE_UNUSED) OVERRIDE
+			  bool is_mutable ATTRIBUTE_UNUSED) override
   {
   }
   void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
-	       tree rhs ATTRIBUTE_UNUSED) OVERRIDE
+	       tree rhs ATTRIBUTE_UNUSED) override
   {
   }
-  void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
+  void on_unexpected_tree_code (tree, const dump_location_t &) override {}
 
-  void on_escaped_function (tree) OVERRIDE {}
+  void on_escaped_function (tree) override {}
 
-  uncertainty_t *get_uncertainty () OVERRIDE { return NULL; }
+  uncertainty_t *get_uncertainty () override { return NULL; }
 
-  void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) OVERRIDE {}
+  void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
 
-  void bifurcate (custom_edge_info *info) OVERRIDE;
-  void terminate_path () OVERRIDE;
+  void bifurcate (custom_edge_info *info) override;
+  void terminate_path () override;
 
-  const extrinsic_state *get_ext_state () const OVERRIDE { return NULL; }
+  const extrinsic_state *get_ext_state () const override { return NULL; }
 
   bool get_malloc_map (sm_state_map **,
 		       const state_machine **,
-		       unsigned *) OVERRIDE
+		       unsigned *) override
   {
     return false;
   }
   bool get_taint_map (sm_state_map **,
 		      const state_machine **,
-		      unsigned *) OVERRIDE
+		      unsigned *) override
   {
     return false;
   }
+
+  const gimple *get_stmt () const override { return NULL; }
 };
 
 /* A subclass of region_model_context for determining if operations fail
@@ -986,7 +1054,7 @@ public:
   tentative_region_model_context () : m_num_unexpected_codes (0) {}
 
   void on_unexpected_tree_code (tree, const dump_location_t &)
-    FINAL OVERRIDE
+    final override
   {
     m_num_unexpected_codes++;
   }
@@ -995,6 +1063,153 @@ public:
 
 private:
   int m_num_unexpected_codes;
+};
+
+/* Subclass of region_model_context that wraps another context, allowing
+   for extra code to be added to the various hooks.  */
+
+class region_model_context_decorator : public region_model_context
+{
+ public:
+  bool warn (pending_diagnostic *d) override
+  {
+    return m_inner->warn (d);
+  }
+
+  void add_note (pending_note *pn) override
+  {
+    m_inner->add_note (pn);
+  }
+
+  void on_svalue_leak (const svalue *sval) override
+  {
+    m_inner->on_svalue_leak (sval);
+  }
+
+  void on_liveness_change (const svalue_set &live_svalues,
+			   const region_model *model) override
+  {
+    m_inner->on_liveness_change (live_svalues, model);
+  }
+
+  logger *get_logger () override
+  {
+    return m_inner->get_logger ();
+  }
+
+  void on_condition (const svalue *lhs,
+		     enum tree_code op,
+		     const svalue *rhs) override
+  {
+    m_inner->on_condition (lhs, op, rhs);
+  }
+
+  void on_bounded_ranges (const svalue &sval,
+			  const bounded_ranges &ranges) override
+  {
+    m_inner->on_bounded_ranges (sval, ranges);
+  }
+
+  void on_unknown_change (const svalue *sval, bool is_mutable) override
+  {
+    m_inner->on_unknown_change (sval, is_mutable);
+  }
+
+  void on_phi (const gphi *phi, tree rhs) override
+  {
+    m_inner->on_phi (phi, rhs);
+  }
+
+  void on_unexpected_tree_code (tree t,
+				const dump_location_t &loc) override
+  {
+    m_inner->on_unexpected_tree_code (t, loc);
+  }
+
+  void on_escaped_function (tree fndecl) override
+  {
+    m_inner->on_escaped_function (fndecl);
+  }
+
+  uncertainty_t *get_uncertainty () override
+  {
+    return m_inner->get_uncertainty ();
+  }
+
+  void purge_state_involving (const svalue *sval) override
+  {
+    m_inner->purge_state_involving (sval);
+  }
+
+  void bifurcate (custom_edge_info *info) override
+  {
+    m_inner->bifurcate (info);
+  }
+
+  void terminate_path () override
+  {
+    m_inner->terminate_path ();
+  }
+
+  const extrinsic_state *get_ext_state () const override
+  {
+    return m_inner->get_ext_state ();
+  }
+
+  bool get_malloc_map (sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx) override
+  {
+    return m_inner->get_malloc_map (out_smap, out_sm, out_sm_idx);
+  }
+
+  bool get_taint_map (sm_state_map **out_smap,
+		      const state_machine **out_sm,
+		      unsigned *out_sm_idx) override
+  {
+    return m_inner->get_taint_map (out_smap, out_sm, out_sm_idx);
+  }
+
+  const gimple *get_stmt () const override
+  {
+    return m_inner->get_stmt ();
+  }
+
+protected:
+  region_model_context_decorator (region_model_context *inner)
+  : m_inner (inner)
+  {
+    gcc_assert (m_inner);
+  }
+
+  region_model_context *m_inner;
+};
+
+/* Subclass of region_model_context_decorator that adds a note
+   when saving diagnostics.  */
+
+class note_adding_context : public region_model_context_decorator
+{
+public:
+  bool warn (pending_diagnostic *d) override
+  {
+    if (m_inner->warn (d))
+      {
+	add_note (make_note ());
+	return true;
+      }
+    else
+      return false;
+  }
+
+  /* Hook to make the new note.  */
+  virtual pending_note *make_note () = 0;
+
+protected:
+  note_adding_context (region_model_context *inner)
+  : region_model_context_decorator (inner)
+  {
+  }
 };
 
 /* A bundle of data for use when attempting to merge two region_model
@@ -1066,7 +1281,7 @@ public:
     m_lhs (lhs), m_op (op), m_rhs (rhs)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
   tree m_lhs;
   enum tree_code m_op;
@@ -1082,7 +1297,7 @@ public:
     m_expr (expr), m_ranges (ranges)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
 private:
   tree m_expr;
@@ -1094,14 +1309,15 @@ private:
 class engine
 {
 public:
-  engine (logger *logger = NULL);
+  engine (const supergraph *sg = NULL, logger *logger = NULL);
+  const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
 
   void log_stats (logger *logger) const;
 
 private:
+  const supergraph *m_sg;
   region_model_manager m_mgr;
-
 };
 
 } // namespace ana
@@ -1122,7 +1338,7 @@ using namespace ::selftest;
 class test_region_model_context : public noop_region_model_context
 {
 public:
-  bool warn (pending_diagnostic *d) FINAL OVERRIDE
+  bool warn (pending_diagnostic *d) final override
   {
     m_diagnostics.safe_push (d);
     return true;
@@ -1131,7 +1347,7 @@ public:
   unsigned get_num_diagnostics () const { return m_diagnostics.length (); }
 
   void on_unexpected_tree_code (tree t, const dump_location_t &)
-    FINAL OVERRIDE
+    final override
   {
     internal_error ("unhandled tree code: %qs",
 		    get_tree_code_name (TREE_CODE (t)));

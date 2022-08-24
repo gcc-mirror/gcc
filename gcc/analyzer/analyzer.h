@@ -54,6 +54,7 @@ class svalue;
   class compound_svalue;
   class conjured_svalue;
   class asm_output_svalue;
+  class const_fn_result_svalue;
 typedef hash_set<const svalue *> svalue_set;
 class region;
   class frame_region;
@@ -67,7 +68,10 @@ class region;
   class cast_region;
   class field_region;
   class string_region;
+  class bit_range_region;
+  class var_arg_region;
 class region_model_manager;
+class conjured_purge;
 struct model_merger;
 class store_manager;
 class store;
@@ -83,6 +87,7 @@ class bounded_ranges;
 class bounded_ranges_manager;
 
 class pending_diagnostic;
+class pending_note;
 class state_change_event;
 class checker_path;
 class extrinsic_state;
@@ -100,6 +105,7 @@ class exploded_path;
 class analysis_plan;
 class state_purge_map;
 class state_purge_per_ssa_name;
+class state_purge_per_decl;
 class state_change;
 class rewind_info_t;
 
@@ -291,6 +297,9 @@ extern const char *get_user_facing_name (const gcall *call);
 extern void register_analyzer_pass ();
 
 extern label_text make_label_text (bool can_colorize, const char *fmt, ...);
+extern label_text make_label_text_n (bool can_colorize, int n,
+				     const char *singular_fmt,
+				     const char *plural_fmt, ...);
 
 extern bool fndecl_has_gimple_body_p (tree fndecl);
 

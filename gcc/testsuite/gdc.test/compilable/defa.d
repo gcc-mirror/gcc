@@ -3,7 +3,7 @@
 module defa;
 
 private import imports.defaa;
-	
+
 public abstract class A
 {
 	Display d;

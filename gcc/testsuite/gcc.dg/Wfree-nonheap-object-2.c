@@ -2,7 +2,8 @@
    Verify that attempting to reallocate unallocated objects referenced
    either directly or through pointers is diagnosed.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wfree-nonheap-object" }  */
+   { dg-options "-O2 -Wall -Wfree-nonheap-object" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

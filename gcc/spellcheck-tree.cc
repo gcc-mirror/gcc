@@ -104,7 +104,7 @@ test_find_closest_identifier ()
 /* Run all of the selftests within this file.  */
 
 void
-spellcheck_tree_c_tests ()
+spellcheck_tree_cc_tests ()
 {
   test_find_closest_identifier ();
 }

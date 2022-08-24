@@ -61,6 +61,9 @@ along with GCC; see the file COPYING3.  If not see
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
    - ternary: a normal ternary optab, such as fma<mode>4
 
+   - unary_convert: a single-input conversion optab, such as
+     lround<srcmode><dstmode>2.
+
    - cond_binary: a conditional binary optab, such as cond_add<mode>
    - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
 
@@ -267,6 +270,26 @@ DEF_INTERNAL_FLT_FLOATN_FN (SQRT, ECF_CONST, sqrt, unary)
 DEF_INTERNAL_FLT_FN (TAN, ECF_CONST, tan, unary)
 DEF_INTERNAL_FLT_FN (TANH, ECF_CONST, tanh, unary)
 
+/* Floating-point to integer conversions.
+
+   ??? Here we preserve the I/L/LL prefix convention from the
+   corresponding built-in functions, rather than make the internal
+   functions polymorphic in both the argument and the return types.
+   Perhaps an alternative would be to pass a zero of the required
+   return type as a second parameter.  */
+DEF_INTERNAL_FLT_FN (ICEIL, ECF_CONST, lceil, unary_convert)
+DEF_INTERNAL_FLT_FN (IFLOOR, ECF_CONST, lfloor, unary_convert)
+DEF_INTERNAL_FLT_FN (IRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FN (IROUND, ECF_CONST, lround, unary_convert)
+DEF_INTERNAL_FLT_FN (LCEIL, ECF_CONST, lceil, unary_convert)
+DEF_INTERNAL_FLT_FN (LFLOOR, ECF_CONST, lfloor, unary_convert)
+DEF_INTERNAL_FLT_FN (LRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FN (LROUND, ECF_CONST, lround, unary_convert)
+DEF_INTERNAL_FLT_FN (LLCEIL, ECF_CONST, lceil, unary_convert)
+DEF_INTERNAL_FLT_FN (LLFLOOR, ECF_CONST, lfloor, unary_convert)
+DEF_INTERNAL_FLT_FN (LLRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FN (LLROUND, ECF_CONST, lround, unary_convert)
+
 /* FP rounding.  */
 DEF_INTERNAL_FLT_FLOATN_FN (CEIL, ECF_CONST, ceil, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (FLOOR, ECF_CONST, floor, unary)
@@ -432,6 +455,10 @@ DEF_INTERNAL_FN (SHUFFLEVECTOR, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* <=> optimization.  */
 DEF_INTERNAL_FN (SPACESHIP, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+
+/* __builtin_trap created from/for __builtin_unreachable.  */
+DEF_INTERNAL_FN (TRAP, ECF_CONST | ECF_LEAF | ECF_NORETURN
+		       | ECF_NOTHROW | ECF_COLD, NULL)
 
 #undef DEF_INTERNAL_INT_FN
 #undef DEF_INTERNAL_FLT_FN

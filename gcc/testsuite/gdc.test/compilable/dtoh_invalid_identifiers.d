@@ -17,9 +17,9 @@ compilable/dtoh_invalid_identifiers.d(145): Warning: function `__attribute__` is
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -58,7 +58,6 @@ namespace const_cast
 template <typename register_>
 struct S final
 {
-    // Ignoring var x alignment 0
     register_ x;
     S()
     {
@@ -104,7 +103,6 @@ extern void user(Alias<Base* >* i);
 template <typename typename_>
 struct InvalidNames final
 {
-    // Ignoring var register alignment 0
     typename_ register_;
     void foo(typename_ and_);
     InvalidNames()

@@ -225,7 +225,7 @@ HOST_EXPORTS = \
 	AR_FOR_TARGET="$(AR_FOR_TARGET)"; export AR_FOR_TARGET; \
 	AS_FOR_TARGET="$(AS_FOR_TARGET)"; export AS_FOR_TARGET; \
 	DSYMUTIL_FOR_TARGET="$(DSYMUTIL_FOR_TARGET)"; export DSYMUTIL_FOR_TARGET; \
-	GCC_FOR_TARGET="$(GCC_FOR_TARGET)"; export GCC_FOR_TARGET; \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET) $$TFLAGS"; export GCC_FOR_TARGET; \
 	LD_FOR_TARGET="$(LD_FOR_TARGET)"; export LD_FOR_TARGET; \
 	NM_FOR_TARGET="$(NM_FOR_TARGET)"; export NM_FOR_TARGET; \
 	OBJDUMP_FOR_TARGET="$(OBJDUMP_FOR_TARGET)"; export OBJDUMP_FOR_TARGET; \
@@ -239,8 +239,6 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
-	LIBELFLIBS="$(HOST_LIBELFLIBS)"; export LIBELFLIBS; \
-	LIBELFINC="$(HOST_LIBELFINC)"; export LIBELFINC; \
 	XGCC_FLAGS_FOR_TARGET="$(XGCC_FLAGS_FOR_TARGET)"; export XGCC_FLAGS_FOR_TARGET; \
 @if gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
@@ -345,10 +343,6 @@ HOST_GMPINC = @gmpinc@
 # Where to find isl
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
-
-# Where to find libelf
-HOST_LIBELFLIBS = @libelflibs@
-HOST_LIBELFINC = @libelfinc@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -801,7 +795,7 @@ TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 # The BUILD_* variables are a special case, which are used for the gcc
 # cross-building scheme.
 EXTRA_GCC_FLAGS = \
-	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
+	"GCC_FOR_TARGET=$(GCC_FOR_TARGET) $$TFLAGS" \
 	"`echo 'STMP_FIXPROTO=$(STMP_FIXPROTO)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'LIMITS_H_TEST=$(LIMITS_H_TEST)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 

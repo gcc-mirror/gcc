@@ -41,4 +41,3 @@ pragma(printf) extern (C) int vprintf4(const(char)*, int, va_list);
 pragma(printf) extern (C) int vprintf5(const(char)*, va_list);
 pragma(printf) extern (C) int vprintf6(immutable(char)*, va_list);
 pragma(printf) extern (C) int vprintf7(char*, va_list);
-

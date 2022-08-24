@@ -10,4 +10,4 @@ void frob (mytype &)
 {
 }
 
-// { dg-final { scan-assembler {_ZW3bob6stuart5kevinE4frobRW_2E6mytype:} } }
+// { dg-final { scan-assembler {_ZW3bobW6stuartW5kevin4frobRS1_6mytype:} } }

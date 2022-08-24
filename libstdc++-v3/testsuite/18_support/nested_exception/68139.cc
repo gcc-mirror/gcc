@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target rtti }
 
 // Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //

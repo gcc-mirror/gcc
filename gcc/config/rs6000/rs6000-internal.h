@@ -82,7 +82,6 @@ extern const char *rs6000_machine;
    from rs6000-logue.cc  */
 
 extern int uses_TOC (void);
-extern bool rs6000_global_entry_point_needed_p (void);
 extern void rs6000_output_function_prologue (FILE *file);
 extern void rs6000_output_function_epilogue (FILE *file);
 extern bool rs6000_function_ok_for_sibcall (tree decl, tree exp);
@@ -183,9 +182,6 @@ extern tree rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
 			         tree *args ATTRIBUTE_UNUSED,
 			         bool ignore ATTRIBUTE_UNUSED);
 
-#if TARGET_ELF
-extern bool rs6000_passes_ieee128;
-#endif
 extern bool rs6000_passes_float;
 extern bool rs6000_passes_long_double;
 extern bool rs6000_passes_vector;

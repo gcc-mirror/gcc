@@ -2,8 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail7524b.d(10): Error: #line integer ["filespec"]\n expected
-fail_compilation/fail7524b.d(10): Error: declaration expected, not `$n$L`
+fail_compilation/fail7524b.d(9): Error: invalid filename for `#line` directive
 ---
 */
 

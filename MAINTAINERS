@@ -53,7 +53,7 @@ aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
 aarch64 port		Richard Sandiford	<richard.sandiford@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
-alpha port		Richard Henderson	<rth@twiddle.net>
+alpha port		Richard Henderson	<rth@gcc.gnu.org>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
 amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
@@ -83,6 +83,8 @@ i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 i386 vector ISA extns	Hongtao Liu		<hongtao.liu@intel.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
 lm32 port		Sebastien Bourdeauducq	<sebastien@milkymist.org>
+LoongArch port		Chenghua Xu		<xuchenghua@loongson.cn>
+LoongArch port		Lulu Cheng		<chenglulu@loongson.cn>
 m32r port		Nick Clifton		<nickc@redhat.com>
 m68k port (?)		Jeff Law		<jeffreyalaw@gmail.com>
 m68k port		Andreas Schwab		<schwab@linux-m68k.org>
@@ -110,17 +112,15 @@ riscv port		Andrew Waterman		<andrew@sifive.com>
 riscv port		Jim Wilson		<jim.wilson.gcc@gmail.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
 rs6000/powerpc port	Segher Boessenkool	<segher@kernel.crashing.org>
+rs6000/powerpc port	Kewen Lin		<linkw@gcc.gnu.org>
 rs6000 vector extns	Aldy Hernandez		<aldyh@redhat.com>
 rx port			Nick Clifton		<nickc@redhat.com>
-s390 port		Hartmut Penner		<hepenner@us.ibm.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
 s390 port		Andreas Krebbel		<krebbel@linux.ibm.com>
 sh port			Alexandre Oliva		<aoliva@gcc.gnu.org>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
 sparc port		Eric Botcazou		<ebotcazou@libertysurf.fr>
-tilegx port		Walter Lee		<walt@tilera.com>
-tilepro port		Walter Lee		<walt@tilera.com>
 v850 port		Nick Clifton		<nickc@redhat.com>
 vax port		Matt Thomas		<matt@3am-software.com>
 vax port		Maciej W. Rozycki	<macro@embecosm.com>
@@ -157,6 +157,7 @@ cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 C front end/ISO C99	Joseph Myers		<joseph@codesourcery.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
+Ada front end		Marc Poulhiès		<poulhies@adacore.com>
 Ada front end		Pierre-Marie de Rodat	<derodat@adacore.com>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@acm.org>
@@ -238,6 +239,7 @@ tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>
 profile feedback	Jan Hubicka		<hubicka@ucw.cz>
+AutoFDO			Eugene Rozenfeld	<erozen@microsoft.com>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
 RTL optimizers		Eric Botcazou		<ebotcazou@libertysurf.fr>
 instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
@@ -253,7 +255,6 @@ testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
-SLSR			Bill Schmidt		<wschmidt@linux.ibm.com>
 jit			David Malcolm		<dmalcolm@redhat.com>
 gen* on machine desc	Richard Sandiford	<rdsandiford@googlemail.com>
 static analyzer		David Malcolm		<dmalcolm@redhat.com>
@@ -267,6 +268,7 @@ arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Liska		<mliska@suse.cz>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
+CTF, BTF		David Faust		<david.faust@oracle.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
@@ -353,13 +355,14 @@ Kevin Buettner					<kevinb@redhat.com>
 Andrew Burgess					<aburgess@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
+Andrew Carlotti					<andrew.carlotti@arm.com>
 Daniel Carrera					<dcarrera@gmail.com>
 Stephane Carrez					<stcarrez@nerim.fr>
 Gabriel Charette				<gchare@google.com>
 Chandra Chavva					<cchavva@redhat.com>
 Dehao Chen					<dehao@google.com>
 Fabien Chêne					<fabien@gcc.gnu.org>
-Clément Chigot					<clement.chigot@atos.net>
+Clément Chigot					<chigot@adacore.com>
 Harshit Chopra					<harshit@google.com>
 Tamar Christina					<tamar.christina@arm.com>
 Eric Christopher				<echristo@gmail.com>
@@ -396,7 +399,7 @@ Doug Evans					<dje@google.com>
 Chris Fairles					<cfairles@gcc.gnu.org>
 Alessandro Fanfarillo				<fanfarillo.gcc@gmail.com>
 Changpeng Fang					<changpeng.fang@amd.com>
-David Faust					<david.faust@oracle.com>
+Sam Feifer					<sfeifer@redhat.com>
 Li Feng						<nemokingdom@gmail.com>
 Thomas Fitzsimmons				<fitzsim@redhat.com>
 Alexander Fomin					<afomin.mailbox@gmail.com>
@@ -447,7 +450,7 @@ Manfred Hollstein				<mh@suse.com>
 Cong Hou					<congh@google.com>
 Falk Hueffner					<falk@debian.org>
 Andrew John Hughes				<gnu_andrew@member.fsf.org>
-Dominique d'Humieres				<dominiq@lps.ens.fr>
+Dominique d'Humieres				<dhumieres.dominique@free.fr>
 Andy Hutchinson					<hutchinsonandy@aim.com>
 Joel Hutton					<joel.hutton@arm.com>
 Lewis Hyatt					<lhyatt@gmail.com>
@@ -463,7 +466,9 @@ Daniel Jacobowitz				<drow@false.org>
 Andreas Jaeger					<aj@suse.de>
 Harsha Jagasia					<harsha.jagasia@amd.com>
 Fariborz Jahanian				<fjahanian@apple.com>
-Qian Jianhua					<qianjh@cn.fujitsu.com>
+Surya Kumari Jangala				<jskumari@linux.ibm.com>
+Haochen Jiang					<haochen.jiang@intel.com>
+Qian Jianhua					<qianjh@fujitsu.com>
 Janis Johnson					<janis.marie.johnson@gmail.com>
 Teresa Johnson					<tejohnson@google.com>
 Kean Johnston					<jkj@sco.com>
@@ -478,6 +483,7 @@ Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Nicolas Koenig					<koenigni@student.ethz.ch>
 Boris Kolpackov					<boris@codesynthesis.com>
+Lingling Kong					<lingling.kong@intel.com>
 Dave Korn					<dave.korn.cygwin@gmail.com>
 Julia Koval					<julia.koval@intel.com>
 Matt Kraai					<kraai@ftbfs.org>
@@ -493,6 +499,7 @@ Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
 Jerome Lambourg					<lambourg@adacore.com>
+Tim Lange					<mail@tim-lange.me>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
@@ -506,7 +513,6 @@ Ilya Leoshkevich				<iii@linux.ibm.com>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
-Kewen Lin					<linkw@gcc.gnu.org>
 Chen Liqin					<liqin.gcc@gmail.com>
 Jiangning Liu					<jiangning.liu@arm.com>
 Sa Liu						<saliu@de.ibm.com>
@@ -517,9 +523,9 @@ Manuel López-Ibáñez				<manu@gcc.gnu.org>
 Carl Love					<cel@us.ibm.com>
 Martin v. Löwis					<loewis@informatik.hu-berlin.de>
 H.J. Lu						<hjl.tools@gmail.com>
-Xiong Hu Luo					<luoxhu@linux.vnet.ibm.com>
+Xiong Hu Luo					<luoxhu@gcc.gnu.org>
 Bin Bin Lv					<shlb@linux.ibm.com>
-Christophe Lyon					<christophe.lyon@st.com>
+Christophe Lyon					<christophe.lyon@arm.com>
 Jun Ma						<junma@linux.alibaba.com>
 Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
@@ -540,6 +546,7 @@ Bingfeng Mei					<bmei@broadcom.com>
 Jim Meyering					<jim@meyering.net>
 Martin Michlmayr				<tbm@cyrius.com>
 Lee Millward					<lee.millward@gmail.com>
+Immad Mir					<mir@sourceware.org>
 Dragan Mladjenovic				<Dragan.Mladjenovic@syrmia.com>
 Alan Modra					<amodra@gmail.com>
 Catherine Moore					<clm@codesourcery.com>
@@ -577,7 +584,6 @@ Nicolas Pitre					<nico@cam.org>
 Michael Ploujnikov				<michael.ploujnikov@oracle.com>
 Paul Pluzhnikov					<ppluzhnikov@google.com>
 Antoniu Pop					<antoniu.pop@gmail.com>
-Marc Poulhiès					<poulhies@adacore.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Vidya Praveen					<vidyapraveen@arm.com>
 Thomas Preud'homme				<thomas.preudhomme@celest.fr>
@@ -598,7 +604,6 @@ Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>
 Yvan Roux					<yvan.roux@linaro.org>
-Eugene Rozenfeld				<erozen@microsoft.com>
 Silvius Rus					<rus@google.com>
 Matthew Sachs					<msachs@apple.com>
 Ankur Saini					<arsenic@sourceware.org>
@@ -607,7 +612,7 @@ Duncan Sands					<baldrick@gcc.gnu.org>
 Sujoy Saraswati					<sujoy.saraswati@hpe.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
 Aaron Sawdey					<acsawdey@linux.ibm.com>
-Roger Sayle					<roger@eyesopen.com>
+Roger Sayle					<roger@nextmovesoftware.com>
 Will Schmidt					<will_schmidt@vnet.ibm.com>
 Stefan Schulze Frielinghaus			<stefansf@linux.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
@@ -623,7 +628,7 @@ Johannes Singler				<singler@kit.edu>
 Franz Sirl					<franz.sirl-kernel@lauterbach.com>
 Jan Sjodin					<jan.sjodin@amd.com>
 Trevor Smigiel					<trevor_smigiel@playstation.sony.com>
-Edward Smith-Rowland				<3dw4rd@verizon.net>
+Edward Smith-Rowland				<esmithrowland@gmail.com>
 Anatoly Sokolov					<aesok@dol.ru>
 Michael Sokolov					<msokolov@ivan.Harhan.ORG>
 Jayant Sonar					<rsonar.jayant@gmail.com>
@@ -681,7 +686,7 @@ Przemyslaw Wirkus				<przemyslaw.wirkus@arm.com>
 Carlo Wood					<carlo@alinoe.com>
 Jackson Woodruff				<jackson.woodruff@arm.com>
 Jonathan Wright					<jonathan.wright@arm.com>
-Ruoyao Xi					<xry111@mengyan1223.wang>
+Ruoyao Xi					<xry111@xry111.site>
 Mingjie Xing					<mingjie.xing@gmail.com>
 Chenghua Xu					<paul.hua.gm@gmail.com>
 Canqun Yang					<canqun@nudt.edu.cn>
@@ -715,13 +720,18 @@ information.
 
 
 Matthias Kretz					<m.kretz@gsi.de>
+Tim Lange					<mail@tim-lange.me>
 Jeff Law					<jeffreyalaw@gmail.com>
 Jeff Law					<jlaw@tachyum.com>
+Immad Mir					<mir@sourceware.org>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
+Bill Schmidt					<bill.schmidt@fastmail.com>
 Nathan Sidwell					<nathan@acm.org>
+Edward Smith-Rowland				<esmithrowland@gmail.com>
 Petter Tomner					<tomner@kth.se>
 Martin Uecker					<uecker@gcc.gnu.org>
 Jonathan Wakely					<jwakely@redhat.com>
+Chung-Ju Wu					<jasonwucj@gmail.com>

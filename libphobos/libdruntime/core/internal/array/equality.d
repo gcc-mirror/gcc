@@ -21,8 +21,7 @@ bool __equals(T1, T2)(scope const T1[] lhs, scope const T2[] rhs)
 @nogc nothrow pure @trusted
 if (__traits(isScalar, T1) && __traits(isScalar, T2))
 {
-    if (lhs.length != rhs.length)
-        return false;
+    const length = lhs.length;
 
     static if (T1.sizeof == T2.sizeof
         // Signedness needs to match for types that promote to int.
@@ -31,20 +30,21 @@ if (__traits(isScalar, T1) && __traits(isScalar, T2))
         && (T1.sizeof >= 4 || __traits(isUnsigned, T1) == __traits(isUnsigned, T2))
         && !__traits(isFloating, T1) && !__traits(isFloating, T2))
     {
-        if (!__ctfe)
+        if (__ctfe)
+            return length == rhs.length && isEqual(lhs.ptr, rhs.ptr, length);
+        else
         {
             // This would improperly allow equality of integers and pointers
             // but the CTFE branch will stop this function from compiling then.
             import core.stdc.string : memcmp;
-            return lhs.length == 0 ||
-                0 == memcmp(cast(const void*) lhs.ptr, cast(const void*) rhs.ptr, lhs.length * T1.sizeof);
+            return length == rhs.length &&
+                (!length || 0 == memcmp(cast(const void*) lhs.ptr, cast(const void*) rhs.ptr, length * T1.sizeof));
         }
     }
-
-    foreach (const i; 0 .. lhs.length)
-        if (lhs.ptr[i] != rhs.ptr[i])
-            return false;
-    return true;
+    else
+    {
+        return length == rhs.length && isEqual(lhs.ptr, rhs.ptr, length);
+    }
 }
 
 bool __equals(T1, T2)(scope T1[] lhs, scope T2[] rhs)
@@ -87,6 +87,19 @@ if (!__traits(isScalar, T1) || !__traits(isScalar, T2))
         }
         return true;
     }
+}
+
+/******************************
+ * Helper function for __equals().
+ * Outlined to enable __equals() to be inlined, as dmd cannot inline loops.
+ */
+private
+bool isEqual(T1, T2)(scope const T1* t1, scope const T2* t2, size_t length)
+{
+    foreach (const i; 0 .. length)
+        if (t1[i] != t2[i])
+            return false;
+    return true;
 }
 
 @safe unittest

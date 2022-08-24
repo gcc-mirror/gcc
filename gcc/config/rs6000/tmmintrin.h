@@ -112,8 +112,8 @@ _mm_alignr_epi8 (__m128i __A, __m128i __B, const unsigned int __count)
     {
       if (__count >= 32)
 	{
-	  const __v16qu zero = { 0 };
-	  return (__m128i) zero;
+	  const __v16qu __zero = { 0 };
+	  return (__m128i) __zero;
 	}
       else
 	{

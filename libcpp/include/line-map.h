@@ -22,6 +22,8 @@ along with this program; see the file COPYING3.  If not see
 #ifndef LIBCPP_LINE_MAP_H
 #define LIBCPP_LINE_MAP_H
 
+#include <utility>
+
 #ifndef GTY
 #define GTY(x) /* nothing */
 #endif
@@ -792,6 +794,9 @@ public:
   /* If true, prints an include trace a la -H.  */
   bool trace_includes;
 
+  /* True if we've seen a #line or # 44 "file" directive.  */
+  bool seen_line_directive;
+
   /* Highest location_t "given out".  */
   location_t highest_location;
 
@@ -814,9 +819,6 @@ public:
   /* The special location value that is used as spelling location for
      built-in tokens.  */
   location_t builtin_location;
-
-  /* True if we've seen a #line or # 44 "file" directive.  */
-  bool seen_line_directive;
 
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
@@ -1816,16 +1818,16 @@ protected:
   int m_column_override;
 
   bool m_have_expanded_location;
+  bool m_seen_impossible_fixit;
+  bool m_fixits_cannot_be_auto_applied;
+  bool m_escape_on_output;
+
   expanded_location m_expanded_location;
 
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
 
-  bool m_seen_impossible_fixit;
-  bool m_fixits_cannot_be_auto_applied;
-
   const diagnostic_path *m_path;
-  bool m_escape_on_output;
 };
 
 /* A struct for the result of range_label::get_text: a NUL-terminated buffer
@@ -1836,14 +1838,36 @@ class label_text
 {
 public:
   label_text ()
-  : m_buffer (NULL), m_caller_owned (false)
+  : m_buffer (NULL), m_owned (false)
   {}
 
-  void maybe_free ()
+  ~label_text ()
   {
-    if (m_caller_owned)
+    if (m_owned)
       free (m_buffer);
   }
+
+  /* Move ctor.  */
+  label_text (label_text &&other)
+  : m_buffer (other.m_buffer), m_owned (other.m_owned)
+  {
+    other.release ();
+  }
+
+  /* Move assignment.  */
+  label_text & operator= (label_text &&other)
+  {
+    if (m_owned)
+      free (m_buffer);
+    m_buffer = other.m_buffer;
+    m_owned = other.m_owned;
+    other.release ();
+    return *this;
+  }
+
+  /* Delete the copy ctor and copy-assignment operator.  */
+  label_text (const label_text &) = delete;
+  label_text & operator= (const label_text &) = delete;
 
   /* Create a label_text instance that borrows BUFFER from a
      longer-lived owner.  */
@@ -1858,21 +1882,28 @@ public:
     return label_text (buffer, true);
   }
 
-  /* Take ownership of the buffer, copying if necessary.  */
-  char *take_or_copy ()
+  void release ()
   {
-    if (m_caller_owned)
-      return m_buffer;
-    else
-      return xstrdup (m_buffer);
+    m_buffer = NULL;
+    m_owned = false;
   }
 
-  char *m_buffer;
-  bool m_caller_owned;
+  const char *get () const
+  {
+    return m_buffer;
+  }
+
+  bool is_owner () const
+  {
+    return m_owned;
+  }
 
 private:
+  char *m_buffer;
+  bool m_owned;
+
   label_text (char *buffer, bool owned)
-  : m_buffer (buffer), m_caller_owned (owned)
+  : m_buffer (buffer), m_owned (owned)
   {}
 };
 

@@ -23,6 +23,9 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+/* Undef gnu-user.h macro we don't want.  */
+#undef CPLUSPLUS_CPP_SPEC
+
 /* Copy and paste from linux64.h and freebsd64.h */
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
@@ -82,7 +85,7 @@
 #define	RS6000_ABI_NAME "linux"
 
 /* Copy and paste from linux64.h and freebsd64.h */
-#define INVALID_64BIT "-m%s not supported in this configuration"
+#define INVALID_64BIT "%<-m%s%> not supported in this configuration"
 
 /* A lot of copy and paste from linux64.h and freebsd64.h */
 #undef	SUBSUBTARGET_OVERRIDE_OPTIONS

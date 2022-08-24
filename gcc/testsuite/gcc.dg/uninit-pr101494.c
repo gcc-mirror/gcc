@@ -1,6 +1,7 @@
 /* PR middle-end/101494 - bogus -Wmaybe-uninitialized on memrchr of size 0
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

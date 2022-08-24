@@ -19,7 +19,8 @@ fn2 (void *frame, uword_t error)
 }
 
 /* { dg-final { scan-assembler-not "movups\[\\t .\]*%(x|y|z)mm\[0-9\]+" } } */
-/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(b|c|d)x" } } */
+/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)ax" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(c|d)x" } } */
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)si" } } */
 /* { dg-final { scan-assembler-not "(push|pop)l\[\\t \]*%edi" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "(push|pop)q\[\\t \]*%rax" { target { { ! ia32 } && nonpic } } } } */
@@ -27,7 +28,7 @@ fn2 (void *frame, uword_t error)
 /* { dg-final { scan-assembler-times "pushl\[\\t \]*%ebp" 2 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "leave" 2 { target { ia32 && nonpic } } } } */
 /* { dg-final { scan-assembler-times "pushl\[\\t \]*%eax" 2 { target ia32 } } } */
-/* { dg-final { scan-assembler-times "movl\[\\t \]*-4\\(%ebp\\),\[\\t \]*%eax" 2 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "movl\[\\t \]*-4\\(%ebp\\),\[\\t \]*%eax" 2 { target { ia32 && nonpic } } } } */
 /* { dg-final { scan-assembler-times "pushq\[\\t \]*%rdi" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "popq\[\\t \]*%rdi" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler "(addl|leal).*4.*%esp" { target ia32 } } } */

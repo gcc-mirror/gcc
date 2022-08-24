@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "langhooks.h"
 #include "options.h"
+#include "internal-fn.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -1601,7 +1602,10 @@ c_pretty_printer::postfix_expression (tree e)
       {
 	call_expr_arg_iterator iter;
 	tree arg;
-	postfix_expression (CALL_EXPR_FN (e));
+	if (CALL_EXPR_FN (e) != NULL_TREE)
+	  postfix_expression (CALL_EXPR_FN (e));
+	else
+	  pp_string (this, internal_fn_name (CALL_EXPR_IFN (e)));
 	pp_c_left_paren (this);
 	FOR_EACH_CALL_EXPR_ARG (arg, iter, e)
 	  {
@@ -1885,6 +1889,12 @@ c_fold_indirect_ref_for_warn (location_t loc, tree type, tree op,
 	      = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (field)));
 	    if (upos <= off && off < upos + el_sz)
 	      {
+		/* The C++ pretty printers print scope of the FIELD_DECLs,
+		   so punt if it is something that can't be printed.  */
+		if (c_dialect_cxx ())
+		  if (tree scope = get_containing_scope (field))
+		    if (TYPE_P (scope) && TYPE_NAME (scope) == NULL_TREE)
+		      break;
 		tree cop = build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
 				       op, field, NULL_TREE);
 		off = off - upos;
@@ -2999,7 +3009,7 @@ test_location_wrappers ()
 /* Run all of the selftests within this file.  */
 
 void
-c_pretty_print_c_tests ()
+c_pretty_print_cc_tests ()
 {
   test_location_wrappers ();
 }

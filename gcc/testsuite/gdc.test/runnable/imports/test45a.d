@@ -14,4 +14,3 @@ int bar(T)(T t)
     printf("bar(t)\n");
     return 3;
 }
-

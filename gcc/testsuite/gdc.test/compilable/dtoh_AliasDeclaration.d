@@ -10,9 +10,9 @@ TEST_OUTPUT:
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -125,7 +125,6 @@ typedef /* noreturn */ char Impossible[0];
 template <typename T>
 struct Array final
 {
-    // Ignoring var length alignment 0
     uint32_t length;
     Array()
     {

@@ -76,12 +76,7 @@ const(char)* toMBSz(scope const(char)[] s, uint codePage = 0)
                         to!int(result.length), null, null);
             }
 
-            if (!readLen || readLen != result.length)
-            {
-                throw new Exception("Couldn't convert string: " ~
-                        sysErrorString(GetLastError()));
-            }
-
+            wenforce(readLen && readLen == result.length, "Couldn't convert string");
             return result.ptr;
         }
     }
@@ -107,16 +102,10 @@ string fromMBSz(return scope immutable(char)* s, int codePage = 0)
                         to!int(result.length));
             }
 
-            if (!readLen || readLen != result.length)
-            {
-                throw new Exception("Couldn't convert string: " ~
-                    sysErrorString(GetLastError()));
-            }
+            wenforce(readLen && readLen == result.length, "Couldn't convert string");
 
             return result[0 .. result.length-1].to!string; // omit trailing null
         }
     }
     return s[0 .. c-s];         // string is ASCII, no conversion necessary
 }
-
-

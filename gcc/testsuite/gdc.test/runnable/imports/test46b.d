@@ -7,4 +7,3 @@ class B
     private C!(char) c;
     this() { c = new C!(char); }
 }
-

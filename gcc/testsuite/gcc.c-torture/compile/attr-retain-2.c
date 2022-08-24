@@ -11,5 +11,7 @@
 /* { dg-final { scan-assembler ".bss.used_lcomm2,\"awR\"" { target arm-*-* } } } */
 /* { dg-final { scan-assembler ".data.used_foo_sec,\"awR\"" } } */
 /* { dg-options "-ffunction-sections -fdata-sections" } */
+/* Prevent readonly data from being put in writable sdata for 32-bit powerpc. */
+/* { dg-options "-ffunction-sections -fdata-sections -G0" { target { powerpc*-*-* && ilp32 } } } */
 
 #include "attr-retain-1.c"

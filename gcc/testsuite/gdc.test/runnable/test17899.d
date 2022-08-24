@@ -1,7 +1,7 @@
 module test17899;
 
 // Test that the ICE in 13259 does not ICE but produces correct code
-auto dg = delegate {}; 
+auto dg = delegate {};
 
 int setme = 0;
 void delegate() bar1 = (){ setme = 1;};

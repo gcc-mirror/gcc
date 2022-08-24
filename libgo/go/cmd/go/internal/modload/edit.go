@@ -21,7 +21,7 @@ import (
 // 	2. Each module version in tryUpgrade is upgraded toward the indicated
 // 	   version as far as can be done without violating (1).
 //
-// 	3. Each module version in rs.rootModules (or rs.graph, if rs.depth is eager)
+// 	3. Each module version in rs.rootModules (or rs.graph, if rs is unpruned)
 // 	   is downgraded from its original version only to the extent needed to
 // 	   satisfy (1), or upgraded only to the extent needed to satisfy (1) and
 // 	   (2).
@@ -69,13 +69,14 @@ func editRequirements(ctx context.Context, rs *Requirements, tryUpgrade, mustSel
 	}
 
 	var roots []module.Version
-	if rs.depth == eager {
-		// In an eager module, modules that provide packages imported by the main
-		// module may either be explicit roots or implicit transitive dependencies.
-		// We promote the modules in mustSelect to be explicit requirements.
+	if rs.pruning == unpruned {
+		// In a module without graph pruning, modules that provide packages imported
+		// by the main module may either be explicit roots or implicit transitive
+		// dependencies. We promote the modules in mustSelect to be explicit
+		// requirements.
 		var rootPaths []string
 		for _, m := range mustSelect {
-			if m.Version != "none" && m.Path != Target.Path {
+			if m.Version != "none" && !MainModules.Contains(m.Path) {
 				rootPaths = append(rootPaths, m.Path)
 			}
 		}
@@ -97,13 +98,13 @@ func editRequirements(ctx context.Context, rs *Requirements, tryUpgrade, mustSel
 			}
 		}
 
-		roots, err = mvs.Req(Target, rootPaths, &mvsReqs{roots: mods})
+		roots, err = mvs.Req(MainModules.mustGetSingleMainModule(), rootPaths, &mvsReqs{roots: mods})
 		if err != nil {
 			return nil, false, err
 		}
 	} else {
-		// In a lazy module, every module that provides a package imported by the
-		// main module must be retained as a root.
+		// In a module with a pruned graph, every module that provides a package
+		// imported by the main module must be retained as a root.
 		roots = mods
 		if !changed {
 			// Because the roots we just computed are unchanged, the entire graph must
@@ -126,7 +127,7 @@ func editRequirements(ctx context.Context, rs *Requirements, tryUpgrade, mustSel
 			direct[m.Path] = true
 		}
 	}
-	return newRequirements(rs.depth, roots, direct), changed, nil
+	return newRequirements(rs.pruning, roots, direct), changed, nil
 }
 
 // limiterForEdit returns a versionLimiter with its max versions set such that
@@ -149,11 +150,12 @@ func limiterForEdit(ctx context.Context, rs *Requirements, tryUpgrade, mustSelec
 		}
 	}
 
-	if rs.depth == eager {
-		// Eager go.mod files don't indicate which transitive dependencies are
-		// actually relevant to the main module, so we have to assume that any module
-		// that could have provided any package — that is, any module whose selected
-		// version was not "none" — may be relevant.
+	if rs.pruning == unpruned {
+		// go.mod files that do not support graph pruning don't indicate which
+		// transitive dependencies are actually relevant to the main module, so we
+		// have to assume that any module that could have provided any package —
+		// that is, any module whose selected version was not "none" — may be
+		// relevant.
 		for _, m := range mg.BuildList() {
 			restrictTo(m)
 		}
@@ -175,7 +177,7 @@ func limiterForEdit(ctx context.Context, rs *Requirements, tryUpgrade, mustSelec
 		}
 	}
 
-	if err := raiseLimitsForUpgrades(ctx, maxVersion, rs.depth, tryUpgrade, mustSelect); err != nil {
+	if err := raiseLimitsForUpgrades(ctx, maxVersion, rs.pruning, tryUpgrade, mustSelect); err != nil {
 		return nil, err
 	}
 
@@ -185,7 +187,7 @@ func limiterForEdit(ctx context.Context, rs *Requirements, tryUpgrade, mustSelec
 		restrictTo(m)
 	}
 
-	return newVersionLimiter(rs.depth, maxVersion), nil
+	return newVersionLimiter(rs.pruning, maxVersion), nil
 }
 
 // raiseLimitsForUpgrades increases the module versions in maxVersions to the
@@ -195,12 +197,12 @@ func limiterForEdit(ctx context.Context, rs *Requirements, tryUpgrade, mustSelec
 //
 // Versions not present in maxVersion are unrestricted, and it is assumed that
 // they will not be promoted to root requirements (and thus will not contribute
-// their own dependencies if the main module is lazy).
+// their own dependencies if the main module supports graph pruning).
 //
 // These limits provide an upper bound on how far a module may be upgraded as
 // part of an incidental downgrade, if downgrades are needed in order to select
 // the versions in mustSelect.
-func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, depth modDepth, tryUpgrade []module.Version, mustSelect []module.Version) error {
+func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, pruning modPruning, tryUpgrade []module.Version, mustSelect []module.Version) error {
 	// allow raises the limit for m.Path to at least m.Version.
 	// If m.Path was already unrestricted, it remains unrestricted.
 	allow := func(m module.Version) {
@@ -214,21 +216,21 @@ func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, d
 	}
 
 	var (
-		eagerUpgrades  []module.Version
-		isLazyRootPath map[string]bool
+		unprunedUpgrades []module.Version
+		isPrunedRootPath map[string]bool
 	)
-	if depth == eager {
-		eagerUpgrades = tryUpgrade
+	if pruning == unpruned {
+		unprunedUpgrades = tryUpgrade
 	} else {
-		isLazyRootPath = make(map[string]bool, len(maxVersion))
+		isPrunedRootPath = make(map[string]bool, len(maxVersion))
 		for p := range maxVersion {
-			isLazyRootPath[p] = true
+			isPrunedRootPath[p] = true
 		}
 		for _, m := range tryUpgrade {
-			isLazyRootPath[m.Path] = true
+			isPrunedRootPath[m.Path] = true
 		}
 		for _, m := range mustSelect {
-			isLazyRootPath[m.Path] = true
+			isPrunedRootPath[m.Path] = true
 		}
 
 		allowedRoot := map[module.Version]bool{}
@@ -240,10 +242,10 @@ func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, d
 			}
 			allowedRoot[m] = true
 
-			if m.Path == Target.Path {
-				// Target is already considered to be higher than any possible m, so we
-				// won't be upgrading to it anyway and there is no point scanning its
-				// dependencies.
+			if MainModules.Contains(m.Path) {
+				// The main module versions are already considered to be higher than any
+				// possible m, so m cannot be selected as a root and there is no point
+				// scanning its dependencies.
 				return nil
 			}
 
@@ -253,15 +255,15 @@ func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, d
 			if err != nil {
 				return err
 			}
-			if summary.depth == eager {
-				// For efficiency, we'll load all of the eager upgrades as one big
+			if summary.pruning == unpruned {
+				// For efficiency, we'll load all of the unpruned upgrades as one big
 				// graph, rather than loading the (potentially-overlapping) subgraph for
 				// each upgrade individually.
-				eagerUpgrades = append(eagerUpgrades, m)
+				unprunedUpgrades = append(unprunedUpgrades, m)
 				return nil
 			}
 			for _, r := range summary.require {
-				if isLazyRootPath[r.Path] {
+				if isPrunedRootPath[r.Path] {
 					// r could become a root as the result of an upgrade or downgrade,
 					// in which case its dependencies will not be pruned out.
 					// We need to allow those dependencies to be upgraded too.
@@ -282,21 +284,19 @@ func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, d
 		}
 	}
 
-	if len(eagerUpgrades) > 0 {
-		// Compute the max versions for eager upgrades all together.
-		// Since these modules are eager, we'll end up scanning all of their
+	if len(unprunedUpgrades) > 0 {
+		// Compute the max versions for unpruned upgrades all together.
+		// Since these modules are unpruned, we'll end up scanning all of their
 		// transitive dependencies no matter which versions end up selected,
 		// and since we have a large dependency graph to scan we might get
 		// a significant benefit from not revisiting dependencies that are at
 		// common versions among multiple upgrades.
-		upgradeGraph, err := readModGraph(ctx, eager, eagerUpgrades)
+		upgradeGraph, err := readModGraph(ctx, unpruned, unprunedUpgrades)
 		if err != nil {
-			if go117LazyTODO {
-				// Compute the requirement path from a module path in tryUpgrade to the
-				// error, and the requirement path (if any) from rs.rootModules to the
-				// tryUpgrade module path. Return a *mvs.BuildListError showing the
-				// concatenation of the paths (with an upgrade in the middle).
-			}
+			// Compute the requirement path from a module path in tryUpgrade to the
+			// error, and the requirement path (if any) from rs.rootModules to the
+			// tryUpgrade module path. Return a *mvs.BuildListError showing the
+			// concatenation of the paths (with an upgrade in the middle).
 			return err
 		}
 
@@ -311,7 +311,7 @@ func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, d
 	nextRoots := append([]module.Version(nil), mustSelect...)
 	for nextRoots != nil {
 		module.Sort(nextRoots)
-		rs := newRequirements(depth, nextRoots, nil)
+		rs := newRequirements(pruning, nextRoots, nil)
 		nextRoots = nil
 
 		rs, mustGraph, err := expandGraph(ctx, rs)
@@ -325,7 +325,7 @@ func raiseLimitsForUpgrades(ctx context.Context, maxVersion map[string]string, d
 			// which case we will error out either way).
 			allow(r)
 
-			if isLazyRootPath[r.Path] {
+			if isPrunedRootPath[r.Path] {
 				if v, ok := rs.rootSelected(r.Path); ok && r.Version == v {
 					// r is already a root, so its requirements are already included in
 					// the build list.
@@ -365,12 +365,12 @@ func selectPotentiallyImportedModules(ctx context.Context, limiter *versionLimit
 	}
 
 	var initial []module.Version
-	if rs.depth == eager {
+	if rs.pruning == unpruned {
 		mg, err := rs.Graph(ctx)
 		if err != nil {
 			return nil, false, err
 		}
-		initial = mg.BuildList()[1:]
+		initial = mg.BuildList()[MainModules.Len():]
 	} else {
 		initial = rs.rootModules
 	}
@@ -382,7 +382,7 @@ func selectPotentiallyImportedModules(ctx context.Context, limiter *versionLimit
 
 	mods = make([]module.Version, 0, len(limiter.selected))
 	for path, v := range limiter.selected {
-		if v != "none" && path != Target.Path {
+		if v != "none" && !MainModules.Contains(path) {
 			mods = append(mods, module.Version{Path: path, Version: v})
 		}
 	}
@@ -392,13 +392,13 @@ func selectPotentiallyImportedModules(ctx context.Context, limiter *versionLimit
 	// downgraded module may require a higher (but still allowed) version of
 	// another. The lower version may require extraneous dependencies that aren't
 	// actually relevant, so we need to compute the actual selected versions.
-	mg, err := readModGraph(ctx, rs.depth, mods)
+	mg, err := readModGraph(ctx, rs.pruning, mods)
 	if err != nil {
 		return nil, false, err
 	}
 	mods = make([]module.Version, 0, len(limiter.selected))
 	for path, _ := range limiter.selected {
-		if path != Target.Path {
+		if !MainModules.Contains(path) {
 			if v := mg.Selected(path); v != "none" {
 				mods = append(mods, module.Version{Path: path, Version: v})
 			}
@@ -414,16 +414,16 @@ func selectPotentiallyImportedModules(ctx context.Context, limiter *versionLimit
 // A versionLimiter tracks the versions that may be selected for each module
 // subject to constraints on the maximum versions of transitive dependencies.
 type versionLimiter struct {
-	// depth is the depth at which the dependencies of the modules passed to
+	// pruning is the pruning at which the dependencies of the modules passed to
 	// Select and UpgradeToward are loaded.
-	depth modDepth
+	pruning modPruning
 
 	// max maps each module path to the maximum version that may be selected for
 	// that path.
 	//
 	// Paths with no entry are unrestricted, and we assume that they will not be
 	// promoted to root dependencies (so will not contribute dependencies if the
-	// main module is lazy).
+	// main module supports graph pruning).
 	max map[string]string
 
 	// selected maps each module path to a version of that path (if known) whose
@@ -475,14 +475,18 @@ func (dq dqState) isDisqualified() bool {
 // in the map are unrestricted. The limiter assumes that unrestricted paths will
 // not be promoted to root dependencies.
 //
-// If depth is lazy, then if a module passed to UpgradeToward or Select is
-// itself lazy, its unrestricted dependencies are skipped when scanning
-// requirements.
-func newVersionLimiter(depth modDepth, max map[string]string) *versionLimiter {
+// If module graph pruning is in effect, then if a module passed to
+// UpgradeToward or Select supports pruning, its unrestricted dependencies are
+// skipped when scanning requirements.
+func newVersionLimiter(pruning modPruning, max map[string]string) *versionLimiter {
+	selected := make(map[string]string)
+	for _, m := range MainModules.Versions() {
+		selected[m.Path] = m.Version
+	}
 	return &versionLimiter{
-		depth:     depth,
+		pruning:   pruning,
 		max:       max,
-		selected:  map[string]string{Target.Path: Target.Version},
+		selected:  selected,
 		dqReason:  map[module.Version]dqState{},
 		requiring: map[module.Version][]module.Version{},
 	}
@@ -491,8 +495,8 @@ func newVersionLimiter(depth modDepth, max map[string]string) *versionLimiter {
 // UpgradeToward attempts to upgrade the selected version of m.Path as close as
 // possible to m.Version without violating l's maximum version limits.
 //
-// If depth is lazy and m itself is lazy, the the dependencies of unrestricted
-// dependencies of m will not be followed.
+// If module graph pruning is in effect and m itself supports pruning, the
+// dependencies of unrestricted dependencies of m will not be followed.
 func (l *versionLimiter) UpgradeToward(ctx context.Context, m module.Version) error {
 	selected, ok := l.selected[m.Path]
 	if ok {
@@ -504,7 +508,7 @@ func (l *versionLimiter) UpgradeToward(ctx context.Context, m module.Version) er
 		selected = "none"
 	}
 
-	if l.check(m, l.depth).isDisqualified() {
+	if l.check(m, l.pruning).isDisqualified() {
 		candidates, err := versions(ctx, m.Path, CheckAllowed)
 		if err != nil {
 			// This is likely a transient error reaching the repository,
@@ -521,7 +525,7 @@ func (l *versionLimiter) UpgradeToward(ctx context.Context, m module.Version) er
 		})
 		candidates = candidates[:i]
 
-		for l.check(m, l.depth).isDisqualified() {
+		for l.check(m, l.pruning).isDisqualified() {
 			n := len(candidates)
 			if n == 0 || cmpVersion(selected, candidates[n-1]) >= 0 {
 				// We couldn't find a suitable candidate above the already-selected version.
@@ -538,7 +542,7 @@ func (l *versionLimiter) UpgradeToward(ctx context.Context, m module.Version) er
 
 // Select attempts to set the selected version of m.Path to exactly m.Version.
 func (l *versionLimiter) Select(m module.Version) (conflict module.Version, err error) {
-	dq := l.check(m, l.depth)
+	dq := l.check(m, l.pruning)
 	if !dq.isDisqualified() {
 		l.selected[m.Path] = m.Version
 	}
@@ -548,15 +552,15 @@ func (l *versionLimiter) Select(m module.Version) (conflict module.Version, err 
 // check determines whether m (or its transitive dependencies) would violate l's
 // maximum version limits if added to the module requirement graph.
 //
-// If depth is lazy and m itself is lazy, then the dependencies of unrestricted
-// dependencies of m will not be followed. If the lazy loading invariants hold
-// for the main module up to this point, the packages in those modules are at
-// best only imported by tests of dependencies that are themselves loaded from
-// outside modules. Although we would like to keep 'go test all' as reproducible
-// as is feasible, we don't want to retain test dependencies that are only
-// marginally relevant at best.
-func (l *versionLimiter) check(m module.Version, depth modDepth) dqState {
-	if m.Version == "none" || m == Target {
+// If pruning is in effect and m itself supports graph pruning, the dependencies
+// of unrestricted dependencies of m will not be followed. If the graph-pruning
+// invariants hold for the main module up to this point, the packages in those
+// modules are at best only imported by tests of dependencies that are
+// themselves loaded from outside modules. Although we would like to keep
+// 'go test all' as reproducible as is feasible, we don't want to retain test
+// dependencies that are only marginally relevant at best.
+func (l *versionLimiter) check(m module.Version, pruning modPruning) dqState {
+	if m.Version == "none" || m == MainModules.mustGetSingleMainModule() {
 		// version "none" has no requirements, and the dependencies of Target are
 		// tautological.
 		return dqState{}
@@ -586,20 +590,20 @@ func (l *versionLimiter) check(m module.Version, depth modDepth) dqState {
 		return l.disqualify(m, dqState{err: err})
 	}
 
-	if summary.depth == eager {
-		depth = eager
+	if summary.pruning == unpruned {
+		pruning = unpruned
 	}
 	for _, r := range summary.require {
-		if depth == lazy {
+		if pruning == pruned {
 			if _, restricted := l.max[r.Path]; !restricted {
 				// r.Path is unrestricted, so we don't care at what version it is
 				// selected. We assume that r.Path will not become a root dependency, so
-				// since m is lazy, r's dependencies won't be followed.
+				// since m supports pruning, r's dependencies won't be followed.
 				continue
 			}
 		}
 
-		if dq := l.check(r, depth); dq.isDisqualified() {
+		if dq := l.check(r, pruning); dq.isDisqualified() {
 			return l.disqualify(m, dq)
 		}
 

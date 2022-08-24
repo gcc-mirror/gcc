@@ -37,4 +37,4 @@ main (void)
 }
 
 /* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 0, 128\\)" "oaccloops" } } */
-/* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=8, vectors=128" } */
+/* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=\[1-8\], vectors=128" } */

@@ -17,7 +17,7 @@ struct Scope;
 class Module;
 class Package;
 
-class Import : public Dsymbol
+class Import final : public Dsymbol
 {
 public:
     /* static import aliasId = pkg1.pkg2.id : alias1 = name1, alias2 = name2;
@@ -38,17 +38,17 @@ public:
 
     AliasDeclarations aliasdecls; // corresponding AliasDeclarations for alias=name pairs
 
-    const char *kind() const;
-    Visibility visible();
-    Import *syntaxCopy(Dsymbol *s);    // copy only syntax trees
+    const char *kind() const override;
+    Visibility visible() override;
+    Import *syntaxCopy(Dsymbol *s) override; // copy only syntax trees
     void load(Scope *sc);
-    void importAll(Scope *sc);
-    Dsymbol *toAlias();
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    void setScope(Scope* sc);
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    bool overloadInsert(Dsymbol *s);
+    void importAll(Scope *sc) override;
+    Dsymbol *toAlias() override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    void setScope(Scope* sc) override;
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool overloadInsert(Dsymbol *s) override;
 
-    Import *isImport() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    Import *isImport() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

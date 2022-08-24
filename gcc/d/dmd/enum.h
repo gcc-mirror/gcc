@@ -17,7 +17,7 @@ class Identifier;
 class Type;
 class Expression;
 
-class EnumDeclaration : public ScopeDsymbol
+class EnumDeclaration final : public ScopeDsymbol
 {
 public:
     /* The separate, and distinct, cases are:
@@ -35,32 +35,37 @@ public:
     Expression *maxval;
     Expression *minval;
     Expression *defaultval;     // default initializer
+private:
+    uint8_t bitFields;
+public:
+    bool isdeprecated() const;
+    bool isdeprecated(bool v);
+    bool added() const;
+    bool added(bool v);
+    bool inuse() const;
+    bool inuse(bool v);
 
-    bool isdeprecated;
-    bool added;
-    int inuse;
-
-    EnumDeclaration *syntaxCopy(Dsymbol *s);
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    void setScope(Scope *sc);
-    bool oneMember(Dsymbol **ps, Identifier *ident);
-    Type *getType();
-    const char *kind() const;
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    bool isDeprecated() const;                // is Dsymbol deprecated?
-    Visibility visible();
+    EnumDeclaration *syntaxCopy(Dsymbol *s) override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    void setScope(Scope *sc) override;
+    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    Type *getType() override;
+    const char *kind() const override;
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool isDeprecated() const override;       // is Dsymbol deprecated?
+    Visibility visible() override;
     bool isSpecial() const;
     Expression *getDefaultValue(const Loc &loc);
     Type *getMemtype(const Loc &loc);
 
-    EnumDeclaration *isEnumDeclaration() { return this; }
+    EnumDeclaration *isEnumDeclaration() override { return this; }
 
     Symbol *sinit;
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 
-class EnumMember : public VarDeclaration
+class EnumMember final : public VarDeclaration
 {
 public:
     /* Can take the following forms:
@@ -78,9 +83,9 @@ public:
 
     EnumDeclaration *ed;
 
-    EnumMember *syntaxCopy(Dsymbol *s);
-    const char *kind() const;
+    EnumMember *syntaxCopy(Dsymbol *s) override;
+    const char *kind() const override;
 
-    EnumMember *isEnumMember() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    EnumMember *isEnumMember() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

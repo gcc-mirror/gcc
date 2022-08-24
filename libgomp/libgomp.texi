@@ -113,6 +113,7 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 * OpenACC Library Interoperability:: OpenACC library interoperability with the
                                NVIDIA CUBLAS library.
 * OpenACC Profiling Interface::
+* Offload-Target Specifics::   Notes on offload-target specific internals
 * The libgomp ABI::            Notes on the external ABI presented by libgomp.
 * Reporting Bugs::             How to report bugs in the GNU Offloading and
                                Multi Processing Runtime Library.
@@ -158,6 +159,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 4.5:: Feature completion status to 4.5 specification
 * OpenMP 5.0:: Feature completion status to 5.0 specification
 * OpenMP 5.1:: Feature completion status to 5.1 specification
+* OpenMP 5.2:: Feature completion status to 5.2 specification
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -182,14 +184,15 @@ The OpenMP 4.5 specification is fully supported.
 @item Iterators @tab Y @tab
 @item @code{metadirective} directive @tab N @tab
 @item @code{declare variant} directive
-      @tab P @tab simd traits not handled correctly
+      @tab P @tab @emph{simd} traits not handled correctly
 @item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab Only fulfillable requirement is @code{atomic_default_mem_order}
+      @tab complete but no non-host devices provides @code{unified_address},
+      @code{unified_shared_memory} or @code{reverse_offload}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
-@item Non-rectangular loop nests @tab P @tab Only C/C++
+@item Non-rectangular loop nests @tab Y @tab
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
 @item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
       constructs @tab Y @tab
@@ -203,7 +206,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{reduction} clause @tab Y @tab
 @item @code{in_reduction} clause on @code{task} constructs @tab Y @tab
 @item @code{in_reduction} clause on @code{target} constructs @tab P
-      @tab Only C/C++, @code{nowait} only stub
+      @tab @code{nowait} only stub
 @item @code{task_reduction} clause with @code{taskgroup} @tab Y @tab
 @item @code{task} modifier to @code{reduction} clause @tab Y @tab
 @item @code{affinity} clause to @code{task} construct @tab Y @tab Stub only
@@ -213,13 +216,13 @@ The OpenMP 4.5 specification is fully supported.
       and @code{taskloop simd} constructs @tab Y @tab
 @item @code{taskloop} construct cancelable by @code{cancel} construct
       @tab Y @tab
-@item @code{mutexinouset} @emph{dependence-type} for @code{depend} clause
+@item @code{mutexinoutset} @emph{dependence-type} for @code{depend} clause
       @tab Y @tab
 @item Predefined memory spaces, memory allocators, allocator traits
       @tab Y @tab Some are only stubs
 @item Memory management routines @tab Y @tab
 @item @code{allocate} directive @tab N @tab
-@item @code{allocate} clause @tab P @tab initial support
+@item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
       @tab P @tab Reverse offload unsupported
@@ -244,7 +247,7 @@ The OpenMP 4.5 specification is fully supported.
       device memory mapped by an array section @tab P @tab
 @item Mapping of Fortran pointer and allocatable variables, including pointer
       and allocatable components of variables
-      @tab P @tab Mapping of vars with allocatable components unspported
+      @tab P @tab Mapping of vars with allocatable components unsupported
 @item @code{defaultmap} extensions @tab Y @tab
 @item @code{declare mapper} directive @tab N @tab
 @item @code{omp_get_supported_active_levels} routine @tab Y @tab
@@ -273,7 +276,7 @@ The OpenMP 4.5 specification is fully supported.
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
 @item OpenMP directive as C++ attribute specifiers @tab Y @tab
-@item @code{omp_all_memory} reserved locator @tab N @tab
+@item @code{omp_all_memory} reserved locator @tab Y @tab
 @item @emph{target_device trait} in OpenMP Context @tab N @tab
 @item @code{target_device} selector set in context selectors @tab N @tab
 @item C/C++'s @code{declare variant} directive: elision support of
@@ -282,44 +285,43 @@ The OpenMP 4.5 specification is fully supported.
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
 @item device-specific ICV settings the environment variables @tab N @tab
-@item assume directive @tab N @tab
+@item @code{assume} directive @tab N @tab
 @item @code{nothing} directive @tab Y @tab
 @item @code{error} directive @tab Y @tab
 @item @code{masked} construct @tab Y @tab
 @item @code{scope} directive @tab Y @tab
 @item Loop transformation constructs @tab N @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
-      clauses of the taskloop construct @tab Y @tab
+      clauses of the @code{taskloop} construct @tab Y @tab
 @item @code{align} clause/modifier in @code{allocate} directive/clause
       and @code{allocator} directive @tab P @tab C/C++ on clause only
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
-@item @code{has_device_addr} clause to @code{target} construct @tab N @tab
-@item iterators in @code{target update} motion clauses and @code{map}
+@item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
+@item Iterators in @code{target update} motion clauses and @code{map}
       clauses @tab N @tab
-@item indirect calls to the device version of a procedure or function in
+@item Indirect calls to the device version of a procedure or function in
       @code{target} regions @tab N @tab
 @item @code{interop} directive @tab N @tab
 @item @code{omp_interop_t} object support in runtime routines @tab N @tab
-@item @code{nowait} clause in @code{taskwait} directive @tab N @tab
+@item @code{nowait} clause in @code{taskwait} directive @tab Y @tab
 @item Extensions to the @code{atomic} directive @tab Y @tab
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
-@item @code{inoutset} argument to the @code{depend} clause @tab N @tab
+@item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
       clause in C and C++ @tab Y @tab
 @item @code{present} argument to @code{defaultmap} clause @tab N @tab
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
       routines @tab Y @tab
-@item @code{omp_target_is_accessible} runtime routine @tab N @tab
+@item @code{omp_target_is_accessible} runtime routine @tab Y @tab
 @item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
-      runtime routines @tab N @tab
-@item @code{omp_get_mapped_ptr} runtime routine @tab N @tab
+      runtime routines @tab Y @tab
+@item @code{omp_get_mapped_ptr} runtime routine @tab Y @tab
 @item @code{omp_calloc}, @code{omp_realloc}, @code{omp_aligned_alloc} and
       @code{omp_aligned_calloc} runtime routines @tab Y @tab
 @item @code{omp_alloctrait_key_t} enum: @code{omp_atv_serialized} added,
       @code{omp_atv_default} changed @tab Y @tab
-@item @code{omp_display_env} runtime routine @tab P
-      @tab Not inside @code{target} regions
+@item @code{omp_display_env} runtime routine @tab Y @tab
 @item @code{ompt_scope_endpoint_t} enum: @code{ompt_scope_beginend} @tab N @tab
 @item @code{ompt_sync_region_t} enum additions @tab N @tab
 @item @code{ompt_state_t} enum: @code{ompt_state_wait_barrier_implementation}
@@ -341,6 +343,74 @@ The OpenMP 4.5 specification is fully supported.
 @item Support of structured block sequences in C/C++ @tab Y @tab
 @item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
       clause @tab Y @tab
+@item Support @code{begin/end declare target} syntax in C/C++ @tab N @tab
+@item Pointer predetermined firstprivate getting initialized
+to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
+@end multitable
+
+
+@node OpenMP 5.2
+@section OpenMP 5.2
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item @code{omp_in_explicit_task} routine and @emph{implicit-task-var} ICV
+      @tab N @tab
+@item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
+      namespaces @tab N/A @tab
+@item Clauses on @code{end} directive can be on directive @tab N @tab
+@item Deprecation of no-argument @code{destroy} clause on @code{depobj}
+      @tab N @tab
+@item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
+@item Deprecation of minus operator for reductions @tab N @tab
+@item Deprecation of separating @code{map} modifiers without comma @tab N @tab
+@item @code{declare mapper} with iterator and @code{present} modifiers
+      @tab N @tab
+@item If a matching mapped list item is not found in the data environment, the
+      pointer retains its original value @tab N @tab
+@item New @code{enter} clause as alias for @code{to} on declare target directive
+      @tab Y @tab
+@item Deprecation of @code{to} clause on declare target directive @tab N @tab
+@item Extended list of directives permitted in Fortran pure procedures
+      @tab N @tab
+@item New @code{allocators} directive for Fortran @tab N @tab
+@item Deprecation of @code{allocator} directive for Fortran
+      allocatables/pointers @tab N @tab
+@item Optional paired @code{end} directive with @code{dispatch} @tab N @tab
+@item New @code{memspace} and @code{traits} modifiers for @code{uses_allocators}
+      @tab N @tab
+@item Deprecation of traits array following the allocator_handle expression in
+      @code{uses_allocators} @tab N @tab
+@item New @code{otherwise} clause as alias for @code{default} on metadirectives
+      @tab N @tab
+@item Deprecation of @code{default} clause on metadirectives @tab N @tab
+@item Deprecation of delimited form of @code{declare target} @tab N @tab
+@item Reproducible semantics changed for @code{order(concurrent)} @tab N @tab
+@item @code{allocate} and @code{firstprivate} clauses on @code{scope}
+      @tab Y @tab
+@item @code{ompt_callback_work} @tab N @tab
+@item Default map-type for @code{map} clause in @code{target enter/exit data}
+      @tab Y @tab
+@item New @code{doacross} clause as alias for @code{depend} with
+      @code{source}/@code{sink} modifier @tab N @tab
+@item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
+      @tab N @tab
+@item @code{omp_cur_iteration} keyword @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new OpenMP 5.2 features
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item For Fortran, optional comma between directive and clause @tab N @tab
+@item Conforming device numbers and @code{omp_initial_device} and
+      @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
+@item Initial value of @emph{default-device-var} ICV with
+      @code{OMP_TARGET_OFFLOAD=mandatory} @tab N @tab
+@item @emph{interop_types} in any position of the modifier list for the @code{init} clause
+      of the @code{interop} construct @tab N @tab
 @end multitable
 
 
@@ -4203,6 +4273,37 @@ offloading devices (it's not clear if they should be):
 @item @code{acc_memcpy_from_device}, @code{acc_memcpy_from_device_async}
 @end itemize
 
+@c ---------------------------------------------------------------------
+@c Offload-Target Specifics
+@c ---------------------------------------------------------------------
+
+@node Offload-Target Specifics
+@chapter Offload-Target Specifics
+
+The following sections present notes on the offload-target specifics.
+
+@menu
+* OpenMP Context Selectors::
+@end menu
+
+@node OpenMP Context Selectors
+@section OpenMP Context Selectors
+
+@code{vendor} is always @code{gnu}. References are to the GCC manual.
+
+@multitable @columnfractions .60 .10 .25
+@headitem @code{arch} @tab @code{kind} @tab @code{isa}
+@item @code{intel_mic}, @code{x86}, @code{x86_64}, @code{i386}, @code{i486},
+      @code{i586}, @code{i686}, @code{ia32}
+      @tab @code{host}
+      @tab See @code{-m...} flags in ``x86 Options'' (without @code{-m})
+@item @code{amdgcn}, @code{gcn}
+      @tab @code{gpu}
+      @tab See @code{-march=} in ``AMD GCN Options''
+@item @code{nvptx}
+      @tab @code{gpu}
+      @tab See @code{-misa=} in ``Nvidia PTX Options''
+@end multitable
 
 
 @c ---------------------------------------------------------------------

@@ -402,7 +402,7 @@ routines, since these are architecture independent.
 If active synchronization is required for access to the variables in the
 shared passive package, then as described in the Ada Reference Manual, the
 package may contain protected objects used for this purpose. In this case
-a lock file (whose name is :file:`___lock` (three underscores)
+a lock file (whose name is :file:`___lock`, with three underscores)
 is created in the shared memory directory.
 
 .. index:: ___lock file (for shared passive packages)

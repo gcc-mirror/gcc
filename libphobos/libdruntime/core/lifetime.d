@@ -200,12 +200,10 @@ Returns: The newly constructed object.
 T emplace(T, Args...)(void[] chunk, auto ref Args args)
     if (is(T == class))
 {
-    import core.internal.traits : maxAlignment;
-
     enum classSize = __traits(classInstanceSize, T);
     assert(chunk.length >= classSize, "chunk size too small.");
 
-    enum alignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum alignment = __traits(classInstanceAlignment, T);
     assert((cast(size_t) chunk.ptr) % alignment == 0, "chunk is not aligned.");
 
     return emplace!T(cast(T)(chunk.ptr), forward!args);
@@ -242,9 +240,7 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
         int virtualGetI() { return i; }
     }
 
-    import core.internal.traits : classInstanceAlignment;
-
-    align(classInstanceAlignment!C) byte[__traits(classInstanceSize, C)] buffer;
+    align(__traits(classInstanceAlignment, C)) byte[__traits(classInstanceSize, C)] buffer;
     C c = emplace!C(buffer[], 42);
     assert(c.virtualGetI() == 42);
 }
@@ -290,7 +286,8 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
     }
 
     int var = 6;
-    align(__conv_EmplaceTestClass.alignof) ubyte[__traits(classInstanceSize, __conv_EmplaceTestClass)] buf;
+    align(__traits(classInstanceAlignment, __conv_EmplaceTestClass))
+        ubyte[__traits(classInstanceSize, __conv_EmplaceTestClass)] buf;
     auto support = (() @trusted => cast(__conv_EmplaceTestClass)(buf.ptr))();
 
     auto fromRval = emplace!__conv_EmplaceTestClass(support, 1);
@@ -1198,7 +1195,7 @@ pure nothrow @safe /* @nogc */ unittest
     }
     void[] buf;
 
-    static align(A.alignof) byte[__traits(classInstanceSize, A)] sbuf;
+    static align(__traits(classInstanceAlignment, A)) byte[__traits(classInstanceSize, A)] sbuf;
     buf = sbuf[];
     auto a = emplace!A(buf, 55);
     assert(a.x == 55 && a.y == 55);
@@ -1273,7 +1270,9 @@ void copyEmplace(S, T)(ref S source, ref T target) @system
         }
         else static if (__traits(hasCopyConstructor, T))
         {
-            emplace(cast(Unqual!(T)*) &target); // blit T.init
+            // https://issues.dlang.org/show_bug.cgi?id=22766
+            import core.internal.lifetime : emplaceInitializer;
+            emplaceInitializer(*(cast(Unqual!T*)&target));
             static if (__traits(isNested, T))
             {
                  // copy context pointer
@@ -1371,6 +1370,22 @@ void copyEmplace(S, T)(ref S source, ref T target) @system
 
     static assert(!__traits(compiles, copyEmplace(s, st)));
     static assert(!__traits(compiles, copyEmplace(ss, t)));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22766
+@system pure nothrow @nogc unittest
+{
+    static struct S
+    {
+        @disable this();
+        this(int) @safe pure nothrow @nogc{}
+        this(ref const(S) other) @safe pure nothrow @nogc {}
+    }
+
+    S s1 = S(1);
+    S s2 = void;
+    copyEmplace(s1, s2);
+    assert(s2 == S(1));
 }
 
 version (DigitalMars) version (X86) version (Posix) version = DMD_X86_Posix;
@@ -2108,6 +2123,65 @@ private T trustedMoveImpl(T)(return scope ref T source) @trusted
     move(x, x);
 }
 
+private enum bool hasContextPointers(T) = {
+    static if (__traits(isStaticArray, T))
+    {
+        return hasContextPointers!(typeof(T.init[0]));
+    }
+    else static if (is(T == struct))
+    {
+        import core.internal.traits : anySatisfy;
+        return __traits(isNested, T) || anySatisfy!(hasContextPointers, typeof(T.tupleof));
+    }
+    else return false;
+} ();
+
+@safe @nogc nothrow pure unittest
+{
+    static assert(!hasContextPointers!int);
+    static assert(!hasContextPointers!(void*));
+
+    static struct S {}
+    static assert(!hasContextPointers!S);
+    static assert(!hasContextPointers!(S[1]));
+
+    struct Nested
+    {
+        void foo() {}
+    }
+
+    static assert(hasContextPointers!Nested);
+    static assert(hasContextPointers!(Nested[1]));
+
+    static struct OneLevel
+    {
+        int before;
+        Nested n;
+        int after;
+    }
+
+    static assert(hasContextPointers!OneLevel);
+    static assert(hasContextPointers!(OneLevel[1]));
+
+    static struct TwoLevels
+    {
+        int before;
+        OneLevel o;
+        int after;
+    }
+
+    static assert(hasContextPointers!TwoLevels);
+    static assert(hasContextPointers!(TwoLevels[1]));
+
+    union U
+    {
+        Nested n;
+    }
+
+    // unions can have false positives, so this query ignores them
+    static assert(!hasContextPointers!U);
+}
+
 // target must be first-parameter, because in void-functions DMD + dip1000 allows it to take the place of a return-scope
 private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
 {
@@ -2119,9 +2193,10 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
 //              "Cannot move object with internal pointer unless `opPostMove` is defined.");
 //    }
 
+    import core.internal.traits : hasElaborateAssign, isAssignable, hasElaborateMove,
+                                  hasElaborateDestructor, hasElaborateCopyConstructor;
     static if (is(T == struct))
     {
-        import core.internal.traits;
 
         //  Unsafe when compiling without -preview=dip1000
         assert((() @trusted => &source !is &target)(), "source and target must not be identical");
@@ -2141,28 +2216,35 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
         // object in order to avoid double freeing and undue aliasing
         static if (hasElaborateDestructor!T || hasElaborateCopyConstructor!T)
         {
-            // If T is nested struct, keep original context pointer
-            static if (__traits(isNested, T))
-                enum sz = T.sizeof - (void*).sizeof;
-            else
-                enum sz = T.sizeof;
-
+            // If there are members that are nested structs, we must take care
+            // not to erase any context pointers, so we might have to recurse
             static if (__traits(isZeroInit, T))
-            {
-                import core.stdc.string : memset;
-                () @trusted { memset(&source, 0, sz); }();
-            }
+                wipe(source);
             else
-            {
-                import core.stdc.string : memcpy;
-                () @trusted { memcpy(&source, __traits(initSymbol, T).ptr, sz); }();
-            }
+                wipe(source, ref () @trusted { return *cast(immutable(T)*) __traits(initSymbol, T).ptr; } ());
         }
     }
     else static if (__traits(isStaticArray, T))
     {
-        for (size_t i = 0; i < source.length; ++i)
-            moveEmplaceImpl(target[i], source[i]);
+        static if (T.length)
+        {
+            static if (!hasElaborateMove!T &&
+                       !hasElaborateDestructor!T &&
+                       !hasElaborateCopyConstructor!T)
+            {
+                // Single blit if no special per-instance handling is required
+                () @trusted
+                {
+                    assert(source.ptr !is target.ptr, "source and target must not be identical");
+                    *cast(ubyte[T.sizeof]*) &target = *cast(ubyte[T.sizeof]*) &source;
+                } ();
+            }
+            else
+            {
+                for (size_t i = 0; i < source.length; ++i)
+                    moveEmplaceImpl(target[i], source[i]);
+            }
+        }
     }
     else
     {
@@ -2256,6 +2338,13 @@ pure nothrow @nogc @system unittest
 
     static assert(!__traits(compiles, f(ncarray)));
     f(move(ncarray));
+}
+
+//debug = PRINTF;
+
+debug(PRINTF)
+{
+    import core.stdc.stdio;
 }
 
 /// Implementation of `_d_delstruct` and `_d_delstructTrace`
@@ -2360,4 +2449,263 @@ template _d_delstructImpl(T)
     assert(o == null);
     assert(innerDtors == 2);
     assert(outerDtors == 1);
+}
+
+// issue 25552
+pure nothrow @system unittest
+{
+    int i;
+    struct Nested
+    {
+    pure nothrow @nogc:
+        char[1] arr; // char.init is not 0
+        ~this() { ++i; }
+    }
+
+    {
+        Nested[1] dst = void;
+        Nested[1] src = [Nested(['a'])];
+
+        moveEmplace(src, dst);
+        assert(i == 0);
+        assert(dst[0].arr == ['a']);
+        assert(src[0].arr == [char.init]);
+        assert(dst[0].tupleof[$-1] is src[0].tupleof[$-1]);
+    }
+    assert(i == 2);
+}
+
+// issue 25552
+@safe unittest
+{
+    int i;
+    struct Nested
+    {
+        ~this() { ++i; }
+    }
+
+    static struct NotNested
+    {
+        Nested n;
+    }
+
+    static struct Deep
+    {
+        NotNested nn;
+    }
+
+    static struct Deeper
+    {
+        NotNested[1] nn;
+    }
+
+    static assert(__traits(isZeroInit, Nested));
+    static assert(__traits(isZeroInit, NotNested));
+    static assert(__traits(isZeroInit, Deep));
+    static assert(__traits(isZeroInit, Deeper));
+
+    {
+        auto a = NotNested(Nested());
+        assert(a.n.tupleof[$-1]);
+        auto b = move(a);
+        assert(b.n.tupleof[$-1]);
+        assert(a.n.tupleof[$-1] is b.n.tupleof[$-1]);
+
+        auto c = Deep(NotNested(Nested()));
+        auto d = move(c);
+        assert(d.nn.n.tupleof[$-1]);
+        assert(c.nn.n.tupleof[$-1] is d.nn.n.tupleof[$-1]);
+
+        auto e = Deeper([NotNested(Nested())]);
+        auto f = move(e);
+        assert(f.nn[0].n.tupleof[$-1]);
+        assert(e.nn[0].n.tupleof[$-1] is f.nn[0].n.tupleof[$-1]);
+    }
+    assert(i == 6);
+}
+
+// issue 25552
+@safe unittest
+{
+    int i;
+    struct Nested
+    {
+        align(32) // better still find context pointer correctly!
+        int[3] stuff = [0, 1, 2];
+        ~this() { ++i; }
+    }
+
+    static struct NoAssign
+    {
+        int value;
+        @disable void opAssign(typeof(this));
+    }
+
+    static struct NotNested
+    {
+        int before = 42;
+        align(Nested.alignof * 4) // better still find context pointer correctly!
+        Nested n;
+        auto after = NoAssign(43);
+    }
+
+    static struct Deep
+    {
+        NotNested nn;
+    }
+
+    static struct Deeper
+    {
+        NotNested[1] nn;
+    }
+
+    static assert(!__traits(isZeroInit, Nested));
+    static assert(!__traits(isZeroInit, NotNested));
+    static assert(!__traits(isZeroInit, Deep));
+    static assert(!__traits(isZeroInit, Deeper));
+
+    {
+        auto a = NotNested(1, Nested([3, 4, 5]), NoAssign(2));
+        auto b = move(a);
+        assert(b.n.tupleof[$-1]);
+        assert(a.n.tupleof[$-1] is b.n.tupleof[$-1]);
+        assert(a.n.stuff == [0, 1, 2]);
+        assert(a.before == 42);
+        assert(a.after == NoAssign(43));
+
+        auto c = Deep(NotNested(1, Nested([3, 4, 5]), NoAssign(2)));
+        auto d = move(c);
+        assert(d.nn.n.tupleof[$-1]);
+        assert(c.nn.n.tupleof[$-1] is d.nn.n.tupleof[$-1]);
+        assert(c.nn.n.stuff == [0, 1, 2]);
+        assert(c.nn.before == 42);
+        assert(c.nn.after == NoAssign(43));
+
+        auto e = Deeper([NotNested(1, Nested([3, 4, 5]), NoAssign(2))]);
+        auto f = move(e);
+        assert(f.nn[0].n.tupleof[$-1]);
+        assert(e.nn[0].n.tupleof[$-1] is f.nn[0].n.tupleof[$-1]);
+        assert(e.nn[0].n.stuff == [0, 1, 2]);
+        assert(e.nn[0].before == 42);
+        assert(e.nn[0].after == NoAssign(43));
+    }
+    assert(i == 6);
+}
+
+// wipes source after moving
+pragma(inline, true)
+private void wipe(T, Init...)(return scope ref T source, ref const scope Init initializer) @trusted
+if (!Init.length ||
+    ((Init.length == 1) && (is(immutable T == immutable Init[0]))))
+{
+    static if (__traits(isStaticArray, T) && hasContextPointers!T)
+    {
+        for (auto i = 0; i < T.length; i++)
+            static if (Init.length)
+                wipe(source[i], initializer[0][i]);
+            else
+                wipe(source[i]);
+    }
+    else static if (is(T == struct) && hasContextPointers!T)
+    {
+        import core.internal.traits : anySatisfy;
+        static if (anySatisfy!(hasContextPointers, typeof(T.tupleof)))
+        {
+            static foreach (i; 0 .. T.tupleof.length - __traits(isNested, T))
+                static if (Init.length)
+                    wipe(source.tupleof[i], initializer[0].tupleof[i]);
+                else
+                    wipe(source.tupleof[i]);
+        }
+        else
+        {
+            static if (__traits(isNested, T))
+                enum sz = T.tupleof[$-1].offsetof;
+            else
+                enum sz = T.sizeof;
+
+            static if (Init.length)
+                *cast(ubyte[sz]*) &source = *cast(ubyte[sz]*) &initializer[0];
+            else
+                *cast(ubyte[sz]*) &source = 0;
+        }
+    }
+    else
+    {
+        import core.internal.traits : hasElaborateAssign, isAssignable;
+        static if (Init.length)
+        {
+            static if (hasElaborateAssign!T || !isAssignable!T)
+                *cast(ubyte[T.sizeof]*) &source = *cast(ubyte[T.sizeof]*) &initializer[0];
+            else
+                source = *cast(T*) &initializer[0];
+        }
+        else
+        {
+            *cast(ubyte[T.sizeof]*) &source = 0;
+        }
+    }
+}
+
+/**
+ * Allocate an exception of type `T` from the exception pool.
+ * `T` must be `Throwable` or derived from it and cannot be a COM or C++ class.
+ *
+ * Note:
+ *  This function does not call the constructor of `T` because that would require
+ *  `forward!args`, which causes errors with -dip1008. This inconvenience will be
+ *  removed once -dip1008 works as intended.
+ *
+ * Returns:
+ *   allocated instance of type `T`
+ */
+T _d_newThrowable(T)() @trusted
+    if (is(T : Throwable) && __traits(getLinkage, T) == "D")
+{
+    debug(PRINTF) printf("_d_newThrowable(%s)\n", cast(char*) T.stringof);
+
+    import core.memory : pureMalloc;
+    auto init = __traits(initSymbol, T);
+    void* p = pureMalloc(init.length);
+    if (!p)
+    {
+        import core.exception : onOutOfMemoryError;
+        onOutOfMemoryError();
+    }
+
+    debug(PRINTF) printf(" p = %p\n", p);
+
+    // initialize it
+    p[0 .. init.length] = init[];
+
+    import core.internal.traits : hasIndirections;
+    if (hasIndirections!T)
+    {
+        // Inform the GC about the pointers in the object instance
+        import core.memory : GC;
+        GC.addRange(p, init.length);
+    }
+
+    debug(PRINTF) printf("initialization done\n");
+
+    (cast(Throwable) p).refcount() = 1;
+
+    return cast(T) p;
+}
+
+@system unittest
+{
+    class E : Exception
+    {
+        this(string msg = "", Throwable nextInChain = null)
+        {
+            super(msg, nextInChain);
+        }
+    }
+
+    Throwable exc = _d_newThrowable!Exception();
+    Throwable e = _d_newThrowable!E();
+
+    assert(exc.refcount() == 1);
+    assert(e.refcount() == 1);
 }

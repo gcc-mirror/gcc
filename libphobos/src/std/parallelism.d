@@ -1039,6 +1039,11 @@ uint totalCPUsImpl() @nogc nothrow @trusted
         import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
         return cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
     }
+    else version (Hurd)
+    {
+        import core.sys.posix.unistd : _SC_NPROCESSORS_ONLN, sysconf;
+        return cast(uint) sysconf(_SC_NPROCESSORS_ONLN);
+    }
     else
     {
         static assert(0, "Don't know how to get N CPUs on this OS.");

@@ -12,6 +12,7 @@ struct foo
 };
 
 char buf[100];
+char buf2[100];
 
 /* memset with tainted size.  */
 
@@ -29,4 +30,12 @@ void test_1 (FILE *f)
     
     // TOOD: better messages for state changes
   }
+}
+
+/* memcpy with tainted size.  */
+
+void __attribute__((tainted_args))
+test_2 (size_t sz)
+{
+  memcpy (buf, buf2, sz); /* { dg-warning "use of attacker-controlled value 'sz' as size without upper-bounds checking" } */
 }

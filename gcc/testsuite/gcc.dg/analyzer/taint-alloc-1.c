@@ -1,5 +1,6 @@
 // TODO: remove need for this option
 /* { dg-additional-options "-fanalyzer-checker=taint" } */
+/* { dg-require-effective-target alloca } */
 
 #include "analyzer-decls.h"
 #include <stdio.h>
@@ -24,6 +25,7 @@ void *test_1 (FILE *f)
     return malloc (tmp.sz); /* { dg-warning "use of attacker-controlled value 'tmp\\.sz' as allocation size without upper-bounds checking" "warning" } */
     /* { dg-message "23: \\(\[0-9\]+\\) 'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } .-1 } */
     /* { dg-message "\\(\[0-9\]+\\) use of attacker-controlled value 'tmp\\.sz' as allocation size without upper-bounds checking" "final event" { target *-*-* } .-2 } */
+    /* { dg-message "heap-based allocation" "memory space" { target *-*-* } .-3 } */
     
     // TOOD: better messages for state changes
   }
@@ -45,6 +47,7 @@ void *test_2 (FILE *f)
       char buf[tmp.sz]; /* { dg-warning "use of attacker-controlled value 'tmp\\.sz' as allocation size without upper-bounds checking" "warning" } */
       /* { dg-message "\\(\[0-9\]+\\) 'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } .-1 } */
       /* { dg-message "\\(\[0-9\]+\\) use of attacker-controlled value 'tmp\\.sz' as allocation size without upper-bounds checking" "final event" { target *-*-* } .-2 } */
+      /* { dg-message "stack-based allocation" "memory space" { target *-*-* } .-3 } */
       fread (buf, tmp.sz, 1, f);
     }
     

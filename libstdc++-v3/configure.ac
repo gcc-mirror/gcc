@@ -172,7 +172,7 @@ GLIBCXX_ENABLE_LONG_LONG([yes])
 GLIBCXX_ENABLE_WCHAR_T([yes])
 GLIBCXX_ENABLE_C99([yes])
 GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
-GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0 -D_GLIBCXX_ASSERTIONS"])
+GLIBCXX_ENABLE_DEBUG_FLAGS(["-g3 -O0 -D_GLIBCXX_ASSERTIONS"])
 GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
@@ -353,6 +353,30 @@ else
 
     AC_DEFINE(HAVE_ICONV)
     AC_DEFINE(HAVE_MEMALIGN)
+
+    case "${target}" in
+      *-rtems*)
+        case "${target}" in
+          bfin* | lm32* | mips* | moxie* | or1k* | v850*)
+            ;;
+          *)
+            AC_DEFINE(HAVE_TLS)
+            ;;
+        esac
+        AC_DEFINE(HAVE_ALIGNED_ALLOC)
+        AC_DEFINE(HAVE_AT_QUICK_EXIT)
+        AC_DEFINE(HAVE_LINK)
+        AC_DEFINE(HAVE_QUICK_EXIT)
+        AC_DEFINE(HAVE_READLINK)
+        AC_DEFINE(HAVE_SETENV)
+        AC_DEFINE(HAVE_SLEEP)
+        AC_DEFINE(HAVE_SOCKATMARK)
+        AC_DEFINE(HAVE_STRERROR_L)
+        AC_DEFINE(HAVE_SYMLINK)
+        AC_DEFINE(HAVE_TRUNCATE)
+        AC_DEFINE(HAVE_USLEEP)
+        ;;
+    esac
   elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
   fi

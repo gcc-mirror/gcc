@@ -734,12 +734,9 @@ friend_accessible_p (tree scope, tree decl, tree type, tree otype)
 	  && friend_accessible_p (DECL_CONTEXT (scope), decl, type, otype))
 	return 1;
       /* Perhaps SCOPE is a friend function defined inside a class from which
-	 DECL is accessible.  Checking this is necessary only when the class
-	 is dependent, for otherwise add_friend will already have added the
-	 class to SCOPE's DECL_BEFRIENDING_CLASSES.  */
+	 DECL is accessible.  */
       if (tree fctx = DECL_FRIEND_CONTEXT (scope))
-	if (dependent_type_p (fctx)
-	    && protected_accessible_p (decl, fctx, type, otype))
+	if (friend_accessible_p (fctx, decl, type, otype))
 	  return 1;
     }
 
@@ -941,8 +938,6 @@ struct lookup_field_info {
   tree ambiguous;
   /* If nonzero, we are looking for types, not data members.  */
   int want_type;
-  /* If something went wrong, a message indicating what.  */
-  const char *errstr;
 };
 
 /* True for a class member means that it is shared between all objects
@@ -1055,7 +1050,6 @@ lookup_field_r (tree binfo, void *data)
 	  /* Add the new value.  */
 	  lfi->ambiguous = tree_cons (NULL_TREE, nval, lfi->ambiguous);
 	  TREE_TYPE (lfi->ambiguous) = error_mark_node;
-	  lfi->errstr = G_("request for member %qD is ambiguous");
 	}
     }
   else
@@ -1127,8 +1121,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
      checks.  Whereas rval is only set if a proper (not hidden)
      non-function member is found.  */
 
-  const char *errstr = 0;
-
   if (name == error_mark_node
       || xbasetype == NULL_TREE
       || xbasetype == error_mark_node)
@@ -1172,20 +1164,26 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   rval_binfo = lfi.rval_binfo;
   if (rval_binfo)
     type = BINFO_TYPE (rval_binfo);
-  errstr = lfi.errstr;
 
-  /* If we are not interested in ambiguities, don't report them;
-     just return NULL_TREE.  */
-  if (!protect && lfi.ambiguous)
-    return NULL_TREE;
-
-  if (protect == 2)
+  if (lfi.ambiguous)
     {
-      if (lfi.ambiguous)
+      if (protect == 0)
+	return NULL_TREE;
+      else if (protect == 1)
+	{
+	  if (complain & tf_error)
+	    {
+	      error ("request for member %qD is ambiguous", name);
+	      print_candidates (lfi.ambiguous);
+	    }
+	  return error_mark_node;
+	}
+      else if (protect == 2)
 	return lfi.ambiguous;
-      else
-	protect = 0;
     }
+
+  if (!rval)
+    return NULL_TREE;
 
   /* [class.access]
 
@@ -1206,8 +1204,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 
     only the first call to "f" is valid.  However, if the function is
     static, we can check.  */
-  if (rval && protect 
-      && !really_overloaded_fn (rval))
+  if (protect == 1 && !really_overloaded_fn (rval))
     {
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       decl = strip_using_decl (decl);
@@ -1216,21 +1213,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 	  && !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain, afi))
-	rval = error_mark_node;
+	return error_mark_node;
     }
 
-  if (errstr && protect)
-    {
-      if (complain & tf_error)
-	{
-	  error (errstr, name, type);
-	  if (lfi.ambiguous)
-	    print_candidates (lfi.ambiguous);
-	}
-      rval = error_mark_node;
-    }
-
-  if (rval && is_overloaded_fn (rval)
+  if (is_overloaded_fn (rval)
       /* Don't use a BASELINK for class-scope deduction guides since
 	 they're not actually member functions.  */
       && !dguide_name_p (name))
@@ -1274,6 +1260,13 @@ lookup_field_fuzzy_info::fuzzy_lookup_field (tree type)
 
       if (is_lambda_ignored_entity (field))
 	continue;
+
+      /* Ignore special identifiers with space at the end like cdtor or
+	 conversion op identifiers.  */
+      if (TREE_CODE (DECL_NAME (field)) == IDENTIFIER_NODE)
+	if (unsigned int len = IDENTIFIER_LENGTH (DECL_NAME (field)))
+	  if (IDENTIFIER_POINTER (DECL_NAME (field))[len - 1] == ' ')
+	    continue;
 
       m_candidates.safe_push (DECL_NAME (field));
     }

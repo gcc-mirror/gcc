@@ -206,7 +206,8 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_XSAVE | OPTION_MASK_ISA_XSAVEOPT_UNSET \
    | OPTION_MASK_ISA_XSAVES_UNSET | OPTION_MASK_ISA_XSAVEC_UNSET \
    | OPTION_MASK_ISA_AVX_UNSET)
-#define OPTION_MASK_ISA2_XSAVE_UNSET OPTION_MASK_ISA2_AMX_TILE_UNSET
+#define OPTION_MASK_ISA2_XSAVE_UNSET \
+  (OPTION_MASK_ISA2_AVX2_UNSET | OPTION_MASK_ISA2_AMX_TILE_UNSET)
 #define OPTION_MASK_ISA_XSAVEOPT_UNSET OPTION_MASK_ISA_XSAVEOPT
 #define OPTION_MASK_ISA_AVX2_UNSET \
   (OPTION_MASK_ISA_AVX2 | OPTION_MASK_ISA_AVX512F_UNSET)
@@ -314,13 +315,12 @@ along with GCC; see the file COPYING3.  If not see
    | OPTION_MASK_ISA_SSE_UNSET)
 
 #define OPTION_MASK_ISA2_AVX512F_UNSET \
-  (OPTION_MASK_ISA2_AVX512BF16_UNSET \
+  (OPTION_MASK_ISA2_AVX512BW_UNSET \
    | OPTION_MASK_ISA2_AVX5124FMAPS_UNSET \
    | OPTION_MASK_ISA2_AVX5124VNNIW_UNSET \
-   | OPTION_MASK_ISA2_AVX512VP2INTERSECT_UNSET \
-   | OPTION_MASK_ISA2_AVX512FP16_UNSET)
+   | OPTION_MASK_ISA2_AVX512VP2INTERSECT_UNSET)
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
-  (OPTION_MASK_ISA2_AVX512F_UNSET)
+  OPTION_MASK_ISA2_SSE_UNSET
 #define OPTION_MASK_ISA2_AVX_UNSET OPTION_MASK_ISA2_AVX2_UNSET
 #define OPTION_MASK_ISA2_SSE4_2_UNSET OPTION_MASK_ISA2_AVX_UNSET
 #define OPTION_MASK_ISA2_SSE4_1_UNSET OPTION_MASK_ISA2_SSE4_2_UNSET
@@ -1714,16 +1714,21 @@ ix86_option_init_struct (struct gcc_options *opts)
    field in the TCB, so they cannot be used together.  */
 
 static bool
-ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED,
+ix86_supports_split_stack (bool report,
 			   struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
+#if defined(TARGET_THREAD_SPLIT_STACK_OFFSET) && defined(OPTION_GLIBC_P)
+  if (!OPTION_GLIBC_P (opts))
+#endif
+    {
+      if (report)
+	error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
+      return false;
+    }
+
   bool ret = true;
 
-#ifndef TARGET_THREAD_SPLIT_STACK_OFFSET
-  if (report)
-    error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
-  ret = false;
-#else
+#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     {
       if (report)
@@ -1811,6 +1816,7 @@ const char *const processor_names[] =
   "alderlake",
   "rocketlake",
   "intel",
+  "lujiazui",
   "geode",
   "k6",
   "athlon",
@@ -1989,6 +1995,13 @@ const pta processor_alias_table[] =
   {"nano-x4", PROCESSOR_K8, CPU_K8,
     PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
       | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR, 0, P_NONE},
+  {"lujiazui", PROCESSOR_LUJIAZUI, CPU_LUJIAZUI,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+	| PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_BMI | PTA_BMI2
+	| PTA_PRFCHW | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE
+	| PTA_RDRND | PTA_MOVBE | PTA_ADX | PTA_RDSEED | PTA_POPCNT,
+	M_CPU_SUBTYPE (ZHAOXIN_FAM7H_LUJIAZUI), P_NONE},
   {"k8", PROCESSOR_K8, CPU_K8,
     PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
       | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR, 0, P_NONE},

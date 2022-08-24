@@ -32,14 +32,12 @@
 
 #pragma GCC system_header
 
-#pragma GCC visibility push(default)
-
 #include <bits/c++config.h>
 #include <bits/exception.h>
 
 extern "C++" {
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   /** @addtogroup exceptions
    *  @{
@@ -79,7 +77,7 @@ namespace std
    *  abandoned for any reason.  It can also be called by the user.  */
   void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));
 
-#if __cplusplus < 201703L || _GLIBCXX_USE_DEPRECATED
+#if __cplusplus < 201703L || (__cplusplus <= 202002L && _GLIBCXX_USE_DEPRECATED)
   /// If you write a replacement %unexpected handler, it must be of this type.
   typedef void (*_GLIBCXX11_DEPRECATED unexpected_handler) ();
 
@@ -120,7 +118,7 @@ namespace std
    *  %exception can result in a call of 1terminate()`
    *  (15.5.1).'
    */
-  _GLIBCXX17_DEPRECATED
+  _GLIBCXX17_DEPRECATED_SUGGEST("std::uncaught_exceptions()")
   bool uncaught_exception() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
 #if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++98
@@ -135,7 +133,7 @@ namespace std
   /// @} group exceptions
 } // namespace std
 
-namespace __gnu_cxx
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
@@ -161,8 +159,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 } // extern "C++"
-
-#pragma GCC visibility pop
 
 #if (__cplusplus >= 201103L)
 #include <bits/exception_ptr.h>

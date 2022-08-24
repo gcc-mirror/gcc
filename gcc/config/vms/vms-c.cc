@@ -41,7 +41,7 @@ vms_pragma_nostandard (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree x;
 
   if (pragma_lex (&x) != CPP_EOF)
-    warning (OPT_Wpragmas, "junk at end of #pragma __nostandard");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma __nostandard%>");
 }
 
 /* '#pragma __standard' is simply ignored.  */
@@ -52,7 +52,7 @@ vms_pragma_standard (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree x;
 
   if (pragma_lex (&x) != CPP_EOF)
-    warning (OPT_Wpragmas, "junk at end of #pragma __standard");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma __standard%>");
 }
 
 /* Saved member alignment.  */
@@ -271,13 +271,13 @@ vms_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
         pragma_extern_prefix = saved_extern_prefix;
       else
         warning (OPT_Wpragmas,
-                 "malformed '#pragma __extern_prefix', ignoring");
+                 "malformed %<#pragma __extern_prefix%>, ignoring");
       return;
     }
   else if (tok != CPP_STRING)
     {
       warning (OPT_Wpragmas,
-               "malformed '#pragma __extern_prefix', ignoring");
+               "malformed %<#pragma __extern_prefix%>, ignoring");
     }
   else
     {

@@ -10,7 +10,7 @@
 #ifndef _PSTL_GLUE_ALGORITHM_DEFS_H
 #define _PSTL_GLUE_ALGORITHM_DEFS_H
 
-#include <functional>
+#include <bits/stl_pair.h>
 
 #include "execution_defs.h"
 

@@ -593,8 +593,8 @@ compute_distributive_range (tree type, value_range &op0_range,
   gcc_assert (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type));
   if (result_range)
     {
-      range_operator *op = range_op_handler (code, type);
-      op->fold_range (*result_range, type, op0_range, op1_range);
+      range_op_handler op (code, type);
+      op.fold_range (*result_range, type, op0_range, op1_range);
     }
 
   /* The distributive property guarantees that if TYPE is no narrower
@@ -639,10 +639,10 @@ compute_distributive_range (tree type, value_range &op0_range,
   range_cast (op0_range, ssizetype);
   range_cast (op1_range, ssizetype);
   value_range wide_range;
-  range_operator *op = range_op_handler (code, ssizetype);
+  range_op_handler op (code, ssizetype);
   bool saved_flag_wrapv = flag_wrapv;
   flag_wrapv = 1;
-  op->fold_range (wide_range, ssizetype, op0_range, op1_range);
+  op.fold_range (wide_range, ssizetype, op0_range, op1_range);
   flag_wrapv = saved_flag_wrapv;
   if (wide_range.num_pairs () != 1 || !range_int_cst_p (&wide_range))
     return false;
@@ -2968,6 +2968,25 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
      disambiguation.  */
   if (!loop_nest)
     {
+      tree tree_size_a = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (a)));
+      tree tree_size_b = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (b)));
+
+      if (DR_BASE_ADDRESS (a)
+	  && DR_BASE_ADDRESS (b)
+	  && operand_equal_p (DR_BASE_ADDRESS (a), DR_BASE_ADDRESS (b))
+	  && operand_equal_p (DR_OFFSET (a), DR_OFFSET (b))
+	  && poly_int_tree_p (tree_size_a)
+	  && poly_int_tree_p (tree_size_b)
+	  && !ranges_maybe_overlap_p (wi::to_widest (DR_INIT (a)),
+				      wi::to_widest (tree_size_a),
+				      wi::to_widest (DR_INIT (b)),
+				      wi::to_widest (tree_size_b)))
+	{
+	  gcc_assert (integer_zerop (DR_STEP (a))
+		      && integer_zerop (DR_STEP (b)));
+	  return false;
+	}
+
       aff_tree off1, off2;
       poly_widest_int size1, size2;
       get_inner_reference_aff (DR_REF (a), &off1, &size1);

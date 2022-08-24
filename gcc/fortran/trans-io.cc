@@ -737,7 +737,6 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
 static void
 gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
 {
-  tree size;
 
   if (e->rank == 0)
     {
@@ -755,12 +754,13 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
       array = sym->backend_decl;
       type = TREE_TYPE (array);
 
+      tree elts_count;
       if (GFC_ARRAY_TYPE_P (type))
-	size = GFC_TYPE_ARRAY_SIZE (type);
+	elts_count = GFC_TYPE_ARRAY_SIZE (type);
       else
 	{
 	  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-	  size = gfc_conv_array_stride (array, rank);
+	  tree stride = gfc_conv_array_stride (array, rank);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
 				 gfc_conv_array_ubound (array, rank),
@@ -768,23 +768,49 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
 	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
 				 gfc_array_index_type, tmp,
 				 gfc_index_one_node);
+	  elts_count = fold_build2_loc (input_location, MULT_EXPR,
+					gfc_array_index_type, tmp, stride);
+	}
+      gcc_assert (elts_count);
+
+      tree elt_size = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+      elt_size = fold_convert (gfc_array_index_type, elt_size);
+
+      tree size;
+      if (TREE_CODE (se->expr) == ARRAY_REF)
+	{
+	  tree index = TREE_OPERAND (se->expr, 1);
+	  index = fold_convert (gfc_array_index_type, index);
+
+	  elts_count = fold_build2_loc (input_location, MINUS_EXPR,
+					gfc_array_index_type,
+					elts_count, index);
+
 	  size = fold_build2_loc (input_location, MULT_EXPR,
-				  gfc_array_index_type, tmp, size);
+				  gfc_array_index_type, elts_count, elt_size);
+	}
+      else
+	{
+	  gcc_assert (TREE_CODE (se->expr) == INDIRECT_REF);
+	  tree ptr = TREE_OPERAND (se->expr, 0);
+
+	  gcc_assert (TREE_CODE (ptr) == POINTER_PLUS_EXPR);
+	  tree offset = fold_convert_loc (input_location, gfc_array_index_type,
+					  TREE_OPERAND (ptr, 1));
+
+	  size = fold_build2_loc (input_location, MULT_EXPR,
+				  gfc_array_index_type, elts_count, elt_size);
+	  size = fold_build2_loc (input_location, MINUS_EXPR,
+				  gfc_array_index_type, size, offset);
 	}
       gcc_assert (size);
 
-      size = fold_build2_loc (input_location, MINUS_EXPR,
-			      gfc_array_index_type, size,
-			      TREE_OPERAND (se->expr, 1));
       se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
-      tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-      size = fold_build2_loc (input_location, MULT_EXPR,
-			      gfc_array_index_type, size,
-			      fold_convert (gfc_array_index_type, tmp));
       se->string_length = fold_convert (gfc_charlen_type_node, size);
       return;
     }
 
+  tree size;
   gfc_conv_array_parameter (se, e, true, NULL, NULL, &size);
   se->string_length = fold_convert (gfc_charlen_type_node, size);
 }

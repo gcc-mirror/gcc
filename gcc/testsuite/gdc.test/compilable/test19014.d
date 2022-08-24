@@ -8,5 +8,5 @@ void main()
     {
     	static import core.stdc.math;
     }
-    static assert(!__traits(compiles, core.stdc.math.cos(0))); 
+    static assert(!__traits(compiles, core.stdc.math.cos(0)));
 }

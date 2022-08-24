@@ -89,7 +89,7 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED,
     {
     case 1:
       if (strcasecmp (argv[0], "default"))
-	error ("unexpected argument to msp430_select_hwmult_lib: %s", argv[0]);
+	error ("unexpected argument to %<msp430_select_hwmult_lib%>: %s", argv[0]);
       break;
 
     default:
@@ -138,12 +138,12 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED,
 	    }
 	}
       else
-	error ("unexpected first argument to msp430_select_hwmult_lib: %s",
+	error ("unexpected first argument to %<msp430_select_hwmult_lib%>: %s",
 	       argv[0]);
       break;
 
     case 0:
-      error ("msp430_select_hwmult_lib needs one or more arguments");
+      error ("%<msp430_select_hwmult_lib%> needs one or more arguments");
       break;
     }
 

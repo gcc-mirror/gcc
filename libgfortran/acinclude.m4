@@ -261,44 +261,62 @@ __mingw_snprintf (NULL, 0, "%d\n", 1);
   fi
 ])
 
-dnl Check whether we have a __float128 type
+dnl Check whether we have a __float128 and _Float128 type
 AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   LIBQUADSPEC=
+  LIBQUADLIB=
+  LIBQUADLIB_DEP=
+  LIBQUADINCLUDE=
+  USE_IEC_60559=no
 
   if test "x$enable_libquadmath_support" != xno; then
 
-  AC_CACHE_CHECK([whether we have a usable __float128 type],
+  AC_CACHE_CHECK([whether we have a usable _Float128 type],
                  libgfor_cv_have_float128, [
    GCC_TRY_COMPILE_OR_LINK([
-    typedef _Complex float __attribute__((mode(TC))) __complex128;
-
-    __float128 foo (__float128 x)
+    _Float128 foo (_Float128 x)
     {
-
-     __complex128 z1, z2;
+     _Complex _Float128 z1, z2;
 
      z1 = x;
-     z2 = x / 7.Q;
+     z2 = x / 7.F128;
      z2 /= z1;
 
-     return (__float128) z2;
+     return (_Float128) z2;
     }
 
-    __float128 bar (__float128 x)
+    _Float128 bar (_Float128 x)
     {
-      return x * __builtin_huge_valq ();
+      return x * __builtin_huge_valf128 ();
+    }
+
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
     }
   ],[
+    foo (1.2F128);
+    bar (1.2F128);
+    baz (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
+    baz (1.2Q);
   ],[
     libgfor_cv_have_float128=yes
   ],[
     libgfor_cv_have_float128=no
 ])])
 
+    if test "x$have_iec_60559_libc_support$enable_libquadmath_support$libgfor_cv_have_float128" = xyesdefaultyes; then
+      USE_IEC_60559=yes
+    fi
+
+
   if test "x$libgfor_cv_have_float128" = xyes; then
-    AC_DEFINE(HAVE_FLOAT128, 1, [Define if have a usable __float128 type.])
+    if test "x$USE_IEC_60559" = xyes; then
+      AC_DEFINE(USE_IEC_60559, 1, [Define if IEC 60559 *f128 APIs should be used for _Float128.])
+    fi
+    AC_DEFINE(HAVE_FLOAT128, 1, [Define if target has usable _Float128 and __float128 types.])
 
     dnl Check whether -Wl,--as-needed resp. -Wl,-zignore is supported
     dnl 
@@ -338,27 +356,52 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
       ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
     ])
 
+    dnl Determine -Bstatic ... -Bdynamic etc. support from gfortran -### stderr.
+    touch conftest1.$ac_objext conftest2.$ac_objext
+    LQUADMATH=-lquadmath
+    $FC -static-libgfortran -### -o conftest \
+	conftest1.$ac_objext -lgfortran conftest2.$ac_objext 2>&1 >/dev/null \
+	| grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
+    if grep "conftest1.$ac_objext.* -Bstatic -lgfortran -Bdynamic .*conftest2.$ac_objext" \
+       conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
+    elif grep "conftest1.$ac_objext.* -bstatic -lgfortran -bdynamic .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
+    elif grep "conftest1.$ac_objext.* -aarchive_shared -lgfortran -adefault .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
+    elif grep "conftest1.$ac_objext.*libgfortran.a .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
+    fi
+    rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
+
     dnl For static libgfortran linkage, depend on libquadmath only if needed.
+    dnl If using *f128 APIs from libc/libm, depend on libquadmath only if needed
+    dnl even for dynamic libgfortran linkage, and don't link libgfortran against
+    dnl -lquadmath.
     if test "x$libgfor_cv_have_as_needed" = xyes; then
-      LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} -lquadmath %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
+      if test "x$USE_IEC_60559" = xyes; then
+	LIBQUADSPEC="$libgfor_cv_as_needed_option $LQUADMATH $libgfor_cv_no_as_needed_option"
+      else
+	LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} $LQUADMATH %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
+      fi
     else
-      LIBQUADSPEC="-lquadmath"
+      LIBQUADSPEC="$LQUADMATH"
     fi
-    if test -f ../libquadmath/libquadmath.la; then
-      LIBQUADLIB=../libquadmath/libquadmath.la
-      LIBQUADLIB_DEP=../libquadmath/libquadmath.la
-      LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
-    else
-      LIBQUADLIB="-lquadmath"
-      LIBQUADLIB_DEP=
-      LIBQUADINCLUDE=
+    if test "x$USE_IEC_60559" != xyes; then
+      if test -f ../libquadmath/libquadmath.la; then
+	LIBQUADLIB=../libquadmath/libquadmath.la
+	LIBQUADLIB_DEP=../libquadmath/libquadmath.la
+	LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+      else
+	LIBQUADLIB="-lquadmath"
+      fi
     fi
-  fi
   else
-    # for --disable-quadmath
-    LIBQUADLIB=
-    LIBQUADLIB_DEP=
-    LIBQUADINCLUDE=
+    USE_IEC_60559=no
+  fi
   fi
 
   dnl For the spec file
@@ -366,9 +409,7 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   AC_SUBST(LIBQUADLIB)
   AC_SUBST(LIBQUADLIB_DEP)
   AC_SUBST(LIBQUADINCLUDE)
-
-  dnl We need a conditional for the Makefile
-  AM_CONDITIONAL(LIBGFOR_BUILD_QUAD, [test "x$libgfor_cv_have_float128" = xyes])
+  AC_SUBST(USE_IEC_60559)
 ])
 
 
@@ -517,8 +558,8 @@ AC_DEFUN([LIBGFOR_CHECK_MATH_IEEE128],
   AC_REQUIRE([GCC_CHECK_MATH_HEADERS])
   AC_CACHE_CHECK([for $1], [gcc_cv_math_func_$1],
 		 [AC_LINK_IFELSE([AC_LANG_SOURCE([
-__float128 $1 (__float128);
-__float128 (*ptr)(__float128) = $1;
+_Float128 $1 (_Float128);
+_Float128 (*ptr)(_Float128) = $1;
 
 int
 main ()

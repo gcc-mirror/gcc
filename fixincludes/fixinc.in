@@ -258,12 +258,11 @@ then echo "All directories (including links to directories):"
      echo $all_dirs
 fi
 
-for file in $all_dirs; do
-  rm -rf $LIB/$file
-  if [ ! -d $LIB/$file ]
-  then mkdir $LIB/$file
-  fi
-done
+OLDDIR=`${PWDCMD}`
+cd $LIB
+echo "$all_dirs" | xargs mkdir -p
+cd ${OLDDIR}
+
 mkdir $LIB/root
 
 # # # # # # # # # # # # # # # # # # # # #

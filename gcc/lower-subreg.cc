@@ -1769,8 +1769,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_split_wide_types != 0; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_split_wide_types != 0; }
+  unsigned int execute (function *) final override
     {
       decompose_multiword_subregs (false);
       return 0;
@@ -1811,9 +1811,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_split_wide_types
-					  && flag_split_wide_types_early; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override
+  {
+    return flag_split_wide_types && flag_split_wide_types_early;
+  }
+  unsigned int execute (function *) final override
     {
       decompose_multiword_subregs (true);
       return 0;
@@ -1854,8 +1856,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_split_wide_types; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_split_wide_types; }
+  unsigned int execute (function *) final override
     {
       decompose_multiword_subregs (true);
       return 0;

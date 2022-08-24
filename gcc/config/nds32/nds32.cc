@@ -3476,35 +3476,35 @@ nds32_print_operand (FILE *stream, rtx x, int code)
     case 'R': /* cctl valck  */
       /* Note the cctl divide to 5 group and share the same name table.  */
       if (op_value < 0 || op_value > 4)
-	error ("CCTL intrinsic function subtype out of range!");
+	error ("CCTL intrinsic function subtype out of range");
       fprintf (stream, "%s", nds32_cctl_names[op_value]);
       return;
 
     case 'T': /* cctl idxwbinv  */
       /* Note the cctl divide to 5 group and share the same name table.  */
       if (op_value < 0 || op_value > 4)
-	error ("CCTL intrinsic function subtype out of range!");
+	error ("CCTL intrinsic function subtype out of range");
       fprintf (stream, "%s", nds32_cctl_names[op_value + 4]);
       return;
 
     case 'U': /* cctl vawbinv  */
       /* Note the cctl divide to 5 group and share the same name table.  */
       if (op_value < 0 || op_value > 4)
-	error ("CCTL intrinsic function subtype out of range!");
+	error ("CCTL intrinsic function subtype out of range");
       fprintf (stream, "%s", nds32_cctl_names[op_value + 8]);
       return;
 
     case 'X': /* cctl idxread  */
       /* Note the cctl divide to 5 group and share the same name table.  */
       if (op_value < 0 || op_value > 4)
-	error ("CCTL intrinsic function subtype out of range!");
+	error ("CCTL intrinsic function subtype out of range");
       fprintf (stream, "%s", nds32_cctl_names[op_value + 12]);
       return;
 
     case 'W': /* cctl idxwitre  */
       /* Note the cctl divide to 5 group and share the same name table.  */
       if (op_value < 0 || op_value > 4)
-	error ("CCTL intrinsic function subtype out of range!");
+	error ("CCTL intrinsic function subtype out of range");
       fprintf (stream, "%s", nds32_cctl_names[op_value + 16]);
       return;
 
@@ -3941,7 +3941,7 @@ nds32_insert_attributes (tree decl, tree *attributes)
       tree new_attrs = *attributes;
 
       if (TARGET_LINUX_ABI)
-	error("cannot use indirect_call attribute under linux toolchain");
+	error ("cannot use %<indirect_call%> attribute under linux toolchain");
 
       if (lookup_attribute ("noinline", new_attrs) == NULL)
 	new_attrs = tree_cons (get_identifier ("noinline"), NULL, new_attrs);
@@ -3949,7 +3949,7 @@ nds32_insert_attributes (tree decl, tree *attributes)
 	new_attrs = tree_cons (get_identifier ("noclone"), NULL, new_attrs);
 
       if (!TREE_PUBLIC (decl))
-	error ("indirect_call attribute can%'t apply for static function");
+	error ("%<indirect_call%> attribute cannot apply for static function");
 
       *attributes = new_attrs;
     }

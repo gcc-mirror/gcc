@@ -557,8 +557,7 @@ bool
 is_local_temp (tree decl)
 {
   return (VAR_P (decl) && DECL_ARTIFICIAL (decl)
-	  && !TREE_STATIC (decl)
-	  && DECL_FUNCTION_SCOPE_P (decl));
+	  && !TREE_STATIC (decl));
 }
 
 /* Set various status flags when building an AGGR_INIT_EXPR object T.  */
@@ -741,7 +740,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
    constructor calls until gimplification time; now we only do it to set
    VEC_INIT_EXPR_IS_CONSTEXPR.
 
-   We assume that init is either NULL_TREE, void_type_node (indicating
+   We assume that init is either NULL_TREE, {}, void_type_node (indicating
    value-initialization), or another array to copy.  */
 
 static tree
@@ -753,7 +752,20 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
       || !CLASS_TYPE_P (inner_type))
     /* No interesting initialization to do.  */
     return integer_zero_node;
-  else if (init == void_type_node)
+  if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      /* Even if init has initializers for some array elements,
+	 we're interested in the {}-init of trailing elements.	*/
+      if (CP_AGGREGATE_TYPE_P (inner_type))
+	{
+	  tree empty = build_constructor (init_list_type_node, nullptr);
+	  return digest_init (inner_type, empty, complain);
+	}
+      else
+	/* It's equivalent to value-init.  */
+	init = void_type_node;
+    }
+  if (init == void_type_node)
     return build_value_init (inner_type, complain);
 
   releasing_vec argvec;
@@ -786,8 +798,8 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 tree
 build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
-  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
-    return init;
+  if (tree vi = get_vec_init_expr (init))
+    return vi;
 
   tree elt_init;
   if (init && TREE_CODE (init) == CONSTRUCTOR
@@ -809,9 +821,13 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
   TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
 
-  if (cxx_dialect >= cxx11
-      && potential_constant_expression (elt_init))
-    VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
+  if (cxx_dialect >= cxx11)
+    {
+      bool cx = potential_constant_expression (elt_init);
+      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+	cx &= potential_constant_expression (init);
+      VEC_INIT_EXPR_IS_CONSTEXPR (init) = cx;
+    }
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
   return init;
@@ -1343,9 +1359,8 @@ c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
    in a similar manner for restricting non-pointer types.  */
 
 tree
-cp_build_qualified_type_real (tree type,
-			      int type_quals,
-			      tsubst_flags_t complain)
+cp_build_qualified_type (tree type, int type_quals,
+			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   tree result;
   int bad_quals = TYPE_UNQUALIFIED;
@@ -1362,9 +1377,7 @@ cp_build_qualified_type_real (tree type,
 	 type.  Obtain the appropriately qualified element type.  */
       tree t;
       tree element_type
-	= cp_build_qualified_type_real (TREE_TYPE (type),
-					type_quals,
-					complain);
+	= cp_build_qualified_type (TREE_TYPE (type), type_quals, complain);
 
       if (element_type == error_mark_node)
 	return error_mark_node;
@@ -1415,7 +1428,7 @@ cp_build_qualified_type_real (tree type,
     {
       tree t = PACK_EXPANSION_PATTERN (type);
 
-      t = cp_build_qualified_type_real (t, type_quals, complain);
+      t = cp_build_qualified_type (t, type_quals, complain);
       return make_pack_expansion (t, complain);
     }
 
@@ -1567,7 +1580,8 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
    stripped.  */
 
 tree
-strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
+strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
+		unsigned int flags /* = 0 */)
 {
   tree result = NULL, type = NULL, t0 = NULL;
 
@@ -1781,7 +1795,7 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	    type = strip_typedefs (pat, remove_attributes, flags);
 	    if (type != pat)
 	      {
-		result = copy_node (t);
+		result = build_distinct_type_copy (t);
 		PACK_EXPANSION_PATTERN (result) = type;
 	      }
 	  }
@@ -2804,8 +2818,9 @@ fixup_deferred_exception_variants (tree type, tree raises)
 
   /* Though sucky, this walk will process the canonical variants
      first.  */
+  tree prev = NULL_TREE;
   for (tree variant = TYPE_MAIN_VARIANT (type);
-       variant; variant = TYPE_NEXT_VARIANT (variant))
+       variant; prev = variant, variant = TYPE_NEXT_VARIANT (variant))
     if (TYPE_RAISES_EXCEPTIONS (variant) == original)
       {
 	gcc_checking_assert (variant != TYPE_MAIN_VARIANT (type));
@@ -2815,21 +2830,34 @@ fixup_deferred_exception_variants (tree type, tree raises)
 	    cp_cv_quals var_quals = TYPE_QUALS (variant);
 	    cp_ref_qualifier rqual = type_memfn_rqual (variant);
 
+	    /* If VARIANT would become a dup (cp_check_qualified_type-wise)
+	       of an existing variant in the variant list of TYPE after its
+	       exception specification has been parsed, elide it.  Otherwise,
+	       build_cp_fntype_variant could use it, leading to "canonical
+	       types differ for identical types."  */
 	    tree v = TYPE_MAIN_VARIANT (type);
 	    for (; v; v = TYPE_NEXT_VARIANT (v))
-	      if (TYPE_CANONICAL (v) == v
-		  && cp_check_qualified_type (v, variant, var_quals,
-					      rqual, cr, false))
-		break;
+	      if (cp_check_qualified_type (v, variant, var_quals,
+					   rqual, cr, false))
+		{
+		  /* The main variant will not match V, so PREV will never
+		     be null.  */
+		  TYPE_NEXT_VARIANT (prev) = TYPE_NEXT_VARIANT (variant);
+		  break;
+		}
 	    TYPE_RAISES_EXCEPTIONS (variant) = raises;
 
 	    if (!v)
 	      v = build_cp_fntype_variant (TYPE_CANONICAL (variant),
 					   rqual, cr, false);
-	    TYPE_CANONICAL (variant) = v;
+	    TYPE_CANONICAL (variant) = TYPE_CANONICAL (v);
 	  }
 	else
 	  TYPE_RAISES_EXCEPTIONS (variant) = raises;
+
+	if (!TYPE_DEPENDENT_P (variant))
+	  /* We no longer know that it's not type-dependent.  */
+	  TYPE_DEPENDENT_P_VALID (variant) = false;
       }
 }
 
@@ -2870,7 +2898,11 @@ bind_template_template_parm (tree t, tree newargs)
   TYPE_NAME (t2) = decl;
   TYPE_STUB_DECL (t2) = decl;
   TYPE_SIZE (t2) = 0;
-  SET_TYPE_STRUCTURAL_EQUALITY (t2);
+
+  if (any_template_arguments_need_structural_equality_p (newargs))
+    SET_TYPE_STRUCTURAL_EQUALITY (t2);
+  else
+    TYPE_CANONICAL (t2) = canonical_type_parameter (t2);
 
   return t2;
 }
@@ -3652,6 +3684,8 @@ build_min_non_dep_op_overload (enum tree_code op,
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
+  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+    expected_nargs -= 1;
   if ((op == POSTINCREMENT_EXPR
        || op == POSTDECREMENT_EXPR)
       /* With -fpermissive non_dep could be operator++().  */
@@ -3678,7 +3712,7 @@ build_min_non_dep_op_overload (enum tree_code op,
       tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
       fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		      object, method, NULL_TREE);
-      for (int i = 1; i < nargs; i++)
+      for (int i = 0; i < nargs; i++)
 	{
 	  tree arg = va_arg (p, tree);
 	  vec_safe_push (args, arg);
@@ -3714,7 +3748,6 @@ build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
   tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
   tree fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		       object, method, NULL_TREE);
-  nargs--;
   gcc_assert (vec_safe_length (args) == nargs);
 
   tree call = build_min_non_dep_call_vec (non_dep, fn, args);
@@ -4286,15 +4319,31 @@ maybe_dummy_object (tree type, tree* binfop)
   if (binfop)
     *binfop = binfo;
 
-  if (current_class_ref
-      /* current_class_ref might not correspond to current_class_type if
-	 we're in tsubst_default_argument or a lambda-declarator; in either
-	 case, we want to use current_class_ref if it matches CONTEXT.  */
-      && (same_type_ignoring_top_level_qualifiers_p
-	  (TREE_TYPE (current_class_ref), context)))
+  /* current_class_ref might not correspond to current_class_type if
+     we're in tsubst_default_argument or a lambda-declarator; in either
+     case, we want to use current_class_ref if it matches CONTEXT.  */
+  tree ctype = current_class_ref ? TREE_TYPE (current_class_ref) : NULL_TREE;
+  if (ctype
+      && same_type_ignoring_top_level_qualifiers_p (ctype, context))
     decl = current_class_ref;
   else
-    decl = build_dummy_object (context);
+    {
+      /* Return a dummy object whose cv-quals are consistent with (the
+	 non-lambda) 'this' if available.  */
+      if (ctype)
+	{
+	  int quals = TYPE_UNQUALIFIED;
+	  if (tree lambda = CLASSTYPE_LAMBDA_EXPR (ctype))
+	    {
+	      if (tree cap = lambda_expr_this_capture (lambda, false))
+		quals = cp_type_quals (TREE_TYPE (TREE_TYPE (cap)));
+	    }
+	  else
+	    quals = cp_type_quals (ctype);
+	  context = cp_build_qualified_type (context, quals);
+	}
+      decl = build_dummy_object (context);
+    }
 
   return decl;
 }
@@ -4820,8 +4869,8 @@ structural_type_p (tree t, bool explain)
 	explain_non_literal_class (t);
       return false;
     }
-  for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
-       m = next_initializable_field (DECL_CHAIN (m)))
+  for (tree m = next_aggregate_field (TYPE_FIELDS (t)); m;
+       m = next_aggregate_field (DECL_CHAIN (m)))
     {
       if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
 	{
@@ -5382,9 +5431,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case NONTYPE_ARGUMENT_PACK:
       {
         tree args = ARGUMENT_PACK_ARGS (*tp);
-        int i, len = TREE_VEC_LENGTH (args);
-        for (i = 0; i < len; i++)
-          WALK_SUBTREE (TREE_VEC_ELT (args, i));
+	for (tree arg : tree_vec_range (args))
+	  WALK_SUBTREE (arg);
       }
       break;
 
@@ -6087,6 +6135,25 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
     }
   return false;
 }
+
+/* FNDECL is a function declaration whose type may have been altered by
+   adding extra parameters such as this, in-charge, or VTT.  When this
+   takes place, the positional arguments supplied by the user (as in the
+   'format' attribute arguments) may refer to the wrong argument.  This
+   function returns an integer indicating how many arguments should be
+   skipped.  */
+
+int
+maybe_adjust_arg_pos_for_attribute (const_tree fndecl)
+{
+  if (!fndecl)
+    return 0;
+  int n = num_artificial_parms_for (fndecl);
+  /* The manual states that it's the user's responsibility to account
+     for the implicit this parameter.  */
+  return n > 0 ? n - 1 : 0;
+}
+
 
 /* Release memory we no longer need after parsing.  */
 void
@@ -6167,7 +6234,7 @@ test_lvalue_kind ()
 /* Run all of the selftests within this file.  */
 
 void
-cp_tree_c_tests ()
+cp_tree_cc_tests ()
 {
   test_lvalue_kind ();
 }

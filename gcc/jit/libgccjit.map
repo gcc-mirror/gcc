@@ -238,8 +238,36 @@ LIBGCCJIT_ABI_18 {
 } LIBGCCJIT_ABI_17;
 
 LIBGCCJIT_ABI_19 {
+  global:
     gcc_jit_context_new_array_constructor;
     gcc_jit_context_new_struct_constructor;
     gcc_jit_context_new_union_constructor;
     gcc_jit_global_set_initializer_rvalue;
 } LIBGCCJIT_ABI_18;
+
+LIBGCCJIT_ABI_20 {
+  global:
+    gcc_jit_compatible_types;
+    gcc_jit_type_get_size;
+} LIBGCCJIT_ABI_19;
+
+LIBGCCJIT_ABI_21 {
+  global:
+    gcc_jit_context_new_bitcast;
+} LIBGCCJIT_ABI_20;
+
+LIBGCCJIT_ABI_22 {
+  global:
+    gcc_jit_lvalue_set_register_name;
+} LIBGCCJIT_ABI_21;
+
+LIBGCCJIT_ABI_23 {
+  global:
+    gcc_jit_context_set_bool_print_errors_to_stderr;
+} LIBGCCJIT_ABI_22;
+
+LIBGCCJIT_ABI_24 {
+  global:
+    gcc_jit_lvalue_set_alignment;
+    gcc_jit_lvalue_get_alignment;
+} LIBGCCJIT_ABI_23;

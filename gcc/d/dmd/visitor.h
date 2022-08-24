@@ -220,6 +220,7 @@ class BinAssignExp;
 class MixinExp;
 class ImportExp;
 class AssertExp;
+class ThrowExp;
 class DotIdExp;
 class DotTemplateExp;
 class DotVarExp;
@@ -264,6 +265,8 @@ class ShlAssignExp;
 class ShrAssignExp;
 class UshrAssignExp;
 class CatAssignExp;
+class CatElemAssignExp;
+class CatDcharAssignExp;
 class AddExp;
 class MinExp;
 class CatExp;
@@ -511,6 +514,7 @@ public:
     virtual void visit(CallExp *e) { visit((UnaExp *)e); }
     virtual void visit(DotIdExp *e) { visit((UnaExp *)e); }
     virtual void visit(AssertExp *e) { visit((UnaExp *)e); }
+    virtual void visit(ThrowExp *e) { visit((UnaExp *)e); }
     virtual void visit(ImportExp *e) { visit((UnaExp *)e); }
     virtual void visit(DotTemplateInstanceExp *e) { visit((UnaExp *)e); }
     virtual void visit(ArrayExp *e) { visit((UnaExp *)e); }
@@ -561,6 +565,10 @@ public:
     virtual void visit(ShrAssignExp *e) { visit((BinAssignExp *)e); }
     virtual void visit(UshrAssignExp *e) { visit((BinAssignExp *)e); }
     virtual void visit(CatAssignExp *e) { visit((BinAssignExp *)e); }
+
+    // CatAssignExp
+    virtual void visit(CatElemAssignExp *e) { visit((CatAssignExp *)e); }
+    virtual void visit(CatDcharAssignExp *e) { visit((CatAssignExp *)e); }
 
     // TemplateParameter
     virtual void visit(TemplateAliasParameter *tp) { visit((TemplateParameter *)tp); }

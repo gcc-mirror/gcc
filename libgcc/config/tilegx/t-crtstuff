@@ -1,8 +1,0 @@
-# crtend*.o cannot be compiled without -fno-asynchronous-unwind-tables,
-# because then __FRAME_END__ might not be the last thing in .eh_frame
-# section.
-CRTSTUFF_T_CFLAGS += -fno-asynchronous-unwind-tables
-CRTSTUFF_T_CFLAGS_S += -fno-asynchronous-unwind-tables
-
-# Compile crtbeginS.o and crtendS.o with -mcmodel=large
-CRTSTUFF_T_CFLAGS_S += -mcmodel=large

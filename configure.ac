@@ -1,6 +1,6 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 #   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-#   2014, 2015, 2016, 2019 Free Software Foundation, Inc.
+#   2014, 2015, 2016, 2019, 2022 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libelf libiconv libctf"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libiconv libctf"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -353,7 +353,7 @@ case "${ENABLE_GOLD}" in
       # Check for target supported by gold.
       case "${target}" in
         i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
-        | aarch64*-*-* | tilegx*-*-* | mips*-*-* | s390*-*-*)
+        | aarch64*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -649,7 +649,7 @@ case "${target}" in
 esac
 
 # Disable libstdc++-v3 for some systems.
-# Allow user to override this if they pass --enable-libstdc++-v3
+# Allow user to override this if they pass --enable-libstdcxx
 if test "${ENABLE_LIBSTDCXX}" = "default" ; then
   case "${target}" in
     *-*-vxworks*)
@@ -899,6 +899,9 @@ case "${target}" in
   i[[3456789]]86-*-*)
     libgloss_dir=i386
     ;;
+  loongarch*-*-*)
+    libgloss_dir=loongarch
+    ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     libgloss_dir=m68hc11
     ;;
@@ -1021,7 +1024,7 @@ case "${target}" in
   *-*-dragonfly*)
     ;;
   *-*-freebsd*)
-    if test "x$with_gmp" = x && test "x$with_gmp_dir" = x \
+    if test "x$with_gmp" = x \
 	&& ! test -d ${srcdir}/gmp \
 	&& test -f /usr/local/include/gmp.h; then
       with_gmp=/usr/local
@@ -1271,9 +1274,6 @@ case "${target}" in
   tic6x-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
-  tilepro*-*-* | tilegx*-*-*)
-    noconfigdirs="$noconfigdirs sim"
-    ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gdb ld opcodes target-libgloss"
     ;;
@@ -1282,6 +1282,11 @@ case "${target}" in
     ;;
   wasm32-*-*)
     noconfigdirs="$noconfigdirs ld"
+    ;;
+  loongarch*-*-linux*)
+    ;;
+  loongarch*-*-*)
+    noconfigdirs="$noconfigdirs gprof"
     ;;
 esac
 
@@ -1568,11 +1573,6 @@ fi
 
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
-AC_ARG_WITH(mpfr-dir,
-[AS_HELP_STRING([--with-mpfr-dir=PATH], [this option has been REMOVED])],
-[AC_MSG_ERROR([The --with-mpfr-dir=PATH option has been removed.
-Use --with-mpfr=PATH or --with-mpfr-include=PATH plus --with-mpfr-lib=PATH])])
-
 AC_ARG_WITH(mpfr,
 [AS_HELP_STRING([--with-mpfr=PATH],
 		[specify prefix directory for installed MPFR package.
@@ -1612,11 +1612,6 @@ Building GCC with MPFR in the source tree is only handled for MPFR 3.1.0+.])
 fi
 
 # Specify a location for gmp
-AC_ARG_WITH(gmp-dir,
-[AS_HELP_STRING([--with-gmp-dir=PATH], [this option has been REMOVED])],
-[AC_MSG_ERROR([The --with-gmp-dir=PATH option has been removed.
-Use --with-gmp=PATH or --with-gmp-include=PATH plus --with-gmp-lib=PATH])])
-
 AC_ARG_WITH(gmp,
 [AS_HELP_STRING([--with-gmp=PATH],
 		[specify prefix directory for the installed GMP package.
@@ -1920,7 +1915,7 @@ AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
 		[build host code as shared libraries])],
 [host_shared=$enableval
- case $target in
+ case $host in
    x86_64-*-darwin* | aarch64-*-darwin*)
      if test x$host_shared != xyes ; then
        # PIC is the default, and actually cannot be switched off.
@@ -1929,7 +1924,7 @@ AC_ARG_ENABLE(host-shared,
      fi ;;
   *) ;;
  esac],
-[case $target in
+[case $host in
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
   *) host_shared=no ;;
  esac])
@@ -2459,7 +2454,7 @@ fi
 extra_host_libiberty_configure_flags=
 extra_host_zlib_configure_flags=
 case " $configdirs " in
-  *" lto-plugin "* | *" libcc1 "*)
+  *" lto-plugin "* | *" libcc1 "* | *" gdbserver "*)
     # When these are to be built as shared libraries, the same applies to
     # libiberty.
     extra_host_libiberty_configure_flags=--enable-shared

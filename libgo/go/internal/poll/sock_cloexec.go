@@ -6,7 +6,6 @@
 // setting SetNonblock and CloseOnExec.
 
 //go:build dragonfly || freebsd || hurd || illumos || linux || netbsd || openbsd
-// +build dragonfly freebsd hurd illumos linux netbsd openbsd
 
 package poll
 

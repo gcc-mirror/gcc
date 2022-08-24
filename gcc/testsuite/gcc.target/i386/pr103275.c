@@ -1,4 +1,5 @@
 /* { dg-do compile { target ia32 } }  */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -march=tigerlake -fPIC" } */
 /* { dg-final { scan-assembler-not {(?n)kmovd.*@gotntpoff} } }  */
 

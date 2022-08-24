@@ -623,8 +623,10 @@ package Exp_Util is
    --  specifies aspect Storage_Model_Type, returns the Entity_Id of the
    --  subprogram associated with Nam, which must either be a primitive op of
    --  the type in the case of a storage pool, or the operation corresponding
-   --  to Nam as specified in the aspect Storage_Model_Type. It is an error if
-   --  no operation corresponding to the given name is found.
+   --  to Nam as specified in the aspect Storage_Model_Type. In the case of
+   --  aspect Storage_Model_Type, returns Empty when no operation is found,
+   --  indicating that the operation is defaulted in the aspect (can occur in
+   --  the case where the storage-model address type is System.Address).
 
    function Find_Hook_Context (N : Node_Id) return Node_Id;
    --  Determine a suitable node on which to attach actions related to N that
@@ -758,7 +760,7 @@ package Exp_Util is
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return a suitable standard integer type containing at least S bits and
-   --  of the signedness given by Uns.
+   --  of the signedness given by Uns. See also Small_Integer_Type_For.
 
    function Is_Displacement_Of_Object_Or_Function_Result
      (Obj_Id : Entity_Id) return Boolean;
@@ -820,6 +822,8 @@ package Exp_Util is
    --  Determine whether object Id is related to an expanded return statement.
    --  The case concerned is "return Id.all;".
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Renamed_Object (N : Node_Id) return Boolean;
    --  Returns True if the node N is a renamed object. An expression is
    --  considered to be a renamed object if either it is the Name of an object
@@ -834,6 +838,11 @@ package Exp_Util is
    function Is_Secondary_Stack_BIP_Func_Call (Expr : Node_Id) return Boolean;
    --  Determine whether Expr denotes a build-in-place function which returns
    --  its result on the secondary stack.
+
+   function Is_Secondary_Stack_Thunk (Id : Entity_Id) return Boolean;
+   --  Determine whether Id denotes a secondary stack thunk
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_Tag_To_Class_Wide_Conversion
      (Obj_Id : Entity_Id) return Boolean;
@@ -874,13 +883,19 @@ package Exp_Util is
    --  expression Expr. Expr is passed as an actual parameter in the call.
 
    function Make_Predicate_Call
-     (Typ  : Entity_Id;
-      Expr : Node_Id;
-      Mem  : Boolean := False) return Node_Id;
+     (Typ         : Entity_Id;
+      Expr        : Node_Id;
+      Static_Mem  : Boolean := False;
+      Dynamic_Mem : Node_Id := Empty) return Node_Id;
    --  Typ is a type with Predicate_Function set. This routine builds a call to
    --  this function passing Expr as the argument, and returns it unanalyzed.
-   --  If Mem is set True, this is the special call for the membership case,
-   --  and the function called is the Predicate_Function_M if present.
+   --  If the callee takes a second parameter (as determined by
+   --  Sem_Util.Predicate_Function_Needs_Membership_Parameter), then the
+   --  actual parameter is determined by the two Mem parameters.
+   --  If Dynamic_Mem is nonempty, then Dynamic_Mem is the actual parameter.
+   --  Otherwise, the value of the Static_Mem parameter is passed in as
+   --  a Boolean literal. It is an error if Dynamic_Mem is nonempty but
+   --  the callee does not take a second parameter.
 
    function Make_Predicate_Check
      (Typ  : Entity_Id;
@@ -901,12 +916,14 @@ package Exp_Util is
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
+      Typ      : Entity_Id;
       Mode     : Name_Id;
       Curr_Val : Node_Id;
       Old_Val  : Node_Id) return Node_Id;
    --  Subsidiary to the expansion of pragmas Loop_Variant and
    --  Subprogram_Variant. Generate a comparison between Curr_Val and Old_Val
-   --  depending on the variant mode (Increases / Decreases).
+   --  depending on the variant mode (Increases / Decreases) using less or
+   --  greater operator for Typ.
 
    procedure Map_Formals
      (Parent_Subp  : Entity_Id;
@@ -1103,8 +1120,8 @@ package Exp_Util is
    --    1) controlled objects
    --    2) library-level tagged types
    --
-   --  These cases require special actions on scope exit. The flag Lib_Level
-   --  is set True if the construct is at library level, and False otherwise.
+   --  These cases require special actions on scope exit. Lib_Level is True if
+   --  the construct is at library level, and False otherwise.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this
@@ -1178,7 +1195,13 @@ package Exp_Util is
 
    function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return the smallest standard integer type containing at least S bits and
-   --  of the signedness given by Uns.
+   --  of the signedness given by Uns. See also Integer_Type_For.
+
+   function Thunk_Target (Thunk : Entity_Id) return Entity_Id;
+   --  Return the entity ultimately called by the thunk, that is to say return
+   --  the Thunk_Entity of the last member on the thunk chain.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Type_May_Have_Bit_Aligned_Components
      (Typ : Entity_Id) return Boolean;
@@ -1206,4 +1229,6 @@ private
    pragma Inline (Force_Evaluation);
    pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);
+   pragma Inline (Is_Secondary_Stack_Thunk);
+   pragma Inline (Thunk_Target);
 end Exp_Util;

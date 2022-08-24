@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 
 constexpr std::array<int, 12> car{{0, 1, 2, 3, 4, 5, 6, 6, 8, 9, 9, 11}};
 

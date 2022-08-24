@@ -2029,7 +2029,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return instantiate_virtual_regs ();
     }
@@ -3471,6 +3471,17 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       rtx tempreg = gen_reg_rtx (GET_MODE (data->entry_parm));
 
       emit_move_insn (tempreg, validize_mem (copy_rtx (data->entry_parm)));
+
+      /* Some ABIs require scalar floating point modes to be passed
+	 in a wider scalar integer mode.  We need to explicitly
+	 truncate to an integer mode of the correct precision before
+	 using a SUBREG to reinterpret as a floating point value.  */
+      if (SCALAR_FLOAT_MODE_P (data->nominal_mode)
+	  && SCALAR_INT_MODE_P (data->arg.mode)
+	  && known_lt (GET_MODE_SIZE (data->nominal_mode),
+		       GET_MODE_SIZE (data->arg.mode)))
+	tempreg = convert_wider_int_to_float (data->nominal_mode,
+					      data->arg.mode, tempreg);
 
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       to_conversion = true;
@@ -5892,7 +5903,9 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
   df_simulate_one_insn_backwards (bb, ret, live_out);
 
   HARD_REG_SET selected_hardregs;
+  HARD_REG_SET all_call_used_regs;
   CLEAR_HARD_REG_SET (selected_hardregs);
+  CLEAR_HARD_REG_SET (all_call_used_regs);
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
       if (!crtl->abi->clobbers_full_reg_p (regno))
@@ -5901,6 +5914,13 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (REGNO_REG_SET_P (live_out, regno))
 	continue;
+#ifdef LEAF_REG_REMAP
+      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
+	continue;
+#endif
+      /* This is a call used register that is dead at return.  */
+      SET_HARD_REG_BIT (all_call_used_regs, regno);
+
       if (only_gpr
 	  && !TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], regno))
 	continue;
@@ -5908,10 +5928,6 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (only_arg && !FUNCTION_ARG_REGNO_P (regno))
 	continue;
-#ifdef LEAF_REG_REMAP
-      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
-	continue;
-#endif
 
       /* Now this is a register that we might want to zero.  */
       SET_HARD_REG_BIT (selected_hardregs, regno);
@@ -5925,6 +5941,15 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
   HARD_REG_SET zeroed_hardregs;
   start_sequence ();
   zeroed_hardregs = targetm.calls.zero_call_used_regs (selected_hardregs);
+
+  /* For most targets, the returned set of registers is a subset of
+     selected_hardregs, however, for some of the targets (for example MIPS),
+     clearing some registers that are in selected_hardregs requires clearing
+     other call used registers that are not in the selected_hardregs, under
+     such situation, the returned set of registers must be a subset of
+     all call used registers.  */
+  gcc_assert (hard_reg_set_subset_p (zeroed_hardregs, all_call_used_regs));
+
   rtx_insn *seq = get_insns ();
   end_sequence ();
   if (seq)
@@ -5941,7 +5966,7 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 
       /* Update the data flow information.  */
       crtl->must_be_zero_on_return |= zeroed_hardregs;
-      df_set_bb_dirty (EXIT_BLOCK_PTR_FOR_FN (cfun));
+      df_update_exit_block_uses ();
     }
 }
 
@@ -6502,7 +6527,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_check_leaf_regs ();
     }
@@ -6603,7 +6628,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_thread_prologue_and_epilogue ();
     }
@@ -6641,7 +6666,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_zero_call_used_regs
 
@@ -6912,7 +6937,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_match_asm_constraints
 

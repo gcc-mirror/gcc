@@ -25,4 +25,3 @@ void baz()
 {
     alias Foo!(int) bar;
 }
-

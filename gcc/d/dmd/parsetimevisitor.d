@@ -220,6 +220,7 @@ public:
     void visit(AST.CallExp e) { visit(cast(AST.UnaExp)e); }
     void visit(AST.DotIdExp e) { visit(cast(AST.UnaExp)e); }
     void visit(AST.AssertExp e) { visit(cast(AST.UnaExp)e); }
+    void visit(AST.ThrowExp e) { visit(cast(AST.UnaExp)e); }
     void visit(AST.ImportExp e) { visit(cast(AST.UnaExp)e); }
     void visit(AST.DotTemplateInstanceExp e) { visit(cast(AST.UnaExp)e); }
     void visit(AST.ArrayExp e) { visit(cast(AST.UnaExp)e); }
@@ -270,6 +271,10 @@ public:
     void visit(AST.ShrAssignExp e) { visit(cast(AST.BinAssignExp)e); }
     void visit(AST.UshrAssignExp e) { visit(cast(AST.BinAssignExp)e); }
     void visit(AST.CatAssignExp e) { visit(cast(AST.BinAssignExp)e); }
+
+    // CatAssignExp
+    void visit(AST.CatElemAssignExp e) { visit(cast(AST.CatAssignExp)e); }
+    void visit(AST.CatDcharAssignExp e) { visit(cast(AST.CatAssignExp)e); }
 
     //===============================================================================
     // TemplateParameter

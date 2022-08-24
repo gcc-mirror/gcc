@@ -200,6 +200,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #if _GLIBCXX_USE_WEAK_REF
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
+#include <stdint.h>
+
+using std::size_t;
+
 extern "C" {
 
 #ifndef _GLIBCXX_MANGLE_SIZE_T

@@ -34,8 +34,6 @@ pragma Warnings (Off);
 with System.OS_Lib; use System.OS_Lib;
 pragma Warnings (On);
 
-with Unchecked_Conversion;
-
 with GNAT.HTable;
 
 package body Fmap is

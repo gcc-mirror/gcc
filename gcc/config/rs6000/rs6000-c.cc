@@ -178,9 +178,8 @@ rid_int128(void)
   return RID_MAX + 1;
 }
 
-/* Called to decide whether a conditional macro should be expanded.
-   Since we have exactly one such macro (i.e, 'vector'), we do not
-   need to examine the 'tok' parameter.  */
+/* Called to decide whether a conditional macro should be expanded
+   by peeking two or more tokens(_bool/_pixel/int/long/double/...).  */
 
 static cpp_hashnode *
 rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
@@ -282,7 +281,9 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 		expand_bool_pixel = __pixel_keyword;
 	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
 		expand_bool_pixel = __bool_keyword;
-	      else
+
+	      /* If there are more tokens to check.  */
+	      else if (ident)
 		{
 		  /* Try two tokens down, too.  */
 		  do
@@ -334,20 +335,16 @@ rs6000_define_or_undefine_macro (bool define_p, const char *name)
 }
 
 /* Define or undefine macros based on the current target.  If the user does
-   #pragma GCC target, we need to adjust the macros dynamically.  Note, some of
-   the options needed for builtins have been moved to separate variables, so
-   have both the target flags and the builtin flags as arguments.  */
+   #pragma GCC target, we need to adjust the macros dynamically.  */
 
 void
-rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
-			     HOST_WIDE_INT bu_mask)
+rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags)
 {
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
     fprintf (stderr,
-	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX
-	     ", " HOST_WIDE_INT_PRINT_HEX ")\n",
+	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX ")\n",
 	     (define_p) ? "define" : "undef",
-	     flags, bu_mask);
+	     flags);
 
   /* Each of the flags mentioned below controls whether certain
      preprocessor macros will be automatically defined when
@@ -383,7 +380,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	TARGET_DEFAULT macro is defined to equal zero, and
 	TARGET_POWERPC64 and
 	a) BYTES_BIG_ENDIAN and the flag to be enabled is either
-	   MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
+	   OPTION_MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
 	   target), or
 	b) !BYTES_BIG_ENDIAN and the flag to be enabled is either
 	   MASK_POWERPC64 or it is one of the flags included in
@@ -584,16 +581,18 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	rs6000_define_or_undefine_macro (true, "__float128=__ieee128");
       else
 	rs6000_define_or_undefine_macro (false, "__float128");
+      if (ieee128_float_type_node && define_p)
+	rs6000_define_or_undefine_macro (true, "__SIZEOF_FLOAT128__=16");
+      else
+	rs6000_define_or_undefine_macro (false, "__SIZEOF_FLOAT128__");
     }
   /* OPTION_MASK_FLOAT128_HARDWARE can be turned on if -mcpu=power9 is used or
      via the target attribute/pragma.  */
   if ((flags & OPTION_MASK_FLOAT128_HW) != 0)
     rs6000_define_or_undefine_macro (define_p, "__FLOAT128_HARDWARE__");
 
-  /* options from the builtin masks.  */
-  /* Note that RS6000_BTM_CELL is enabled only if (rs6000_cpu ==
-     PROCESSOR_CELL) (e.g. -mcpu=cell).  */
-  if ((bu_mask & RS6000_BTM_CELL) != 0)
+  /* Tell the user if we are targeting CELL.  */
+  if (rs6000_cpu == PROCESSOR_CELL)
     rs6000_define_or_undefine_macro (define_p, "__PPU__");
 
   /* Tell the user if we support the MMA instructions.  */
@@ -611,8 +610,7 @@ void
 rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 {
   /* Define all of the common macros.  */
-  rs6000_target_modify_macros (true, rs6000_isa_flags,
-			       rs6000_builtin_mask_calculate ());
+  rs6000_target_modify_macros (true, rs6000_isa_flags);
 
   if (TARGET_FRE)
     builtin_define ("__RECIP__");
@@ -624,6 +622,10 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__RSQRTEF__");
   if (TARGET_FLOAT128_TYPE)
     builtin_define ("__FLOAT128_TYPE__");
+  if (ibm128_float_type_node)
+    builtin_define ("__SIZEOF_IBM128__=16");
+  if (ieee128_float_type_node)
+    builtin_define ("__SIZEOF_IEEE128__=16");
 #ifdef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
   builtin_define ("__BUILTIN_CPU_SUPPORTS__");
 #endif
@@ -939,37 +941,25 @@ altivec_build_resolved_builtin (tree *args, int n, tree fntype, tree ret_type,
 enum resolution { unresolved, resolved, resolved_bad };
 
 /* Resolve an overloaded vec_mul call and return a tree expression for the
-   resolved call if successful.  NARGS is the number of arguments to the call.
-   ARGLIST contains the arguments.  RES must be set to indicate the status of
+   resolved call if successful.  ARGS contains the arguments to the call.
+   TYPES contains their types.  RES must be set to indicate the status of
    the resolution attempt.  LOC contains statement location information.  */
 
 static tree
-resolve_vec_mul (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs,
-		 location_t loc)
+resolve_vec_mul (resolution *res, tree *args, tree *types, location_t loc)
 {
   /* vec_mul needs to be special cased because there are no instructions for it
      for the {un}signed char, {un}signed short, and {un}signed int types.  */
-  if (nargs != 2)
-    {
-      error ("builtin %qs only accepts 2 arguments", "vec_mul");
-      *res = resolved;
-      return error_mark_node;
-    }
-
-  tree arg0 = (*arglist)[0];
-  tree arg0_type = TREE_TYPE (arg0);
-  tree arg1 = (*arglist)[1];
-  tree arg1_type = TREE_TYPE (arg1);
 
   /* Both arguments must be vectors and the types must be compatible.  */
-  if (TREE_CODE (arg0_type) != VECTOR_TYPE
-      || !lang_hooks.types_compatible_p (arg0_type, arg1_type))
+  if (TREE_CODE (types[0]) != VECTOR_TYPE
+      || !lang_hooks.types_compatible_p (types[0], types[1]))
     {
       *res = resolved_bad;
       return error_mark_node;
     }
 
-  switch (TYPE_MODE (TREE_TYPE (arg0_type)))
+  switch (TYPE_MODE (TREE_TYPE (types[0])))
     {
     case E_QImode:
     case E_HImode:
@@ -978,21 +968,21 @@ resolve_vec_mul (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs,
     case E_TImode:
       /* For scalar types just use a multiply expression.  */
       *res = resolved;
-      return fold_build2_loc (loc, MULT_EXPR, TREE_TYPE (arg0), arg0,
-			      fold_convert (TREE_TYPE (arg0), arg1));
+      return fold_build2_loc (loc, MULT_EXPR, types[0], args[0],
+			      fold_convert (types[0], args[1]));
     case E_SFmode:
       {
 	/* For floats use the xvmulsp instruction directly.  */
 	*res = resolved;
 	tree call = rs6000_builtin_decls[RS6000_BIF_XVMULSP];
-	return build_call_expr (call, 2, arg0, arg1);
+	return build_call_expr (call, 2, args[0], args[1]);
       }
     case E_DFmode:
       {
 	/* For doubles use the xvmuldp instruction directly.  */
 	*res = resolved;
 	tree call = rs6000_builtin_decls[RS6000_BIF_XVMULDP];
-	return build_call_expr (call, 2, arg0, arg1);
+	return build_call_expr (call, 2, args[0], args[1]);
       }
     /* Other types are errors.  */
     default:
@@ -1002,37 +992,25 @@ resolve_vec_mul (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs,
 }
 
 /* Resolve an overloaded vec_cmpne call and return a tree expression for the
-   resolved call if successful.  NARGS is the number of arguments to the call.
-   ARGLIST contains the arguments.  RES must be set to indicate the status of
+   resolved call if successful.  ARGS contains the arguments to the call.
+   TYPES contains their types.  RES must be set to indicate the status of
    the resolution attempt.  LOC contains statement location information.  */
 
 static tree
-resolve_vec_cmpne (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs,
-		   location_t loc)
+resolve_vec_cmpne (resolution *res, tree *args, tree *types, location_t loc)
 {
   /* vec_cmpne needs to be special cased because there are no instructions
      for it (prior to power 9).  */
-  if (nargs != 2)
-    {
-      error ("builtin %qs only accepts 2 arguments", "vec_cmpne");
-      *res = resolved;
-      return error_mark_node;
-    }
-
-  tree arg0 = (*arglist)[0];
-  tree arg0_type = TREE_TYPE (arg0);
-  tree arg1 = (*arglist)[1];
-  tree arg1_type = TREE_TYPE (arg1);
 
   /* Both arguments must be vectors and the types must be compatible.  */
-  if (TREE_CODE (arg0_type) != VECTOR_TYPE
-      || !lang_hooks.types_compatible_p (arg0_type, arg1_type))
+  if (TREE_CODE (types[0]) != VECTOR_TYPE
+      || !lang_hooks.types_compatible_p (types[0], types[1]))
     {
       *res = resolved_bad;
       return error_mark_node;
     }
 
-  machine_mode arg0_elt_mode = TYPE_MODE (TREE_TYPE (arg0_type));
+  machine_mode arg0_elt_mode = TYPE_MODE (TREE_TYPE (types[0]));
 
   /* Power9 instructions provide the most efficient implementation of
      ALTIVEC_BUILTIN_VEC_CMPNE if the mode is not DImode or TImode
@@ -1060,8 +1038,8 @@ resolve_vec_cmpne (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs,
 	    /* call = vec_cmpeq (va, vb)
 	       result = vec_nor (call, call).  */
 	    vec<tree, va_gc> *params = make_tree_vector ();
-	    vec_safe_push (params, arg0);
-	    vec_safe_push (params, arg1);
+	    vec_safe_push (params, args[0]);
+	    vec_safe_push (params, args[1]);
 	    tree decl = rs6000_builtin_decls[RS6000_OVLD_VEC_CMPEQ];
 	    tree call = altivec_resolve_overloaded_builtin (loc, decl, params);
 	    /* Use save_expr to ensure that operands used more than once
@@ -1088,46 +1066,30 @@ resolve_vec_cmpne (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs,
   return error_mark_node;
 }
 
-/* Resolve an overloaded vec_adde or vec_sube call and return a tree
-   expression for the resolved call if successful.  NARGS is the number of
-   arguments to the call.  ARGLIST contains the arguments.  RES must be set
-   to indicate the status of the resolution attempt.  LOC contains statement
-   location information.  */
+/* Resolve an overloaded vec_adde or vec_sube call and return a tree expression
+   for the resolved call if successful.  ARGS contains the arguments to the
+   call.  TYPES contains their arguments.  RES must be set to indicate the
+   status of the resolution attempt.  LOC contains statement location
+   information.  */
 
 static tree
 resolve_vec_adde_sube (resolution *res, rs6000_gen_builtins fcode,
-		       vec<tree, va_gc> *arglist, unsigned nargs,
-		       location_t loc)
+		       tree *args, tree *types, location_t loc)
 {
   /* vec_adde needs to be special cased because there is no instruction
      for the {un}signed int version.  */
-  if (nargs != 3)
-    {
-      const char *name;
-      name = fcode == RS6000_OVLD_VEC_ADDE ? "vec_adde" : "vec_sube";
-      error ("builtin %qs only accepts 3 arguments", name);
-      *res = resolved;
-      return error_mark_node;
-    }
-
-  tree arg0 = (*arglist)[0];
-  tree arg0_type = TREE_TYPE (arg0);
-  tree arg1 = (*arglist)[1];
-  tree arg1_type = TREE_TYPE (arg1);
-  tree arg2 = (*arglist)[2];
-  tree arg2_type = TREE_TYPE (arg2);
 
   /* All 3 arguments must be vectors of (signed or unsigned) (int or
      __int128) and the types must be compatible.  */
-  if (TREE_CODE (arg0_type) != VECTOR_TYPE
-      || !lang_hooks.types_compatible_p (arg0_type, arg1_type)
-      || !lang_hooks.types_compatible_p (arg1_type, arg2_type))
+  if (TREE_CODE (types[0]) != VECTOR_TYPE
+      || !lang_hooks.types_compatible_p (types[0], types[1])
+      || !lang_hooks.types_compatible_p (types[1], types[2]))
     {
       *res = resolved_bad;
       return error_mark_node;
     }
 
-  switch (TYPE_MODE (TREE_TYPE (arg0_type)))
+  switch (TYPE_MODE (TREE_TYPE (types[0])))
     {
       /* For {un}signed ints,
 	 vec_adde (va, vb, carryv) == vec_add (vec_add (va, vb),
@@ -1137,8 +1099,8 @@ resolve_vec_adde_sube (resolution *res, rs6000_gen_builtins fcode,
     case E_SImode:
       {
 	vec<tree, va_gc> *params = make_tree_vector ();
-	vec_safe_push (params, arg0);
-	vec_safe_push (params, arg1);
+	vec_safe_push (params, args[0]);
+	vec_safe_push (params, args[1]);
 
 	tree add_sub_builtin;
 	if (fcode == RS6000_OVLD_VEC_ADDE)
@@ -1148,10 +1110,10 @@ resolve_vec_adde_sube (resolution *res, rs6000_gen_builtins fcode,
 
 	tree call = altivec_resolve_overloaded_builtin (loc, add_sub_builtin,
 							params);
-	tree const1 = build_int_cstu (TREE_TYPE (arg0_type), 1);
-	tree ones_vector = build_vector_from_val (arg0_type, const1);
-	tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR, arg0_type,
-					 arg2, ones_vector);
+	tree const1 = build_int_cstu (TREE_TYPE (types[0]), 1);
+	tree ones_vector = build_vector_from_val (types[0], const1);
+	tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR, types[0],
+					 args[2], ones_vector);
 	params = make_tree_vector ();
 	vec_safe_push (params, call);
 	vec_safe_push (params, and_expr);
@@ -1175,45 +1137,29 @@ resolve_vec_adde_sube (resolution *res, rs6000_gen_builtins fcode,
 }
 
 /* Resolve an overloaded vec_addec or vec_subec call and return a tree
-   expression for the resolved call if successful.  NARGS is the number of
-   arguments to the call.  ARGLIST contains the arguments.  RES must be set
-   to indicate the status of the resolution attempt.  LOC contains statement
-   location information.  */
+   expression for the resolved call if successful.  ARGS contains the arguments
+   to the call.  TYPES contains their types.  RES must be set to indicate the
+   status of the resolution attempt.  LOC contains statement location
+   information.  */
 
 static tree
 resolve_vec_addec_subec (resolution *res, rs6000_gen_builtins fcode,
-			 vec<tree, va_gc> *arglist, unsigned nargs,
-			 location_t loc)
+			 tree *args, tree *types, location_t loc)
 {
   /* vec_addec and vec_subec needs to be special cased because there is
      no instruction for the (un)signed int version.  */
-  if (nargs != 3)
-    {
-      const char *name;
-      name = fcode == RS6000_OVLD_VEC_ADDEC ? "vec_addec" : "vec_subec";
-      error ("builtin %qs only accepts 3 arguments", name);
-      *res = resolved;
-      return error_mark_node;
-    }
-
-  tree arg0 = (*arglist)[0];
-  tree arg0_type = TREE_TYPE (arg0);
-  tree arg1 = (*arglist)[1];
-  tree arg1_type = TREE_TYPE (arg1);
-  tree arg2 = (*arglist)[2];
-  tree arg2_type = TREE_TYPE (arg2);
 
   /* All 3 arguments must be vectors of (signed or unsigned) (int or
      __int128) and the types must be compatible.  */
-  if (TREE_CODE (arg0_type) != VECTOR_TYPE
-      || !lang_hooks.types_compatible_p (arg0_type, arg1_type)
-      || !lang_hooks.types_compatible_p (arg1_type, arg2_type))
+  if (TREE_CODE (types[0]) != VECTOR_TYPE
+      || !lang_hooks.types_compatible_p (types[0], types[1])
+      || !lang_hooks.types_compatible_p (types[1], types[2]))
     {
       *res = resolved_bad;
       return error_mark_node;
     }
 
-  switch (TYPE_MODE (TREE_TYPE (arg0_type)))
+  switch (TYPE_MODE (TREE_TYPE (types[0])))
     {
       /* For {un}signed ints,
 	   vec_addec (va, vb, carryv) ==
@@ -1224,11 +1170,11 @@ resolve_vec_addec_subec (resolution *res, rs6000_gen_builtins fcode,
       {
 	/* Use save_expr to ensure that operands used more than once that may
 	   have side effects (like calls) are only evaluated once.  */
-	arg0 = save_expr (arg0);
-	arg1 = save_expr (arg1);
+	args[0] = save_expr (args[0]);
+	args[1] = save_expr (args[1]);
 	vec<tree, va_gc> *params = make_tree_vector ();
-	vec_safe_push (params, arg0);
-	vec_safe_push (params, arg1);
+	vec_safe_push (params, args[0]);
+	vec_safe_push (params, args[1]);
 
 	tree as_c_builtin;
 	if (fcode == RS6000_OVLD_VEC_ADDEC)
@@ -1239,8 +1185,8 @@ resolve_vec_addec_subec (resolution *res, rs6000_gen_builtins fcode,
 	tree call1 = altivec_resolve_overloaded_builtin (loc, as_c_builtin,
 							 params);
 	params = make_tree_vector ();
-	vec_safe_push (params, arg0);
-	vec_safe_push (params, arg1);
+	vec_safe_push (params, args[0]);
+	vec_safe_push (params, args[1]);
 
 	tree as_builtin;
 	if (fcode == RS6000_OVLD_VEC_ADDEC)
@@ -1250,10 +1196,10 @@ resolve_vec_addec_subec (resolution *res, rs6000_gen_builtins fcode,
 
 	tree call2 = altivec_resolve_overloaded_builtin (loc, as_builtin,
 							 params);
-	tree const1 = build_int_cstu (TREE_TYPE (arg0_type), 1);
-	tree ones_vector = build_vector_from_val (arg0_type, const1);
-	tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR, arg0_type,
-					 arg2, ones_vector);
+	tree const1 = build_int_cstu (TREE_TYPE (types[0]), 1);
+	tree ones_vector = build_vector_from_val (types[0], const1);
+	tree and_expr = fold_build2_loc (loc, BIT_AND_EXPR, types[0],
+					 args[2], ones_vector);
 	params = make_tree_vector ();
 	vec_safe_push (params, call2);
 	vec_safe_push (params, and_expr);
@@ -1734,6 +1680,10 @@ find_instance (bool *unsupported_builtin, ovlddata **instance,
 
   ovlddata *inst = *instance;
   gcc_assert (inst != NULL);
+  /* It is possible for an instance to require a data type that isn't
+     defined on this target, in which case inst->fntype will be NULL.  */
+  if (!inst->fntype)
+    return error_mark_node;
   tree fntype = rs6000_builtin_info[inst->bifid].fntype;
   tree parmtype0 = TREE_VALUE (TYPE_ARG_TYPES (fntype));
   tree parmtype1 = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (fntype)));
@@ -1783,77 +1733,21 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	     "%<vec_lvsr%> is deprecated for little endian; use "
 	     "assignment for unaligned loads and stores");
 
-  /* Some overloads require special handling.  */
-  /* FIXME: Could we simplify the helper functions if we gathered arguments
-     and types into arrays first?  */
-  tree returned_expr = NULL;
-  resolution res = unresolved;
-  vec<tree, va_gc> *arglist = static_cast<vec<tree, va_gc> *> (passed_arglist);
-  unsigned int nargs = vec_safe_length (arglist);
-
-  switch (fcode)
-    {
-    case RS6000_OVLD_VEC_MUL:
-      returned_expr = resolve_vec_mul (&res, arglist, nargs, loc);
-      break;
-
-    case RS6000_OVLD_VEC_CMPNE:
-      returned_expr = resolve_vec_cmpne (&res, arglist, nargs, loc);
-      break;
-
-    case RS6000_OVLD_VEC_ADDE:
-    case RS6000_OVLD_VEC_SUBE:
-      returned_expr = resolve_vec_adde_sube (&res, fcode, arglist, nargs, loc);
-      break;
-
-    case RS6000_OVLD_VEC_ADDEC:
-    case RS6000_OVLD_VEC_SUBEC:
-      returned_expr = resolve_vec_addec_subec (&res, fcode, arglist, nargs,
-					       loc);
-      break;
-
-    case RS6000_OVLD_VEC_SPLATS:
-    case RS6000_OVLD_VEC_PROMOTE:
-      returned_expr = resolve_vec_splats (&res, fcode, arglist, nargs);
-      break;
-
-    case RS6000_OVLD_VEC_EXTRACT:
-      returned_expr = resolve_vec_extract (&res, arglist, nargs, loc);
-      break;
-
-    case RS6000_OVLD_VEC_INSERT:
-      returned_expr = resolve_vec_insert (&res, arglist, nargs, loc);
-      break;
-
-    case RS6000_OVLD_VEC_STEP:
-      returned_expr = resolve_vec_step (&res, arglist, nargs);
-      break;
-
-    default:
-      ;
-    }
-
-  if (res == resolved)
-    return returned_expr;
-
-  /* "Regular" built-in functions and overloaded functions share a namespace
-     for some arrays, like rs6000_builtin_decls.  But rs6000_overload_info
-     only has information for the overloaded functions, so we need an
-     adjusted index for that.  */
-  unsigned int adj_fcode = fcode - RS6000_OVLD_NONE;
-
-  if (res == resolved_bad)
-    {
-      const char *name = rs6000_overload_info[adj_fcode].ovld_name;
-      error ("invalid parameter combination for AltiVec intrinsic %qs", name);
-      return error_mark_node;
-    }
-
   /* Gather the arguments and their types into arrays for easier handling.  */
   tree fnargs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
   tree types[MAX_OVLD_ARGS];
   tree args[MAX_OVLD_ARGS];
   unsigned int n;
+
+  /* Count the number of expected arguments.  */
+  unsigned expected_args = 0;
+  for (tree chain = fnargs;
+       chain && !VOID_TYPE_P (TREE_VALUE (chain));
+       chain = TREE_CHAIN (chain))
+    expected_args++;
+
+  vec<tree, va_gc> *arglist = static_cast<vec<tree, va_gc> *> (passed_arglist);
+  unsigned int nargs = vec_safe_length (arglist);
 
   for (n = 0;
        !VOID_TYPE_P (TREE_VALUE (fnargs)) && n < nargs;
@@ -1892,8 +1786,9 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  if (TYPE_READONLY (TREE_TYPE (type))
 	      && !TYPE_READONLY (TREE_TYPE (decl_type)))
-	    warning (0, "passing argument %d of %qE discards const qualifier "
-		     "from pointer target type", n + 1, fndecl);
+	    warning (0, "passing argument %d of %qE discards %qs "
+		     "qualifier from pointer target type", n + 1, fndecl,
+		     "const");
 	  type = build_qualified_type (TREE_TYPE (type), 0);
 	  type = build_pointer_type (type);
 	  arg = fold_convert (type, arg);
@@ -1915,9 +1810,71 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     }
 
   /* If the number of arguments did not match the prototype, return NULL
-     and the generic code will issue the appropriate error message.  */
-  if (!VOID_TYPE_P (TREE_VALUE (fnargs)) || n < nargs)
+     and the generic code will issue the appropriate error message.  Skip
+     this test for functions where we don't fully describe all the possible
+     overload signatures in rs6000-overload.def (because they aren't relevant
+     to the expansion here).  If we don't, we get confusing error messages.  */
+  /* As an example, for vec_splats we have:
+
+; There are no actual builtins for vec_splats.  There is special handling for
+; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
+; is replaced by a constructor.  The single overload here causes
+; __builtin_vec_splats to be registered with the front end so that can happen.
+[VEC_SPLATS, vec_splats, __builtin_vec_splats]
+  vsi __builtin_vec_splats (vsi);
+    ABS_V4SI SPLATS_FAKERY
+
+    So even though __builtin_vec_splats accepts all vector types, the
+    infrastructure cheats and just records one prototype.  We end up getting
+    an error message that refers to this specific prototype even when we
+    are handling a different argument type.  That is completely confusing
+    to the user, so it's best to let these cases be handled individually
+    in the resolve_vec_splats, etc., helper functions.  */
+
+  if (n != expected_args
+      && !(fcode == RS6000_OVLD_VEC_PROMOTE
+	   || fcode == RS6000_OVLD_VEC_SPLATS
+	   || fcode == RS6000_OVLD_VEC_EXTRACT
+	   || fcode == RS6000_OVLD_VEC_INSERT
+	   || fcode == RS6000_OVLD_VEC_STEP))
     return NULL;
+
+  /* Some overloads require special handling.  */
+  tree returned_expr = NULL;
+  resolution res = unresolved;
+
+  if (fcode == RS6000_OVLD_VEC_MUL)
+    returned_expr = resolve_vec_mul (&res, args, types, loc);
+  else if (fcode == RS6000_OVLD_VEC_CMPNE)
+    returned_expr = resolve_vec_cmpne (&res, args, types, loc);
+  else if (fcode == RS6000_OVLD_VEC_ADDE || fcode == RS6000_OVLD_VEC_SUBE)
+    returned_expr = resolve_vec_adde_sube (&res, fcode, args, types, loc);
+  else if (fcode == RS6000_OVLD_VEC_ADDEC || fcode == RS6000_OVLD_VEC_SUBEC)
+    returned_expr = resolve_vec_addec_subec (&res, fcode, args, types, loc);
+  else if (fcode == RS6000_OVLD_VEC_SPLATS || fcode == RS6000_OVLD_VEC_PROMOTE)
+    returned_expr = resolve_vec_splats (&res, fcode, arglist, nargs);
+  else if (fcode == RS6000_OVLD_VEC_EXTRACT)
+    returned_expr = resolve_vec_extract (&res, arglist, nargs, loc);
+  else if (fcode == RS6000_OVLD_VEC_INSERT)
+    returned_expr = resolve_vec_insert (&res, arglist, nargs, loc);
+  else if (fcode == RS6000_OVLD_VEC_STEP)
+    returned_expr = resolve_vec_step (&res, arglist, nargs);
+
+  if (res == resolved)
+    return returned_expr;
+
+  /* "Regular" built-in functions and overloaded functions share a namespace
+     for some arrays, like rs6000_builtin_decls.  But rs6000_overload_info
+     only has information for the overloaded functions, so we need an
+     adjusted index for that.  */
+  unsigned int adj_fcode = fcode - RS6000_OVLD_NONE;
+
+  if (res == resolved_bad)
+    {
+      const char *name = rs6000_overload_info[adj_fcode].ovld_name;
+      error ("invalid parameter combination for AltiVec intrinsic %qs", name);
+      return error_mark_node;
+    }
 
   bool unsupported_builtin = false;
   rs6000_gen_builtins instance_code;

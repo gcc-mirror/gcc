@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // mkpreempt generates the asyncPreempt functions for each
 // architecture.
@@ -125,15 +124,13 @@ func header(arch string) {
 	if beLe[arch] {
 		base := arch[:len(arch)-1]
 		fmt.Fprintf(out, "//go:build %s || %sle\n", base, base)
-		fmt.Fprintf(out, "// +build %s %sle\n\n", base, base)
 	}
 	fmt.Fprintf(out, "#include \"go_asm.h\"\n")
 	fmt.Fprintf(out, "#include \"textflag.h\"\n\n")
-	fmt.Fprintf(out, "// Note: asyncPreempt doesn't use the internal ABI, but we must be able to inject calls to it from the signal handler, so Go code has to see the PC of this function literally.\n")
-	fmt.Fprintf(out, "TEXT ·asyncPreempt<ABIInternal>(SB),NOSPLIT|NOFRAME,$0-0\n")
+	fmt.Fprintf(out, "TEXT ·asyncPreempt(SB),NOSPLIT|NOFRAME,$0-0\n")
 }
 
-func p(f string, args ...interface{}) {
+func p(f string, args ...any) {
 	fmted := fmt.Sprintf(f, args...)
 	fmt.Fprintf(out, "\t%s\n", strings.ReplaceAll(fmted, "\n", "\n\t"))
 }
@@ -202,6 +199,8 @@ func gen386() {
 		l.add("MOVL", reg, 4)
 	}
 
+	softfloat := "GO386_softfloat"
+
 	// Save SSE state only if supported.
 	lSSE := layout{stack: l.stack, sp: "SP"}
 	for i := 0; i < 8; i++ {
@@ -211,13 +210,13 @@ func gen386() {
 	p("ADJSP $%d", lSSE.stack)
 	p("NOP SP")
 	l.save()
-	p("CMPB internal∕cpu·X86+const_offsetX86HasSSE2(SB), $1\nJNE nosse")
+	p("#ifndef %s", softfloat)
 	lSSE.save()
-	label("nosse:")
+	p("#endif")
 	p("CALL ·asyncPreempt2(SB)")
-	p("CMPB internal∕cpu·X86+const_offsetX86HasSSE2(SB), $1\nJNE nosse2")
+	p("#ifndef %s", softfloat)
 	lSSE.restore()
-	label("nosse2:")
+	p("#endif")
 	l.restore()
 	p("ADJSP $%d", -lSSE.stack)
 
@@ -511,12 +510,12 @@ func genRISCV() {
 }
 
 func genRISCV64() {
-	// X0 (zero), X1 (LR), X2 (SP), X4 (TP), X27 (g), X31 (TMP) are special.
+	// X0 (zero), X1 (LR), X2 (SP), X3 (GP), X4 (TP), X27 (g), X31 (TMP) are special.
 	var l = layout{sp: "X2", stack: 8}
 
-	// Add integer registers (X3, X5-X26, X28-30).
-	for i := 3; i < 31; i++ {
-		if i == 4 || i == 27 {
+	// Add integer registers (X5-X26, X28-30).
+	for i := 5; i < 31; i++ {
+		if i == 27 {
 			continue
 		}
 		reg := fmt.Sprintf("X%d", i)

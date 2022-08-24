@@ -16,4 +16,3 @@ static assert(__traits(getFunctionVariadicStyle, typesafe) == "typesafe");
 
 static assert(__traits(getFunctionVariadicStyle, (int[] a...) {}) == "typesafe");
 static assert(__traits(getFunctionVariadicStyle, typeof(cstyle)) == "stdarg");
-

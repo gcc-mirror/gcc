@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-options "-O2 -mdejagnu-cpu=power8 -mno-fold-gimple" } */
-/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8" } */
 
 __attribute__ ((altivec(vector__))) long long
 sdiv (__attribute__ ((altivec(vector__))) long long a,

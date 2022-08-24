@@ -60,6 +60,8 @@
 
 (define_mode_iterator V_INT_noQI
 		      [V64HI V64SI V64DI])
+(define_mode_iterator V_INT_noHI
+		      [V64SI V64DI])
 
 ; All of above
 (define_mode_iterator V_ALL
@@ -823,17 +825,8 @@
 
     static char buf[200];
     if (AS_GLOBAL_P (as))
-      {
-	/* Work around assembler bug in which a 64-bit register is expected,
-	but a 32-bit value would be correct.  */
-	int reg = REGNO (operands[2]) - FIRST_VGPR_REG;
-	if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
-	  sprintf (buf, "global_load%%o0\t%%0, v%d, %%1 offset:%%3%s\;"
-			"s_waitcnt\tvmcnt(0)", reg, glc);
-	else
-	  sprintf (buf, "global_load%%o0\t%%0, v[%d:%d], %%1 offset:%%3%s\;"
-			"s_waitcnt\tvmcnt(0)", reg, reg + 1, glc);
-      }
+      sprintf (buf, "global_load%%o0\t%%0, %%2, %%1 offset:%%3%s\;"
+	       "s_waitcnt\tvmcnt(0)", glc);
     else
       gcc_unreachable ();
       
@@ -958,17 +951,7 @@
 
     static char buf[200];
     if (AS_GLOBAL_P (as))
-      {
-	/* Work around assembler bug in which a 64-bit register is expected,
-	but a 32-bit value would be correct.  */
-	int reg = REGNO (operands[1]) - FIRST_VGPR_REG;
-	if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
-	  sprintf (buf, "global_store%%s3\tv%d, %%3, %%0 offset:%%2%s",
-		   reg, glc);
-	else
-	  sprintf (buf, "global_store%%s3\tv[%d:%d], %%3, %%0 offset:%%2%s",
-		   reg, reg + 1, glc);
-      }
+      sprintf (buf, "global_store%%s3\t%%1, %%3, %%0 offset:%%2%s", glc);
     else
       gcc_unreachable ();
 
@@ -2105,10 +2088,10 @@
   })
 
 (define_insn "<expander><mode>3<exec>"
-  [(set (match_operand:V_SI 0 "register_operand"  "= v")
-	(shiftop:V_SI
-	  (match_operand:V_SI 1 "gcn_alu_operand" "  v")
-	  (vec_duplicate:V_SI
+  [(set (match_operand:V_INT_noHI 0 "register_operand"  "= v")
+	(shiftop:V_INT_noHI
+	  (match_operand:V_INT_noHI 1 "gcn_alu_operand" "  v")
+	  (vec_duplicate:<VnSI>
 	    (match_operand:SI 2 "gcn_alu_operand"  "SvB"))))]
   ""
   "v_<revmnemonic>0\t%0, %2, %1"
@@ -2136,10 +2119,10 @@
   })
 
 (define_insn "v<expander><mode>3<exec>"
-  [(set (match_operand:V_SI 0 "register_operand"  "=v")
-	(shiftop:V_SI
-	  (match_operand:V_SI 1 "gcn_alu_operand" " v")
-	  (match_operand:V_SI 2 "gcn_alu_operand" "vB")))]
+  [(set (match_operand:V_INT_noHI 0 "register_operand"  "=v")
+	(shiftop:V_INT_noHI
+	  (match_operand:V_INT_noHI 1 "gcn_alu_operand" " v")
+	  (match_operand:<VnSI> 2 "gcn_alu_operand"	"vB")))]
   ""
   "v_<revmnemonic>0\t%0, %2, %1"
   [(set_attr "type" "vop2")

@@ -7,7 +7,7 @@ int foo ()
   int j;
 
   if (1 == i)
-    return j; /* { dg-bogus "uninitialized" "uninitialized" { xfail *-*-* } } */
+    return j; /* { dg-bogus "uninitialized" "uninitialized" } */
 
   return 0;
 }

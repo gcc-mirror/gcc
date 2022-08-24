@@ -17,7 +17,9 @@ import core.stdc.stdio;
 extern(C++) class ParseTimeTransitiveVisitor(AST) : PermissiveVisitor!AST
 {
     alias visit = PermissiveVisitor!AST.visit;
-    mixin ParseVisitMethods!AST;
+
+    mixin ParseVisitMethods!AST __methods;
+    alias visit = __methods.visit;
 }
 
 /* This mixin implements the AST traversal logic for parse time AST nodes. The same code
@@ -421,12 +423,20 @@ package mixin template ParseVisitMethods(AST)
         //printf("Visiting TypeQualified\n");
         foreach (id; t.idents)
         {
-            if (id.dyncast() == DYNCAST.dsymbol)
+            switch(id.dyncast()) with(DYNCAST)
+            {
+            case dsymbol:
                 (cast(AST.TemplateInstance)id).accept(this);
-            else if (id.dyncast() == DYNCAST.expression)
+                break;
+            case expression:
                 (cast(AST.Expression)id).accept(this);
-            else if (id.dyncast() == DYNCAST.type)
+                break;
+            case type:
                 (cast(AST.Type)id).accept(this);
+                break;
+            default:
+                break;
+            }
         }
     }
 
@@ -852,6 +862,12 @@ package mixin template ParseVisitMethods(AST)
         visitFuncBody(d);
     }
 
+    override void visit(AST.CtorDeclaration d)
+    {
+        //printf("Visiting CtorDeclaration\n");
+        visitFuncBody(d);
+    }
+
     override void visit(AST.StaticCtorDeclaration d)
     {
         //printf("Visiting StaticCtorDeclaration\n");
@@ -961,8 +977,6 @@ package mixin template ParseVisitMethods(AST)
         //printf("Visiting NewExp\n");
         if (e.thisexp)
             e.thisexp.accept(this);
-        if (e.newargs && e.newargs.dim)
-            visitArgs(e.newargs);
         visitType(e.newtype);
         if (e.arguments && e.arguments.dim)
             visitArgs(e.arguments);
@@ -973,8 +987,6 @@ package mixin template ParseVisitMethods(AST)
         //printf("Visiting NewAnonClassExp\n");
         if (e.thisexp)
             e.thisexp.accept(this);
-        if (e.newargs && e.newargs.dim)
-            visitArgs(e.newargs);
         if (e.arguments && e.arguments.dim)
             visitArgs(e.arguments);
         if (e.cd)
@@ -1139,6 +1151,12 @@ package mixin template ParseVisitMethods(AST)
                 t.accept(this);
             (*e.exps )[i].accept(this);
         }
+    }
+
+    override void visit(AST.ThrowExp e)
+    {
+        //printf("Visiting ThrowExp\n");
+        e.e1.accept(this);
     }
 
 // Template Parameter

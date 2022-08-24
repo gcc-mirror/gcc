@@ -1,7 +1,6 @@
 /* PR c++/55095 */
 /* { dg-do compile { target int32 } } */
 /* { dg-options "-O -Wno-shift-overflow" } */
-/* { dg-additional-options "-std=c++11" { target c++ } } */
 
 #define INTM1 (sizeof (int) * __CHAR_BIT__ - 1)
 #define INTM2 (sizeof (int) * __CHAR_BIT__ - 2)

@@ -941,7 +941,7 @@ rtx_writer::print_rtx (const_rtx in_rtx)
     {
 #ifndef GENERATOR_FILE
     case MEM:
-      if (__builtin_expect (final_insns_dump_p, false))
+      if (UNLIKELY (final_insns_dump_p))
 	fprintf (m_outfile, " [");
       else
 	fprintf (m_outfile, " [" HOST_WIDE_INT_PRINT_DEC,

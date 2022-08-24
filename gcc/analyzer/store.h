@@ -310,6 +310,15 @@ struct byte_range
 	    && m_size_in_bytes == other.m_size_in_bytes);
   }
 
+  bool intersects_p (const byte_range &other,
+		     byte_size_t *out_num_overlap_bytes) const;
+
+  bool exceeds_p (const byte_range &other,
+		  byte_range *out_overhanging_byte_range) const;
+
+  bool falls_short_of_p (byte_offset_t offset,
+			 byte_range *out_fall_short_bytes) const;
+
   byte_offset_t get_start_byte_offset () const
   {
     return m_start_byte_offset;
@@ -347,7 +356,7 @@ public:
   concrete_binding (bit_offset_t start_bit_offset, bit_size_t size_in_bits)
   : m_bit_range (start_bit_offset, size_in_bits)
   {}
-  bool concrete_p () const FINAL OVERRIDE { return true; }
+  bool concrete_p () const final override { return true; }
 
   hashval_t hash () const
   {
@@ -361,9 +370,9 @@ public:
     return m_bit_range == other.m_bit_range;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  const concrete_binding *dyn_cast_concrete_binding () const FINAL OVERRIDE
+  const concrete_binding *dyn_cast_concrete_binding () const final override
   { return this; }
 
   const bit_range &get_bit_range () const { return m_bit_range; }
@@ -415,7 +424,7 @@ public:
   typedef symbolic_binding key_t;
 
   symbolic_binding (const region *region) : m_region (region) {}
-  bool concrete_p () const FINAL OVERRIDE { return false; }
+  bool concrete_p () const final override { return false; }
 
   hashval_t hash () const
   {
@@ -426,9 +435,9 @@ public:
     return m_region == other.m_region;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  const symbolic_binding *dyn_cast_symbolic_binding () const FINAL OVERRIDE
+  const symbolic_binding *dyn_cast_symbolic_binding () const final override
   { return this; }
 
   const region *get_region () const { return m_region; }
@@ -509,7 +518,8 @@ public:
 
   void remove_overlapping_bindings (store_manager *mgr,
 				    const binding_key *drop_key,
-				    uncertainty_t *uncertainty);
+				    uncertainty_t *uncertainty,
+				    bool always_overlap);
 
 private:
   void get_overlapping_bindings (const binding_key *key,
@@ -543,9 +553,7 @@ public:
   typedef hash_map <const binding_key *, const svalue *> map_t;
   typedef map_t::iterator iterator_t;
 
-  binding_cluster (const region *base_region)
-  : m_base_region (base_region), m_map (),
-    m_escaped (false), m_touched (false) {}
+  binding_cluster (const region *base_region);
   binding_cluster (const binding_cluster &other);
   binding_cluster& operator=(const binding_cluster &other);
 
@@ -574,7 +582,9 @@ public:
   void purge_region (store_manager *mgr, const region *reg);
   void fill_region (store_manager *mgr, const region *reg, const svalue *sval);
   void zero_fill_region (store_manager *mgr, const region *reg);
-  void mark_region_as_unknown (store_manager *mgr, const region *reg,
+  void mark_region_as_unknown (store_manager *mgr,
+			       const region *reg_to_bind,
+			       const region *reg_for_overlap,
 			       uncertainty_t *uncertainty);
   void purge_state_involving (const svalue *sval,
 			      region_model_manager *sval_mgr);
@@ -609,8 +619,10 @@ public:
 				 store_manager *mgr);
 
   void mark_as_escaped ();
-  void on_unknown_fncall (const gcall *call, store_manager *mgr);
-  void on_asm (const gasm *stmt, store_manager *mgr);
+  void on_unknown_fncall (const gcall *call, store_manager *mgr,
+			  const conjured_purge &p);
+  void on_asm (const gasm *stmt, store_manager *mgr,
+	       const conjured_purge &p);
 
   bool escaped_p () const { return m_escaped; }
   bool touched_p () const { return m_touched; }
@@ -735,7 +747,8 @@ public:
 			   model_merger *merger);
 
   void mark_as_escaped (const region *base_reg);
-  void on_unknown_fncall (const gcall *call, store_manager *mgr);
+  void on_unknown_fncall (const gcall *call, store_manager *mgr,
+			  const conjured_purge &p);
   bool escaped_p (const region *reg) const;
 
   void get_representative_path_vars (const region_model *model,
@@ -762,7 +775,8 @@ public:
 			  region_model_manager *mgr);
 
 private:
-  void remove_overlapping_bindings (store_manager *mgr, const region *reg);
+  void remove_overlapping_bindings (store_manager *mgr, const region *reg,
+				    uncertainty_t *uncertainty);
   tristate eval_alias_1 (const region *base_reg_a,
 			 const region *base_reg_b) const;
 

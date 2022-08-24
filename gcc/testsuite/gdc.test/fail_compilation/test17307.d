@@ -1,4 +1,4 @@
-/* 
+/*
 TEST_OUTPUT:
 ---
 fail_compilation/test17307.d(9): Error: anonymous struct can only be a part of an aggregate, not module `test17307`

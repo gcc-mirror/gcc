@@ -677,7 +677,7 @@ if (isSomeString!(typeof(fmt)))
     import std.format : checkFormatException;
 
     alias e = checkFormatException!(fmt, Args);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .formattedWrite(w, fmt, args);
 }
 

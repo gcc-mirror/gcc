@@ -15,10 +15,10 @@ class TestMembers(TemplateArg)
   public:
     /**
 
-       a static method 
+       a static method
 
        Params: idx = index
-   
+
     */
     static void PublicStaticMethod(int  idx)
     {
@@ -28,4 +28,3 @@ class TestMembers(TemplateArg)
 void main()
 {
 }
-

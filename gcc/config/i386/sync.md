@@ -373,11 +373,20 @@
    (match_operand:SI 7 "const_int_operand")]	;; failure model
   "TARGET_CMPXCHG"
 {
-  emit_insn
-   (gen_atomic_compare_and_swap<mode>_1
-    (operands[1], operands[2], operands[3], operands[4], operands[6]));
-  ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
-		     const0_rtx);
+  if (TARGET_RELAX_CMPXCHG_LOOP)
+  {
+    ix86_expand_cmpxchg_loop (&operands[0], operands[1], operands[2],
+			      operands[3], operands[4], operands[6],
+			      false, NULL);
+  }
+  else
+  {
+    emit_insn
+      (gen_atomic_compare_and_swap<mode>_1
+	(operands[1], operands[2], operands[3], operands[4], operands[6]));
+      ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
+			const0_rtx);
+  }
   DONE;
 })
 
@@ -397,25 +406,35 @@
    (match_operand:SI 7 "const_int_operand")]	;; failure model
   "TARGET_CMPXCHG"
 {
-  if (<MODE>mode == DImode && TARGET_64BIT)
-    {
-      emit_insn
-       (gen_atomic_compare_and_swapdi_1
-	(operands[1], operands[2], operands[3], operands[4], operands[6]));
-    }
+  int doubleword = !(<MODE>mode == DImode && TARGET_64BIT);
+  if (TARGET_RELAX_CMPXCHG_LOOP)
+  {
+    ix86_expand_cmpxchg_loop (&operands[0], operands[1], operands[2],
+			      operands[3], operands[4], operands[6],
+			      doubleword, NULL);
+  }
   else
-    {
-      machine_mode hmode = <CASHMODE>mode;
+  {
+    if (!doubleword)
+      {
+	emit_insn
+	  (gen_atomic_compare_and_swapdi_1
+	   (operands[1], operands[2], operands[3], operands[4], operands[6]));
+      }
+    else
+      {
+	machine_mode hmode = <CASHMODE>mode;
 
-      emit_insn
-       (gen_atomic_compare_and_swap<mode>_doubleword
-        (operands[1], operands[2], operands[3],
-	 gen_lowpart (hmode, operands[4]), gen_highpart (hmode, operands[4]),
-	 operands[6]));
-    }
+	emit_insn
+	  (gen_atomic_compare_and_swap<mode>_doubleword
+	   (operands[1], operands[2], operands[3],
+	    gen_lowpart (hmode, operands[4]), gen_highpart (hmode, operands[4]),
+	    operands[6]));
+      }
 
-  ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
-		     const0_rtx);
+    ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
+		       const0_rtx);
+  }
   DONE;
 })
 
@@ -726,10 +745,10 @@
 	    [(match_operand:SWI 0 "memory_operand" "+m")
 	     (match_operand:SI 3 "const_int_operand")]		;; model
 	    UNSPECV_XCHG)
-	  (match_operand:SWI 2 "const_int_operand" "i")))
+	  (match_operand:SWI 2 "const_int_operand")))
    (set (match_dup 0)
 	(plus:SWI (match_dup 0)
-		  (match_operand:SWI 1 "const_int_operand" "i")))]
+		  (match_operand:SWI 1 "const_int_operand")))]
   "(unsigned HOST_WIDE_INT) INTVAL (operands[1])
    == -(unsigned HOST_WIDE_INT) INTVAL (operands[2])"
 {

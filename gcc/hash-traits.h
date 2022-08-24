@@ -28,6 +28,11 @@ struct typed_free_remove
   static inline void remove (Type *p);
 };
 
+template <typename Type>
+struct typed_const_free_remove
+{
+  static inline void remove (const Type *p);
+};
 
 /* Remove with free.  */
 
@@ -36,6 +41,13 @@ inline void
 typed_free_remove <Type>::remove (Type *p)
 {
   free (p);
+}
+
+template <typename Type>
+inline void
+typed_const_free_remove <Type>::remove (const Type *p)
+{
+  free (const_cast <Type *> (p));
 }
 
 /* Helpful type for removing with delete.  */
@@ -304,6 +316,11 @@ struct ggc_ptr_hash : pointer_hash <T>, ggc_remove <T *> {};
 
 template <typename T>
 struct ggc_cache_ptr_hash : pointer_hash <T>, ggc_cache_remove <T *> {};
+
+/* Traits for string elements that should be freed when an element is
+   deleted.  */
+
+struct free_string_hash : string_hash, typed_const_free_remove <char> {};
 
 /* Traits for string elements that should not be freed when an element
    is deleted.  */

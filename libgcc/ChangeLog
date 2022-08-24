@@ -1,3 +1,322 @@
+2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/sfp-machine.h (_FP_NANFRAC_H): New.
+	(_FP_NANFRAC_H): Ditto.
+	(_FP_NANSIGN_H): Ditto.
+	* config/riscv/t-softfp32 (softfp_extensions): Add HF related
+	routines.
+	(softfp_truncations): Ditto.
+	(softfp_extras): Ditto.
+	* config/riscv/t-softfp64 (softfp_extras): Add HF related routines.
+
+2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* soft-fp/fixhfdi.c: New.
+	* soft-fp/fixhfsi.c: Likewise.
+	* soft-fp/fixunshfdi.c: Likewise.
+	* soft-fp/fixunshfsi.c: Likewise.
+	* soft-fp/floatdihf.c: Likewise.
+	* soft-fp/floatsihf.c: Likewise.
+	* soft-fp/floatundihf.c: Likewise.
+	* soft-fp/floatunsihf.c: Likewise.
+	* soft-fp/adddf3.c: Updating copyright years, removing "Contributed by"
+	lines and update URL for license.
+	* soft-fp/addsf3.c: Likewise.
+	* soft-fp/addtf3.c: Likewise.
+	* soft-fp/divdf3.c: Likewise.
+	* soft-fp/divsf3.c: Likewise.
+	* soft-fp/divtf3.c: Likewise.
+	* soft-fp/double.h: Likewise.
+	* soft-fp/eqdf2.c: Likewise.
+	* soft-fp/eqhf2.c: Likewise.
+	* soft-fp/eqsf2.c: Likewise.
+	* soft-fp/eqtf2.c: Likewise.
+	* soft-fp/extenddftf2.c: Likewise.
+	* soft-fp/extended.h: Likewise.
+	* soft-fp/extendhfdf2.c: Likewise.
+	* soft-fp/extendhfsf2.c: Likewise.
+	* soft-fp/extendhftf2.c: Likewise.
+	* soft-fp/extendhfxf2.c: Likewise.
+	* soft-fp/extendsfdf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/fixdfdi.c: Likewise.
+	* soft-fp/fixdfsi.c: Likewise.
+	* soft-fp/fixdfti.c: Likewise.
+	* soft-fp/fixhfti.c: Likewise.
+	* soft-fp/fixsfdi.c: Likewise.
+	* soft-fp/fixsfsi.c: Likewise.
+	* soft-fp/fixsfti.c: Likewise.
+	* soft-fp/fixtfdi.c: Likewise.
+	* soft-fp/fixtfsi.c: Likewise.
+	* soft-fp/fixtfti.c: Likewise.
+	* soft-fp/fixunsdfdi.c: Likewise.
+	* soft-fp/fixunsdfsi.c: Likewise.
+	* soft-fp/fixunsdfti.c: Likewise.
+	* soft-fp/fixunshfti.c: Likewise.
+	* soft-fp/fixunssfdi.c: Likewise.
+	* soft-fp/fixunssfsi.c: Likewise.
+	* soft-fp/fixunssfti.c: Likewise.
+	* soft-fp/fixunstfdi.c: Likewise.
+	* soft-fp/fixunstfsi.c: Likewise.
+	* soft-fp/fixunstfti.c: Likewise.
+	* soft-fp/floatdidf.c: Likewise.
+	* soft-fp/floatdisf.c: Likewise.
+	* soft-fp/floatditf.c: Likewise.
+	* soft-fp/floatsidf.c: Likewise.
+	* soft-fp/floatsisf.c: Likewise.
+	* soft-fp/floatsitf.c: Likewise.
+	* soft-fp/floattidf.c: Likewise.
+	* soft-fp/floattihf.c: Likewise.
+	* soft-fp/floattisf.c: Likewise.
+	* soft-fp/floattitf.c: Likewise.
+	* soft-fp/floatundidf.c: Likewise.
+	* soft-fp/floatundisf.c: Likewise.
+	* soft-fp/floatunditf.c: Likewise.
+	* soft-fp/floatunsidf.c: Likewise.
+	* soft-fp/floatunsisf.c: Likewise.
+	* soft-fp/floatunsitf.c: Likewise.
+	* soft-fp/floatuntidf.c: Likewise.
+	* soft-fp/floatuntihf.c: Likewise.
+	* soft-fp/floatuntisf.c: Likewise.
+	* soft-fp/floatuntitf.c: Likewise.
+	* soft-fp/gedf2.c: Likewise.
+	* soft-fp/gesf2.c: Likewise.
+	* soft-fp/getf2.c: Likewise.
+	* soft-fp/half.h: Likewise.
+	* soft-fp/ledf2.c: Likewise.
+	* soft-fp/lesf2.c: Likewise.
+	* soft-fp/letf2.c: Likewise.
+	* soft-fp/muldf3.c: Likewise.
+	* soft-fp/mulsf3.c: Likewise.
+	* soft-fp/multf3.c: Likewise.
+	* soft-fp/negdf2.c: Likewise.
+	* soft-fp/negsf2.c: Likewise.
+	* soft-fp/negtf2.c: Likewise.
+	* soft-fp/op-1.h: Likewise.
+	* soft-fp/op-2.h: Likewise.
+	* soft-fp/op-4.h: Likewise.
+	* soft-fp/op-8.h: Likewise.
+	* soft-fp/op-common.h: Likewise.
+	* soft-fp/quad.h: Likewise.
+	* soft-fp/single.h: Likewise.
+	* soft-fp/soft-fp.h: Likewise.
+	* soft-fp/subdf3.c: Likewise.
+	* soft-fp/subsf3.c: Likewise.
+	* soft-fp/subtf3.c: Likewise.
+	* soft-fp/truncdfhf2.c: Likewise.
+	* soft-fp/truncdfsf2.c: Likewise.
+	* soft-fp/truncsfhf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfhf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/trunctfxf2.c: Likewise.
+	* soft-fp/truncxfhf2.c: Likewise.
+	* soft-fp/unorddf2.c: Likewise.
+	* soft-fp/unordsf2.c: Likewise.
+	* soft-fp/unordtf2.c: Likewise.
+
+2022-07-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib2funcs.c (udivmodsi4): Update AND mask.
+	* config/arc/lib1funcs.S (umodsi3): Don't use it for RF16
+	configurations.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config.host: Removed tilegx and tilepro entries.
+	* config/tilegx/sfp-machine.h: Removed.
+	* config/tilegx/sfp-machine32.h: Removed.
+	* config/tilegx/sfp-machine64.h: Removed.
+	* config/tilegx/t-crtstuff: Removed.
+	* config/tilegx/t-softfp: Removed.
+	* config/tilegx/t-tilegx: Removed.
+	* config/tilepro/atomic.c: Removed.
+	* config/tilepro/atomic.h: Removed.
+	* config/tilepro/linux-unwind.h: Removed.
+	* config/tilepro/sfp-machine.h: Removed.
+	* config/tilepro/softdivide.c: Removed.
+	* config/tilepro/softmpy.S: Removed.
+	* config/tilepro/t-crtstuff: Removed.
+	* config/tilepro/t-tilepro: Removed.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/lib1funcs.S (__clrsbsi2): New function.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add _clrsbsi2.
+
+2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR libgcc/27576
+	* crtstuff.c (__EH_FRAME_BEGIN__): Aligned to pointer size.
+
+2022-05-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR libgcc/105708
+	* config/aarch64/lse-init.c: Increase constructor priority.
+
+2022-05-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/104689
+	* config/aarch64/aarch64-unwind.h (aarch64_frob_update_context):
+	Handle the !REG_UNSAVED case.
+	* unwind-dw2.c (execute_cfa_program): Fail toggle if !REG_UNSAVED.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* Makefile.in (D32PBIT_FUNCS): Add _hf_to_sd and _sd_to_hf.
+	(D64PBIT_FUNCS): Add _hf_to_dd and _dd_to_hf.
+	(D128PBIT_FUNCS): Add _hf_to_td _td_to_hf.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config.host: Add t-dfprules to AArch64 targets.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* configure: Regenerate.
+
+2022-05-13  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* config/aarch64/lse.S: Define BARRIER and handle memory MODEL 5.
+	* config/aarch64/t-lse: Add a 5th memory model for _sync functions.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+	    Hans-Peter Helfert  <peter-helfert@t-online.de>
+
+	PR gcov-profile/105535
+	* libgcov.h (struct gcov_info): Use gcov_unsigned_t for
+	n_functions.
+
+2022-05-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Add ATTRIBUTE_UNUSED.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (ftw_read_file): Improve notice using xstrerror().
+	(gcov_profile_merge_stream): Likewise.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (consume_stream): New.
+	(get_target_profiles_for_merge): Likewise.
+	(gcov_profile_merge_stream): Likewise.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (ftw_read_file): Use size_t for strlen() variables.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (read_gcda_file): Do not open file.
+	(ftw_read_file): Open file here.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (read_gcda_file): Prepend new info object to global
+	list.
+	(ftw_read_file): Remove list append here.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (read_gcda_file): Do not duplicate filename.
+	(ftw_read_file): Duplicate filename for read_gcda_file().
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov.h (__gcov_info_to_gcda): Mention __gcov_filename_to_gcfn().
+	(__gcov_filename_to_gcfn): Declare and document.
+	* libgcov-driver.c (dump_string): New.
+	(__gcov_filename_to_gcfn): Likewise.
+	(__gcov_info_to_gcda): Adjust comment to match C11 standard language.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_seek): Remove define and declaration.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Add mode
+	parameter.  Pass mode to gcov_open() calls.
+	* libgcov-driver.c (dump_one_gcov):  Add mode parameter.  Pass mode to
+	gcov_exit_open_gcda_file() call.
+	(gcov_do_dump): Add mode parameter.  Pass mode to dump_one_gcov()
+	calls.
+	(__gcov_dump_one):  Open file for reading and writing.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Open file for
+	reading and writing.
+	* libgcov-util.c (read_gcda_file): Open file for reading.
+	* libgcov.h (gcov_open): Delete declaration.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (gcov_profile_merge): Return the list of merged
+	profiles.  Accept empty target and source profile lists.
+
+2022-04-08  Sergei Trofimovich  <siarheit@google.com>
+
+	* config/ia64/fde-glibc.c: Make a no-op in inhibit_libc mode.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure: Regenerate file.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/crtfastmath.c: New file.
+	* config/loongarch/linux-unwind.h: Like wise.
+	* config/loongarch/sfp-machine.h: Like wise.
+	* config/loongarch/t-crtstuff: Like wise.
+	* config/loongarch/t-loongarch: Like wise.
+	* config/loongarch/t-loongarch64: Like wise.
+	* config/loongarch/t-softfp-tf: Like wise.
+	* config.host: Add LoongArch tuples.
+	* configure.ac: Add LoongArch support.
+
+2022-03-19  Sergei Trofimovich  <slyfox at gentoo dot org>
+
+	PR libgcc/86224
+	* config/m68k/lb1sf68.S (__mulsi3_internal): Internal, hidden alias
+	for __mulsi3.
+	(__udivsi3_internal, __divsi3_internal): Similarly.
+	(__umodsi3, __modsi3): Use the internal function names.
+
+2022-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/102215
+	* config/gcn/atomic.c (__sync_val_compare_and_swap_##SIZE): Move
+	a line up to non-arg-dependent value first.
+	(__ATOMIC_COMPARE_EXCHANGE): Define + call to generate
+	__atomic_compare_exchange_{1,2}.
+
+2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/t-darwin-ehs: Add darwin-fallback.o.
+	* config/t-darwin-ehs: Add dependency on unwind.h.
+
+2022-02-24  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Call find_fde_tail
+	with 0 instead of NULL.
+
+2022-02-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/104656
+	* configure.ac: --disable-gcov if targetting bpf-*.
+	* configure: Regenerate.
+
+2022-01-25  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/104207
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Add NULL check.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c: Rename .c names to .cc.

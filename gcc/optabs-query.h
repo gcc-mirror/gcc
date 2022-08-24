@@ -178,8 +178,8 @@ bool can_conditionally_move_p (machine_mode mode);
 opt_machine_mode qimode_for_vec_perm (machine_mode);
 bool selector_fits_mode_p (machine_mode, const vec_perm_indices &);
 bool can_vec_perm_var_p (machine_mode);
-bool can_vec_perm_const_p (machine_mode, const vec_perm_indices &,
-			   bool = true);
+bool can_vec_perm_const_p (machine_mode, machine_mode,
+			   const vec_perm_indices &, bool = true);
 /* Find a widening optab even if it doesn't widen as much as we want.  */
 #define find_widening_optab_handler(A, B, C) \
   find_widening_optab_handler_and_mode (A, B, C, NULL)
@@ -195,6 +195,7 @@ bool can_atomic_load_p (machine_mode);
 bool lshift_cheap_p (bool);
 bool supports_vec_gather_load_p (machine_mode = E_VOIDmode);
 bool supports_vec_scatter_store_p (machine_mode = E_VOIDmode);
+bool can_vec_extract (machine_mode, machine_mode);
 
 /* Version of find_widening_optab_handler_and_mode that operates on
    specific mode types.  */

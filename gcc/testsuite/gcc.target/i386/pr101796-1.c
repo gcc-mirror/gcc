@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512bw" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-final {scan-assembler-times "vpsrlw\[ \\t\]" 1 } } */
 /* { dg-final {scan-assembler-times "vpsllw\[ \\t\]" 1 } } */
 /* { dg-final {scan-assembler-times "vpsraw\[ \\t\]" 1 } } */

@@ -232,8 +232,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	  if (targets.length () == 1)
 	    target = targets[0];
 	  else
-	    target = cgraph_node::get_create
-		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+	    target = cgraph_node::get_create (builtin_decl_unreachable ());
 
 	  if (dump_enabled_p ())
 	    {
@@ -1343,8 +1342,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return ipa_cdtor_merge (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
+  {
+    return ipa_cdtor_merge ();
+  }
 
 }; // class pass_ipa_cdtor_merge
 
@@ -1566,7 +1568,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return ipa_single_use (); }
+  unsigned int execute (function *) final override { return ipa_single_use (); }
 
 }; // class pass_ipa_single_use
 

@@ -37,6 +37,10 @@
 #include <windows.h>
 #endif
 
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#  define __constinit [[clang::require_constant_initialization]]
+#endif
+
 namespace
 {
   using std::string;
@@ -522,11 +526,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   error_category::~error_category() = default;
 
-  const error_category&
-  _V2::system_category() noexcept { return system_category_instance.obj; }
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
   const error_category&
-  _V2::generic_category() noexcept { return generic_category_instance.obj; }
+  system_category() noexcept { return system_category_instance.obj; }
+
+  const error_category&
+  generic_category() noexcept { return generic_category_instance.obj; }
+
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   system_error::~system_error() = default;
 

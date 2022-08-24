@@ -11,4 +11,3 @@ class Arm2 {
   alias int ListHead;
   Queue2.ListHead mqueue;
 }
-

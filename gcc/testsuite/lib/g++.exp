@@ -32,7 +32,11 @@ load_lib target-libpath.exp
 
 
 set gpp_compile_options ""
-set gpp_std_list { }
+# Allow gpp_std_list to be set in configuration files, e.g., ~/.dejagnurc
+if ![info exists gpp_std_list] {
+    set gpp_std_list { }
+}
+# Allow gpp_std_list to be set from the environment.
 if [info exists env(GXX_TESTSUITE_STDS)] {
     set gpp_std_list [split $env(GXX_TESTSUITE_STDS) ","]
 }

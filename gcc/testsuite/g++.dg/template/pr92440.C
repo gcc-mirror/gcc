@@ -3,8 +3,8 @@
 
 template <int T> // { dg-error "template parameter" }
 struct S {
-    template <class U>
-    friend struct S;  // { dg-message "note: redeclared here as" }
+    template <class U> // { dg-message "note: redeclared here as" }
+    friend struct S;
 };
 
 S<0> s;

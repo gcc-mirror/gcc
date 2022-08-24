@@ -411,51 +411,42 @@ package body Uname is
    --------------------------
 
    procedure Get_Unit_Name_String
-     (N      : Unit_Name_Type;
+     (Buf    : in out Bounded_String;
+      N      : Unit_Name_Type;
       Suffix : Boolean := True)
    is
-      Unit_Is_Body : Boolean;
-
    begin
-      Get_Decoded_Name_String (N);
-      Unit_Is_Body := Name_Buffer (Name_Len) = 'b';
-      Set_Casing (Identifier_Casing (Source_Index (Main_Unit)));
+      Buf.Length := 0;
+      Append_Decoded (Buf, N);
 
-      --  A special fudge, normally we don't have operator symbols present,
-      --  since it is always an error to do so. However, if we do, at this
-      --  stage it has the form:
+      --  Buf always ends with "%s" or "%b", which we either remove, or replace
+      --  with " (spec)" or " (body)". Set_Casing of Buf after checking for
+      --  (lower case) 's'/'b', and before appending (lower case) "spec" or
+      --  "body".
 
-      --    "and"
+      pragma Assert (Buf.Length >= 3);
+      pragma Assert (Buf.Chars (1) /= '"');
+      pragma Assert (Buf.Chars (Buf.Length) in 's' | 'b');
 
-      --  and the %s or %b has already been eliminated so put 2 chars back
+      declare
+         S : constant String :=
+           (if Buf.Chars (Buf.Length) = 's' then " (spec)" else " (body)");
+      begin
+         Buf.Length := Buf.Length - 1; -- remove 's' or 'b'
+         pragma Assert (Buf.Chars (Buf.Length) = '%');
+         Buf.Length := Buf.Length - 1; -- remove '%'
+         Set_Casing (Buf, Identifier_Casing (Source_Index (Main_Unit)));
 
-      if Name_Buffer (1) = '"' then
-         Name_Len := Name_Len + 2;
-      end if;
-
-      --  Now adjust the %s or %b to (spec) or (body)
-
-      if Suffix then
-         if Unit_Is_Body then
-            Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (body)";
-         else
-            Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (spec)";
+         if Suffix then
+            Append (Buf, S);
          end if;
-      end if;
+      end;
 
-      for J in 1 .. Name_Len loop
-         if Name_Buffer (J) = '-' then
-            Name_Buffer (J) := '.';
+      for J in 1 .. Buf.Length loop
+         if Buf.Chars (J) = '-' then
+            Buf.Chars (J) := '.';
          end if;
       end loop;
-
-      --  Adjust Name_Len
-
-      if Suffix then
-         Name_Len := Name_Len + (7 - 2);
-      else
-         Name_Len := Name_Len - 2;
-      end if;
    end Get_Unit_Name_String;
 
    ----------------
@@ -721,9 +712,23 @@ package body Uname is
    ---------------------
 
    procedure Write_Unit_Name (N : Unit_Name_Type) is
+      Buf : Bounded_String;
    begin
-      Get_Unit_Name_String (N);
-      Write_Str (Name_Buffer (1 .. Name_Len));
+      Get_Unit_Name_String (Buf, N);
+      Write_Str (Buf.Chars (1 .. Buf.Length));
    end Write_Unit_Name;
+
+   -------------------------------
+   -- Write_Unit_Name_For_Debug --
+   -------------------------------
+
+   procedure Write_Unit_Name_For_Debug (N : Unit_Name_Type) is
+   begin
+      if Is_Valid_Name (N) then
+         Write_Unit_Name (N);
+      else
+         Write_Name_For_Debug (N);
+      end if;
+   end Write_Unit_Name_For_Debug;
 
 end Uname;

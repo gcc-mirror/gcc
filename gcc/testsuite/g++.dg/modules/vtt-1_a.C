@@ -31,6 +31,6 @@ export void make_foo ()
   derived d;
 }
 
-// { dg-final {scan-assembler "_ZTV4base:" } }
-// { dg-final {scan-assembler "_ZTV7derived:" } }
-// { dg-final {scan-assembler "_ZTT7derived:" } }
+// { dg-final {scan-assembler "_ZTVW3foo4base:" } }
+// { dg-final {scan-assembler "_ZTVW3foo7derived:" } }
+// { dg-final {scan-assembler "_ZTTW3foo7derived:" } }

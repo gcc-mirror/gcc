@@ -41,7 +41,7 @@ void destroy(T)(ref T obj) if (is(T == struct))
     _destructRecurse(obj);
     () @trusted {
         auto buf = (cast(ubyte*) &obj)[0 .. T.sizeof];
-        auto init = cast(ubyte[])typeid(T).init();
+        const init = cast(ubyte[]) __traits(initSymbol, T);
         if (init.ptr is null) // null ptr means initialize to 0s
             buf[] = 0;
         else

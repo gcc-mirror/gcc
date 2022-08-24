@@ -169,6 +169,3 @@ int tiszero()
                         return false;
         return true;
 }
-
-
-

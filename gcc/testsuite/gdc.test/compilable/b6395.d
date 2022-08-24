@@ -22,4 +22,3 @@ void applyNoRemoveRegex()
     auto a = find!((a){return match(e);})(map!regex(noRemoveStr));
   }
 }
-

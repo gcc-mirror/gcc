@@ -40,6 +40,9 @@
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
 #if __cplusplus >= 201103L
 # include <type_traits>
+#if !defined __UINT_LEAST16_TYPE__ || !defined __UINT_LEAST32_TYPE__
+# include <cstdint>
+#endif
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
@@ -212,14 +215,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (__s1 == __s2) // unlikely, but saves a lot of work
 	    return __s1;
-#if __cpp_constexpr_dynamic_alloc
-	  // The overlap detection below fails due to PR c++/89074,
-	  // so use a temporary buffer instead.
-	  char_type* __tmp = new char_type[__n];
-	  copy(__tmp, __s2, __n);
-	  copy(__s1, __tmp, __n);
-	  delete[] __tmp;
-#else
 	  const auto __end = __s2 + __n - 1;
 	  bool __overlap = false;
 	  for (std::size_t __i = 0; __i < __n - 1; ++__i)
@@ -241,7 +236,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  else
 	    copy(__s1, __s2, __n);
-#endif
 	  return __s1;
 	}
 #endif
@@ -728,8 +722,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
 
-#include <cstdint>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -738,10 +730,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char16_t>
     {
       typedef char16_t          char_type;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-      typedef uint_least16_t    int_type;
-#elif defined __UINT_LEAST16_TYPE__
+#ifdef __UINT_LEAST16_TYPE__
       typedef __UINT_LEAST16_TYPE__	    int_type;
+#elif defined _GLIBCXX_USE_C99_STDINT_TR1
+      typedef uint_least16_t    int_type;
 #else
       typedef make_unsigned<char16_t>::type int_type;
 #endif
@@ -859,10 +851,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char32_t>
     {
       typedef char32_t          char_type;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-      typedef uint_least32_t    int_type;
-#elif defined __UINT_LEAST32_TYPE__
+#ifdef __UINT_LEAST32_TYPE__
       typedef __UINT_LEAST32_TYPE__	    int_type;
+#elif defined _GLIBCXX_USE_C99_STDINT_TR1
+      typedef uint_least32_t    int_type;
 #else
       typedef make_unsigned<char32_t>::type int_type;
 #endif

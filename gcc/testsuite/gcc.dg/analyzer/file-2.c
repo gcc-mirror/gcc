@@ -1,4 +1,7 @@
-#include <stdio.h>
+typedef struct FILE   FILE;
+
+FILE* fopen (const char*, const char*);
+int   fclose (FILE*);
 
 struct foo
 {

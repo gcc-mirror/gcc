@@ -39,7 +39,7 @@ First we need to include the relevant header:
 
 All state associated with compilation is associated with a
 :type:`gccjit::context`, which is a thin C++ wrapper around the C API's
-:c:type:`gcc_jit_context *`.
+:c:expr:`gcc_jit_context *`.
 
 Create one using :func:`gccjit::context::acquire`:
 
@@ -121,7 +121,7 @@ in this case just one:
   params.push_back (param_i);
 
 Now we can create the function, using
-:c:func:`gccjit::context::new_function`:
+:cpp:func:`gccjit::context::new_function`:
 
 .. code-block:: c++
 
@@ -194,7 +194,7 @@ OK, we've populated the context.  We can now compile it using
    gcc_jit_result *result;
    result = ctxt.compile ();
 
-and get a :c:type:`gcc_jit_result *`.
+and get a :c:expr:`gcc_jit_result *`.
 
 We can now use :c:func:`gcc_jit_result_get_code` to look up a specific
 machine code routine within the result, in this case, the function we
@@ -286,7 +286,7 @@ before compiling:
         .cfi_endproc
   .LFE6:
         .size   square, .-square
-        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-0.5.1920c315ff984892399893b380305ab36e07b455.fc20)"
+        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
         .section       .note.GNU-stack,"",@progbits
 
 By default, no optimizations are performed, the equivalent of GCC's
@@ -315,7 +315,7 @@ By default, no optimizations are performed, the equivalent of GCC's
         .cfi_endproc
   .LFE7:
         .size   square, .-square
-        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-0.5.1920c315ff984892399893b380305ab36e07b455.fc20)"
+        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
         .section        .note.GNU-stack,"",@progbits
 
 Naturally this has only a small effect on such a trivial function.

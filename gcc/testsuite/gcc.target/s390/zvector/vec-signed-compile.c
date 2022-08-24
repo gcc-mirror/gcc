@@ -31,6 +31,10 @@ vcgdb_mem (vector double *a)
   return vec_signed (*a);
 }
 
+/* The following immediates are being converted and directly stored
+   in the literal pool so no explicit conversion is necessary.   */
+/* { dg-final { scan-assembler-times "vl\t%v\[0-9\]+,\.L\[0-9\]+\-\.L\[0-9\]+\\(%r\[0-9\]+\\)" 2 } } */
+
 vector signed int
 vcfeb_imm ()
 {
@@ -43,5 +47,5 @@ vcgdb_imm ()
   return vec_signed ((vector double){ 1.0, 2.0 });
 }
 
-/* { dg-final { scan-assembler-times "vcfeb\t" 3 } } */
-/* { dg-final { scan-assembler-times "vcgdb\t" 3 } } */
+/* { dg-final { scan-assembler-times "vcfeb\t" 2 } } */
+/* { dg-final { scan-assembler-times "vcgdb\t" 2 } } */

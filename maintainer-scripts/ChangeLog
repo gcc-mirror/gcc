@@ -1,3 +1,17 @@
+2022-07-28  Martin Liska  <mliska@suse.cz>
+
+	* update_web_docs_git: Use sphinx-build from a venv so that
+	we can use a recent version.
+
+2022-05-20  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Disable snapshots from the gcc-9 branch.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 13 related.
+	Add GCC 12 snapshots from the respective branch.
+
 2021-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Stop doing gcc-8 snapshots.

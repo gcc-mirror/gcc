@@ -40,7 +40,10 @@ generic
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Functional_Vectors with SPARK_Mode is
+package Ada.Containers.Functional_Vectors with
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
+is
 
    subtype Extended_Index is Index_Type'Base range
      Index_Type'Pred (Index_Type'First) .. Index_Type'Last;
@@ -342,6 +345,12 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
    --  valid (in particular, it does not break the ownership policy of SPARK,
    --  i.e. it does not contain pointers that could be used to alias mutable
    --  data).
+
+   function Empty_Sequence return Sequence with
+   --  Return an empty Sequence
+
+     Global => null,
+     Post   => Length (Empty_Sequence'Result) = 0;
 
    ---------------------------
    --  Iteration Primitives --

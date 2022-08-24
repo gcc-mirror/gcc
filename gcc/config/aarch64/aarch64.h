@@ -148,9 +148,6 @@
 
 #define PCC_BITFIELD_TYPE_MATTERS	1
 
-/* Major revision number of the ARM Architecture implemented by the target.  */
-extern unsigned aarch64_architecture_version;
-
 /* Instruction tuning/selection flags.  */
 
 /* Bit values used to identify processor capabilities.  */
@@ -278,7 +275,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
 #define AARCH64_FL_FOR_ARCH9       \
-  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9)
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
+   | AARCH64_FL_F16)
 
 /* Macros to test ISA flags.  */
 
@@ -814,8 +812,7 @@ enum target_cpus
 
 /* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT \
-  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
+# define TARGET_CPU_DEFAULT TARGET_CPU_generic
 #endif
 
 /* If inserting NOP before a mult-accumulate insn remember to adjust the
@@ -922,9 +919,21 @@ struct GTY (()) aarch64_frame
 	 Indicated by CALLEE_ADJUST == 0 && EMIT_FRAME_CHAIN.
 
      These fields indicate which registers we've decided to handle using
-     (1) or (2), or INVALID_REGNUM if none.  */
-  unsigned wb_candidate1;
-  unsigned wb_candidate2;
+     (1) or (2), or INVALID_REGNUM if none.
+
+     In some cases we don't always need to pop all registers in the push
+     candidates, pop candidates record which registers need to be popped
+     eventually.  The initial value of a pop candidate is copied from its
+     corresponding push candidate.
+
+     Currently, different pop candidates are only used for shadow call
+     stack.  When "-fsanitize=shadow-call-stack" is specified, we replace
+     x30 in the pop candidate with INVALID_REGNUM to ensure that x30 is
+     not popped twice.  */
+  unsigned wb_push_candidate1;
+  unsigned wb_push_candidate2;
+  unsigned wb_pop_candidate1;
+  unsigned wb_pop_candidate2;
 
   /* Big-endian SVE frames need a spare predicate register in order
      to save vector registers in the correct layout for unwinding.
@@ -932,6 +941,9 @@ struct GTY (()) aarch64_frame
   unsigned spare_pred_reg;
 
   bool laid_out;
+
+  /* True if shadow call stack should be enabled for the current function.  */
+  bool is_scs_enabled;
 };
 
 typedef struct GTY (()) machine_function

@@ -72,7 +72,7 @@ package System.Stack_Checking.Operations is
 private
    Cache : aliased Stack_Access := Null_Stack;
 
-   pragma Export (C, Cache, "_gnat_stack_cache");
-   pragma Export (C, Stack_Check, "_gnat_stack_check");
+   pragma Export (C, Cache, "__gnat_stack_cache");
+   pragma Export (C, Stack_Check, "__gnat_stack_check");
 
 end System.Stack_Checking.Operations;

@@ -60,6 +60,7 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
    --with-arch is ignored if -march or -mcpu is specified.
    --with-abi is ignored if -mabi is specified.
    --with-tune is ignored if -mtune or -mcpu is specified.
+   --with-isa-spec is ignored if -misa-spec is specified.
 
    But using default -march/-mtune value if -mcpu don't have valid option.  */
 #define OPTION_DEFAULT_SPECS \
@@ -70,6 +71,7 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 	   "  %{!mcpu=*:-march=%(VALUE)}"				\
 	   "  %{mcpu=*:%:riscv_expand_arch_from_cpu(%* %(VALUE))}}" },	\
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
+  {"isa_spec", "%{!misa-spec=*:-misa-spec=%(VALUE)}" }, \
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
@@ -520,19 +522,20 @@ enum reg_class
 #define SMALL_OPERAND(VALUE) \
   ((unsigned HOST_WIDE_INT) (VALUE) + IMM_REACH/2 < IMM_REACH)
 
+#define POLY_SMALL_OPERAND_P(POLY_VALUE)		\
+  (POLY_VALUE.is_constant () ?				\
+     SMALL_OPERAND (POLY_VALUE.to_constant ()) : false)
+     
 /* True if VALUE can be loaded into a register using LUI.  */
 
 #define LUI_OPERAND(VALUE)						\
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
 
-/* If this is a single bit mask, then we can load it with bseti.  But this
-   is not useful for any of the low 31 bits because we can use addi or lui
-   to load them.  It is wrong for loading SImode 0x80000000 on rv64 because it
-   needs to be sign-extended.  So we restrict this to the upper 32-bits
-   only.  */
-#define SINGLE_BIT_MASK_OPERAND(VALUE) \
-  (pow2p_hwi (VALUE) && (ctz_hwi (VALUE) >= 32))
+/* If this is a single bit mask, then we can load it with bseti.  Special
+   handling of SImode 0x80000000 on RV64 is done in riscv_build_integer_1. */
+#define SINGLE_BIT_MASK_OPERAND(VALUE)					\
+  (pow2p_hwi (VALUE))
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -953,6 +956,11 @@ while (0)
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
 extern unsigned riscv_stack_boundary;
+extern unsigned riscv_bytes_per_vector_chunk;
+extern poly_uint16 riscv_vector_chunks;
+/* The number of bits and bytes in a RVV vector.  */
+#define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))
+#define BYTES_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk))
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \
@@ -1001,5 +1009,12 @@ extern unsigned riscv_stack_boundary;
 extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define HARD_REGNO_RENAME_OK(FROM, TO) riscv_hard_regno_rename_ok (FROM, TO)
+
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+
+#define TARGET_SUPPORTS_WIDE_INT 1
 
 #endif /* ! GCC_RISCV_H */

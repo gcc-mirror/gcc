@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "attribs.h"
 #include "function.h"
+#include "gimple-expr.h"
 
 #include "d-tree.h"
 
@@ -76,7 +77,7 @@ d_decl_context (Dsymbol *dsym)
 	 but only for extern(D) symbols.  */
       if (parent->isModule ())
 	{
-	  if ((decl != NULL && decl->linkage != LINK::d)
+	  if ((decl != NULL && decl->resolvedLinkage () != LINK::d)
 	      || (ad != NULL && ad->classKind != ClassKind::d))
 	    return NULL_TREE;
 
@@ -115,6 +116,7 @@ tree
 copy_aggregate_type (tree type)
 {
   tree newtype = build_distinct_type_copy (type);
+  TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype);
   TYPE_FIELDS (newtype) = copy_list (TYPE_FIELDS (type));
 
   for (tree f = TYPE_FIELDS (newtype); f; f = DECL_CHAIN (f))
@@ -417,8 +419,8 @@ build_delegate_cst (tree method, tree object, Type *type)
     {
       /* Convert a function method into an anonymous delegate.  */
       ctype = make_struct_type ("delegate()", 2,
-				get_identifier ("object"), TREE_TYPE (object),
-				get_identifier ("func"), TREE_TYPE (method));
+				get_identifier ("ptr"), TREE_TYPE (object),
+				get_identifier ("funcptr"), TREE_TYPE (method));
       TYPE_DELEGATE (ctype) = 1;
     }
 
@@ -622,11 +624,8 @@ build_target_expr (tree decl, tree exp)
 tree
 force_target_expr (tree exp)
 {
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE,
-			  TREE_TYPE (exp));
+  tree decl = create_tmp_var_raw (TREE_TYPE (exp));
   DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
   layout_decl (decl, 0);
 
   return build_target_expr (decl, exp);
@@ -696,11 +695,12 @@ build_address (tree exp)
   return compound_expr (init, exp);
 }
 
-/* Mark EXP saying that we need to be able to take the
-   address of it; it should not be allocated in a register.  */
+/* Mark EXP saying that we need to be able to take the address of it; it should
+   not be allocated in a register.  When COMPLAIN is true, issue an error if we
+   are marking a register variable.  */
 
 tree
-d_mark_addressable (tree exp)
+d_mark_addressable (tree exp, bool complain)
 {
   switch (TREE_CODE (exp))
     {
@@ -712,12 +712,22 @@ d_mark_addressable (tree exp)
       d_mark_addressable (TREE_OPERAND (exp, 0));
       break;
 
-    case PARM_DECL:
     case VAR_DECL:
+      if (complain && DECL_REGISTER (exp))
+	{
+	  if (DECL_HARD_REGISTER (exp) || DECL_EXTERNAL (exp))
+	    error ("address of explicit register variable %qD requested", exp);
+	  else
+	    error ("address of register variable %qD requested", exp);
+	}
+
+      /* Fall through.  */
+    case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
     case FUNCTION_DECL:
-      TREE_ADDRESSABLE (exp) = 1;
+      if (!VAR_P (exp) || !DECL_HARD_REGISTER (exp))
+	TREE_ADDRESSABLE (exp) = 1;
       break;
 
     case CONSTRUCTOR:
@@ -1161,11 +1171,11 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
   if (COMPLEX_FLOAT_TYPE_P (type))
     {
       gcc_assert (vec_safe_length (init) == 2);
-      return build_complex (type, (*init)[0].value, (*init)[1].value);
+      return complex_expr (type, (*init)[0].value, (*init)[1].value);
     }
 
   vec <constructor_elt, va_gc> *ve = NULL;
-  HOST_WIDE_INT offset = 0;
+  HOST_WIDE_INT bitoffset = 0;
   bool constant_p = true;
   bool finished = false;
 
@@ -1210,11 +1220,11 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 
       if (is_initialized)
 	{
-	  HOST_WIDE_INT fieldpos = int_byte_position (field);
+	  HOST_WIDE_INT fieldpos = int_bit_position (field);
 	  gcc_assert (value != NULL_TREE);
 
 	  /* Must not initialize fields that overlap.  */
-	  if (fieldpos < offset)
+	  if (fieldpos < bitoffset)
 	    {
 	      /* Find the nearest user defined type and field.  */
 	      tree vtype = type;
@@ -1243,12 +1253,9 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 	    finished = true;
 	}
 
-      /* Move offset to the next position in the struct.  */
-      if (TREE_CODE (type) == RECORD_TYPE)
-	{
-	  offset = int_byte_position (field)
-	    + int_size_in_bytes (TREE_TYPE (field));
-	}
+      /* Move bit offset to the next position in the struct.  */
+      if (TREE_CODE (type) == RECORD_TYPE && DECL_SIZE (field))
+	bitoffset = int_bit_position (field) + tree_to_shwi (DECL_SIZE (field));
 
       /* If all initializers have been assigned, there's nothing else to do.  */
       if (vec_safe_is_empty (init))
@@ -1581,6 +1588,32 @@ complex_expr (tree type, tree re, tree im)
 			  type, re, im);
 }
 
+/* Build a two-field record TYPE representing the complex expression EXPR.  */
+
+tree
+underlying_complex_expr (tree type, tree expr)
+{
+  gcc_assert (list_length (TYPE_FIELDS (type)) == 2);
+
+  expr = d_save_expr (expr);
+
+  /* Build a constructor from the real and imaginary parts.  */
+  if (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (expr)) &&
+      (!INDIRECT_REF_P (expr)
+       || !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (expr, 0)))))
+    {
+      vec <constructor_elt, va_gc> *ve = NULL;
+      CONSTRUCTOR_APPEND_ELT (ve, TYPE_FIELDS (type),
+                    real_part (expr));
+      CONSTRUCTOR_APPEND_ELT (ve, TREE_CHAIN (TYPE_FIELDS (type)),
+                    imaginary_part (expr));
+      return build_constructor (type, ve);
+    }
+
+  /* Replace type in the reinterpret cast with a cast to the record type.  */
+  return build_vconvert (type, expr);
+}
+
 /* Cast EXP (which should be a pointer) to TYPE* and then indirect.
    The back-end requires this cast in many cases.  */
 
@@ -1628,7 +1661,7 @@ build_deref (tree exp)
 /* Builds pointer offset expression PTR[INDEX].  */
 
 tree
-build_array_index (tree ptr, tree index)
+build_pointer_index (tree ptr, tree index)
 {
   if (error_operand_p (ptr) || error_operand_p (index))
     return error_mark_node;
@@ -2207,9 +2240,17 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 			      build_address (targ));
 	    }
 
-  	  /* Type `noreturn` is a terminator, as no other arguments can possibly
-  	     be evaluated after it.  */
-  	  if (TREE_TYPE (targ) == noreturn_type_node)
+	  /* Complex types are exposed as special types with an underlying
+	     struct representation, if we are passing the native type to a
+	     function that accepts the library-defined version, then ensure
+	     it is properly reinterpreted as the underlying struct type.  */
+	  if (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (targ))
+	      && arg->type->isTypeStruct ())
+	    targ = underlying_complex_expr (build_ctype (arg->type), targ);
+
+	  /* Type `noreturn` is a terminator, as no other arguments can possibly
+	     be evaluated after it.  */
+	  if (TREE_TYPE (targ) == noreturn_type_node)
 	    noreturn_call = true;
 
 	  vec_safe_push (args, targ);
@@ -2690,9 +2731,15 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (vsym);
       TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (vsym);
 
-      /* Can't do nrvo if the variable is put in a frame.  */
-      if (fd->nrvo_can && fd->nrvo_var == v)
-	fd->nrvo_can = 0;
+      if (DECL_LANG_NRVO (vsym))
+	{
+	  /* Store the nrvo variable in the frame by reference.  */
+	  TREE_TYPE (field) = build_reference_type (TREE_TYPE (field));
+
+	  /* Can't do nrvo if the variable is put in a closure, since what the
+	     return slot points to may no longer exist.  */
+	  gcc_assert (!FRAMEINFO_IS_CLOSURE (ffi));
+	}
 
       if (FRAMEINFO_IS_CLOSURE (ffi))
 	{
@@ -2700,7 +2747,16 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	  if ((v->edtor && (v->storage_class & STCparameter))
 	      || v->needsScopeDtor ())
 	    error_at (make_location_t (v->loc),
-		      "has scoped destruction, cannot build closure");
+		      "variable %qs has scoped destruction, "
+		      "cannot build closure", v->toChars ());
+	}
+
+      if (DECL_REGISTER (vsym))
+	{
+	  /* Because the value will be in memory, not a register.  */
+	  error_at (make_location_t (v->loc),
+		    "explicit register variable %qs cannot be used in nested "
+		    "function", v->toChars ());
 	}
     }
 
@@ -2769,13 +2825,17 @@ build_closure (FuncDeclaration *fd)
   for (size_t i = 0; i < fd->closureVars.length; i++)
     {
       VarDeclaration *v = fd->closureVars[i];
-
-      if (!v->isParameter ())
-	continue;
-
       tree vsym = get_symbol_decl (v);
 
+      if (TREE_CODE (vsym) != PARM_DECL && !DECL_LANG_NRVO (vsym))
+	continue;
+
       tree field = component_ref (decl_ref, DECL_LANG_FRAME_FIELD (vsym));
+
+      /* Variable is an alias for the NRVO slot, store the reference.  */
+      if (DECL_LANG_NRVO (vsym))
+	vsym = build_address (DECL_LANG_NRVO (vsym));
+
       tree expr = modify_expr (field, vsym);
       add_stmt (expr);
     }
@@ -2800,8 +2860,15 @@ get_frameinfo (FuncDeclaration *fd)
 
   DECL_LANG_FRAMEINFO (fds) = ffi;
 
+  const bool requiresClosure = fd->requiresClosure;
   if (fd->needsClosure ())
     {
+      /* This can shift due to templates being expanded that access alias
+         symbols, give it a decent error for now.  */
+      if (requiresClosure != fd->requiresClosure
+	  && (fd->nrvo_var || global.params.betterC))
+	fd->checkClosure ();
+
       /* Set-up a closure frame, this will be allocated on the heap.  */
       FRAMEINFO_CREATES_FRAME (ffi) = 1;
       FRAMEINFO_IS_CLOSURE (ffi) = 1;

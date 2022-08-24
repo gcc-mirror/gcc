@@ -14,4 +14,3 @@ class Bar {}
 class Baz { int a; }
 
 class Test : Foo, Bar, Baz, int {}
-

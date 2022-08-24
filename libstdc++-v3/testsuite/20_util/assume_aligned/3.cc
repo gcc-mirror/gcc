@@ -20,6 +20,7 @@
 // { dg-final { scan-assembler-not "undefined" } }
 
 #include <memory>
+#include <cstdint>
 
 int* ptr();
 extern "C" void undefined();

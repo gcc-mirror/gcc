@@ -3290,14 +3290,19 @@ expand_asm_stmt (gasm *stmt)
 
       generating_concat_p = 0;
 
-      if ((TREE_CODE (val) == INDIRECT_REF && allows_mem)
+      gcc_assert (TREE_CODE (val) != INDIRECT_REF);
+      if (((TREE_CODE (val) == MEM_REF
+	    && TREE_CODE (TREE_OPERAND (val, 0)) != ADDR_EXPR)
+	   && allows_mem)
 	  || (DECL_P (val)
 	      && (allows_mem || REG_P (DECL_RTL (val)))
 	      && ! (REG_P (DECL_RTL (val))
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
 	  || is_inout
-	  || TREE_ADDRESSABLE (type))
+	  || TREE_ADDRESSABLE (type)
+	  || (!tree_fits_poly_int64_p (TYPE_SIZE (type))
+	      && !known_size_p (max_int_size_in_bytes (type))))
 	{
 	  op = expand_expr (val, NULL_RTX, VOIDmode,
 			    !allows_reg ? EXPAND_MEMORY : EXPAND_WRITE);
@@ -3715,7 +3720,18 @@ expand_value_return (rtx val)
         mode = promote_function_mode (type, old_mode, &unsignedp, funtype, 1);
 
       if (mode != old_mode)
-	val = convert_modes (mode, old_mode, val, unsignedp);
+	{
+	  /* Some ABIs require scalar floating point modes to be returned
+	     in a wider scalar integer mode.  We need to explicitly
+	     reinterpret to an integer mode of the correct precision
+	     before extending to the desired result.  */
+	  if (SCALAR_INT_MODE_P (mode)
+	      && SCALAR_FLOAT_MODE_P (old_mode)
+	      && known_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (old_mode)))
+	    val = convert_float_to_wider_int (mode, old_mode, val);
+	  else
+	    val = convert_modes (mode, old_mode, val, unsignedp);
+	}
 
       if (GET_CODE (return_reg) == PARALLEL)
 	emit_group_load (return_reg, val, type, int_size_in_bytes (type));
@@ -4560,7 +4576,8 @@ expand_debug_expr (tree exp)
 	      || !DECL_NAME (exp)
 	      || DECL_HARD_REGISTER (exp)
 	      || DECL_IN_CONSTANT_POOL (exp)
-	      || mode == VOIDmode)
+	      || mode == VOIDmode
+	      || symtab_node::get (exp) == NULL)
 	    return NULL;
 
 	  op0 = make_decl_rtl_for_debug (exp);
@@ -4569,6 +4586,10 @@ expand_debug_expr (tree exp)
 	      || SYMBOL_REF_DECL (XEXP (op0, 0)) != exp)
 	    return NULL;
 	}
+      else if (VAR_P (exp)
+	       && is_global_var (exp)
+	       && symtab_node::get (exp) == NULL)
+	return NULL;
       else
 	op0 = copy_rtx (op0);
 
@@ -5927,7 +5948,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	{
 	  new_bb = expand_gimple_cond (bb, as_a <gcond *> (stmt));
 	  if (new_bb)
-	    return new_bb;
+	    {
+	      currently_expanding_gimple_stmt = NULL;
+	      return new_bb;
+	    }
 	}
       else if (is_gimple_debug (stmt))
 	{
@@ -6049,7 +6073,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		  if (can_fallthru)
 		    bb = new_bb;
 		  else
-		    return new_bb;
+		    {
+		      currently_expanding_gimple_stmt = NULL;
+		      return new_bb;
+		    }
 		}
 	    }
 	  else
@@ -6557,7 +6584,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_expand
 

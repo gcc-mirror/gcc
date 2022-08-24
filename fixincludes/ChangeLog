@@ -1,3 +1,17 @@
+2022-02-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_math_constexpr): New hack.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Update.
+
+2022-02-04  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use cd OLDDIR instead of cd .. .
+
+2022-02-03  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use mkdir -p rather that a loop.
+
 2022-01-16  Olivier Hainque  <hainque@adacore.com>
 
 	* inclhack.def (vxworks_posix_open): New hack.

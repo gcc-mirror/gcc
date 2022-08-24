@@ -23,9 +23,9 @@ subroutine f1
   !$omp depobj(depobj) depend(mutexinoutset : a)     ! OK
   !$omp depobj(depobj) depend(source)                ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type SOURCE, SINK or DEPOBJ" }
   !$omp depobj(depobj) depend(sink : i + 1)          ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type SOURCE, SINK or DEPOBJ" }
-  !$omp depobj(depobj) update(source)                ! { dg-error "Expected IN, OUT, INOUT, MUTEXINOUTSET followed by '\\)'" }
-  !$omp depobj(depobj) update(sink)                  ! { dg-error "Expected IN, OUT, INOUT, MUTEXINOUTSET followed by '\\)'" }
-  !$omp depobj(depobj) update(depobj)                ! { dg-error "Expected IN, OUT, INOUT, MUTEXINOUTSET followed by '\\)'" }
+  !$omp depobj(depobj) update(source)                ! { dg-error "Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET followed by '\\)'" }
+  !$omp depobj(depobj) update(sink)                  ! { dg-error "Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET followed by '\\)'" }
+  !$omp depobj(depobj) update(depobj)                ! { dg-error "Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET followed by '\\)'" }
 
   ! Valid in OpenMP 5.1:
   !$omp depobj(depobj5) depend(depobj: depobj3)      ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type SOURCE, SINK or DEPOBJ" }

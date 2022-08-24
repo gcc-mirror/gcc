@@ -57,8 +57,12 @@ CHECKING_DFLAGS =
 endif
 WARN_DFLAGS = -Wall -Wdeprecated $(NOCOMMON_FLAG)
 
+# D front-end doesn't use exceptions, but it does require RTTI.
+NOEXCEPTION_DFLAGS = $(filter-out -fno-rtti, $(NOEXCEPTION_FLAGS))
+
 ALL_DFLAGS = $(DFLAGS-$@) $(GDCFLAGS) -fversion=IN_GCC $(CHECKING_DFLAGS) \
-	$(PICFLAG) $(ALIASING_FLAGS) $(COVERAGE_FLAGS) $(WARN_DFLAGS)
+	$(PICFLAG) $(ALIASING_FLAGS) $(NOEXCEPTION_DFLAGS) $(COVERAGE_FLAGS) \
+	$(WARN_DFLAGS)
 
 DCOMPILE.base = $(GDC) $(NO_PIE_CFLAGS) -c $(ALL_DFLAGS) -o $@
 DCOMPILE = $(DCOMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(*F).TPo
@@ -89,6 +93,7 @@ D_FRONTEND_OBJS = \
 	d/canthrow.o \
 	d/chkformat.o \
 	d/clone.o \
+	d/common-bitfields.o \
 	d/common-file.o \
 	d/common-outbuffer.o \
 	d/common-string.o \
@@ -143,6 +148,7 @@ D_FRONTEND_OBJS = \
 	d/lambdacomp.o \
 	d/lexer.o \
 	d/mtype.o \
+	d/mustuse.o \
 	d/nogc.o \
 	d/nspace.o \
 	d/ob.o \
@@ -277,7 +283,7 @@ d.srcextra:
 
 d.tags: force
 	cd $(srcdir)/d; \
-	$(ETAGS) -o TAGS.sub *.c *.cc *.h dmd/*.h dmd/root/*.h; \
+	$(ETAGS) -o TAGS.sub *.cc *.h dmd/*.h dmd/root/*.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 d.man: doc/gdc.1

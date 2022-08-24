@@ -348,8 +348,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-  // Include host and configuration specific timepunct functions.
-  #include <bits/time_members.h>
+// Include host and configuration specific timepunct functions.
+#include <bits/time_members.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

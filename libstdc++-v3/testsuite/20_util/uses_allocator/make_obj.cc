@@ -142,7 +142,7 @@ test01()
   VERIFY( c2.alloc_id == 1 );
 }
 
-void 
+void
 test02()
 {
   decltype(auto) b
@@ -388,6 +388,34 @@ test08()
   std::allocator<X> a;
   std::make_obj_using_allocator<X>(a);
 }
+
+constexpr bool
+test_pr104542()
+{
+  // PR libstdc++/104542 - missing constexpr
+  std::allocator<void> a;
+  int i = std::make_obj_using_allocator<int>(a, 1);
+
+  struct X {
+    using allocator_type = std::allocator<long>;
+    constexpr X(std::allocator_arg_t, std::allocator<int>, int i) : i(i+1) { }
+    int i;
+  };
+
+  X x = std::make_obj_using_allocator<X>(a, i);
+
+  struct Y {
+    using allocator_type = std::allocator<char>;
+    constexpr Y(X x, std::allocator<int>) : i(x.i+1) { }
+    int i;
+  };
+
+  Y y = std::make_obj_using_allocator<Y>(a, x);
+
+  return y.i == 3;
+}
+
+static_assert( test_pr104542() );
 
 int
 main()

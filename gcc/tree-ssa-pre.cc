@@ -34,10 +34,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "cfganal.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
@@ -323,6 +323,7 @@ static unsigned int next_expression_id;
 static vec<pre_expr> expressions;
 static hash_table<pre_expr_d> *expression_to_id;
 static vec<unsigned> name_to_id;
+static obstack pre_expr_obstack;
 
 /* Allocate an expression id for EXPR.  */
 
@@ -383,18 +384,6 @@ lookup_expression_id (const pre_expr expr)
     }
 }
 
-/* Return the existing expression id for EXPR, or create one if one
-   does not exist yet.  */
-
-static inline unsigned int
-get_or_alloc_expression_id (pre_expr expr)
-{
-  unsigned int id = lookup_expression_id (expr);
-  if (id == 0)
-    return alloc_expression_id (expr);
-  return expr->id = id;
-}
-
 /* Return the expression that has expression id ID */
 
 static inline pre_expr
@@ -430,18 +419,23 @@ get_or_alloc_expr_for_name (tree name)
   return result;
 }
 
-/* Given an NARY, get or create a pre_expr to represent it.  */
+/* Given an NARY, get or create a pre_expr to represent it.  Assign
+   VALUE_ID to it or allocate a new value-id if it is zero.  Record
+   LOC as the original location of the expression.  */
 
 static pre_expr
-get_or_alloc_expr_for_nary (vn_nary_op_t nary,
+get_or_alloc_expr_for_nary (vn_nary_op_t nary, unsigned value_id,
 			    location_t loc = UNKNOWN_LOCATION)
 {
   struct pre_expr_d expr;
   pre_expr result;
   unsigned int result_id;
 
+  gcc_assert (value_id == 0 || !value_id_constant_p (value_id));
+
   expr.kind = NARY;
   expr.id = 0;
+  nary->hashcode = vn_nary_op_compute_hash (nary);
   PRE_EXPR_NARY (&expr) = nary;
   result_id = lookup_expression_id (&expr);
   if (result_id != 0)
@@ -450,8 +444,10 @@ get_or_alloc_expr_for_nary (vn_nary_op_t nary,
   result = pre_expr_pool.allocate ();
   result->kind = NARY;
   result->loc = loc;
-  result->value_id = nary->value_id;
-  PRE_EXPR_NARY (result) = nary;
+  result->value_id = value_id ? value_id : get_next_value_id ();
+  PRE_EXPR_NARY (result)
+    = alloc_vn_nary_op_noinit (nary->length, &pre_expr_obstack);
+  memcpy (PRE_EXPR_NARY (result), nary, sizeof_vn_nary_op (nary->length));
   alloc_expression_id (result);
   return result;
 }
@@ -721,7 +717,7 @@ add_to_value (unsigned int v, pre_expr e)
 	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
 	  value_expressions[v] = set;
 	}
-      bitmap_set_bit (set, get_or_alloc_expression_id (e));
+      bitmap_set_bit (set, get_expression_id (e));
     }
 }
 
@@ -784,7 +780,7 @@ bitmap_insert_into_set (bitmap_set_t set, pre_expr expr)
          for the same value to appear in a set.  This is needed for
 	 TMP_GEN, PHI_GEN and NEW_SETs.  */
       bitmap_set_bit (&set->values, val);
-      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
+      bitmap_set_bit (&set->expressions, get_expression_id (expr));
     }
 }
 
@@ -1022,7 +1018,7 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
 
-  gcc_checking_assert (expr->id == get_or_alloc_expression_id (expr));
+  gcc_checking_assert (expr->id == get_expression_id (expr));
 
   /* Constant values are always considered to be part of the set.  */
   if (value_id_constant_p (val))
@@ -1187,18 +1183,6 @@ get_or_alloc_expr_for_constant (tree constant)
   newexpr->value_id = get_or_alloc_constant_value_id (constant);
   add_to_value (newexpr->value_id, newexpr);
   return newexpr;
-}
-
-/* Get or allocate a pre_expr for a piece of GIMPLE, and return it.
-   Currently only supports constants and SSA_NAMES.  */
-static pre_expr
-get_or_alloc_expr_for (tree t)
-{
-  if (TREE_CODE (t) == SSA_NAME)
-    return get_or_alloc_expr_for_name (t);
-  else if (is_gimple_min_invariant (t))
-    return get_or_alloc_expr_for_constant (t);
-  gcc_unreachable ();
 }
 
 /* Return the folded version of T if T, when folded, is a gimple
@@ -1517,15 +1501,10 @@ phi_translate_1 (bitmap_set_t dest,
 	      return get_or_alloc_expr_for_constant (result);
 
 	    if (!nary || nary->predicated_values)
-	      {
-		new_val_id = get_next_value_id ();
-		nary = vn_nary_op_insert_pieces (newnary->length,
-						 newnary->opcode,
-						 newnary->type,
-						 &newnary->op[0],
-						 result, new_val_id);
-	      }
-	    expr = get_or_alloc_expr_for_nary (nary, expr_loc);
+	      new_val_id = 0;
+	    else
+	      new_val_id = nary->value_id;
+	    expr = get_or_alloc_expr_for_nary (newnary, new_val_id, expr_loc);
 	    add_to_value (get_expr_value_id (expr), expr);
 	  }
 	return expr;
@@ -2776,8 +2755,16 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
 static tree
 find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 {
-  pre_expr expr = get_or_alloc_expr_for (op);
-  unsigned int lookfor = get_expr_value_id (expr);
+  /* Constants are always leaders.  */
+  if (is_gimple_min_invariant (op))
+    return op;
+
+  gcc_assert (TREE_CODE (op) == SSA_NAME);
+  vn_ssa_aux_t info = VN_INFO (op);
+  unsigned int lookfor = info->value_id;
+  if (value_id_constant_p (lookfor))
+    return info->valnum;
+
   pre_expr leader = bitmap_find_leader (AVAIL_OUT (block), lookfor);
   if (leader)
     {
@@ -2789,6 +2776,7 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
       /* Defer.  */
       return NULL_TREE;
     }
+  gcc_assert (!value_id_constant_p (lookfor));
 
   /* It must be a complex expression, so generate it recursively.  Note
      that this is only necessary to handle gcc.dg/tree-ssa/ssa-pre28.c
@@ -2804,7 +2792,7 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 	 its operand values.  */
       if (temp->kind == NARY)
 	return create_expression_by_pieces (block, temp, stmts,
-					    get_expr_type (expr));
+					    TREE_TYPE (op));
     }
 
   /* Defer.  */
@@ -3246,14 +3234,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  && r.kind () == VR_RANGE
 	  && !wi::neg_p (r.lower_bound (), SIGNED)
 	  && !wi::neg_p (r.upper_bound (), SIGNED))
-	/* Just handle extension and sign-changes of all-positive ranges.  */
-	set_range_info (temp, VR_RANGE,
-			wide_int_storage::from (r.lower_bound (),
-						TYPE_PRECISION (type),
-						TYPE_SIGN (type)),
-			wide_int_storage::from (r.upper_bound (),
-						TYPE_PRECISION (type),
-						TYPE_SIGN (type)));
+	{
+	  /* Just handle extension and sign-changes of all-positive ranges.  */
+	  range_cast (r, type);
+	  set_range_info (temp, r);
+	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3993,7 +3978,6 @@ compute_avail (function *fun)
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	    {
 	      pre_expr e = get_or_alloc_expr_for_name (op);
-
 	      add_to_value (get_expr_value_id (e), e);
 	      bitmap_insert_into_set (TMP_GEN (block), e);
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
@@ -4073,6 +4057,16 @@ compute_avail (function *fun)
 		      if (!nary || nary->predicated_values)
 			continue;
 
+		      unsigned value_id = nary->value_id;
+		      if (value_id_constant_p (value_id))
+			continue;
+
+		      /* Record the un-valueized expression for EXP_GEN.  */
+		      nary = XALLOCAVAR (struct vn_nary_op_s,
+					 sizeof_vn_nary_op
+					   (vn_nary_length_from_stmt (stmt)));
+		      init_vn_nary_op_from_stmt (nary, as_a <gassign *> (stmt));
+
 		      /* If the NARY traps and there was a preceding
 		         point in the block that might not return avoid
 			 adding the nary to EXP_GEN.  */
@@ -4081,7 +4075,7 @@ compute_avail (function *fun)
 			continue;
 
 		      result = get_or_alloc_expr_for_nary
-				 (nary, gimple_location (stmt));
+				 (nary, value_id, gimple_location (stmt));
 		      break;
 		    }
 
@@ -4275,6 +4269,7 @@ init_pre (void)
   constant_value_expressions.create (get_max_constant_value_id () + 1);
   constant_value_expressions.quick_grow_cleared (get_max_constant_value_id () + 1);
   name_to_id.create (0);
+  gcc_obstack_init (&pre_expr_obstack);
 
   inserted_exprs = BITMAP_ALLOC (NULL);
 
@@ -4312,6 +4307,7 @@ fini_pre ()
   delete expression_to_id;
   expression_to_id = NULL;
   name_to_id.release ();
+  obstack_free (&pre_expr_obstack, NULL);
 
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
@@ -4343,9 +4339,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     { return flag_tree_pre != 0 || flag_code_hoisting != 0; }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_pre
 

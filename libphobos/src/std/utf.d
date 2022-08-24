@@ -65,9 +65,9 @@ module std.utf;
 import std.exception : basicExceptionCtors;
 import core.exception : UnicodeException;
 import std.meta : AliasSeq;
-import std.range.primitives;
-import std.traits : isAutodecodableString, isPointer, isSomeChar,
-    isSomeString, isStaticArray, Unqual, isConvertibleToString;
+import std.range;
+import std.traits : isAutodecodableString, isConvertibleToString, isPointer,
+    isSomeChar, isSomeString, isStaticArray, Unqual;
 import std.typecons : Flag, Yes, No;
 
 
@@ -1209,6 +1209,15 @@ do
     assert("ë"w.decode(i) == 'ë' && i == 1);
 }
 
+@safe pure unittest // https://issues.dlang.org/show_bug.cgi?id=22867
+{
+    import std.conv : hexString;
+    string data = hexString!"f787a598";
+    size_t offset = 0;
+    try data.decode(offset);
+    catch (UTFException ex) assert(offset == 0);
+}
+
 /++
     `decodeFront` is a variant of $(LREF decode) which specifically decodes
     the first code point. Unlike $(LREF decode), `decodeFront` accepts any
@@ -1671,7 +1680,6 @@ if (
                 }
             }
 
-            index += i + 1;
             static if (i == 3)
             {
                 if (d > dchar.max)
@@ -1682,6 +1690,8 @@ if (
                         throw invalidUTF();
                 }
             }
+
+            index += i + 1;
             return d;
         }
     }
@@ -2809,7 +2819,7 @@ if (isSomeChar!C)
         The number of code units in `input` when encoded to `C`
   +/
 size_t codeLength(C, InputRange)(InputRange input)
-if (isInputRange!InputRange && !isInfinite!InputRange && isSomeChar!(ElementType!InputRange))
+if (isSomeFiniteCharInputRange!InputRange)
 {
     alias EncType = Unqual!(ElementEncodingType!InputRange);
     static if (isSomeString!InputRange && is(EncType == C) && is(typeof(input.length)))
@@ -2961,7 +2971,7 @@ if (isSomeString!S)
  *     For a lazy, non-allocating version of these functions, see $(LREF byUTF).
  */
 string toUTF8(S)(S s)
-if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S))
+if (isSomeFiniteCharInputRange!S)
 {
     return toUTFImpl!string(s);
 }
@@ -3003,7 +3013,7 @@ if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S))
  *     For a lazy, non-allocating version of these functions, see $(LREF byUTF).
  */
 wstring toUTF16(S)(S s)
-if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S))
+if (isSomeFiniteCharInputRange!S)
 {
     return toUTFImpl!wstring(s);
 }
@@ -3047,7 +3057,7 @@ if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S))
  *     For a lazy, non-allocating version of these functions, see $(LREF byUTF).
  */
 dstring toUTF32(S)(scope S s)
-if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S))
+if (isSomeFiniteCharInputRange!S)
 {
     return toUTFImpl!dstring(s);
 }
@@ -4265,10 +4275,10 @@ private int impureVariable;
  *                            UseReplacementDchar.no means throw `UTFException` for invalid UTF
  *
  * Throws:
- *      `UTFException` if invalid UTF sequence and `useReplacementDchar` is set to `UseReplacementDchar.yes`
+ *      `UTFException` if invalid UTF sequence and `useReplacementDchar` is set to `UseReplacementDchar.no`
  *
  * GC:
- *      Does not use GC if `useReplacementDchar` is set to `UseReplacementDchar.no`
+ *      Does not use GC if `useReplacementDchar` is set to `UseReplacementDchar.yes`
  *
  * Returns:
  *      A bidirectional range if `R` is a bidirectional range and not auto-decodable,

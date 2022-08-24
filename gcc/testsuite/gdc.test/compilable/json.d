@@ -191,7 +191,7 @@ struct SafeS
 
     ref SafeS foo3() return scope
     {
-        return this;
+        static SafeS s; return s;
     }
 
 	int* p;
@@ -203,14 +203,14 @@ extern(C) int vlinakgeC;
 extern(C++) __gshared int vlinkageCpp;
 extern(Windows) int vlinkageWindows;
 extern(Objective-C) int vlinkageObjc;
-
+extern(System) int vlinkageSystem;
 extern int flinkageDefault();
 extern(D) int flinkageD();
 extern(C) int linakgeC();
 extern(C++) int flinkageCpp();
 extern(Windows) int flinkageWindows();
 extern(Objective-C) int flinkageObjc();
-
+extern(System) int flinkageSystem();
 mixin template test18211(int n)
 {
     static foreach (i; 0 .. n>10 ? 10 : n)

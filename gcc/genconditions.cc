@@ -175,7 +175,7 @@ static const struct c_test insn_conditions[] = {\n");
 
   traverse_c_tests (write_one_condition, 0);
 
-  puts ("\n};\n#endif /* gcc >= 3.0.1 */\n");
+  puts ("  { nullptr, -1 }\n};\n#endif /* gcc >= 3.0.1 */\n");
 }
 
 /* Emit code which will convert the C-format table to a
@@ -192,7 +192,7 @@ write_writer (void)
         "  const char *p;\n"
         "  puts (\"(define_conditions [\");\n"
 	"#if GCC_VERSION >= 3001\n"
-	"  for (i = 0; i < ARRAY_SIZE (insn_conditions); i++)\n"
+	"  for (i = 0; i < ARRAY_SIZE (insn_conditions) - 1; i++)\n"
 	"    {\n"
 	"      printf (\"  (%d \\\"\", insn_conditions[i].value);\n"
 	"      for (p = insn_conditions[i].expr; *p; p++)\n"

@@ -235,6 +235,9 @@ package Sem_Ch3 is
    --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
    --  In_Assertion_Expr can be properly adjusted.
 
+   procedure Preanalyze_Assert_Expression (N : Node_Id);
+   --  Similar to the above, but without forcing N to be of a particular type
+
    procedure Preanalyze_Spec_Expression (N : Node_Id; T : Entity_Id);
    --  Default and per object expressions do not freeze their components, and
    --  must be analyzed and resolved accordingly. The analysis is done by

@@ -507,6 +507,7 @@ cgraph_node::create (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   node->decl = decl;
+  node->semantic_interposition = opt_for_fn (decl, flag_semantic_interposition);
 
   if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
@@ -544,12 +545,12 @@ cgraph_node::get_create (tree decl)
       node->order = first_clone->order;
       symtab->symtab_prevail_in_asm_name_hash (node);
       node->decl->decl_with_vis.symtab_node = node;
-      if (dump_file)
+      if (dump_file && symtab->state != PARSING)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s) and turned into root of the clone tree.\n",
 		 node->dump_name ());
     }
-  else if (dump_file)
+  else if (dump_file && symtab->state != PARSING)
     fprintf (dump_file, "Introduced new external node "
 	     "(%s).\n", node->dump_name ());
   return node;
@@ -1422,7 +1423,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       else
 	{
 	  /* Be sure we redirect all speculative targets before poking
-	     abou tindirect edge.  */
+	     about indirect edge.  */
 	  gcc_checking_assert (e->callee);
 	  cgraph_edge *indirect = e->speculative_call_indirect_edge ();
 	  gcall *new_stmt;
@@ -1892,7 +1893,11 @@ cgraph_node::remove (void)
   if (prev_sibling_clone)
     prev_sibling_clone->next_sibling_clone = next_sibling_clone;
   else if (clone_of)
-    clone_of->clones = next_sibling_clone;
+    {
+      clone_of->clones = next_sibling_clone;
+      if (!clone_of->analyzed && !clone_of->clones && !clones)
+	clone_of->release_body ();
+    }
   if (next_sibling_clone)
     next_sibling_clone->prev_sibling_clone = prev_sibling_clone;
   if (clones)
@@ -2930,11 +2935,10 @@ cgraph_edge::maybe_hot_p (void)
     return false;
   if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE)
     {
-      if (count.apply_scale (2, 1) < where->count.apply_scale (3, 1))
+      if (count * 2 < where->count * 3)
 	return false;
     }
-  else if (count.apply_scale (param_hot_bb_frequency_fraction , 1)
-	   < where->count)
+  else if (count * param_hot_bb_frequency_fraction < where->count)
     return false;
   return true;
 }
@@ -3487,7 +3491,11 @@ cgraph_node::verify_node (void)
 	     "returns a pointer");
       error_found = true;
     }
-  if (definition && externally_visible
+  if (definition
+      && externally_visible
+      /* For aliases in lto1 free_lang_data doesn't guarantee preservation
+	 of opt_for_fn (decl, flag_semantic_interposition).  See PR105399.  */
+      && (!alias || !in_lto_p)
       && semantic_interposition
 	 != opt_for_fn (decl, flag_semantic_interposition))
     {
@@ -4077,7 +4085,7 @@ cgraph_node::get_fun () const
    within the same process.  For use by toplev::finalize.  */
 
 void
-cgraph_c_finalize (void)
+cgraph_cc_finalize (void)
 {
   nested_function_info::release ();
   thunk_info::release ();
@@ -4261,7 +4269,7 @@ test_symbol_table_test ()
 /* Run all of the selftests within this file.  */
 
 void
-cgraph_c_tests ()
+cgraph_cc_tests ()
 {
   test_symbol_table_test ();
 }

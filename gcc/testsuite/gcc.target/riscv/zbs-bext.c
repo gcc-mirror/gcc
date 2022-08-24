@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zbs -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc_zbs -mabi=lp64" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 /* bext */
 long

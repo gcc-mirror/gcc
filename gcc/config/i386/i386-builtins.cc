@@ -126,6 +126,9 @@ BDESC_VERIFYS (IX86_BUILTIN_MAX,
 static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
 tree ix86_float16_type_node = NULL_TREE;
+tree ix86_bf16_type_node = NULL_TREE;
+tree ix86_bf16_ptr_type_node = NULL_TREE;
+
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
 
@@ -385,6 +388,8 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 	  ix86_builtins[i] = decl;
 	  if (ix86_builtins_isa[i].const_p)
 	    TREE_READONLY (decl) = 1;
+	  if (ix86_builtins_isa[i].pure_p)
+	    DECL_PURE_P (decl) = 1;
 	}
     }
 
@@ -1365,6 +1370,22 @@ ix86_register_float16_builtin_type (void)
 }
 
 static void
+ix86_register_bf16_builtin_type (void)
+{
+  ix86_bf16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (ix86_bf16_type_node) = 16;
+  SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
+  layout_type (ix86_bf16_type_node);
+
+  if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
+    {
+      lang_hooks.types.register_builtin_type (ix86_bf16_type_node,
+					    "__bf16");
+      ix86_bf16_ptr_type_node = build_pointer_type (ix86_bf16_type_node);
+    }
+}
+
+static void
 ix86_init_builtin_types (void)
 {
   tree float80_type_node, const_string_type_node;
@@ -1393,6 +1414,8 @@ ix86_init_builtin_types (void)
   lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
 
   ix86_register_float16_builtin_type ();
+
+  ix86_register_bf16_builtin_type ();
 
   const_string_type_node
     = build_pointer_type (build_qualified_type
@@ -1785,7 +1808,12 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
   bool si;
   enum ix86_builtins code;
 
-  if (! TARGET_AVX2 || !TARGET_USE_GATHER)
+  if (! TARGET_AVX2
+      || (known_eq (TYPE_VECTOR_SUBPARTS (mem_vectype), 2u)
+	  ? !TARGET_USE_GATHER_2PARTS
+	  : (known_eq (TYPE_VECTOR_SUBPARTS (mem_vectype), 4u)
+	     ? !TARGET_USE_GATHER_4PARTS
+	     : !TARGET_USE_GATHER)))
     return NULL_TREE;
 
   if ((TREE_CODE (index_type) != INTEGER_TYPE
@@ -1931,8 +1959,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 
   enum feature_priority priority = P_NONE;
 
-  static unsigned int NUM_FEATURES
-    = sizeof (isa_names_table) / sizeof (_isa_names_table);
+  static unsigned int NUM_FEATURES = ARRAY_SIZE (isa_names_table);
 
   unsigned int i;
 
@@ -2275,7 +2302,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       /* Check the value.  */
       final = build2 (EQ_EXPR, unsigned_type_node, ref,
 		      build_int_cstu (unsigned_type_node, field_val));
-      return build1 (CONVERT_EXPR, integer_type_node, final);
+      return build1 (NOP_EXPR, integer_type_node, final);
     }
   else if (fn_code == IX86_BUILTIN_CPU_SUPPORTS)
     {
@@ -2285,8 +2312,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       tree final;
 
       unsigned int field_val = 0;
-      unsigned int NUM_ISA_NAMES
-	= sizeof (isa_names_table) / sizeof (struct _isa_names_table);
+      unsigned int NUM_ISA_NAMES = ARRAY_SIZE (isa_names_table);
 
       for (i = 0; i < NUM_ISA_NAMES; i++)
 	if (strcmp (isa_names_table[i].name,
@@ -2300,7 +2326,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	  return integer_zero_node;
 	}
 
-      if (isa_names_table[i].feature >= 32)
+      unsigned feature = isa_names_table[i].feature;
+      if (feature >= INT_TYPE_SIZE)
 	{
 	  if (ix86_cpu_features2_var == nullptr)
 	    {
@@ -2318,46 +2345,44 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	      varpool_node::add (ix86_cpu_features2_var);
 	    }
 
-	  for (unsigned int j = 0; j < SIZE_OF_CPU_FEATURES; j++)
-	    if (isa_names_table[i].feature < (32 + 32 + j * 32))
-	      {
-		field_val = (1U << (isa_names_table[i].feature
-				    - (32 + j * 32)));
-		tree index = size_int (j);
-		array_elt = build4 (ARRAY_REF, unsigned_type_node,
-				    ix86_cpu_features2_var,
-				    index, NULL_TREE, NULL_TREE);
-		/* Return __cpu_features2[index] & field_val  */
-		final = build2 (BIT_AND_EXPR, unsigned_type_node,
-				array_elt,
-				build_int_cstu (unsigned_type_node,
-						field_val));
-		return build1 (CONVERT_EXPR, integer_type_node, final);
-	      }
+	  feature -= INT_TYPE_SIZE;
+	  field_val = 1U << (feature % INT_TYPE_SIZE);
+	  tree index = size_int (feature / INT_TYPE_SIZE);
+	  array_elt = build4 (ARRAY_REF, unsigned_type_node,
+			      ix86_cpu_features2_var,
+			      index, NULL_TREE, NULL_TREE);
+	  /* Return __cpu_features2[index] & field_val  */
+	  final = build2 (BIT_AND_EXPR, unsigned_type_node,
+			  array_elt,
+			  build_int_cstu (unsigned_type_node,
+					  field_val));
+	  return build1 (NOP_EXPR, integer_type_node, final);
 	}
-
-      field = TYPE_FIELDS (ix86_cpu_model_type_node);
-      /* Get the last field, which is __cpu_features.  */
-      while (DECL_CHAIN (field))
-        field = DECL_CHAIN (field);
-
-      /* Get the appropriate field: __cpu_model.__cpu_features  */
-      ref = build3 (COMPONENT_REF, TREE_TYPE (field), ix86_cpu_model_var,
-		    field, NULL_TREE);
-
-      /* Access the 0th element of __cpu_features array.  */
-      array_elt = build4 (ARRAY_REF, unsigned_type_node, ref,
-			  integer_zero_node, NULL_TREE, NULL_TREE);
-
-      field_val = (1U << isa_names_table[i].feature);
-      /* Return __cpu_model.__cpu_features[0] & field_val  */
-      final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
-		      build_int_cstu (unsigned_type_node, field_val));
-      if (isa_names_table[i].feature == (INT_TYPE_SIZE - 1))
-	return build2 (NE_EXPR, integer_type_node, final,
-		       build_int_cst (unsigned_type_node, 0));
       else
-	return build1 (CONVERT_EXPR, integer_type_node, final);
+	{
+	  field = TYPE_FIELDS (ix86_cpu_model_type_node);
+	  /* Get the last field, which is __cpu_features.  */
+	  while (DECL_CHAIN (field))
+	    field = DECL_CHAIN (field);
+
+	  /* Get the appropriate field: __cpu_model.__cpu_features  */
+	  ref = build3 (COMPONENT_REF, TREE_TYPE (field), ix86_cpu_model_var,
+			field, NULL_TREE);
+
+	  /* Access the 0th element of __cpu_features array.  */
+	  array_elt = build4 (ARRAY_REF, unsigned_type_node, ref,
+			      integer_zero_node, NULL_TREE, NULL_TREE);
+
+	  field_val = (1U << feature);
+	  /* Return __cpu_model.__cpu_features[0] & field_val  */
+	  final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
+			  build_int_cstu (unsigned_type_node, field_val));
+	  if (feature == (INT_TYPE_SIZE - 1))
+	    return build2 (NE_EXPR, integer_type_node, final,
+			   build_int_cst (unsigned_type_node, 0));
+	  else
+	    return build1 (NOP_EXPR, integer_type_node, final);
+	}
     }
   gcc_unreachable ();
 }

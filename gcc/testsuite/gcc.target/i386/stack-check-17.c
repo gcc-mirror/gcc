@@ -31,9 +31,11 @@ f3 (void)
    into either a stack slot or callee saved register.  The former
    would be rather dumb.  So assume it does not happen.
 
-   So search for two/four pushes for the callee register saves/argument
-   pushes and no pops (since the function has no reachable epilogue).  */
+   So search for two/four pushes for the callee register saves/argument pushes
+   (plus one for the PIC register if needed on ia32) and no pops (since the
+   function has no reachable epilogue).  */
 /* { dg-final { scan-assembler-times "push\[ql\]" 2 { target { ! ia32 } } } }  */
-/* { dg-final { scan-assembler-times "push\[ql\]" 4 { target { ia32 } } } }  */
+/* { dg-final { scan-assembler-times "push\[ql\]" 4 { target { ia32 && nonpic } } } }  */
+/* { dg-final { scan-assembler-times "push\[ql\]" 5 { target { ia32 && { ! nonpic } } } } }  */
 /* { dg-final { scan-assembler-not "pop" } } */
 

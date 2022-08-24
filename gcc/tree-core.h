@@ -33,7 +33,7 @@ struct function;
 struct real_value;
 struct fixed_value;
 struct ptr_info_def;
-struct range_info_def;
+struct irange_storage_slot;
 struct die_struct;
 
 
@@ -302,9 +302,9 @@ enum omp_clause_code {
   /* OpenMP clause: uniform (argument-list).  */
   OMP_CLAUSE_UNIFORM,
 
-  /* OpenMP clause: to (extended-list).
-     Only when it appears in declare target.  */
-  OMP_CLAUSE_TO_DECLARE,
+  /* OpenMP clause: enter (extended-list).
+     to is a deprecated alias when it appears in declare target.  */
+  OMP_CLAUSE_ENTER,
 
   /* OpenMP clause: link (variable-list).  */
   OMP_CLAUSE_LINK,
@@ -341,6 +341,9 @@ enum omp_clause_code {
 
      OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
+
+  /* OpenMP clause: has_device_addr (variable-list).  */
+  OMP_CLAUSE_HAS_DEVICE_ADDR,
 
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
@@ -963,6 +966,15 @@ enum annot_expr_kind {
   annot_expr_kind_last
 };
 
+/* The kind of a TREE_CLOBBER_P CONSTRUCTOR node.  */
+enum clobber_kind {
+  /* Unspecified, this clobber acts as a store of an undefined value.  */
+  CLOBBER_UNDEF,
+  /* This clobber ends the lifetime of the storage.  */
+  CLOBBER_EOL,
+  CLOBBER_LAST
+};
+
 /*---------------------------------------------------------------------------
                                 Type definitions
 ---------------------------------------------------------------------------*/
@@ -1055,7 +1067,8 @@ struct GTY(()) tree_base {
 
       /* This field is only used with TREE_TYPE nodes; the only reason it is
 	 present in tree_base instead of tree_type is to save space.  The size
-	 of the field must be large enough to hold addr_space_t values.  */
+	 of the field must be large enough to hold addr_space_t values.
+	 For CONSTRUCTOR nodes this holds the clobber_kind enum.  */
       unsigned address_space : 8;
     } bits;
 
@@ -1142,6 +1155,9 @@ struct GTY(()) tree_base {
        PREDICT_EXPR_OUTCOME in
 	   PREDICT_EXPR
 
+       OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE in
+	   OMP_CLAUSE
+
    static_flag:
 
        TREE_STATIC in
@@ -1177,9 +1193,6 @@ struct GTY(()) tree_base {
 
        TRANSACTION_EXPR_OUTER in
 	   TRANSACTION_EXPR
-
-       SSA_NAME_ANTI_RANGE_P in
-	   SSA_NAME
 
        MUST_TAIL_CALL in
 	   CALL_EXPR
@@ -1445,7 +1458,7 @@ struct GTY(()) tree_int_cst {
 
 struct GTY(()) tree_real_cst {
   struct tree_typed typed;
-  struct real_value * real_cst_ptr;
+  struct real_value value;
 };
 
 struct GTY(()) tree_fixed_cst {
@@ -1511,6 +1524,7 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_OUT,
   OMP_CLAUSE_DEPEND_INOUT,
   OMP_CLAUSE_DEPEND_MUTEXINOUTSET,
+  OMP_CLAUSE_DEPEND_INOUTSET,
   OMP_CLAUSE_DEPEND_SOURCE,
   OMP_CLAUSE_DEPEND_SINK,
   OMP_CLAUSE_DEPEND_DEPOBJ,
@@ -1547,9 +1561,7 @@ enum omp_clause_linear_kind
 struct GTY(()) tree_exp {
   struct tree_typed typed;
   location_t locus;
-  tree GTY ((special ("tree_exp"),
-	     desc ("TREE_CODE ((tree) &%0)")))
-    operands[1];
+  tree GTY ((length ("TREE_OPERAND_LENGTH ((tree)&%h)"))) operands[1];
 };
 
 /* Immediate use linking structure.  This structure is used for maintaining
@@ -1577,13 +1589,17 @@ struct GTY(()) tree_ssa_name {
 
   /* Value range information.  */
   union ssa_name_info_type {
+    /* Ranges for integers.  */
+    struct GTY ((tag ("0"))) irange_storage_slot *irange_info;
+    /* Ranges for floating point numbers.  */
+    struct GTY ((tag ("1"))) frange_storage_slot *frange_info;
     /* Pointer attributes used for alias analysis.  */
-    struct GTY ((tag ("0"))) ptr_info_def *ptr_info;
-    /* Value range attributes used for zero/sign extension elimination.  */
-    struct GTY ((tag ("1"))) range_info_def *range_info;
+    struct GTY ((tag ("2"))) ptr_info_def *ptr_info;
+    /* This holds any range info supported by ranger (except ptr_info
+       above) and is managed by vrange_storage.  */
+    void * GTY ((skip)) range_info;
   } GTY ((desc ("%1.typed.type ?" \
-		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
-
+		"(POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) ? 2 : SCALAR_FLOAT_TYPE_P (TREE_TYPE ((tree)&%1))) : 3"))) info;
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_t imm_uses;
 };
@@ -2099,8 +2115,10 @@ struct attribute_spec {
   bool function_type_required;
   /* Specifies if attribute affects type's identity.  */
   bool affects_type_identity;
-  /* Function to handle this attribute.  NODE points to the node to which
-     the attribute is to be applied.  If a DECL, it should be modified in
+  /* Function to handle this attribute.  NODE points to a tree[3] array,
+     where node[0] is the node to which the attribute is to be applied;
+     node[1] is the last pushed/merged declaration if one exists, and node[2]
+     may be the declaration for node[0].  If a DECL, it should be modified in
      place; if a TYPE, a copy should be created.  NAME is the canonicalized
      name of the attribute i.e. without any leading or trailing underscores.
      ARGS is the TREE_LIST of the arguments (which may be NULL).  FLAGS gives
@@ -2267,6 +2285,7 @@ extern const char * built_in_names[(int) END_BUILTINS];
 /* Number of operands and names for each OMP_CLAUSE node.  */
 extern unsigned const char omp_clause_num_ops[];
 extern const char * const omp_clause_code_name[];
+extern const char *user_omp_clause_code_name (tree, bool);
 
 /* A vector of all translation-units.  */
 extern GTY (()) vec<tree, va_gc> *all_translation_units;

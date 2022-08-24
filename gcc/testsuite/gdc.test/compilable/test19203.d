@@ -24,4 +24,3 @@ void test()
     static assert(!hasPopBack!Bar);
     static assert( hasPopBack!Foo && !hasPopBack!Bar);
 }
-

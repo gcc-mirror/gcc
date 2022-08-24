@@ -4191,8 +4191,8 @@ extern(Windows) nothrow @nogc {
     DWORD GetGlyphOutlineA(HDC, UINT, UINT, LPGLYPHMETRICS, DWORD, PVOID, const(MAT2)*);
     DWORD GetGlyphOutlineW(HDC, UINT, UINT, LPGLYPHMETRICS, DWORD, PVOID, const(MAT2)*);
     int GetGraphicsMode(HDC);
-    BOOL GetICMProfileA(HDC, DWORD, LPSTR);
-    BOOL GetICMProfileW(HDC, DWORD, LPWSTR);
+    BOOL GetICMProfileA(HDC, LPDWORD, LPSTR);
+    BOOL GetICMProfileW(HDC, LPDWORD, LPWSTR);
     DWORD GetKerningPairsA(HDC, DWORD, LPKERNINGPAIR);
     DWORD GetKerningPairsW(HDC, DWORD, LPKERNINGPAIR);
     BOOL GetLogColorSpaceA(HCOLORSPACE, LPLOGCOLORSPACEA, DWORD);

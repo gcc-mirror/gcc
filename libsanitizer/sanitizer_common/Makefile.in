@@ -105,6 +105,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../config/toolexeclibdir.m4 \
+	$(top_srcdir)/../config/warnings.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
@@ -139,10 +140,10 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_procmaps_bsd.lo sanitizer_procmaps_common.lo \
 	sanitizer_procmaps_linux.lo sanitizer_procmaps_mac.lo \
 	sanitizer_procmaps_solaris.lo sanitizer_solaris.lo \
-	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
-	sanitizer_stacktrace_libcdep.lo sanitizer_stacktrace_sparc.lo \
-	sanitizer_symbolizer_mac.lo sanitizer_symbolizer_report.lo \
-	sanitizer_stacktrace_printer.lo \
+	sanitizer_stack_store.lo sanitizer_stackdepot.lo \
+	sanitizer_stacktrace.lo sanitizer_stacktrace_libcdep.lo \
+	sanitizer_stacktrace_sparc.lo sanitizer_symbolizer_mac.lo \
+	sanitizer_symbolizer_report.lo sanitizer_stacktrace_printer.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_stoptheworld_mac.lo sanitizer_suppressions.lo \
 	sanitizer_symbolizer.lo sanitizer_symbolizer_libbacktrace.lo \
@@ -299,6 +300,7 @@ STRIP = @STRIP@
 TSAN_TARGET_DEPENDENT_OBJECTS = @TSAN_TARGET_DEPENDENT_OBJECTS@
 VERSION = @VERSION@
 VIEW_FILE = @VIEW_FILE@
+WARN_FLAGS = @WARN_FLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -352,7 +354,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -418,6 +419,7 @@ sanitizer_common_files = \
 	sanitizer_procmaps_mac.cpp \
 	sanitizer_procmaps_solaris.cpp \
 	sanitizer_solaris.cpp \
+	sanitizer_stack_store.cpp \
 	sanitizer_stackdepot.cpp \
 	sanitizer_stacktrace.cpp \
 	sanitizer_stacktrace_libcdep.cpp \
@@ -574,6 +576,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_solaris.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stack_store.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_libcdep.Plo@am__quote@

@@ -4,7 +4,7 @@
  * Copyright: Copyright Sean Kelly 2005 - 2009.
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Sean Kelly
- * Source:    $(LINK2 https://github.com/dlang/druntime/blob/master/src/core/runtime.d, _runtime.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/druntime/src/core/runtime.d, _runtime.d)
  * Documentation: https://dlang.org/phobos/core_runtime.html
  */
 
@@ -285,7 +285,7 @@ struct Runtime
      * an appropriate calling context from which to begin the trace.
      *
      * Params:
-     *  h = The new trace handler.  Set to null to use the default handler.
+     *  h = The new trace handler.  Set to null to disable exception backtracing.
      */
     extern(C) pragma(mangle, "rt_setTraceHandler") static @property void traceHandler(TraceHandler h);
 

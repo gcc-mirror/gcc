@@ -40,7 +40,14 @@ void pru_register_pragmas (void);
 extern rtx pru_get_return_address (int);
 extern int pru_hard_regno_rename_ok (unsigned int, unsigned int);
 
-extern const char *pru_output_sign_extend (rtx *);
+struct pru_byterange {
+    int start;		/* Starting byte number.  */
+    int nbytes;		/* Number of consecutive bytes.  */
+};
+
+extern pru_byterange pru_calc_byterange (HOST_WIDE_INT cval,
+					      machine_mode mode);
+
 extern const char *pru_output_signed_cbranch (rtx *, bool);
 extern const char *pru_output_signed_cbranch_ubyteop2 (rtx *, bool);
 extern const char *pru_output_signed_cbranch_zeroop2 (rtx *, bool);

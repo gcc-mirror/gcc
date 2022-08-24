@@ -54,6 +54,13 @@ begin
 
    Display_Usage_Version_And_Help;
 
+   --  Line for -P
+
+   Write_Str ("  -Pproj   Build GNAT Project File proj using GPRbuild");
+   Write_Eol;
+   Write_Str ("           Treats all other switches as GPRbuild switches");
+   Write_Eol;
+
    --  Line for -a
 
    Write_Str ("  -a       Consider all files, even readonly ali files");
@@ -167,11 +174,6 @@ begin
    --  Line for -p
 
    Write_Str ("  -p       Create missing obj, lib and exec dirs");
-   Write_Eol;
-
-   --  Line for -P
-
-   Write_Str ("  -Pproj   Use GNAT Project File proj");
    Write_Eol;
 
    --  Line for -q

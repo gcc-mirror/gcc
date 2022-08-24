@@ -1377,7 +1377,9 @@ jt_state::register_equivs_stmt (gimple *stmt, basic_block bb,
 		SET_USE (use_p, tmp);
 	    }
 
-	  cached_lhs = simplifier->simplify (stmt, stmt, bb, this);
+	  /* Do not pass state to avoid calling the ranger with the
+	     temporarily altered IL.  */
+	  cached_lhs = simplifier->simplify (stmt, stmt, bb, /*state=*/NULL);
 
 	  /* Restore the statement's original uses/defs.  */
 	  i = 0;
@@ -1397,7 +1399,6 @@ jt_state::register_equivs_stmt (gimple *stmt, basic_block bb,
 
 // Hybrid threader implementation.
 
-
 hybrid_jt_simplifier::hybrid_jt_simplifier (gimple_ranger *r,
 					    path_range_query *q)
 {
@@ -1409,19 +1410,24 @@ tree
 hybrid_jt_simplifier::simplify (gimple *stmt, gimple *, basic_block,
 				jt_state *state)
 {
-  int_range_max r;
+  auto_bitmap dependencies;
+  auto_vec<basic_block> path;
 
-  compute_ranges_from_state (stmt, state);
+  state->get_path (path);
+  compute_exit_dependencies (dependencies, path, stmt);
+  m_query->reset_path (path, dependencies);
 
   if (gimple_code (stmt) == GIMPLE_COND
       || gimple_code (stmt) == GIMPLE_ASSIGN)
     {
+      Value_Range r (gimple_range_type (stmt));
       tree ret;
       if (m_query->range_of_stmt (r, stmt) && r.singleton_p (&ret))
 	return ret;
     }
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
     {
+      int_range_max r;
       gswitch *switch_stmt = dyn_cast <gswitch *> (stmt);
       tree index = gimple_switch_index (switch_stmt);
       if (m_query->range_of_expr (r, index, stmt))
@@ -1430,31 +1436,33 @@ hybrid_jt_simplifier::simplify (gimple *stmt, gimple *, basic_block,
   return NULL;
 }
 
-// Use STATE to generate the list of imports needed for the solver,
-// and calculate the ranges along the path.
+// Calculate the set of exit dependencies for a path and statement to
+// be simplified.  This is different than the
+// compute_exit_dependencies in the path solver because the forward
+// threader asks questions about statements not necessarily in the
+// path.  Using the default compute_exit_dependencies in the path
+// solver gets noticeably less threads.
 
 void
-hybrid_jt_simplifier::compute_ranges_from_state (gimple *stmt, jt_state *state)
+hybrid_jt_simplifier::compute_exit_dependencies (bitmap dependencies,
+						 const vec<basic_block> &path,
+						 gimple *stmt)
 {
-  auto_bitmap imports;
   gori_compute &gori = m_ranger->gori ();
 
-  state->get_path (m_path);
-
   // Start with the imports to the final conditional.
-  bitmap_copy (imports, gori.imports (m_path[0]));
+  bitmap_copy (dependencies, gori.imports (path[0]));
 
   // Add any other interesting operands we may have missed.
-  if (gimple_bb (stmt) != m_path[0])
+  if (gimple_bb (stmt) != path[0])
     {
       for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
 	{
 	  tree op = gimple_op (stmt, i);
 	  if (op
 	      && TREE_CODE (op) == SSA_NAME
-	      && irange::supports_type_p (TREE_TYPE (op)))
-	    bitmap_set_bit (imports, SSA_NAME_VERSION (op));
+	      && Value_Range::supports_type_p (TREE_TYPE (op)))
+	    bitmap_set_bit (dependencies, SSA_NAME_VERSION (op));
 	}
     }
-  m_query->compute_ranges (m_path, imports);
 }

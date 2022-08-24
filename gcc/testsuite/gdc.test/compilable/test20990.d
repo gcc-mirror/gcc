@@ -16,4 +16,3 @@ void bar(int* ptr)
     assert(ptr);
     *ptr = 42;
 }
-

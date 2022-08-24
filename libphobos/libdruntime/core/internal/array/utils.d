@@ -11,7 +11,7 @@ module core.internal.array.utils;
 
 import core.internal.traits : Parameters;
 
-private auto gcStatsPure() nothrow pure
+auto gcStatsPure() nothrow pure
 {
     import core.memory : GC;
 
@@ -19,7 +19,7 @@ private auto gcStatsPure() nothrow pure
     return impureBypass();
 }
 
-private ulong accumulatePure(string file, int line, string funcname, string name, ulong size) nothrow pure
+ulong accumulatePure(string file, int line, string funcname, string name, ulong size) nothrow pure
 {
     static ulong impureBypass(string file, int line, string funcname, string name, ulong size) @nogc nothrow
     {
@@ -32,6 +32,52 @@ private ulong accumulatePure(string file, int line, string funcname, string name
 
     auto func = cast(ulong function(string file, int line, string funcname, string name, ulong size) @nogc nothrow pure)&impureBypass;
     return func(file, line, funcname, name, size);
+}
+
+/**
+ * TraceGC wrapper generator around the runtime hook `Hook`.
+ * Params:
+ *   Type = The type of hook to report to accumulate
+ *   Hook = The name hook to wrap
+ */
+template TraceHook(string Type, string Hook)
+{
+    const char[] TraceHook = q{
+        import core.internal.array.utils : gcStatsPure, accumulatePure;
+
+        pragma(inline, false);
+        string name = } ~ "`" ~ Type ~ "`;" ~ q{
+
+        // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
+        version (tracegc)
+    } ~ "{\n" ~ q{
+            import core.stdc.stdio;
+
+            printf("%sTrace file = '%.*s' line = %d function = '%.*s' type = %.*s\n",
+            } ~ "\"" ~ Hook ~ "\".ptr," ~ q{
+                file.length, file.ptr,
+                line,
+                funcname.length, funcname.ptr,
+                name.length, name.ptr
+            );
+        } ~ "}\n" ~ q{
+        ulong currentlyAllocated = gcStatsPure().allocatedInCurrentThread;
+
+        scope(exit)
+        {
+            ulong size = gcStatsPure().allocatedInCurrentThread - currentlyAllocated;
+            if (size > 0)
+                if (!accumulatePure(file, line, funcname, name, size)) {
+                    // This 'if' and 'assert' is needed to force the compiler to not remove the call to
+                    // `accumulatePure`. It really want to do that while optimizing as the function is
+                    // `pure` and it does not influence the result of this hook.
+
+                    // `accumulatePure` returns the value of `size`, which can never be zero due to the
+                    // previous 'if'. So this assert will never be triggered.
+                    assert(0);
+                }
+        }
+    };
 }
 
 /**
@@ -53,39 +99,7 @@ auto _d_HookTraceImpl(T, alias Hook, string errorMessage)(string file, int line,
 {
     version (D_TypeInfo)
     {
-        pragma(inline, false);
-        string name = T.stringof;
-
-        // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
-        version (tracegc)
-        {
-            import core.stdc.stdio;
-
-            printf("%sTrace file = '%.*s' line = %d function = '%.*s' type = %.*s\n",
-                Hook.stringof.ptr,
-                file.length, file.ptr,
-                line,
-                funcname.length, funcname.ptr,
-                name.length, name.ptr
-            );
-        }
-
-        ulong currentlyAllocated = gcStatsPure().allocatedInCurrentThread;
-
-        scope(exit)
-        {
-            ulong size = gcStatsPure().allocatedInCurrentThread - currentlyAllocated;
-            if (size > 0)
-                if (!accumulatePure(file, line, funcname, name, size)) {
-                    // This 'if' and 'assert' is needed to force the compiler to not remove the call to
-                    // `accumulatePure`. It really want to do that while optimizing as the function is
-                    // `pure` and it does not influence the result of this hook.
-
-                    // `accumulatePure` returns the value of `size`, which can never be zero due to the
-                    // previous 'if'. So this assert will never be triggered.
-                    assert(0);
-                }
-        }
+        mixin(TraceHook!(T.stringof, __traits(identifier, Hook)));
         return Hook(parameters);
     }
     else

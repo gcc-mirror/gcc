@@ -56,17 +56,32 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case MULT_HIGHPART_EXPR:
       return TYPE_UNSIGNED (type) ? umul_highpart_optab : smul_highpart_optab;
 
-    case TRUNC_MOD_EXPR:
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
+      /* {s,u}mod_optab implements TRUNC_MOD_EXPR.  For scalar modes,
+	 expansion has code to adjust TRUNC_MOD_EXPR into the desired other
+	 modes, but for vector modes it does not.  The adjustment code
+	 should be instead emitted in tree-vect-patterns.cc.  */
+      if (TREE_CODE (type) == VECTOR_TYPE)
+	return unknown_optab;
+      /* FALLTHRU */
+    case TRUNC_MOD_EXPR:
       return TYPE_UNSIGNED (type) ? umod_optab : smod_optab;
 
-    case RDIV_EXPR:
-    case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
+      /* {,u}{s,u}div_optab implements {TRUNC,EXACT}_DIV_EXPR or RDIV_EXPR.
+	 For scalar modes, expansion has code to adjust TRUNC_DIV_EXPR
+	 into the desired other modes, but for vector modes it does not.
+	 The adjustment code should be instead emitted in
+	 tree-vect-patterns.cc.  */
+      if (TREE_CODE (type) == VECTOR_TYPE)
+	return unknown_optab;
+      /* FALLTHRU */
+    case RDIV_EXPR:
+    case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
       if (TYPE_SATURATING (type))
 	return TYPE_UNSIGNED (type) ? usdiv_optab : ssdiv_optab;

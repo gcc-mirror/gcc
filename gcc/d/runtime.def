@@ -61,13 +61,8 @@ DEF_D_RUNTIME (ARRAYBOUNDS_INDEXP, "_d_arraybounds_indexp", RT(VOID),
 
 /* Used when calling new on a class.  */
 DEF_D_RUNTIME (NEWCLASS, "_d_newclass", RT(OBJECT), P1(CONST_CLASSINFO), 0)
-DEF_D_RUNTIME (NEWTHROW, "_d_newThrowable", RT(OBJECT), P1(CONST_CLASSINFO), 0)
 
-/* Used when calling delete on a class or interface.  */
-DEF_D_RUNTIME (DELCLASS, "_d_delclass", RT(VOID), P1(VOIDPTR), 0)
-DEF_D_RUNTIME (DELINTERFACE, "_d_delinterface", RT(VOID), P1(VOIDPTR), 0)
-
-/* Same as deleting a class, but used for stack-allocated classes.  */
+/* Used when calling delete on a stack-allocated class or interface.  */
 DEF_D_RUNTIME (CALLFINALIZER, "_d_callfinalizer", RT(VOID), P1(VOIDPTR), 0)
 DEF_D_RUNTIME (CALLINTERFACEFINALIZER, "_d_callinterfacefinalizer", RT(VOID),
 	       P1(VOIDPTR), 0)
@@ -82,9 +77,6 @@ DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
    initializer is nonzero.  */
 DEF_D_RUNTIME (NEWITEMT, "_d_newitemT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 DEF_D_RUNTIME (NEWITEMIT, "_d_newitemiT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-
-/* Used when calling delete on a pointer.  */
-DEF_D_RUNTIME (DELMEMORY, "_d_delmemory", RT(VOID), P1(POINTER_VOIDPTR), 0)
 
 /* Used when calling new on an array.  The `i' variant is for when the
    initializer is nonzero, and the `m' variant is when initializing a
@@ -101,10 +93,6 @@ DEF_D_RUNTIME (NEWARRAYMITX, "_d_newarraymiTX", RT(ARRAY_VOID),
 /* Used for allocating an array literal on the GC heap.  */
 DEF_D_RUNTIME (ARRAYLITERALTX, "_d_arrayliteralTX", RT(VOIDPTR),
 	       P2(CONST_TYPEINFO, SIZE_T), 0)
-
-/* Used when calling delete on an array.  */
-DEF_D_RUNTIME (DELARRAYT, "_d_delarray_t", RT(VOID),
-	       P2(ARRAYPTR_VOID, CONST_TYPEINFO), 0)
 
 /* Used for value equality (x == y) and comparisons (x < y) of non-trivial
    arrays.  Such as an array of structs or classes.  */
@@ -155,10 +143,6 @@ DEF_D_RUNTIME (ARRAYAPPENDCD, "_d_arrayappendcd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
 DEF_D_RUNTIME (ARRAYAPPENDWD, "_d_arrayappendwd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
-
-/* Used for appending an existing array to another.  */
-DEF_D_RUNTIME (ARRAYAPPENDT, "_d_arrayappendT", RT(ARRAY_VOID),
-	       P3(TYPEINFO, ARRAYPTR_BYTE, ARRAY_BYTE), 0)
 
 /* Used for allocating a new associative array.  */
 DEF_D_RUNTIME (ASSOCARRAYLITERALTX, "_d_assocarrayliteralTX", RT(VOIDPTR),

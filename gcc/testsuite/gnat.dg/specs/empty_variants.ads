@@ -1,5 +1,4 @@
 --  { dg-do compile }
---  { dg-options "-gnatdF" }
 
 package Empty_Variants is
    
@@ -23,10 +22,11 @@ package Empty_Variants is
    
    R : Rec;
    
-   I : Integer := R.I;
+   I : Integer := R.I; -- { dg-warning "\"R\.I\" may be referenced before it has a value" }
    J : Integer := R.J;
    K : Integer := R.K;
    L : Integer := R.L;
    M : Integer := R.L;
 
 end Empty_Variants;
+

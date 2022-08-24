@@ -13,13 +13,13 @@ lab:
 constexpr int
 bar ()
 {
-  static int a;		// { dg-error "'a' declared 'static' in 'constexpr' context" }
+  static int a;		// { dg-error "'a' defined 'static' in 'constexpr' context" }
   return ++a;
 }
 
 constexpr int
 baz (int x)
 {
-  thread_local int a;	// { dg-error "'a' declared 'thread_local' in 'constexpr' context" }
+  thread_local int a;	// { dg-error "'a' defined 'thread_local' in 'constexpr' context" }
   return ++a;
 }

@@ -20,5 +20,6 @@ void foo ()
       }
 }
 
-/* { dg-final { scan-tree-dump "generated memcpy" "ldist" } } */
-/* { dg-final { scan-tree-dump "generated memset zero" "ldist" } } */
+/* The cost modeling does not consider WAR as beneficial to split.  */
+/* { dg-final { scan-tree-dump "generated memcpy" "ldist" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "generated memset zero" "ldist" { xfail *-*-* } } } */

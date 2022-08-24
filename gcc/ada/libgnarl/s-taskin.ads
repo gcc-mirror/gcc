@@ -1168,7 +1168,7 @@ package System.Tasking is
       --
       --  Protection: Self.L. Once a task has set Self.Stage to Completing, it
       --  has exclusive access to this field.
-   end record;
+   end record; -- Ada_Task_Control_Block
 
    --------------------
    -- Initialization --

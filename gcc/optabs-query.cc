@@ -407,9 +407,9 @@ can_vec_perm_var_p (machine_mode mode)
 }
 
 /* Return true if the target directly supports VEC_PERM_EXPRs on vectors
-   of mode MODE using the selector SEL.  ALLOW_VARIABLE_P is true if it
-   is acceptable to force the selector into a register and use a variable
-   permute (if the target supports that).
+   of mode OP_MODE and result vector of mode MODE using the selector SEL.
+   ALLOW_VARIABLE_P is true if it is acceptable to force the selector into a
+   register and use a variable permute (if the target supports that).
 
    Note that additional permutations representing whole-vector shifts may
    also be handled via the vec_shr or vec_shl optab, but only where the
@@ -417,8 +417,8 @@ can_vec_perm_var_p (machine_mode mode)
    with here.  */
 
 bool
-can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
-		      bool allow_variable_p)
+can_vec_perm_const_p (machine_mode mode, machine_mode op_mode,
+		      const vec_perm_indices &sel, bool allow_variable_p)
 {
   /* If the target doesn't implement a vector mode for the vector type,
      then no operations are supported.  */
@@ -426,7 +426,7 @@ can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
     return false;
 
   /* It's probably cheaper to test for the variable case first.  */
-  if (allow_variable_p && selector_fits_mode_p (mode, sel))
+  if (op_mode == mode && allow_variable_p && selector_fits_mode_p (mode, sel))
     {
       if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
 	return true;
@@ -448,7 +448,7 @@ can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
 
   if (targetm.vectorize.vec_perm_const != NULL)
     {
-      if (targetm.vectorize.vec_perm_const (mode, NULL_RTX, NULL_RTX,
+      if (targetm.vectorize.vec_perm_const (mode, op_mode, NULL_RTX, NULL_RTX,
 					    NULL_RTX, sel))
 	return true;
 
@@ -534,7 +534,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 			    + (i & ~1)
 			    + ((i & 1) ? nunits : 0));
 	  vec_perm_indices indices (sel, 2, nunits);
-	  if (can_vec_perm_const_p (mode, indices))
+	  if (can_vec_perm_const_p (mode, mode, indices))
 	    return 2;
 	}
     }
@@ -550,7 +550,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	  for (unsigned int i = 0; i < 3; ++i)
 	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
 	  vec_perm_indices indices (sel, 2, nunits);
-	  if (can_vec_perm_const_p (mode, indices))
+	  if (can_vec_perm_const_p (mode, mode, indices))
 	    return 3;
 	}
     }
@@ -720,7 +720,7 @@ static bool
 supports_vec_convert_optab_p (optab op, machine_mode mode)
 {
   int start = mode == VOIDmode ? 0 : mode;
-  int end = mode == VOIDmode ? MAX_MACHINE_MODE : mode;
+  int end = mode == VOIDmode ? MAX_MACHINE_MODE - 1 : mode;
   for (int i = start; i <= end; ++i)
     if (VECTOR_MODE_P ((machine_mode) i))
       for (int j = MIN_MODE_VECTOR_INT; j < MAX_MODE_VECTOR_INT; ++j)
@@ -763,3 +763,31 @@ supports_vec_scatter_store_p (machine_mode mode)
   return this_fn_optabs->supports_vec_scatter_store[mode] > 0;
 }
 
+/* Whether we can extract part of the vector mode MODE as
+   (scalar or vector) mode EXTR_MODE.  */
+
+bool
+can_vec_extract (machine_mode mode, machine_mode extr_mode)
+{
+  unsigned m;
+  if (!VECTOR_MODE_P (mode)
+      || !constant_multiple_p (GET_MODE_SIZE (mode),
+			       GET_MODE_SIZE (extr_mode), &m))
+    return false;
+
+  if (convert_optab_handler (vec_extract_optab, mode, extr_mode)
+      != CODE_FOR_nothing)
+    return true;
+
+  /* Besides a direct vec_extract we can also use an element extract from
+     an integer vector mode with elements of the size of the extr_mode.  */
+  scalar_int_mode imode;
+  machine_mode vmode;
+  if (!int_mode_for_size (GET_MODE_BITSIZE (extr_mode), 0).exists (&imode)
+      || !related_vector_mode (mode, imode, m).exists (&vmode)
+      || (convert_optab_handler (vec_extract_optab, vmode, imode)
+	  == CODE_FOR_nothing))
+    return false;
+  /* We assume we can pun mode to vmode and imode to extr_mode.  */
+  return true;
+}

@@ -254,6 +254,10 @@
 						  false,
 						  ADDR_QUERY_LDP_STP_N)")))
 
+(define_predicate "aarch64_reg_or_mem_pair_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_mem_pair_lanes_operand")))
+
 (define_predicate "aarch64_prefetch_operand"
   (match_test "aarch64_address_valid_for_prefetch_p (op, false)"))
 

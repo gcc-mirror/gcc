@@ -1305,8 +1305,16 @@ simd_clone_adjust (struct cgraph_node *node)
 				       build_int_cst (TREE_TYPE (iter1), c));
 	      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 	    }
+	  tree shift_cnt_conv = shift_cnt;
+	  if (!useless_type_conversion_p (TREE_TYPE (mask),
+					  TREE_TYPE (shift_cnt)))
+	    {
+	      shift_cnt_conv = make_ssa_name (TREE_TYPE (mask));
+	      g = gimple_build_assign (shift_cnt_conv, NOP_EXPR, shift_cnt);
+	      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	    }
 	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (mask)),
-				   RSHIFT_EXPR, mask, shift_cnt);
+				   RSHIFT_EXPR, mask, shift_cnt_conv);
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 	  mask = gimple_assign_lhs (g);
 	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (mask)),
@@ -1819,8 +1827,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return ipa_omp_simd_clone (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
+  {
+    return ipa_omp_simd_clone ();
+  }
 };
 
 bool

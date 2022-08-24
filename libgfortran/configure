@@ -645,8 +645,7 @@ IEEE_SUPPORT
 IEEE_SUPPORT_FALSE
 IEEE_SUPPORT_TRUE
 FPU_HOST_HEADER
-LIBGFOR_BUILD_QUAD_FALSE
-LIBGFOR_BUILD_QUAD_TRUE
+USE_IEC_60559
 LIBQUADINCLUDE
 LIBQUADLIB_DEP
 LIBQUADLIB
@@ -2673,6 +2672,8 @@ as_fn_append ac_func_list " newlocale"
 as_fn_append ac_func_list " freelocale"
 as_fn_append ac_func_list " uselocale"
 as_fn_append ac_func_list " strerror_l"
+as_fn_append ac_func_list " strtof128"
+as_fn_append ac_func_list " strfromf128"
 as_fn_append ac_header_list " math.h"
 # Check that the precious variables saved in the cache have kept the same
 # value.
@@ -12766,7 +12767,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12769 "configure"
+#line 12770 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12872,7 +12873,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12875 "configure"
+#line 12876 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17074,6 +17075,10 @@ _ACEOF
 
 fi
 done
+
+
+
+
 
 
 
@@ -25857,8 +25862,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __acoshieee128 (__float128);
-__float128 (*ptr)(__float128) = __acoshieee128;
+_Float128 __acoshieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __acoshieee128;
 
 int
 main ()
@@ -25899,8 +25904,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __acosieee128 (__float128);
-__float128 (*ptr)(__float128) = __acosieee128;
+_Float128 __acosieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __acosieee128;
 
 int
 main ()
@@ -25941,8 +25946,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __asinhieee128 (__float128);
-__float128 (*ptr)(__float128) = __asinhieee128;
+_Float128 __asinhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __asinhieee128;
 
 int
 main ()
@@ -25983,8 +25988,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __asinieee128 (__float128);
-__float128 (*ptr)(__float128) = __asinieee128;
+_Float128 __asinieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __asinieee128;
 
 int
 main ()
@@ -26025,8 +26030,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __atan2ieee128 (__float128);
-__float128 (*ptr)(__float128) = __atan2ieee128;
+_Float128 __atan2ieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __atan2ieee128;
 
 int
 main ()
@@ -26067,8 +26072,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __atanhieee128 (__float128);
-__float128 (*ptr)(__float128) = __atanhieee128;
+_Float128 __atanhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __atanhieee128;
 
 int
 main ()
@@ -26109,8 +26114,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __atanieee128 (__float128);
-__float128 (*ptr)(__float128) = __atanieee128;
+_Float128 __atanieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __atanieee128;
 
 int
 main ()
@@ -26151,8 +26156,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __coshieee128 (__float128);
-__float128 (*ptr)(__float128) = __coshieee128;
+_Float128 __coshieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __coshieee128;
 
 int
 main ()
@@ -26193,8 +26198,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __cosieee128 (__float128);
-__float128 (*ptr)(__float128) = __cosieee128;
+_Float128 __cosieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __cosieee128;
 
 int
 main ()
@@ -26235,8 +26240,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __erfieee128 (__float128);
-__float128 (*ptr)(__float128) = __erfieee128;
+_Float128 __erfieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __erfieee128;
 
 int
 main ()
@@ -26277,8 +26282,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __expieee128 (__float128);
-__float128 (*ptr)(__float128) = __expieee128;
+_Float128 __expieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __expieee128;
 
 int
 main ()
@@ -26319,8 +26324,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __fabsieee128 (__float128);
-__float128 (*ptr)(__float128) = __fabsieee128;
+_Float128 __fabsieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __fabsieee128;
 
 int
 main ()
@@ -26361,8 +26366,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __jnieee128 (__float128);
-__float128 (*ptr)(__float128) = __jnieee128;
+_Float128 __jnieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __jnieee128;
 
 int
 main ()
@@ -26403,8 +26408,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __log10ieee128 (__float128);
-__float128 (*ptr)(__float128) = __log10ieee128;
+_Float128 __log10ieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __log10ieee128;
 
 int
 main ()
@@ -26445,8 +26450,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __logieee128 (__float128);
-__float128 (*ptr)(__float128) = __logieee128;
+_Float128 __logieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __logieee128;
 
 int
 main ()
@@ -26487,8 +26492,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __powieee128 (__float128);
-__float128 (*ptr)(__float128) = __powieee128;
+_Float128 __powieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __powieee128;
 
 int
 main ()
@@ -26529,8 +26534,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __sinhieee128 (__float128);
-__float128 (*ptr)(__float128) = __sinhieee128;
+_Float128 __sinhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __sinhieee128;
 
 int
 main ()
@@ -26571,8 +26576,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __sinieee128 (__float128);
-__float128 (*ptr)(__float128) = __sinieee128;
+_Float128 __sinieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __sinieee128;
 
 int
 main ()
@@ -26613,8 +26618,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __sqrtieee128 (__float128);
-__float128 (*ptr)(__float128) = __sqrtieee128;
+_Float128 __sqrtieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __sqrtieee128;
 
 int
 main ()
@@ -26655,8 +26660,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __tanhieee128 (__float128);
-__float128 (*ptr)(__float128) = __tanhieee128;
+_Float128 __tanhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __tanhieee128;
 
 int
 main ()
@@ -26697,8 +26702,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __tanieee128 (__float128);
-__float128 (*ptr)(__float128) = __tanieee128;
+_Float128 __tanieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __tanieee128;
 
 int
 main ()
@@ -26739,8 +26744,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __ynieee128 (__float128);
-__float128 (*ptr)(__float128) = __ynieee128;
+_Float128 __ynieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __ynieee128;
 
 int
 main ()
@@ -26997,6 +27002,2984 @@ _ACEOF
   fi
 fi
 
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acosf128" >&5
+$as_echo_n "checking for acosf128... " >&6; }
+if ${gcc_cv_math_func_acosf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())acosf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_acosf128=yes
+else
+  gcc_cv_math_func_acosf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_acosf128" >&5
+$as_echo "$gcc_cv_math_func_acosf128" >&6; }
+  if test $gcc_cv_math_func_acosf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acoshf128" >&5
+$as_echo_n "checking for acoshf128... " >&6; }
+if ${gcc_cv_math_func_acoshf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())acoshf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_acoshf128=yes
+else
+  gcc_cv_math_func_acoshf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_acoshf128" >&5
+$as_echo "$gcc_cv_math_func_acoshf128" >&6; }
+  if test $gcc_cv_math_func_acoshf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for asinf128" >&5
+$as_echo_n "checking for asinf128... " >&6; }
+if ${gcc_cv_math_func_asinf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())asinf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_asinf128=yes
+else
+  gcc_cv_math_func_asinf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_asinf128" >&5
+$as_echo "$gcc_cv_math_func_asinf128" >&6; }
+  if test $gcc_cv_math_func_asinf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for asinhf128" >&5
+$as_echo_n "checking for asinhf128... " >&6; }
+if ${gcc_cv_math_func_asinhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())asinhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_asinhf128=yes
+else
+  gcc_cv_math_func_asinhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_asinhf128" >&5
+$as_echo "$gcc_cv_math_func_asinhf128" >&6; }
+  if test $gcc_cv_math_func_asinhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atan2f128" >&5
+$as_echo_n "checking for atan2f128... " >&6; }
+if ${gcc_cv_math_func_atan2f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())atan2f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_atan2f128=yes
+else
+  gcc_cv_math_func_atan2f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_atan2f128" >&5
+$as_echo "$gcc_cv_math_func_atan2f128" >&6; }
+  if test $gcc_cv_math_func_atan2f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATAN2F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atanf128" >&5
+$as_echo_n "checking for atanf128... " >&6; }
+if ${gcc_cv_math_func_atanf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())atanf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_atanf128=yes
+else
+  gcc_cv_math_func_atanf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_atanf128" >&5
+$as_echo "$gcc_cv_math_func_atanf128" >&6; }
+  if test $gcc_cv_math_func_atanf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atanhf128" >&5
+$as_echo_n "checking for atanhf128... " >&6; }
+if ${gcc_cv_math_func_atanhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())atanhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_atanhf128=yes
+else
+  gcc_cv_math_func_atanhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_atanhf128" >&5
+$as_echo "$gcc_cv_math_func_atanhf128" >&6; }
+  if test $gcc_cv_math_func_atanhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cargf128" >&5
+$as_echo_n "checking for cargf128... " >&6; }
+if ${gcc_cv_math_func_cargf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cargf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cargf128=yes
+else
+  gcc_cv_math_func_cargf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cargf128" >&5
+$as_echo "$gcc_cv_math_func_cargf128" >&6; }
+  if test $gcc_cv_math_func_cargf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CARGF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ceilf128" >&5
+$as_echo_n "checking for ceilf128... " >&6; }
+if ${gcc_cv_math_func_ceilf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ceilf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ceilf128=yes
+else
+  gcc_cv_math_func_ceilf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ceilf128" >&5
+$as_echo "$gcc_cv_math_func_ceilf128" >&6; }
+  if test $gcc_cv_math_func_ceilf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEILF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for copysignf128" >&5
+$as_echo_n "checking for copysignf128... " >&6; }
+if ${gcc_cv_math_func_copysignf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())copysignf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_copysignf128=yes
+else
+  gcc_cv_math_func_copysignf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_copysignf128" >&5
+$as_echo "$gcc_cv_math_func_copysignf128" >&6; }
+  if test $gcc_cv_math_func_copysignf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COPYSIGNF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cosf128" >&5
+$as_echo_n "checking for cosf128... " >&6; }
+if ${gcc_cv_math_func_cosf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cosf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cosf128=yes
+else
+  gcc_cv_math_func_cosf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cosf128" >&5
+$as_echo "$gcc_cv_math_func_cosf128" >&6; }
+  if test $gcc_cv_math_func_cosf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ccosf128" >&5
+$as_echo_n "checking for ccosf128... " >&6; }
+if ${gcc_cv_math_func_ccosf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ccosf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ccosf128=yes
+else
+  gcc_cv_math_func_ccosf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ccosf128" >&5
+$as_echo "$gcc_cv_math_func_ccosf128" >&6; }
+  if test $gcc_cv_math_func_ccosf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for coshf128" >&5
+$as_echo_n "checking for coshf128... " >&6; }
+if ${gcc_cv_math_func_coshf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())coshf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_coshf128=yes
+else
+  gcc_cv_math_func_coshf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_coshf128" >&5
+$as_echo "$gcc_cv_math_func_coshf128" >&6; }
+  if test $gcc_cv_math_func_coshf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_COSHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ccoshf128" >&5
+$as_echo_n "checking for ccoshf128... " >&6; }
+if ${gcc_cv_math_func_ccoshf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ccoshf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ccoshf128=yes
+else
+  gcc_cv_math_func_ccoshf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ccoshf128" >&5
+$as_echo "$gcc_cv_math_func_ccoshf128" >&6; }
+  if test $gcc_cv_math_func_ccoshf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CCOSHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for expf128" >&5
+$as_echo_n "checking for expf128... " >&6; }
+if ${gcc_cv_math_func_expf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())expf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_expf128=yes
+else
+  gcc_cv_math_func_expf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_expf128" >&5
+$as_echo "$gcc_cv_math_func_expf128" >&6; }
+  if test $gcc_cv_math_func_expf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_EXPF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cexpf128" >&5
+$as_echo_n "checking for cexpf128... " >&6; }
+if ${gcc_cv_math_func_cexpf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cexpf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cexpf128=yes
+else
+  gcc_cv_math_func_cexpf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cexpf128" >&5
+$as_echo "$gcc_cv_math_func_cexpf128" >&6; }
+  if test $gcc_cv_math_func_cexpf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CEXPF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fabsf128" >&5
+$as_echo_n "checking for fabsf128... " >&6; }
+if ${gcc_cv_math_func_fabsf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())fabsf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_fabsf128=yes
+else
+  gcc_cv_math_func_fabsf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_fabsf128" >&5
+$as_echo "$gcc_cv_math_func_fabsf128" >&6; }
+  if test $gcc_cv_math_func_fabsf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FABSF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cabsf128" >&5
+$as_echo_n "checking for cabsf128... " >&6; }
+if ${gcc_cv_math_func_cabsf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cabsf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cabsf128=yes
+else
+  gcc_cv_math_func_cabsf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cabsf128" >&5
+$as_echo "$gcc_cv_math_func_cabsf128" >&6; }
+  if test $gcc_cv_math_func_cabsf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CABSF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for floorf128" >&5
+$as_echo_n "checking for floorf128... " >&6; }
+if ${gcc_cv_math_func_floorf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())floorf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_floorf128=yes
+else
+  gcc_cv_math_func_floorf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_floorf128" >&5
+$as_echo "$gcc_cv_math_func_floorf128" >&6; }
+  if test $gcc_cv_math_func_floorf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FLOORF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmaf128" >&5
+$as_echo_n "checking for fmaf128... " >&6; }
+if ${gcc_cv_math_func_fmaf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())fmaf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_fmaf128=yes
+else
+  gcc_cv_math_func_fmaf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_fmaf128" >&5
+$as_echo "$gcc_cv_math_func_fmaf128" >&6; }
+  if test $gcc_cv_math_func_fmaf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMAF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmodf128" >&5
+$as_echo_n "checking for fmodf128... " >&6; }
+if ${gcc_cv_math_func_fmodf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())fmodf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_fmodf128=yes
+else
+  gcc_cv_math_func_fmodf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_fmodf128" >&5
+$as_echo "$gcc_cv_math_func_fmodf128" >&6; }
+  if test $gcc_cv_math_func_fmodf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FMODF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for frexpf128" >&5
+$as_echo_n "checking for frexpf128... " >&6; }
+if ${gcc_cv_math_func_frexpf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())frexpf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_frexpf128=yes
+else
+  gcc_cv_math_func_frexpf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_frexpf128" >&5
+$as_echo "$gcc_cv_math_func_frexpf128" >&6; }
+  if test $gcc_cv_math_func_frexpf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FREXPF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hypotf128" >&5
+$as_echo_n "checking for hypotf128... " >&6; }
+if ${gcc_cv_math_func_hypotf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())hypotf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_hypotf128=yes
+else
+  gcc_cv_math_func_hypotf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_hypotf128" >&5
+$as_echo "$gcc_cv_math_func_hypotf128" >&6; }
+  if test $gcc_cv_math_func_hypotf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOTF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ldexpf128" >&5
+$as_echo_n "checking for ldexpf128... " >&6; }
+if ${gcc_cv_math_func_ldexpf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ldexpf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ldexpf128=yes
+else
+  gcc_cv_math_func_ldexpf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ldexpf128" >&5
+$as_echo "$gcc_cv_math_func_ldexpf128" >&6; }
+  if test $gcc_cv_math_func_ldexpf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LDEXPF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for logf128" >&5
+$as_echo_n "checking for logf128... " >&6; }
+if ${gcc_cv_math_func_logf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())logf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_logf128=yes
+else
+  gcc_cv_math_func_logf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_logf128" >&5
+$as_echo "$gcc_cv_math_func_logf128" >&6; }
+  if test $gcc_cv_math_func_logf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOGF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clogf128" >&5
+$as_echo_n "checking for clogf128... " >&6; }
+if ${gcc_cv_math_func_clogf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())clogf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_clogf128=yes
+else
+  gcc_cv_math_func_clogf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_clogf128" >&5
+$as_echo "$gcc_cv_math_func_clogf128" >&6; }
+  if test $gcc_cv_math_func_clogf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOGF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for log10f128" >&5
+$as_echo_n "checking for log10f128... " >&6; }
+if ${gcc_cv_math_func_log10f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())log10f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_log10f128=yes
+else
+  gcc_cv_math_func_log10f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_log10f128" >&5
+$as_echo "$gcc_cv_math_func_log10f128" >&6; }
+  if test $gcc_cv_math_func_log10f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LOG10F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clog10f128" >&5
+$as_echo_n "checking for clog10f128... " >&6; }
+if ${gcc_cv_math_func_clog10f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())clog10f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_clog10f128=yes
+else
+  gcc_cv_math_func_clog10f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_clog10f128" >&5
+$as_echo "$gcc_cv_math_func_clog10f128" >&6; }
+  if test $gcc_cv_math_func_clog10f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOG10F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nextafterf128" >&5
+$as_echo_n "checking for nextafterf128... " >&6; }
+if ${gcc_cv_math_func_nextafterf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())nextafterf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_nextafterf128=yes
+else
+  gcc_cv_math_func_nextafterf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_nextafterf128" >&5
+$as_echo "$gcc_cv_math_func_nextafterf128" >&6; }
+  if test $gcc_cv_math_func_nextafterf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_NEXTAFTERF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for powf128" >&5
+$as_echo_n "checking for powf128... " >&6; }
+if ${gcc_cv_math_func_powf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())powf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_powf128=yes
+else
+  gcc_cv_math_func_powf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_powf128" >&5
+$as_echo "$gcc_cv_math_func_powf128" >&6; }
+  if test $gcc_cv_math_func_powf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_POWF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cpowf128" >&5
+$as_echo_n "checking for cpowf128... " >&6; }
+if ${gcc_cv_math_func_cpowf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cpowf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cpowf128=yes
+else
+  gcc_cv_math_func_cpowf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cpowf128" >&5
+$as_echo "$gcc_cv_math_func_cpowf128" >&6; }
+  if test $gcc_cv_math_func_cpowf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CPOWF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for roundf128" >&5
+$as_echo_n "checking for roundf128... " >&6; }
+if ${gcc_cv_math_func_roundf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())roundf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_roundf128=yes
+else
+  gcc_cv_math_func_roundf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_roundf128" >&5
+$as_echo "$gcc_cv_math_func_roundf128" >&6; }
+  if test $gcc_cv_math_func_roundf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ROUNDF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lroundf128" >&5
+$as_echo_n "checking for lroundf128... " >&6; }
+if ${gcc_cv_math_func_lroundf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())lroundf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_lroundf128=yes
+else
+  gcc_cv_math_func_lroundf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_lroundf128" >&5
+$as_echo "$gcc_cv_math_func_lroundf128" >&6; }
+  if test $gcc_cv_math_func_lroundf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LROUNDF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for llroundf128" >&5
+$as_echo_n "checking for llroundf128... " >&6; }
+if ${gcc_cv_math_func_llroundf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())llroundf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_llroundf128=yes
+else
+  gcc_cv_math_func_llroundf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_llroundf128" >&5
+$as_echo "$gcc_cv_math_func_llroundf128" >&6; }
+  if test $gcc_cv_math_func_llroundf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LLROUNDF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for scalbnf128" >&5
+$as_echo_n "checking for scalbnf128... " >&6; }
+if ${gcc_cv_math_func_scalbnf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())scalbnf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_scalbnf128=yes
+else
+  gcc_cv_math_func_scalbnf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_scalbnf128" >&5
+$as_echo "$gcc_cv_math_func_scalbnf128" >&6; }
+  if test $gcc_cv_math_func_scalbnf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SCALBNF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sinf128" >&5
+$as_echo_n "checking for sinf128... " >&6; }
+if ${gcc_cv_math_func_sinf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())sinf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_sinf128=yes
+else
+  gcc_cv_math_func_sinf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_sinf128" >&5
+$as_echo "$gcc_cv_math_func_sinf128" >&6; }
+  if test $gcc_cv_math_func_sinf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for csinf128" >&5
+$as_echo_n "checking for csinf128... " >&6; }
+if ${gcc_cv_math_func_csinf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())csinf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_csinf128=yes
+else
+  gcc_cv_math_func_csinf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_csinf128" >&5
+$as_echo "$gcc_cv_math_func_csinf128" >&6; }
+  if test $gcc_cv_math_func_csinf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sinhf128" >&5
+$as_echo_n "checking for sinhf128... " >&6; }
+if ${gcc_cv_math_func_sinhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())sinhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_sinhf128=yes
+else
+  gcc_cv_math_func_sinhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_sinhf128" >&5
+$as_echo "$gcc_cv_math_func_sinhf128" >&6; }
+  if test $gcc_cv_math_func_sinhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SINHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for csinhf128" >&5
+$as_echo_n "checking for csinhf128... " >&6; }
+if ${gcc_cv_math_func_csinhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())csinhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_csinhf128=yes
+else
+  gcc_cv_math_func_csinhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_csinhf128" >&5
+$as_echo "$gcc_cv_math_func_csinhf128" >&6; }
+  if test $gcc_cv_math_func_csinhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSINHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sqrtf128" >&5
+$as_echo_n "checking for sqrtf128... " >&6; }
+if ${gcc_cv_math_func_sqrtf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())sqrtf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_sqrtf128=yes
+else
+  gcc_cv_math_func_sqrtf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_sqrtf128" >&5
+$as_echo "$gcc_cv_math_func_sqrtf128" >&6; }
+  if test $gcc_cv_math_func_sqrtf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SQRTF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for csqrtf128" >&5
+$as_echo_n "checking for csqrtf128... " >&6; }
+if ${gcc_cv_math_func_csqrtf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())csqrtf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_csqrtf128=yes
+else
+  gcc_cv_math_func_csqrtf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_csqrtf128" >&5
+$as_echo "$gcc_cv_math_func_csqrtf128" >&6; }
+  if test $gcc_cv_math_func_csqrtf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CSQRTF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tanf128" >&5
+$as_echo_n "checking for tanf128... " >&6; }
+if ${gcc_cv_math_func_tanf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())tanf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_tanf128=yes
+else
+  gcc_cv_math_func_tanf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_tanf128" >&5
+$as_echo "$gcc_cv_math_func_tanf128" >&6; }
+  if test $gcc_cv_math_func_tanf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ctanf128" >&5
+$as_echo_n "checking for ctanf128... " >&6; }
+if ${gcc_cv_math_func_ctanf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ctanf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ctanf128=yes
+else
+  gcc_cv_math_func_ctanf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ctanf128" >&5
+$as_echo "$gcc_cv_math_func_ctanf128" >&6; }
+  if test $gcc_cv_math_func_ctanf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tanhf128" >&5
+$as_echo_n "checking for tanhf128... " >&6; }
+if ${gcc_cv_math_func_tanhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())tanhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_tanhf128=yes
+else
+  gcc_cv_math_func_tanhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_tanhf128" >&5
+$as_echo "$gcc_cv_math_func_tanhf128" >&6; }
+  if test $gcc_cv_math_func_tanhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TANHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ctanhf128" >&5
+$as_echo_n "checking for ctanhf128... " >&6; }
+if ${gcc_cv_math_func_ctanhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ctanhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ctanhf128=yes
+else
+  gcc_cv_math_func_ctanhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ctanhf128" >&5
+$as_echo "$gcc_cv_math_func_ctanhf128" >&6; }
+  if test $gcc_cv_math_func_ctanhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CTANHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for truncf128" >&5
+$as_echo_n "checking for truncf128... " >&6; }
+if ${gcc_cv_math_func_truncf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())truncf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_truncf128=yes
+else
+  gcc_cv_math_func_truncf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_truncf128" >&5
+$as_echo "$gcc_cv_math_func_truncf128" >&6; }
+  if test $gcc_cv_math_func_truncf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TRUNCF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for erff128" >&5
+$as_echo_n "checking for erff128... " >&6; }
+if ${gcc_cv_math_func_erff128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())erff128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_erff128=yes
+else
+  gcc_cv_math_func_erff128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_erff128" >&5
+$as_echo "$gcc_cv_math_func_erff128" >&6; }
+  if test $gcc_cv_math_func_erff128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for erfcf128" >&5
+$as_echo_n "checking for erfcf128... " >&6; }
+if ${gcc_cv_math_func_erfcf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())erfcf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_erfcf128=yes
+else
+  gcc_cv_math_func_erfcf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_erfcf128" >&5
+$as_echo "$gcc_cv_math_func_erfcf128" >&6; }
+  if test $gcc_cv_math_func_erfcf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ERFCF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for j0f128" >&5
+$as_echo_n "checking for j0f128... " >&6; }
+if ${gcc_cv_math_func_j0f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())j0f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_j0f128=yes
+else
+  gcc_cv_math_func_j0f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_j0f128" >&5
+$as_echo "$gcc_cv_math_func_j0f128" >&6; }
+  if test $gcc_cv_math_func_j0f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J0F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for j1f128" >&5
+$as_echo_n "checking for j1f128... " >&6; }
+if ${gcc_cv_math_func_j1f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())j1f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_j1f128=yes
+else
+  gcc_cv_math_func_j1f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_j1f128" >&5
+$as_echo "$gcc_cv_math_func_j1f128" >&6; }
+  if test $gcc_cv_math_func_j1f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_J1F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jnf128" >&5
+$as_echo_n "checking for jnf128... " >&6; }
+if ${gcc_cv_math_func_jnf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())jnf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_jnf128=yes
+else
+  gcc_cv_math_func_jnf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_jnf128" >&5
+$as_echo "$gcc_cv_math_func_jnf128" >&6; }
+  if test $gcc_cv_math_func_jnf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_JNF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for y0f128" >&5
+$as_echo_n "checking for y0f128... " >&6; }
+if ${gcc_cv_math_func_y0f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())y0f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_y0f128=yes
+else
+  gcc_cv_math_func_y0f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_y0f128" >&5
+$as_echo "$gcc_cv_math_func_y0f128" >&6; }
+  if test $gcc_cv_math_func_y0f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y0F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for y1f128" >&5
+$as_echo_n "checking for y1f128... " >&6; }
+if ${gcc_cv_math_func_y1f128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())y1f128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_y1f128=yes
+else
+  gcc_cv_math_func_y1f128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_y1f128" >&5
+$as_echo "$gcc_cv_math_func_y1f128" >&6; }
+  if test $gcc_cv_math_func_y1f128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_Y1F128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ynf128" >&5
+$as_echo_n "checking for ynf128... " >&6; }
+if ${gcc_cv_math_func_ynf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())ynf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_ynf128=yes
+else
+  gcc_cv_math_func_ynf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_ynf128" >&5
+$as_echo "$gcc_cv_math_func_ynf128" >&6; }
+  if test $gcc_cv_math_func_ynf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_YNF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tgammaf128" >&5
+$as_echo_n "checking for tgammaf128... " >&6; }
+if ${gcc_cv_math_func_tgammaf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())tgammaf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_tgammaf128=yes
+else
+  gcc_cv_math_func_tgammaf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_tgammaf128" >&5
+$as_echo "$gcc_cv_math_func_tgammaf128" >&6; }
+  if test $gcc_cv_math_func_tgammaf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_TGAMMAF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lgammaf128" >&5
+$as_echo_n "checking for lgammaf128... " >&6; }
+if ${gcc_cv_math_func_lgammaf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())lgammaf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_lgammaf128=yes
+else
+  gcc_cv_math_func_lgammaf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_lgammaf128" >&5
+$as_echo "$gcc_cv_math_func_lgammaf128" >&6; }
+  if test $gcc_cv_math_func_lgammaf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LGAMMAF128 1
+_ACEOF
+
+  fi
+
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cacosf128" >&5
+$as_echo_n "checking for cacosf128... " >&6; }
+if ${gcc_cv_math_func_cacosf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cacosf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cacosf128=yes
+else
+  gcc_cv_math_func_cacosf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cacosf128" >&5
+$as_echo "$gcc_cv_math_func_cacosf128" >&6; }
+  if test $gcc_cv_math_func_cacosf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cacoshf128" >&5
+$as_echo_n "checking for cacoshf128... " >&6; }
+if ${gcc_cv_math_func_cacoshf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())cacoshf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_cacoshf128=yes
+else
+  gcc_cv_math_func_cacoshf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_cacoshf128" >&5
+$as_echo "$gcc_cv_math_func_cacoshf128" >&6; }
+  if test $gcc_cv_math_func_cacoshf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CACOSHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for casinf128" >&5
+$as_echo_n "checking for casinf128... " >&6; }
+if ${gcc_cv_math_func_casinf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())casinf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_casinf128=yes
+else
+  gcc_cv_math_func_casinf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_casinf128" >&5
+$as_echo "$gcc_cv_math_func_casinf128" >&6; }
+  if test $gcc_cv_math_func_casinf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for casinhf128" >&5
+$as_echo_n "checking for casinhf128... " >&6; }
+if ${gcc_cv_math_func_casinhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())casinhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_casinhf128=yes
+else
+  gcc_cv_math_func_casinhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_casinhf128" >&5
+$as_echo "$gcc_cv_math_func_casinhf128" >&6; }
+  if test $gcc_cv_math_func_casinhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CASINHF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for catanf128" >&5
+$as_echo_n "checking for catanf128... " >&6; }
+if ${gcc_cv_math_func_catanf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())catanf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_catanf128=yes
+else
+  gcc_cv_math_func_catanf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_catanf128" >&5
+$as_echo "$gcc_cv_math_func_catanf128" >&6; }
+  if test $gcc_cv_math_func_catanf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANF128 1
+_ACEOF
+
+  fi
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for catanhf128" >&5
+$as_echo_n "checking for catanhf128... " >&6; }
+if ${gcc_cv_math_func_catanhf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_COMPLEX_H
+#include <complex.h>
+#endif
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+
+int (*ptr)() = (int (*)())catanhf128;
+
+int
+main ()
+{
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gcc_cv_math_func_catanhf128=yes
+else
+  gcc_cv_math_func_catanhf128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_math_func_catanhf128" >&5
+$as_echo "$gcc_cv_math_func_catanhf128" >&6; }
+  if test $gcc_cv_math_func_catanhf128 = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_CATANHF128 1
+_ACEOF
+
+  fi
+
+
 # Check whether the system has a working stat()
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target stat is reliable" >&5
@@ -27099,27 +30082,44 @@ $as_echo "#define HAVE_MINGW_SNPRINTF 1" >>confdefs.h
   fi
 
 
+have_iec_60559_libc_support=no
+if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
+   && test "x$gcc_cv_math_func_sinf128$gcc_cv_math_func_cacosf128" = xyesyes; then
+  have_iec_60559_libc_support=yes
+fi
+
 # Check whether libquadmath should be used
 # Check whether --enable-libquadmath-support was given.
 if test "${enable_libquadmath_support+set}" = set; then :
   enableval=$enable_libquadmath_support; ENABLE_LIBQUADMATH_SUPPORT=$enableval
 else
+  if test "x$have_iec_60559_libc_support" = xyes; then
+  ENABLE_LIBQUADMATH_SUPPORT=default
+else
   ENABLE_LIBQUADMATH_SUPPORT=yes
+fi
 fi
 
 enable_libquadmath_support=
 if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
   enable_libquadmath_support=no
+elif test "${ENABLE_LIBQUADMATH_SUPPORT}" = "default" ; then
+  enable_libquadmath_support=default
 fi
 
-# Check whether we have a __float128 type, depends on enable_libquadmath_support
+# Check whether we have a _Float128 type, depends on enable_libquadmath_support
+# and have_iec_60559_libc_support.
 
   LIBQUADSPEC=
+  LIBQUADLIB=
+  LIBQUADLIB_DEP=
+  LIBQUADINCLUDE=
+  USE_IEC_60559=no
 
   if test "x$enable_libquadmath_support" != xno; then
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we have a usable __float128 type" >&5
-$as_echo_n "checking whether we have a usable __float128 type... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we have a usable _Float128 type" >&5
+$as_echo_n "checking whether we have a usable _Float128 type... " >&6; }
 if ${libgfor_cv_have_float128+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -27128,31 +30128,37 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-    typedef _Complex float __attribute__((mode(TC))) __complex128;
-
-    __float128 foo (__float128 x)
+    _Float128 foo (_Float128 x)
     {
-
-     __complex128 z1, z2;
+     _Complex _Float128 z1, z2;
 
      z1 = x;
-     z2 = x / 7.Q;
+     z2 = x / 7.F128;
      z2 /= z1;
 
-     return (__float128) z2;
+     return (_Float128) z2;
     }
 
-    __float128 bar (__float128 x)
+    _Float128 bar (_Float128 x)
     {
-      return x * __builtin_huge_valq ();
+      return x * __builtin_huge_valf128 ();
+    }
+
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
     }
 
 int
 main ()
 {
 
+    foo (1.2F128);
+    bar (1.2F128);
+    baz (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
+    baz (1.2Q);
 
   ;
   return 0;
@@ -27175,31 +30181,37 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-    typedef _Complex float __attribute__((mode(TC))) __complex128;
-
-    __float128 foo (__float128 x)
+    _Float128 foo (_Float128 x)
     {
-
-     __complex128 z1, z2;
+     _Complex _Float128 z1, z2;
 
      z1 = x;
-     z2 = x / 7.Q;
+     z2 = x / 7.F128;
      z2 /= z1;
 
-     return (__float128) z2;
+     return (_Float128) z2;
     }
 
-    __float128 bar (__float128 x)
+    _Float128 bar (_Float128 x)
     {
-      return x * __builtin_huge_valq ();
+      return x * __builtin_huge_valf128 ();
+    }
+
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
     }
 
 int
 main ()
 {
 
+    foo (1.2F128);
+    bar (1.2F128);
+    baz (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
+    baz (1.2Q);
 
   ;
   return 0;
@@ -27221,7 +30233,17 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_float128" >&5
 $as_echo "$libgfor_cv_have_float128" >&6; }
 
+    if test "x$have_iec_60559_libc_support$enable_libquadmath_support$libgfor_cv_have_float128" = xyesdefaultyes; then
+      USE_IEC_60559=yes
+    fi
+
+
   if test "x$libgfor_cv_have_float128" = xyes; then
+    if test "x$USE_IEC_60559" = xyes; then
+
+$as_echo "#define USE_IEC_60559 1" >>confdefs.h
+
+    fi
 
 $as_echo "#define HAVE_FLOAT128 1" >>confdefs.h
 
@@ -27301,40 +30323,53 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_as_needed" >&5
 $as_echo "$libgfor_cv_have_as_needed" >&6; }
 
-        if test "x$libgfor_cv_have_as_needed" = xyes; then
-      LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} -lquadmath %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
-    else
-      LIBQUADSPEC="-lquadmath"
+        touch conftest1.$ac_objext conftest2.$ac_objext
+    LQUADMATH=-lquadmath
+    $FC -static-libgfortran -### -o conftest \
+	conftest1.$ac_objext -lgfortran conftest2.$ac_objext 2>&1 >/dev/null \
+	| grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
+    if grep "conftest1.$ac_objext.* -Bstatic -lgfortran -Bdynamic .*conftest2.$ac_objext" \
+       conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
+    elif grep "conftest1.$ac_objext.* -bstatic -lgfortran -bdynamic .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
+    elif grep "conftest1.$ac_objext.* -aarchive_shared -lgfortran -adefault .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
+    elif grep "conftest1.$ac_objext.*libgfortran.a .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
     fi
-    if test -f ../libquadmath/libquadmath.la; then
-      LIBQUADLIB=../libquadmath/libquadmath.la
-      LIBQUADLIB_DEP=../libquadmath/libquadmath.la
-      LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+    rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
+
+                    if test "x$libgfor_cv_have_as_needed" = xyes; then
+      if test "x$USE_IEC_60559" = xyes; then
+	LIBQUADSPEC="$libgfor_cv_as_needed_option $LQUADMATH $libgfor_cv_no_as_needed_option"
+      else
+	LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} $LQUADMATH %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
+      fi
     else
-      LIBQUADLIB="-lquadmath"
-      LIBQUADLIB_DEP=
-      LIBQUADINCLUDE=
+      LIBQUADSPEC="$LQUADMATH"
     fi
-  fi
+    if test "x$USE_IEC_60559" != xyes; then
+      if test -f ../libquadmath/libquadmath.la; then
+	LIBQUADLIB=../libquadmath/libquadmath.la
+	LIBQUADLIB_DEP=../libquadmath/libquadmath.la
+	LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+      else
+	LIBQUADLIB="-lquadmath"
+      fi
+    fi
   else
-    # for --disable-quadmath
-    LIBQUADLIB=
-    LIBQUADLIB_DEP=
-    LIBQUADINCLUDE=
+    USE_IEC_60559=no
+  fi
   fi
 
 
 
 
 
-
-     if test "x$libgfor_cv_have_float128" = xyes; then
-  LIBGFOR_BUILD_QUAD_TRUE=
-  LIBGFOR_BUILD_QUAD_FALSE='#'
-else
-  LIBGFOR_BUILD_QUAD_TRUE='#'
-  LIBGFOR_BUILD_QUAD_FALSE=
-fi
 
 
 
@@ -28517,10 +31552,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_HWCAP_TRUE}" && test -z "${HAVE_HWCAP_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_HWCAP\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGFOR_BUILD_QUAD_TRUE}" && test -z "${LIBGFOR_BUILD_QUAD_FALSE}"; then
-  as_fn_error $? "conditional \"LIBGFOR_BUILD_QUAD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${IEEE_SUPPORT_TRUE}" && test -z "${IEEE_SUPPORT_FALSE}"; then

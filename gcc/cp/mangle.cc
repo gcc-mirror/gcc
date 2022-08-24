@@ -102,7 +102,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Things we only need one of.  This module is not reentrant.  */
 struct GTY(()) globals {
   /* An array of the current substitution candidates, in the order
-     we've seen them.  */
+     we've seen them.  Contains NULLS, which correspond to module
+     substitutions.  */
   vec<tree, va_gc> *substitutions;
 
   /* The entity that is being mangled.  */
@@ -179,9 +180,9 @@ static tree maybe_template_info (const tree);
 
 static inline tree canonicalize_for_substitution (tree);
 static void add_substitution (tree);
-static inline int is_std_substitution (const tree,
+static inline bool is_std_substitution (const tree,
 				       const substitution_identifier_index_t);
-static inline int is_std_substitution_char (const tree,
+static inline bool is_std_substitution_char (const tree,
 					    const substitution_identifier_index_t);
 static int find_substitution (tree);
 static void mangle_call_offset (const tree, const tree);
@@ -318,20 +319,26 @@ dump_substitution_candidates (void)
 
       if (i > 0)
 	fprintf (stderr, "                    ");
-      if (DECL_P (el))
+      if (!el)
+	name = "module";
+      else if (DECL_P (el))
 	name = IDENTIFIER_POINTER (DECL_NAME (el));
       else if (TREE_CODE (el) == TREE_LIST)
 	name = IDENTIFIER_POINTER (DECL_NAME (TREE_VALUE (el)));
       else if (TYPE_NAME (el))
 	name = TYPE_NAME_STRING (el);
       fprintf (stderr, " S%d_ = ", i - 1);
-      if (TYPE_P (el) &&
-	  (CP_TYPE_RESTRICT_P (el)
-	   || CP_TYPE_VOLATILE_P (el)
-	   || CP_TYPE_CONST_P (el)))
-	fprintf (stderr, "CV-");
-      fprintf (stderr, "%s (%s at %p)\n",
-	       name, get_tree_code_name (TREE_CODE (el)), (void *) el);
+      if (el)
+	{
+	  if (TYPE_P (el) &&
+	      (CP_TYPE_RESTRICT_P (el)
+	       || CP_TYPE_VOLATILE_P (el)
+	       || CP_TYPE_CONST_P (el)))
+	    fprintf (stderr, "CV-");
+	  fprintf (stderr, "%s (%s at %p)",
+		   name, get_tree_code_name (TREE_CODE (el)), (void *) el);
+	}
+      fprintf (stderr, "\n");
     }
 }
 
@@ -443,11 +450,12 @@ add_substitution (tree node)
       tree candidate;
 
       FOR_EACH_VEC_SAFE_ELT (G.substitutions, i, candidate)
-	{
-	  gcc_assert (!(DECL_P (node) && node == candidate));
-	  gcc_assert (!(TYPE_P (node) && TYPE_P (candidate)
-		      && same_type_p (node, candidate)));
-	}
+	if (candidate)
+	  {
+	    gcc_assert (!(DECL_P (node) && node == candidate));
+	    gcc_assert (!(TYPE_P (node) && TYPE_P (candidate)
+			  && same_type_p (node, candidate)));
+	  }
     }
 
   /* Put the decl onto the varray of substitution candidates.  */
@@ -459,9 +467,10 @@ add_substitution (tree node)
 
 /* Helper function for find_substitution.  Returns nonzero if NODE,
    which may be a decl or a CLASS_TYPE, is a template-id with template
-   name of substitution_index[INDEX] in the ::std namespace.  */
+   name of substitution_index[INDEX] in the ::std namespace, with
+   global module attachment.  */
 
-static inline int
+static bool
 is_std_substitution (const tree node,
 		     const substitution_identifier_index_t index)
 {
@@ -480,13 +489,22 @@ is_std_substitution (const tree node,
     }
   else
     /* These are not the droids you're looking for.  */
-    return 0;
+    return false;
 
-  return (DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl))
-	  && TYPE_LANG_SPECIFIC (type)
-	  && TYPE_TEMPLATE_INFO (type)
-	  && (DECL_NAME (TYPE_TI_TEMPLATE (type))
-	      == subst_identifiers[index]));
+  if (!DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl)))
+    return false;
+
+  if (!(TYPE_LANG_SPECIFIC (type) && TYPE_TEMPLATE_INFO (type)))
+    return false;
+
+  tree tmpl = TYPE_TI_TEMPLATE (type);
+  if (DECL_NAME (tmpl) != subst_identifiers[index])
+    return false;
+
+  if (modules_p () && get_originating_module (tmpl, true) >= 0)
+    return false;
+
+  return true;
 }
 
 /* Return the ABI tags (the TREE_VALUE of the "abi_tag" attribute entry) for T,
@@ -518,7 +536,7 @@ get_abi_tags (tree t)
    ::std::identifier<char>, where identifier is
    substitution_index[INDEX].  */
 
-static inline int
+static bool
 is_std_substitution_char (const tree node,
 			  const substitution_identifier_index_t index)
 {
@@ -669,20 +687,21 @@ find_substitution (tree node)
     tags = get_abi_tags (type);
   /* Now check the list of available substitutions for this mangling
      operation.  */
-  if (!abbr || tags) for (i = 0; i < size; ++i)
-    {
-      tree candidate = (*G.substitutions)[i];
-      /* NODE is a matched to a candidate if it's the same decl node or
-	 if it's the same type.  */
-      if (decl == candidate
-	  || (TYPE_P (candidate) && type && TYPE_P (node)
-	      && same_type_p (type, candidate))
-	  || NESTED_TEMPLATE_MATCH (node, candidate))
+  if (!abbr || tags)
+    for (i = 0; i < size; ++i)
+      if (tree candidate = (*G.substitutions)[i])
 	{
-	  write_substitution (i);
-	  return 1;
+	  /* NODE is a matched to a candidate if it's the same decl node or
+	     if it's the same type.  */
+	  if (decl == candidate
+	      || (TYPE_P (candidate) && type && TYPE_P (node)
+		  && same_type_p (type, candidate))
+	      || NESTED_TEMPLATE_MATCH (node, candidate))
+	    {
+	      write_substitution (i);
+	      return 1;
+	    }
 	}
-    }
 
   if (!abbr)
     /* No substitution found.  */
@@ -733,6 +752,10 @@ unmangled_name_p (const tree decl)
 
       /* Declarations with ABI tags are mangled.  */
       if (get_abi_tags (decl))
+	return false;
+
+      // Declarations attached to a named module are mangled
+      if (modules_p () && get_originating_module (decl, true) >= 0)
 	return false;
 
       /* The names of non-static global variables aren't mangled.  */
@@ -853,51 +876,52 @@ write_encoding (const tree decl)
 void
 mangle_module_substitution (int v)
 {
-  if (v < 10)
-    {
-      write_char ('_');
-      write_char ('0' + v);
-    }
-  else
-    {
-      write_char ('W');
-      write_unsigned_number (v - 10);
-      write_char ('_');
-    }
+  write_substitution (v - 1);
 }
 
-void
-mangle_identifier (char c, tree id)
+int
+mangle_module_component (tree comp, bool partition_p)
 {
-  if (c)
-    write_char (c);
-  write_source_name (id);
+  write_char ('W');
+  if (partition_p)
+    write_char ('P');
+  write_source_name (comp);
+
+  // Module substitutions use the same number-space as entity
+  // substitutions, but are orthogonal.
+  vec_safe_push (G.substitutions, NULL_TREE);
+  return G.substitutions->length ();
 }
 
 /* If the outermost non-namespace context (including DECL itself) is
    a module-linkage decl, mangle the module information.  For module
    global initializers we need to include the partition part.
 
-   <module-name> ::= W <module-id>+ E
-   <module-id> :: <unqualified-name>
-               || _ <digit>  ;; short backref
-	       || W <number> _  ;; long backref
-               || P <module-id> ;; partition introducer
+   <module-name> ::= <module-sub>
+		 || <subst>
+                 || <module-name> <module-sub>
+   <module-sub> :: W [P] <unqualified-name>
 */
 
 static void
 write_module (int m, bool include_partition)
 {
   G.mod = true;
-
-  write_char ('W');
   mangle_module (m, include_partition);
-  write_char ('E');
 }
 
 static void
 maybe_write_module (tree decl)
 {
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
+    return;
+
+  if (!TREE_PUBLIC (STRIP_TEMPLATE (decl)))
+    return;
+
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
+    return;
+
   int m = get_originating_module (decl, true);
   if (m >= 0)
     write_module (m, false);
@@ -964,9 +988,6 @@ write_name (tree decl, const int ignore_local_scope)
 	 TYPE_DECL for the main variant.  */
       decl = TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
     }
-
-  if (modules_p ())
-    maybe_write_module (decl);
 
   context = decl_mangling_context (decl);
 
@@ -1356,10 +1377,10 @@ find_decomp_unqualified_name (tree decl, size_t *len)
 /* We don't need to handle thunks, vtables, or VTTs here.  Those are
    mangled through special entry points.
 
-    <unqualified-name>  ::= <operator-name>
+    <unqualified-name>  ::= [<module-name>] <operator-name>
 			::= <special-name>
-			::= <source-name>
-			::= <unnamed-type-name>
+			::= [<module-name>] <source-name>
+			::= [<module-name>] <unnamed-type-name>
 			::= <local-source-name> 
 
     <local-source-name>	::= L <source-name> <discriminator> */
@@ -1384,6 +1405,9 @@ static void
 write_unqualified_name (tree decl)
 {
   MANGLE_TRACE_TREE ("unqualified-name", decl);
+
+  if (modules_p ())
+    maybe_write_module (decl);
 
   if (identifier_p (decl))
     {
@@ -3342,7 +3366,7 @@ write_expression (tree expr)
 		  {
 		    if (i > last_nonzero)
 		      break;
-		    if (TREE_CODE (etype) == UNION_TYPE)
+		    if (!undigested && TREE_CODE (etype) == UNION_TYPE)
 		      {
 			/* Express the active member as a designator.  */
 			write_string ("di");
@@ -3996,7 +4020,6 @@ mangle_module_global_init (int module)
 
   write_string ("_ZGI");
   write_module (module, true);
-  write_char ('v');
 
   return finish_mangling_get_identifier ();
 }

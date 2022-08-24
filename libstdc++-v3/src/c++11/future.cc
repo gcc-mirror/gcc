@@ -25,6 +25,10 @@
 #include <future>
 #include <bits/functexcept.h>
 
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#  define __constinit [[clang::require_constant_initialization]]
+#endif
+
 namespace
 {
   struct future_error_category final : public std::error_category

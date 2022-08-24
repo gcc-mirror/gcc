@@ -156,7 +156,7 @@ package body Debug is
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
    --  d_q
-   --  d_r
+   --  d_r  Disable the use of the return slot in functions
    --  d_s  Stop elaboration checks on synchronous suspension
    --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
    --  d_u  In LLVM-based CCG, dump flows
@@ -211,7 +211,7 @@ package body Debug is
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
    --  d.8  Disable unconditional inlining of expression functions
-   --  d.9  Disable build-in-place for nonlimited types
+   --  d.9
 
    --  d_1
    --  d_2
@@ -993,6 +993,11 @@ package body Debug is
    --       semantics of invariants and postconditions in both the static and
    --       dynamic elaboration models.
 
+   --  d_r  The compiler does not make use of the return slot in the expansion
+   --       of functions returning a by-reference type. If this use is required
+   --       for these functions to return on the primary stack, then they are
+   --       changed to return on the secondary stack instead.
+
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
@@ -1119,9 +1124,6 @@ package body Debug is
    --  d.8  By default calls to expression functions are always inlined.
    --       This debug flag turns off this behavior, making them subject
    --       to the usual inlining heuristics of the code generator.
-
-   --  d.9  Disable build-in-place for function calls returning nonlimited
-   --       types.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

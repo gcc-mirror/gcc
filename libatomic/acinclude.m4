@@ -299,6 +299,7 @@ dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
 dnl  libat_ld_is_gold (possibly)
+dnl  libat_ld_is_mold (possibly)
 dnl  libat_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -331,110 +332,11 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
   libat_ld_is_gold=no
+  libat_ld_is_mold=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libat_ld_is_gold=yes
-  fi
-  changequote(,)
-  ldver=`$LD --version 2>/dev/null |
-         sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
-  changequote([,])
-  libat_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
-
-  # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
-    # GNU ld it is!  Joy and bunny rabbits!
-
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
-    ac_test_CFLAGS="${CFLAGS+set}"
-    ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
-
-    # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
-    AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
-    AC_TRY_RUN([
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
-    ], [ac_sectionLDflags=yes],[ac_sectionLDflags=no], [ac_sectionLDflags=yes])
-    if test "$ac_test_CFLAGS" = set; then
-      CFLAGS="$ac_save_CFLAGS"
-    else
-      # this is the suspicious part
-      CFLAGS=''
-    fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    AC_MSG_RESULT($ac_sectionLDflags)
-  fi
-
-  # Set linker optimization flags.
-  if test x"$with_gnu_ld" = x"yes"; then
-    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
-  fi
-
-  AC_SUBST(SECTION_LDFLAGS)
-  AC_SUBST(OPT_LDFLAGS)
-])
-
-
-dnl
-dnl If GNU ld is in use, check to see if tricky linker opts can be used.  If
-dnl the native linker is in use, all variables will be defined to something
-dnl safe (like an empty string).
-dnl
-dnl Defines:
-dnl  SECTION_LDFLAGS='-Wl,--gc-sections' if possible
-dnl  OPT_LDFLAGS='-Wl,-O1' if possible
-dnl  LD (as a side effect of testing)
-dnl Sets:
-dnl  with_gnu_ld
-dnl  libat_ld_is_gold (possibly)
-dnl  libat_gnu_ld_version (possibly)
-dnl
-dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
-dnl set libat_gnu_ld_version to 12345.  Zeros cause problems.
-dnl
-AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
-  # If we're not using GNU ld, then there's no point in even trying these
-  # tests.  Check for that first.  We should have already tested for gld
-  # by now (in libtool), but require it now just to be safe...
-  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
-  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
-  AC_REQUIRE([AC_PROG_LD])
-  AC_REQUIRE([AC_PROG_AWK])
-
-  # The name set by libtool depends on the version of libtool.  Shame on us
-  # for depending on an impl detail, but c'est la vie.  Older versions used
-  # ac_cv_prog_gnu_ld, but now it's lt_cv_prog_gnu_ld, and is copied back on
-  # top of with_gnu_ld (which is also set by --with-gnu-ld, so that actually
-  # makes sense).  We'll test with_gnu_ld everywhere else, so if that isn't
-  # set (hence we're using an older libtool), then set it.
-  if test x${with_gnu_ld+set} != xset; then
-    if test x${ac_cv_prog_gnu_ld+set} != xset; then
-      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
-      with_gnu_ld=no
-    else
-      with_gnu_ld=$ac_cv_prog_gnu_ld
-    fi
-  fi
-
-  # Start by getting the version number.  I think the libtool test already
-  # does some of this, but throws away the result.
-  libat_ld_is_gold=no
-  if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
-    libat_ld_is_gold=yes
+  elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
+    libat_ld_is_mold=yes
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
@@ -589,6 +491,8 @@ if test $enable_symvers != no && test $libat_shared_libgcc = yes; then
     if test $libat_gnu_ld_version -ge $libat_min_gnu_ld_version ; then
       enable_symvers=gnu
     elif test $libat_ld_is_gold = yes ; then
+      enable_symvers=gnu
+    elif test $libat_ld_is_mold = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?

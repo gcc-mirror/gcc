@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 extern int foo (void);
 

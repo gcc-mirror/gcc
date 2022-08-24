@@ -38,4 +38,3 @@ alias TK2 = reverse!(int, const uint, X2);
 static assert(TK2[0] == 3);
 static assert(is(TK2[1] == const(uint)));
 static assert(is(TK2[2] == int));
-

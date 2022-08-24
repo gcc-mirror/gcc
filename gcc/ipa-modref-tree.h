@@ -50,8 +50,8 @@ enum modref_special_parms {
   MODREF_RETSLOT_PARM = -3,
   /* Used for bases that points to memory that escapes from function.  */
   MODREF_GLOBAL_MEMORY_PARM = -4,
-  /* Used in modref_parm_map to tak references which can be removed
-     from the summary during summary update since they now points to loca
+  /* Used in modref_parm_map to take references which can be removed
+     from the summary during summary update since they now points to local
      memory.  */
   MODREF_LOCAL_MEMORY_PARM = -5
 };
@@ -101,7 +101,7 @@ struct GTY(()) modref_access_node
   bool range_info_useful_p () const;
   /* Return tree corresponding to parameter of the range in STMT.  */
   tree get_call_arg (const gcall *stmt) const;
-  /* Build ao_ref corresponding to the access and return true if succesful.  */
+  /* Build ao_ref corresponding to the access and return true if successful.  */
   bool get_ao_ref (const gcall *stmt, class ao_ref *ref) const;
   /* Stream access to OB.  */
   void stream_out (struct output_block *ob) const;
@@ -109,7 +109,7 @@ struct GTY(()) modref_access_node
   static modref_access_node stream_in (struct lto_input_block *ib);
   /* Insert A into vector ACCESSES.  Limit size of vector to MAX_ACCESSES and
      if RECORD_ADJUSTMENT is true keep track of adjustment counts.
-     Return 0 if nothing changed, 1 is insertion suceeded and -1 if failed.  */
+     Return 0 if nothing changed, 1 is insertion succeeded and -1 if failed.  */
   static int insert (vec <modref_access_node, va_gc> *&accesses,
 		     modref_access_node a, size_t max_accesses,
 		     bool record_adjustments);
@@ -173,7 +173,7 @@ struct GTY((user)) modref_ref_node
     if (every_access)
       return false;
 
-    /* Only the following kind of paramters needs to be tracked.
+    /* Only the following kind of parameters needs to be tracked.
        We do not track return slots because they are seen as a direct store
        in the caller.  */
     gcc_checking_assert (a.parm_index >= 0
@@ -197,8 +197,7 @@ struct GTY((user)) modref_ref_node
       {
 	if (dump_file)
 	  fprintf (dump_file,
-		   "--param param=modref-max-accesses limit reached;"
-		   " collapsing\n");
+		   "--param modref-max-accesses limit reached; collapsing\n");
 	collapse ();
       }
     return ret != 0;
@@ -252,7 +251,7 @@ struct GTY((user)) modref_base_node
     if (ref && refs && refs->length () >= max_refs)
       {
 	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-refs limit reached;"
+	  fprintf (dump_file, "--param modref-max-refs limit reached;"
 		   " using 0\n");
 	ref = 0;
 	ref_node = search (ref);
@@ -344,12 +343,12 @@ struct GTY((user)) modref_tree
 	if (base_node)
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, "--param param=modref-max-bases"
+	      fprintf (dump_file, "--param modref-max-bases"
 		       " limit reached; using ref\n");
 	    return base_node;
 	  }
 	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-bases"
+	  fprintf (dump_file, "--param modref-max-bases"
 		   " limit reached; using 0\n");
 	base = 0;
 	base_node = search (base);
@@ -737,8 +736,6 @@ struct GTY((user)) modref_tree
       }
   }
 };
-
-void modref_c_tests ();
 
 void gt_ggc_mx (modref_tree <int>* const&);
 void gt_ggc_mx (modref_tree <tree_node*>* const&);

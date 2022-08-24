@@ -1,5 +1,5 @@
 /* { dg-do compile { target sqrt_insn } } */
-/* { dg-options "-fdump-tree-sincos -Ofast --param max-pow-sqrt-depth=8" } */
+/* { dg-options "-fdump-tree-powcabs -Ofast --param max-pow-sqrt-depth=8" } */
 /* { dg-additional-options "-mfloat-abi=softfp -mfpu=neon-vfpv4" { target arm*-*-* } } */
 
 double
@@ -34,4 +34,4 @@ vecfoo (double *a)
     a[i] = __builtin_pow (a[i], 1.25);
 }
 
-/* { dg-final { scan-tree-dump-times "synthesizing" 7 "sincos" } } */
+/* { dg-final { scan-tree-dump-times "synthesizing" 7 "powcabs" } } */

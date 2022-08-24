@@ -35,4 +35,3 @@ pragma(msg, V);
 struct G {}
 struct F(T) { void f(ref T) {} }
 pragma(msg, F!G().f(G.init));
-

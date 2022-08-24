@@ -1602,15 +1602,15 @@ package body System.OS_Lib is
       SIGKILL : constant := 9;
       SIGINT  : constant := 2;
 
-      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
+      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer);
       pragma Import (C, C_Kill, "__gnat_kill");
 
    begin
       if Pid /= Invalid_Pid then
          if Hard_Kill then
-            C_Kill (Pid, SIGKILL, 1);
+            C_Kill (Pid, SIGKILL);
          else
-            C_Kill (Pid, SIGINT, 1);
+            C_Kill (Pid, SIGINT);
          end if;
       end if;
    end Kill;
@@ -1940,7 +1940,7 @@ package body System.OS_Lib is
       procedure Quote_Argument (Arg : in out String_Access) is
          J            : Positive := 1;
          Quote_Needed : Boolean  := False;
-         Res          : String (1 .. Arg'Length * 2);
+         Res          : String (1 .. Arg'Length * 2 + 2);
 
       begin
          if Arg (Arg'First) /= '"' or else Arg (Arg'Last) /= '"' then

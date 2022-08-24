@@ -34,6 +34,8 @@ static const struct default_options xtensa_option_optimization_table[] =
        assembler, so GCC cannot do a good job of reordering blocks.
        Do not enable reordering unless it is explicitly requested.  */
     { OPT_LEVELS_ALL, OPT_freorder_blocks, NULL, 0 },
+    /* Split multi-word types early (pre-GCC10 behavior).  */
+    { OPT_LEVELS_ALL, OPT_fsplit_wide_types_early, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 

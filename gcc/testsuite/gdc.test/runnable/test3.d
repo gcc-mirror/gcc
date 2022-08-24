@@ -38,4 +38,3 @@ int main(string[] args)
     assert(a.bar == "lolobetty");
     return 0;
 }
-

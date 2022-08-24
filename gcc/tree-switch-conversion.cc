@@ -1498,7 +1498,7 @@ case_bit_test::cmp (const void *p1, const void *p2)
 
 void
 bit_test_cluster::emit (tree index_expr, tree index_type,
-			tree, basic_block default_bb, location_t)
+			tree, basic_block default_bb, location_t loc)
 {
   case_bit_test test[m_max_case_bit_tests] = { {} };
   unsigned int i, j, k;
@@ -1622,9 +1622,9 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   gsi = gsi_last_bb (m_case_bb);
 
   /* idx = (unsigned)x - minval.  */
-  idx = fold_convert (unsigned_index_type, index_expr);
-  idx = fold_build2 (MINUS_EXPR, unsigned_index_type, idx,
-		     fold_convert (unsigned_index_type, minval));
+  idx = fold_convert_loc (loc, unsigned_index_type, index_expr);
+  idx = fold_build2_loc (loc, MINUS_EXPR, unsigned_index_type, idx,
+			 fold_convert_loc (loc, unsigned_index_type, minval));
   idx = force_gimple_operand_gsi (&gsi, idx,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
@@ -1638,15 +1638,15 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				    fold_convert (unsigned_index_type, range),
 				    /*simple=*/true, NULL_TREE,
 				    /*before=*/true, GSI_SAME_STMT);
-      tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
+      tmp = fold_build2_loc (loc, GT_EXPR, boolean_type_node, idx, range);
       basic_block new_bb
 	= hoist_edge_and_branch_if_true (&gsi, tmp, default_bb,
-					 profile_probability::unlikely ());
+					 profile_probability::unlikely (), loc);
       gsi = gsi_last_bb (new_bb);
     }
 
-  tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
-		     fold_convert (word_type_node, idx));
+  tmp = fold_build2_loc (loc, LSHIFT_EXPR, word_type_node, word_mode_one,
+			 fold_convert_loc (loc, word_type_node, idx));
 
   /* csui = (1 << (word_mode) idx) */
   if (count > 1)
@@ -1672,13 +1672,15 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 							 bt_range);
       bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
-      tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
-      tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
+      tmp = fold_build2_loc (loc, BIT_AND_EXPR, word_type_node, csui, tmp);
+      tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
+			     tmp, word_mode_zero);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
 				      /*before=*/true, GSI_SAME_STMT);
       basic_block new_bb
-	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb, prob);
+	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb,
+					 prob, loc);
       gsi = gsi_last_bb (new_bb);
     }
 
@@ -1708,7 +1710,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 basic_block
 bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						 tree cond, basic_block case_bb,
-						 profile_probability prob)
+						 profile_probability prob,
+						 location_t loc)
 {
   tree tmp;
   gcond *cond_stmt;
@@ -1722,6 +1725,7 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   tmp = force_gimple_operand_gsi (gsip, cond, /*simple=*/true, NULL,
 				  /*before=*/true, GSI_SAME_STMT);
   cond_stmt = gimple_build_cond_from_tree (tmp, NULL_TREE, NULL_TREE);
+  gimple_set_location (cond_stmt, loc);
   gsi_insert_before (gsip, cond_stmt, GSI_SAME_STMT);
 
   e_false = split_block (split_bb, cond_stmt);
@@ -1778,7 +1782,7 @@ switch_decision_tree::analyze_switch_statement ()
       tree high = CASE_HIGH (elt);
 
       profile_probability p
-	= case_edge->probability.apply_scale (1, (intptr_t) (case_edge->aux));
+	= case_edge->probability / ((intptr_t) (case_edge->aux));
       clusters.quick_push (new simple_cluster (low, high, elt, case_edge->dest,
 					       p));
       m_case_bbs.quick_push (case_edge->dest);
@@ -2035,18 +2039,14 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
   if (np)
     {
       int i = 0;
-      int ranges = 0;
       case_tree_node **npp;
       case_tree_node *left;
       profile_probability prob = profile_probability::never ();
 
-      /* Count the number of entries on branch.  Also count the ranges.  */
+      /* Count the number of entries on branch.  */
 
       while (np)
 	{
-	  if (!tree_int_cst_equal (np->m_c->get_low (), np->m_c->get_high ()))
-	    ranges++;
-
 	  i++;
 	  prob += np->m_c->m_prob;
 	  np = np->m_right;
@@ -2057,10 +2057,10 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	  /* Split this list if it is long enough for that to help.  */
 	  npp = head;
 	  left = *npp;
-	  profile_probability pivot_prob = prob.apply_scale (1, 2);
+	  profile_probability pivot_prob = prob / 2;
 
-	  /* Find the place in the list that bisects the list's total cost,
-	     where ranges count as 2.  */
+	  /* Find the place in the list that bisects the list's total cost
+	     by probability.  */
 	  while (1)
 	    {
 	      /* Skip nodes while their probability does not reach
@@ -2259,12 +2259,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      redirect_edge_succ (single_pred_edge (test_bb),
 				  single_succ_edge (bb)->dest);
 
-	      p = ((node->m_right->m_c->m_subtree_prob
-		    + default_prob.apply_scale (1, 2))
+	      p = ((node->m_right->m_c->m_subtree_prob + default_prob / 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
 					    GT_EXPR, test_bb, p, loc);
-	      default_prob = default_prob.apply_scale (1, 2);
+	      default_prob /= 2;
 
 	      /* Handle the left-hand subtree.  */
 	      bb = emit_case_nodes (bb, index, node->m_left,
@@ -2293,11 +2292,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	  if (node->m_right->has_child ()
 	      || !node->m_right->m_c->is_single_value_p ())
 	    {
-	      p = (default_prob.apply_scale (1, 2)
+	      p = ((default_prob / 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
 					    LT_EXPR, m_default_bb, p, loc);
-	      default_prob = default_prob.apply_scale (1, 2);
+	      default_prob /= 2;
 
 	      bb = emit_case_nodes (bb, index, node->m_right, default_prob,
 				    index_type, loc);
@@ -2320,11 +2319,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	  if (node->m_left->has_child ()
 	      || !node->m_left->m_c->is_single_value_p ())
 	    {
-	      p = (default_prob.apply_scale (1, 2)
+	      p = ((default_prob / 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
 					    GT_EXPR, m_default_bb, p, loc);
-		  default_prob = default_prob.apply_scale (1, 2);
+	      default_prob /= 2;
 
 	      bb = emit_case_nodes (bb, index, node->m_left, default_prob,
 				    index_type, loc);
@@ -2357,29 +2356,29 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	   profile_probability right_prob = profile_probability::never ();
 	   if (node->m_right)
 	     right_prob = node->m_right->m_c->m_subtree_prob;
-	  p = ((right_prob + default_prob.apply_scale (1, 2))
-	       / (node->m_c->m_subtree_prob + default_prob));
+	   p = ((right_prob + default_prob / 2)
+		/ (node->m_c->m_subtree_prob + default_prob));
 
-	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					GT_EXPR, test_bb, p, loc);
-	  default_prob = default_prob.apply_scale (1, 2);
+	   bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					 GT_EXPR, test_bb, p, loc);
+	   default_prob /= 2;
 
-	  /* Value belongs to this node or to the left-hand subtree.  */
-	  p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
-	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
-					GE_EXPR, node->m_c->m_case_bb, p, loc);
+	   /* Value belongs to this node or to the left-hand subtree.  */
+	   p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
+	   bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
+					 GE_EXPR, node->m_c->m_case_bb, p, loc);
 
-	  /* Handle the left-hand subtree.  */
-	  bb = emit_case_nodes (bb, index, node->m_left,
-				default_prob, index_type, loc);
+	   /* Handle the left-hand subtree.  */
+	   bb = emit_case_nodes (bb, index, node->m_left, default_prob,
+				 index_type, loc);
 
-	  /* If the left-hand subtree fell through,
-	     don't let it fall into the right-hand subtree.  */
-	  if (bb && m_default_bb)
-	    emit_jump (bb, m_default_bb);
+	   /* If the left-hand subtree fell through,
+	      don't let it fall into the right-hand subtree.  */
+	   if (bb && m_default_bb)
+	     emit_jump (bb, m_default_bb);
 
-	  bb = emit_case_nodes (test_bb, index, node->m_right,
-				default_prob, index_type, loc);
+	   bb = emit_case_nodes (test_bb, index, node->m_right, default_prob,
+				 index_type, loc);
 	}
       else
 	{
@@ -2428,8 +2427,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_switch_conversion != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override
+  {
+    return flag_tree_switch_conversion != 0;
+  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_convert_switch
 
@@ -2507,18 +2509,18 @@ public:
 
   static const pass_data data;
   opt_pass *
-  clone ()
+  clone () final override
   {
     return new pass_lower_switch<O0> (m_ctxt);
   }
 
-  virtual bool
-  gate (function *)
+  bool
+  gate (function *) final override
   {
     return !O0 || !optimize;
   }
 
-  virtual unsigned int execute (function *fun);
+  unsigned int execute (function *fun) final override;
 }; // class pass_lower_switch
 
 template <bool O0>

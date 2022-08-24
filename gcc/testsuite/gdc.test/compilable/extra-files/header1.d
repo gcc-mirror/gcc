@@ -577,7 +577,8 @@ struct SafeS
 
     ref SafeS foo3() return scope
     {
-        return this;
+        static SafeS s;
+        return s;
     }
 
     int* p;
@@ -600,3 +601,19 @@ struct Test14UDA4(string v){}
 void test14x(@Test14UDA1 int, @Test14UDA2("1") int, @test14uda3("2") int, @Test14UDA4!"3" int) {}
 
 void test15x(@(20) void delegate(int) @safe dg){}
+
+T throwStuff(T)(T t)
+{
+    if (false) test13x(1, throw new Exception(""), 2);
+    return t ? t : throw new Exception("Bad stuff happens!");
+}
+
+class C12344
+{
+    abstract int c12344(int x) in(x > 0) out(result) {assert(result > 0);};
+}
+
+interface I12344
+{
+    int i12344(int x) in(x > 0) out(result) {assert(result > 0);};
+}

@@ -6,7 +6,8 @@
    of targets where it's known to pass (see PR testsuite/83483).
    { dg-do compile }
    { dg-options "-O0 -Wrestrict -fdump-tree-optimized" }
-   { dg-skip-if "skip non-x86 targets" { ! { i?86-*-* x86_64-*-* } } }  */
+   { dg-skip-if "skip non-x86 targets" { ! { i?86-*-* x86_64-*-* } } }
+   { dg-additional-options "-msse" { target i?86-*-* x86_64-*-* } } */
 
 char a[32];
 

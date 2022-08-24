@@ -1,5 +1,6 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 /* { dg-additional-options "-fsanitize=bounds" } */
+/* { dg-require-effective-target alloca } */
 
 #include <stdlib.h>
 #include "../analyzer-decls.h"
@@ -19,6 +20,7 @@ int test_2 (int *arr, int i, int n)
     __analyzer_eval (arr[i]); /* { dg-warning "TRUE" } */
   else
     __analyzer_eval (arr[i]); /* { dg-warning "FALSE" } */
+  return 1;
 }
 
 int test_3 (int arr[], int i, int n)
@@ -29,6 +31,7 @@ int test_3 (int arr[], int i, int n)
     __analyzer_eval (arr[i]); /* { dg-warning "TRUE" } */
   else
     __analyzer_eval (arr[i]); /* { dg-warning "FALSE" } */
+  return 1;
 }
 
 void test_4 (int i, int n)

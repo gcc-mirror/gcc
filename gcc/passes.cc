@@ -417,13 +417,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* Don't bother doing anything if the program has errors.  */
       return (!seen_error () && !in_lto_p);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return execute_build_ssa_passes ();
     }
@@ -451,7 +451,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* Don't bother doing anything if the program has errors.  */
       return (!seen_error () && !in_lto_p);
@@ -480,7 +480,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* Don't bother doing anything if the program has errors.  */
       return (!seen_error () && !in_lto_p);
@@ -531,7 +531,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (optimize >= 1
 	      /* Don't bother doing anything if the program has errors.  */
@@ -571,7 +571,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize >= 1 && !optimize_debug; }
+  bool gate (function *) final override
+  {
+    return optimize >= 1 && !optimize_debug;
+  }
 
 }; // class pass_all_optimizations
 
@@ -606,7 +609,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize >= 1 && optimize_debug; }
+  bool gate (function *) final override
+  {
+    return optimize >= 1 && optimize_debug;
+  }
 
 }; // class pass_all_optimizations_g
 
@@ -641,7 +647,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* Early return if there were errors.  We can run afoul of our
 	 consistency checks, and there's not really much point in fixing them.  */
@@ -681,7 +687,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return reload_completed; }
+  bool gate (function *) final override { return reload_completed; }
 
 }; // class pass_postreload
 
@@ -716,7 +722,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return reload_completed || targetm.no_register_allocation;
   }
@@ -756,15 +762,15 @@ public:
   {
   }
 
-  virtual bool
-  gate (function *fun)
+  bool
+  gate (function *fun) final override
   {
     return flag_tree_slp_vectorize
 	   && (fun->pending_TODOs & PENDING_TODO_force_next_scalar_cleanup);
   }
 
-  virtual unsigned int
-  execute (function *fun)
+  unsigned int
+  execute (function *fun) final override
   {
     fun->pending_TODOs &= ~PENDING_TODO_force_next_scalar_cleanup;
     return 0;
@@ -903,7 +909,7 @@ void
 pass_manager::register_pass_name (opt_pass *pass, const char *name)
 {
   if (!m_name_to_pass_map)
-    m_name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
+    m_name_to_pass_map = new hash_map<free_string_hash, opt_pass *> (256);
 
   if (m_name_to_pass_map->get (name))
     return; /* Ignore plugin passes.  */
@@ -1674,6 +1680,7 @@ pass_manager::~pass_manager ()
   GCC_PASS_LISTS
 #undef DEF_PASS_LIST
 
+  delete m_name_to_pass_map;
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
@@ -1943,7 +1950,7 @@ pass_manager::dump_profile_report () const
 	   "                                 |in count     |out prob     "
 	   "|in count                  |out prob                  "
 	   "|size               |time                      |\n");
-	   
+
   for (int i = 1; i < passes_by_id_size; i++)
     if (profile_record[i].run)
       {

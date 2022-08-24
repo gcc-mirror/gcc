@@ -1090,7 +1090,7 @@ static struct
   { FB_REGNO, 0x01, 2, 4 }
 };
 
-#define PUSHM_N (sizeof(pushm_info)/sizeof(pushm_info[0]))
+#define PUSHM_N (ARRAY_SIZE (pushm_info))
 
 /* Returns TRUE if we need to save/restore the given register.  We
    save everything for exception handlers, so that any register can be

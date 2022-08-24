@@ -44,17 +44,6 @@ struct pollfd
 
 nfds_t
 
-POLLIN
-POLLRDNORM
-POLLRDBAND
-POLLPRI
-POLLOUT
-POLLWRNORM
-POLLWRBAND
-POLLERR
-POLLHUP
-POLLNVAL
-
 int poll(pollfd[], nfds_t, int);
 */
 
@@ -69,20 +58,6 @@ version (CRuntime_Glibc)
 
     alias c_ulong nfds_t;
 
-    enum
-    {
-        POLLIN      = 0x001,
-        POLLRDNORM  = 0x040,
-        POLLRDBAND  = 0x080,
-        POLLPRI     = 0x002,
-        POLLOUT     = 0x004,
-        POLLWRNORM  = 0x100,
-        POLLWRBAND  = 0x200,
-        POLLERR     = 0x008,
-        POLLHUP     = 0x010,
-        POLLNVAL    = 0x020,
-    }
-
     int poll(pollfd*, nfds_t, int);
 }
 else version (Darwin)
@@ -96,6 +71,148 @@ else version (Darwin)
 
     alias uint nfds_t;
 
+    int poll(pollfd*, nfds_t, int);
+}
+else version (FreeBSD)
+{
+    alias uint nfds_t;
+
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    int poll(pollfd*, nfds_t, int);
+}
+else version (NetBSD)
+{
+    alias uint nfds_t;
+
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    int poll(pollfd*, nfds_t, int);
+}
+else version (OpenBSD)
+{
+    alias uint nfds_t;
+
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    int poll(pollfd*, nfds_t, int);
+}
+else version (DragonFlyBSD)
+{
+    alias uint nfds_t;
+
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    int poll(pollfd*, nfds_t, int);
+}
+else version (Solaris)
+{
+    alias c_ulong nfds_t;
+
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    int poll(pollfd*, nfds_t, int);
+}
+else version (CRuntime_Bionic)
+{
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    alias uint nfds_t;
+
+    int poll(pollfd*, nfds_t, c_long);
+}
+else version (CRuntime_Musl)
+{
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    alias uint nfds_t;
+
+    int poll(pollfd*, nfds_t, c_long);
+}
+else version (CRuntime_UClibc)
+{
+    struct pollfd
+    {
+        int     fd;
+        short   events;
+        short   revents;
+    }
+
+    alias c_ulong nfds_t;
+
+    int poll(pollfd*, nfds_t, int);
+}
+else
+{
+    static assert(false, "Unsupported platform");
+}
+
+/*
+POLLIN
+POLLRDNORM
+POLLRDBAND
+POLLPRI
+POLLOUT
+POLLWRNORM
+POLLWRBAND
+POLLERR
+POLLHUP
+POLLNVAL
+*/
+
+version (linux)
+{
+    enum
+    {
+        POLLIN      = 0x001,
+        POLLRDNORM  = 0x040,
+        POLLRDBAND  = 0x080,
+        POLLPRI     = 0x002,
+        POLLOUT     = 0x004,
+        POLLWRNORM  = 0x100,
+        POLLWRBAND  = 0x200,
+        POLLERR     = 0x008,
+        POLLHUP     = 0x010,
+        POLLNVAL    = 0x020,
+    }
+}
+else version (Darwin)
+{
     enum
     {
         POLLIN      = 0x0001,
@@ -116,20 +233,9 @@ else version (Darwin)
         POLLSTANDARD = (POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLRDBAND|
                         POLLWRBAND|POLLERR|POLLHUP|POLLNVAL)
     }
-
-    int poll(pollfd*, nfds_t, int);
 }
 else version (FreeBSD)
 {
-    alias uint nfds_t;
-
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
     enum
     {
         POLLIN      = 0x0001,
@@ -150,20 +256,9 @@ else version (FreeBSD)
         POLLSTANDARD = (POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLRDBAND|
         POLLWRBAND|POLLERR|POLLHUP|POLLNVAL)
     }
-
-    int poll(pollfd*, nfds_t, int);
 }
 else version (NetBSD)
 {
-    alias uint nfds_t;
-
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
     enum
     {
         POLLIN      = 0x0001,
@@ -184,20 +279,9 @@ else version (NetBSD)
         POLLSTANDARD = (POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLRDBAND|
         POLLWRBAND|POLLERR|POLLHUP|POLLNVAL)
     }
-
-    int poll(pollfd*, nfds_t, int);
 }
 else version (OpenBSD)
 {
-    alias uint nfds_t;
-
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
     enum
     {
         POLLIN      = 0x0001,
@@ -215,20 +299,9 @@ else version (OpenBSD)
         POLLSTANDARD = (POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLRDBAND|
         POLLWRBAND|POLLERR|POLLHUP|POLLNVAL)
     }
-
-    int poll(pollfd*, nfds_t, int);
 }
 else version (DragonFlyBSD)
 {
-    alias uint nfds_t;
-
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
     enum
     {
         POLLIN      = 0x0001,
@@ -249,20 +322,9 @@ else version (DragonFlyBSD)
         POLLSTANDARD = (POLLIN|POLLPRI|POLLOUT|POLLRDNORM|POLLRDBAND|
         POLLWRBAND|POLLERR|POLLHUP|POLLNVAL)
     }
-
-    int poll(pollfd*, nfds_t, int);
 }
 else version (Solaris)
 {
-    alias c_ulong nfds_t;
-
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
     enum
     {
         POLLIN      = 0x0001,
@@ -276,90 +338,8 @@ else version (Solaris)
         POLLHUP     = 0x0010,
         POLLNVAL    = 0x0020,
     }
-
-    int poll(pollfd*, nfds_t, int);
 }
-else version (CRuntime_Bionic)
+else
 {
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
-    alias uint nfds_t;
-
-    enum
-    {
-        POLLIN      = 0x001,
-        POLLRDNORM  = 0x040,
-        POLLRDBAND  = 0x080,
-        POLLPRI     = 0x002,
-        POLLOUT     = 0x004,
-        POLLWRNORM  = 0x100,
-        POLLWRBAND  = 0x200,
-        POLLERR     = 0x008,
-        POLLHUP     = 0x010,
-        POLLNVAL    = 0x020,
-    }
-
-    int poll(pollfd*, nfds_t, c_long);
-}
-else version (CRuntime_Musl)
-{
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
-    alias uint nfds_t;
-
-    enum
-    {
-        POLLIN      = 0x001,
-        POLLPRI     = 0x002,
-        POLLOUT     = 0x004,
-        POLLERR     = 0x008,
-        POLLHUP     = 0x010,
-        POLLNVAL    = 0x020,
-        POLLRDNORM  = 0x040,
-        POLLRDBAND  = 0x080,
-        POLLWRNORM  = 0x100,
-        POLLWRBAND  = 0x200,
-    }
-
-    int poll(pollfd*, nfds_t, c_long);
-}
-else version (CRuntime_UClibc)
-{
-    struct pollfd
-    {
-        int     fd;
-        short   events;
-        short   revents;
-    }
-
-    alias c_ulong nfds_t;
-
-    enum
-    {
-        POLLIN      = 0x001,
-        POLLRDNORM  = 0x040,
-        POLLRDBAND  = 0x080,
-        POLLPRI     = 0x002,
-        POLLOUT     = 0x004,
-        POLLWRNORM  = 0x100,
-        POLLWRBAND  = 0x200,
-        POLLMSG     = 0x400,
-        POLLREMOVE  = 0x1000,
-        POLLRDHUP   = 0x2000,
-        POLLERR     = 0x008,
-        POLLHUP     = 0x010,
-        POLLNVAL    = 0x020,
-    }
-
-    int poll(pollfd*, nfds_t, int);
+    static assert(false, "Unsupported platform");
 }

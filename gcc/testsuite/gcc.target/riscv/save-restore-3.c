@@ -1,4 +1,5 @@
-/* { dg-options "-Os -msave-restore" } */
+/* { dg-options "-msave-restore" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
 
 /* With -msave-restore in use GCC should be able to remove the calls to the
    save and restore stubs in this case, replacing them with a tail call to

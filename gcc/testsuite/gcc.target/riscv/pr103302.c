@@ -1,5 +1,6 @@
 /* { dg-do run { target int128 } } */
-/* { dg-options "-Og -fharden-compares -fno-tree-dce -fno-tree-fre " } */
+/* { dg-options "-fharden-compares -fno-tree-dce -fno-tree-fre" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 typedef unsigned char u8;
 typedef unsigned char __attribute__((__vector_size__ (32))) v256u8;

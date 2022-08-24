@@ -27,13 +27,20 @@
 (define_cpu_unit "hs4x_mult" "ARCHS4x")
 (define_cpu_unit "hs4x_x1, hs4x_x2" "ARCHS4x")
 (define_cpu_unit "hs4x_y1, hs4x_y2" "ARCHS4x")
+(define_cpu_unit "hs4x_brcc0, hs4x_brcc1" "ARCHS4x")
 
 (define_insn_reservation "hs4x_brj_op" 1
   (and (match_test "TARGET_HS")
        (eq_attr "tune" "archs4x, archs4xd")
        (eq_attr "type" "call, call_no_delay_slot, uncond_branch, jump, \
-branch, brcc,brcc_no_delay_slot, sfunc"))
+branch, sfunc"))
   "hs4x_issue0")
+
+(define_insn_reservation "hs4x_brcc_op" 1
+  (and (match_test "TARGET_HS")
+       (eq_attr "tune" "archs4x, archs4xd")
+       (eq_attr "type" "brcc,brcc_no_delay_slot,loop_end"))
+  "hs4x_issue0 + hs4x_brcc0 + hs4x_brcc1")
 
 (define_insn_reservation "hs4x_data_load_op" 4
   (and (match_test "TARGET_HS")
@@ -43,9 +50,15 @@ branch, brcc,brcc_no_delay_slot, sfunc"))
 
 (define_insn_reservation "hs4x_data_store_op" 1
   (and (match_test "TARGET_HS")
-       (eq_attr "tune" "archs4x, archs4xd")
+       (eq_attr "tune_store" "normal")
        (eq_attr "type" "store"))
   "hs4x_issue1 + hs4x_ld_st")
+
+(define_insn_reservation "hs4x_data_store_1_op" 2
+  (and (match_test "TARGET_HS")
+       (eq_attr "tune_store" "rel31a")
+       (eq_attr "type" "store"))
+  "hs4x_issue1 + hs4x_ld_st + hs4x_brcc0, hs4x_brcc1")
 
 ;; Advanced ALU
 (define_insn_reservation "hs4x_adv_alue_op" 4

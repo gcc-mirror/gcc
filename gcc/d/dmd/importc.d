@@ -81,10 +81,14 @@ Expression arrayFuncConv(Expression e, Scope* sc)
     auto t = e.type.toBasetype();
     if (auto ta = t.isTypeDArray())
     {
+        if (!checkAddressable(e, sc))
+            return ErrorExp.get();
         e = e.castTo(sc, ta.next.pointerTo());
     }
     else if (auto ts = t.isTypeSArray())
     {
+        if (!checkAddressable(e, sc))
+            return ErrorExp.get();
         e = e.castTo(sc, ts.next.pointerTo());
     }
     else if (t.isTypeFunction())
@@ -159,7 +163,8 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     if (t1.isTypeDArray() || t1.isTypeSArray())
     {
         e2 = e2.expressionSemantic(sc).arrayFuncConv(sc);
-        return new IndexExp(ae.loc, e1, e2).expressionSemantic(sc);
+        // C doesn't do array bounds checking, so `true` turns it off
+        return new IndexExp(ae.loc, e1, e2, true).expressionSemantic(sc);
     }
 
     e1 = e1.arrayFuncConv(sc);   // e1 might still be a function call
@@ -167,7 +172,7 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     auto t2 = e2.type.toBasetype();
     if (t2.isTypeDArray() || t2.isTypeSArray())
     {
-        return new IndexExp(ae.loc, e2, e1).expressionSemantic(sc); // swap operands
+        return new IndexExp(ae.loc, e2, e1, true).expressionSemantic(sc); // swap operands
     }
 
     e2 = e2.arrayFuncConv(sc);
@@ -260,3 +265,97 @@ Expression castCallAmbiguity(Expression e, Scope* sc)
     }
 }
 
+/********************************************
+ * Implement the C11 notion of function equivalence,
+ * which allows prototyped functions to match K+R functions,
+ * even though they are different.
+ * Params:
+ *      tf1 = type of first function
+ *      tf2 = type of second function
+ * Returns:
+ *      true if C11 considers them equivalent
+ */
+
+bool cFuncEquivalence(TypeFunction tf1, TypeFunction tf2)
+{
+    //printf("cFuncEquivalence()\n  %s\n  %s\n", tf1.toChars(), tf2.toChars());
+    if (tf1.equals(tf2))
+        return true;
+
+    if (tf1.linkage != tf2.linkage)
+        return false;
+
+    // Allow func(void) to match func()
+    if (tf1.parameterList.length == 0 && tf2.parameterList.length == 0)
+        return true;
+
+    if (!cTypeEquivalence(tf1.next, tf2.next))
+        return false;   // function return types don't match
+
+    if (tf1.parameterList.length != tf2.parameterList.length)
+        return false;
+
+    if (!tf1.parameterList.hasIdentifierList && !tf2.parameterList.hasIdentifierList) // if both are prototyped
+    {
+        if (tf1.parameterList.varargs != tf2.parameterList.varargs)
+            return false;
+    }
+
+    foreach (i, fparam ; tf1.parameterList)
+    {
+        Type t1 = fparam.type;
+        Type t2 = tf2.parameterList[i].type;
+
+        /* Strip off head const.
+         * Not sure if this is C11, but other compilers treat
+         * `void fn(int)` and `fn(const int x)`
+         * as equivalent.
+         */
+        t1 = t1.mutableOf();
+        t2 = t2.mutableOf();
+
+        if (!t1.equals(t2))
+            return false;
+    }
+
+    //printf("t1: %s\n", tf1.toChars());
+    //printf("t2: %s\n", tf2.toChars());
+    return true;
+}
+
+/*******************************
+ * Types haven't been merged yet, because we haven't done
+ * semantic() yet.
+ * But we still need to see if t1 and t2 are the same type.
+ * Params:
+ *      t1 = first type
+ *      t2 = second type
+ * Returns:
+ *      true if they are equivalent types
+ */
+bool cTypeEquivalence(Type t1, Type t2)
+{
+    if (t1.equals(t2))
+        return true;    // that was easy
+
+    if (t1.ty != t2.ty || t1.mod != t2.mod)
+        return false;
+
+    if (auto tp = t1.isTypePointer())
+        return cTypeEquivalence(tp.next, t2.nextOf());
+
+    if (auto ta = t1.isTypeSArray())
+        // Bug: should check array dimension
+        return cTypeEquivalence(ta.next, t2.nextOf());
+
+    if (auto ts = t1.isTypeStruct())
+        return ts.sym is t2.isTypeStruct().sym;
+
+    if (auto te = t1.isTypeEnum())
+        return te.sym is t2.isTypeEnum().sym;
+
+    if (auto tf = t1.isTypeFunction())
+        return cFuncEquivalence(tf, tf.isTypeFunction());
+
+    return false;
+}

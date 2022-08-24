@@ -38,7 +38,8 @@ def skip_warning(filename, message):
                  'when in C++ mode, this behavior is deprecated',
                  '-Wignored-attributes', '-Wgnu-zero-variadic-macro-arguments',
                  '-Wformat-security', '-Wundefined-internal',
-                 '-Wunknown-warning-option', '-Wc++20-extensions'],
+                 '-Wunknown-warning-option', '-Wc++20-extensions',
+                 '-Wbitwise-instead-of-logical'],
             'insn-modes.cc': ['-Wshift-count-overflow'],
             'insn-emit.cc': ['-Wtautological-compare'],
             'insn-attrtab.cc': ['-Wparentheses-equality'],
@@ -46,12 +47,14 @@ def skip_warning(filename, message):
             'generic-match.cc': ['-Wunused-', '-Wtautological-compare'],
             'i386.md': ['-Wparentheses-equality', '-Wtautological-compare',
                         '-Wtautological-overlap-compare'],
-            'sse.md': ['-Wparentheses-equality', '-Wtautological-compare'],
+            'sse.md': ['-Wparentheses-equality', '-Wtautological-compare',
+                       '-Wconstant-logical-operand'],
             'mmx.md': ['-Wtautological-compare'],
             'genautomata.cc': ['-Wstring-plus-int'],
             'fold-const-call.cc': ['-Wreturn-type'],
             'gfortran.texi': [''],
-            'libtool': ['']
+            'libtool': [''],
+            'lex.cc': ['-Wc++20-attribute-extensions'],
     }
 
     for name, ignores in ignores.items():

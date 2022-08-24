@@ -53,6 +53,10 @@ Current gcov-tool supports the following functionalities:
 merge two sets of profiles with weights.
 
 @item
+read a stream of profiles with associated filenames and merge it with a set of
+profiles with weights.
+
+@item
 read one set of profile and rewrite profile contents. One can scale or
 normalize the count values.
 @end itemize
@@ -63,6 +67,12 @@ Examples of the use cases for this tool are:
 Collect the profiles for different set of inputs, and use this tool to merge
 them. One can specify the weight to factor in the relative importance of
 each input.
+
+@item
+Collect profiles from target systems without a filesystem (freestanding
+environments).  Merge the collected profiles with associated profiles
+present on the host system.  One can specify the weight to factor in the
+relative importance of each input.
 
 @item
 Rewrite the profile after removing a subset of the gcda files, while maintaining
@@ -117,6 +127,10 @@ gcov-tool merge [merge-options] @var{directory1} @var{directory2}
      [@option{-v}|@option{--verbose}]
      [@option{-w}|@option{--weight} @var{w1,w2}]
 
+gcov-tool merge-stream [merge-stream-options] [@var{file}]
+     [@option{-v}|@option{--verbose}]
+     [@option{-w}|@option{--weight} @var{w1,w2}]
+
 gcov-tool rewrite [rewrite-options] @var{directory}
      [@option{-n}|@option{--normalize} @var{long_long_value}]
      [@option{-o}|@option{--output} @var{directory}]
@@ -167,6 +181,28 @@ Set the verbose mode.
 @itemx --weight @var{w1},@var{w2}
 Set the merge weights of the @var{directory1} and @var{directory2},
 respectively. The default weights are 1 for both.
+@end table
+
+@item merge-stream
+Collect profiles with associated filenames from a @emph{gcfn} and @emph{gcda}
+data stream.  Read the stream from the file specified by @var{file} or from
+@file{stdin}.  Merge the profiles with associated profiles in the host
+filesystem.  Apply the optional weights while merging profiles.
+
+For the generation of a @emph{gcfn} and @emph{gcda} data stream on the target
+system, please have a look at the @code{__gcov_filename_to_gcfn()} and
+@code{__gcov_info_to_gcda()} functions declared in @code{#include <gcov.h>}.
+@table @gcctabopt
+
+@item -v
+@itemx --verbose
+Set the verbose mode.
+
+@item -w @var{w1},@var{w2}
+@itemx --weight @var{w1},@var{w2}
+Set the merge weights of the profiles from the @emph{gcfn} and @emph{gcda} data
+stream and the associated profiles in the host filesystem, respectively.  The
+default weights are 1 for both.
 @end table
 
 @item rewrite

@@ -161,7 +161,41 @@ void test_strcpy_new_int16_t (size_t n, const size_t vals[])
 
   ptrdiff_t r_dmin_dmax = SR (DIFF_MIN, DIFF_MAX);
   T (S (1), new int16_t[r_dmin_dmax]);
-  T (S (2), new int16_t[r_dmin_dmax + 1]);
+  /* ?? The above SR(DIFF_MIN, DIFF_MAX) implies r_dmin_dmax can be
+     the entire domain, including negative numbers because ptrdiff_t
+     is a signed entity.
+
+     This causes a warning in the following line after the
+     DOM/threader changes for C++98.
+
+      <bb 2> [local count: 1073741824]:
+      _26 ={v} signed_value_source;                      ;; could be -1
+      r_dmin_dmax.1_8 = (sizetype) _26;
+      if (r_dmin_dmax.1_8 <= 4611686018427387900)        ;; placement new rounding
+        goto <bb 3>; [50.00%]
+      else
+        goto <bb 9>; [50.00%]
+
+      ...
+      ...
+
+      <bb 9> [local count: 536870912]:
+      # iftmp.0_39 = PHI <18446744073709551615(2)>
+      _41 = operator new [] (iftmp.0_39);
+      __builtin_memcpy (_41, "z", 2);
+      sink (_41);
+      _44 = _26 + 1;					;; _44 = 0
+      _45 = (sizetype) _44;				;; _45 = 0
+      if (_45 <= 4611686018427387900)
+        goto <bb 8>; [0.00%]
+      else
+        goto <bb 7>; [100.00%]
+
+      <bb 8> [local count: 0]:
+      iftmp.2_33 = _45 * 2;				;; iftmp.2_33 = 0
+      _34 = operator new [] (iftmp.2_33);		;; new [] (0)
+  */
+  T (S (2), new int16_t[r_dmin_dmax + 1]); // { dg-bogus "into a region of size" "" { xfail c++98_only } }
   T (S (9), new int16_t[r_dmin_dmax * 2 + 1]);
 }
 

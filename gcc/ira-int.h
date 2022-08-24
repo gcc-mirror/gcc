@@ -764,8 +764,9 @@ minmax_set_iter_cond (minmax_set_iterator *i, int *n)
     }
 
   /* Skip bits that are zero.  */
-  for (; (i->word & 1) == 0; i->word >>= 1)
-    i->bit_num++;
+  int off = ctz_hwi (i->word);
+  i->bit_num += off;
+  i->word >>= off;
 
   *n = (int) i->bit_num + i->start_val;
 
@@ -1379,8 +1380,9 @@ ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
 	}
 
       /* Skip bits that are zero.  */
-      for (; (word & 1) == 0; word >>= 1)
-	bit_num++;
+      int off = ctz_hwi (word);
+      bit_num += off;
+      word >>= off;
 
       obj = ira_object_id_map[bit_num + i->base_conflict_id];
       i->bit_num = bit_num + 1;

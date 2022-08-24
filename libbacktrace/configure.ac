@@ -145,10 +145,10 @@ ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-format-attribute -Wcast-qual],
 			  [WARN_FLAGS])
 
-if test -n "${with_target_subdir}"; then
-  WARN_FLAGS="$WARN_FLAGS -Werror"
-fi
-
+AC_ARG_ENABLE([werror],
+  [AS_HELP_STRING([--disable-werror], [disable building with -Werror])])
+AS_IF([test "x$enable_werror" != "xno" && test -n "${with_target_subdir}"],
+  [WARN_FLAGS="$WARN_FLAGS -Werror"])
 AC_SUBST(WARN_FLAGS)
 
 if test -n "${with_target_subdir}"; then
@@ -335,13 +335,17 @@ fi
 AC_SUBST(BACKTRACE_USES_MALLOC)
 
 # Check for dl_iterate_phdr.
-AC_CHECK_HEADERS(link.h)
-if test "$ac_cv_header_link_h" = "no"; then
+AC_CHECK_HEADERS(link.h sys/link.h)
+if test "$ac_cv_header_link_h" = "no" -a "$ac_cv_header_sys_link_h" = "no"; then
   have_dl_iterate_phdr=no
 else
   if test -n "${with_target_subdir}"; then
+    link_h=link.h
+    if test "$ac_cv_header_link_h" = "no"; then
+       link_h=sys/link.h
+    fi
     # When built as a GCC target library, we can't do a link test.
-    AC_EGREP_HEADER([dl_iterate_phdr], [link.h], [have_dl_iterate_phdr=yes],
+    AC_EGREP_HEADER([dl_iterate_phdr], [$link_h], [have_dl_iterate_phdr=yes],
 		    [have_dl_iterate_phdr=no])
   else
     AC_CHECK_FUNC([dl_iterate_phdr], [have_dl_iterate_phdr=yes],
@@ -500,7 +504,7 @@ AC_CACHE_CHECK([whether objcopy supports debuglink],
   libbacktrace_cv_objcopy_debuglink=no
 elif ! test -n "${OBJCOPY}"; then
   libbacktrace_cv_objcopy_debuglink=no
-elif ${OBJCOPY} --help | fgrep add-gnu-debuglink >/dev/null 2>&1; then
+elif ${OBJCOPY} --help | grep add-gnu-debuglink >/dev/null 2>&1; then
   libbacktrace_cv_objcopy_debuglink=yes
 else
   libbacktrace_cv_objcopy_debuglink=no

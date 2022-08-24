@@ -578,7 +578,7 @@ extern(C++) private final class Supported : Objc
 
     override void checkLinkage(FuncDeclaration fd)
     {
-        if (fd.linkage != LINK.objc && fd.objc.selector)
+        if (fd._linkage != LINK.objc && fd.objc.selector)
             fd.error("must have Objective-C linkage to attach a selector");
     }
 
@@ -640,11 +640,11 @@ extern(C++) private final class Supported : Objc
         if (!fd.objc.isOptional)
             return;
 
-        if (fd.linkage != LINK.objc)
+        if (fd._linkage != LINK.objc)
         {
             fd.error("only functions with Objective-C linkage can be declared as optional");
 
-            const linkage = linkageToString(fd.linkage);
+            const linkage = linkageToString(fd._linkage);
 
             errorSupplemental(fd.loc, "function is declared with %.*s linkage",
                 cast(uint) linkage.length, linkage.ptr);
@@ -817,64 +817,6 @@ extern(C++) private final class Supported : Objc
         expression.error("no property `tupleof` for type `%s`", type.toChars());
         expression.errorSupplemental("`tupleof` is not available for members " ~
             "of Objective-C classes. Please use the Objective-C runtime instead");
-    }
-
-extern(D) private:
-
-    /**
-     * Returns `true` if the given symbol is a symbol declared in
-     * `core.attribute` and has the given identifier.
-     *
-     * This is used to determine if a symbol is a UDA declared in
-     * `core.attribute`.
-     *
-     * Params:
-     *  sd = the symbol to check
-     *  ident = the name of the expected UDA
-     */
-    bool isCoreUda(ScopeDsymbol sd, Identifier ident) const
-    {
-        if (sd.ident != ident || !sd.parent)
-            return false;
-
-        auto _module = sd.parent.isModule();
-        return _module && _module.isCoreModule(Id.attribute);
-    }
-
-    /**
-     * Iterates the UDAs attached to the given function declaration.
-     *
-     * If `dg` returns `!= 0`, it will stop the iteration and return that
-     * value, otherwise it will return 0.
-     *
-     * Params:
-     *  fd = the function declaration to get the UDAs from
-     *  dg = called once for each UDA. If `dg` returns `!= 0`, it will stop the
-     *      iteration and return that value, otherwise it will return `0`.
-     */
-    int foreachUda(FuncDeclaration fd, Scope* sc, int delegate(Expression) dg) const
-    {
-        if (!fd.userAttribDecl)
-            return 0;
-
-        auto udas = fd.userAttribDecl.getAttributes();
-        arrayExpressionSemantic(udas, sc, true);
-
-        return udas.each!((uda) {
-            if (!uda.isTupleExp())
-                return 0;
-
-            auto exps = uda.isTupleExp().exps;
-
-            return exps.each!((e) {
-                assert(e);
-
-                if (auto result = dg(e))
-                    return result;
-
-                return 0;
-            });
-        });
     }
 }
 

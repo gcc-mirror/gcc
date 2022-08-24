@@ -11,4 +11,4 @@ foo (__complex double a, __complex double b)
 }
 
 /* { dg-final { scan-tree-dump-times "unord" 1 "cplxlower1" } } */
-/* { dg-final { scan-tree-dump-times "__muldc3" 1 "cplxlower1" } } */
+/* { dg-final { scan-tree-dump-times "__(?:gnu_)?muldc3" 1 "cplxlower1" } } */

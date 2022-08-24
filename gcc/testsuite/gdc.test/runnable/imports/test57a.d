@@ -6,5 +6,3 @@ import imports.test57b;
 
 // doesn't work
 void foo() { C!(int) x; }
-
-

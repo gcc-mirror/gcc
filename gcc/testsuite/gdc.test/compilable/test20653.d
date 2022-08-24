@@ -17,4 +17,3 @@ void main ()
 {
     assert(myFunc!int() == 0);
 }
-

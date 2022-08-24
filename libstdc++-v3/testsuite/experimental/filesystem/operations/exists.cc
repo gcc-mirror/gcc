@@ -89,7 +89,7 @@ test04()
   ec.clear();
   try
   {
-    exists(unr);
+    (void) exists(unr);
   }
   catch(const std::experimental::filesystem::filesystem_error& ex)
   {

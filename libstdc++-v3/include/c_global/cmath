@@ -1847,7 +1847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201703L
 
   // [c.math.hypot3], three-dimensional hypotenuse
-#define __cpp_lib_hypot 201603
+#define __cpp_lib_hypot 201603L
 
   template<typename _Tp>
     inline _Tp

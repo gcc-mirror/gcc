@@ -207,6 +207,47 @@ _GLIBCXX_END_NAMESPACE_CXX11
   /// Class for @c wchar_t mixed input and output file streams.
   typedef basic_fstream<wchar_t> 	wfstream;
 #endif
+
+#if __cplusplus >= 202002L && _GLIBCXX_USE_CXX11_ABI
+  template<typename _CharT, typename _Traits = char_traits<_CharT>,
+           typename _Allocator = allocator<_CharT>>
+    class basic_syncbuf;
+  template<typename _CharT, typename _Traits = char_traits<_CharT>,
+           typename _Allocator = allocator<_CharT>>
+    class basic_osyncstream;
+
+  using syncbuf = basic_syncbuf<char>;
+  using osyncstream = basic_osyncstream<char>;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  using wsyncbuf = basic_syncbuf<wchar_t>;
+  using wosyncstream = basic_osyncstream<wchar_t>;
+#endif
+#endif // C++20 && CXX11_ABI
+
+#if __cplusplus > 202002L
+  template<typename _CharT, typename _Traits = char_traits<_CharT>>
+    class basic_spanbuf;
+  template<typename _CharT, typename _Traits = char_traits<_CharT>>
+    class basic_ispanstream;
+  template<typename _CharT, typename _Traits = char_traits<_CharT>>
+    class basic_ospanstream;
+  template<typename _CharT, typename _Traits = char_traits<_CharT>>
+    class basic_spanstream;
+
+  using spanbuf     = basic_spanbuf<char>;
+  using ispanstream = basic_ispanstream<char>;
+  using ospanstream = basic_ospanstream<char>;
+  using spanstream  = basic_spanstream<char>;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  using wspanbuf     = basic_spanbuf<wchar_t>;
+  using wispanstream = basic_ispanstream<wchar_t>;
+  using wospanstream = basic_ospanstream<wchar_t>;
+  using wspanstream  = basic_spanstream<wchar_t>;
+#endif
+#endif // C++23
+
   /** @}  */
 
 _GLIBCXX_END_NAMESPACE_VERSION

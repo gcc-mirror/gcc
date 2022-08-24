@@ -43,12 +43,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
-
-.. Some notes:
-
-   The Sphinx C domain appears to lack explicit support for enum values,
-   so I've been using :c:macro: for them.
-
-   See https://sphinx-doc.org/domains.html#the-c-domain

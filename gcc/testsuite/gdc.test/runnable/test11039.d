@@ -1,5 +1,5 @@
 
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/test11039b.d
 
 import imports.test11039b;
@@ -20,4 +20,3 @@ void main()
     globalField.getInnerField();
     anotherGlobalField.getInnerField();
 }
-

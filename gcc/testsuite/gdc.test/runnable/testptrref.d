@@ -21,7 +21,7 @@ version(CRuntime_Microsoft)
                                               void[] function(string name) nothrow @nogc);
         dataSection = findImageSection(".data");
     }
-    
+
     void[] tlsRange;
     static this()
     {
@@ -30,7 +30,7 @@ version(CRuntime_Microsoft)
                                               void[] function() nothrow @nogc);
         tlsRange = initTLSRanges();
     }
-    
+
     version = ptrref_supported;
 }
 else version(Win32)
@@ -126,7 +126,7 @@ bool findDataPtr(const(void)* ptr)
             void* addr = dataSection.ptr + *p;
         else
             void* addr = *p;
-        
+
         if (addr == ptr)
             return true;
     }
@@ -158,7 +158,7 @@ void testRefPtr()
 
     assert(!findTlsPtr(cast(size_t*)&tlsStr)); // length
     assert(findTlsPtr(cast(size_t*)&tlsStr + 1)); // ptr
-    
+
     // monitor is manually managed
     assert(!findDataPtr(cast(size_t*)cast(void*)Class.classinfo + 1));
     assert(!findDataPtr(cast(size_t*)cast(void*)Class.classinfo + 1));
@@ -167,7 +167,7 @@ void testRefPtr()
     assert(!findTlsPtr(&arr));
     assert(!findDataPtr(cast(size_t*)&arr + 1));
     assert(!findTlsPtr(cast(size_t*)&arr + 1));
-    
+
     assert(findDataPtr(cast(size_t*)&strArr[0] + 1)); // ptr in _DATA!
     assert(findDataPtr(cast(size_t*)&strArr[1] + 1)); // ptr in _DATA!
     strArr[1] = "c";

@@ -1459,7 +1459,11 @@ namespace __gnu_test
 	  while (!exit);
 
 	  // Log count info.
+#if __cpp_rtti
 	  std::cout << __f.target_type().name() << std::endl;
+#else
+	  std::cout << "[no type info - rtti disabled]\n";
+#endif
 	  std::cout << "end count " << __step << std::endl;
 	  return __step;
 	}
@@ -1627,7 +1631,11 @@ namespace __gnu_test
 	  while (!exit);
 
 	  // Log count info.
+#if __cpp_rtti
 	  std::cout << __f.target_type().name() << std::endl;
+#else
+	  std::cout << "[no type info - rtti disabled]\n";
+#endif
 	  std::cout << "end count " << i << std::endl;
 	}
     };

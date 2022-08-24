@@ -62,8 +62,10 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Hashed_Maps with
-  SPARK_Mode
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
 is
+
    --  Contracts in this unit are meant for analysis only, not for run-time
    --  checking.
 
@@ -900,7 +902,7 @@ private
    end record;
 
    package HT_Types is new
-     Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
+     Ada.Containers.Hash_Tables.Generic_Formal_Hash_Table_Types (Node_Type);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is record
      Content : HT_Types.Hash_Table_Type (Capacity, Modulus);

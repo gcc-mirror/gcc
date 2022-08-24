@@ -21,3 +21,43 @@ void foo(scope int* pf)
     betty(rf, pf);
     boop(rf, pf);
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=22801
+struct Wrapper
+{
+    int* ptr;
+
+    this(return ref int var) @safe
+    {
+        this.ptr = &var;
+    }
+}
+
+void main() @safe
+{
+    int i;
+    auto w = Wrapper(i);
+    auto wt = WrapperT!()(i);
+}
+
+void assign(ref scope int* x, return ref int y) @safe
+{
+    x = &y;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22967
+// inference of `return ref` when assigned to first parameter
+struct WrapperT()
+{
+    int* ptr;
+
+    this(ref int var) @safe
+    {
+        this.ptr = &var;
+    }
+
+    static void assignInferred(ref scope int* xi, ref int yi) @safe
+    {
+        xi = &yi;
+    }
+}

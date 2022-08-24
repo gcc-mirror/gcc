@@ -1123,12 +1123,6 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 
 #define CDISABLE _POSIX_VDISABLE
 
-/* On HP-UX and Sun system, there is a bzero function but with a different
-   signature. Use memset instead */
-#if defined (__hpux__) || defined (__sun__) || defined (_AIX)
-#   define bzero(s,n) memset (s,0,n)
-#endif
-
 /* POSIX does not specify how to open the master side of a terminal.Several
    methods are available (system specific):
       1- using a cloning device (USE_CLONE_DEVICE)
@@ -1289,8 +1283,15 @@ child_setup_tty (int fd)
   struct termios s;
   int    status;
 
-  /* ensure that s is filled with 0 */
-  bzero (&s, sizeof (s));
+  /* Ensure that s is filled with 0.
+
+     Note that we avoid using bzero for a few reasons:
+       - On HP-UX and Sun system, there is a bzero function but with
+         a different signature, thus making the use of bzero more
+	 complicated on these platforms (we used to define a bzero
+	 macro that rewrote calls to bzero into calls to memset);
+       - bzero is deprecated (marked as LEGACY in POSIX.1-2001).  */
+  memset (&s, 0, sizeof (s));
 
   /* Get the current terminal settings */
   status = tcgetattr (fd, &s);

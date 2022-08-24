@@ -71,61 +71,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const moneypunct<_CharT, _Intl>& __mp =
 	use_facet<moneypunct<_CharT, _Intl> >(__loc);
 
+      struct _Scoped_str
+      {
+	size_t _M_len;
+	_CharT* _M_str;
+
+	explicit
+	_Scoped_str(const basic_string<_CharT>& __str)
+	: _M_len(__str.size()), _M_str(new _CharT[_M_len])
+	{ __str.copy(_M_str, _M_len); }
+
+	~_Scoped_str() { delete[] _M_str; }
+
+	void
+	_M_release(const _CharT*& __p, size_t& __n)
+	{
+	  __p = _M_str;
+	  __n = _M_len;
+	  _M_str = 0;
+	}
+      };
+
+      _Scoped_str __curr_symbol(__mp.curr_symbol());
+      _Scoped_str __positive_sign(__mp.positive_sign());
+      _Scoped_str __negative_sign(__mp.negative_sign());
+
+      const string& __g = __mp.grouping();
+      const size_t __g_size = __g.size();
+      char* const __grouping = new char[__g_size];
+      __g.copy(__grouping, __g_size);
+
+      // All allocations succeeded without throwing, OK to modify *this now.
+
+      _M_grouping = __grouping;
+      _M_grouping_size = __g_size;
+      _M_use_grouping = (__g_size
+			 && static_cast<signed char>(__grouping[0]) > 0
+			 && (__grouping[0]
+			     != __gnu_cxx::__numeric_traits<char>::__max));
+
       _M_decimal_point = __mp.decimal_point();
       _M_thousands_sep = __mp.thousands_sep();
+
+      __curr_symbol._M_release(_M_curr_symbol, _M_curr_symbol_size);
+      __positive_sign._M_release(_M_positive_sign, _M_positive_sign_size);
+      __negative_sign._M_release(_M_negative_sign, _M_negative_sign_size);
+
       _M_frac_digits = __mp.frac_digits();
+      _M_pos_format = __mp.pos_format();
+      _M_neg_format = __mp.neg_format();
 
-      char* __grouping = 0;
-      _CharT* __curr_symbol = 0;
-      _CharT* __positive_sign = 0;
-      _CharT* __negative_sign = 0;     
-      __try
-	{
-	  const string& __g = __mp.grouping();
-	  _M_grouping_size = __g.size();
-	  __grouping = new char[_M_grouping_size];
-	  __g.copy(__grouping, _M_grouping_size);
-	  _M_use_grouping = (_M_grouping_size
-			     && static_cast<signed char>(__grouping[0]) > 0
-			     && (__grouping[0]
-				 != __gnu_cxx::__numeric_traits<char>::__max));
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(money_base::_S_atoms,
+		 money_base::_S_atoms + money_base::_S_end, _M_atoms);
 
-	  const basic_string<_CharT>& __cs = __mp.curr_symbol();
-	  _M_curr_symbol_size = __cs.size();
-	  __curr_symbol = new _CharT[_M_curr_symbol_size];
-	  __cs.copy(__curr_symbol, _M_curr_symbol_size);
-
-	  const basic_string<_CharT>& __ps = __mp.positive_sign();
-	  _M_positive_sign_size = __ps.size();
-	  __positive_sign = new _CharT[_M_positive_sign_size];
-	  __ps.copy(__positive_sign, _M_positive_sign_size);
-
-	  const basic_string<_CharT>& __ns = __mp.negative_sign();
-	  _M_negative_sign_size = __ns.size();
-	  __negative_sign = new _CharT[_M_negative_sign_size];
-	  __ns.copy(__negative_sign, _M_negative_sign_size);
-
-	  _M_pos_format = __mp.pos_format();
-	  _M_neg_format = __mp.neg_format();
-
-	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-	  __ct.widen(money_base::_S_atoms,
-		     money_base::_S_atoms + money_base::_S_end, _M_atoms);
-
-	  _M_grouping = __grouping;
-	  _M_curr_symbol = __curr_symbol;
-	  _M_positive_sign = __positive_sign;
-	  _M_negative_sign = __negative_sign;
-	  _M_allocated = true;
-	}
-      __catch(...)
-	{
-	  delete [] __grouping;
-	  delete [] __curr_symbol;
-	  delete [] __positive_sign;
-	  delete [] __negative_sign;
-	  __throw_exception_again;
-	}
+      _M_allocated = true;
     }
 
 _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
@@ -635,6 +635,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
       && defined __LONG_DOUBLE_IEEE128__
+extern "C"
+__typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
+
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
@@ -643,30 +646,24 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
     {
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-#if _GLIBCXX_USE_C99_STDIO
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      const __c_locale __old = __gnu_cxx::__uselocale(_S_get_c_locale());
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 328. Bad sprintf format modifier in money_put<>::do_put()
-      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					"%.*Lf", 0, __units);
+      int __len = __glibcxx_snprintfibm128(__cs, __cs_size, "%.*Lf", 0,
+					     __units);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					"%.*Lf", 0, __units);
+	  __len = __glibcxx_snprintfibm128(__cs, __cs_size, "%.*Lf", 0,
+					     __units);
 	}
-#else
-      // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
-      const int __cs_size =
-	__gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 3;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
-					0, __units);
-#endif
+      __gnu_cxx::__uselocale(__old);
       string_type __digits(__len, char_type());
       __ctype.widen(__cs, __cs + __len, &__digits[0]);
       return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
@@ -1468,7 +1465,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __err = ios_base::goodbit;
       bool __use_state = false;
-#if __GNUC__ >= 5
+#if __GNUC__ >= 5 && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
       // Nasty hack.  The C++ standard mandates that get invokes the do_get

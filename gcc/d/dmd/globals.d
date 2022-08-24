@@ -15,6 +15,7 @@ import core.stdc.stdint;
 import dmd.root.array;
 import dmd.root.filename;
 import dmd.common.outbuffer;
+import dmd.file_manager;
 import dmd.identifier;
 
 /// Defines a setting for how compiler warnings and deprecations are handled
@@ -50,14 +51,6 @@ enum CHECKACTION : ubyte
     context,      /// call D assert with the error context on failure
 }
 
-/// Position Indepent Code setting
-enum PIC : ubyte
-{
-    fixed,              /// located at a specific address
-    pic,                /// Position Independent Code
-    pie,                /// Position Independent Executable
-}
-
 /**
 Each flag represents a field that can be included in the JSON output.
 
@@ -82,14 +75,6 @@ enum CppStdRevision : uint
     cpp20 = 2020_02,
 }
 
-/// Configuration for the C++ header generator
-enum CxxHeaderMode : uint
-{
-    none,   /// Don't generate headers
-    silent, /// Generate headers
-    verbose /// Generate headers and add comments for hidden declarations
-}
-
 /// Trivalent boolean to represent the state of a `revert`able change
 enum FeatureState : byte
 {
@@ -98,15 +83,24 @@ enum FeatureState : byte
     enabled = 1    /// Specified as `-preview=`
 }
 
+extern(C++) struct Output
+{
+    bool doOutput;      // Output is enabled
+    bool fullOutput;    // Generate comments for hidden declarations (for -HC),
+                        // and don't strip the bodies of plain (non-template) functions (for -H)
+
+    const(char)[] dir;  // write to directory 'dir'
+    const(char)[] name; // write to file 'name'
+    Array!(const(char)*) files; // Other files associated with this output,
+                                // e.g. macro include files for Ddoc, dependencies for makedeps
+    OutBuffer* buffer;  // if this output is buffered, this is the buffer
+    int bufferLines;    // number of lines written to the buffer
+}
 /// Put command line switches in here
 extern (C++) struct Param
 {
     bool obj = true;        // write object file
-    bool link = true;       // perform link
-    bool dll;               // generate shared dynamic library
-    bool lib;               // write library file instead of object file(s)
     bool multiobj;          // break one object file into multiple ones
-    bool oneobj;            // write one object file instead of multiple ones
     bool trace;             // insert profiling hooks
     bool tracegc;           // instrument calls to 'new'
     bool verbose;           // verbose compile
@@ -119,25 +113,20 @@ extern (C++) struct Param
     bool vfield;            // identify non-mutable field variables
     bool vcomplex = true;   // identify complex/imaginary type usage
     bool vin;               // identify 'in' parameters
-    ubyte symdebug;         // insert debug symbolic information
-    bool symdebugref;       // insert debug information for all referenced types, too
-    bool optimize;          // run optimizer
     DiagnosticReporting useDeprecated = DiagnosticReporting.inform;  // how use of deprecated features are handled
-    bool stackstomp;            // add stack stomping code
     bool useUnitTests;          // generate unittest code
     bool useInline = false;     // inline expand functions
     FeatureState useDIP25;  // implement https://wiki.dlang.org/DIP25
     FeatureState useDIP1000; // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
+    bool fixImmutableConv;  // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
     bool useDIP1021;        // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
     bool release;           // build release version
     bool preservePaths;     // true means don't strip path from source file
     DiagnosticReporting warnings = DiagnosticReporting.off;  // how compiler warnings are handled
-    PIC pic = PIC.fixed;    // generate fixed, pic or pie code
     bool color;             // use ANSI colors in console output
     bool cov;               // generate code coverage data
     ubyte covPercent;       // 0..100 code coverage percentage required
     bool ctfe_cov = false;  // generate coverage data for ctfe
-    bool nofloat;           // code should not pull in floating point support
     bool ignoreUnsupportedPragmas;  // rather than error on them
     bool useModuleInfo = true;   // generate runtime module information
     bool useTypeInfo = true;     // generate runtime type information
@@ -161,16 +150,14 @@ extern (C++) struct Param
     FeatureState dtorFields; // destruct fields of partially constructed objects
                             // https://issues.dlang.org/show_bug.cgi?id=14246
     bool fieldwise;         // do struct equality testing field-wise rather than by memcmp()
-    bool rvalueRefParam;    // allow rvalues to be arguments to ref parameters
-                            // https://dconf.org/2019/talks/alexandrescu.html
-                            // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
-                            // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
-                            // Implementation: https://github.com/dlang/dmd/pull/9817
+    bool bitfields;         // support C style bit fields
+    FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
+                                 // https://dconf.org/2019/talks/alexandrescu.html
+                                 // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
+                                 // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
+                                 // Implementation: https://github.com/dlang/dmd/pull/9817
 
     CppStdRevision cplusplus = CppStdRevision.cpp11;    // version of C++ standard to support
-
-    bool markdown = true;   // enable Markdown replacements in Ddoc
-    bool vmarkdown;         // list instances of Markdown replacements in Ddoc
 
     bool showGaggedErrors;  // print gagged errors anyway
     bool printErrorContext;  // print errors with the error context (the error line in the source file)
@@ -206,27 +193,14 @@ extern (C++) struct Param
     const(char)[] objname;               // .obj file output name
     const(char)[] libname;               // .lib file output name
 
-    bool doDocComments;                 // process embedded documentation comments
-    const(char)[] docdir;               // write documentation file to docdir directory
-    const(char)[] docname;              // write documentation file to docname
-    Array!(const(char)*) ddocfiles;     // macro include files for Ddoc
-
-    bool doHdrGeneration;               // process embedded documentation comments
-    const(char)[] hdrdir;                // write 'header' file to docdir directory
-    const(char)[] hdrname;               // write 'header' file to docname
-    bool hdrStripPlainFunctions = true; // strip the bodies of plain (non-template) functions
-
-    CxxHeaderMode doCxxHdrGeneration;      /// Generate 'Cxx header' file
-    const(char)[] cxxhdrdir;            // write 'header' file to docdir directory
-    const(char)[] cxxhdrname;           // write 'header' file to docname
-
-    bool doJsonGeneration;              // write JSON file
-    const(char)[] jsonfilename;          // write JSON file to jsonfilename
+    Output ddoc;                        // Generate embedded documentation comments
+    Output dihdr;                       // Generate `.di` 'header' files
+    Output cxxhdr;                      // Generate 'Cxx header' file
+    Output json;                        // Generate JSON file
     JsonFieldFlags jsonFieldFlags;      // JSON field flags to include
-
-    OutBuffer* mixinOut;                // write expanded mixins for debugging
-    const(char)* mixinFile;             // .mixin file output name
-    int mixinLines;                     // Number of lines in writeMixins
+    Output makeDeps;                    // Generate make file dependencies
+    Output mixinOut;                    // write expanded mixins for debugging
+    Output moduleDeps;                  // Generate `.deps` module dependencies
 
     uint debuglevel;                    // debug level
     Array!(const(char)*)* debugids;     // debug identifiers
@@ -234,21 +208,12 @@ extern (C++) struct Param
     uint versionlevel;                  // version level
     Array!(const(char)*)* versionids;   // version identifiers
 
-    const(char)[] defaultlibname;        // default library for non-debug builds
-    const(char)[] debuglibname;          // default library for debug builds
-    const(char)[] mscrtlib;              // MS C runtime library
-
-    const(char)[] moduleDepsFile;        // filename for deps output
-    OutBuffer* moduleDeps;              // contents to be written to deps file
-
-    bool emitMakeDeps;                   // whether to emit makedeps
-    const(char)[] makeDepsFile;          // filename for makedeps output
-    Array!(const(char)*) makeDeps;      // dependencies for makedeps
 
     MessageStyle messageStyle = MessageStyle.digitalmars; // style of file/line annotations on messages
 
     bool run; // run resulting executable
     Strings runargs; // arguments for executable
+    Array!(const(char)*) cppswitches;   // C preprocessor switches
 
     // Linker stuff
     Array!(const(char)*) objfiles;
@@ -327,8 +292,14 @@ extern (C++) struct Global
     Array!Identifier* debugids;   /// command line debug versions and predefined versions
 
     bool hasMainFunction; /// Whether a main function has already been compiled in (for -main switch)
+    uint varSequenceNumber = 1; /// Relative lifetime of `VarDeclaration` within a function, used for `scope` checks
+
+    /// Cache files read from disk
+    FileManager fileManager;
 
     enum recursionLimit = 500; /// number of recursive template expansions before abort
+
+    extern (C++) FileName function(FileName, ref const Loc, out bool, OutBuffer*) preprocess;
 
   nothrow:
 
@@ -382,6 +353,7 @@ extern (C++) struct Global
 
     extern (C++) void _init()
     {
+        this.fileManager = new FileManager();
         version (MARS)
         {
             vendor = "Digital Mars D";
@@ -462,15 +434,6 @@ extern (C++) struct Global
     {
         return _version.ptr;
     }
-
-    /**
-    Returns: the final defaultlibname based on the command-line parameters
-    */
-    extern (D) const(char)[] finalDefaultlibname() const
-    {
-        return params.betterC ? null :
-            params.symdebug ? params.debuglibname : params.defaultlibname;
-    }
 }
 
 // Because int64_t and friends may be any integral type of the
@@ -484,15 +447,6 @@ alias dinteger_t = ulong;
 // Signed and unsigned variants
 alias sinteger_t = long;
 alias uinteger_t = ulong;
-
-alias d_int8 = int8_t;
-alias d_uns8 = uint8_t;
-alias d_int16 = int16_t;
-alias d_uns16 = uint16_t;
-alias d_int32 = int32_t;
-alias d_uns32 = uint32_t;
-alias d_int64 = int64_t;
-alias d_uns64 = uint64_t;
 
 version (DMDLIB)
 {
@@ -613,49 +567,6 @@ nothrow:
         return filename !is null;
     }
 }
-
-/// A linkage attribute as defined by `extern(XXX)`
-///
-/// https://dlang.org/spec/attribute.html#linkage
-enum LINK : ubyte
-{
-    default_,
-    d,
-    c,
-    cpp,
-    windows,
-    objc,
-    system,
-}
-
-/// Whether to mangle an external aggregate as a struct or class, as set by `extern(C++, struct)`
-enum CPPMANGLE : ubyte
-{
-    def,      /// default
-    asStruct, /// `extern(C++, struct)`
-    asClass,  /// `extern(C++, class)`
-}
-
-/// Function match levels
-///
-/// https://dlang.org/spec/function.html#function-overloading
-enum MATCH : int
-{
-    nomatch,   /// no match
-    convert,   /// match with conversions
-    constant,  /// match with conversion to const
-    exact,     /// exact match
-}
-
-/// Inline setting as defined by `pragma(inline, XXX)`
-enum PINLINE : ubyte
-{
-    default_, /// as specified on the command line
-    never,    /// never inline
-    always,   /// always inline
-}
-
-alias StorageClass = ulong;
 
 /// Collection of global state
 extern (C++) __gshared Global global;

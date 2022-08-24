@@ -1,6 +1,9 @@
 /* { dg-additional-options "-fanalyzer-verbosity=3" } */
 
-#include <stdio.h>
+typedef struct FILE   FILE;
+
+FILE* fopen (const char*, const char*);
+int   fclose (FILE*);
 
 extern int foo ();
 extern void bar ();

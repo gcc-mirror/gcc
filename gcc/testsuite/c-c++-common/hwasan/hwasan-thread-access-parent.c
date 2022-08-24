@@ -46,6 +46,6 @@ main (int argc, char **argv)
 }
 
 /* { dg-output "HWAddressSanitizer: tag-mismatch on address 0x\[0-9a-f\]*.*" } */
-/* { dg-output "READ of size 4 at 0x\[0-9a-f\]* tags: 00/\[\[:xdigit:\]\]\[\[:xdigit:\]\] \\(ptr/mem\\) in thread T1.*" } */
+/* { dg-output "READ of size 4 at 0x\[0-9a-f\]* tags: 00/\[\[:xdigit:\]\]\[\[:xdigit:\]\].* \\(ptr/mem\\) in thread T1.*" } */
 /* { dg-output "Address 0x\[0-9a-f\]* is located in stack of thread T0.*" } */
 /* { dg-output "SUMMARY: HWAddressSanitizer: tag-mismatch \[^\n\]*.*" } */

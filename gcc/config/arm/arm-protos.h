@@ -101,8 +101,8 @@ extern char *neon_output_shift_immediate (const char *, char, rtx *,
 					  machine_mode, int, bool);
 extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
+extern rtx mve_bool_vec_to_const (rtx const_vec);
 extern rtx neon_make_constant (rtx, bool generate = true);
-extern tree arm_builtin_vectorized_function (unsigned int, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 extern void arm_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
@@ -195,12 +195,15 @@ extern void arm_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 extern rtx arm_load_tp (rtx);
 extern bool arm_coproc_builtin_available (enum unspecv);
 extern bool arm_coproc_ldc_stc_legitimate_address (rtx);
+extern rtx arm_stack_protect_tls_canary_mem (bool);
+
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
+extern opt_machine_mode arm_get_mask_mode (machine_mode mode);
 
 #endif /* RTX_CODE */
 
@@ -377,7 +380,7 @@ extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 extern bool arm_fusion_enabled_p (tune_params::fuse_ops);
 extern bool arm_valid_symbolic_address_p (rtx);
 extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
-extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool, bool);
+extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool);
 #endif /* RTX_CODE */
 
 extern bool arm_gen_setmem (rtx *);

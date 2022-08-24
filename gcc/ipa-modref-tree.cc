@@ -71,13 +71,13 @@ modref_access_node::contains (const modref_access_node &a) const
 	   /* Accesses are never below parm_offset, so look
 	      for smaller offset.
 	      If access ranges are known still allow merging
-	      when bit offsets comparsion passes.  */
+	      when bit offsets comparison passes.  */
 	   if (!known_le (parm_offset, a.parm_offset)
 	       && !range_info_useful_p ())
 	     return false;
 	   /* We allow negative aoffset_adj here in case
 	      there is an useful range.  This is because adding
-	      a.offset may result in non-ngative offset again.
+	      a.offset may result in non-negative offset again.
 	      Ubsan fails on val << LOG_BITS_PER_UNIT where val
 	      is negative.  */
 	   aoffset_adj = (a.parm_offset - parm_offset)
@@ -89,7 +89,7 @@ modref_access_node::contains (const modref_access_node &a) const
       if (!a.range_info_useful_p ())
 	return false;
       /* Sizes of stores are used to check that object is big enough
-	 to fit the store, so smaller or unknown sotre is more general
+	 to fit the store, so smaller or unknown store is more general
 	 than large store.  */
       if (known_size_p (size)
 	  && (!known_size_p (a.size)
@@ -130,8 +130,7 @@ modref_access_node::update (poly_int64 parm_offset1,
   else
     {
       if (dump_file)
-	fprintf (dump_file,
-		 "--param param=modref-max-adjustments limit reached:");
+	fprintf (dump_file, "--param modref-max-adjustments limit reached:");
       if (!known_eq (parm_offset, parm_offset1))
 	{
 	  if (dump_file)
@@ -267,35 +266,43 @@ modref_access_node::closer_pair_p (const modref_access_node &a1,
     gcc_unreachable ();
 
 
-  /* Now compute distnace of the intervals.  */
-  poly_int64 dist1, dist2;
+  /* Now compute distance of the intervals.  */
+  poly_offset_int dist1, dist2;
   if (known_le (offseta1, offsetb1))
     {
       if (!known_size_p (a1.max_size))
 	dist1 = 0;
       else
-	dist1 = offsetb1 - offseta1 - a1.max_size;
+	dist1 = (poly_offset_int)offsetb1
+		- (poly_offset_int)offseta1
+		- (poly_offset_int)a1.max_size;
     }
   else
     {
       if (!known_size_p (b1.max_size))
 	dist1 = 0;
       else
-	dist1 = offseta1 - offsetb1 - b1.max_size;
+	dist1 = (poly_offset_int)offseta1
+		 - (poly_offset_int)offsetb1
+		 - (poly_offset_int)b1.max_size;
     }
   if (known_le (offseta2, offsetb2))
     {
       if (!known_size_p (a2.max_size))
 	dist2 = 0;
       else
-	dist2 = offsetb2 - offseta2 - a2.max_size;
+	dist2 = (poly_offset_int)offsetb2
+		- (poly_offset_int)offseta2
+		- (poly_offset_int)a2.max_size;
     }
   else
     {
       if (!known_size_p (b2.max_size))
 	dist2 = 0;
       else
-	dist2 = offseta2 - offsetb2 - b2.max_size;
+	dist2 = offseta2
+		- (poly_offset_int)offsetb2
+		- (poly_offset_int)b2.max_size;
     }
   /* It may happen that intervals overlap in case size
      is different.  Prefer the overlap to non-overlap.  */
@@ -381,9 +388,16 @@ modref_access_node::update2 (poly_int64 parm_offset1,
     new_max_size = max_size2;
   else
     {
-      new_max_size = max_size2 + offset2 - offset1;
-      if (known_le (new_max_size, max_size1))
-	new_max_size = max_size1;
+      poly_offset_int s = (poly_offset_int)max_size2
+			  + (poly_offset_int)offset2
+			  - (poly_offset_int)offset1;
+      if (s.to_shwi (&new_max_size))
+	{
+	  if (known_le (new_max_size, max_size1))
+	    new_max_size = max_size1;
+	}
+      else
+	new_max_size = -1;
     }
 
   update (parm_offset1, offset1,
@@ -510,7 +524,7 @@ modref_access_node::stream_in (struct lto_input_block *ib)
    If RECORD_ADJUSTMENTs is true avoid too many interval extensions.
    Return true if record was changed.
 
-   Reutrn 0 if nothing changed, 1 if insert was successful and -1
+   Return 0 if nothing changed, 1 if insert was successful and -1
    if entries should be collapsed.  */
 int
 modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
@@ -594,11 +608,11 @@ modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
 	return -1;
       if (dump_file && best2 >= 0)
 	fprintf (dump_file,
-		 "--param param=modref-max-accesses limit reached;"
+		 "--param modref-max-accesses limit reached;"
 		 " merging %i and %i\n", best1, best2);
       else if (dump_file)
 	fprintf (dump_file,
-		 "--param param=modref-max-accesses limit reached;"
+		 "--param modref-max-accesses limit reached;"
 		 " merging with %i\n", best1);
       modref_access_node::try_merge_with (accesses, best1);
       if (best2 >= 0)
@@ -679,7 +693,9 @@ modref_access_node::get_ao_ref (const gcall *stmt, ao_ref *ref) const
 {
   tree arg;
 
-  if (!parm_offset_known || !(arg = get_call_arg (stmt)))
+  if (!parm_offset_known
+      || !(arg = get_call_arg (stmt))
+      || !POINTER_TYPE_P (TREE_TYPE (arg)))
     return false;
   poly_offset_int off = (poly_offset_int)offset
 	+ ((poly_offset_int)parm_offset << LOG2_BITS_PER_UNIT);
@@ -801,7 +817,7 @@ modref_access_node::insert_kill (vec<modref_access_node> &kills,
   gcc_checking_assert (a.useful_for_kill_p ());
 
   /* See if we have corresponding entry already or we can merge with
-     neighbouring entry.  */
+     neighboring entry.  */
   FOR_EACH_VEC_ELT (kills, index, a2)
     {
       if (a2->contains_for_kills (a))
@@ -825,8 +841,7 @@ modref_access_node::insert_kill (vec<modref_access_node> &kills,
       if ((int)kills.length () >= param_modref_max_accesses)
 	{
 	  if (dump_file)
-	    fprintf (dump_file,
-		     "--param param=modref-max-accesses limit reached:");
+	    fprintf (dump_file, "--param modref-max-accesses limit reached:");
 	  return false;
 	}
       a.adjustments = 0;
@@ -1007,7 +1022,7 @@ test_merge ()
 
 
 void
-ipa_modref_tree_c_tests ()
+ipa_modref_tree_cc_tests ()
 {
   test_insert_search_collapse ();
   test_merge ();

@@ -32,5 +32,3 @@ void funchds(char *p_adults)
          }
    }
 }
-
-

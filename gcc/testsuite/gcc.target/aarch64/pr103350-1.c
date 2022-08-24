@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target le } } */
 /* { dg-additional-options "-Os -fno-tree-ter -save-temps -fdump-rtl-ree-all -free -std=c99 -w" } */
 
 typedef unsigned char u8;

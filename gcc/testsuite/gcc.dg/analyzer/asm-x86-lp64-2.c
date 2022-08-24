@@ -1,4 +1,4 @@
-/* { dg-do assemble { target x86_64-*-* } } */
+/* { dg-do compile { target x86_64-*-* } } */
 /* { dg-require-effective-target lp64 } */
 
 /* Adapted from Linux x86: page_ref_dec_and_test.c (GPL-2.0).  */

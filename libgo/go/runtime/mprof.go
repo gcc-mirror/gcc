@@ -152,7 +152,7 @@ var (
 	xbuckets    *bucket // mutex profile buckets
 	sbuckets    *bucket // pre-symbolization profile buckets (stacks fixed up)
 	freebuckets *bucket // freelist of unused fixed up profile buckets
-	buckhash    *[179999]*bucket
+	buckhash    *[buckHashSize]*bucket
 	bucketmem   uintptr
 
 	mProf struct {

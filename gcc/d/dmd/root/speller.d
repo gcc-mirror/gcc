@@ -42,6 +42,7 @@ private:
 
 import core.stdc.stdlib;
 import core.stdc.string;
+import dmd.common.string : SmallBuffer;
 
 enum isSearchFunction(alias fun) = is(searchFunctionType!fun);
 alias searchFunctionType(alias fun) = typeof(() {int x; return fun("", x);}());
@@ -63,15 +64,8 @@ auto spellerX(alias dg)(const(char)[] seed, bool flag)
     /* Need buffer to store trial strings in
      */
     char[30] tmp = void;
-    char[] buf;
-    if (seed.length <= tmp.sizeof - 1)
-        buf = tmp;
-    else
-    {
-        buf = (cast(char*)alloca(seed.length + 1))[0 .. seed.length + 1]; // leave space for extra char
-        if (!buf.ptr)
-            return null; // no matches
-    }
+    auto sb = SmallBuffer!char(seed.length + 1, tmp[]);
+    char[] buf = sb[];
 
     int cost = int.max;
     searchFunctionType!dg p = null;
@@ -164,15 +158,8 @@ auto spellerY(alias dg)(const(char)[] seed, size_t index, out int cost)
      * space for an extra char for insertions
      */
     char[30] tmp = void;        // stack allocations are fastest
-    char[] buf;
-    if (seed.length <= tmp.sizeof - 1)
-        buf = tmp;
-    else
-    {
-        buf = (cast(char*)alloca(seed.length + 1))[0 .. seed.length + 1]; // leave space for extra char
-        if (!buf.ptr)
-            return null; // no matches
-    }
+    auto sb = SmallBuffer!char(seed.length + 1, tmp[]);
+    char[] buf = sb[];
     buf[0 .. index] = seed[0 .. index];
 
     cost = int.max;             // start with worst possible match

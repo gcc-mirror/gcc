@@ -44,6 +44,33 @@ package Ghost is
    --  Determine whether node Ghost_Ref appears within a Ghost-friendly context
    --  where Ghost entity Ghost_Id can safely reside.
 
+   procedure Check_Ghost_Context_In_Generic_Association
+     (Actual : Node_Id;
+      Formal : Entity_Id);
+   --  Check that if Actual contains references to ghost entities, generic
+   --  formal parameter Formal is ghost (SPARK RM 6.9(10)).
+
+   procedure Check_Ghost_Formal_Procedure_Or_Package
+     (N          : Node_Id;
+      Actual     : Entity_Id;
+      Formal     : Entity_Id;
+      Is_Default : Boolean := False);
+   --  Verify that if generic formal procedure (resp. package) Formal is ghost,
+   --  then Actual is not Empty and also a ghost procedure (resp. package)
+   --  (SPARK RM 6.9(13-14)). The error if any is located on N. If
+   --  Is_Default is False, N and Actual represent the actual parameter in an
+   --  instantiation. Otherwise, they represent the default subprogram of a
+   --  formal subprogram declaration.
+
+   procedure Check_Ghost_Formal_Variable
+     (Actual     : Node_Id;
+      Formal     : Entity_Id;
+      Is_Default : Boolean := False);
+   --  Verify that if Formal (either an IN OUT generic formal parameter, or an
+   --  IN generic formal parameter of access-to-variable type) is ghost, then
+   --  Actual is a ghost object (SPARK RM 6.9(13-14)). Is_Default is True when
+   --  Actual is the default expression of the formal object declaration.
+
    procedure Check_Ghost_Overriding
      (Subp            : Entity_Id;
       Overridden_Subp : Entity_Id);

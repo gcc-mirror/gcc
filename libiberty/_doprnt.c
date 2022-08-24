@@ -55,7 +55,6 @@ Foundation, 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
 	 putc(CHAR, stream); \
 	 ptr++; \
 	 total_printed++; \
-	 continue; \
      } while (0)
 
 #define PRINT_TYPE(TYPE) \

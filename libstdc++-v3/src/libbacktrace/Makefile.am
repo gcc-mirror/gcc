@@ -35,9 +35,12 @@ toolexeclib_LTLIBRARIES = libstdc++_libbacktrace.la
 
 ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 
-AM_CPPFLAGS = -I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
+# This will be used instead of the common AM_CPPFLAGS from fragment.am
+libstdc___libbacktrace_la_CPPFLAGS = \
+	-I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
 	-I ../../../libgcc -I .. -I $(top_srcdir) \
 	-I $(top_srcdir)/../libbacktrace \
+	-I $(top_srcdir)/../libiberty \
 	-include $(top_srcdir)/src/libbacktrace/backtrace-rename.h \
 	$(BACKTRACE_CPPFLAGS)
 
@@ -50,41 +53,54 @@ AM_CFLAGS += $(EXTRA_CFLAGS)
 AM_CXXFLAGS = $(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 
+obj_prefix = std_stacktrace
+
+# Each FILE.c in SOURCES will be compiled to SHORTNAME-FILE.o
+libstdc___libbacktrace_la_SHORTNAME = $(obj_prefix)
+
 libstdc___libbacktrace_la_SOURCES = \
-	../../../libbacktrace/backtrace.h \
-	../../../libbacktrace/atomic.c \
-	../../../libbacktrace/dwarf.c \
-	../../../libbacktrace/fileline.c \
-	../../../libbacktrace/internal.h \
-	../../../libbacktrace/posix.c \
-	../../../libbacktrace/sort.c \
-	../../../libbacktrace/simple.c \
-	../../../libbacktrace/state.c \
-	../../../libiberty/cp-demangle.c
+	atomic.c \
+	dwarf.c \
+	fileline.c \
+	posix.c \
+	sort.c \
+	simple.c \
+	state.c \
+	cp-demangle.c
 
 FORMAT_FILES = \
-	../../../libbacktrace/elf.c \
-	../../../libbacktrace/unknown.c
+	elf.c \
+	unknown.c
 
 VIEW_FILES = \
-	../../../libbacktrace/read.c \
-	../../../libbacktrace/mmapio.c
+	read.c \
+	mmapio.c
 
 ALLOC_FILES = \
-	../../../libbacktrace/alloc.c \
-	../../../libbacktrace/mmap.c
+	alloc.c \
+	mmap.c
 
 EXTRA_libstdc___libbacktrace_la_SOURCES = \
 	$(FORMAT_FILES) \
 	$(VIEW_FILES) \
 	$(ALLOC_FILES)
 
+# These three files are chosen by configure and added to the link.
+# We need the SHORTNAME- prefix so that they use the custom CPPFLAGS above.
 libstdc___libbacktrace_la_LIBADD = \
-	$(FORMAT_FILE) \
-	$(VIEW_FILE) \
-	$(ALLOC_FILE)
+	$(obj_prefix)-$(FORMAT_FILE) \
+	$(obj_prefix)-$(VIEW_FILE) \
+	$(obj_prefix)-$(ALLOC_FILE)
 
 libstdc___libbacktrace_la_DEPENDENCIES = $(libstdc___libbacktrace_la_LIBADD)
+
+# Use symlinks for the sources
+
+%.c: ../../../libbacktrace/%.c
+	$(LN_S) $< $@
+
+cp-demangle.c: ../../../libiberty/cp-demangle.c
+	$(LN_S) $< $@
 
 LTCOMPILE = \
 	$(LIBTOOL) --tag CC --tag disable-shared \

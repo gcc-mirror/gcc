@@ -100,6 +100,11 @@ package Err_Vars is
    --
    --  Some of these are initialized below, because they are read before being
    --  set by clients.
+   --
+   --  Would it be desirable to use arrays (with element renamings) here
+   --  instead of individual variables, at least for the Error_Msg_Name_N and
+   --  Error_Msg_Node_N ??? This would allow simplifying existing code in some
+   --  cases (see errout.adb).
 
    Error_Msg_Col : Column_Number;
    --  Column for @ insertion character in message
@@ -116,6 +121,9 @@ package Err_Vars is
    Error_Msg_Name_1 : Name_Id;
    Error_Msg_Name_2 : Name_Id := No_Name;
    Error_Msg_Name_3 : Name_Id := No_Name;
+   Error_Msg_Name_4 : Name_Id := No_Name;
+   Error_Msg_Name_5 : Name_Id := No_Name;
+   Error_Msg_Name_6 : Name_Id := No_Name;
    --  Name_Id values for % insertion characters in message
 
    Error_Msg_File_1 : File_Name_Type;
@@ -129,6 +137,10 @@ package Err_Vars is
 
    Error_Msg_Node_1 : Node_Id;
    Error_Msg_Node_2 : Node_Id := Empty;
+   Error_Msg_Node_3 : Node_Id := Empty;
+   Error_Msg_Node_4 : Node_Id := Empty;
+   Error_Msg_Node_5 : Node_Id := Empty;
+   Error_Msg_Node_6 : Node_Id := Empty;
    --  Node_Id values for & insertion characters in message
 
    Error_Msg_Warn : Boolean;

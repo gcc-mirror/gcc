@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-slp2-details" } */
+/* { dg-options "-O3 -mtune=generic -fdump-tree-slp2-details" } */
 
 typedef struct uint64_pair uint64_pair_t ;
 struct uint64_pair
@@ -18,5 +18,4 @@ uint64_pair_t pair(int num)
   return p ;
 }
 
-/* See PR92266 for the XFAIL.  */
-/* { dg-final { scan-tree-dump-not "optimized: basic block" "slp2" { xfail ilp32 } } } */
+/* { dg-final { scan-tree-dump-not "optimized: basic block" "slp2" } } */

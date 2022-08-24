@@ -1,3 +1,131 @@
+2022-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106645
+	* include/cpplib.h (struct cpp_options): Implement
+	P2290R3 - Delimited escape sequences.  Add delimite_escape_seqs
+	member.
+	* init.cc (struct lang_flags): Likewise.
+	(lang_defaults): Add delim column.
+	(cpp_set_lang): Copy over delimite_escape_seqs.
+	* charset.cc (extend_char_range): New function.
+	(_cpp_valid_ucn): Use it.  Handle delimited escape sequences.
+	(convert_hex): Likewise.
+	(convert_oct): Likewise.
+	(convert_ucn): Use extend_char_range.
+	(convert_escape): Call convert_oct even for \o.
+	(_cpp_interpret_identifier): Handle delimited escape sequences.
+	* lex.cc (get_bidi_ucn_1): Likewise.  Add end argument, fill it in.
+	(get_bidi_ucn): Adjust get_bidi_ucn_1 caller.  Use end argument to
+	compute num_bytes.
+
+2022-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add warning_directive.
+	* init.cc (struct lang_flags, lang_defaults): Add
+	warning_directive.
+	* directives.cc (DIRECTIVE_TABLE): Mark #warning as STDC2X not
+	EXTENSION.
+	(directive_diagnostics): Diagnose #warning with -Wc11-c2x-compat,
+	or with -pedantic for a standard not supporting #warning.
+
+2022-08-16  Tom Honermann  <tom@honermann.net>
+
+	PR c++/106423
+	* include/cpplib.h (cpp_warning_reason): Add CPP_W_CXX20_COMPAT.
+	* init.cc (cpp_create_reader): Add cpp_warn_cxx20_compat.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	PR preprocessor/106426
+	* charset.cc (narrow_str_to_charconst): Set signedness of CPP_UTF8CHAR
+	literals based on unsigned_utf8char.
+	* include/cpplib.h (cpp_options): Add unsigned_utf8char.
+	* init.cc (cpp_create_reader): Initialize unsigned_utf8char.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/line-map.h (label_text::take_or_copy): Remove.
+	(label_text::moved_from): Rename to release.
+	(label_text::m_buffer, label_text::m_owned): Make private.
+	(label_text::get, label_text::is_owned): New accessors.
+
+2022-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/106272
+	* include/line-map.h (class label_text): Don't std::move in a return
+	statement.
+
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* directives.cc (destringize_and_run): Override the location of
+	the CPP_PRAGMA token from a _Pragma directive to the location of
+	the expansion point, as is done for the tokens lexed from it.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h: Include <utility>.
+	(class label_text): Delete maybe_free method in favor of a
+	destructor.  Add move ctor and assignment operator.  Add deletion
+	of the copy ctor and copy-assignment operator.  Rename field
+	m_caller_owned to m_owned.  Add std::move where necessary; add
+	moved_from member function.
+
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* ucnid.h: Regenerated for Unicode 14.0.
+
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Generated from updated Unicode data files.
+
+2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* expr.cc (_cpp_parse_expr): Handle CPP_PADDING by just another
+	token.
+
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* lex.cc: Replace uses of "FINAL" and "OVERRIDE" with "final" and
+	"override".
+
+2022-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (po/$(PACKAGE).pot): Also handle cpp_warning_at,
+	cpp_pedwarning_at and cpp_error_at.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/104147
+	* macro.cc (funlike_invocation_p): For padding prefer a token
+	with val.source non-NULL especially if it has PREV_WHITE set
+	on val.source->flags.  Add gcc_assert that CPP_PADDING tokens
+	don't have PREV_WHITE set in flags.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* directives.cc (destringize_and_run): Push &pfile->avoid_paste
+	instead of a copy of pfile->directive_result for the CPP_PADDING
+	case.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* include/cpplib.h (enum cpp_bidirectional_level): Add
+	bidirectional_ucn.  Set values explicitly.
+	* internal.h (cpp_reader): Adjust warn_bidi_p.
+	* lex.cc (maybe_warn_bidi_on_close): Don't warn about UCNs
+	unless UCN checking is on.
+	(maybe_warn_bidi_on_char): Likewise.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	* include/line-map.h (class line_maps): Re-arrange fields
+	to minimize padding.
+	(class rich_location): Likewise.
+	* line-map.cc (rich_location::rich_location): Adjust.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Rename .c names to .cc.

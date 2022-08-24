@@ -1,4 +1,4 @@
-// REQUIRED_ARGS: -o-
+// REQUIRED_ARGS: -o- -preview=dip1000
 
 void lazyfun(scope lazy int a) @nogc;
 

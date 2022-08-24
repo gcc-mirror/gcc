@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zba -mabi=ilp32 -O2" } */
+/* { dg-options "-march=rv32gc_zba -mabi=ilp32" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 long test_1(long a, long b)
 {

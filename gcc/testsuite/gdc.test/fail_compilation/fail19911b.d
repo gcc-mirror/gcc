@@ -1,4 +1,4 @@
-/* 
+/*
 DFLAGS:
 EXTRA_SOURCES: extra-files/minimal/object.d
 TEST_OUTPUT:

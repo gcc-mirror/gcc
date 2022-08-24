@@ -1309,7 +1309,10 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    compare_values (CONSTRUCTOR_NELTS);
+    {
+      compare_values (CLOBBER_KIND);
+      compare_values (CONSTRUCTOR_NELTS);
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     if (IDENTIFIER_LENGTH (t1) != IDENTIFIER_LENGTH (t2)
@@ -2101,8 +2104,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
       char r_str[27];
       enum ld_plugin_symbol_resolution r = (enum ld_plugin_symbol_resolution) 0;
       unsigned int j;
-      unsigned int lto_resolution_str_len
-	= sizeof (lto_resolution_str) / sizeof (char *);
+      unsigned int lto_resolution_str_len = ARRAY_SIZE (lto_resolution_str);
       res_pair rp;
 
       t = fscanf (resolution, "%u " HOST_WIDE_INT_PRINT_HEX_PURE
@@ -2704,6 +2706,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 {
   unsigned int i, last_file_ix;
   FILE *resolution;
+  unsigned resolution_objects = 0;
   int count = 0;
   struct lto_file_decl_data **decl_data;
   symtab_node *snode;
@@ -2726,18 +2729,14 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (resolution_file_name)
     {
       int t;
-      unsigned num_objects;
 
       resolution = fopen (resolution_file_name, "r");
       if (resolution == NULL)
 	fatal_error (input_location,
 		     "could not open symbol resolution file: %m");
 
-      t = fscanf (resolution, "%u", &num_objects);
+      t = fscanf (resolution, "%u", &resolution_objects);
       gcc_assert (t == 1);
-
-      /* True, since the plugin splits the archives.  */
-      gcc_assert (num_objects == nfiles);
     }
   symtab->state = LTO_STREAMING;
 
@@ -2806,7 +2805,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   lto_register_canonical_types_for_odr_types ();
 
   if (resolution_file_name)
-    fclose (resolution);
+    {
+      /* True, since the plugin splits the archives.  */
+      gcc_assert (resolution_objects == nfiles);
+      fclose (resolution);
+    }
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))

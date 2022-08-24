@@ -645,22 +645,21 @@
 ;;   is made that makes conditional execution required.
 
 (define_attr "tune" "none,arc600,arc7xx,arc700_4_2_std,arc700_4_2_xmac, \
-core_3, archs4x, archs4xd, archs4xd_slow"
+archs4x, archs4xd"
   (const
-   (cond [(symbol_ref "arc_tune == TUNE_ARC600")
+   (cond [(symbol_ref "arc_tune == ARC_TUNE_ARC600")
 	  (const_string "arc600")
 	  (symbol_ref "arc_tune == ARC_TUNE_ARC7XX")
 	  (const_string "arc7xx")
-	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_STD")
+	  (symbol_ref "arc_tune == ARC_TUNE_ARC700_4_2_STD")
 	  (const_string "arc700_4_2_std")
-	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_XMAC")
+	  (symbol_ref "arc_tune == ARC_TUNE_ARC700_4_2_XMAC")
 	  (const_string "arc700_4_2_xmac")
-	  (symbol_ref "arc_tune == ARC_TUNE_CORE_3")
-	  (const_string "core_3")
-	  (symbol_ref "arc_tune == TUNE_ARCHS4X")
+	  (ior (symbol_ref "arc_tune == ARC_TUNE_ARCHS4X")
+	       (symbol_ref "arc_tune == ARC_TUNE_ARCHS4X_REL31A"))
 	  (const_string "archs4x")
-	  (ior (symbol_ref "arc_tune == TUNE_ARCHS4XD")
-	       (symbol_ref "arc_tune == TUNE_ARCHS4XD_SLOW"))
+	  (ior (symbol_ref "arc_tune == ARC_TUNE_ARCHS4XD")
+	       (symbol_ref "arc_tune == ARC_TUNE_ARCHS4XD_SLOW"))
 	  (const_string "archs4xd")]
 	 (const_string "none"))))
 
@@ -671,11 +670,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 (define_attr "tune_dspmpy" "none, slow, fast"
   (const
-  (cond [(ior (symbol_ref "arc_tune == TUNE_ARCHS4X")
-	      (symbol_ref "arc_tune == TUNE_ARCHS4XD"))
+  (cond [(ior (symbol_ref "arc_tune == ARC_TUNE_ARCHS4X")
+	      (symbol_ref "arc_tune == ARC_TUNE_ARCHS4XD"))
 	 (const_string "fast")
-	 (symbol_ref "arc_tune == TUNE_ARCHS4XD_SLOW")
+	 (symbol_ref "arc_tune == ARC_TUNE_ARCHS4XD_SLOW")
 	 (const_string "slow")]
+	(const_string "none"))))
+
+(define_attr "tune_store" "none, normal, rel31a"
+  (const
+  (cond [(ior (symbol_ref "arc_tune == ARC_TUNE_ARCHS4X")
+	      (symbol_ref "arc_tune == ARC_TUNE_ARCHS4XD"))
+	 (const_string "normal")
+	 (symbol_ref "arc_tune == ARC_TUNE_ARCHS4X_REL31A")
+	 (const_string "rel31a")]
 	(const_string "none"))))
 
 ;; Move instructions.
@@ -1618,8 +1626,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		         (match_operand:SI 2 "nonmemory_operand" "")
  		         (match_operand:SI 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
-
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 (define_expand "movdicc"
   [(set (match_operand:DI 0 "dest_reg_operand" "")
@@ -1627,7 +1638,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		        (match_operand:DI 2 "nonmemory_operand" "")
 		        (match_operand:DI 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 
 (define_expand "movsfcc"
@@ -1636,7 +1651,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		      (match_operand:SF 2 "nonmemory_operand" "")
 		      (match_operand:SF 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "dest_reg_operand" "")
@@ -1644,7 +1663,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		      (match_operand:DF 2 "nonmemory_operand" "")
 		      (match_operand:DF 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 (define_insn "*movsicc_insn"
   [(set (match_operand:SI 0 "dest_reg_operand" "=w,w")
@@ -4666,7 +4689,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   /* Keep this message in sync with the one in arc.cc:arc_expand_builtin,
      because *.md files do not get scanned by exgettext.  */
   fatal_error (input_location,
-	       \"operand to trap_s should be an unsigned 6-bit value\");
+	       \"operand to %<trap_s%> should be an unsigned 6-bit value\");
 }
   [(set_attr "length" "2")
   (set_attr "type" "misc")])

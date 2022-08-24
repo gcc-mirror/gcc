@@ -68,6 +68,7 @@ private:
 				     const char *);
 
   void handle_implied_ext (riscv_subset_t *);
+  void handle_combine_ext ();
 
 public:
   ~riscv_subset_list ();

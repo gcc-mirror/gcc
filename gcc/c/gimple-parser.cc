@@ -330,13 +330,17 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
 		  }
 		gsi_remove (&gsi, true);
 	      }
-	  /* Fill SSA name gaps, putting them on the freelist.  */
+	  /* Fill SSA name gaps, putting them on the freelist and diagnose
+	     SSA names without definition.  */
 	  for (unsigned i = 1; i < num_ssa_names; ++i)
 	    if (!ssa_name (i))
 	      {
 		tree name = make_ssa_name_fn (cfun, integer_type_node, NULL, i);
 		release_ssa_name_fn (cfun, name);
 	      }
+	    else if (!SSA_NAME_DEF_STMT (ssa_name (i)))
+	      error ("SSA name %qE with version %d has no definition",
+		     ssa_name (i), i);
 	  /* No explicit virtual operands (yet).  */
 	  bitmap_obstack_initialize (NULL);
 	  update_ssa (TODO_update_ssa_only_virtuals);
@@ -860,9 +864,10 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
   if (lhs.value != error_mark_node
       && rhs.value != error_mark_node)
     {
-      /* If we parsed a comparison and the next token is a '?' then
-         parse a conditional expression.  */
-      if (COMPARISON_CLASS_P (rhs.value)
+      /* If we parsed a comparison or an identifier and the next token
+	 is a '?' then parse a conditional expression.  */
+      if ((COMPARISON_CLASS_P (rhs.value)
+	   || SSA_VAR_P (rhs.value))
 	  && c_parser_next_token_is (parser, CPP_QUERY))
 	{
 	  struct c_expr trueval, falseval;
@@ -874,7 +879,10 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 	  if (trueval.value == error_mark_node
 	      || falseval.value == error_mark_node)
 	    return;
-	  rhs.value = build3_loc (loc, COND_EXPR, TREE_TYPE (trueval.value),
+	  rhs.value = build3_loc (loc,
+				  VECTOR_TYPE_P (TREE_TYPE (rhs.value))
+				  ? VEC_COND_EXPR : COND_EXPR,
+				  TREE_TYPE (trueval.value),
 				  rhs.value, trueval.value, falseval.value);
 	}
       if (get_gimple_rhs_class (TREE_CODE (rhs.value)) == GIMPLE_INVALID_RHS)
@@ -1792,7 +1800,7 @@ c_parser_gimple_postfix_expression_after_primary (gimple_parser &parser,
 	    finish = c_parser_peek_token (parser)->get_finish ();
 	    c_parser_consume_token (parser);
 	    expr.value = build_component_ref (op_loc, expr.value, ident,
-					      comp_loc);
+					      comp_loc, UNKNOWN_LOCATION);
 	    set_c_expr_source_range (&expr, start, finish);
 	    expr.original_code = ERROR_MARK;
 	    if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -1840,7 +1848,8 @@ c_parser_gimple_postfix_expression_after_primary (gimple_parser &parser,
 	    expr.value = build_component_ref (op_loc,
 					      build_simple_mem_ref_loc
 					        (op_loc, expr.value),
-					      ident, comp_loc);
+					      ident, comp_loc,
+					      expr.get_location ());
 	    set_c_expr_source_range (&expr, start, finish);
 	    expr.original_code = ERROR_MARK;
 	    if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -2057,16 +2066,34 @@ c_parser_gimple_declaration (gimple_parser &parser)
       /* Handle SSA name decls specially, they do not go into the identifier
          table but we simply build the SSA name for later lookup.  */
       unsigned version, ver_offset;
-      if (declarator->kind == cdk_id
-	  && is_gimple_reg_type (specs->type)
-	  && c_parser_parse_ssa_name_id (declarator->u.id.id,
+      /* Handle SSA pointer declarations in a very simplistic ways, we
+	 probably would like to call grokdeclarator in a special mode to
+	 just build the type of the decl - start_decl already pushes
+	 the identifier to the bindings for lookup, something we do not
+	 want.  */
+      struct c_declarator *id_declarator = declarator;
+      while (id_declarator->kind == cdk_pointer)
+	id_declarator = id_declarator->declarator;
+      if (id_declarator->kind == cdk_id
+	  && (declarator->kind == cdk_pointer
+	      || is_gimple_reg_type (specs->type))
+	  && c_parser_parse_ssa_name_id (id_declarator->u.id.id,
 					 &version, &ver_offset)
 	  /* The following restricts it to unnamed anonymous SSA names
 	     which fails parsing of named ones in dumps (we could
 	     decide to not dump their name for -gimple).  */
 	  && ver_offset == 0)
-	c_parser_parse_ssa_name (parser, declarator->u.id.id, specs->type,
-				 version, ver_offset);
+	{
+	  struct c_declarator *p = declarator;
+	  tree type = specs->type;
+	  while (p->kind == cdk_pointer)
+	    {
+	      type = build_pointer_type (type);
+	      p = p->declarator;
+	    }
+	  c_parser_parse_ssa_name (parser, id_declarator->u.id.id, type,
+				   version, ver_offset);
+	}
       else
 	{
 	  tree postfix_attrs = NULL_TREE;

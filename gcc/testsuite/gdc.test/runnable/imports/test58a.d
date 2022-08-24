@@ -4,4 +4,3 @@ void foo(T)() {
    long[] a;
    a[] = -a[];
 }
-

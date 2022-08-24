@@ -50,7 +50,7 @@ init_msvc (void)
   core_stdc_stderr = stderr;
 
 #if __MSVCRT_VERSION__ >= 0xE00
-  msvcUsedUCRT = 1;
+  msvcUsesUCRT = 1;
 #endif
 }
 

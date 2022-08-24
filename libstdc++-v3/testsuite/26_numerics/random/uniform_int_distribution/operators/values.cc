@@ -24,6 +24,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -32,15 +40,15 @@ void test01()
 
   std::uniform_int_distribution<> uid1(0, 2);
   auto buid1 = std::bind(uid1, eng);
-  testDiscreteDist(buid1, [](int n) { return uniform_int_pdf(n, 0, 2); } );
+  testDiscreteDist<ARGS>(buid1, [](int n) { return uniform_int_pdf(n, 0, 2); } );
 
   std::uniform_int_distribution<> uid2(3, 7);
   auto buid2 = std::bind(uid2, eng);
-  testDiscreteDist(buid2, [](int n) { return uniform_int_pdf(n, 3, 7); } );
+  testDiscreteDist<ARGS>(buid2, [](int n) { return uniform_int_pdf(n, 3, 7); } );
 
   std::uniform_int_distribution<> uid3(1, 20);
   auto buid3 = std::bind(uid3, eng);
-  testDiscreteDist(buid3, [](int n) { return uniform_int_pdf(n, 1, 20); } );
+  testDiscreteDist<ARGS>(buid3, [](int n) { return uniform_int_pdf(n, 1, 20); } );
 }
 
 int main()

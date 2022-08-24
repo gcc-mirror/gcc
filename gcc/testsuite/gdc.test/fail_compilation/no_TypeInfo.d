@@ -1,4 +1,4 @@
-/* 
+/*
 DFLAGS:
 REQUIRED_ARGS: -c
 EXTRA_SOURCES: extra-files/minimal/object.d
@@ -13,4 +13,3 @@ void test()
     int i;
     auto ti = typeid(i);
 }
-

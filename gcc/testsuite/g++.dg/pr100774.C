@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-forwprop --param=evrp-mode=ranger -fcompare-debug  " } */
+/* { dg-options "-O2 -fno-tree-forwprop -fcompare-debug  " } */
 
 extern void __attribute__((noreturn)) error();
 

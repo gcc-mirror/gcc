@@ -118,6 +118,13 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
       return False;
    end Contains;
 
+   --------------------
+   -- Empty_Sequence --
+   --------------------
+
+   function Empty_Sequence return Sequence is
+      ((others => <>));
+
    ------------------
    -- Equal_Except --
    ------------------

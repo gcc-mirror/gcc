@@ -370,7 +370,7 @@ is
 
    function Element
      (Container : Vector;
-      Index     : Index_Type) return Element_Type
+      Index     : Extended_Index) return Element_Type
    is
    begin
       if Index > Container.Last then

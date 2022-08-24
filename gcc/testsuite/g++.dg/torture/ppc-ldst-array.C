@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-skip-if "do not override mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8" } */
+/* { dg-options "-mdejagnu-cpu=power8" } */
 
 /* When compiled with C++, this code was breaking because of different
    tree representations of arrays between C and C++.  */

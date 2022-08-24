@@ -2552,7 +2552,7 @@ scan_libraries (const char *prog_name)
 
   pex = pex_init (PEX_USE_PIPES, "collect2", NULL);
   if (pex == NULL)
-    fatal_error (input_location, "pex_init failed: %m");
+    fatal_error (input_location, "%<pex_init%> failed: %m");
 
   errmsg = pex_run (pex, 0, ldd_file_name, real_ldd_argv, NULL, NULL, &err);
   if (errmsg != NULL)

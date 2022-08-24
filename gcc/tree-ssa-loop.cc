@@ -67,9 +67,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_loop_optimize; }
+  bool gate (function *) final override { return flag_tree_loop_optimize; }
 
-  virtual unsigned int execute (function *fn);
+  unsigned int execute (function *fn) final override;
 }; // class pass_fix_loops
 
 unsigned int
@@ -134,7 +134,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fn) { return gate_loop (fn); }
+  bool gate (function *fn) final override { return gate_loop (fn); }
 
 }; // class pass_tree_loop
 
@@ -189,7 +189,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fn) { return gate_oacc_kernels (fn); }
+  bool gate (function *fn) final override { return gate_oacc_kernels (fn); }
 
 }; // class pass_oacc_kernels
 
@@ -226,7 +226,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return (optimize
 	    && flag_openacc
@@ -303,7 +303,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fn) { return !gate_loop (fn); }
+  bool gate (function *fn) final override { return !gate_loop (fn); }
 
 }; // class pass_tree_no_loop
 
@@ -341,7 +341,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_tree_loop_init
 
@@ -395,8 +395,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_scev_cprop; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_tree_scev_cprop; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_scev_cprop
 
@@ -446,8 +446,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_ivopts != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_ivopts != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_iv_optimize
 
@@ -503,7 +503,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return tree_ssa_loop_done (); }
+  unsigned int execute (function *) final override
+  {
+    return tree_ssa_loop_done ();
+  }
 
 }; // class pass_tree_loop_done
 

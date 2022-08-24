@@ -376,10 +376,10 @@ public:
   ipa_sra_function_summaries (symbol_table *table, bool ggc):
     function_summary<isra_func_summary *> (table, ggc) { }
 
-  virtual void duplicate (cgraph_node *, cgraph_node *,
-			  isra_func_summary *old_sum,
-			  isra_func_summary *new_sum);
-  virtual void insert (cgraph_node *, isra_func_summary *);
+  void duplicate (cgraph_node *, cgraph_node *,
+		  isra_func_summary *old_sum,
+		  isra_func_summary *new_sum) final override;
+  void insert (cgraph_node *, isra_func_summary *) final override;
 };
 
 /* Hook that is called by summary when a node is duplicated.  */
@@ -458,9 +458,9 @@ public:
     call_summary<isra_call_summary *> (table) { }
 
   /* Duplicate info when an edge is cloned.  */
-  virtual void duplicate (cgraph_edge *, cgraph_edge *,
-			  isra_call_summary *old_sum,
-			  isra_call_summary *new_sum);
+  void duplicate (cgraph_edge *, cgraph_edge *,
+		  isra_call_summary *old_sum,
+		  isra_call_summary *new_sum) final override;
 };
 
 static ipa_sra_call_summaries *call_sums;
@@ -2493,10 +2493,10 @@ verify_splitting_accesses (cgraph_node *node, bool certain_must_exist)
 
       bool certain_access_present = !certain_must_exist;
       if (overlapping_certain_accesses_p (desc, &certain_access_present))
-	internal_error ("Function %qs, parameter %u, has IPA-SRA accesses "
+	internal_error ("function %qs, parameter %u, has IPA-SRA accesses "
 			"which overlap", node->dump_name (), pidx);
       if (!certain_access_present)
-	internal_error ("Function %s, parameter %u, is used but does not "
+	internal_error ("function %qs, parameter %u, is used but does not "
 			"have any certain IPA-SRA access",
 			node->dump_name (), pidx);
     }
@@ -2874,7 +2874,7 @@ struct caller_issues
   bool thunk;
   /* Call site with no available information.  */
   bool unknown_callsite;
-  /* Call from outside the the candidate's comdat group.  */
+  /* Call from outside the candidate's comdat group.  */
   bool call_from_outside_comdat;
   /* There is a bit-aligned load into one of non-gimple-typed arguments. */
   bool bit_aligned_aggregate_argument;
@@ -4049,14 +4049,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* TODO: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
       return (flag_ipa_sra && optimize);
     }
 
-  virtual unsigned int execute (function *) { return ipa_sra_analysis (); }
+  unsigned int execute (function *)  final override
+  {
+    return ipa_sra_analysis ();
+  }
 
 }; // class pass_ipa_sra
 

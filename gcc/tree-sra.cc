@@ -1667,7 +1667,18 @@ build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 static tree
 build_reconstructed_reference (location_t, tree base, struct access *model)
 {
-  tree expr = model->expr, prev_expr = NULL;
+  tree expr = model->expr;
+  /* We have to make sure to start just below the outermost union.  */
+  tree start_expr = expr;
+  while (handled_component_p (expr))
+    {
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == UNION_TYPE)
+	start_expr = expr;
+      expr = TREE_OPERAND (expr, 0);
+    }
+
+  expr = start_expr;
+  tree prev_expr = NULL_TREE;
   while (!types_compatible_p (TREE_TYPE (expr), TREE_TYPE (base)))
     {
       if (!handled_component_p (expr))
@@ -4270,32 +4281,31 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       sra_stats.exprs++;
     }
 
-  if (modify_this_stmt)
+  if (modify_this_stmt
+      && !useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
     {
+      /* If we can avoid creating a VIEW_CONVERT_EXPR, then do so.
+	 ??? This should move to fold_stmt which we simply should
+	 call after building a VIEW_CONVERT_EXPR here.  */
+      if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
+	  && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (lhs)) == racc->reverse
+	  && !contains_bitfld_component_ref_p (lhs))
+	{
+	  lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
+	  gimple_assign_set_lhs (stmt, lhs);
+	}
+      else if (lacc
+	       && AGGREGATE_TYPE_P (TREE_TYPE (rhs))
+	       && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (rhs)) == lacc->reverse
+	       && !contains_vce_or_bfcref_p (rhs))
+	rhs = build_ref_for_model (loc, rhs, 0, lacc, gsi, false);
+
       if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	{
-	  /* If we can avoid creating a VIEW_CONVERT_EXPR do so.
-	     ???  This should move to fold_stmt which we simply should
-	     call after building a VIEW_CONVERT_EXPR here.  */
-	  if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
-	      && !contains_bitfld_component_ref_p (lhs))
-	    {
-	      lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
-	      gimple_assign_set_lhs (stmt, lhs);
-	    }
-	  else if (lacc
-		   && AGGREGATE_TYPE_P (TREE_TYPE (rhs))
-		   && !contains_vce_or_bfcref_p (rhs))
-	    rhs = build_ref_for_model (loc, rhs, 0, lacc, gsi, false);
-
-	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
-	    {
-	      rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (lhs),
-				     rhs);
-	      if (is_gimple_reg_type (TREE_TYPE (lhs))
-		  && TREE_CODE (lhs) != SSA_NAME)
-		force_gimple_rhs = true;
-	    }
+	  rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
+	  if (is_gimple_reg_type (TREE_TYPE (lhs))
+	      && TREE_CODE (lhs) != SSA_NAME)
+	    force_gimple_rhs = true;
 	}
     }
 
@@ -4744,8 +4754,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_intra_sra (); }
-  virtual unsigned int execute (function *) { return early_intra_sra (); }
+  bool gate (function *) final override { return gate_intra_sra (); }
+  unsigned int execute (function *) final override
+  {
+    return early_intra_sra ();
+  }
 
 }; // class pass_sra_early
 
@@ -4780,8 +4793,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_intra_sra (); }
-  virtual unsigned int execute (function *) { return late_intra_sra (); }
+  bool gate (function *) final override { return gate_intra_sra (); }
+  unsigned int execute (function *) final override { return late_intra_sra (); }
 
 }; // class pass_sra
 

@@ -19,8 +19,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VALL_F16MOV 0 "nonimmediate_operand")
-	(match_operand:VALL_F16MOV 1 "general_operand"))]
+  [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
+	(match_operand:VALL_F16 1 "general_operand"))]
   "TARGET_SIMD"
   "
   /* Force the operand into a register if it is not an
@@ -50,8 +50,8 @@
 )
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VALL 0 "nonimmediate_operand")
-        (match_operand:VALL 1 "general_operand"))]
+  [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
+        (match_operand:VALL_F16 1 "general_operand"))]
   "TARGET_SIMD && !STRICT_ALIGNMENT"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
@@ -272,7 +272,7 @@
 
 (define_expand "@aarch64_split_simd_mov<mode>"
   [(set (match_operand:VQMOV 0)
-        (match_operand:VQMOV 1))]
+	(match_operand:VQMOV 1))]
   "TARGET_SIMD"
   {
     rtx dst = operands[0];
@@ -280,23 +280,22 @@
 
     if (GP_REGNUM_P (REGNO (src)))
       {
-        rtx src_low_part = gen_lowpart (<VHALF>mode, src);
-        rtx src_high_part = gen_highpart (<VHALF>mode, src);
+	rtx src_low_part = gen_lowpart (<VHALF>mode, src);
+	rtx src_high_part = gen_highpart (<VHALF>mode, src);
+	rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
 
-        emit_insn
-          (gen_move_lo_quad_<mode> (dst, src_low_part));
-        emit_insn
-          (gen_move_hi_quad_<mode> (dst, src_high_part));
+	emit_move_insn (dst_low_part, src_low_part);
+	emit_insn (gen_aarch64_combine<Vhalf> (dst, dst_low_part,
+					       src_high_part));
       }
-
     else
       {
-        rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
-        rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
+	rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
+	rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
 	rtx lo = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
 	rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-        emit_insn (gen_aarch64_get_half<mode> (dst_low_part, src, lo));
-        emit_insn (gen_aarch64_get_half<mode> (dst_high_part, src, hi));
+	emit_insn (gen_aarch64_get_half<mode> (dst_low_part, src, lo));
+	emit_insn (gen_aarch64_get_half<mode> (dst_high_part, src, hi));
       }
     DONE;
   }
@@ -556,17 +555,17 @@
 ;; remainder.  Because of this, expand early.
 (define_expand "cml<fcmac1><conj_op><mode>4"
   [(set (match_operand:VHSDF 0 "register_operand")
-	(plus:VHSDF (match_operand:VHSDF 1 "register_operand")
-		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand")
-				   (match_operand:VHSDF 3 "register_operand")]
-				   FCMLA_OP)))]
+	(plus:VHSDF (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")
+				   (match_operand:VHSDF 2 "register_operand")]
+				   FCMLA_OP)
+		    (match_operand:VHSDF 3 "register_operand")))]
   "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_aarch64_fcmla<rotsplit1><mode> (tmp, operands[1],
-						 operands[3], operands[2]));
+  emit_insn (gen_aarch64_fcmla<rotsplit1><mode> (tmp, operands[3],
+						 operands[2], operands[1]));
   emit_insn (gen_aarch64_fcmla<rotsplit2><mode> (operands[0], tmp,
-						 operands[3], operands[2]));
+						 operands[2], operands[1]));
   DONE;
 })
 
@@ -1039,7 +1038,7 @@
   [(set (match_operand:VALL_F16 0 "register_operand" "=w,w,w")
 	(vec_merge:VALL_F16
 	    (vec_duplicate:VALL_F16
-		(match_operand:<VEL> 1 "aarch64_simd_general_operand" "w,?r,Utv"))
+		(match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand" "w,?r,Utv"))
 	    (match_operand:VALL_F16 3 "register_operand" "0,0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i,i")))]
   "TARGET_SIMD"
@@ -1378,7 +1377,7 @@
 
 (define_expand "vec_set<mode>"
   [(match_operand:VALL_F16 0 "register_operand")
-   (match_operand:<VEL> 1 "register_operand")
+   (match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand")
    (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
   {
@@ -1580,102 +1579,6 @@
 ;; What that means, is that the RTL descriptions of the below patterns
 ;; need to change depending on endianness.
 
-;; Move to the low architectural bits of the register.
-;; On little-endian this is { operand, zeroes }
-;; On big-endian this is { zeroes, operand }
-
-(define_insn "move_lo_quad_internal_<mode>"
-  [(set (match_operand:VQMOV 0 "register_operand" "=w,w,w")
-	(vec_concat:VQMOV
-	  (match_operand:<VHALF> 1 "register_operand" "w,r,r")
-	  (match_operand:<VHALF> 2 "aarch64_simd_or_scalar_imm_zero")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "@
-   dup\\t%d0, %1.d[0]
-   fmov\\t%d0, %1
-   dup\\t%d0, %1"
-  [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
-   (set_attr "length" "4")
-   (set_attr "arch" "simd,fp,simd")]
-)
-
-(define_insn "move_lo_quad_internal_be_<mode>"
-  [(set (match_operand:VQMOV 0 "register_operand" "=w,w,w")
-	(vec_concat:VQMOV
-	  (match_operand:<VHALF> 2 "aarch64_simd_or_scalar_imm_zero")
-	  (match_operand:<VHALF> 1 "register_operand" "w,r,r")))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "@
-   dup\\t%d0, %1.d[0]
-   fmov\\t%d0, %1
-   dup\\t%d0, %1"
-  [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
-   (set_attr "length" "4")
-   (set_attr "arch" "simd,fp,simd")]
-)
-
-(define_expand "move_lo_quad_<mode>"
-  [(match_operand:VQMOV 0 "register_operand")
-   (match_operand:<VHALF> 1 "register_operand")]
-  "TARGET_SIMD"
-{
-  rtx zs = CONST0_RTX (<VHALF>mode);
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_move_lo_quad_internal_be_<mode> (operands[0], operands[1], zs));
-  else
-    emit_insn (gen_move_lo_quad_internal_<mode> (operands[0], operands[1], zs));
-  DONE;
-}
-)
-
-;; Move operand1 to the high architectural bits of the register, keeping
-;; the low architectural bits of operand2.
-;; For little-endian this is { operand2, operand1 }
-;; For big-endian this is { operand1, operand2 }
-
-(define_insn "aarch64_simd_move_hi_quad_<mode>"
-  [(set (match_operand:VQMOV 0 "register_operand" "+w,w")
-        (vec_concat:VQMOV
-          (vec_select:<VHALF>
-                (match_dup 0)
-                (match_operand:VQMOV 2 "vect_par_cnst_lo_half" ""))
-	  (match_operand:<VHALF> 1 "register_operand" "w,r")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "@
-   ins\\t%0.d[1], %1.d[0]
-   ins\\t%0.d[1], %1"
-  [(set_attr "type" "neon_ins")]
-)
-
-(define_insn "aarch64_simd_move_hi_quad_be_<mode>"
-  [(set (match_operand:VQMOV 0 "register_operand" "+w,w")
-        (vec_concat:VQMOV
-	  (match_operand:<VHALF> 1 "register_operand" "w,r")
-          (vec_select:<VHALF>
-                (match_dup 0)
-                (match_operand:VQMOV 2 "vect_par_cnst_lo_half" ""))))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "@
-   ins\\t%0.d[1], %1.d[0]
-   ins\\t%0.d[1], %1"
-  [(set_attr "type" "neon_ins")]
-)
-
-(define_expand "move_hi_quad_<mode>"
- [(match_operand:VQMOV 0 "register_operand")
-  (match_operand:<VHALF> 1 "register_operand")]
- "TARGET_SIMD"
-{
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_aarch64_simd_move_hi_quad_be_<mode> (operands[0],
-		    operands[1], p));
-  else
-    emit_insn (gen_aarch64_simd_move_hi_quad_<mode> (operands[0],
-		    operands[1], p));
-  DONE;
-})
-
 ;; Narrowing operations.
 
 (define_insn "aarch64_xtn<mode>_insn_le"
@@ -1776,16 +1679,12 @@
 
 (define_expand "vec_pack_trunc_<mode>"
  [(match_operand:<VNARROWD> 0 "register_operand")
-  (match_operand:VDN 1 "register_operand")
-  (match_operand:VDN 2 "register_operand")]
+  (match_operand:VDN 1 "general_operand")
+  (match_operand:VDN 2 "general_operand")]
  "TARGET_SIMD"
 {
   rtx tempreg = gen_reg_rtx (<VDBL>mode);
-  int lo = BYTES_BIG_ENDIAN ? 2 : 1;
-  int hi = BYTES_BIG_ENDIAN ? 1 : 2;
-
-  emit_insn (gen_move_lo_quad_<Vdbl> (tempreg, operands[lo]));
-  emit_insn (gen_move_hi_quad_<Vdbl> (tempreg, operands[hi]));
+  emit_insn (gen_aarch64_vec_concat<mode> (tempreg, operands[1], operands[2]));
   emit_insn (gen_trunc<Vdbl><Vnarrowd>2 (operands[0], tempreg));
   DONE;
 })
@@ -3435,20 +3334,13 @@
 
 (define_expand "vec_pack_trunc_df"
   [(set (match_operand:V2SF 0 "register_operand")
-      (vec_concat:V2SF
-	(float_truncate:SF
-	    (match_operand:DF 1 "register_operand"))
-	(float_truncate:SF
-	    (match_operand:DF 2 "register_operand"))
-	  ))]
+	(vec_concat:V2SF
+	  (float_truncate:SF (match_operand:DF 1 "general_operand"))
+	  (float_truncate:SF (match_operand:DF 2 "general_operand"))))]
   "TARGET_SIMD"
   {
     rtx tmp = gen_reg_rtx (V2SFmode);
-    int lo = BYTES_BIG_ENDIAN ? 2 : 1;
-    int hi = BYTES_BIG_ENDIAN ? 1 : 2;
-
-    emit_insn (gen_move_lo_quad_v2df (tmp, operands[lo]));
-    emit_insn (gen_move_hi_quad_v2df (tmp, operands[hi]));
+    emit_insn (gen_aarch64_vec_concatdf (tmp, operands[1], operands[2]));
     emit_insn (gen_aarch64_float_truncate_lo_v2sf (operands[0], tmp));
     DONE;
   }
@@ -3493,20 +3385,6 @@
 
 ;; 'across lanes' add.
 
-(define_expand "reduc_plus_scal_<mode>"
-  [(match_operand:<VEL> 0 "register_operand")
-   (unspec:VDQ_I [(match_operand:VDQ_I 1 "register_operand")]
-	       UNSPEC_ADDV)]
-  "TARGET_SIMD"
-  {
-    rtx elt = aarch64_endian_lane_rtx (<MODE>mode, 0);
-    rtx scratch = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_aarch64_reduc_plus_internal<mode> (scratch, operands[1]));
-    emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
-    DONE;
-  }
-)
-
 (define_insn "aarch64_faddp<mode>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
@@ -3517,14 +3395,57 @@
   [(set_attr "type" "neon_fp_reduc_add_<stype><q>")]
 )
 
-(define_insn "aarch64_reduc_plus_internal<mode>"
- [(set (match_operand:VDQV 0 "register_operand" "=w")
-       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
+(define_insn "reduc_plus_scal_<mode>"
+ [(set (match_operand:<VEL> 0 "register_operand" "=w")
+       (unspec:<VEL> [(match_operand:VDQV 1 "register_operand" "w")]
 		    UNSPEC_ADDV))]
  "TARGET_SIMD"
  "add<VDQV:vp>\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
+
+(define_insn "reduc_plus_scal_v2si"
+ [(set (match_operand:SI 0 "register_operand" "=w")
+       (unspec:SI [(match_operand:V2SI 1 "register_operand" "w")]
+		    UNSPEC_ADDV))]
+ "TARGET_SIMD"
+ "addp\\t%0.2s, %1.2s, %1.2s"
+  [(set_attr "type" "neon_reduc_add")]
+)
+
+;; ADDV with result zero-extended to SI/DImode (for popcount).
+(define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
+ [(set (match_operand:GPI 0 "register_operand" "=w")
+       (zero_extend:GPI
+	(unspec:<VDQV_E:VEL> [(match_operand:VDQV_E 1 "register_operand" "w")]
+			     UNSPEC_ADDV)))]
+ "TARGET_SIMD"
+ "add<VDQV_E:vp>\\t%<VDQV_E:Vetype>0, %1.<VDQV_E:Vtype>"
+  [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
+)
+
+(define_insn "reduc_plus_scal_<mode>"
+ [(set (match_operand:<VEL> 0 "register_operand" "=w")
+       (unspec:<VEL> [(match_operand:V2F 1 "register_operand" "w")]
+		   UNSPEC_FADDV))]
+ "TARGET_SIMD"
+ "faddp\\t%<Vetype>0, %1.<Vtype>"
+  [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
+)
+
+(define_expand "reduc_plus_scal_v4sf"
+ [(set (match_operand:SF 0 "register_operand")
+       (unspec:SF [(match_operand:V4SF 1 "register_operand")]
+		    UNSPEC_FADDV))]
+ "TARGET_SIMD"
+{
+  rtx elt = aarch64_endian_lane_rtx (V4SFmode, 0);
+  rtx scratch = gen_reg_rtx (V4SFmode);
+  emit_insn (gen_aarch64_faddpv4sf (scratch, operands[1], operands[1]));
+  emit_insn (gen_aarch64_faddpv4sf (scratch, scratch, scratch));
+  emit_insn (gen_aarch64_get_lanev4sf (operands[0], scratch, elt));
+  DONE;
+})
 
 (define_insn "aarch64_<su>addlv<mode>"
  [(set (match_operand:<VWIDE_S> 0 "register_operand" "=w")
@@ -3543,49 +3464,6 @@
  "<su>addlp\\t%0.<Vwhalf>, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
-
-;; ADDV with result zero-extended to SI/DImode (for popcount).
-(define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
- [(set (match_operand:GPI 0 "register_operand" "=w")
-       (zero_extend:GPI
-	(unspec:<VDQV_E:VEL> [(match_operand:VDQV_E 1 "register_operand" "w")]
-			     UNSPEC_ADDV)))]
- "TARGET_SIMD"
- "add<VDQV_E:vp>\\t%<VDQV_E:Vetype>0, %1.<VDQV_E:Vtype>"
-  [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
-)
-
-(define_insn "aarch64_reduc_plus_internalv2si"
- [(set (match_operand:V2SI 0 "register_operand" "=w")
-       (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- "addp\\t%0.2s, %1.2s, %1.2s"
-  [(set_attr "type" "neon_reduc_add")]
-)
-
-(define_insn "reduc_plus_scal_<mode>"
- [(set (match_operand:<VEL> 0 "register_operand" "=w")
-       (unspec:<VEL> [(match_operand:V2F 1 "register_operand" "w")]
-		   UNSPEC_FADDV))]
- "TARGET_SIMD"
- "faddp\\t%<Vetype>0, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
-)
-
-(define_expand "reduc_plus_scal_v4sf"
- [(set (match_operand:SF 0 "register_operand")
-       (unspec:V4SF [(match_operand:V4SF 1 "register_operand")]
-		    UNSPEC_FADDV))]
- "TARGET_SIMD"
-{
-  rtx elt = aarch64_endian_lane_rtx (V4SFmode, 0);
-  rtx scratch = gen_reg_rtx (V4SFmode);
-  emit_insn (gen_aarch64_faddpv4sf (scratch, operands[1], operands[1]));
-  emit_insn (gen_aarch64_faddpv4sf (scratch, scratch, scratch));
-  emit_insn (gen_aarch64_get_lanev4sf (operands[0], scratch, elt));
-  DONE;
-})
 
 (define_insn "clrsb<mode>2"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
@@ -4351,92 +4229,175 @@
 (define_insn "load_pair_lanes<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w")
 	(vec_concat:<VDBL>
-	   (match_operand:VDC 1 "memory_operand" "Utq")
-	   (match_operand:VDC 2 "memory_operand" "m")))]
-  "TARGET_SIMD && !STRICT_ALIGNMENT
-   && rtx_equal_p (XEXP (operands[2], 0),
-		   plus_constant (Pmode,
-				  XEXP (operands[1], 0),
-				  GET_MODE_SIZE (<MODE>mode)))"
-  "ldr\\t%q0, %1"
-  [(set_attr "type" "neon_load1_1reg_q")]
+	   (match_operand:VDCSIF 1 "memory_operand" "Utq")
+	   (match_operand:VDCSIF 2 "memory_operand" "m")))]
+  "TARGET_SIMD
+   && aarch64_mergeable_load_pair_p (<VDBL>mode, operands[1], operands[2])"
+  "ldr\\t%<single_dtype>0, %1"
+  [(set_attr "type" "neon_load1_1reg<dblq>")]
 )
+
+;; This STP pattern is a partial duplicate of the general vec_concat patterns
+;; below.  The reason for having both of them is that the alternatives of
+;; the later patterns do not have consistent register preferences: the STP
+;; alternatives have no preference between GPRs and FPRs (and if anything,
+;; the GPR form is more natural for scalar integers) whereas the other
+;; alternatives *require* an FPR for operand 1 and prefer one for operand 2.
+;;
+;; Using "*" to hide the STP alternatives from the RA penalizes cases in
+;; which the destination was always memory.  On the other hand, expressing
+;; the true preferences makes GPRs seem more palatable than they really are
+;; for register destinations.
+;;
+;; Despite that, we do still want the general form to have STP alternatives,
+;; in order to handle cases where a register destination is spilled.
+;;
+;; The best compromise therefore seemed to be to have a dedicated STP
+;; pattern to catch cases in which the destination was always memory.
+;; This dedicated pattern must come first.
 
 (define_insn "store_pair_lanes<mode>"
   [(set (match_operand:<VDBL> 0 "aarch64_mem_pair_lanes_operand" "=Umn, Umn")
 	(vec_concat:<VDBL>
-	   (match_operand:VDC 1 "register_operand" "w, r")
-	   (match_operand:VDC 2 "register_operand" "w, r")))]
+	   (match_operand:VDCSIF 1 "register_operand" "w, r")
+	   (match_operand:VDCSIF 2 "register_operand" "w, r")))]
   "TARGET_SIMD"
   "@
-   stp\\t%d1, %d2, %y0
-   stp\\t%x1, %x2, %y0"
+   stp\t%<single_type>1, %<single_type>2, %y0
+   stp\t%<single_wx>1, %<single_wx>2, %y0"
   [(set_attr "type" "neon_stp, store_16")]
+)
+
+;; Form a vector whose least significant half comes from operand 1 and whose
+;; most significant half comes from operand 2.  The register alternatives
+;; tie the least significant half to the same register as the destination,
+;; so that only the other half needs to be handled explicitly.  For the
+;; reasons given above, the STP alternatives use ? for constraints that
+;; the register alternatives either don't accept or themselves disparage.
+
+(define_insn "*aarch64_combine_internal<mode>"
+  [(set (match_operand:<VDBL> 0 "aarch64_reg_or_mem_pair_operand" "=w, w, w, Umn, Umn")
+	(vec_concat:<VDBL>
+	  (match_operand:VDCSIF 1 "register_operand" "0, 0, 0, ?w, ?r")
+	  (match_operand:VDCSIF 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, w, ?r")))]
+  "TARGET_SIMD
+   && !BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <VDBL>mode)
+       || register_operand (operands[2], <MODE>mode))"
+  "@
+   ins\t%0.<single_type>[1], %2.<single_type>[0]
+   ins\t%0.<single_type>[1], %<single_wx>2
+   ld1\t{%0.<single_type>}[1], %2
+   stp\t%<single_type>1, %<single_type>2, %y0
+   stp\t%<single_wx>1, %<single_wx>2, %y0"
+  [(set_attr "type" "neon_ins<dblq>, neon_from_gp<dblq>, neon_load1_one_lane<dblq>, neon_stp, store_16")]
+)
+
+(define_insn "*aarch64_combine_internal_be<mode>"
+  [(set (match_operand:<VDBL> 0 "aarch64_reg_or_mem_pair_operand" "=w, w, w, Umn, Umn")
+	(vec_concat:<VDBL>
+	  (match_operand:VDCSIF 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, ?w, ?r")
+	  (match_operand:VDCSIF 1 "register_operand" "0, 0, 0, ?w, ?r")))]
+  "TARGET_SIMD
+   && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <VDBL>mode)
+       || register_operand (operands[2], <MODE>mode))"
+  "@
+   ins\t%0.<single_type>[1], %2.<single_type>[0]
+   ins\t%0.<single_type>[1], %<single_wx>2
+   ld1\t{%0.<single_type>}[1], %2
+   stp\t%<single_type>2, %<single_type>1, %y0
+   stp\t%<single_wx>2, %<single_wx>1, %y0"
+  [(set_attr "type" "neon_ins<dblq>, neon_from_gp<dblq>, neon_load1_one_lane<dblq>, neon_stp, store_16")]
 )
 
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 
-(define_insn "@aarch64_combinez<mode>"
+(define_insn "*aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
 	(vec_concat:<VDBL>
-	  (match_operand:VDC 1 "general_operand" "w,?r,m")
-	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")))]
+	  (match_operand:VDCSIF 1 "nonimmediate_operand" "w,?r,m")
+	  (match_operand:VDCSIF 2 "aarch64_simd_or_scalar_imm_zero")))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "@
-   mov\\t%0.8b, %1.8b
-   fmov\t%d0, %1
-   ldr\\t%d0, %1"
+   fmov\\t%<single_type>0, %<single_type>1
+   fmov\t%<single_type>0, %<single_wx>1
+   ldr\\t%<single_type>0, %1"
   [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
    (set_attr "arch" "simd,fp,simd")]
 )
 
-(define_insn "@aarch64_combinez_be<mode>"
+(define_insn "*aarch64_combinez_be<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
-	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")
-	  (match_operand:VDC 1 "general_operand" "w,?r,m")))]
+	  (match_operand:VDCSIF 2 "aarch64_simd_or_scalar_imm_zero")
+	  (match_operand:VDCSIF 1 "nonimmediate_operand" "w,?r,m")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "@
-   mov\\t%0.8b, %1.8b
-   fmov\t%d0, %1
-   ldr\\t%d0, %1"
+   fmov\\t%<single_type>0, %<single_type>1
+   fmov\t%<single_type>0, %<single_wx>1
+   ldr\\t%<single_type>0, %1"
   [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
    (set_attr "arch" "simd,fp,simd")]
 )
 
-(define_expand "aarch64_combine<mode>"
-  [(match_operand:<VDBL> 0 "register_operand")
-   (match_operand:VDC 1 "register_operand")
-   (match_operand:VDC 2 "aarch64_simd_reg_or_zero")]
+;; Form a vector whose first half (in array order) comes from operand 1
+;; and whose second half (in array order) comes from operand 2.
+;; This operand order follows the RTL vec_concat operation.
+(define_expand "@aarch64_vec_concat<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand")
+	(vec_concat:<VDBL>
+	  (match_operand:VDCSIF 1 "general_operand")
+	  (match_operand:VDCSIF 2 "general_operand")))]
   "TARGET_SIMD"
 {
-  if (operands[2] == CONST0_RTX (<MODE>mode))
+  int lo = BYTES_BIG_ENDIAN ? 2 : 1;
+  int hi = BYTES_BIG_ENDIAN ? 1 : 2;
+
+  if (MEM_P (operands[1])
+      && MEM_P (operands[2])
+      && aarch64_mergeable_load_pair_p (<VDBL>mode, operands[1], operands[2]))
+    /* Use load_pair_lanes<mode>.  */
+    ;
+  else if (operands[hi] == CONST0_RTX (<MODE>mode))
     {
-      if (BYTES_BIG_ENDIAN)
-	emit_insn (gen_aarch64_combinez_be<mode> (operands[0], operands[1],
-						  operands[2]));
-      else
-	emit_insn (gen_aarch64_combinez<mode> (operands[0], operands[1],
-					       operands[2]));
+      /* Use *aarch64_combinez<mode>.  */
+      if (!nonimmediate_operand (operands[lo], <MODE>mode))
+	operands[lo] = force_reg (<MODE>mode, operands[lo]);
     }
   else
-    aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
+    {
+      /* Use *aarch64_combine_general<mode>.  */
+      operands[lo] = force_reg (<MODE>mode, operands[lo]);
+      if (!aarch64_simd_nonimmediate_operand (operands[hi], <MODE>mode))
+	{
+	  if (MEM_P (operands[hi]))
+	    {
+	      rtx addr = force_reg (Pmode, XEXP (operands[hi], 0));
+	      operands[hi] = replace_equiv_address (operands[hi], addr);
+	    }
+	  else
+	    operands[hi] = force_reg (<MODE>mode, operands[hi]);
+	}
+    }
+})
+
+;; Form a vector whose least significant half comes from operand 1 and whose
+;; most significant half comes from operand 2.  This operand order follows
+;; arm_neon.h vcombine* intrinsics.
+(define_expand "aarch64_combine<mode>"
+  [(match_operand:<VDBL> 0 "register_operand")
+   (match_operand:VDC 1 "general_operand")
+   (match_operand:VDC 2 "general_operand")]
+  "TARGET_SIMD"
+{
+  if (BYTES_BIG_ENDIAN)
+    std::swap (operands[1], operands[2]);
+  emit_insn (gen_aarch64_vec_concat<mode> (operands[0], operands[1],
+					   operands[2]));
   DONE;
 }
-)
-
-(define_expand "@aarch64_simd_combine<mode>"
-  [(match_operand:<VDBL> 0 "register_operand")
-   (match_operand:VDC 1 "register_operand")
-   (match_operand:VDC 2 "register_operand")]
-  "TARGET_SIMD"
-  {
-    emit_insn (gen_move_lo_quad_<Vdbl> (operands[0], operands[1]));
-    emit_insn (gen_move_hi_quad_<Vdbl> (operands[0], operands[2]));
-    DONE;
-  }
-[(set_attr "type" "multiple")]
 )
 
 ;; <su><addsub>l<q>.
@@ -8065,16 +8026,16 @@
 })
 
 ;; Extract a single-element 64-bit vector from one half of a 128-bit vector.
-(define_expand "vec_extractv2dfv1df"
-  [(match_operand:V1DF 0 "register_operand")
-   (match_operand:V2DF 1 "register_operand")
+(define_expand "vec_extract<mode><V1half>"
+  [(match_operand:<V1HALF> 0 "register_operand")
+   (match_operand:VQ_2E 1 "register_operand")
    (match_operand 2 "immediate_operand")]
   "TARGET_SIMD"
 {
-  /* V1DF is rarely used by other patterns, so it should be better to hide
-     it in a subreg destination of a normal DF op.  */
-  rtx scalar0 = gen_lowpart (DFmode, operands[0]);
-  emit_insn (gen_vec_extractv2dfdf (scalar0, operands[1], operands[2]));
+  /* V1DI and V1DF are rarely used by other patterns, so it should be better
+     to hide it in a subreg destination of a normal DI or DF op.  */
+  rtx scalar0 = gen_lowpart (<VHALF>mode, operands[0]);
+  emit_insn (gen_vec_extract<mode><Vhalf> (scalar0, operands[1], operands[2]));
   DONE;
 })
 

@@ -87,6 +87,8 @@ aligned_alloc (std::size_t al, std::size_t sz)
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
+  // Solaris requires al >= sizeof a word and QNX requires >= sizeof(void*)
+  // but they both provide posix_memalign, so will use the definition above.
   return memalign (al, sz);
 }
 #else // !HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN

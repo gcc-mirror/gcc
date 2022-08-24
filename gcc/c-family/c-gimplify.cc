@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "c-ubsan.h"
 #include "tree-nested.h"
+#include "context.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -552,6 +553,7 @@ c_genericize_control_r (tree *stmt_p, int *walk_subtrees, void *data)
 void
 c_genericize (tree fndecl)
 {
+  dump_file_info *dfi;
   FILE *dump_orig;
   dump_flags_t local_dump_flags;
   struct cgraph_node *cgn;
@@ -581,7 +583,9 @@ c_genericize (tree fndecl)
 				  do_warn_duplicated_branches_r, NULL);
 
   /* Dump the C-specific tree IR.  */
-  dump_orig = get_dump_info (TDI_original, &local_dump_flags);
+  dfi = g->get_dumps ()->get_dump_file_info (TDI_original);
+  dump_orig = dfi->pstream;
+  local_dump_flags = dfi->pflags;
   if (dump_orig)
     {
       fprintf (dump_orig, "\n;; Function %s",
@@ -703,18 +707,6 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	  *op1_p = unshare_expr (convert (unsigned_type_node, *op1_p));
 	break;
       }
-
-    case DECL_EXPR:
-      /* This is handled mostly by gimplify.cc, but we have to deal with
-	 not warning about int x = x; as it is a GCC extension to turn off
-	 this warning but only if warn_init_self is zero.  */
-      if (VAR_P (DECL_EXPR_DECL (*expr_p))
-	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
-	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
-	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
-	  && !warn_init_self)
-	suppress_warning (DECL_EXPR_DECL (*expr_p), OPT_Winit_self);
-      break;
 
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:

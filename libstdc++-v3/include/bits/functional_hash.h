@@ -280,10 +280,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @} group hashes
 
-  // Hint about performance of hash functor. If not fast the hash-based
-  // containers will cache the hash code.
-  // Default behavior is to consider that hashers are fast unless specified
-  // otherwise.
+  /** Hint about performance of hash functions.
+   *
+   * If a given hash function object is not fast, the hash-based containers
+   * will cache the hash code.
+   * The default behavior is to consider that hashers are fast unless specified
+   * otherwise.
+   *
+   * Users can specialize this for their own hash functions in order to force
+   * caching of hash codes in unordered containers. Specializing this trait
+   * affects the ABI of the unordered containers, so use it carefully.
+   */
   template<typename _Hash>
     struct __is_fast_hash : public std::true_type
     { };

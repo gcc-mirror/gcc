@@ -1,4 +1,4 @@
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/test32a.d
 // PERMUTE_ARGS:
 
@@ -8,4 +8,3 @@ void main()
 {
     assert(S.sizeof == int.sizeof);
 }
-

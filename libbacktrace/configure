@@ -801,6 +801,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_largefile
 enable_cet
+enable_werror
 with_system_libunwind
 enable_host_shared
 '
@@ -1448,6 +1449,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-largefile     omit support for large files
   --enable-cet            enable Intel CET in target libraries [default=auto]
+  --disable-werror        disable building with -Werror
   --enable-host-shared    build host code as shared libraries
   --enable-cet            enable Intel CET in host libraries [default=auto]
 
@@ -11509,7 +11511,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11512 "configure"
+#line 11514 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11615,7 +11617,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11618 "configure"
+#line 11620 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12300,10 +12302,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-if test -n "${with_target_subdir}"; then
-  WARN_FLAGS="$WARN_FLAGS -Werror"
+# Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror;
 fi
 
+if test "x$enable_werror" != "xno" && test -n "${with_target_subdir}"; then :
+  WARN_FLAGS="$WARN_FLAGS -Werror"
+fi
 
 
 if test -n "${with_target_subdir}"; then
@@ -13261,26 +13267,31 @@ fi
 
 
 # Check for dl_iterate_phdr.
-for ac_header in link.h
+for ac_header in link.h sys/link.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "link.h" "ac_cv_header_link_h" "$ac_includes_default"
-if test "x$ac_cv_header_link_h" = xyes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_LINK_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
 fi
 
 done
 
-if test "$ac_cv_header_link_h" = "no"; then
+if test "$ac_cv_header_link_h" = "no" -a "$ac_cv_header_sys_link_h" = "no"; then
   have_dl_iterate_phdr=no
 else
   if test -n "${with_target_subdir}"; then
+    link_h=link.h
+    if test "$ac_cv_header_link_h" = "no"; then
+       link_h=sys/link.h
+    fi
     # When built as a GCC target library, we can't do a link test.
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <link.h>
+#include <$link_h>
 
 _ACEOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
@@ -13825,7 +13836,7 @@ else
   libbacktrace_cv_objcopy_debuglink=no
 elif ! test -n "${OBJCOPY}"; then
   libbacktrace_cv_objcopy_debuglink=no
-elif ${OBJCOPY} --help | fgrep add-gnu-debuglink >/dev/null 2>&1; then
+elif ${OBJCOPY} --help | grep add-gnu-debuglink >/dev/null 2>&1; then
   libbacktrace_cv_objcopy_debuglink=yes
 else
   libbacktrace_cv_objcopy_debuglink=no

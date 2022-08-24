@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target rtti }
 
 // 2010-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 //

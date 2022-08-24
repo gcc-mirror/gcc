@@ -1,6 +1,6 @@
 /* Adapted from Linux: arch/x86/include/asm/paravirt.h */
 
-/* { dg-do assemble { target x86_64-*-* } } */
+/* { dg-do compile { target x86_64-pc-linux-gnu } } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 

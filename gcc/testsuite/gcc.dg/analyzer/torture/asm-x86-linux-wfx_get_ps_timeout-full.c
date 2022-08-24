@@ -1,4 +1,4 @@
-/* { dg-do assemble { target x86_64-*-* } } */
+/* { dg-do compile { target x86_64-*-* } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-additional-options "-fsanitize=bounds -fno-analyzer-call-summaries" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */

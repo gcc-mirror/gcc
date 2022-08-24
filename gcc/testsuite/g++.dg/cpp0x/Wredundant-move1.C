@@ -60,7 +60,8 @@ fn4 (const T t)
 {
   // t is const: will decay into copy despite std::move, so it's redundant.
   // We used to warn about this, but no longer since c++/87378.
-  return std::move (t);	 // { dg-warning "redundant move" "" { target c++20 } }
+  // Now we warn again since c++/90428.
+  return std::move (t);	 // { dg-warning "redundant move" }
 }
 
 int

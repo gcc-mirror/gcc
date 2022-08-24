@@ -1,5 +1,5 @@
 /* PR target/95683 */
-/* { dg-options "-Os" } */
+/* { dg-options "" } */
 /* { dg-do compile } */
 void a() {
   asm(""

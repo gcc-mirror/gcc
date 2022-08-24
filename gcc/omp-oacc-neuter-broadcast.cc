@@ -538,7 +538,7 @@ typedef hash_map<tree, tree> field_map_t;
    to propagate, to the field in the record type that should be used for
    transmission and reception.  */
 
-typedef hash_map<tree, field_map_t *> record_field_map_t;
+typedef hash_map<tree, field_map_t> record_field_map_t;
 
 static void
 install_var_field (tree var, tree record_type, field_map_t *fields)
@@ -937,35 +937,13 @@ worker_single_simple (basic_block from, basic_block to,
     }
 }
 
-/* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
-   as appropriate.  */
-/* Adapted from 'gcc/omp-low.cc:omp_build_component_ref'.  */
-
-static tree
-oacc_build_component_ref (tree obj, tree field)
-{
-  tree field_type = TREE_TYPE (field);
-  tree obj_type = TREE_TYPE (obj);
-  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (obj_type)))
-    field_type = build_qualified_type
-			(field_type,
-			 KEEP_QUAL_ADDR_SPACE (TYPE_QUALS (obj_type)));
-
-  tree ret = build3 (COMPONENT_REF, field_type, obj, field, NULL);
-  if (TREE_THIS_VOLATILE (field))
-    TREE_THIS_VOLATILE (ret) |= 1;
-  if (TREE_READONLY (field))
-    TREE_READONLY (ret) |= 1;
-  return ret;
-}
-
 static tree
 build_receiver_ref (tree var, tree receiver_decl, field_map_t *fields)
 {
   tree x = build_simple_mem_ref (receiver_decl);
   tree field = *fields->get (var);
   TREE_THIS_NOTRAP (x) = 1;
-  x = oacc_build_component_ref (x, field);
+  x = omp_build_component_ref (x, field);
   return x;
 }
 
@@ -975,7 +953,7 @@ build_sender_ref (tree var, tree sender_decl, field_map_t *fields)
   if (POINTER_TYPE_P (TREE_TYPE (sender_decl)))
     sender_decl = build_simple_mem_ref (sender_decl);
   tree field = *fields->get (var);
-  return oacc_build_component_ref (sender_decl, field);
+  return omp_build_component_ref (sender_decl, field);
 }
 
 static int
@@ -1168,8 +1146,7 @@ worker_single_copy (basic_block from, basic_block to,
 	gcc_assert (TREE_CODE (var) == VAR_DECL);
 
       /* If we had no record type, we will have no fields map.  */
-      field_map_t **fields_p = record_field_map->get (record_type);
-      field_map_t *fields = fields_p ? *fields_p : NULL;
+      field_map_t *fields = record_field_map->get (record_type);
 
       if (worker_partitioned_uses->contains (var)
 	  && fields
@@ -1684,10 +1661,9 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 
 	  field_vec.qsort (sort_by_size_then_ssa_version_or_uid);
 
-	  field_map_t *fields = new field_map_t;
-
 	  bool existed;
-	  existed = record_field_map.put (record_type, fields);
+	  field_map_t *fields
+	    = &record_field_map.get_or_insert (record_type, &existed);
 	  gcc_checking_assert (!existed);
 
 	  /* Insert var fields in reverse order, so the last inserted element
@@ -1818,8 +1794,6 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 			&partitioned_var_uses, &record_field_map,
 			&blk_offset_map, writes_gang_private);
 
-  for (auto it : record_field_map)
-    delete it.second;
   record_field_map.empty ();
 
   /* These are supposed to have been 'delete'd by 'neuter_worker_single'.  */
@@ -1971,7 +1945,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
   {
     if (!flag_openacc)
       return false;
@@ -1987,7 +1961,7 @@ public:
     return true;
   }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return execute_omp_oacc_neuter_broadcast ();
     }

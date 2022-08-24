@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune=generic -fshrink-wrap -fdump-rtl-pro_and_epilogue" } */
+/* { dg-options "-O2 -mtune=generic -fshrink-wrap -fdump-rtl-pro_and_epilogue -fno-stack-protector" } */
 /* { dg-additional-options "-mno-avx" { target ia32 } } */
 /* { dg-skip-if "No shrink-wrapping preformed" { x86_64-*-mingw* } } */
 

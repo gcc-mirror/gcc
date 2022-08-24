@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bid_functions.h"
 #include "bid_gcc_intrinsics.h"
 
+#ifdef __LIBGCC_HAS_XF_MODE__
 XFtype
 __bid_extendsdxf (_Decimal32 x) {
   XFtype res;
@@ -34,3 +35,4 @@ __bid_extendsdxf (_Decimal32 x) {
   res = __bid32_to_binary80 (ux.i);
   return (res);
 }
+#endif

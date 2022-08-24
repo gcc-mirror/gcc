@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-traits.h"
 #include "attribs.h"
 #include "builtins.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "attr-fnspec.h"
 #include "value-query.h"
@@ -201,7 +202,8 @@ mark_stack_region_used (poly_uint64 lower_bound, poly_uint64 upper_bound)
 {
   unsigned HOST_WIDE_INT const_lower, const_upper;
   const_lower = constant_lower_bound (lower_bound);
-  if (upper_bound.is_constant (&const_upper))
+  if (upper_bound.is_constant (&const_upper)
+      && const_upper <= highest_outgoing_arg_in_use)
     for (unsigned HOST_WIDE_INT i = const_lower; i < const_upper; ++i)
       stack_usage_map[i] = 1;
   else
@@ -990,11 +992,21 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 	/* If we are to promote the function arg to a wider mode,
 	   do it now.  */
 
-	if (args[i].mode != TYPE_MODE (TREE_TYPE (args[i].tree_value)))
-	  args[i].value
-	    = convert_modes (args[i].mode,
-			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-			     args[i].value, args[i].unsignedp);
+	machine_mode old_mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
+
+	/* Some ABIs require scalar floating point modes to be returned
+	   in a wider scalar integer mode.  We need to explicitly
+	   reinterpret to an integer mode of the correct precision
+	   before extending to the desired result.  */
+	if (SCALAR_INT_MODE_P (args[i].mode)
+	    && SCALAR_FLOAT_MODE_P (old_mode)
+	    && known_gt (GET_MODE_SIZE (args[i].mode),
+			 GET_MODE_SIZE (old_mode)))
+	  args[i].value = convert_float_to_wider_int (args[i].mode, old_mode,
+						      args[i].value);
+	else if (args[i].mode != old_mode)
+	  args[i].value = convert_modes (args[i].mode, old_mode,
+					 args[i].value, args[i].unsignedp);
 
 	/* If the value is a non-legitimate constant, force it into a
 	   pseudo now.  TLS symbols sometimes need a call to resolve.  */
@@ -1214,7 +1226,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 
 	    bytes -= bitsize / BITS_PER_UNIT;
 	    store_bit_field (reg, bitsize, endian_correction, 0, 0,
-			     word_mode, word, false);
+			     word_mode, word, false, false);
 	  }
       }
 }
@@ -2093,7 +2105,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  poly_int64 size = 0;
 	  HOST_WIDE_INT const_size = 0;
 	  rtx_insn *before_arg = get_last_insn ();
-	  tree type = TREE_TYPE (args[i].tree_value);
+	  tree tree_value = args[i].tree_value;
+	  tree type = TREE_TYPE (tree_value);
 	  if (RECORD_OR_UNION_TYPE_P (type) && TYPE_TRANSPARENT_AGGR (type))
 	    type = TREE_TYPE (first_field (type));
 	  /* Set non-negative if we must move a word at a time, even if
@@ -2170,6 +2183,25 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg) + j),
 			      args[i].aligned_regs[j]);
 
+	  /* If we need a single register and the source is a constant
+	     VAR_DECL with a simple constructor, expand that constructor
+	     via a pseudo rather than read from (possibly misaligned)
+	     memory.  PR middle-end/95126.  */
+	  else if (nregs == 1
+		   && partial == 0
+		   && !args[i].pass_on_stack
+		   && VAR_P (tree_value)
+		   && TREE_READONLY (tree_value)
+		   && !TREE_SIDE_EFFECTS (tree_value)
+		   && immediate_const_ctor_p (DECL_INITIAL (tree_value)))
+	    {
+	      rtx target = gen_reg_rtx (word_mode);
+	      store_constructor (DECL_INITIAL (tree_value), target, 0,
+				 int_expr_size (DECL_INITIAL (tree_value)),
+				 false);
+	      reg = gen_rtx_REG (word_mode, REGNO (reg));
+	      emit_move_insn (reg, target);
+	    }
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {
 	      /* SIZE and CONST_SIZE are 0 for partial arguments and
@@ -3068,6 +3100,7 @@ expand_call (tree exp, rtx target, int ignore)
   for (pass = try_tail_call ? 0 : 1; pass < 2; pass++)
     {
       int sibcall_failure = 0;
+      bool normal_failure = false;
       /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
 	 recursion call can be ignored if we indeed use the tail
@@ -3447,6 +3480,11 @@ expand_call (tree exp, rtx target, int ignore)
 		  >= (1 << (HOST_BITS_PER_INT - 2)))
 	        {
 	          sorry ("passing too large argument on stack");
+		  /* Don't worry about stack clean-up.  */
+		  if (pass == 0)
+		    sibcall_failure = 1;
+		  else
+		    normal_failure = true;
 		  continue;
 		}
 
@@ -3797,18 +3835,24 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  tree type = rettype;
 	  int unsignedp = TYPE_UNSIGNED (type);
+	  machine_mode ret_mode = TYPE_MODE (type);
 	  machine_mode pmode;
 
 	  /* Ensure we promote as expected, and get the new unsignedness.  */
-	  pmode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
+	  pmode = promote_function_mode (type, ret_mode, &unsignedp,
 					 funtype, 1);
 	  gcc_assert (GET_MODE (target) == pmode);
 
-	  poly_uint64 offset = subreg_lowpart_offset (TYPE_MODE (type),
-						      GET_MODE (target));
-	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
-	  SUBREG_PROMOTED_VAR_P (target) = 1;
-	  SUBREG_PROMOTED_SET (target, unsignedp);
+	  if (SCALAR_INT_MODE_P (pmode)
+	      && SCALAR_FLOAT_MODE_P (ret_mode)
+	      && known_gt (GET_MODE_SIZE (pmode), GET_MODE_SIZE (ret_mode)))
+	    target = convert_wider_int_to_float (ret_mode, pmode, target);
+	  else
+	    {
+	      target = gen_lowpart_SUBREG (ret_mode, target);
+	      SUBREG_PROMOTED_VAR_P (target) = 1;
+	      SUBREG_PROMOTED_SET (target, unsignedp);
+	    }
 	}
 
       /* If size of args is variable or this was a constructor call for a stack
@@ -3903,9 +3947,12 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  /* Verify that we've deallocated all the stack we used.  */
 	  gcc_assert ((flags & ECF_NORETURN)
+		      || normal_failure
 		      || known_eq (old_stack_allocated,
 				   stack_pointer_delta
 				   - pending_stack_adjust));
+	  if (normal_failure)
+	    normal_call_insns = NULL;
 	}
 
       /* If something prevents making this a sibling call,
@@ -5139,6 +5186,13 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 			ARGS_SIZE_RTX (arg->locate.offset),
 			reg_parm_stack_space,
 			ARGS_SIZE_RTX (arg->locate.alignment_pad), false);
+      /* If we bypass emit_push_insn because it is a zero sized argument,
+	 we still might need to adjust stack if such argument requires
+	 extra alignment.  See PR104558.  */
+      else if ((arg->locate.alignment_pad.var
+		|| maybe_ne (arg->locate.alignment_pad.constant, 0))
+	       && !argblock)
+	anti_adjust_stack (ARGS_SIZE_RTX (arg->locate.alignment_pad));
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.

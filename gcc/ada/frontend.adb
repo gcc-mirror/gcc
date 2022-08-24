@@ -38,7 +38,6 @@ with Ghost;          use Ghost;
 with Inline;         use Inline;
 with Lib;            use Lib;
 with Lib.Load;       use Lib.Load;
-with Lib.Xref;
 with Live;           use Live;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -481,7 +480,6 @@ begin
 
             --  Output waiting warning messages
 
-            Lib.Xref.Process_Deferred_References;
             Sem_Warn.Output_Non_Modified_In_Out_Warnings;
             Sem_Warn.Output_Unreferenced_Messages;
             Sem_Warn.Check_Unused_Withs;

@@ -16,10 +16,10 @@ subroutine f1 ()
   implicit none
   integer :: n
 
-  !$omp requires reverse_offload  ! { dg-error "Sorry, 'reverse_offload' clause at \\(1\\) on REQUIRES directive is not yet supported" }
+  !$omp requires reverse_offload
 
   !$omp target device (ancestor : 1)
-    n = omp_get_thread_num ()  ! { dg-error "" "OpenMP runtime API call 'omp_get_thread_num' in a region with 'device\\(ancestor\\)' clause" { xfail *-*-* } }
+    n = omp_get_thread_num ()  ! { dg-error "OpenMP runtime API call 'omp_get_thread_num' in a region with 'device\\(ancestor\\)' clause" }
   !$omp end target
 
   !$omp target device (device_num : 1)

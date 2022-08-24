@@ -75,6 +75,11 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_AS_TLS 0
 #endif
 
+/* Define this if the target has no hardware divide instructions.  */
+#if !TARGET_DIV32
+#define TARGET_HAS_NO_HW_DIVIDE
+#endif
+
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\
@@ -373,6 +378,7 @@ enum reg_class
   FP_REGS,			/* floating point registers */
   ACC_REG,			/* MAC16 accumulator */
   SP_REG,			/* sp register (aka a1) */
+  ISC_REGS,			/* registers for indirect sibling calls */
   RL_REGS,			/* preferred reload regs (not sp or fp) */
   GR_REGS,			/* integer registers except sp */
   AR_REGS,			/* all integer registers */
@@ -394,6 +400,7 @@ enum reg_class
   "FP_REGS",								\
   "ACC_REG",								\
   "SP_REG",								\
+  "ISC_REGS",								\
   "RL_REGS",								\
   "GR_REGS",								\
   "AR_REGS",								\
@@ -410,6 +417,7 @@ enum reg_class
   { 0xfff80000, 0x00000007 }, /* floating-point registers */ \
   { 0x00000000, 0x00000008 }, /* MAC16 accumulator */ \
   { 0x00000002, 0x00000000 }, /* stack pointer register */ \
+  { 0x000001fc, 0x00000000 }, /* registers for indirect sibling calls */ \
   { 0x0000fffd, 0x00000000 }, /* preferred reload registers */ \
   { 0x0000fffd, 0x00000000 }, /* general-purpose registers */ \
   { 0x0003ffff, 0x00000000 }, /* integer registers */ \
@@ -499,7 +507,7 @@ enum reg_class
    used for this purpose since all function arguments are pushed on
    the stack.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
-  ((N) >= GP_OUTGOING_ARG_FIRST && (N) <= GP_OUTGOING_ARG_LAST)
+  IN_RANGE ((N), GP_OUTGOING_ARG_FIRST, GP_OUTGOING_ARG_LAST)
 
 /* Record the number of argument words seen so far, along with a flag to
    indicate whether these are incoming arguments.  (FUNCTION_INCOMING_ARG

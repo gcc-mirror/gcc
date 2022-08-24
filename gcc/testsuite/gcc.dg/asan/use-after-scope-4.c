@@ -1,4 +1,5 @@
 // { dg-do run }
+/* { dg-options "-fno-stack-protector" } */
 
 #define FN(NAME) \
 NAME (void) \

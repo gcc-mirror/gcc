@@ -131,6 +131,8 @@ is_friend (tree type, tree supplicant)
     {
       if (DECL_FUNCTION_MEMBER_P (supplicant))
 	context = DECL_CONTEXT (supplicant);
+      else if (tree fc = DECL_FRIEND_CONTEXT (supplicant))
+	context = fc;
       else
 	context = NULL_TREE;
     }
@@ -506,6 +508,7 @@ do_friend (tree ctype, tree declarator, tree decl,
     error ("friend declaration %qD may not have virt-specifiers",
 	   decl);
 
+  tree orig_declarator = declarator;
   if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
     {
       declarator = TREE_OPERAND (declarator, 0);
@@ -513,32 +516,33 @@ do_friend (tree ctype, tree declarator, tree decl,
 	declarator = OVL_NAME (declarator);
     }
 
+  /* CLASS_TEMPLATE_DEPTH counts the number of template headers for
+     the enclosing class.  FRIEND_DEPTH counts the number of template
+     headers used for this friend declaration.  TEMPLATE_MEMBER_P is
+     true if a template header in FRIEND_DEPTH is intended for
+     DECLARATOR.  For example, the code
+
+     template <class T> struct A {
+       template <class U> struct B {
+	 template <class V> template <class W>
+	   friend void C<V>::f(W);
+       };
+     };
+
+     will eventually give the following results
+
+     1. CLASS_TEMPLATE_DEPTH equals 2 (for `T' and `U').
+     2. FRIEND_DEPTH equals 2 (for `V' and `W').
+     3. CTYPE_DEPTH equals 1 (for `V').
+     4. TEMPLATE_MEMBER_P is true (for `W').  */
+
+  int class_template_depth = template_class_depth (current_class_type);
+  int friend_depth = current_template_depth - class_template_depth;
+  int ctype_depth = num_template_headers_for_class (ctype);
+  bool template_member_p = friend_depth > ctype_depth;
+
   if (ctype)
     {
-      /* CLASS_TEMPLATE_DEPTH counts the number of template headers for
-	 the enclosing class.  FRIEND_DEPTH counts the number of template
-	 headers used for this friend declaration.  TEMPLATE_MEMBER_P is
-	 true if a template header in FRIEND_DEPTH is intended for
-	 DECLARATOR.  For example, the code
-
-	   template <class T> struct A {
-	     template <class U> struct B {
-	       template <class V> template <class W>
-		 friend void C<V>::f(W);
-	     };
-	   };
-
-	 will eventually give the following results
-
-	 1. CLASS_TEMPLATE_DEPTH equals 2 (for `T' and `U').
-	 2. FRIEND_DEPTH equals 2 (for `V' and `W').
-	 3. TEMPLATE_MEMBER_P is true (for `W').  */
-
-      int class_template_depth = template_class_depth (current_class_type);
-      int friend_depth = current_template_depth - class_template_depth;
-      /* We will figure this out later.  */
-      bool template_member_p = false;
-
       tree cname = TYPE_NAME (ctype);
       if (TREE_CODE (cname) == TYPE_DECL)
 	cname = DECL_NAME (cname);
@@ -548,13 +552,6 @@ do_friend (tree ctype, tree declarator, tree decl,
 	DECL_CXX_CONSTRUCTOR_P (decl) = 1;
 
       grokclassfn (ctype, decl, flags);
-
-      if (friend_depth)
-	{
-	  if (!uses_template_parms_level (ctype, class_template_depth
-						 + friend_depth))
-	    template_member_p = true;
-	}
 
       /* A nested class may declare a member of an enclosing class
 	 to be a friend, so we do lookup here even if CTYPE is in
@@ -584,9 +581,6 @@ do_friend (tree ctype, tree declarator, tree decl,
 	       || (class_template_depth && friend_depth))
 	      && decl && TREE_CODE (decl) == FUNCTION_DECL)
 	    decl = DECL_TI_TEMPLATE (decl);
-
-	  if (decl)
-	    add_friend (current_class_type, decl, /*complain=*/true);
 	}
       else
 	error ("member %qD declared as friend before type %qT defined",
@@ -595,7 +589,6 @@ do_friend (tree ctype, tree declarator, tree decl,
   else
     {
       /* Namespace-scope friend function.  */
-      int is_friend_template = PROCESSING_REAL_TEMPLATE_DECL_P ();
 
       if (funcdef_flag)
 	SET_DECL_FRIEND_CONTEXT (decl, current_class_type);
@@ -606,12 +599,11 @@ do_friend (tree ctype, tree declarator, tree decl,
 	     arguments before push_template_decl adds a reference to
 	     the containing template class.  */
 	  int warn = (warn_nontemplate_friend
-		      && ! funcdef_flag && ! is_friend_template
+		      && ! funcdef_flag && ! friend_depth
 		      && current_template_parms
 		      && uses_template_parms (decl));
 
-	  if (is_friend_template
-	      || template_class_depth (current_class_type) != 0)
+	  if (friend_depth || class_template_depth)
 	    /* We can't call pushdecl for a template class, since in
 	       general, such a declaration depends on template
 	       parameters.  Instead, we call pushdecl when the class
@@ -651,14 +643,26 @@ do_friend (tree ctype, tree declarator, tree decl,
 		}
 	    }
 	}
-
-      if (decl == error_mark_node)
-	return error_mark_node;
-
-      add_friend (current_class_type,
-		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl,
-		  /*complain=*/true);
     }
+
+  if (decl == error_mark_node)
+    return error_mark_node;
+
+  if (!class_template_depth && DECL_IMPLICIT_INSTANTIATION (decl))
+    /* "[if no non-template match is found,] each remaining function template
+       is replaced with the specialization chosen by deduction from the
+       friend declaration or discarded if deduction fails."
+
+       set_decl_namespace or check_classfn set DECL_IMPLICIT_INSTANTIATION to
+       indicate that we need a template match, so ask
+       check_explicit_specialization to find one.  */
+    decl = (check_explicit_specialization
+	    (orig_declarator, decl, ctype_depth,
+	     2 * funcdef_flag + 4));
+
+  add_friend (current_class_type,
+	      (!ctype && friend_depth) ? DECL_TI_TEMPLATE (decl) : decl,
+	      /*complain=*/true);
 
   return decl;
 }

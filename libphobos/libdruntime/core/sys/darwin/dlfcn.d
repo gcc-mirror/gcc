@@ -25,20 +25,6 @@ nothrow:
 
 public import core.sys.posix.dlfcn;
 
-struct Dl_info
-{
-    const(char)* dli_fname;
-    void*        dli_fbase;
-    const(char)* dli_sname;
-    void*        dli_saddr;
-}
-
-int dladdr(const scope void* addr, Dl_info* info);
-
-enum RTLD_NOLOAD = 0x10;
-enum RTLD_NODELETE = 0x80;
-enum RTLD_FIRST = 0x100;
-
 enum RTLD_NEXT = cast(void*) -1;
 enum RTLD_DEFAULT = cast(void*) -2;
 enum RTLD_SELF = cast(void*) -3;

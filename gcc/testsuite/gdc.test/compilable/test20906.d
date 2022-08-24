@@ -12,4 +12,3 @@ int test12()
     int d = !x ? 1 : 1 / x;
     return a | b | c;
 }
-

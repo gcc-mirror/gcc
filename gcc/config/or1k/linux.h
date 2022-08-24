@@ -32,6 +32,8 @@
 #undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER  "/lib/ld-musl-or1k.so.1"
 
+#define CPP_SPEC "%{pthread:-D_REENTRANT}"
+
 #undef LINK_SPEC
 #define LINK_SPEC "%{h*}			\
    %{static:-Bstatic}				\

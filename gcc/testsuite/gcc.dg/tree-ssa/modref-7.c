@@ -10,4 +10,4 @@ int test(struct a *a, int p)
   a->array[0] = 1;
 }
 /* All three accesses combine to one bigger access.  */
-/* { dg-final { scan-tree-dump-not "param=modref-max-accesses" "modref1" } } */
+/* { dg-final { scan-tree-dump-not "--param modref-max-accesses" "modref1" } } */

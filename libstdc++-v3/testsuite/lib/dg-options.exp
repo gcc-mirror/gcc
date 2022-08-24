@@ -241,6 +241,33 @@ proc dg-require-filesystem-ts { args } {
     return
 }
 
+proc dg-require-target-fs-symlinks { args } {
+    if { ![ check_v3_target_fs_symlinks ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-target-fs-space { args } {
+    if { ![ check_v3_target_fs_space ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-target-fs-lwt { args } {
+    if { ![ check_v3_target_fs_last_write_time ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc add_options_for_no_pch { flags } {
     # This forces any generated and possibly included PCH to be invalid.
     return "-D__GLIBCXX__=99999999"
@@ -253,6 +280,8 @@ proc add_options_for_net_ts { flags } {
     # libsocket and libnsl for networking applications.
     if { [istarget *-*-solaris2*] } {
 	return "$flags -lsocket -lnsl"
+    } elseif { [istarget *-*-rtems*] } {
+	return "$flags -lbsd -Wl,--gc-sections"
     }
     return $flags
 }

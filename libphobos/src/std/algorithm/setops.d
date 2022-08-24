@@ -404,7 +404,7 @@ if (ranges.length >= 2 &&
                     r = ranges[i].save; // rollover
             }
         }
-        @property Result save() scope return
+        @property Result save() return scope
         {
             Result copy = this;
             foreach (i, r; ranges)

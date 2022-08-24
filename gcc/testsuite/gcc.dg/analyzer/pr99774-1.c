@@ -7,7 +7,7 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned long uint64_t;
 typedef unsigned long uint64_t;
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 extern void *calloc(size_t __nmemb, size_t __size)
   __attribute__((__nothrow__, __leaf__))

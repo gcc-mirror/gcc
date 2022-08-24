@@ -329,6 +329,17 @@ canonicalize_change_group (rtx_insn *insn, rtx x)
     return false;
 }
 
+/* Check if REG_INC argument in *data overlaps a stored REG.  */
+
+static void
+check_invalid_inc_dec (rtx reg, const_rtx, void *data)
+{
+  rtx *pinc = (rtx *) data;
+  if (*pinc == NULL_RTX || MEM_P (reg))
+    return;
+  if (reg_overlap_mentioned_p (reg, *pinc))
+    *pinc = NULL_RTX;
+}
 
 /* This subroutine of apply_change_group verifies whether the changes to INSN
    were valid; i.e. whether INSN can still be recognized.
@@ -385,6 +396,17 @@ insn_invalid_p (rtx_insn *insn, bool in_group)
       if (! constrain_operands (1, get_preferred_alternatives (insn)))
 	return 1;
     }
+
+  /* Punt if REG_INC argument overlaps some stored REG.  */
+  for (rtx link = FIND_REG_INC_NOTE (insn, NULL_RTX);
+       link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_INC)
+      {
+	rtx reg = XEXP (link, 0);
+	note_stores (insn, check_invalid_inc_dec, &reg);
+	if (reg == NULL_RTX)
+	  return 1;
+      }
 
   INSN_CODE (insn) = icode;
   return 0;
@@ -4336,9 +4358,12 @@ public:
   /* opt_pass methods: */
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
-  opt_pass * clone () { return new pass_peephole2 (m_ctxt); }
-  virtual bool gate (function *) { return (optimize > 0 && flag_peephole2); }
-  virtual unsigned int execute (function *)
+  opt_pass * clone () final override { return new pass_peephole2 (m_ctxt); }
+  bool gate (function *) final override
+  {
+    return (optimize > 0 && flag_peephole2);
+  }
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_peephole2 ();
     }
@@ -4378,8 +4403,11 @@ public:
   /* opt_pass methods: */
   /* The epiphany backend creates a second instance of this pass, so
      we need a clone method.  */
-  opt_pass * clone () { return new pass_split_all_insns (m_ctxt); }
-  virtual unsigned int execute (function *)
+  opt_pass * clone () final override
+  {
+    return new pass_split_all_insns (m_ctxt);
+  }
+  unsigned int execute (function *) final override
     {
       split_all_insns ();
       return 0;
@@ -4418,13 +4446,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* If optimizing, then go ahead and split insns now.  */
       return optimize > 0;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       split_all_insns ();
       return 0;
@@ -4473,12 +4501,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return enable_split_before_sched2 ();
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       split_all_insns ();
       return 0;
@@ -4517,8 +4545,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
     {
       split_all_insns ();
       return 0;
@@ -4576,7 +4604,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* The placement of the splitting that we do for shorten_branches
 	 depends on whether regstack is used by the target or not.  */
@@ -4587,7 +4615,7 @@ public:
 #endif
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return split_all_insns_noflow ();
     }

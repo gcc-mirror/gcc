@@ -7,4 +7,3 @@ struct O
 struct R(O U, int W)
 {
 }
-

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "" } */
 
 /* Test for do_tablejump patch.  */
 extern void asdf(int);

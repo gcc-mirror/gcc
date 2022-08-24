@@ -193,14 +193,10 @@ func isDirective(c string) bool {
 // in a signature.
 // Field.Names is nil for unnamed parameters (parameter lists which only contain types)
 // and embedded struct fields. In the latter case, the field name is the type name.
-// Field.Names contains a single name "type" for elements of interface type lists.
-// Types belonging to the same type list share the same "type" identifier which also
-// records the position of that keyword.
-//
 type Field struct {
 	Doc     *CommentGroup // associated documentation; or nil
-	Names   []*Ident      // field/method/(type) parameter names, or type "type"; or nil
-	Type    Expr          // field/method/parameter type, type list type; or nil
+	Names   []*Ident      // field/method/(type) parameter names; or nil
+	Type    Expr          // field/method/parameter type; or nil
 	Tag     *BasicLit     // field tag; or nil
 	Comment *CommentGroup // line comments; or nil
 }
@@ -228,11 +224,12 @@ func (f *Field) End() token.Pos {
 	return token.NoPos
 }
 
-// A FieldList represents a list of Fields, enclosed by parentheses or braces.
+// A FieldList represents a list of Fields, enclosed by parentheses,
+// curly braces, or square brackets.
 type FieldList struct {
-	Opening token.Pos // position of opening parenthesis/brace, if any
+	Opening token.Pos // position of opening parenthesis/brace/bracket, if any
 	List    []*Field  // field list; or nil
-	Closing token.Pos // position of closing parenthesis/brace, if any
+	Closing token.Pos // position of closing parenthesis/brace/bracket, if any
 }
 
 func (f *FieldList) Pos() token.Pos {
@@ -344,6 +341,15 @@ type (
 		Rbrack token.Pos // position of "]"
 	}
 
+	// An IndexListExpr node represents an expression followed by multiple
+	// indices.
+	IndexListExpr struct {
+		X       Expr      // expression
+		Lbrack  token.Pos // position of "["
+		Indices []Expr    // index expressions
+		Rbrack  token.Pos // position of "]"
+	}
+
 	// A SliceExpr node represents an expression followed by slice indices.
 	SliceExpr struct {
 		X      Expr      // expression
@@ -440,6 +446,14 @@ type (
 
 	// Pointer types are represented via StarExpr nodes.
 
+	// A FuncType node represents a function type.
+	FuncType struct {
+		Func       token.Pos  // position of "func" keyword (token.NoPos if there is no "func")
+		TypeParams *FieldList // type parameters; or nil
+		Params     *FieldList // (incoming) parameters; non-nil
+		Results    *FieldList // (outgoing) results; or nil
+	}
+
 	// An InterfaceType node represents an interface type.
 	InterfaceType struct {
 		Interface  token.Pos  // position of "interface" keyword
@@ -479,6 +493,7 @@ func (x *CompositeLit) Pos() token.Pos {
 func (x *ParenExpr) Pos() token.Pos      { return x.Lparen }
 func (x *SelectorExpr) Pos() token.Pos   { return x.X.Pos() }
 func (x *IndexExpr) Pos() token.Pos      { return x.X.Pos() }
+func (x *IndexListExpr) Pos() token.Pos  { return x.X.Pos() }
 func (x *SliceExpr) Pos() token.Pos      { return x.X.Pos() }
 func (x *TypeAssertExpr) Pos() token.Pos { return x.X.Pos() }
 func (x *CallExpr) Pos() token.Pos       { return x.Fun.Pos() }
@@ -512,6 +527,7 @@ func (x *CompositeLit) End() token.Pos   { return x.Rbrace + 1 }
 func (x *ParenExpr) End() token.Pos      { return x.Rparen + 1 }
 func (x *SelectorExpr) End() token.Pos   { return x.Sel.End() }
 func (x *IndexExpr) End() token.Pos      { return x.Rbrack + 1 }
+func (x *IndexListExpr) End() token.Pos  { return x.Rbrack + 1 }
 func (x *SliceExpr) End() token.Pos      { return x.Rbrack + 1 }
 func (x *TypeAssertExpr) End() token.Pos { return x.Rparen + 1 }
 func (x *CallExpr) End() token.Pos       { return x.Rparen + 1 }
@@ -543,6 +559,7 @@ func (*CompositeLit) exprNode()   {}
 func (*ParenExpr) exprNode()      {}
 func (*SelectorExpr) exprNode()   {}
 func (*IndexExpr) exprNode()      {}
+func (*IndexListExpr) exprNode()  {}
 func (*SliceExpr) exprNode()      {}
 func (*TypeAssertExpr) exprNode() {}
 func (*CallExpr) exprNode()       {}
@@ -892,6 +909,16 @@ type (
 		Values  []Expr        // initial values; or nil
 		Comment *CommentGroup // line comments; or nil
 	}
+
+	// A TypeSpec node represents a type declaration (TypeSpec production).
+	TypeSpec struct {
+		Doc        *CommentGroup // associated documentation; or nil
+		Name       *Ident        // type name
+		TypeParams *FieldList    // type parameters; or nil
+		Assign     token.Pos     // position of '=', if any
+		Type       Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+		Comment    *CommentGroup // line comments; or nil
+	}
 )
 
 // Pos and End implementations for spec nodes.
@@ -968,8 +995,6 @@ type (
 		Name *Ident        // function/method name
 		Type *FuncType     // function signature: type and value parameters, results, and position of "func" keyword
 		Body *BlockStmt    // function body; or nil for external (non-Go) function
-		// TODO(rFindley) consider storing TParams here, rather than FuncType, as
-		//                they are only valid for declared functions
 	}
 )
 

@@ -5,7 +5,8 @@
 package runtime
 
 import (
-	"runtime/internal/sys"
+	"internal/abi"
+	"internal/goarch"
 	"unsafe"
 )
 
@@ -20,7 +21,7 @@ import (
 func mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer {
 	if raceenabled && h != nil {
 		callerpc := getcallerpc()
-		racereadpc(unsafe.Pointer(h), callerpc, funcPC(mapaccess1_fast64))
+		racereadpc(unsafe.Pointer(h), callerpc, abi.FuncPCABIInternal(mapaccess1_fast64))
 	}
 	if h == nil || h.count == 0 {
 		return unsafe.Pointer(&zeroVal[0])
@@ -60,7 +61,7 @@ func mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer {
 func mapaccess2_fast64(t *maptype, h *hmap, key uint64) (unsafe.Pointer, bool) {
 	if raceenabled && h != nil {
 		callerpc := getcallerpc()
-		racereadpc(unsafe.Pointer(h), callerpc, funcPC(mapaccess2_fast64))
+		racereadpc(unsafe.Pointer(h), callerpc, abi.FuncPCABIInternal(mapaccess2_fast64))
 	}
 	if h == nil || h.count == 0 {
 		return unsafe.Pointer(&zeroVal[0]), false
@@ -103,7 +104,7 @@ func mapassign_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer {
 	}
 	if raceenabled {
 		callerpc := getcallerpc()
-		racewritepc(unsafe.Pointer(h), callerpc, funcPC(mapassign_fast64))
+		racewritepc(unsafe.Pointer(h), callerpc, abi.FuncPCABIInternal(mapassign_fast64))
 	}
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map writes")
@@ -193,7 +194,7 @@ func mapassign_fast64ptr(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer
 	}
 	if raceenabled {
 		callerpc := getcallerpc()
-		racewritepc(unsafe.Pointer(h), callerpc, funcPC(mapassign_fast64))
+		racewritepc(unsafe.Pointer(h), callerpc, abi.FuncPCABIInternal(mapassign_fast64))
 	}
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map writes")
@@ -280,7 +281,7 @@ done:
 func mapdelete_fast64(t *maptype, h *hmap, key uint64) {
 	if raceenabled && h != nil {
 		callerpc := getcallerpc()
-		racewritepc(unsafe.Pointer(h), callerpc, funcPC(mapdelete_fast64))
+		racewritepc(unsafe.Pointer(h), callerpc, abi.FuncPCABIInternal(mapdelete_fast64))
 	}
 	if h == nil || h.count == 0 {
 		return
@@ -308,7 +309,7 @@ search:
 			}
 			// Only clear key if there are pointers in it.
 			if t.key.ptrdata != 0 {
-				if sys.PtrSize == 8 {
+				if goarch.PtrSize == 8 {
 					*(*unsafe.Pointer)(k) = nil
 				} else {
 					// There are three ways to squeeze at one ore more 32 bit pointers into 64 bits.
@@ -438,7 +439,7 @@ func evacuate_fast64(t *maptype, h *hmap, oldbucket uintptr) {
 
 				// Copy key.
 				if t.key.ptrdata != 0 && writeBarrier.enabled {
-					if sys.PtrSize == 8 {
+					if goarch.PtrSize == 8 {
 						// Write with a write barrier.
 						*(*unsafe.Pointer)(dst.k) = *(*unsafe.Pointer)(k)
 					} else {

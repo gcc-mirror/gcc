@@ -30,6 +30,11 @@
 #ifndef _UNORDERED_SET_H
 #define _UNORDERED_SET_H
 
+#include <bits/hashtable.h>
+#include <bits/allocator.h>
+#include <bits/functional_hash.h> // hash
+#include <bits/stl_function.h>    // equal_to
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

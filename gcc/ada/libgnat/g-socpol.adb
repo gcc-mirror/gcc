@@ -4,7 +4,7 @@
 --                                                                          --
 --                    G N A T . S O C K E T S . P O L L                     --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --                       Copyright (C) 2020-2022, AdaCore                   --
 --                                                                          --

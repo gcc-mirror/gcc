@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -msave-restore -fomit-frame-pointer" } */
+/* { dg-options "-msave-restore -fomit-frame-pointer" } */
 
 #include <stdlib.h>
 

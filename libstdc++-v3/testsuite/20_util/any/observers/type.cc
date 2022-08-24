@@ -1,4 +1,5 @@
 // { dg-do run { target c++17 } }
+// { dg-require-effective-target rtti }
 
 // Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //

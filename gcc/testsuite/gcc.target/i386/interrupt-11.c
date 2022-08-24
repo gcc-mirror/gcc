@@ -15,7 +15,7 @@ foo (void *frame)
 /* { dg-final { scan-assembler-not "kmov.\[\\t \]*\[0-9\]*\\(%\[re\]?sp\\),\[\\t \]*%k\[0-7\]+" } } */
 /* { dg-final { scan-assembler-not "pushq\[\\t \]*%rbx" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-not "pushq\[\\t \]*%r1\[2-5\]+" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-not "pushl\[\\t \]*%ebx" { target ia32 } } } */
+/* { dg-final { scan-assembler-not "pushl\[\\t \]*%ebx" { target { ia32 && nonpic } } } } */
 /* { dg-final { scan-assembler-not "pushl\[\\t \]*%edi" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "pushl\[\\t \]*%esi" { target ia32 } } } */
 /* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)ax" 1 } } */

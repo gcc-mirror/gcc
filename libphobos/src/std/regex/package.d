@@ -170,6 +170,10 @@ $(TR $(TD Objects) $(TD
       Greedy version - tries as many times as possible.)
     $(REG_ROW +?, Matches previous character/subexpression 1 or more times.
       Lazy version  - stops as early as possible.)
+    $(REG_ROW ?, Matches previous character/subexpression 0 or 1 time.
+      Greedy version - tries as many times as possible.)
+    $(REG_ROW ??, Matches previous character/subexpression 0 or 1 time.
+      Lazy version  - stops as early as possible.)
     $(REG_ROW {n}, Matches previous character/subexpression exactly n times. )
     $(REG_ROW {n$(COMMA)}, Matches previous character/subexpression n times or more.
       Greedy version - tries as many times as possible. )
@@ -1744,4 +1748,10 @@ auto escaper(Range)(Range r)
       auto s2 = "";
       assert(s2.escaper.equal(""));
     }}
+}
+
+@system unittest
+{
+    assert("ab".matchFirst(regex(`a?b?`)).hit == "ab");
+    assert("ab".matchFirst(regex(`a??b?`)).hit == "");
 }

@@ -1,5 +1,6 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88957
-// { dg-do compile }
+// { dg-additional-options "-mavx" { target avx_runtime } }
+// { dg-do compile { target { avx_runtime || vect_sizes_16B_8B } } }
 // { dg-additional-options "-fsanitize=undefined" }
 
 alias int4 = __vector(int[4]);

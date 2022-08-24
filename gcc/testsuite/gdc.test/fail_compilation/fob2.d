@@ -176,3 +176,20 @@ void free7(int*);
     free7(p);
 }
 
+/* TEST_OUTPUT:
+---
+fail_compilation/fob2.d(807): Error: variable `fob2.test8.p` assigning to Owner without disposing of owned value
+---
+*/
+
+#line 800
+
+int* malloc8();
+void free8(int*);
+
+@live void test8()
+{
+    int* p = malloc8();
+    p = malloc8();  // error here
+    free8(p);
+}

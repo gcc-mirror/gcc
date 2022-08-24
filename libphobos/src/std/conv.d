@@ -50,9 +50,9 @@ module std.conv;
 public import std.ascii : LetterCase;
 
 import std.meta;
-import std.range.primitives;
+import std.range;
 import std.traits;
-import std.typecons : Flag, Yes, No, tuple;
+import std.typecons : Flag, Yes, No, tuple, isTuple;
 
 // Same as std.string.format, but "self-importing".
 // Helps reduce code and imports, particularly in static asserts.
@@ -653,6 +653,32 @@ if (isImplicitlyConvertible!(S, T) &&
     }}
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=13551
+private T toImpl(T, S)(S value)
+if (isTuple!T)
+{
+    T t;
+    static foreach (i; 0 .. T.length)
+    {
+        t[i] = value[i].to!(typeof(T[i]));
+    }
+    return t;
+}
+
+@safe unittest
+{
+    import std.typecons : Tuple;
+
+    auto test = ["10", "20", "30"];
+    assert(test.to!(Tuple!(int, int, int)) == Tuple!(int, int, int)(10, 20, 30));
+
+    auto test1 = [1, 2];
+    assert(test1.to!(Tuple!(int, int)) == Tuple!(int, int)(1, 2));
+
+    auto test2 = [1.0, 2.0, 3.0];
+    assert(test2.to!(Tuple!(int, int, int)) == Tuple!(int, int, int)(1, 2, 3));
+}
+
 /*
   Converting static arrays forwards to their dynamic counterparts.
  */
@@ -1127,7 +1153,7 @@ if (!(isImplicitlyConvertible!(S, T) &&
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=16108
-@system unittest
+@safe unittest
 {
     static struct A
     {
@@ -1315,12 +1341,12 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     assert(to!string(a) == "[1.5, 2.5]");
 }
 
-@system unittest
+@safe unittest
 {
     // Conversion representing class object with string
     class A
     {
-        override string toString() const { return "an A"; }
+        override string toString() @safe const { return "an A"; }
     }
     A a;
     assert(to!string(a) == "null");
@@ -1328,7 +1354,7 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     assert(to!string(a) == "an A");
 
     // https://issues.dlang.org/show_bug.cgi?id=7660
-    class C { override string toString() const { return "C"; } }
+    class C { override string toString() @safe const { return "C"; } }
     struct S { C c; alias c this; }
     S s; s.c = new C();
     assert(to!string(s) == "C");
@@ -1616,7 +1642,7 @@ if (!isImplicitlyConvertible!(S, T) &&
 Array-to-array conversion (except when target is a string type)
 converts each element in turn by using `to`.
  */
-private T toImpl(T, S)(S value)
+private T toImpl(T, S)(scope S value)
 if (!isImplicitlyConvertible!(S, T) &&
     !isSomeString!S && isDynamicArray!S &&
     !isExactSomeString!T && isArray!T)
@@ -1713,10 +1739,10 @@ if (!isImplicitlyConvertible!(S, T) && isAssociativeArray!S &&
     foreach (k1, v1; value)
     {
         // Cast values temporarily to Unqual!V2 to store them to result variable
-        result[to!K2(k1)] = cast(Unqual!V2) to!V2(v1);
+        result[to!K2(k1)] = to!(Unqual!V2)(v1);
     }
     // Cast back to original type
-    return cast(T) result;
+    return () @trusted { return cast(T) result; }();
 }
 
 @safe unittest
@@ -1970,7 +1996,7 @@ if (isInputRange!S && isSomeChar!(ElementEncodingType!S) &&
 
 /// ditto
 private T toImpl(T, S)(S value, uint radix)
-if (isInputRange!S && !isInfinite!S && isSomeChar!(ElementEncodingType!S) &&
+if (isSomeFiniteCharInputRange!S &&
     isIntegral!T && is(typeof(parse!T(value, radix))))
 {
     scope(success)
@@ -2824,7 +2850,7 @@ do
     static if (isNarrowString!Source)
     {
         import std.string : representation;
-        auto s = source.representation;
+        scope s = source.representation;
     }
     else
     {
@@ -2872,7 +2898,7 @@ do
     }
 
     static if (isNarrowString!Source)
-        source = cast(Source) s;
+        source = source[$ - s.length .. $];
 
     static if (doCount)
     {
@@ -3089,11 +3115,17 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     static if (isNarrowString!Source)
     {
         import std.string : representation;
-        auto p = source.representation;
+        scope p = source.representation;
     }
     else
     {
         alias p = source;
+    }
+
+    void advanceSource()
+    {
+        static if (isNarrowString!Source)
+            source = source[$ - p.length .. $];
     }
 
     static immutable real[14] negtab =
@@ -3111,6 +3143,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     }
 
     enforce(!p.empty, bailOut());
+
 
     size_t count = 0;
     bool sign = false;
@@ -3142,8 +3175,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         // skip past the last 'f'
         ++count;
         p.popFront();
-        static if (isNarrowString!Source)
-            source = cast(Source) p;
+        advanceSource();
         static if (doCount)
         {
             return tuple!("data", "count")(sign ? -Target.infinity : Target.infinity, count);
@@ -3163,8 +3195,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         p.popFront();
         if (p.empty)
         {
-            static if (isNarrowString!Source)
-                source = cast(Source) p;
+            advanceSource();
             static if (doCount)
             {
                 return tuple!("data", "count")(cast (Target) (sign ? -0.0 : 0.0), count);
@@ -3196,8 +3227,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         // skip past the last 'n'
         ++count;
         p.popFront();
-        static if (isNarrowString!Source)
-            source = cast(Source) p;
+        advanceSource();
         static if (doCount)
         {
             return tuple!("data", "count")(Target.nan, count);
@@ -3389,20 +3419,23 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         }
     }
 
-    // if overflow occurred
-    enforce(ldval != real.infinity, new ConvException("Range error"));
+    Target result = cast(Target) (sign ? -ldval : ldval);
 
-    static if (isNarrowString!Source)
-        source = cast(Source) p;
+    // if overflow occurred
+    import std.math : isFinite;
+    enforce(isFinite(result), new ConvException("Range error"));
+
+    advanceSource();
     static if (doCount)
     {
-        return tuple!("data", "count")(cast (Target) (sign ? -ldval : ldval), count);
+        return tuple!("data", "count")(result, count);
     }
     else
     {
-        return cast (Target) (sign ? -ldval : ldval);
+        return result;
     }
 }
+
 
 ///
 @safe unittest
@@ -3753,6 +3786,16 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         parse!double(s);
     foreach (s; ssKO)
         assertThrown!ConvException(parse!double(s));
+}
+
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=22637
+{
+    import std.exception : assertThrown, assertNotThrown;
+    auto src = "9991232549867999698999493543521458974414359998784641646846435132132543645435456345634541999999999999999"
+    ~ "9999999943321231321311999231345312413646846354354354399999934153465464654646464654134135354199999999996515734999"
+    ~ "9999999320135273486741354354731567431324134999999999999999999999999999999999999999999999135411.9";
+    assertThrown!ConvException(parse!double(src));
+    static if (real.max_10_exp > 310) assertNotThrown!ConvException(parse!real(src));
 }
 
 /**
@@ -5951,4 +5994,15 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
             assert(original[i .. original.length - i].tupleof == r.tupleof);
         }
     }
+}
+
+// Converts an unsigned integer to a compile-time string constant.
+package enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
+
+// Check that .stringof does what we expect, since it's not guaranteed by the
+// language spec.
+@safe /*@betterC*/ unittest
+{
+    assert(toCtString!0 == "0");
+    assert(toCtString!123456 == "123456");
 }

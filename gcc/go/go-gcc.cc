@@ -898,6 +898,20 @@ Gcc_backend::Gcc_backend()
                        t, 0);
 
   t = build_function_type_list(unsigned_char_type_node,
+			       ptr_type_node,
+			       integer_type_node,
+			       NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_LOAD_1, "__atomic_load_1", NULL, t, 0);
+
+  t = build_function_type_list(void_type_node,
+			       ptr_type_node,
+			       unsigned_char_type_node,
+			       integer_type_node,
+			       NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_STORE_1, "__atomic_store_1", NULL,
+		       t, 0);
+
+  t = build_function_type_list(unsigned_char_type_node,
                                ptr_type_node,
                                unsigned_char_type_node,
                                integer_type_node,
@@ -1693,6 +1707,13 @@ Gcc_backend::struct_field_expression(Bexpression* bstruct, size_t index,
   if (struct_tree == error_mark_node
       || TREE_TYPE(struct_tree) == error_mark_node)
     return this->error_expression();
+
+  // A function call that returns a zero-sized object will have been
+  // changed to return void.  A zero-sized object can have a
+  // (zero-sized) field, so support that case.
+  if (TREE_TYPE(struct_tree) == void_type_node)
+    return bstruct;
+
   gcc_assert(TREE_CODE(TREE_TYPE(struct_tree)) == RECORD_TYPE);
   tree field = TYPE_FIELDS(TREE_TYPE(struct_tree));
   if (field == NULL_TREE)
@@ -2098,6 +2119,19 @@ Gcc_backend::call_expression(Bfunction*, // containing fcn for call
       args[i] = fn_args.at(i)->get_tree();
       if (args[i] == error_mark_node)
         return this->error_expression();
+      if (TREE_TYPE(args[i]) == void_type_node)
+	{
+	  // This can happen for a case like f(g()) where g returns a
+	  // zero-sized type, because in that case we've changed g to
+	  // return void.
+	  tree t = TYPE_ARG_TYPES(TREE_TYPE(TREE_TYPE(fn)));
+	  for (size_t j = 0; j < i; ++j)
+	    t = TREE_CHAIN(t);
+	  tree arg_type = TREE_TYPE(TREE_VALUE(t));
+	  args[i] = fold_build2_loc(EXPR_LOCATION(args[i]), COMPOUND_EXPR,
+				    arg_type, args[i],
+				    build_zero_cst(arg_type));
+	}
     }
 
   tree fndecl = fn;

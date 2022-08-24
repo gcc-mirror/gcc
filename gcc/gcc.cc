@@ -27,6 +27,7 @@ CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -43,6 +44,7 @@ compilation is specified by a string called a "spec".  */
 #include "opts.h"
 #include "filenames.h"
 #include "spellcheck.h"
+#include "opts-jobserver.h"
 
 
 
@@ -1462,13 +1464,13 @@ static const struct compiler default_compilers[] =
 		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
 			%(cc1_options)\
 			%{!fsyntax-only:%{!S:-o %g.s} \
-			    %{!fdump-ada-spec*:%{!o*:--output-pch=%i.gch}\
-					       %W{o*:--output-pch=%*}}%V}}\
+			    %{!fdump-ada-spec*:%{!o*:--output-pch %i.gch}\
+					       %W{o*:--output-pch %*}}%V}}\
 	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)\
 		    %{!fsyntax-only:%{!S:-o %g.s} \
-		        %{!fdump-ada-spec*:%{!o*:--output-pch=%i.gch}\
-					   %W{o*:--output-pch=%*}}%V}}}}}}}", 0, 0, 0},
+		        %{!fdump-ada-spec*:%{!o*:--output-pch %i.gch}\
+					   %W{o*:--output-pch %*}}%V}}}}}}}", 0, 0, 0},
   {".i", "@cpp-output", 0, 0, 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
@@ -3758,7 +3760,8 @@ display_help (void)
 
   fputs (_("  -pass-exit-codes         Exit with highest error code from a phase.\n"), stdout);
   fputs (_("  --help                   Display this information.\n"), stdout);
-  fputs (_("  --target-help            Display target specific command line options.\n"), stdout);
+  fputs (_("  --target-help            Display target specific command line options "
+	   "(including assembler and linker options).\n"), stdout);
   fputs (_("  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"), stdout);
   fputs (_("                           Display specific types of command line options.\n"), stdout);
   if (! verbose_flag)
@@ -4334,7 +4337,7 @@ driver_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc,
+      diagnostic_output_format_init (dc, opts->x_dump_base_name,
 				     (enum diagnostics_output_format)value);
       break;
 
@@ -4582,12 +4585,14 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgcc:
     case OPT_shared_libgcc:
     case OPT_static_libgfortran:
+    case OPT_static_libquadmath:
     case OPT_static_libphobos:
     case OPT_static_libstdc__:
       /* These are always valid, since gcc.cc itself understands the
 	 first two, gfortranspec.cc understands -static-libgfortran,
-	 d-spec.cc understands -static-libphobos, and g++spec.cc
-	 understands -static-libstdc++ */
+	 d-spec.cc understands -static-libphobos, g++spec.cc
+	 understands -static-libstdc++ and libgfortran.spec handles
+	 -static-libquadmath.  */
       validated = true;
       break;
 
@@ -9177,38 +9182,9 @@ driver::final_actions () const
 void
 driver::detect_jobserver () const
 {
-  /* Detect jobserver and drop it if it's not working.  */
-  const char *makeflags = env.get ("MAKEFLAGS");
-  if (makeflags != NULL)
-    {
-      const char *needle = "--jobserver-auth=";
-      const char *n = strstr (makeflags, needle);
-      if (n != NULL)
-	{
-	  int rfd = -1;
-	  int wfd = -1;
-
-	  bool jobserver
-	    = (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
-	       && rfd > 0
-	       && wfd > 0
-	       && is_valid_fd (rfd)
-	       && is_valid_fd (wfd));
-
-	  /* Drop the jobserver if it's not working now.  */
-	  if (!jobserver)
-	    {
-	      unsigned offset = n - makeflags;
-	      char *dup = xstrdup (makeflags);
-	      dup[offset] = '\0';
-
-	      const char *space = strchr (makeflags + offset, ' ');
-	      if (space != NULL)
-		strcpy (dup + offset, space);
-	      xputenv (concat ("MAKEFLAGS=", dup, NULL));
-	    }
-	}
-    }
+  jobserver_info jinfo;
+  if (!jinfo.is_active && !jinfo.skipped_makeflags.empty ())
+    xputenv (xstrdup (jinfo.skipped_makeflags.c_str ()));
 }
 
 /* Determine what the exit code of the driver should be.  */
@@ -10312,8 +10288,9 @@ sanitize_spec_function (int argc, const char **argv)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)
     return ((flag_sanitize
-	     & (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT))
-	    && !flag_sanitize_undefined_trap_on_error) ? "" : NULL;
+	     & ~flag_sanitize_trap
+	     & (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT)))
+	   ? "" : NULL;
   if (strcmp (argv[0], "leak") == 0)
     return ((flag_sanitize
 	     & (SANITIZE_ADDRESS | SANITIZE_LEAK | SANITIZE_THREAD))

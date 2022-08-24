@@ -48,7 +48,8 @@ enum svalue_kind
   SK_WIDENING,
   SK_COMPOUND,
   SK_CONJURED,
-  SK_ASM_OUTPUT
+  SK_ASM_OUTPUT,
+  SK_CONST_FN_RESULT
 };
 
 /* svalue and its subclasses.
@@ -77,7 +78,9 @@ enum svalue_kind
      compound_svalue (SK_COMPOUND): a mapping of bit-ranges to svalues
      conjured_svalue (SK_CONJURED): a value arising from a stmt
      asm_output_svalue (SK_ASM_OUTPUT): an output from a deterministic
-       asm stmt.  */
+       asm stmt.
+     const_fn_result_svalue (SK_CONST_FN_RESULT): the return value from
+       a function with __attribute((const)) for given inputs.  */
 
 /* An abstract base class representing a value held by a region of memory.  */
 
@@ -129,6 +132,8 @@ public:
   dyn_cast_conjured_svalue () const { return NULL; }
   virtual const asm_output_svalue *
   dyn_cast_asm_output_svalue () const { return NULL; }
+  virtual const const_fn_result_svalue *
+  dyn_cast_const_fn_result_svalue () const { return NULL; }
 
   tree maybe_get_constant () const;
   const region *maybe_get_region () const;
@@ -169,6 +174,8 @@ public:
      Most can, but UNKNOWN and POISONED svalues are singletons
      per-type and thus it's meaningless for them to "have state".  */
   virtual bool can_have_associated_state_p () const { return true; }
+
+  const region *maybe_get_deref_base_region () const;
 
  protected:
   svalue (complexity c, tree type)
@@ -222,14 +229,14 @@ public:
     gcc_assert (m_reg != NULL);
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_REGION; }
+  enum svalue_kind get_kind () const final override { return SK_REGION; }
   const region_svalue *
-  dyn_cast_region_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_region_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   const region * get_pointee () const { return m_reg; }
 
@@ -271,14 +278,14 @@ public:
     gcc_assert (CONSTANT_CLASS_P (cst_expr));
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_CONSTANT; }
+  enum svalue_kind get_kind () const final override { return SK_CONSTANT; }
   const constant_svalue *
-  dyn_cast_constant_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_constant_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   tree get_constant () const { return m_cst_expr; }
   static tristate eval_condition (const constant_svalue *lhs,
@@ -288,9 +295,9 @@ public:
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
-  bool all_zeroes_p () const FINAL OVERRIDE;
+  bool all_zeroes_p () const final override;
 
  private:
   tree m_cst_expr;
@@ -320,18 +327,18 @@ public:
   : svalue (complexity (1, 1), type)
   {}
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_UNKNOWN; }
+  enum svalue_kind get_kind () const final override { return SK_UNKNOWN; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
   /* Unknown values are singletons per-type, so can't have state.  */
-  bool can_have_associated_state_p () const FINAL OVERRIDE { return false; }
+  bool can_have_associated_state_p () const final override { return false; }
 };
 
 /* An enum describing a particular kind of "poisoned" value.  */
@@ -388,22 +395,22 @@ public:
   poisoned_svalue (enum poison_kind kind, tree type)
   : svalue (complexity (1, 1), type), m_kind (kind) {}
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_POISONED; }
+  enum svalue_kind get_kind () const final override { return SK_POISONED; }
   const poisoned_svalue *
-  dyn_cast_poisoned_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_poisoned_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
   enum poison_kind get_poison_kind () const { return m_kind; }
 
   /* Poisoned svalues are singletons per-type, so can't have state.  */
-  bool can_have_associated_state_p () const FINAL OVERRIDE { return false; }
+  bool can_have_associated_state_p () const final override { return false; }
 
  private:
   enum poison_kind m_kind;
@@ -497,12 +504,12 @@ public:
   : svalue (complexity (1, 1), type), m_setjmp_record (setjmp_record)
   {}
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_SETJMP; }
+  enum svalue_kind get_kind () const final override { return SK_SETJMP; }
   const setjmp_svalue *
-  dyn_cast_setjmp_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_setjmp_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   int get_enode_index () const;
 
@@ -547,14 +554,14 @@ public:
     gcc_assert (m_reg != NULL);
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_INITIAL; }
+  enum svalue_kind get_kind () const final override { return SK_INITIAL; }
   const initial_svalue *
-  dyn_cast_initial_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_initial_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   bool initial_value_of_param_p () const;
 
@@ -621,14 +628,14 @@ public:
     gcc_assert (arg->can_have_associated_state_p ());
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_UNARYOP; }
+  enum svalue_kind get_kind () const final override { return SK_UNARYOP; }
   const unaryop_svalue *
-  dyn_cast_unaryop_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_unaryop_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   enum tree_code get_op () const { return m_op; }
   const svalue *get_arg () const { return m_arg; }
@@ -636,7 +643,7 @@ public:
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
  private:
   enum tree_code m_op;
@@ -715,16 +722,16 @@ public:
     gcc_assert (arg1->can_have_associated_state_p ());
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_BINOP; }
-  const binop_svalue *dyn_cast_binop_svalue () const FINAL OVERRIDE
+  enum svalue_kind get_kind () const final override { return SK_BINOP; }
+  const binop_svalue *dyn_cast_binop_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   enum tree_code get_op () const { return m_op; }
   const svalue *get_arg0 () const { return m_arg0; }
@@ -796,16 +803,16 @@ public:
   sub_svalue (tree type, const svalue *parent_svalue,
 	       const region *subregion);
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_SUB; }
-  const sub_svalue *dyn_cast_sub_svalue () const FINAL OVERRIDE
+  enum svalue_kind get_kind () const final override { return SK_SUB; }
+  const sub_svalue *dyn_cast_sub_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   const svalue *get_parent () const { return m_parent_svalue; }
   const region *get_subregion () const { return m_subregion; }
@@ -878,24 +885,24 @@ public:
 		   const svalue *outer_size,
 		   const svalue *inner_svalue);
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_REPEATED; }
-  const repeated_svalue *dyn_cast_repeated_svalue () const FINAL OVERRIDE
+  enum svalue_kind get_kind () const final override { return SK_REPEATED; }
+  const repeated_svalue *dyn_cast_repeated_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const svalue *get_outer_size () const { return m_outer_size; }
   const svalue *get_inner_svalue () const { return m_inner_svalue; }
 
-  bool all_zeroes_p () const FINAL OVERRIDE;
+  bool all_zeroes_p () const final override;
 
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
  private:
   const svalue *m_outer_size;
@@ -965,17 +972,17 @@ public:
 		      const bit_range &bits,
 		      const svalue *inner_svalue);
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_BITS_WITHIN; }
+  enum svalue_kind get_kind () const final override { return SK_BITS_WITHIN; }
   const bits_within_svalue *
-  dyn_cast_bits_within_svalue () const FINAL OVERRIDE
+  dyn_cast_bits_within_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   const bit_range &get_bits () const { return m_bits; }
   const svalue *get_inner_svalue () const { return m_inner_svalue; }
@@ -983,7 +990,7 @@ public:
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
  private:
   const bit_range m_bits;
@@ -1027,14 +1034,14 @@ public:
   {
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_UNMERGEABLE; }
+  enum svalue_kind get_kind () const final override { return SK_UNMERGEABLE; }
   const unmergeable_svalue *
-  dyn_cast_unmergeable_svalue () const FINAL OVERRIDE { return this; }
+  dyn_cast_unmergeable_svalue () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
-			  const region_model *) const FINAL OVERRIDE;
+			  const region_model *) const final override;
 
   const svalue *get_arg () const { return m_arg; }
 
@@ -1067,10 +1074,10 @@ public:
   {
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_PLACEHOLDER; }
+  enum svalue_kind get_kind () const final override { return SK_PLACEHOLDER; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const char *get_name () const { return m_name; }
 
@@ -1158,14 +1165,14 @@ public:
     gcc_assert (iter_sval->can_have_associated_state_p ());
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_WIDENING; }
-  const widening_svalue *dyn_cast_widening_svalue () const FINAL OVERRIDE
+  enum svalue_kind get_kind () const final override { return SK_WIDENING; }
+  const widening_svalue *dyn_cast_widening_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const function_point &get_point () const { return m_point; }
   const svalue *get_base_svalue () const { return m_base_sval; }
@@ -1253,14 +1260,14 @@ public:
 
   compound_svalue (tree type, const binding_map &map);
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_COMPOUND; }
-  const compound_svalue *dyn_cast_compound_svalue () const FINAL OVERRIDE
+  enum svalue_kind get_kind () const final override { return SK_COMPOUND; }
+  const compound_svalue *dyn_cast_compound_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const binding_map &get_map () const { return m_map; }
 
@@ -1275,7 +1282,7 @@ public:
   const svalue *
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
-			  region_model_manager *mgr) const FINAL OVERRIDE;
+			  region_model_manager *mgr) const final override;
 
  private:
   static complexity calc_complexity (const binding_map &map);
@@ -1300,6 +1307,27 @@ template <> struct default_hash_traits<compound_svalue::key_t>
 };
 
 namespace ana {
+
+/* A bundle of state for purging information from a program_state about
+   a conjured_svalue.  We pass this whenever calling
+   get_or_create_conjured_svalue, so that if the program_state already
+   has information about this conjured_svalue on an execution path, we
+   can purge that information, to avoid the analyzer confusing the two
+   values as being the same.  */
+
+class conjured_purge
+{
+public:
+  conjured_purge (region_model *model, region_model_context *ctxt)
+  : m_model (model), m_ctxt (ctxt)
+  {
+  }
+  void purge (const conjured_svalue *sval) const;
+
+private:
+  region_model *m_model;
+  region_model_context *m_ctxt;
+};
 
 /* A defined value arising from a statement, where we want to identify a
    particular unknown value, rather than resorting to the unknown_value
@@ -1366,14 +1394,14 @@ public:
     gcc_assert (m_stmt != NULL);
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_CONJURED; }
-  const conjured_svalue *dyn_cast_conjured_svalue () const FINAL OVERRIDE
+  enum svalue_kind get_kind () const final override { return SK_CONJURED; }
+  const conjured_svalue *dyn_cast_conjured_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const gimple *get_stmt () const { return m_stmt; }
   const region *get_id_region () const { return m_id_reg; }
@@ -1487,15 +1515,15 @@ public:
       m_input_arr[i] = inputs[i];
   }
 
-  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_ASM_OUTPUT; }
+  enum svalue_kind get_kind () const final override { return SK_ASM_OUTPUT; }
   const asm_output_svalue *
-  dyn_cast_asm_output_svalue () const FINAL OVERRIDE
+  dyn_cast_asm_output_svalue () const final override
   {
     return this;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
 
   const char *get_asm_string () const { return m_asm_string; }
   unsigned get_output_idx () const { return m_output_idx; }
@@ -1535,4 +1563,128 @@ template <> struct default_hash_traits<asm_output_svalue::key_t>
 {
   static const bool empty_zero_p = true;
 };
+
+namespace ana {
+
+/* The return value from a function with __attribute((const)) for given
+   inputs, provided that we don't have too many inputs, and all of them
+   are deterministic.
+
+   Comparisons of variables that share the same const_fn_result_svalue are known
+   to be equal, even if we don't know what the value is.  */
+
+class const_fn_result_svalue : public svalue
+{
+public:
+  /* Imposing an upper limit and using a (small) array allows key_t
+     to avoid memory management.  */
+  static const unsigned MAX_INPUTS = 2;
+
+  /* A support class for uniquifying instances of const_fn_result_svalue.  */
+  struct key_t
+  {
+    key_t (tree type,
+	   tree fndecl,
+	   const vec<const svalue *> &inputs)
+    : m_type (type), m_fndecl (fndecl),
+      m_num_inputs (inputs.length ())
+    {
+      gcc_assert (inputs.length () <= MAX_INPUTS);
+      for (unsigned i = 0; i < m_num_inputs; i++)
+	m_input_arr[i] = inputs[i];
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_type);
+      hstate.add_ptr (m_fndecl);
+      for (unsigned i = 0; i < m_num_inputs; i++)
+	hstate.add_ptr (m_input_arr[i]);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      if (!(m_type == other.m_type
+	    && m_fndecl == other.m_fndecl
+	    && m_num_inputs == other.m_num_inputs))
+	return false;
+      for (unsigned i = 0; i < m_num_inputs; i++)
+	if (m_input_arr[i] != other.m_input_arr[i])
+	  return false;
+      return true;
+    }
+
+    /* Use m_fndecl to mark empty/deleted.  */
+    void mark_deleted () { m_fndecl = reinterpret_cast<tree> (1); }
+    void mark_empty () { m_fndecl = NULL; }
+    bool is_deleted () const
+    {
+      return m_fndecl == reinterpret_cast<tree> (1);
+    }
+    bool is_empty () const { return m_fndecl == NULL; }
+
+    tree m_type;
+    tree m_fndecl;
+    unsigned m_num_inputs;
+    const svalue *m_input_arr[MAX_INPUTS];
+  };
+
+  const_fn_result_svalue (tree type,
+			  tree fndecl,
+			  const vec<const svalue *> &inputs)
+  : svalue (complexity::from_vec_svalue (inputs), type),
+    m_fndecl (fndecl),
+    m_num_inputs (inputs.length ())
+  {
+    gcc_assert (inputs.length () <= MAX_INPUTS);
+    for (unsigned i = 0; i < m_num_inputs; i++)
+      m_input_arr[i] = inputs[i];
+  }
+
+  enum svalue_kind get_kind () const final override
+  {
+    return SK_CONST_FN_RESULT;
+  }
+  const const_fn_result_svalue *
+  dyn_cast_const_fn_result_svalue () const final override
+  {
+    return this;
+  }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void accept (visitor *v) const final override;
+
+  tree get_fndecl () const { return m_fndecl; }
+  unsigned get_num_inputs () const { return m_num_inputs; }
+  const svalue *get_input (unsigned idx) const { return m_input_arr[idx]; }
+
+ private:
+  void dump_input (pretty_printer *pp,
+		   unsigned input_idx,
+		   const svalue *sval,
+		   bool simple) const;
+
+  tree m_fndecl;
+  unsigned m_num_inputs;
+  const svalue *m_input_arr[MAX_INPUTS];
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const const_fn_result_svalue *>::test (const svalue *sval)
+{
+  return sval->get_kind () == SK_CONST_FN_RESULT;
+}
+
+template <> struct default_hash_traits<const_fn_result_svalue::key_t>
+: public member_function_hash_traits<const_fn_result_svalue::key_t>
+{
+  static const bool empty_zero_p = true;
+};
+
 #endif /* GCC_ANALYZER_SVALUE_H */

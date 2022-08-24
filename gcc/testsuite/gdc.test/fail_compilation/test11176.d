@@ -12,7 +12,10 @@ fail_compilation/test11176.d(16): Error: `b.ptr` cannot be used in `@safe` code,
     return *b.ptr;
 }
 
-@safe ubyte oops(ubyte[3] b) {
+@safe ubyte oops(ubyte[0] b) {
     return *b.ptr;
 }
 
+@safe ubyte cool(ubyte[1] b) {
+    return *b.ptr;
+}

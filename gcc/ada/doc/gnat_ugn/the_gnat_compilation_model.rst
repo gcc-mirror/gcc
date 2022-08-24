@@ -1401,6 +1401,8 @@ recognized by GNAT::
      Ada_2005
      Ada_12
      Ada_2012
+     Ada_2022
+     Aggregate_Individually_Assign
      Allow_Integer_Address
      Annotate
      Assertion_Policy
@@ -1741,8 +1743,7 @@ The following information is contained in the :file:`ALI` file.
   if any of these units are modified.
 
 * Cross-reference data. Contains information on all entities referenced
-  in the unit. Used by tools like ``gnatxref`` and ``gnatfind`` to
-  provide cross-reference information.
+  in the unit. Used by some tools to provide cross-reference information.
 
 For a full detailed description of the format of the :file:`ALI` file,
 see the source of the body of unit ``Lib.Writ``, contained in file
@@ -2007,8 +2008,8 @@ be :file:`adalib`).
 You can also specify a new default path to the run-time library at compilation
 time with the switch :switch:`--RTS=rts-path`. You can thus choose / change
 the run-time library you want your program to be compiled with. This switch is
-recognized by ``gcc``, ``gnatmake``, ``gnatbind``,
-``gnatls``, ``gnatfind`` and ``gnatxref``.
+recognized by ``gcc``, ``gnatmake``, ``gnatbind``, ``gnatls``, and all
+project aware tools.
 
 It is possible to install a library before or after the standard GNAT
 library, by reordering the lines in the configuration files. In general, a
@@ -3809,7 +3810,7 @@ Interfacing to C++
 
 GNAT supports interfacing with the G++ compiler (or any C++ compiler
 generating code that is compatible with the G++ Application Binary
-Interface ---see http://www.codesourcery.com/archives/cxx-abi).
+Interface ---see http://itanium-cxx-abi.github.io/cxx-abi/abi.html).
 
 Interfacing can be done at 3 levels: simple data, subprograms, and
 classes. In the first two cases, GNAT offers a specific ``Convention C_Plus_Plus``
@@ -4556,8 +4557,8 @@ can use instead the :switch:`-fdump-ada-spec-slim` switch.
 You can optionally specify a parent unit, of which all generated units will
 be children, using :switch:`-fada-spec-parent={unit}`.
 
-The simple ``gcc```-based command works only for C headers. For C++ headers
-you need to use either the ``g++`` command or the combination ``gcc -x c++```.
+The simple ``gcc``-based command works only for C headers. For C++ headers
+you need to use either the ``g++`` command or the combination ``gcc -x c++``.
 
 In some cases, the generated bindings will be more complete or more meaningful
 when defining some macros, which you can do via the :switch:`-D` switch. This

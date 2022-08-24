@@ -65,4 +65,3 @@ extern (D) pure @safe @nogc nothrow {
     }
 
 }
-

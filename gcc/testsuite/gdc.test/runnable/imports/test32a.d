@@ -7,4 +7,3 @@ struct S{
 int f(){
   return S.sizeof; // OK
 }
-

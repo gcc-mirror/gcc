@@ -1845,7 +1845,7 @@ package body Sem_Elab is
 
       function Is_SPARK_Semantic_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_SPARK_Semantic_Target);
-      --  Determine whether arbitrary entity Id nodes a source or internally
+      --  Determine whether arbitrary entity Id denotes a source or internally
       --  generated subprogram which emulates SPARK semantics.
 
       function Is_Subprogram_Inst (Id : Entity_Id) return Boolean;
@@ -4958,7 +4958,7 @@ package body Sem_Elab is
          then
             Error_Msg_Name_1 := Attribute_Name (Attr);
             Error_Msg_NE
-              ("??% attribute of & before body seen", Attr, Subp_Id);
+              ("?.f?% attribute of & before body seen", Attr, Subp_Id);
             Error_Msg_N ("\possible Program_Error on later references", Attr);
 
             Output_Active_Scenarios (Attr, New_In_State);
@@ -7346,12 +7346,22 @@ package body Sem_Elab is
             --  is a byproduct of the parser. Such a null statement should be
             --  excluded from the early call region because it carries the
             --  source location of the "end" keyword, and may lead to confusing
-            --  diagnistics.
+            --  diagnostics.
 
             if Nkind (N) = N_Null_Statement
               and then not Comes_From_Source (N)
               and then Present (Context)
               and then Nkind (Context) = N_Handled_Sequence_Of_Statements
+            then
+               return False;
+
+            --  Similarly, internally-generated objects and types may have
+            --  out-of-order source locations that confuse diagnostics, e.g.
+            --  source locations in the body for objects/types generated in
+            --  the spec.
+
+            elsif Nkind (N) in N_Full_Type_Declaration | N_Object_Declaration
+              and then not Comes_From_Source (N)
             then
                return False;
             end if;
@@ -18900,18 +18910,16 @@ package body Sem_Elab is
 
       procedure Collect_Tasks (Decls : List_Id) is
       begin
-         if Present (Decls) then
-            Decl := First (Decls);
-            while Present (Decl) loop
-               if Nkind (Decl) = N_Object_Declaration
-                 and then Has_Task (Etype (Defining_Identifier (Decl)))
-               then
-                  Add_Task_Proc (Etype (Defining_Identifier (Decl)));
-               end if;
+         Decl := First (Decls);
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Object_Declaration
+              and then Has_Task (Etype (Defining_Identifier (Decl)))
+            then
+               Add_Task_Proc (Etype (Defining_Identifier (Decl)));
+            end if;
 
-               Next (Decl);
-            end loop;
-         end if;
+            Next (Decl);
+         end loop;
       end Collect_Tasks;
 
       ----------------

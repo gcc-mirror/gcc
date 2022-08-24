@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "builtins.h"
 #include "generic-match.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
 #include "md5.h"
@@ -86,8 +87,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 
 /* Nonzero if we are folding constants inside an initializer or a C++
-   manifestly-constant-evaluated context; zero otherwise.  */
+   manifestly-constant-evaluated context; zero otherwise.
+   Should be used when folding in initializer enables additional
+   optimizations.  */
 int folding_initializer = 0;
+
+/* Nonzero if we are folding C++ manifestly-constant-evaluated context; zero
+   otherwise.
+   Should be used when certain constructs shouldn't be optimized
+   during folding in that context.  */
+bool folding_cxx_constexpr = false;
 
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
@@ -1306,6 +1315,17 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       real_convert (&result, mode, &value);
 
       /* Don't constant fold this floating point operation if
+	 both operands are not NaN but the result is NaN, and
+	 flag_trapping_math.  Such operations should raise an
+	 invalid operation exception.  */
+      if (flag_trapping_math
+	  && MODE_HAS_NANS (mode)
+	  && REAL_VALUE_ISNAN (result)
+	  && !REAL_VALUE_ISNAN (d1)
+	  && !REAL_VALUE_ISNAN (d2))
+	return NULL_TREE;
+
+      /* Don't constant fold this floating point operation if
 	 the result has overflowed and flag_trapping_math.  */
       if (flag_trapping_math
 	  && MODE_HAS_INFINITIES (mode)
@@ -2365,7 +2385,7 @@ build_zero_vector (tree type)
 bool
 fold_convertible_p (const_tree type, const_tree arg)
 {
-  tree orig = TREE_TYPE (arg);
+  const_tree orig = TREE_TYPE (arg);
 
   if (type == orig)
     return true;
@@ -2397,7 +2417,7 @@ fold_convertible_p (const_tree type, const_tree arg)
       return (VECTOR_TYPE_P (orig)
 	      && known_eq (TYPE_VECTOR_SUBPARTS (type),
 			   TYPE_VECTOR_SUBPARTS (orig))
-	      && fold_convertible_p (TREE_TYPE (type), TREE_TYPE (orig)));
+	      && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
 
     default:
       return false;
@@ -3338,8 +3358,11 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
-		    if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
-					  DECL_FIELD_OFFSET (field1), flags)
+		    /* Non-FIELD_DECL operands can appear in C++ templates.  */
+		    if (TREE_CODE (field0) != FIELD_DECL
+			|| TREE_CODE (field1) != FIELD_DECL
+			|| !operand_equal_p (DECL_FIELD_OFFSET (field0),
+					     DECL_FIELD_OFFSET (field1), flags)
 			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
 					     DECL_FIELD_BIT_OFFSET (field1),
 					     flags))
@@ -5189,7 +5212,7 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 	n_high = fold_convert_loc (loc, arg0_type, n_high);
 
       /* If we're converting arg0 from an unsigned type, to exp,
-	 a signed type,  we will be doing the comparison as unsigned.
+	 a signed type, we will be doing the comparison as unsigned.
 	 The tests above have already verified that LOW and HIGH
 	 are both positive.
 
@@ -5248,6 +5271,32 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 		return NULL_TREE;
 
 	      in_p = (in_p != n_in_p);
+	    }
+	}
+
+      /* Otherwise, if we are converting arg0 from signed type, to exp,
+	 an unsigned type, we will do the comparison as signed.  If
+	 high is non-NULL, we punt above if it doesn't fit in the signed
+	 type, so if we get through here, +[-, high] or +[low, high] are
+	 equivalent to +[-, n_high] or +[n_low, n_high].  Similarly,
+	 +[-, -] or -[-, -] are equivalent too.  But if low is specified and
+	 high is not, the +[low, -] range is equivalent to union of
+	 +[n_low, -] and +[-, -1] ranges, so +[low, -] is equivalent to
+	 -[0, n_low-1] and similarly -[low, -] to +[0, n_low-1], except for
+	 low being 0, which should be treated as [-, -].  */
+      else if (TYPE_UNSIGNED (exp_type)
+	       && !TYPE_UNSIGNED (arg0_type)
+	       && low
+	       && !high)
+	{
+	  if (integer_zerop (low))
+	    n_low = NULL_TREE;
+	  else
+	    {
+	      n_high = fold_build2_loc (loc, PLUS_EXPR, arg0_type,
+					n_low, build_int_cst (arg0_type, -1));
+	      n_low = build_zero_cst (arg0_type);
+	      in_p = !in_p;
 	    }
 	}
 
@@ -7481,7 +7530,7 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
 static tree
 fold_to_nonsharp_ineq_using_bound (location_t loc, tree ineq, tree bound)
 {
-  tree a, typea, type = TREE_TYPE (ineq), a1, diff, y;
+  tree a, typea, type = TREE_TYPE (bound), a1, diff, y;
 
   if (TREE_CODE (bound) == LT_EXPR)
     a = TREE_OPERAND (bound, 0);
@@ -8624,7 +8673,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
    the buffer PTR of length LEN as a REAL_CST of type TYPE.
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
-static tree
+tree
 native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
   scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
@@ -8675,19 +8724,7 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
     }
 
   real_from_target (&r, tmp, mode);
-  tree ret = build_real (type, r);
-  if (MODE_COMPOSITE_P (mode))
-    {
-      /* For floating point values in composite modes, punt if this folding
-	 doesn't preserve bit representation.  As the mode doesn't have fixed
-	 precision while GCC pretends it does, there could be valid values that
-	 GCC can't really represent accurately.  See PR95450.  */
-      unsigned char buf[24];
-      if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
-	  || memcmp (ptr, buf, total_bytes) != 0)
-	ret = NULL_TREE;
-    }
-  return ret;
+  return build_real (type, r);
 }
 
 
@@ -8805,7 +8842,23 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
-      return native_interpret_real (type, ptr, len);
+      if (tree ret = native_interpret_real (type, ptr, len))
+	{
+	  /* For floating point values in composite modes, punt if this
+	     folding doesn't preserve bit representation.  As the mode doesn't
+	     have fixed precision while GCC pretends it does, there could be
+	     valid values that GCC can't really represent accurately.
+	     See PR95450.  Even for other modes, e.g. x86 XFmode can have some
+	     bit combinationations which GCC doesn't preserve.  */
+	  unsigned char buf[24];
+	  scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
+	  int total_bytes = GET_MODE_SIZE (mode);
+	  if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
+	      || memcmp (ptr, buf, total_bytes) != 0)
+	    return NULL_TREE;
+	  return ret;
+	}
+      return NULL_TREE;
 
     case FIXED_POINT_TYPE:
       return native_interpret_fixed (type, ptr, len);
@@ -9461,6 +9514,16 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && sanitize_flags_p (SANITIZE_ALIGNMENT)
 	      && (min_align_of_type (TREE_TYPE (type))
 		  > min_align_of_type (TREE_TYPE (TREE_TYPE (arg00)))))
+	    return NULL_TREE;
+
+	  /* Similarly, avoid this optimization in GENERIC for -fsanitize=null
+	     when type is a reference type and arg00's type is not,
+	     because arg00 could be validly nullptr and if arg01 doesn't return,
+	     we don't want false positive binding of reference to nullptr.  */
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      && !in_gimple_form
+	      && sanitize_flags_p (SANITIZE_NULL)
+	      && TREE_CODE (TREE_TYPE (arg00)) != REFERENCE_TYPE)
 	    return NULL_TREE;
 
 	  arg00 = fold_convert_loc (loc, type, arg00);
@@ -11974,11 +12037,15 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	{
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg0, arg1);
 	  if (tem && !operand_equal_p (tem, arg0, 0))
-	    return fold_build2_loc (loc, code, type, tem, arg1);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg1),
+						  tem, arg1));
 
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg1, arg0);
 	  if (tem && !operand_equal_p (tem, arg1, 0))
-	    return fold_build2_loc (loc, code, type, arg0, tem);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg0),
+						  arg0, tem));
 	}
 
       if ((tem = fold_truth_andor (loc, code, type, arg0, arg1, op0, op1))
@@ -12134,60 +12201,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	      return fold_build2_loc (loc, code, type,
 				      fold_convert_loc (loc, TREE_TYPE (arg1),
 							tem), arg1);
-	    }
-	}
-
-      /* Fold ((X >> C1) & C2) == 0 and ((X >> C1) & C2) != 0 where
-	 C1 is a valid shift constant, and C2 is a power of two, i.e.
-	 a single bit.  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && integer_pow2p (TREE_OPERAND (arg0, 1))
-	  && integer_zerop (arg1))
-	{
-	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  STRIP_NOPS (arg00);
-	  if (TREE_CODE (arg00) == RSHIFT_EXPR
-	      && TREE_CODE (TREE_OPERAND (arg00, 1)) == INTEGER_CST)
-	    {
-	      tree itype = TREE_TYPE (arg00);
-	      tree arg001 = TREE_OPERAND (arg00, 1);
-	      prec = TYPE_PRECISION (itype);
-
-	      /* Check for a valid shift count.  */
-	      if (wi::ltu_p (wi::to_wide (arg001), prec))
-		{
-		  tree arg01 = TREE_OPERAND (arg0, 1);
-		  tree arg000 = TREE_OPERAND (arg00, 0);
-		  unsigned HOST_WIDE_INT log2 = tree_log2 (arg01);
-		  /* If (C2 << C1) doesn't overflow, then
-		     ((X >> C1) & C2) != 0 can be rewritten as
-		     (X & (C2 << C1)) != 0.  */
-		  if ((log2 + TREE_INT_CST_LOW (arg001)) < prec)
-		    {
-		      tem = fold_build2_loc (loc, LSHIFT_EXPR, itype,
-					     arg01, arg001);
-		      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype,
-					     arg000, tem);
-		      return fold_build2_loc (loc, code, type, tem,
-				fold_convert_loc (loc, itype, arg1));
-		    }
-		  /* Otherwise, for signed (arithmetic) shifts,
-		     ((X >> C1) & C2) != 0 is rewritten as X < 0, and
-		     ((X >> C1) & C2) == 0 is rewritten as X >= 0.  */
-		  else if (!TYPE_UNSIGNED (itype))
-		    return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR
-								 : LT_EXPR,
-					    type, arg000,
-					    build_int_cst (itype, 0));
-		  /* Otherwise, of unsigned (logical) shifts,
-		     ((X >> C1) & C2) != 0 is rewritten as (X,false), and
-		     ((X >> C1) & C2) == 0 is rewritten as (X,true).  */
-		  else
-		    return omit_one_operand_loc (loc, type,
-					 code == EQ_EXPR ? integer_one_node
-							 : integer_zero_node,
-					 arg000);
-		}
 	    }
 	}
 
@@ -14062,13 +14075,19 @@ fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
      SAVE_EXPR (I) * SAVE_EXPR (J)
 
    (where the same SAVE_EXPR (J) is used in the original and the
-   transformed version).  */
+   transformed version).
+
+   NOWRAP specifies whether all outer operations in TYPE should
+   be considered not wrapping.  Any type conversion within TOP acts
+   as a barrier and we will fall back to NOWRAP being false.
+   NOWRAP is mostly used to treat expressions in TYPE_SIZE and friends
+   as not wrapping even though they are generally using unsigned arithmetic.  */
 
 int
-multiple_of_p (tree type, const_tree top, const_tree bottom)
+multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 {
   gimple *stmt;
-  tree t1, op1, op2;
+  tree op1, op2;
 
   if (operand_equal_p (top, bottom, 0))
     return 1;
@@ -14083,10 +14102,17 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	 a multiple of BOTTOM then TOP is a multiple of BOTTOM.  */
       if (!integer_pow2p (bottom))
 	return 0;
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
+	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
 
     case MULT_EXPR:
+      /* If the multiplication can wrap we cannot recurse further unless
+	 the bottom is a power of two which is where wrapping does not
+	 matter.  */
+      if (!nowrap
+	  && !TYPE_OVERFLOW_UNDEFINED (type)
+	  && !integer_pow2p (bottom))
+	return 0;
       if (TREE_CODE (bottom) == INTEGER_CST)
 	{
 	  op1 = TREE_OPERAND (top, 0);
@@ -14095,82 +14121,88 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	    std::swap (op1, op2);
 	  if (TREE_CODE (op2) == INTEGER_CST)
 	    {
-	      if (multiple_of_p (type, op2, bottom))
+	      if (multiple_of_p (type, op2, bottom, nowrap))
 		return 1;
 	      /* Handle multiple_of_p ((x * 2 + 2) * 4, 8).  */
-	      if (multiple_of_p (type, bottom, op2))
+	      if (multiple_of_p (type, bottom, op2, nowrap))
 		{
 		  widest_int w = wi::sdiv_trunc (wi::to_widest (bottom),
 						 wi::to_widest (op2));
 		  if (wi::fits_to_tree_p (w, TREE_TYPE (bottom)))
 		    {
 		      op2 = wide_int_to_tree (TREE_TYPE (bottom), w);
-		      return multiple_of_p (type, op1, op2);
+		      return multiple_of_p (type, op1, op2, nowrap);
 		    }
 		}
-	      return multiple_of_p (type, op1, bottom);
+	      return multiple_of_p (type, op1, bottom, nowrap);
 	    }
 	}
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
-
-    case MINUS_EXPR:
-      /* It is impossible to prove if op0 - op1 is multiple of bottom
-	 precisely, so be conservative here checking if both op0 and op1
-	 are multiple of bottom.  Note we check the second operand first
-	 since it's usually simpler.  */
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
-
-    case PLUS_EXPR:
-      /* The same as MINUS_EXPR, but handle cases like op0 + 0xfffffffd
-	 as op0 - 3 if the expression has unsigned type.  For example,
-	 (X / 3) + 0xfffffffd is multiple of 3, but 0xfffffffd is not.  */
-      op1 = TREE_OPERAND (top, 1);
-      if (TYPE_UNSIGNED (type)
-	  && TREE_CODE (op1) == INTEGER_CST && tree_int_cst_sign_bit (op1))
-	op1 = fold_build1 (NEGATE_EXPR, type, op1);
-      return (multiple_of_p (type, op1, bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
+	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
 
     case LSHIFT_EXPR:
+      /* Handle X << CST as X * (1 << CST) and only process the constant.  */
       if (TREE_CODE (TREE_OPERAND (top, 1)) == INTEGER_CST)
 	{
 	  op1 = TREE_OPERAND (top, 1);
-	  /* const_binop may not detect overflow correctly,
-	     so check for it explicitly here.  */
-	  if (wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
-			 wi::to_wide (op1))
-	      && (t1 = fold_convert (type,
-				     const_binop (LSHIFT_EXPR, size_one_node,
-						  op1))) != 0
-	      && !TREE_OVERFLOW (t1))
-	    return multiple_of_p (type, t1, bottom);
+	  if (wi::to_widest (op1) < TYPE_PRECISION (type))
+	    {
+	      wide_int mul_op
+		= wi::one (TYPE_PRECISION (type)) << wi::to_wide (op1);
+	      return multiple_of_p (type,
+				    wide_int_to_tree (type, mul_op), bottom,
+				    nowrap);
+	    }
 	}
       return 0;
 
-    case NOP_EXPR:
+    case MINUS_EXPR:
+    case PLUS_EXPR:
+      /* If the addition or subtraction can wrap we cannot recurse further
+	 unless bottom is a power of two which is where wrapping does not
+	 matter.  */
+      if (!nowrap
+	  && !TYPE_OVERFLOW_UNDEFINED (type)
+	  && !integer_pow2p (bottom))
+	return 0;
+
+      /* Handle cases like op0 + 0xfffffffd as op0 - 3 if the expression has
+	 unsigned type.  For example, (X / 3) + 0xfffffffd is multiple of 3,
+	 but 0xfffffffd is not.  */
+      op1 = TREE_OPERAND (top, 1);
+      if (TREE_CODE (top) == PLUS_EXPR
+	  && nowrap
+	  && TYPE_UNSIGNED (type)
+	  && TREE_CODE (op1) == INTEGER_CST && tree_int_cst_sign_bit (op1))
+	op1 = fold_build1 (NEGATE_EXPR, type, op1);
+
+      /* It is impossible to prove if op0 +- op1 is multiple of bottom
+	 precisely, so be conservative here checking if both op0 and op1
+	 are multiple of bottom.  Note we check the second operand first
+	 since it's usually simpler.  */
+      return (multiple_of_p (type, op1, bottom, nowrap)
+	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
+
+    CASE_CONVERT:
       /* Can't handle conversions from non-integral or wider integral type.  */
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
 	  || (TYPE_PRECISION (type)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
 	return 0;
-
-      /* fall through */
+      /* NOWRAP only extends to operations in the outermost type so
+	 make sure to strip it off here.  */
+      return multiple_of_p (TREE_TYPE (TREE_OPERAND (top, 0)),
+			    TREE_OPERAND (top, 0), bottom, false);
 
     case SAVE_EXPR:
-      return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
+      return multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap);
 
     case COND_EXPR:
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
+	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom, nowrap));
 
     case INTEGER_CST:
-      if (TREE_CODE (bottom) != INTEGER_CST
-	  || integer_zerop (bottom)
-	  || (TYPE_UNSIGNED (type)
-	      && (tree_int_cst_sgn (top) < 0
-		  || tree_int_cst_sgn (bottom) < 0)))
+      if (TREE_CODE (bottom) != INTEGER_CST || integer_zerop (bottom))
 	return 0;
       return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
 				SIGNED);
@@ -16538,6 +16570,7 @@ tree_nonzero_bits (const_tree t)
 
 /* Helper function for address compare simplifications in match.pd.
    OP0 and OP1 are ADDR_EXPR operands being compared by CODE.
+   TYPE is the type of comparison operands.
    BASE0, BASE1, OFF0 and OFF1 are set by the function.
    GENERIC is true if GENERIC folding and false for GIMPLE folding.
    Returns 0 if OP0 is known to be unequal to OP1 regardless of OFF{0,1},
@@ -16587,6 +16620,15 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
 	       || TREE_CODE (base1) == SSA_NAME
 	       || TREE_CODE (base1) == STRING_CST))
     equal = (base0 == base1);
+  /* Assume different STRING_CSTs with the same content will be
+     merged.  */
+  if (equal == 0
+      && TREE_CODE (base0) == STRING_CST
+      && TREE_CODE (base1) == STRING_CST
+      && TREE_STRING_LENGTH (base0) == TREE_STRING_LENGTH (base1)
+      && memcmp (TREE_STRING_POINTER (base0), TREE_STRING_POINTER (base1),
+		 TREE_STRING_LENGTH (base0)) == 0)
+    equal = 1;
   if (equal == 1)
     {
       if (code == EQ_EXPR
@@ -16605,44 +16647,66 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
   if (code != EQ_EXPR && code != NE_EXPR)
     return 2;
 
+  /* At this point we know (or assume) the two pointers point at
+     different objects.  */
   HOST_WIDE_INT ioff0 = -1, ioff1 = -1;
   off0.is_constant (&ioff0);
   off1.is_constant (&ioff1);
-  if ((DECL_P (base0) && TREE_CODE (base1) == STRING_CST)
-       || (TREE_CODE (base0) == STRING_CST && DECL_P (base1))
-       || (TREE_CODE (base0) == STRING_CST
-	   && TREE_CODE (base1) == STRING_CST
-	   && ioff0 >= 0 && ioff1 >= 0
-	   && ioff0 < TREE_STRING_LENGTH (base0)
-	   && ioff1 < TREE_STRING_LENGTH (base1)
-	  /* This is a too conservative test that the STRING_CSTs
-	     will not end up being string-merged.  */
-	   && strncmp (TREE_STRING_POINTER (base0) + ioff0,
-		       TREE_STRING_POINTER (base1) + ioff1,
-		       MIN (TREE_STRING_LENGTH (base0) - ioff0,
-			    TREE_STRING_LENGTH (base1) - ioff1)) != 0))
-    ;
-  else if (!DECL_P (base0) || !DECL_P (base1))
+  /* Punt on non-zero offsets from functions.  */
+  if ((TREE_CODE (base0) == FUNCTION_DECL && ioff0)
+      || (TREE_CODE (base1) == FUNCTION_DECL && ioff1))
     return 2;
-  /* If this is a pointer comparison, ignore for now even
-     valid equalities where one pointer is the offset zero
-     of one object and the other to one past end of another one.  */
-  else if (!folding_initializer && !INTEGRAL_TYPE_P (type))
-    ;
-  /* Assume that automatic variables can't be adjacent to global
-     variables.  */
-  else if (is_global_var (base0) != is_global_var (base1))
-    ;
+  /* Or if the bases are neither decls nor string literals.  */
+  if (!DECL_P (base0) && TREE_CODE (base0) != STRING_CST)
+    return 2;
+  if (!DECL_P (base1) && TREE_CODE (base1) != STRING_CST)
+    return 2;
+  /* For initializers, assume addresses of different functions are
+     different.  */
+  if (folding_initializer
+      && TREE_CODE (base0) == FUNCTION_DECL
+      && TREE_CODE (base1) == FUNCTION_DECL)
+    return 0;
+
+  /* Compute whether one address points to the start of one
+     object and another one to the end of another one.  */
+  poly_int64 size0 = 0, size1 = 0;
+  if (TREE_CODE (base0) == STRING_CST)
+    {
+      if (ioff0 < 0 || ioff0 > TREE_STRING_LENGTH (base0))
+	equal = 2;
+      else
+	size0 = TREE_STRING_LENGTH (base0);
+    }
+  else if (TREE_CODE (base0) == FUNCTION_DECL)
+    size0 = 1;
   else
     {
       tree sz0 = DECL_SIZE_UNIT (base0);
+      if (!tree_fits_poly_int64_p (sz0))
+	equal = 2;
+      else
+	size0 = tree_to_poly_int64 (sz0);
+    }
+  if (TREE_CODE (base1) == STRING_CST)
+    {
+      if (ioff1 < 0 || ioff1 > TREE_STRING_LENGTH (base1))
+	equal = 2;
+      else
+	size1 = TREE_STRING_LENGTH (base1);
+    }
+  else if (TREE_CODE (base1) == FUNCTION_DECL)
+    size1 = 1;
+  else
+    {
       tree sz1 = DECL_SIZE_UNIT (base1);
-      /* If sizes are unknown, e.g. VLA or not representable, punt.  */
-      if (!tree_fits_poly_int64_p (sz0) || !tree_fits_poly_int64_p (sz1))
-	return 2;
-
-      poly_int64 size0 = tree_to_poly_int64 (sz0);
-      poly_int64 size1 = tree_to_poly_int64 (sz1);
+      if (!tree_fits_poly_int64_p (sz1))
+	equal = 2;
+      else
+	size1 = tree_to_poly_int64 (sz1);
+    }
+  if (equal == 0)
+    {
       /* If one offset is pointing (or could be) to the beginning of one
 	 object and the other is pointing to one past the last byte of the
 	 other object, punt.  */
@@ -16658,8 +16722,84 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
 	  && (known_ne (off0, 0)
 	      || (known_ne (size0, 0) && known_ne (size1, 0))))
 	equal = 0;
-     }
+    }
+
+  /* At this point, equal is 2 if either one or both pointers are out of
+     bounds of their object, or one points to start of its object and the
+     other points to end of its object.  This is unspecified behavior
+     e.g. in C++.  Otherwise equal is 0.  */
+  if (folding_cxx_constexpr && equal)
+    return equal;
+
+  /* When both pointers point to string literals, even when equal is 0,
+     due to tail merging of string literals the pointers might be the same.  */
+  if (TREE_CODE (base0) == STRING_CST && TREE_CODE (base1) == STRING_CST)
+    {
+      if (ioff0 < 0
+	  || ioff1 < 0
+	  || ioff0 > TREE_STRING_LENGTH (base0)
+	  || ioff1 > TREE_STRING_LENGTH (base1))
+	return 2;
+
+      /* If the bytes in the string literals starting at the pointers
+	 differ, the pointers need to be different.  */
+      if (memcmp (TREE_STRING_POINTER (base0) + ioff0,
+		  TREE_STRING_POINTER (base1) + ioff1,
+		  MIN (TREE_STRING_LENGTH (base0) - ioff0,
+		       TREE_STRING_LENGTH (base1) - ioff1)) == 0)
+	{
+	  HOST_WIDE_INT ioffmin = MIN (ioff0, ioff1);
+	  if (memcmp (TREE_STRING_POINTER (base0) + ioff0 - ioffmin,
+		      TREE_STRING_POINTER (base1) + ioff1 - ioffmin,
+		      ioffmin) == 0)
+	    /* If even the bytes in the string literal before the
+	       pointers are the same, the string literals could be
+	       tail merged.  */
+	    return 2;
+	}
+      return 0;
+    }
+
+  if (folding_cxx_constexpr)
+    return 0;
+
+  /* If this is a pointer comparison, ignore for now even
+     valid equalities where one pointer is the offset zero
+     of one object and the other to one past end of another one.  */
+  if (!INTEGRAL_TYPE_P (type))
+    return 0;
+
+  /* Assume that string literals can't be adjacent to variables
+     (automatic or global).  */
+  if (TREE_CODE (base0) == STRING_CST || TREE_CODE (base1) == STRING_CST)
+    return 0;
+
+  /* Assume that automatic variables can't be adjacent to global
+     variables.  */
+  if (is_global_var (base0) != is_global_var (base1))
+    return 0;
+
   return equal;
+}
+
+/* Return the single non-zero element of a CONSTRUCTOR or NULL_TREE.  */
+tree
+ctor_single_nonzero_element (const_tree t)
+{
+  unsigned HOST_WIDE_INT idx;
+  constructor_elt *ce;
+  tree elt = NULL_TREE;
+
+  if (TREE_CODE (t) != CONSTRUCTOR)
+    return NULL_TREE;
+  for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (t), idx, &ce); idx++)
+    if (!integer_zerop (ce->value) && !real_zerop (ce->value))
+      {
+	if (elt)
+	  return NULL_TREE;
+	elt = ce->value;
+      }
+  return elt;
 }
 
 #if CHECKING_P
@@ -16775,7 +16915,7 @@ test_vec_duplicate_folding ()
 /* Run all of the selftests within this file.  */
 
 void
-fold_const_c_tests ()
+fold_const_cc_tests ()
 {
   test_arithmetic_folding ();
   test_vector_folding ();

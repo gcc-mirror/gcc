@@ -7278,11 +7278,11 @@
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn
     (gen_aarch64_pred_fcmla<sve_rot1><mode> (tmp, operands[4],
-					     operands[3], operands[2],
-					     operands[1], operands[5]));
+					     operands[2], operands[1],
+					     operands[3], operands[5]));
   emit_insn
     (gen_aarch64_pred_fcmla<sve_rot2><mode> (operands[0], operands[4],
-					     operands[3], operands[2],
+					     operands[2], operands[1],
 					     tmp, operands[5]));
   DONE;
 })
@@ -8231,7 +8231,7 @@
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
 	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	         (match_operand:SVE_FULL_F 3 "register_operand" "w")]
 	        UNSPEC_COND_FCMUO))
 	    (match_operand:<VPRED> 4 "register_operand" "Upa"))
 	  (match_dup:<VPRED> 1)))
@@ -8267,7 +8267,7 @@
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
 	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	         (match_operand:SVE_FULL_F 3 "register_operand" "w")]
 	        UNSPEC_COND_FCMUO))
 	    (not:<VPRED>
 	      (match_operand:<VPRED> 4 "register_operand" "Upa")))

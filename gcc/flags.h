@@ -40,6 +40,7 @@ unsigned int debug_set_count (uint32_t w_symbols);
 
 const char * debug_set_names (uint32_t w_symbols);
 
+#ifndef GENERATOR_FILE
 /* Return true iff BTF debug info is enabled.  */
 
 extern bool btf_debuginfo_p ();
@@ -54,12 +55,13 @@ extern bool ctf_debuginfo_p ();
 
 /* Return true iff DWARF2 debug info is enabled.  */
 
-extern bool dwarf_debuginfo_p ();
+extern bool dwarf_debuginfo_p (struct gcc_options *opts = &global_options);
 
 /* Return true iff the debug info format is to be generated based on DWARF
    DIEs (like CTF and BTF debug info formats).  */
 
 extern bool dwarf_based_debuginfo_p ();
+#endif
 
 extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);
@@ -110,6 +112,6 @@ extern class target_flag_state *this_target_flag_state;
 /* Whether to emit an overflow warning whose code is C.  */
 #define issue_strict_overflow_warning(c) (warn_strict_overflow >= (int) (c))
 
-#endif
+#endif /* ! in target library */
 
 #endif /* ! GCC_FLAGS_H */

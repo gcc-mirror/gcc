@@ -2766,7 +2766,7 @@ test_pr87025 ()
 /* Run all of the selftests within this file.  */
 
 void
-dumpfile_c_tests ()
+dumpfile_cc_tests ()
 {
   test_impl_location ();
   for_each_line_table_case (test_capture_of_dump_calls);

@@ -42,4 +42,3 @@ void main()
 {
 	alias aaa = DOMImplementation!string;
 }
-

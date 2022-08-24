@@ -326,14 +326,17 @@ values are supported:
 @item all
 Turns on all upcoming D language features.
 @item dip1000
-Implements @uref{https://wiki.dlang.org/DIP1000} (Scoped pointers).
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1000.md}
+(Scoped pointers).
 @item dip1008
-Implements @uref{https://wiki.dlang.org/DIP1008} (Allow exceptions in
-@code{@@nogc} code).
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1008.md}
+(Allow exceptions in @code{@@nogc} code).
 @item dip1021
-Implements @uref{https://wiki.dlang.org/DIP1021} (Mutable function arguments).
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md}
+(Mutable function arguments).
 @item dip25
-Implements @uref{https://wiki.dlang.org/DIP25} (Sealed references).
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
+(Sealed references).
 @item dtorfields
 Turns on generation for destructing fields of partially constructed objects.
 @item fieldwise
@@ -383,7 +386,8 @@ are supported:
 @item all
 Turns off all revertable D language features.
 @item dip25
-Reverts @uref{https://wiki.dlang.org/DIP25} (Sealed references).
+Reverts @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
+(Sealed references).
 @item dtorfields
 Turns off generation for destructing fields of partially constructed objects.
 @item markdown

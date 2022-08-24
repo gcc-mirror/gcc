@@ -1,4 +1,4 @@
-// PERMUTE_ARGS -preview=dip1000
+// PERMUTE_ARGS: -preview=dip1000
 // https://issues.dlang.org/show_bug.cgi?id=19873
 int* ed(scope int* x)
 {

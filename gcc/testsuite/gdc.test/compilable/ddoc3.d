@@ -42,7 +42,7 @@
  *	$(TROW 4, 5, 6)
  *	)
  *
- * $(D_CODE 
+ * $(D_CODE
       $(B pragma)( $(I name) );
       $(B pragma)( $(I name) , $(I option) [ $(I option) ] );
       $(U $(LPAREN))
@@ -68,4 +68,3 @@ class StreamException: Exception {
     /********** stars ***************/
     int stars;
 }
-

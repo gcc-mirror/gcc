@@ -27,6 +27,10 @@
 # define NEED_DO_COPY_FILE
 # define NEED_DO_SPACE
 #endif
+#ifndef _GNU_SOURCE
+// Cygwin needs this for secure_getenv
+# define _GNU_SOURCE 1
+#endif
 
 #include <bits/largefile-config.h>
 #include <filesystem>
@@ -404,8 +408,12 @@ fs::copy(const path& from, const path& to, copy_options options,
       // set an unused bit in options to disable further recursion
       if (!is_set(options, copy_options::recursive))
 	options |= static_cast<copy_options>(4096);
-      for (const directory_entry& x : directory_iterator(from))
-	copy(x.path(), to/x.path().filename(), options, ec);
+      for (const directory_entry& x : directory_iterator(from, ec))
+	{
+	  copy(x.path(), to/x.path().filename(), options, ec);
+	  if (ec)
+	    return;
+	}
     }
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2683. filesystem::copy() says "no effects"
@@ -1273,105 +1281,80 @@ fs::remove(const path& p, error_code& ec) noexcept
   return false;
 }
 
-namespace std::filesystem
-{
-namespace
-{
-  struct ErrorReporter
-  {
-    explicit
-    ErrorReporter(error_code& ec) : code(&ec)
-    { }
-
-    explicit
-    ErrorReporter(const char* s, const path& p)
-    : code(nullptr), msg(s), path1(&p)
-    { }
-
-    error_code* code;
-    const char* msg;
-    const path* path1;
-
-    void
-    report(const error_code& ec) const
-    {
-      if (code)
-	*code = ec;
-      else
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(msg, *path1, ec));
-    }
-
-    void
-    report(const error_code& ec, const path& path2) const
-    {
-      if (code)
-	*code = ec;
-      else if (path2 != *path1)
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(msg, *path1, path2, ec));
-      else
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(msg, *path1, ec));
-    }
-  };
-
-  uintmax_t
-  do_remove_all(const path& p, const ErrorReporter& err)
-  {
-    error_code ec;
-    const auto s = symlink_status(p, ec);
-    if (!status_known(s))
-      {
-	if (ec)
-	  err.report(ec, p);
-	return -1;
-      }
-
-    ec.clear();
-    if (s.type() == file_type::not_found)
-      return 0;
-
-    uintmax_t count = 0;
-    if (s.type() == file_type::directory)
-      {
-	directory_iterator d(p, ec), end;
-	while (d != end)
-	  {
-	    const auto removed = fs::do_remove_all(d->path(), err);
-	    if (removed == numeric_limits<uintmax_t>::max())
-	      return -1;
-	    count += removed;
-
-	    d.increment(ec);
-	    if (ec)
-	      {
-		err.report(ec, p);
-		return -1;
-	      }
-	  }
-      }
-
-    if (fs::remove(p, ec))
-      ++count;
-    if (ec)
-      {
-	err.report(ec, p);
-	return -1;
-      }
-    return count;
-  }
-}
-}
-
 std::uintmax_t
 fs::remove_all(const path& p)
 {
-  return fs::do_remove_all(p, ErrorReporter{"cannot remove all", p});
+  error_code ec;
+  uintmax_t count = 0;
+  recursive_directory_iterator dir(p, directory_options{64|128}, ec);
+  switch (ec.value()) // N.B. assumes ec.category() == std::generic_category()
+  {
+  case 0:
+    // Iterate over the directory removing everything.
+    {
+      const recursive_directory_iterator end;
+      while (dir != end)
+	{
+	  dir.__erase(); // throws on error
+	  ++count;
+	}
+    }
+    // Directory is empty now, will remove it below.
+    break;
+  case ENOENT:
+    // Our work here is done.
+    return 0;
+  case ENOTDIR:
+  case ELOOP:
+    // Not a directory, will remove below.
+    break;
+  default:
+    // An error occurred.
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
+  }
+
+  // Remove p itself, which is either a non-directory or is now empty.
+  return count + fs::remove(p);
 }
 
 std::uintmax_t
 fs::remove_all(const path& p, error_code& ec)
 {
-  ec.clear();
-  return fs::do_remove_all(p, ErrorReporter{ec});
+  uintmax_t count = 0;
+  recursive_directory_iterator dir(p, directory_options{64|128}, ec);
+  switch (ec.value()) // N.B. assumes ec.category() == std::generic_category()
+  {
+  case 0:
+    // Iterate over the directory removing everything.
+    {
+      const recursive_directory_iterator end;
+      while (dir != end)
+	{
+	  dir.__erase(&ec);
+	  if (ec)
+	    return -1;
+	  ++count;
+	}
+    }
+    // Directory is empty now, will remove it below.
+    break;
+  case ENOENT:
+    // Our work here is done.
+    ec.clear();
+    return 0;
+  case ENOTDIR:
+  case ELOOP:
+    // Not a directory, will remove below.
+    break;
+  default:
+    // An error occurred.
+    return -1;
+  }
+
+  // Remove p itself, which is either a non-directory or is now empty.
+  if (int last = fs::remove(p, ec); !ec)
+    return count + last;
+  return -1;
 }
 
 void
@@ -1588,25 +1571,37 @@ fs::path
 fs::temp_directory_path()
 {
   error_code ec;
-  path tmp = temp_directory_path(ec);
+  path p = fs::get_temp_directory_from_env(ec);
+  if (!ec)
+    {
+      auto st = status(p, ec);
+      if (!ec && !is_directory(st))
+	ec = std::make_error_code(std::errc::not_a_directory);
+    }
   if (ec)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", ec));
-  return tmp;
+    {
+      if (p.empty())
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", ec));
+      else
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", p, ec));
+    }
+  return p;
 }
 
 fs::path
 fs::temp_directory_path(error_code& ec)
 {
   path p = fs::get_temp_directory_from_env(ec);
-  if (ec)
-    return p;
-  auto st = status(p, ec);
-  if (ec)
-    p.clear();
-  else if (!is_directory(st))
+  if (!ec)
     {
-      p.clear();
-      ec = std::make_error_code(std::errc::not_a_directory);
+      auto st = status(p, ec);
+      if (ec)
+	p.clear();
+      else if (!is_directory(st))
+	{
+	  p.clear();
+	  ec = std::make_error_code(std::errc::not_a_directory);
+	}
     }
   return p;
 }

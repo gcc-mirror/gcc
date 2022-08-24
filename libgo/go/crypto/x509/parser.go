@@ -51,9 +51,9 @@ func isPrintable(b byte) bool {
 }
 
 // parseASN1String parses the ASN.1 string types T61String, PrintableString,
-// UTF8String, BMPString, and IA5String. This is mostly copied from the
-// respective encoding/asn1.parse... methods, rather than just increasing
-// the API surface of that package.
+// UTF8String, BMPString, IA5String, and NumericString. This is mostly copied
+// from the respective encoding/asn1.parse... methods, rather than just
+// increasing the API surface of that package.
 func parseASN1String(tag cryptobyte_asn1.Tag, value []byte) (string, error) {
 	switch tag {
 	case cryptobyte_asn1.T61String:
@@ -93,6 +93,13 @@ func parseASN1String(tag cryptobyte_asn1.Tag, value []byte) (string, error) {
 			return "", errors.New("invalid IA5String")
 		}
 		return s, nil
+	case cryptobyte_asn1.Tag(asn1.TagNumericString):
+		for _, b := range value {
+			if !('0' <= b && b <= '9' || b == ' ') {
+				return "", errors.New("invalid NumericString")
+			}
+		}
+		return string(value), nil
 	}
 	return "", fmt.Errorf("unsupported string type: %v", tag)
 }
@@ -214,22 +221,22 @@ func parseValidity(der cryptobyte.String) (time.Time, time.Time, error) {
 func parseExtension(der cryptobyte.String) (pkix.Extension, error) {
 	var ext pkix.Extension
 	if !der.ReadASN1ObjectIdentifier(&ext.Id) {
-		return ext, errors.New("x509: malformed extention OID field")
+		return ext, errors.New("x509: malformed extension OID field")
 	}
 	if der.PeekASN1Tag(cryptobyte_asn1.BOOLEAN) {
 		if !der.ReadASN1Boolean(&ext.Critical) {
-			return ext, errors.New("x509: malformed extention critical field")
+			return ext, errors.New("x509: malformed extension critical field")
 		}
 	}
 	var val cryptobyte.String
 	if !der.ReadASN1(&val, cryptobyte_asn1.OCTET_STRING) {
-		return ext, errors.New("x509: malformed extention value field")
+		return ext, errors.New("x509: malformed extension value field")
 	}
 	ext.Value = val
 	return ext, nil
 }
 
-func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{}, error) {
+func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (any, error) {
 	der := cryptobyte.String(keyData.PublicKey.RightAlign())
 	switch algo {
 	case RSA:

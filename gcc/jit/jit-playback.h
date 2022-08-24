@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <utility> // for std::pair
 
 #include "timevar.h"
+#include "varasm.h"
 
 #include "jit-recording.h"
 
@@ -179,6 +180,11 @@ public:
   new_cast (location *loc,
 	    rvalue *expr,
 	    type *type_);
+
+  rvalue *
+  new_bitcast (location *loc,
+	       rvalue *expr,
+	       type *type_);
 
   lvalue *
   new_array_access (location *loc,
@@ -372,7 +378,7 @@ class compile_to_memory : public context
 {
  public:
   compile_to_memory (recording::context *ctxt);
-  void postprocess (const char *ctxt_progname) FINAL OVERRIDE;
+  void postprocess (const char *ctxt_progname) final override;
 
   result *get_result_obj () const { return m_result; }
 
@@ -386,7 +392,7 @@ class compile_to_file : public context
   compile_to_file (recording::context *ctxt,
 		   enum gcc_jit_output_kind output_kind,
 		   const char *output_path);
-  void postprocess (const char *ctxt_progname) FINAL OVERRIDE;
+  void postprocess (const char *ctxt_progname) final override;
 
  private:
   void
@@ -477,7 +483,7 @@ public:
   function(context *ctxt, tree fndecl, enum gcc_jit_function_kind kind);
 
   void gt_ggc_mx ();
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   tree get_return_type_as_tree () const;
 
@@ -556,7 +562,7 @@ public:
   block (function *func,
 	 const char *name);
 
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   tree as_label_decl () const { return m_label_decl; }
 
@@ -701,6 +707,21 @@ public:
     set_decl_section_name (as_tree (), name);
   }
 
+  void
+  set_register_name (const char* reg_name)
+  {
+    set_user_assembler_name (as_tree (), reg_name);
+    DECL_REGISTER (as_tree ()) = 1;
+    DECL_HARD_REGISTER (as_tree ()) = 1;
+  }
+
+  void
+  set_alignment (int alignment)
+  {
+      SET_DECL_ALIGN (as_tree (), alignment * BITS_PER_UNIT);
+      DECL_USER_ALIGN (as_tree ()) = 1;
+  }
+
 private:
   bool mark_addressable (location *loc);
 };
@@ -729,7 +750,7 @@ class source_file : public wrapper
 {
 public:
   source_file (tree filename);
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   source_line *
   get_source_line (int line_num);
@@ -750,7 +771,7 @@ class source_line : public wrapper
 {
 public:
   source_line (source_file *file, int line_num);
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   location *
   get_location (recording::location *rloc, int column_num);

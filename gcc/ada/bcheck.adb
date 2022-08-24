@@ -94,9 +94,7 @@ package body Bcheck is
          Check_Consistent_SSO_Default;
       end if;
 
-      if Zero_Cost_Exceptions_Specified
-        or else Frontend_Exceptions_Specified
-      then
+      if Zero_Cost_Exceptions_Specified then
          Check_Consistent_Exception_Handling;
       end if;
 
@@ -1245,11 +1243,8 @@ package body Bcheck is
    procedure Check_Consistent_Exception_Handling is
    begin
       Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
-         if (ALIs.Table (A1).Zero_Cost_Exceptions /=
-              ALIs.Table (ALIs.First).Zero_Cost_Exceptions)
-           or else
-            (ALIs.Table (A1).Frontend_Exceptions /=
-              ALIs.Table (ALIs.First).Frontend_Exceptions)
+         if ALIs.Table (A1).Zero_Cost_Exceptions /=
+             ALIs.Table (ALIs.First).Zero_Cost_Exceptions
          then
             Error_Msg_File_1 := ALIs.Table (A1).Sfile;
             Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;

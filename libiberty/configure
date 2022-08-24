@@ -2459,6 +2459,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is

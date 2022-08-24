@@ -3712,7 +3712,6 @@ extern unsigned hash_rtx_cb (const_rtx, machine_mode, int *, int *,
 extern rtx regno_use_in (unsigned int, rtx);
 extern int auto_inc_p (const_rtx);
 extern bool in_insn_list_p (const rtx_insn_list *, const rtx_insn *);
-extern void remove_node_from_expr_list (const_rtx, rtx_expr_list **);
 extern void remove_node_from_insn_list (const rtx_insn *, rtx_insn_list **);
 extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
@@ -3774,6 +3773,7 @@ extern bool resize_reg_info (void);
 extern void free_reg_info (void);
 extern void init_subregs_of_mode (void);
 extern void finish_subregs_of_mode (void);
+extern void reginfo_cc_finalize (void);
 
 /* recog.cc */
 extern rtx extract_asm_operands (rtx);
@@ -4604,7 +4604,16 @@ word_register_operation_p (const_rtx x)
       return true;
     }
 }
-    
+
+/* Holds an rtx comparison to simplify passing many parameters pertaining to a
+   single comparison.  */
+
+struct rtx_comparison {
+  rtx_code code;
+  rtx op0, op1;
+  machine_mode mode;
+};
+
 /* gtype-desc.cc.  */
 extern void gt_ggc_mx (rtx &);
 extern void gt_pch_nx (rtx &);

@@ -24,7 +24,7 @@
 #ifndef _X86GPRINTRIN_H_INCLUDED
 #define _X86GPRINTRIN_H_INCLUDED
 
-#if defined __MMX__ || defined __SSE__
+#if !defined _SOFT_FLOAT || defined __MMX__ || defined __SSE__
 #pragma GCC push_options
 #pragma GCC target("general-regs-only")
 #define __DISABLE_GENERAL_REGS_ONLY__

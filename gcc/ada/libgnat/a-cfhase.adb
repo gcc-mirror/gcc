@@ -25,11 +25,11 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Containers.Hash_Tables.Generic_Bounded_Operations;
-pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Operations);
+with Ada.Containers.Hash_Tables.Generic_Formal_Operations;
+pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Formal_Operations);
 
-with Ada.Containers.Hash_Tables.Generic_Bounded_Keys;
-pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
+with Ada.Containers.Hash_Tables.Generic_Formal_Keys;
+pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Formal_Keys);
 
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
@@ -58,7 +58,7 @@ is
    generic
       with procedure Set_Element (Node : in out Node_Type);
    procedure Generic_Allocate
-     (HT   : in out Set;
+     (HT   : in out Hash_Table_Type;
       Node : out Count_Type);
 
    function Hash_Node (Node : Node_Type) return Hash_Type;
@@ -89,19 +89,20 @@ is
    procedure Set_Next (Node : in out Node_Type; Next : Count_Type);
    pragma Inline (Set_Next);
 
-   function Vet (Container : Set; Position : Cursor) return Boolean;
+   function Vet (Container : Set; Position : Cursor) return Boolean
+     with Inline;
 
    --------------------------
    -- Local Instantiations --
    --------------------------
 
-   package HT_Ops is new Hash_Tables.Generic_Bounded_Operations
+   package HT_Ops is new Hash_Tables.Generic_Formal_Operations
      (HT_Types  => HT_Types,
       Hash_Node => Hash_Node,
       Next      => Next,
       Set_Next  => Set_Next);
 
-   package Element_Keys is new Hash_Tables.Generic_Bounded_Keys
+   package Element_Keys is new Hash_Tables.Generic_Formal_Keys
      (HT_Types        => HT_Types,
       Next            => Next,
       Set_Next        => Set_Next,
@@ -167,22 +168,18 @@ is
       --------------------
 
       procedure Insert_Element (Source_Node : Count_Type) is
-         N : Node_Type renames Source.Content.Nodes (Source_Node);
-         X : Count_Type;
-         B : Boolean;
+         N        : Node_Type renames Source.Content.Nodes (Source_Node);
+         Unused_X : Count_Type;
+         B        : Boolean;
 
       begin
-         Insert (Target, N.Element, X, B);
+         Insert (Target, N.Element, Unused_X, B);
          pragma Assert (B);
       end Insert_Element;
 
    --  Start of processing for Assign
 
    begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
       if Target.Capacity < Length (Source) then
          raise Storage_Error with "not enough capacity";  -- SE or CE? ???
       end if;
@@ -335,11 +332,6 @@ is
       SN : Nodes_Type renames Source.Content.Nodes;
 
    begin
-      if Target'Address = Source'Address then
-         Clear (Target);
-         return;
-      end if;
-
       Src_Length := Source.Content.Length;
 
       if Src_Length = 0 then
@@ -393,13 +385,13 @@ is
       -------------
 
       procedure Process (L_Node : Count_Type) is
-         B : Boolean;
-         E : Element_Type renames Left.Content.Nodes (L_Node).Element;
-         X : Count_Type;
+         B        : Boolean;
+         E        : Element_Type renames Left.Content.Nodes (L_Node).Element;
+         Unused_X : Count_Type;
 
       begin
          if Find (Right, E).Node = 0 then
-            Insert (Target, E, X, B);
+            Insert (Target, E, Unused_X, B);
             pragma Assert (B);
          end if;
       end Process;
@@ -411,14 +403,7 @@ is
    end Difference;
 
    function Difference (Left : Set; Right : Set) return Set is
-      C : Count_Type;
-      H : Hash_Type;
-
    begin
-      if Left'Address = Right'Address then
-         return Empty_Set;
-      end if;
-
       if Length (Left) = 0 then
          return Empty_Set;
       end if;
@@ -427,12 +412,14 @@ is
          return Copy (Left);
       end if;
 
-      C := Length (Left);
-      H := Default_Modulus (C);
-
-      return S : Set (C, H) do
-         Difference (Left, Right, Target => S);
-      end return;
+      declare
+         C : constant Count_Type := Length (Left);
+         H : constant Hash_Type := Default_Modulus (C);
+      begin
+         return S : Set (C, H) do
+            Difference (Left, Right, Target => S);
+         end return;
+      end;
    end Difference;
 
    -------------
@@ -461,7 +448,7 @@ is
    function Equivalent_Sets (Left, Right : Set) return Boolean is
 
       function Find_Equivalent_Key
-        (R_HT   : Hash_Table_Type'Class;
+        (R_HT   : Hash_Table_Type;
          L_Node : Node_Type) return Boolean;
       pragma Inline (Find_Equivalent_Key);
 
@@ -473,7 +460,7 @@ is
       -------------------------
 
       function Find_Equivalent_Key
-        (R_HT   : Hash_Table_Type'Class;
+        (R_HT   : Hash_Table_Type;
          L_Node : Node_Type) return Boolean
       is
          R_Index : constant Hash_Type :=
@@ -766,7 +753,7 @@ is
 
          while Position /= 0 loop
             R := P.Add (R, (Node => Position), I);
-            pragma Assert (P.Length (R) = I);
+            pragma Assert (P.Length (R) = Big (I));
             Position := HT_Ops.Next (Container.Content, Position);
             I := I + 1;
          end loop;
@@ -793,11 +780,14 @@ is
    -- Generic_Allocate --
    ----------------------
 
-   procedure Generic_Allocate (HT : in out Set; Node : out Count_Type) is
+   procedure Generic_Allocate
+     (HT   : in out Hash_Table_Type;
+      Node : out Count_Type)
+   is
       procedure Allocate is new HT_Ops.Generic_Allocate (Set_Element);
    begin
-      Allocate (HT.Content, Node);
-      HT.Content.Nodes (Node).Has_Element := True;
+      Allocate (HT, Node);
+      HT.Nodes (Node).Has_Element := True;
    end Generic_Allocate;
 
    package body Generic_Keys with SPARK_Mode => Off is
@@ -815,7 +805,7 @@ is
       -- Local Instantiations --
       --------------------------
 
-      package Key_Keys is new Hash_Tables.Generic_Bounded_Keys
+      package Key_Keys is new Hash_Tables.Generic_Formal_Keys
         (HT_Types        => HT_Types,
          Next            => Next,
          Set_Next        => Set_Next,
@@ -1031,11 +1021,11 @@ is
    end Insert;
 
    procedure Insert (Container : in out Set; New_Item : Element_Type) is
-      Inserted : Boolean;
-      Position : Cursor;
+      Inserted        : Boolean;
+      Unused_Position : Cursor;
 
    begin
-      Insert (Container, New_Item, Position, Inserted);
+      Insert (Container, New_Item, Unused_Position, Inserted);
 
       if not Inserted then
          raise Constraint_Error with
@@ -1052,7 +1042,9 @@ is
       procedure Allocate_Set_Element (Node : in out Node_Type);
       pragma Inline (Allocate_Set_Element);
 
-      function New_Node return Count_Type;
+      procedure New_Node
+        (HT   : in out Hash_Table_Type;
+         Node : out Count_Type);
       pragma Inline (New_Node);
 
       procedure Local_Insert is
@@ -1074,11 +1066,12 @@ is
       -- New_Node --
       --------------
 
-      function New_Node return Count_Type is
-         Result : Count_Type;
+      procedure New_Node
+        (HT   : in out Hash_Table_Type;
+         Node : out Count_Type)
+      is
       begin
-         Allocate (Container, Result);
-         return Result;
+         Allocate (HT, Node);
       end New_Node;
 
    --  Start of processing for Insert
@@ -1096,10 +1089,6 @@ is
       TN       : Nodes_Type renames Target.Content.Nodes;
 
    begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
       if Source.Content.Length = 0 then
          Clear (Target);
          return;
@@ -1133,13 +1122,13 @@ is
       -------------
 
       procedure Process (L_Node : Count_Type) is
-         E : Element_Type renames Left.Content.Nodes (L_Node).Element;
-         X : Count_Type;
-         B : Boolean;
+         E        : Element_Type renames Left.Content.Nodes (L_Node).Element;
+         Unused_X : Count_Type;
+         B        : Boolean;
 
       begin
          if Find (Right, E).Node /= 0 then
-            Insert (Target, E, X, B);
+            Insert (Target, E, Unused_X, B);
             pragma Assert (B);
          end if;
       end Process;
@@ -1151,17 +1140,11 @@ is
    end Intersection;
 
    function Intersection (Left : Set; Right : Set) return Set is
-      C : Count_Type;
-      H : Hash_Type;
+      C : constant Count_Type :=
+        Count_Type'Min (Length (Left), Length (Right));  -- ???
+      H : constant Hash_Type := Default_Modulus (C);
 
    begin
-      if Left'Address = Right'Address then
-         return Copy (Left);
-      end if;
-
-      C := Count_Type'Min (Length (Left), Length (Right));  -- ???
-      H := Default_Modulus (C);
-
       return S : Set (C, H) do
          if Length (Left) /= 0 and Length (Right) /= 0 then
             Intersection (Left, Right, Target => S);
@@ -1196,10 +1179,6 @@ is
       Subset_Nodes : Nodes_Type renames Subset.Content.Nodes;
 
    begin
-      if Subset'Address = Of_Set'Address then
-         return True;
-      end if;
-
       if Length (Subset) > Length (Of_Set) then
          return False;
       end if;
@@ -1207,7 +1186,8 @@ is
       Subset_Node := First (Subset).Node;
       while Subset_Node /= 0 loop
          declare
-            N : Node_Type renames Subset_Nodes (Subset_Node);
+            S : constant Count_Type := Subset_Node;
+            N : Node_Type renames Subset_Nodes (S);
             E : Element_Type renames N.Element;
 
          begin
@@ -1242,10 +1222,6 @@ is
       X, Y : Count_Type;
 
    begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
       if Target.Capacity < Length (Source) then
          raise Constraint_Error with  -- ???
            "Source length exceeds Target capacity";
@@ -1312,14 +1288,11 @@ is
          return False;
       end if;
 
-      if Left'Address = Right'Address then
-         return True;
-      end if;
-
       Left_Node := First (Left).Node;
       while Left_Node /= 0 loop
          declare
-            N : Node_Type renames Left_Nodes (Left_Node);
+            L : constant Count_Type := Left_Node;
+            N : Node_Type renames Left_Nodes (L);
             E : Element_Type renames N.Element;
          begin
             if Find (Right, E).Node /= 0 then
@@ -1416,15 +1389,15 @@ is
       -------------
 
       procedure Process (Source_Node : Count_Type) is
-         B : Boolean;
-         N : Node_Type renames Source.Content.Nodes (Source_Node);
-         X : Count_Type;
+         B        : Boolean;
+         N        : Node_Type renames Source.Content.Nodes (Source_Node);
+         Unused_X : Count_Type;
 
       begin
          if Is_In (Target, N) then
             Delete (Target, N.Element);
          else
-            Insert (Target, N.Element, X, B);
+            Insert (Target, N.Element, Unused_X, B);
             pragma Assert (B);
          end if;
       end Process;
@@ -1432,11 +1405,6 @@ is
    --  Start of processing for Symmetric_Difference
 
    begin
-      if Target'Address = Source'Address then
-         Clear (Target);
-         return;
-      end if;
-
       if Length (Target) = 0 then
          Assign (Target, Source);
          return;
@@ -1446,14 +1414,7 @@ is
    end Symmetric_Difference;
 
    function Symmetric_Difference (Left : Set; Right : Set) return Set is
-      C : Count_Type;
-      H : Hash_Type;
-
    begin
-      if Left'Address = Right'Address then
-         return Empty_Set;
-      end if;
-
       if Length (Right) = 0 then
          return Copy (Left);
       end if;
@@ -1462,13 +1423,15 @@ is
          return Copy (Right);
       end if;
 
-      C := Length (Left) + Length (Right);
-      H := Default_Modulus (C);
-
-      return S : Set (C, H) do
-         Difference (Left, Right, S);
-         Difference (Right, Left, S);
-      end return;
+      declare
+         C : constant Count_Type := Length (Left) + Length (Right);
+         H : constant Hash_Type := Default_Modulus (C);
+      begin
+         return S : Set (C, H) do
+            Difference (Left, Right, S);
+            Difference (Right, Left, S);
+         end return;
+      end;
    end Symmetric_Difference;
 
    ------------
@@ -1476,12 +1439,12 @@ is
    ------------
 
    function To_Set (New_Item : Element_Type) return Set is
-      X : Count_Type;
-      B : Boolean;
+      Unused_X : Count_Type;
+      B        : Boolean;
 
    begin
       return S : Set (Capacity => 1, Modulus => 1) do
-         Insert (S, New_Item, X, B);
+         Insert (S, New_Item, Unused_X, B);
          pragma Assert (B);
       end return;
    end To_Set;
@@ -1504,32 +1467,21 @@ is
          N : Node_Type renames Source.Content.Nodes (Src_Node);
          E : Element_Type renames N.Element;
 
-         X : Count_Type;
-         B : Boolean;
+         Unused_X : Count_Type;
+         Unused_B : Boolean;
 
       begin
-         Insert (Target, E, X, B);
+         Insert (Target, E, Unused_X, Unused_B);
       end Process;
 
    --  Start of processing for Union
 
    begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
       Iterate (Source.Content);
    end Union;
 
    function Union (Left : Set; Right : Set) return Set is
-      C : Count_Type;
-      H : Hash_Type;
-
    begin
-      if Left'Address = Right'Address then
-         return Copy (Left);
-      end if;
-
       if Length (Right) = 0 then
          return Copy (Left);
       end if;
@@ -1538,12 +1490,15 @@ is
          return Copy (Right);
       end if;
 
-      C := Length (Left) + Length (Right);
-      H := Default_Modulus (C);
-      return S : Set (C, H) do
-         Assign (Target => S, Source => Left);
-         Union (Target => S, Source => Right);
-      end return;
+      declare
+         C : constant Count_Type := Length (Left) + Length (Right);
+         H : constant Hash_Type := Default_Modulus (C);
+      begin
+         return S : Set (C, H) do
+            Assign (Target => S, Source => Left);
+            Union (Target => S, Source => Right);
+         end return;
+      end;
    end Union;
 
    ---------
@@ -1552,6 +1507,10 @@ is
 
    function Vet (Container : Set; Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = 0 then
          return True;
       end if;

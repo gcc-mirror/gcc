@@ -6995,10 +6995,12 @@ pt_solution_singleton_or_null_p (struct pt_solution *pt, unsigned *uid)
   return true;
 }
 
-/* Return true if the points-to solution *PT includes global memory.  */
+/* Return true if the points-to solution *PT includes global memory.
+   If ESCAPED_LOCAL_P is true then escaped local variables are also
+   considered global.  */
 
 bool
-pt_solution_includes_global (struct pt_solution *pt)
+pt_solution_includes_global (struct pt_solution *pt, bool escaped_local_p)
 {
   if (pt->anything
       || pt->nonlocal
@@ -7009,12 +7011,17 @@ pt_solution_includes_global (struct pt_solution *pt)
       || pt->vars_contains_escaped_heap)
     return true;
 
+  if (escaped_local_p && pt->vars_contains_escaped)
+    return true;
+
   /* 'escaped' is also a placeholder so we have to look into it.  */
   if (pt->escaped)
-    return pt_solution_includes_global (&cfun->gimple_df->escaped);
+    return pt_solution_includes_global (&cfun->gimple_df->escaped,
+					escaped_local_p);
 
   if (pt->ipa_escaped)
-    return pt_solution_includes_global (&ipa_escaped_pt);
+    return pt_solution_includes_global (&ipa_escaped_pt,
+					escaped_local_p);
 
   return false;
 }
@@ -8078,7 +8085,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_pta; }
+  bool gate (function *) final override { return flag_tree_pta; }
 
 }; // class pass_build_alias
 
@@ -8116,7 +8123,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_pta; }
+  bool gate (function *) final override { return flag_tree_pta; }
 
 }; // class pass_build_ealias
 
@@ -8730,7 +8737,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (optimize
 	      && flag_ipa_pta
@@ -8738,9 +8745,12 @@ public:
 	      && !seen_error ());
     }
 
-  opt_pass * clone () { return new pass_ipa_pta (m_ctxt); }
+  opt_pass * clone () final override { return new pass_ipa_pta (m_ctxt); }
 
-  virtual unsigned int execute (function *) { return ipa_pta_execute (); }
+  unsigned int execute (function *) final override
+  {
+    return ipa_pta_execute ();
+  }
 
 }; // class pass_ipa_pta
 

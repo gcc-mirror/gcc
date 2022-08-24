@@ -71,8 +71,8 @@ package System is
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 64;
-   Memory_Size  : constant := 2 ** 64;
+   Word_Size    : constant := Standard'Word_Size;
+   Memory_Size  : constant := 2 ** Word_Size;
 
    --  Address comparison
 
@@ -157,7 +157,6 @@ private
    Always_Compatible_Rep     : constant Boolean := False;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   Frontend_Exceptions       : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
 
    Executable_Extension : constant String := ".vxe";

@@ -78,6 +78,7 @@ struct mode_data
   bool need_bytesize_adj;	/* true if this mode needs dynamic size
 				   adjustment */
   unsigned int int_n;		/* If nonzero, then __int<INT_N> will be defined */
+  bool boolean;
 };
 
 static struct mode_data *modes[MAX_MODE_CLASS];
@@ -88,7 +89,8 @@ static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   0, -1U, -1U, -1U, -1U,
   0, 0, 0, 0, 0, 0,
-  "<unknown>", 0, 0, 0, 0, false, false, 0
+  "<unknown>", 0, 0, 0, 0, false, false, 0,
+  false
 };
 
 static htab_t modes_by_name;
@@ -456,7 +458,7 @@ make_complex_modes (enum mode_class cl,
       size_t m_len;
 
       /* Skip BImode.  FIXME: BImode probably shouldn't be MODE_INT.  */
-      if (m->precision == 1)
+      if (m->boolean)
 	continue;
 
       m_len = strlen (m->name);
@@ -528,7 +530,7 @@ make_vector_modes (enum mode_class cl, const char *prefix, unsigned int width,
 	 not be necessary.  */
       if (cl == MODE_FLOAT && m->bytesize == 1)
 	continue;
-      if (cl == MODE_INT && m->precision == 1)
+      if (m->boolean)
 	continue;
 
       if ((size_t) snprintf (buf, sizeof buf, "%s%u%s", prefix,
@@ -548,17 +550,18 @@ make_vector_modes (enum mode_class cl, const char *prefix, unsigned int width,
 
 /* Create a vector of booleans called NAME with COUNT elements and
    BYTESIZE bytes in total.  */
-#define VECTOR_BOOL_MODE(NAME, COUNT, BYTESIZE) \
-  make_vector_bool_mode (#NAME, COUNT, BYTESIZE, __FILE__, __LINE__)
+#define VECTOR_BOOL_MODE(NAME, COUNT, COMPONENT, BYTESIZE)		\
+  make_vector_bool_mode (#NAME, COUNT, #COMPONENT, BYTESIZE,		\
+			 __FILE__, __LINE__)
 static void ATTRIBUTE_UNUSED
 make_vector_bool_mode (const char *name, unsigned int count,
-		       unsigned int bytesize, const char *file,
-		       unsigned int line)
+		       const char *component, unsigned int bytesize,
+		       const char *file, unsigned int line)
 {
-  struct mode_data *m = find_mode ("BI");
+  struct mode_data *m = find_mode (component);
   if (!m)
     {
-      error ("%s:%d: no mode \"BI\"", file, line);
+      error ("%s:%d: no mode \"%s\"", file, line, component);
       return;
     }
 
@@ -594,6 +597,20 @@ make_int_mode (const char *name,
   struct mode_data *m = new_mode (MODE_INT, name, file, line);
   m->bytesize = bytesize;
   m->precision = precision;
+}
+
+#define BOOL_MODE(N, B, Y) \
+  make_bool_mode (#N, B, Y, __FILE__, __LINE__)
+
+static void
+make_bool_mode (const char *name,
+		unsigned int precision, unsigned int bytesize,
+		const char *file, unsigned int line)
+{
+  struct mode_data *m = new_mode (MODE_INT, name, file, line);
+  m->bytesize = bytesize;
+  m->precision = precision;
+  m->boolean = true;
 }
 
 #define OPAQUE_MODE(N, B)			\
@@ -1298,9 +1315,21 @@ enum machine_mode\n{");
       /* Don't use BImode for MIN_MODE_INT, since otherwise the middle
 	 end will try to use it for bitfields in structures and the
 	 like, which we do not want.  Only the target md file should
-	 generate BImode widgets.  */
-      if (first && first->precision == 1 && c == MODE_INT)
-	first = first->next;
+	 generate BImode widgets.  Since some targets such as ARM/MVE
+	 define boolean modes with multiple bits, handle those too.  */
+      if (first && first->boolean)
+	{
+	  struct mode_data *last_bool = first;
+	  printf ("  MIN_MODE_BOOL = E_%smode,\n", first->name);
+
+	  while (first && first->boolean)
+	    {
+	      last_bool = first;
+	      first = first->next;
+	    }
+
+	  printf ("  MAX_MODE_BOOL = E_%smode,\n\n", last_bool->name);
+	}
 
       if (first && last)
 	printf ("  MIN_%s = E_%smode,\n  MAX_%s = E_%smode,\n\n",
@@ -1679,15 +1708,15 @@ emit_class_narrowest_mode (void)
   print_decl ("unsigned char", "class_narrowest_mode", "MAX_MODE_CLASS");
 
   for (c = 0; c < MAX_MODE_CLASS; c++)
-    /* Bleah, all this to get the comment right for MIN_MODE_INT.  */
-    tagged_printf ("MIN_%s", mode_class_names[c],
-		   modes[c]
-		   ? ((c != MODE_INT || modes[c]->precision != 1)
-		      ? modes[c]->name
-		      : (modes[c]->next
-			 ? modes[c]->next->name
-			 : void_mode->name))
-		   : void_mode->name);
+    {
+      /* Bleah, all this to get the comment right for MIN_MODE_INT.  */
+      struct mode_data *m = modes[c];
+      while (m && m->boolean)
+	m = m->next;
+      const char *comment_name = (m ? m : void_mode)->name;
+
+      tagged_printf ("MIN_%s", mode_class_names[c], comment_name);
+    }
 
   print_closer ();
 }

@@ -80,9 +80,7 @@ private
 {
     // Handling unaligned mutexes are not supported on all platforms, so we must
     // ensure that the address of all shared data are appropriately aligned.
-    import core.internal.traits : classInstanceAlignment;
-
-    enum mutexAlign = classInstanceAlignment!Mutex;
+    enum mutexAlign = __traits(classInstanceAlignment, Mutex);
     enum mutexClassInstanceSize = __traits(classInstanceSize, Mutex);
 
     alias swapContext = externDFunc!("core.thread.osthread.swapContext", void* function(void*) nothrow @nogc);
@@ -110,8 +108,8 @@ class ThreadBase
         m_call = fn;
     }
 
-    this(void delegate() dg, size_t sz = 0) @safe pure nothrow @nogc
-    in(dg)
+    this(void delegate() dg, size_t sz = 0) @trusted pure nothrow @nogc
+    in( cast(const void delegate()) dg)
     {
         this(sz);
         m_call = dg;
@@ -571,14 +569,14 @@ package(core.thread):
     __gshared align(mutexAlign) void[mutexClassInstanceSize] _slock;
     __gshared align(mutexAlign) void[mutexClassInstanceSize] _criticalRegionLock;
 
-    static void initLocks() @nogc
+    static void initLocks() @nogc nothrow
     {
         import core.lifetime : emplace;
         emplace!Mutex(_slock[]);
         emplace!Mutex(_criticalRegionLock[]);
     }
 
-    static void termLocks() @nogc
+    static void termLocks() @nogc nothrow
     {
         (cast(Mutex)_slock.ptr).__dtor();
         (cast(Mutex)_criticalRegionLock.ptr).__dtor();
@@ -758,13 +756,13 @@ package(core.thread):
 
 private alias attachThread = externDFunc!("core.thread.osthread.attachThread", ThreadBase function(ThreadBase) @nogc nothrow);
 
-extern (C) void _d_monitordelete_nogc(Object h) @nogc;
+extern (C) void _d_monitordelete_nogc(Object h) @nogc nothrow;
 
 /**
  * Terminates the thread module. No other thread routine may be called
  * afterwards.
  */
-package void thread_term_tpl(ThreadT, MainThreadStore)(ref MainThreadStore _mainThreadStore) @nogc
+package void thread_term_tpl(ThreadT, MainThreadStore)(ref MainThreadStore _mainThreadStore) @nogc nothrow
 {
     assert(_mainThreadStore.ptr is cast(void*) ThreadBase.sm_main);
 
@@ -820,10 +818,13 @@ package ThreadT thread_attachThis_tpl(ThreadT)()
  *
  * NOTE: This routine does not run thread-local static destructors when called.
  *       If full functionality as a D thread is desired, the following function
- *       must be called after thread_detachThis, particularly if the thread is
+ *       must be called before thread_detachThis, particularly if the thread is
  *       being detached at some indeterminate time before program termination:
  *
  *       $(D extern(C) void rt_moduleTlsDtor();)
+ *
+ * See_Also:
+ *     $(REF thread_attachThis, core,thread,osthread)
  */
 extern (C) void thread_detachThis() nothrow @nogc
 {
@@ -1331,13 +1332,13 @@ package
         return cast(Mutex)ll_lock.ptr;
     }
 
-    void initLowlevelThreads() @nogc
+    void initLowlevelThreads() @nogc nothrow
     {
         import core.lifetime : emplace;
         emplace(lowlevelLock());
     }
 
-    void termLowlevelThreads() @nogc
+    void termLowlevelThreads() @nogc nothrow
     {
         lowlevelLock.__dtor();
     }

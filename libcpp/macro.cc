@@ -1373,8 +1373,11 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
       token = cpp_get_token (pfile);
       if (token->type != CPP_PADDING)
 	break;
+      gcc_assert ((token->flags & PREV_WHITE) == 0);
       if (padding == NULL
-	  || (!(padding->flags & PREV_WHITE) && token->val.source == NULL))
+	  || padding->val.source == NULL
+	  || (!(padding->val.source->flags & PREV_WHITE)
+	      && token->val.source == NULL))
 	padding = token;
     }
 

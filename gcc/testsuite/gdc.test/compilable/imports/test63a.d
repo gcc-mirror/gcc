@@ -7,4 +7,3 @@ struct s {
     char[SIZE] a;
 
 }
-

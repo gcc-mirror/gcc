@@ -1,3 +1,8 @@
+/* TEST_OUTPUT:
+---
+compilable/test7172.d(14): Deprecation: `scope` as a type constraint is deprecated.  Use `scope` at the usage site.
+---
+*/
 void main()
 {
     abstract class AbstractC{}
@@ -7,7 +12,7 @@ void main()
     static assert(!__traits(compiles, { class D : FinalC{} }));
 
     scope class ScopeC{}
-//    static assert(!__traits(compiles, { auto  sc = new ScopeC(); }));
+    static assert(!__traits(compiles, { auto  sc = new ScopeC(); }));
     static assert( __traits(compiles, { scope sc = new ScopeC(); }));
 
     synchronized class SyncC{ void f(){} }

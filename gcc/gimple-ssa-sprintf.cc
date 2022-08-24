@@ -53,11 +53,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
-#include "gimple-iterator.h"
 #include "tree-ssa.h"
 #include "tree-object-size.h"
 #include "tree-cfg.h"
@@ -600,7 +600,7 @@ struct directive
 
   /* Format conversion function that given a directive and an argument
      returns the formatting result.  */
-  fmtresult (*fmtfunc) (const directive &, tree, range_query *);
+  fmtresult (*fmtfunc) (const directive &, tree, pointer_query &);
 
   /* Return True when the format flag CHR has been used.  */
   bool get_flag (char chr) const
@@ -968,7 +968,7 @@ directive::set_precision (tree arg, range_query *query)
 /* Return the result of formatting a no-op directive (such as '%n').  */
 
 static fmtresult
-format_none (const directive &, tree, range_query *)
+format_none (const directive &, tree, pointer_query &)
 {
   fmtresult res (0);
   return res;
@@ -977,7 +977,7 @@ format_none (const directive &, tree, range_query *)
 /* Return the result of formatting the '%%' directive.  */
 
 static fmtresult
-format_percent (const directive &, tree, range_query *)
+format_percent (const directive &, tree, pointer_query &)
 {
   fmtresult res (1);
   return res;
@@ -1199,7 +1199,7 @@ adjust_range_for_overflow (tree dirtype, tree *argmin, tree *argmax)
    used when the directive argument or its value isn't known.  */
 
 static fmtresult
-format_integer (const directive &dir, tree arg, range_query *query)
+format_integer (const directive &dir, tree arg, pointer_query &ptr_qry)
 {
   tree intmax_type_node;
   tree uintmax_type_node;
@@ -1383,7 +1383,7 @@ format_integer (const directive &dir, tree arg, range_query *query)
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
       value_range vr;
-      query->range_of_expr (vr, arg, dir.info->callstmt);
+      ptr_qry.rvals->range_of_expr (vr, arg, dir.info->callstmt);
 
       if (!vr.varying_p () && !vr.undefined_p ())
 	{
@@ -1414,7 +1414,7 @@ format_integer (const directive &dir, tree arg, range_query *query)
 	      if (code == INTEGER_CST)
 		{
 		  arg = gimple_assign_rhs1 (def);
-		  return format_integer (dir, arg, query);
+		  return format_integer (dir, arg, ptr_qry);
 		}
 
 	      if (code == NOP_EXPR)
@@ -1459,16 +1459,16 @@ format_integer (const directive &dir, tree arg, range_query *query)
       /* For unsigned conversions/directives or signed when
 	 the minimum is positive, use the minimum and maximum to compute
 	 the shortest and longest output, respectively.  */
-      res.range.min = format_integer (dir, argmin, query).range.min;
-      res.range.max = format_integer (dir, argmax, query).range.max;
+      res.range.min = format_integer (dir, argmin, ptr_qry).range.min;
+      res.range.max = format_integer (dir, argmax, ptr_qry).range.max;
     }
   else if (tree_int_cst_sgn (argmax) < 0)
     {
       /* For signed conversions/directives if maximum is negative,
 	 use the minimum as the longest output and maximum as the
 	 shortest output.  */
-      res.range.min = format_integer (dir, argmax, query).range.min;
-      res.range.max = format_integer (dir, argmin, query).range.max;
+      res.range.min = format_integer (dir, argmax, ptr_qry).range.min;
+      res.range.max = format_integer (dir, argmin, ptr_qry).range.max;
     }
   else
     {
@@ -1477,11 +1477,11 @@ format_integer (const directive &dir, tree arg, range_query *query)
 	 length of the output of both minimum and maximum and pick the
 	 longer.  */
       unsigned HOST_WIDE_INT max1
-	= format_integer (dir, argmin, query).range.max;
+	= format_integer (dir, argmin, ptr_qry).range.max;
       unsigned HOST_WIDE_INT max2
-	= format_integer (dir, argmax, query).range.max;
+	= format_integer (dir, argmax, ptr_qry).range.max;
       res.range.min
-	= format_integer (dir, integer_zero_node, query).range.min;
+	= format_integer (dir, integer_zero_node, ptr_qry).range.min;
       res.range.max = MAX (max1, max2);
     }
 
@@ -1830,7 +1830,7 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
    ARG.  */
 
 static fmtresult
-format_floating (const directive &dir, tree arg, range_query *)
+format_floating (const directive &dir, tree arg, pointer_query &)
 {
   HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
   tree type = (dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
@@ -1953,7 +1953,7 @@ format_floating (const directive &dir, tree arg, range_query *)
       &res.range.min, &res.range.max
     };
 
-    for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
+    for (int i = 0; i != ARRAY_SIZE (minmax); ++i)
       {
 	/* Convert the GCC real value representation with the precision
 	   of the real type to the mpfr_t format rounding down in the
@@ -2025,7 +2025,7 @@ format_floating (const directive &dir, tree arg, range_query *)
 
 static fmtresult
 get_string_length (tree str, gimple *stmt, unsigned HOST_WIDE_INT max_size,
-		   unsigned eltsize, range_query *query)
+		   unsigned eltsize, pointer_query &ptr_qry)
 {
   if (!str)
     return fmtresult ();
@@ -2036,7 +2036,7 @@ get_string_length (tree str, gimple *stmt, unsigned HOST_WIDE_INT max_size,
   c_strlen_data lendata = { };
   lendata.maxbound = str;
   if (eltsize == 1)
-    get_range_strlen_dynamic (str, stmt, &lendata, query);
+    get_range_strlen_dynamic (str, stmt, &lendata, ptr_qry);
   else
     {
       /* Determine the length of the shortest and longest string referenced
@@ -2084,17 +2084,30 @@ get_string_length (tree str, gimple *stmt, unsigned HOST_WIDE_INT max_size,
       return res;
     }
 
+  /* The minimum length of the string.  */
   HOST_WIDE_INT min
     = (tree_fits_uhwi_p (lendata.minlen)
        ? tree_to_uhwi (lendata.minlen)
        : 0);
 
+  /* The maximum length of the string; initially set to MAXBOUND which
+     may be less than MAXLEN, but may be adjusted up below.  */
   HOST_WIDE_INT max
     = (lendata.maxbound && tree_fits_uhwi_p (lendata.maxbound)
        ? tree_to_uhwi (lendata.maxbound)
        : HOST_WIDE_INT_M1U);
 
-  const bool unbounded = integer_all_onesp (lendata.maxlen);
+  /* True if either the maximum length is unknown or (conservatively)
+     the array bound is less than the maximum length.  That can happen
+     when the length of the string is unknown but the array in which
+     the string is stored is a member of a struct.  The warning uses
+     the size of the member as the upper bound but the optimization
+     doesn't.  The optimization could still use the size of
+     enclosing object as the upper bound but that's not done here.  */
+  const bool unbounded
+    = (integer_all_onesp (lendata.maxlen)
+       || (lendata.maxbound
+	   && tree_int_cst_lt (lendata.maxbound, lendata.maxlen)));
 
   /* Set the max/likely counters to unbounded when a minimum is known
      but the maximum length isn't bounded.  This implies that STR is
@@ -2147,7 +2160,7 @@ get_string_length (tree str, gimple *stmt, unsigned HOST_WIDE_INT max_size,
    vsprinf).  */
 
 static fmtresult
-format_character (const directive &dir, tree arg, range_query *query)
+format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
 {
   fmtresult res;
 
@@ -2160,7 +2173,8 @@ format_character (const directive &dir, tree arg, range_query *query)
       res.range.min = 0;
 
       HOST_WIDE_INT min, max;
-      if (get_int_range (arg, dir.info->callstmt, &min, &max, false, 0, query))
+      if (get_int_range (arg, dir.info->callstmt, &min, &max, false, 0,
+			 ptr_qry.rvals))
 	{
 	  if (min == 0 && max == 0)
 	    {
@@ -2218,8 +2232,9 @@ format_character (const directive &dir, tree arg, range_query *query)
 }
 
 /* If TYPE is an array or struct or union, increment *FLDOFF by the starting
-   offset of the member that *OFF point into and set *FLDSIZE to its size
-   in bytes and decrement *OFF by the same.  Otherwise do nothing.  */
+   offset of the member that *OFF points into if one can be determined and
+   set *FLDSIZE to its size in bytes and decrement *OFF by the same.
+   Otherwise do nothing.  */
 
 static void
 set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
@@ -2235,9 +2250,9 @@ set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
       if (array_elt_at_offset (type, *off, &index, &arrsize))
 	{
 	  *fldoff += index;
-	  *off -= index;
 	  *fldsize = arrsize;
 	}
+      /* Otherwise leave *FLDOFF et al. unchanged.  */
     }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
@@ -2255,11 +2270,12 @@ set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
 	  *fldoff += index;
 	  *off -= index;
 	}
+      /* Otherwise leave *FLDOFF et al. unchanged.  */
     }
 }
 
-/* For an expression X of pointer type, recursively try to find the same
-   origin (object or pointer) as Y it references and return such a Y.
+/* For an expression X of pointer type, recursively try to find its origin
+   (either object DECL or pointer such as PARM_DECL) Y and return such a Y.
    When X refers to an array element or struct member, set *FLDOFF to
    the offset of the element or member from the beginning of the "most
    derived" object and *FLDSIZE to its size.  When nonnull, set *OFF to
@@ -2270,9 +2286,6 @@ static tree
 get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 			 HOST_WIDE_INT *off)
 {
-  if (!x)
-    return NULL_TREE;
-
   HOST_WIDE_INT sizebuf = -1;
   if (!fldsize)
     fldsize = &sizebuf;
@@ -2294,23 +2307,33 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 
     case ARRAY_REF:
       {
-	tree offset = TREE_OPERAND (x, 1);
-	HOST_WIDE_INT idx = (tree_fits_uhwi_p (offset)
-			     ? tree_to_uhwi (offset) : HOST_WIDE_INT_MAX);
+	tree sub = TREE_OPERAND (x, 1);
+	unsigned HOST_WIDE_INT idx =
+	  tree_fits_uhwi_p (sub) ? tree_to_uhwi (sub) : HOST_WIDE_INT_MAX;
 
-	tree eltype = TREE_TYPE (x);
-	if (TREE_CODE (eltype) == INTEGER_TYPE)
+	tree elsz = array_ref_element_size (x);
+	unsigned HOST_WIDE_INT elbytes =
+	  tree_fits_shwi_p (elsz) ? tree_to_shwi (elsz) : HOST_WIDE_INT_MAX;
+
+	unsigned HOST_WIDE_INT byteoff = idx * elbytes;
+
+	if (byteoff < HOST_WIDE_INT_MAX
+	    && elbytes < HOST_WIDE_INT_MAX
+	    && (elbytes == 0 || byteoff / elbytes == idx))
 	  {
+	    /* For in-bounds constant offsets into constant-sized arrays
+	       bump up *OFF, and for what's likely arrays or structs of
+	       arrays, also *FLDOFF, as necessary.  */
 	    if (off)
-	      *off = idx;
+	      *off += byteoff;
+	    if (elbytes > 1)
+	      *fldoff += byteoff;
 	  }
-	else if (idx < HOST_WIDE_INT_MAX)
-	  *fldoff += idx * int_size_in_bytes (eltype);
 	else
-	  *fldoff = idx;
+	  *fldoff = HOST_WIDE_INT_MAX;
 
 	x = TREE_OPERAND (x, 0);
-	return get_origin_and_offset_r (x, fldoff, fldsize, nullptr);
+	return get_origin_and_offset_r (x, fldoff, fldsize, off);
       }
 
     case MEM_REF:
@@ -2336,8 +2359,14 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 
     case COMPONENT_REF:
       {
+	tree foff = component_ref_field_offset (x);
 	tree fld = TREE_OPERAND (x, 1);
-	*fldoff += int_byte_position (fld);
+	if (!tree_fits_shwi_p (foff)
+	    || !tree_fits_shwi_p (DECL_FIELD_BIT_OFFSET (fld)))
+	  return x;
+	*fldoff += (tree_to_shwi (foff)
+		    + (tree_to_shwi (DECL_FIELD_BIT_OFFSET (fld))
+		       / BITS_PER_UNIT));
 
 	get_origin_and_offset_r (fld, fldoff, fldsize, off);
 	x = TREE_OPERAND (x, 0);
@@ -2397,30 +2426,25 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
   return x;
 }
 
-/* Nonrecursive version of the above.  */
+/* Nonrecursive version of the above.
+   The function never returns null unless X is null to begin with.  */
 
 static tree
 get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off,
 		       HOST_WIDE_INT *fldsize = nullptr)
 {
+  if (!x)
+    return NULL_TREE;
+
   HOST_WIDE_INT sizebuf;
   if (!fldsize)
     fldsize = &sizebuf;
 
+  /* Invalidate *FLDSIZE.  */
   *fldsize = -1;
+  *fldoff = *off = 0;
 
-  *fldoff = *off = *fldsize = 0;
-  tree orig = get_origin_and_offset_r (x, fldoff, fldsize, off);
-  if (!orig)
-    return NULL_TREE;
-
-  if (!*fldoff && *off == *fldsize)
-    {
-      *fldoff = *off;
-      *off = 0;
-    }
-
-  return orig;
+  return get_origin_and_offset_r (x, fldoff, fldsize, off);
 }
 
 /* If ARG refers to the same (sub)object or array element as described
@@ -2440,7 +2464,8 @@ alias_offset (tree arg, HOST_WIDE_INT *arg_size,
     return HOST_WIDE_INT_MIN;
 
   /* The two arguments may refer to the same object.  If they both refer
-     to a struct member, see if the members are one and the same.  */
+     to a struct member, see if the members are one and the same.  If so,
+     return the offset into the member.  */
   HOST_WIDE_INT arg_off = 0, arg_fld = 0;
 
   tree arg_orig = get_origin_and_offset (arg, &arg_fld, &arg_off, arg_size);
@@ -2457,7 +2482,7 @@ alias_offset (tree arg, HOST_WIDE_INT *arg_size,
    vsprinf).  */
 
 static fmtresult
-format_string (const directive &dir, tree arg, range_query *query)
+format_string (const directive &dir, tree arg, pointer_query &ptr_qry)
 {
   fmtresult res;
 
@@ -2495,7 +2520,7 @@ format_string (const directive &dir, tree arg, range_query *query)
     }
 
   fmtresult slen =
-    get_string_length (arg, dir.info->callstmt, arg_size, count_by, query);
+    get_string_length (arg, dir.info->callstmt, arg_size, count_by, ptr_qry);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)
     {
@@ -2667,7 +2692,7 @@ format_string (const directive &dir, tree arg, range_query *query)
 /* Format plain string (part of the format string itself).  */
 
 static fmtresult
-format_plain (const directive &dir, tree, range_query *)
+format_plain (const directive &dir, tree, pointer_query &)
 {
   fmtresult res (dir.len);
   return res;
@@ -3063,7 +3088,7 @@ bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
 static bool
 format_directive (const call_info &info,
 		  format_result *res, const directive &dir,
-		  range_query *query)
+		  pointer_query &ptr_qry)
 {
   /* Offset of the beginning of the directive from the beginning
      of the format string.  */
@@ -3088,7 +3113,7 @@ format_directive (const call_info &info,
     return false;
 
   /* Compute the range of lengths of the formatted output.  */
-  fmtresult fmtres = dir.fmtfunc (dir, dir.arg, query);
+  fmtresult fmtres = dir.fmtfunc (dir, dir.arg, ptr_qry);
 
   /* Record whether the output of all directives is known to be
      bounded by some maximum, implying that their arguments are
@@ -3990,7 +4015,8 @@ maybe_warn_overlap (call_info &info, format_result *res)
    that caused the processing to be terminated early).  */
 
 static bool
-compute_format_length (call_info &info, format_result *res, range_query *query)
+compute_format_length (call_info &info, format_result *res,
+		       pointer_query &ptr_qry)
 {
   if (dump_file)
     {
@@ -4027,10 +4053,10 @@ compute_format_length (call_info &info, format_result *res, range_query *query)
     {
       directive dir (&info, dirno);
 
-      size_t n = parse_directive (info, dir, res, pf, &argno, query);
+      size_t n = parse_directive (info, dir, res, pf, &argno, ptr_qry.rvals);
 
       /* Return failure if the format function fails.  */
-      if (!format_directive (info, res, dir, query))
+      if (!format_directive (info, res, dir, ptr_qry))
 	return false;
 
       /* Return success when the directive is zero bytes long and it's
@@ -4216,7 +4242,8 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 
 	  wide_int min = wi::shwi (retval[0], prec);
 	  wide_int max = wi::shwi (retval[1], prec);
-	  set_range_info (lhs, VR_RANGE, min, max);
+	  value_range r (TREE_TYPE (lhs), min, max);
+	  set_range_info (lhs, r);
 
 	  setrange = true;
 	}
@@ -4700,7 +4727,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
      never set to true again).  */
   res.posunder4k = posunder4k && dstptr;
 
-  bool success = compute_format_length (info, &res, ptr_qry.rvals);
+  bool success = compute_format_length (info, &res, ptr_qry);
   if (res.warned)
     suppress_warning (info.callstmt, info.warnopt ());
 

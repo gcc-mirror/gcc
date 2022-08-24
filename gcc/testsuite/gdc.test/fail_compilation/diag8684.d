@@ -1,8 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag8684.d(11): Error: found `;` when expecting `)`
-fail_compilation/diag8684.d(12): Error: semicolon expected, not `for`
+fail_compilation/diag8684.d(12): Error: found `;` when expecting `)`
+fail_compilation/diag8684.d(13): Error: semicolon needed to end declaration of `x`, instead of `for`
+fail_compilation/diag8684.d(12):        `x` declared here
 ---
 */
 

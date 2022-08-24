@@ -34,6 +34,17 @@ package Sem_Ch10 is
    procedure Analyze_Protected_Body_Stub                (N : Node_Id);
    procedure Analyze_Subunit                            (N : Node_Id);
 
+   procedure Decorate_Type
+     (Ent         : Entity_Id;
+      Scop        : Entity_Id;
+      Is_Tagged   : Boolean := False;
+      Materialize : Boolean := False);
+   --  Perform minimal decoration of a type or its corresponding shadow
+   --  entity denoted by Ent. Scop is the proper scope. Flag Is_Tagged
+   --  should be set when Ent is a tagged type. Flag Materialize should be
+   --  set when Ent is a tagged type and its class-wide type needs to appear
+   --  in the tree.
+
    procedure Install_Context (N : Node_Id; Chain : Boolean := True);
    --  Installs the entities from the context clause of the given compilation
    --  unit into the visibility chains. This is done before analyzing a unit.

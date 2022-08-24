@@ -305,6 +305,7 @@ extern void GOMP_taskloop_ull (void (*) (void *), void *,
 			       unsigned long long);
 extern void GOMP_taskwait (void);
 extern void GOMP_taskwait_depend (void **);
+extern void GOMP_taskwait_depend_nowait (void **);
 extern void GOMP_taskyield (void);
 extern void GOMP_taskgroup_start (void);
 extern void GOMP_taskgroup_end (void);

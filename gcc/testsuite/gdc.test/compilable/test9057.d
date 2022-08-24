@@ -16,5 +16,3 @@ void test9507_2() {
     import imp9057_2;
     Bug9057!(BugInt) xxx;
 }
-
-

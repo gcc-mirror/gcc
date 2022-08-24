@@ -247,7 +247,7 @@ growing_rtx_properties<Base>::repeat (AddFn add)
       /* This retries if the storage happened to be exactly the right size,
 	 but that's expected to be a rare case and so isn't worth
 	 optimizing for.  */
-      if (__builtin_expect (this->ref_iter != this->ref_end, 1))
+      if (LIKELY (this->ref_iter != this->ref_end))
 	break;
       this->grow (count);
     }
@@ -313,7 +313,7 @@ inline vec_rtx_properties_base::vec_rtx_properties_base ()
 
 inline vec_rtx_properties_base::~vec_rtx_properties_base ()
 {
-  if (__builtin_expect (ref_begin != m_storage, 0))
+  if (UNLIKELY (ref_begin != m_storage))
     free (ref_begin);
 }
 

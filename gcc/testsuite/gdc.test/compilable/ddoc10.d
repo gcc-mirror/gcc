@@ -171,7 +171,7 @@ struct T
     /****
      */
     this(A...)(A args) { }
-    
+
     ///
     this(int){}
 }

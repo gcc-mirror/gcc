@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-rtl-loop2_invariant" } */
-/* { dg-skip-if "unexpected IV" { "hppa*-*-* mips*-*-* visium-*-* powerpc*-*-* riscv*-*-* mmix-*-* vax-*-*" } } */
+/* { dg-skip-if "unexpected IV" { "hppa*-*-* mips*-*-* visium-*-* powerpc*-*-* riscv*-*-* mmix-*-* vax-*-* loongarch*-*-*" } } */
 /* Load immediate on condition is available from z13 on and prevents moving
    the load out of the loop, so always run this test with -march=zEC12 that
    does not have load immediate on condition.  */

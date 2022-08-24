@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv64gc -mabi=lp64d -fpic" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -fpic" } */
 
 int main () {
 #if !defined(__riscv)

@@ -386,8 +386,6 @@ DEFTREECODE (NONTYPE_ARGUMENT_PACK, "nontype_argument_pack", tcc_expression, 1)
    the type or expression that we will substitute into with each
    argument in an argument pack.
 
-   SET_PACK_EXPANSION_PATTERN sets the expansion pattern.
-
    PACK_EXPANSION_PARAMETER_PACKS contains a TREE_LIST of the parameter
    packs that are used in this pack expansion.
 

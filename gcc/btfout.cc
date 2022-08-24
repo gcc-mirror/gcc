@@ -463,6 +463,7 @@ btf_dtd_emit_preprocess_cb (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       ctf_dtdef_ref func_dtd = ggc_cleared_alloc<ctf_dtdef_t> ();
       func_dtd->dtd_data = dtd->dtd_data;
       func_dtd->dtd_data.ctti_type = dtd->dtd_type;
+      func_dtd->linkage = dtd->linkage;
 
       vec_safe_push (funcs, func_dtd);
       num_types_created++;
@@ -740,7 +741,10 @@ static void
 btf_asm_func_type (ctf_dtdef_ref dtd)
 {
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name, "btt_name");
-  dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_FUNC, 0, 0), "btt_info");
+  dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_FUNC, 0,
+                                         dtd->linkage),
+                       "btt_info: kind=%u, kflag=%u, linkage=%u",
+                       BTF_KIND_FUNC, 0, dtd->linkage);
   dw2_asm_output_data (4, get_btf_id (dtd->dtd_data.ctti_type), "btt_type");
 }
 
@@ -913,6 +917,10 @@ output_asm_btf_vlen_bytes (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 	 list as size 0 integers. Skip emitting them.  */
       if (dtd->dtd_data.ctti_size < 1)
 	break;
+
+      /* In BTF the CHAR `encoding' seems to not be used, so clear it
+         here.  */
+      dtd->dtd_u.dtu_enc.cte_format &= ~BTF_INT_CHAR;
 
       encoding = BTF_INT_DATA (dtd->dtd_u.dtu_enc.cte_format,
 			       dtd->dtd_u.dtu_enc.cte_offset,

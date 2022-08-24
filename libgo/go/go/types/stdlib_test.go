@@ -142,8 +142,7 @@ func testTestDir(t *testing.T, path string, ignore ...string) {
 		// parse and type-check file
 		file, err := parser.ParseFile(fset, filename, nil, 0)
 		if err == nil {
-			conf := Config{Importer: stdLibImporter}
-			SetGoVersion(&conf, goVersion)
+			conf := Config{GoVersion: goVersion, Importer: stdLibImporter}
 			_, err = conf.Check(filename, fset, []*ast.File{file}, nil)
 		}
 
@@ -169,9 +168,11 @@ func TestStdTest(t *testing.T) {
 	testTestDir(t, filepath.Join(runtime.GOROOT(), "test"),
 		"cmplxdivide.go", // also needs file cmplxdivide1.go - ignore
 		"directive.go",   // tests compiler rejection of bad directive placement - ignore
+		"directive2.go",  // tests compiler rejection of bad directive placement - ignore
 		"embedfunc.go",   // tests //go:embed
 		"embedvers.go",   // tests //go:embed
 		"linkname2.go",   // go/types doesn't check validity of //go:xxx directives
+		"linkname3.go",   // go/types doesn't check validity of //go:xxx directives
 	)
 }
 
@@ -197,6 +198,10 @@ func TestStdFixed(t *testing.T) {
 		"bug251.go",      // issue #34333 which was exposed with fix for #34151
 		"issue42058a.go", // go/types does not have constraints on channel element size
 		"issue42058b.go", // go/types does not have constraints on channel element size
+		"issue48097.go",  // go/types doesn't check validity of //go:xxx directives, and non-init bodyless function
+		"issue48230.go",  // go/types doesn't check validity of //go:xxx directives
+		"issue49767.go",  // go/types does not have constraints on channel element size
+		"issue49814.go",  // go/types does not have constraints on array size
 	)
 }
 
@@ -295,7 +300,7 @@ func pkgFilenames(dir string) ([]string, error) {
 	return filenames, nil
 }
 
-func walkPkgDirs(dir string, pkgh func(dir string, filenames []string), errh func(args ...interface{})) time.Duration {
+func walkPkgDirs(dir string, pkgh func(dir string, filenames []string), errh func(args ...any)) time.Duration {
 	w := walker{time.Now(), 10 * time.Millisecond, pkgh, errh}
 	w.walk(dir)
 	return time.Since(w.start)
@@ -305,7 +310,7 @@ type walker struct {
 	start time.Time
 	dmax  time.Duration
 	pkgh  func(dir string, filenames []string)
-	errh  func(args ...interface{})
+	errh  func(args ...any)
 }
 
 func (w *walker) walk(dir string) {

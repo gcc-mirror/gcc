@@ -414,7 +414,7 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
   rtvec vec, newvec;
   int i, j;
 
-  if (__builtin_expect (fn != NULL, 0))
+  if (UNLIKELY (fn != NULL))
     {
       newx = fn (x, old_rtx, data);
       if (newx)
@@ -1366,10 +1366,34 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	break;
 
       /* If operand is something known to be positive, ignore the ABS.  */
-      if (GET_CODE (op) == FFS || GET_CODE (op) == ABS
-	  || val_signbit_known_clear_p (GET_MODE (op),
-					nonzero_bits (op, GET_MODE (op))))
+      if (val_signbit_known_clear_p (GET_MODE (op),
+				     nonzero_bits (op, GET_MODE (op))))
 	return op;
+
+      /* Using nonzero_bits doesn't (currently) work for modes wider than
+	 HOST_WIDE_INT, so the following transformations help simplify
+	 ABS for TImode and wider.  */
+      switch (GET_CODE (op))
+	{
+	case ABS:
+	case CLRSB:
+	case FFS:
+	case PARITY:
+	case POPCOUNT:
+	case SS_ABS:
+	  return op;
+
+	case LSHIFTRT:
+	  if (CONST_INT_P (XEXP (op, 1))
+	      && INTVAL (XEXP (op, 1)) > 0
+	      && is_a <scalar_int_mode> (mode, &int_mode)
+	      && INTVAL (XEXP (op, 1)) < GET_MODE_PRECISION (int_mode))
+	    return op;
+	  break;
+
+	default:
+	  break;
+	}
 
       /* If operand is known to be only -1 or 0, convert ABS to NEG.  */
       if (is_a <scalar_int_mode> (mode, &int_mode)
@@ -1527,7 +1551,7 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 		  if (partial_subreg_p (temp))
 		    {
 		      SUBREG_PROMOTED_VAR_P (temp) = 1;
-		      SUBREG_PROMOTED_SET (temp, 1);
+		      SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
 		    }
 		  return temp;
 		}
@@ -1615,6 +1639,24 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	    }
 	}
 
+      /* We can canonicalize SIGN_EXTEND (op) as ZERO_EXTEND (op) when
+         we know the sign bit of OP must be clear.  */
+      if (val_signbit_known_clear_p (GET_MODE (op),
+				     nonzero_bits (op, GET_MODE (op))))
+	return simplify_gen_unary (ZERO_EXTEND, mode, op, GET_MODE (op));
+
+      /* (sign_extend:DI (subreg:SI (ctz:DI ...))) is (ctz:DI ...).  */
+      if (GET_CODE (op) == SUBREG
+	  && subreg_lowpart_p (op)
+	  && GET_MODE (SUBREG_REG (op)) == mode
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (op), &op_mode)
+	  && GET_MODE_PRECISION (int_mode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_MODE_PRECISION (op_mode) < GET_MODE_PRECISION (int_mode)
+	  && (nonzero_bits (SUBREG_REG (op), mode)
+	      & ~(GET_MODE_MASK (op_mode) >> 1)) == 0)
+	return SUBREG_REG (op);
+
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
 	 we can do this only if the target does not support different pointer
@@ -1662,7 +1704,7 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 		  if (partial_subreg_p (temp))
 		    {
 		      SUBREG_PROMOTED_VAR_P (temp) = 1;
-		      SUBREG_PROMOTED_SET (temp, 0);
+		      SUBREG_PROMOTED_SET (temp, SRP_UNSIGNED);
 		    }
 		  return temp;
 		}
@@ -1764,6 +1806,18 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	  return simplify_gen_unary (ZERO_EXTEND, int_mode, SUBREG_REG (op),
 				     op0_mode);
 	}
+
+      /* (zero_extend:DI (subreg:SI (ctz:DI ...))) is (ctz:DI ...).  */
+      if (GET_CODE (op) == SUBREG
+	  && subreg_lowpart_p (op)
+	  && GET_MODE (SUBREG_REG (op)) == mode
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (op), &op_mode)
+	  && GET_MODE_PRECISION (int_mode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_MODE_PRECISION (op_mode) < GET_MODE_PRECISION (int_mode)
+	  && (nonzero_bits (SUBREG_REG (op), mode)
+	      & ~GET_MODE_MASK (op_mode)) == 0)
+	return SUBREG_REG (op);
 
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
@@ -5066,6 +5120,15 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case SS_ASHIFT:
 	case US_ASHIFT:
 	  {
+	    /* The shift count might be in SImode while int_mode might
+	       be narrower.  On IA-64 it is even DImode.  If the shift
+	       count is too large and doesn't fit into int_mode, we'd
+	       ICE.  So, if int_mode is narrower than word, use
+	       word_mode for the shift count.  */
+	    if (GET_MODE (op1) == VOIDmode
+		&& GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
+	      pop1 = rtx_mode_t (op1, word_mode);
+
 	    wide_int wop1 = pop1;
 	    if (SHIFT_COUNT_TRUNCATED)
 	      wop1 = wi::umod_trunc (wop1, GET_MODE_PRECISION (int_mode));
@@ -5112,6 +5175,15 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case ROTATE:
 	case ROTATERT:
 	  {
+	    /* The rotate count might be in SImode while int_mode might
+	       be narrower.  On IA-64 it is even DImode.  If the shift
+	       count is too large and doesn't fit into int_mode, we'd
+	       ICE.  So, if int_mode is narrower than word, use
+	       word_mode for the shift count.  */
+	    if (GET_MODE (op1) == VOIDmode
+		&& GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
+	      pop1 = rtx_mode_t (op1, word_mode);
+
 	    if (wi::neg_p (pop1))
 	      return NULL_RTX;
 
@@ -5208,7 +5280,11 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case ASHIFT:
 	  if (CONST_SCALAR_INT_P (op1))
 	    {
-	      wide_int shift = rtx_mode_t (op1, mode);
+	      wide_int shift
+		= rtx_mode_t (op1,
+			      GET_MODE (op1) == VOIDmode
+			      && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD
+			      ? word_mode : mode);
 	      if (SHIFT_COUNT_TRUNCATED)
 		shift = wi::umod_trunc (shift, GET_MODE_PRECISION (int_mode));
 	      else if (wi::geu_p (shift, GET_MODE_PRECISION (int_mode)))
@@ -6876,12 +6952,13 @@ native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
 	  /* This is the only case in which elements can be smaller than
 	     a byte.  */
 	  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+	  auto mask = GET_MODE_MASK (GET_MODE_INNER (mode));
 	  for (unsigned int i = 0; i < num_bytes; ++i)
 	    {
 	      target_unit value = 0;
 	      for (unsigned int j = 0; j < BITS_PER_UNIT; j += elt_bits)
 		{
-		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & 1) << j;
+		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & mask) << j;
 		  elt += 1;
 		}
 	      bytes.quick_push (value);
@@ -7025,9 +7102,8 @@ native_decode_vector_rtx (machine_mode mode, const vec<target_unit> &bytes,
 	  unsigned int bit_index = first_byte * BITS_PER_UNIT + i * elt_bits;
 	  unsigned int byte_index = bit_index / BITS_PER_UNIT;
 	  unsigned int lsb = bit_index % BITS_PER_UNIT;
-	  builder.quick_push (bytes[byte_index] & (1 << lsb)
-			      ? CONST1_RTX (BImode)
-			      : CONST0_RTX (BImode));
+	  unsigned int value = bytes[byte_index] >> lsb;
+	  builder.quick_push (gen_int_mode (value, GET_MODE_INNER (mode)));
 	}
     }
   else
@@ -7302,7 +7378,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx x,
   else if (!native_encode_rtx (innermode, x, buffer, first_byte, inner_bytes))
     return NULL_RTX;
   rtx ret = native_decode_rtx (outermode, buffer, 0);
-  if (ret && MODE_COMPOSITE_P (outermode))
+  if (ret && FLOAT_MODE_P (outermode))
     {
       auto_vec<target_unit, 128> buffer2 (buffer_bytes);
       if (!native_encode_rtx (outermode, ret, buffer2, 0, buffer_bytes))
@@ -7994,17 +8070,23 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 						    duplicate, last_par));
 
       /* Test a scalar subreg of a VEC_MERGE of a VEC_DUPLICATE.  */
-      rtx vector_reg = make_test_reg (mode);
-      for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+      /* Skip this test for vectors of booleans, because offset is in bytes,
+	 while vec_merge indices are in elements (usually bits).  */
+      if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
 	{
-	  if (i >= HOST_BITS_PER_WIDE_INT)
-	    break;
-	  rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
-	  rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
-	  poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
-	  ASSERT_RTX_EQ (scalar_reg,
-			 simplify_gen_subreg (inner_mode, vm,
-					      mode, offset));
+	  rtx vector_reg = make_test_reg (mode);
+	  for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+	    {
+	      if (i >= HOST_BITS_PER_WIDE_INT)
+		break;
+	      rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
+	      rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
+	      poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
+
+	      ASSERT_RTX_EQ (scalar_reg,
+			     simplify_gen_subreg (inner_mode, vm,
+						  mode, offset));
+	    }
 	}
     }
 
@@ -8352,7 +8434,7 @@ test_vector_subregs_fore_back (machine_mode inner_mode)
   for (unsigned int i = 0; i < count; ++i)
     builder.quick_push (gen_int_mode (i, int_mode));
   for (unsigned int i = 0; i < count; ++i)
-    builder.quick_push (gen_int_mode (-(int) i, int_mode));
+    builder.quick_push (gen_int_mode (-1 - (int) i, int_mode));
   rtx x = builder.build ();
 
   test_vector_subregs_modes (x);
@@ -8459,7 +8541,7 @@ simplify_const_poly_int_tests<N>::run ()
 /* Run all of the selftests within this file.  */
 
 void
-simplify_rtx_c_tests ()
+simplify_rtx_cc_tests ()
 {
   test_scalar_ops ();
   test_vector_ops ();

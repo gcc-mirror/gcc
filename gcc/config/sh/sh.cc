@@ -728,7 +728,7 @@ parse_validate_atomic_model_option (const char* str)
 	  goto got_mode_name;
 	}
 
-    err_ret ("invalid atomic model name \"%s\"", tokens.front ().c_str ());
+    err_ret ("invalid atomic model name %qs", tokens.front ().c_str ());
 got_mode_name:;
   }
 
@@ -742,11 +742,11 @@ got_mode_name:;
 	  std::string offset_str = tokens[i].substr (strlen ("gbr-offset="));
 	  ret.tcb_gbr_offset = integral_argument (offset_str.c_str ());
 	  if (offset_str.empty () || ret.tcb_gbr_offset == -1)
-	    err_ret ("could not parse gbr-offset value \"%s\" in atomic model "
+	    err_ret ("could not parse gbr-offset value %qs in atomic model "
 		     "option", offset_str.c_str ());
 	}
       else
-	err_ret ("unknown parameter \"%s\" in atomic model option",
+	err_ret ("unknown parameter %qs in atomic model option",
 		 tokens[i].c_str ());
     }
 
@@ -2178,7 +2178,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	  && prob.to_reg_br_prob_base () >= (int) (REG_BR_PROB_BASE * 3 / 8U)
 	  && prob.to_reg_br_prob_base () <= (int) (REG_BR_PROB_BASE * 5 / 8U))
 	{
-	  msw_taken_prob = prob.apply_scale (1, 2);
+	  msw_taken_prob = prob / 2;
 	  msw_skip_prob = rev_prob.apply_scale (REG_BR_PROB_BASE,
 						rev_prob.to_reg_br_prob_base ()
 						+ REG_BR_PROB_BASE);
@@ -10761,6 +10761,12 @@ sh_register_move_cost (machine_mode mode,
       && ! REGCLASS_HAS_GENERAL_REG (srcclass)
       && ! REGCLASS_HAS_GENERAL_REG (dstclass))
     return 2 * ((GET_MODE_SIZE (mode) + 7) / 8U);
+
+  if (((dstclass == FP_REGS || dstclass == DF_REGS)
+       && (srcclass == PR_REGS))
+      || ((srcclass == FP_REGS || srcclass == DF_REGS)
+	  && (dstclass == PR_REGS)))
+    return 7;
 
   return 2 * ((GET_MODE_SIZE (mode) + 3) / 4U);
 }

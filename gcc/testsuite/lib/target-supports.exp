@@ -30,6 +30,7 @@
 #
 # Assume by default that CONTENTS is C code.  
 # Otherwise, code should contain:
+# "/* Assembly" for assembly code,
 # "// C++" for c++,
 # "// D" for D,
 # "! Fortran" for Fortran code,
@@ -57,6 +58,7 @@ proc check_compile {basename type contents args} {
 	set options ""
     }
     switch -glob -- $contents {
+	"*/* Assembly*" { set src ${basename}[pid].S }
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
 	"*// D*" { set src ${basename}[pid].d }
@@ -849,7 +851,6 @@ proc check_effective_target_nonlocal_goto {} {
 
 proc check_effective_target_global_constructor {} {
     if { [istarget nvptx-*-*]
-	 || [istarget amdgcn-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0
     }
@@ -1295,6 +1296,14 @@ proc check_effective_target_mpaired_single { } {
 # Return true if the target has access to FPU instructions.
 
 proc check_effective_target_hard_float { } {
+    if { [istarget loongarch*-*-*] } {
+	return [check_no_compiler_messages hard_float assembly {
+		#if (defined __loongarch_soft_float)
+		#error __loongarch_soft_float
+		#endif
+	}]
+    }
+
     if { [istarget mips*-*-*] } {
 	return [check_no_compiler_messages hard_float assembly {
 		#if (defined __mips_soft_float || defined __mips16)
@@ -1677,6 +1686,36 @@ proc check_linker_plugin_available { } {
   return [check_no_compiler_messages_nocache linker_plugin executable {
      int main() { return 0; }
   } "-flto -fuse-linker-plugin"]
+}
+
+# Return 1 if the target is RV32, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv32 { } {
+    # Check that we are compiling for RV32 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv32 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 32
+       #error "Not RV32"
+       #endif
+       #endif
+    }]
+}
+
+# Return 1 if the target is RV64, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv64 { } {
+    # Check that we are compiling for RV64 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv64 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 64
+       #error "Not RV64"
+       #endif
+       #endif
+    }]
 }
 
 # Return 1 if the target OS supports running SSE executables, 0
@@ -2249,7 +2288,7 @@ proc check_p9modulo_hw_available { } {
 		{
 		    int i = 5, j = 3, r = -1;
 		    asm ("modsw %0,%1,%2" : "+r" (r) : "r" (i), "r" (j));
-		    return (r == 2);
+		    return (r != 2);
 		}
 	    } $options
 	}
@@ -2308,8 +2347,9 @@ proc check_ppc_mma_hw_available { } {
 proc check_ppc_float128_sw_available { } {
     return [check_cached_effective_target ppc_float128_sw_available {
 	# Some simulators are known to not support VSX/power8/power9
-	# instructions.	For now, disable on Darwin.
-	if { [istarget powerpc-*-eabi]
+	# instructions.	For now, disable on Darwin and VxWorks.
+	if { [istarget *-*-vxworks*]
+	     || [istarget powerpc-*-eabi]
 	     || [istarget powerpc*-*-eabispe]
 	     || [istarget *-*-darwin*]} {
 	    expr 0
@@ -2335,7 +2375,8 @@ proc check_ppc_float128_hw_available { } {
     return [check_cached_effective_target ppc_float128_hw_available {
 	# Some simulators are known to not support VSX/power8/power9
 	# instructions.	For now, disable on Darwin.
-	if { [istarget powerpc-*-eabi]
+	if { [istarget *-*-vxworks*]
+	     || [istarget powerpc-*-eabi]
 	     || [istarget powerpc*-*-eabispe]
 	     || [istarget *-*-darwin*]} {
 	    expr 0
@@ -2360,8 +2401,9 @@ proc check_ppc_float128_hw_available { } {
 # See if the __ieee128 keyword is understood.
 proc check_effective_target_ppc_ieee128_ok { } {
     return [check_cached_effective_target ppc_ieee128_ok {
-	# disable on AIX.
-	if { [istarget *-*-aix*] } {
+	# disable on AIX and VxWorks.
+	if { [istarget *-*-aix*]
+	     || [istarget *-*-vxworks*]} {
 	    expr 0
 	} else {
 	    set options "-mfloat128"
@@ -2860,6 +2902,15 @@ proc check_effective_target_be { } {
 proc check_effective_target_le { } {
     return [check_no_compiler_messages le object {
 	int dummy[__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ? 1 : -1];
+    }]
+}
+
+# Return 1 if we can link a program with 2+GB of data.
+
+proc check_effective_target_two_plus_gigs { } {
+    return [check_no_compiler_messages two_plus_gigs executable {
+	char dummy[0x80000000];
+	int main () { return 0; }
     }]
 }
 
@@ -3382,6 +3433,17 @@ proc check_effective_target_dfprt { } {
     return [check_cached_effective_target dfprt {
 	check_effective_target_dfprt_nocache
     }]
+}
+
+# Return 1 if the target uses the BID format for Decimal Floating
+# Point, 0 otherwise.
+
+proc check_effective_target_dfp_bid { } {
+    if { [istarget aarch64*-*-*]
+	 || [istarget i?86-*-*] || [istarget x86_64-*-*]} {
+	return 1
+    }
+    return 0
 }
 
 # Return 1 iff target has unsigned plain 'char' by default.
@@ -3919,6 +3981,18 @@ proc check_effective_target_arm_vect_no_misalign { } {
 
 proc check_effective_target_arm_soft_ok { } {
     return [check_no_compiler_messages arm_soft_ok object {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
+	} "-mfloat-abi=soft"]
+}
+
+# Return 1 if this is an ARM target supporting -mfloat-abi=soft even
+# for linking.  Some multilibs may be incompatible with this option,
+# and some linkers may reject incompatible options.
+
+proc check_effective_target_arm_soft_ok_link { } {
+    return [check_no_compiler_messages arm_soft_ok_link executable {
 	#include <stdint.h>
 	int dummy;
 	int main (void) { return 0; }
@@ -5036,6 +5110,7 @@ proc check_effective_target_arm_cmse_hw { } {
 	}
     } "-mcmse"]
 }
+
 # Return 1 if the target supports executing MVE instructions, 0
 # otherwise.
 
@@ -5051,7 +5126,7 @@ proc check_effective_target_arm_mve_hw {} {
 	       : "0" (a), "r" (b));
 	  return (a != 2);
 	}
-    } ""]
+    } [add_options_for_arm_v8_1m_mve_fp ""]]
 }
 
 # Return 1 if this is an ARM target where ARMv8-M Security Extensions with
@@ -5230,6 +5305,18 @@ proc check_effective_target_arm_hard_ok { } {
 	int dummy;
 	int main (void) { return 0; }
 	} "-mfloat-abi=hard"]
+}
+
+# Return 1 if this is an ARM target supporting MVE.
+proc check_effective_target_arm_mve { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages arm_mve assembly {
+	#if !defined (__ARM_FEATURE_MVE)
+	#error FOO
+	#endif
+    }]
 }
 
 # Return 1 if the target supports ARMv8.1-M MVE with floating point
@@ -6181,21 +6268,21 @@ proc check_effective_target_powerpc_sqrt { } {
 # Return 1 if this is a PowerPC target supporting -maltivec.
 
 proc check_effective_target_powerpc_altivec_ok { } {
-    if { ([istarget powerpc*-*-*]
-         && ![istarget powerpc-*-linux*paired*])
-	 || [istarget rs6000-*-*] } {
-	# AltiVec is not supported on AIX before 5.3.
-	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
-	     || [istarget powerpc*-*-aix5.2*] } {
-	    return 0
-	}
-	return [check_no_compiler_messages powerpc_altivec_ok object {
-	    int dummy;
-	} "-maltivec"]
-    } else {
-	return 0
-    }
+    # Not PowerPC, then not ok
+    if { !([istarget powerpc*-*-*] || [istarget rs6000-*-*]) } { return 0 }
+
+    # Paired Single, then not ok
+    if { [istarget powerpc-*-linux*paired*] } { return 0 }
+
+    # AltiVec is not supported on AIX before 5.3.
+    if { [istarget powerpc*-*-aix4*]
+	 || [istarget powerpc*-*-aix5.1*]
+	 || [istarget powerpc*-*-aix5.2*] } { return 0 }
+
+    # Return true iff compiling with -maltivec does not error.
+    return [check_no_compiler_messages powerpc_altivec_ok object {
+	int dummy;
+    } "-maltivec"]
 }
 
 # Return 1 if this is a PowerPC target supporting -mpower8-vector
@@ -6281,63 +6368,73 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 # return 1 if our compiler returns the ARCH_PWR defines with the options
 # as provided by the test.
 proc check_effective_target_has_arch_pwr5 { } {
-	return [check_no_compiler_messages arch_pwr5 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr5 assembly {
 		#ifndef _ARCH_PWR5
 		#error does not have power5 support.
 		#else
 		/* "has power5 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr6 { } {
-	return [check_no_compiler_messages arch_pwr6 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr6 assembly {
 		#ifndef _ARCH_PWR6
 		#error does not have power6 support.
 		#else
 		/* "has power6 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr7 { } {
-	return [check_no_compiler_messages arch_pwr7 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr7 assembly {
 		#ifndef _ARCH_PWR7
 		#error does not have power7 support.
 		#else
 		/* "has power7 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr8 { } {
-	return [check_no_compiler_messages arch_pwr8 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr8 assembly {
 		#ifndef _ARCH_PWR8
 		#error does not have power8 support.
 		#else
 		/* "has power8 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr9 { } {
-	return [check_no_compiler_messages arch_pwr9 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr9 assembly {
 		#ifndef _ARCH_PWR9
 		#error does not have power9 support.
 		#else
 		/* "has power9 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr10 { } {
-	return [check_no_compiler_messages arch_pwr10 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr10 assembly {
 		#ifndef _ARCH_PWR10
 		#error does not have power10 support.
 		#else
 		/* "has power10 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
+}
+
+proc check_effective_target_has_arch_ppc64 { } {
+	return [check_no_compiler_messages_nocache arch_ppc64 assembly {
+		#ifndef _ARCH_PPC64
+		#error does not have ppc64 support.
+		#else
+		/* "has ppc64 support" */
+		#endif
+	} [current_compiler_flags]]
 }
 
 # Return 1 if this is a PowerPC target supporting -mcpu=power10.
@@ -7450,6 +7547,19 @@ proc check_effective_target_vect_aligned_arrays { } {
     verbose "check_effective_target_vect_aligned_arrays:\
 	     returning $et_vect_aligned_arrays" 2
     return $et_vect_aligned_arrays
+}
+
+# Return 1 if the biggest alignment required by target is 1 * BITS_PER_UNIT.
+# In such case the target does not impose any alignment constraints.
+
+proc check_effective_target_no_alignment_constraints { } {
+    return [check_runtime_nocache no_alignment_constraints {
+        int
+        main (void)
+        {
+          return __BIGGEST_ALIGNMENT__ == 1 ? 0 : 1;
+        }
+    }]
 }
 
 # Return 1 if types of size 32 bit or less are naturally aligned
@@ -8601,6 +8711,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
+	     || [istarget loongarch*-*-*]
 	     || [check_effective_target_mips_llsc] }}]
 }
 
@@ -10693,6 +10804,7 @@ proc check_effective_target_branch_cost {} {
 	 || [istarget epiphany*-*-*]
 	 || [istarget frv*-*-*]
 	 || [istarget i?86-*-*] || [istarget x86_64-*-*]
+	 || [istarget loongarch*-*-*]
 	 || [istarget mips*-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget riscv*-*-*]
@@ -11720,6 +11832,8 @@ proc check_effective_target___OPTIMIZE__ {} {
 	#ifndef __OPTIMIZE__
 	# error nein
 	#endif
+	/* Avoid pedwarn about empty TU.  */
+	int dummy;
     } [current_compiler_flags]]
 }
 
@@ -11727,6 +11841,18 @@ proc check_effective_target___OPTIMIZE__ {} {
 
 proc check_effective_target_recent_python3 { } {
     set result [remote_exec host "python3 -c \"import sys; assert sys.version_info >= (3, 6)\""]
+    set status [lindex $result 0]
+    if { $status == 0 } then {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+# Return 1 if python3 contains a module
+
+proc check_effective_target_python3_module { module } {
+    set result [remote_exec host "python3 -c \"import $module\""]
     set status [lindex $result 0]
     if { $status == 0 } then {
         return 1;
@@ -11745,4 +11871,39 @@ proc check_effective_target_pytest3 { } {
     } else {
         return 0;
     }
+}
+
+proc check_effective_target_property_1_needed { } {
+  return [check_no_compiler_messages property_1_needed executable {
+/* Assembly code */
+#ifdef __LP64__
+# define __PROPERTY_ALIGN 3
+#else
+# define __PROPERTY_ALIGN 2
+#endif
+
+	.section ".note.gnu.property", "a"
+	.p2align __PROPERTY_ALIGN
+	.long 1f - 0f		/* name length.  */
+	.long 4f - 1f		/* data length.  */
+	/* NT_GNU_PROPERTY_TYPE_0.   */
+	.long 5			/* note type.  */
+0:
+	.asciz "GNU"		/* vendor name.  */
+1:
+	.p2align __PROPERTY_ALIGN
+	/* GNU_PROPERTY_1_NEEDED.  */
+	.long 0xb0008000	/* pr_type.  */
+	.long 3f - 2f		/* pr_datasz.  */
+2:
+	/* GNU_PROPERTY_1_NEEDED_INDIRECT_EXTERN_ACCESS.  */
+	.long 1
+3:
+	.p2align __PROPERTY_ALIGN
+4:
+	.text
+	.globl main
+main:
+	.byte 0
+  } ""]
 }

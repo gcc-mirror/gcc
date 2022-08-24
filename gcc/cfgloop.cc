@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-iterator.h"
 #include "dumpfile.h"
+#include "tree-ssa.h"
+#include "tree-pretty-print.h"
 
 static void flow_loops_cfg_dump (FILE *);
 
@@ -617,7 +619,7 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
     }
 
   if (!tcount.initialized_p () || !(tcount.ipa () > HEAVY_EDGE_MIN_SAMPLES)
-      || (tcount - mcount).apply_scale (HEAVY_EDGE_RATIO, 1) > tcount)
+      || (tcount - mcount) * HEAVY_EDGE_RATIO > tcount)
     return NULL;
 
   if (dump_file)
@@ -1560,6 +1562,17 @@ verify_loop_structure (void)
 		       " region", i);
 		err = 1;
 	      }
+	}
+
+      /* Check cached number of iterations for released SSA names.  */
+      tree ref;
+      if (loop->nb_iterations
+	  && (ref = walk_tree (&loop->nb_iterations,
+			       find_released_ssa_name, NULL, NULL)))
+	{
+	  error ("loop %d%'s number of iterations %qE references the"
+		 " released SSA name %qE", i, loop->nb_iterations, ref);
+	  err = 1;
 	}
     }
 

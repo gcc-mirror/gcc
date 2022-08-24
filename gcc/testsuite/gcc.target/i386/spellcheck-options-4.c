@@ -3,5 +3,5 @@
 
 /* { dg-do compile } */
 
-__attribute__((target ("arch=hasvel"))) void foo (void) {} /* { dg-error "bad value .'hasvel'. for 'target..arch=..' attribute" } */
+__attribute__((target ("arch=hasvel"))) void foo (void) {} /* { dg-error "bad value 'hasvel' for 'target..arch=..' attribute" } */
 /* { dg-message "valid arguments to 'target..arch=..' attribute are: \[^\n\r]*; did you mean 'haswell'?"  "" { target *-*-* } .-1 } */

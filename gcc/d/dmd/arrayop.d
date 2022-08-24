@@ -52,16 +52,16 @@ bool isArrayOpValid(Expression e)
     {
         if (isUnaArrayOp(e.op))
         {
-            return isArrayOpValid((cast(UnaExp)e).e1);
+            return isArrayOpValid(e.isUnaExp().e1);
         }
         if (isBinArrayOp(e.op) || isBinAssignArrayOp(e.op) || e.op == EXP.assign)
         {
-            BinExp be = cast(BinExp)e;
+            BinExp be = e.isBinExp();
             return isArrayOpValid(be.e1) && isArrayOpValid(be.e2);
         }
         if (e.op == EXP.construct)
         {
-            BinExp be = cast(BinExp)e;
+            BinExp be = e.isBinExp();
             return be.e1.op == EXP.slice && isArrayOpValid(be.e2);
         }
         // if (e.op == EXP.call)
@@ -76,7 +76,7 @@ bool isArrayOpValid(Expression e)
 bool isNonAssignmentArrayOp(Expression e)
 {
     if (e.op == EXP.slice)
-        return isNonAssignmentArrayOp((cast(SliceExp)e).e1);
+        return isNonAssignmentArrayOp(e.isSliceExp().e1);
 
     Type tb = e.type.toBasetype();
     if (tb.ty == Tarray || tb.ty == Tsarray)
@@ -111,8 +111,8 @@ bool checkNonAssignmentArrayOp(Expression e, bool suggestion = false)
  * evaluation order as the actual array operations have no
  * side-effect.
  * References:
- * https://github.com/dlang/druntime/blob/master/src/object.d#L3944
- * https://github.com/dlang/druntime/blob/master/src/core/internal/array/operations.d
+ * https://github.com/dlang/dmd/blob/cdfadf8a18f474e6a1b8352af2541efe3e3467cc/druntime/src/object.d#L4694
+ * https://github.com/dlang/dmd/blob/master/druntime/src/core/internal/array/operations.d
  */
 Expression arrayOp(BinExp e, Scope* sc)
 {
@@ -158,7 +158,7 @@ Expression arrayOp(BinExp e, Scope* sc)
 /// ditto
 Expression arrayOp(BinAssignExp e, Scope* sc)
 {
-    //printf("BinAssignExp.arrayOp() %s\n", toChars());
+    //printf("BinAssignExp.arrayOp() %s\n", e.toChars());
 
     /* Check that the elements of e1 can be assigned to
      */
@@ -176,7 +176,7 @@ Expression arrayOp(BinAssignExp e, Scope* sc)
         return e.e1.modifiableLvalue(sc, e.e1);
     }
 
-    return arrayOp(cast(BinExp)e, sc);
+    return arrayOp(e.isBinExp(), sc);
 }
 
 /******************************************

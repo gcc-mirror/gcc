@@ -991,6 +991,7 @@ extern df_ref df_find_def (rtx_insn *, rtx);
 extern bool df_reg_defined (rtx_insn *, rtx);
 extern df_ref df_find_use (rtx_insn *, rtx);
 extern bool df_reg_used (rtx_insn *, rtx);
+extern rtx df_find_single_def_src (rtx);
 extern void df_worklist_dataflow (struct dataflow *,bitmap, int *, int);
 extern void df_print_regset (FILE *file, const_bitmap r);
 extern void df_print_word_regset (FILE *file, const_bitmap r);

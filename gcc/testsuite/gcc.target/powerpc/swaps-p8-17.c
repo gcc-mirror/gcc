@@ -1,7 +1,6 @@
 /* { dg-do compile { target { le } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O1 -mno-fold-gimple" } */
-/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
+/* { dg-options "-mdejagnu-cpu=power8 -O1" } */
 /* { dg-final { scan-assembler "lxvd2x" } } */
 /* { dg-final { scan-assembler "xxpermdi" } } */
 

@@ -555,6 +555,10 @@ dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
 
       fputc (')', file);
     }
+
+  if (do_details && LOCATION_LOCUS (e->goto_locus) > BUILTINS_LOCATION)
+    fprintf (file, " %s:%d:%d", LOCATION_FILE (e->goto_locus),
+	     LOCATION_LINE (e->goto_locus), LOCATION_COLUMN (e->goto_locus));
 }
 
 DEBUG_FUNCTION void
@@ -783,7 +787,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, dump_flags_t flags,
       NULL
 #undef DEF_BASIC_BLOCK_FLAG
     };
-  const unsigned n_bitnames = sizeof (bb_bitnames) / sizeof (char *);
+  const unsigned n_bitnames = ARRAY_SIZE (bb_bitnames);
   bool first;
   char *s_indent = (char *) alloca ((size_t) indent + 1);
   memset ((void *) s_indent, ' ', (size_t) indent);

@@ -26,4 +26,4 @@ struct B {
   template<typename U> B(U, TA<U>);
 };
 
-B b{(int *)0, (char *)0};
+B b{(int *)0, (char *)0};	// { dg-error "deduction|no match" }

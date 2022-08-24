@@ -4049,8 +4049,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return execute_rtl_pre (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *)  final override
+  {
+    return execute_rtl_pre ();
+  }
 
 }; // class pass_rtl_pre
 
@@ -4099,8 +4102,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return execute_rtl_hoist (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
+  {
+    return execute_rtl_hoist ();
+  }
 
 }; // class pass_rtl_hoist
 
@@ -4128,7 +4134,7 @@ make_pass_rtl_hoist (gcc::context *ctxt)
    within the same process.  For use by toplev::finalize.  */
 
 void
-gcse_c_finalize (void)
+gcse_cc_finalize (void)
 {
   test_insn = NULL;
 }

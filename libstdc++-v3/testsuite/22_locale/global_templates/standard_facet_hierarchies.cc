@@ -40,8 +40,10 @@ int main()
   VERIFY( has_facet<base_facet>(loc_derived) );
 
   // Standard derived facet.
+#if __cpp_rtti
   VERIFY( !has_facet<derived_facet>(loc_c) );
   VERIFY( !has_facet<derived_facet>(loc_base) );
+#endif
   VERIFY( has_facet<derived_facet>(loc_derived) );
 
 

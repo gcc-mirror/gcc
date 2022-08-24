@@ -1,7 +1,9 @@
-! { dg-do run { xfail { { i?86-*-* x86_64-*-* } && ilp32 } } }
+! { dg-do run { target { ! ia32 } } }
 ! x87 / x86-32 ABI is unsuitable for signaling NaNs
 !
 ! { dg-require-effective-target issignaling } */
+! The companion C source needs access to the issignaling macro.
+!
 ! { dg-additional-sources signaling_2_c.c }
 ! { dg-additional-options "-w" }
 ! The -w option is needed to make cc1 not report a warning for

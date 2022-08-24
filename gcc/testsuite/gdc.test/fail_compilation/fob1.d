@@ -17,6 +17,7 @@ fail_compilation/fob1.d(104): Error: variable `fob1.foo1.p` is returned but is U
 
 /* TEST_OUTPUT:
 ---
+fail_compilation/fob1.d(204): Error: variable `fob1.foo2.p` assigning to Owner without disposing of owned value
 fail_compilation/fob1.d(203): Error: variable `fob1.foo2.p` is left dangling at return
 ---
 */

@@ -24,4 +24,3 @@ void mulKaratsuba(int[] result, const(int)[] x, const(int)[] y, int[] )
 
     addAssignSimple(resultHigh[1..$], newscratchbuff[0..y1.length]);
 }
-

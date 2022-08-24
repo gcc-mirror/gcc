@@ -36,9 +36,9 @@ void test01()
   char*                 c_ref = new char[size];
 
   locale 		loc = locale::classic();
-  const c_codecvt* 	cvt = &use_facet<c_codecvt>(loc); 
+  const c_codecvt* 	cvt = &use_facet<c_codecvt>(loc);
 
-  // According to the resolution of DR19 (see also libstd++/9168), in
+  // According to the resolution of DR19 (see also libstdc++/9168), in
   // case of degenerate conversion ('noconv'), "there are no changes to
   // the values in [to, to_limit)."
   memset(c_ref, 'X', size);

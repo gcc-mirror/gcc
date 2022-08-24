@@ -41,4 +41,4 @@ int main (int argc, char **argv)
 }
 
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail { ! aarch64_sve }  } } } */

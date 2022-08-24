@@ -11,4 +11,4 @@ subroutine foo
   !$omp end task
 end
 ! { dg-final { scan-tree-dump-times "= ibar \\(&C\\." 3 "gimple" } }
-! { dg-final { scan-tree-dump-times "= ibar \\(j\\." 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "= ibar \\(&j" 1 "gimple" } }
