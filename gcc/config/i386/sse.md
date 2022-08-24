@@ -19495,7 +19495,7 @@
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512ER"
-  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%1, %2, %0<mask_operand3>|<mask_opernad3>%0, %2, %<iptr>1<round_saeonly_mask_op3>}"
+  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%1, %2, %0<mask_operand3>|<mask_operand3>%0, %2, %<iptr>1<round_saeonly_mask_op3>}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "type" "sse")
