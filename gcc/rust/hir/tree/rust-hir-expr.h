@@ -192,10 +192,10 @@ public:
 
   BorrowExpr (Analysis::NodeMapping mappings,
 	      std::unique_ptr<Expr> borrow_lvalue, Mutability mut,
-	      bool is_double_borrow, AST::AttrVec outer_attribs, Location locus)
+	      AST::AttrVec outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (borrow_lvalue),
 		    std::move (outer_attribs), locus),
-      mut (mut), double_borrow (is_double_borrow)
+      mut (mut)
   {}
 
   void accept_vis (HIRFullVisitor &vis) override;
@@ -203,7 +203,6 @@ public:
 
   Mutability get_mut () const { return mut; }
   bool is_mut () const { return mut == Mutability::Mut; }
-  bool get_is_double_borrow () const { return double_borrow; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

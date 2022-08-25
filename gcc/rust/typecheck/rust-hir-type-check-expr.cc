@@ -1209,12 +1209,6 @@ TypeCheckExpr::visit (HIR::BorrowExpr &expr)
 	}
     }
 
-  if (expr.get_is_double_borrow ())
-    {
-      // FIXME double_reference
-      gcc_unreachable ();
-    }
-
   infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 				     TyTy::TyVar (resolved_base->get_ref ()),
 				     expr.get_mut ());
