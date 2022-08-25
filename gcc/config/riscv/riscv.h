@@ -535,7 +535,9 @@ enum reg_class
 /* If this is a single bit mask, then we can load it with bseti.  Special
    handling of SImode 0x80000000 on RV64 is done in riscv_build_integer_1. */
 #define SINGLE_BIT_MASK_OPERAND(VALUE)					\
-  (pow2p_hwi (VALUE))
+  (pow2p_hwi (TARGET_64BIT						\
+		? (VALUE)						\
+		: ((VALUE) & ((HOST_WIDE_INT_1U << 32)-1))))
 
 /* Stack layout; function entry, exit and calling.  */
 

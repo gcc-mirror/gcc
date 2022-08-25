@@ -766,7 +766,11 @@ pru_rtx_costs (rtx x, machine_mode mode,
       }
     case ZERO_EXTEND:
       {
-	*total = COSTS_N_INSNS (0);
+	/* 64-bit zero extensions actually have a cost because they
+	   require setting a register to zero.
+	   32-bit and smaller are free.  */
+	int factor = (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode)) ? 0 : 1;
+	*total = factor * COSTS_N_INSNS (1);
 	return false;
       }
 
@@ -970,39 +974,55 @@ sign_bit_position (const rtx op)
   return sz * 8 - 1;
 }
 
-/* Output asm code for sign_extend operation.  */
-const char *
-pru_output_sign_extend (rtx *operands)
-{
-  static char buf[512];
-  int bufi;
-  const int dst_sz = GET_MODE_SIZE (GET_MODE (operands[0]));
-  const int src_sz = GET_MODE_SIZE (GET_MODE (operands[1]));
-  char ext_start;
+/* Parse the given CVAL integer value, and extract the "filling" byte
+   range of consecutive 0xff byte values.  Rest of bytes must be 0x00.
+   There must be only one range in the given value.  This range would
+   typically be used to calculate the parameters of
+   PRU instructions ZERO and FILL.
 
-  switch (src_sz)
+   The parameter MODE determines the maximum byte range to consider
+   in the given input constant.
+
+   Example input:
+     cval = 0xffffffffffffff00 = -256
+     mode = SImode
+   Return value:
+     start = 1
+     nbytes = 3
+
+   On error, return a range with -1 for START and NBYTES.  */
+pru_byterange
+pru_calc_byterange (HOST_WIDE_INT cval, machine_mode mode)
+{
+  const pru_byterange invalid_range = { -1, -1 };
+  pru_byterange r = invalid_range;
+  enum { ST_FFS, ST_INRANGE, ST_TRAILING_ZEROS } st = ST_FFS;
+  int i;
+
+  for (i = 0; i < GET_MODE_SIZE (mode); i++)
     {
-    case 1: ext_start = 'y'; break;
-    case 2: ext_start = 'z'; break;
-    default: gcc_unreachable ();
+      const int b = cval & ((1U << BITS_PER_UNIT) - 1);
+      cval >>= BITS_PER_UNIT;
+
+      if (b == 0x00 && (st == ST_FFS || st == ST_TRAILING_ZEROS))
+	/* No action.  */;
+      else if (b == 0x00 && st == ST_INRANGE)
+	st = ST_TRAILING_ZEROS;
+      else if (b == 0xff && st == ST_FFS)
+	{
+	  st = ST_INRANGE;
+	  r.start = i;
+	  r.nbytes = 1;
+	}
+      else if (b == 0xff && st == ST_INRANGE)
+	r.nbytes++;
+      else
+	return invalid_range;
     }
 
-  gcc_assert (dst_sz > src_sz);
-
-  /* Note that src and dst can be different parts of the same
-     register, e.g. "r7, r7.w1".  */
-  bufi = snprintf (buf, sizeof (buf),
-	  "mov\t%%0, %%1\n\t"		      /* Copy AND make positive.  */
-	  "qbbc\t.+8, %%0, %d\n\t"	      /* Check sign bit.  */
-	  "fill\t%%%c0, %d",		      /* Make negative.  */
-	  sign_bit_position (operands[1]),
-	  ext_start,
-	  dst_sz - src_sz);
-
-  gcc_assert (bufi > 0);
-  gcc_assert ((unsigned int) bufi < sizeof (buf));
-
-  return buf;
+  if (st != ST_TRAILING_ZEROS && st != ST_INRANGE)
+    return invalid_range;
+  return r;
 }
 
 /* Branches and compares.  */
@@ -1619,8 +1639,6 @@ pru_asm_regname (rtx op)
      V: print exact_log2 () of negated const_int operands.
      w: Lower 32-bits of a const_int operand.
      W: Upper 32-bits of a const_int operand.
-     y: print the next 8-bit register (regardless of op size).
-     z: print the second next 8-bit register (regardless of op size).
 */
 static void
 pru_print_operand (FILE *file, rtx op, int letter)
@@ -1691,26 +1709,6 @@ pru_print_operand (FILE *file, rtx op, int letter)
 	      return;
 	    }
 	  fprintf (file, "r%d", REGNO (op) / 4 + (letter == 'N' ? 1 : 0));
-	  return;
-	}
-      else if (letter == 'y')
-	{
-	  if (REGNO (op) > LAST_NONIO_GP_REGNUM - 1)
-	    {
-	      output_operand_lossage ("invalid operand for '%%%c'", letter);
-	      return;
-	    }
-	  fprintf (file, "%s", reg_names[REGNO (op) + 1]);
-	  return;
-	}
-      else if (letter == 'z')
-	{
-	  if (REGNO (op) > LAST_NONIO_GP_REGNUM - 2)
-	    {
-	      output_operand_lossage ("invalid operand for '%%%c'", letter);
-	      return;
-	    }
-	  fprintf (file, "%s", reg_names[REGNO (op) + 2]);
 	  return;
 	}
       break;

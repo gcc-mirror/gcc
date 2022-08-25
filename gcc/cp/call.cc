@@ -9022,6 +9022,13 @@ unsafe_return_slot_p (tree t)
   if (is_empty_base_ref (t))
     return 2;
 
+  /* A delegating constructor might be used to initialize a base.  */
+  if (current_function_decl
+      && DECL_CONSTRUCTOR_P (current_function_decl)
+      && (t == current_class_ref
+	  || tree_strip_nop_conversions (t) == current_class_ptr))
+    return 2;
+
   STRIP_NOPS (t);
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);

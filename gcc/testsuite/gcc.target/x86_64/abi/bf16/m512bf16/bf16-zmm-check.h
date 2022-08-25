@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "../bf16-helper.h"
 
 static void do_test (void);
 

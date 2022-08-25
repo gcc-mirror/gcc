@@ -8434,7 +8434,7 @@ test_vector_subregs_fore_back (machine_mode inner_mode)
   for (unsigned int i = 0; i < count; ++i)
     builder.quick_push (gen_int_mode (i, int_mode));
   for (unsigned int i = 0; i < count; ++i)
-    builder.quick_push (gen_int_mode (-(int) i, int_mode));
+    builder.quick_push (gen_int_mode (-1 - (int) i, int_mode));
   rtx x = builder.build ();
 
   test_vector_subregs_modes (x);

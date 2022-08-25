@@ -10397,11 +10397,15 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
   if (!CLASS_TYPE_P (type))
     return;
 
+  bool wrapped_p = false;
   /* A a = std::move (A());  */
   if (TREE_CODE (expr) == TREE_LIST)
     {
       if (list_length (expr) == 1)
-	expr = TREE_VALUE (expr);
+	{
+	  expr = TREE_VALUE (expr);
+	  wrapped_p = true;
+	}
       else
 	return;
     }
@@ -10410,7 +10414,10 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
   else if (TREE_CODE (expr) == CONSTRUCTOR)
     {
       if (CONSTRUCTOR_NELTS (expr) == 1)
-	expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	{
+	  expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	  wrapped_p = true;
+	}
       else
 	return;
     }
@@ -10458,6 +10465,8 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
       /* Warn if the move is redundant.  It is redundant when we would
 	 do maybe-rvalue overload resolution even without std::move.  */
       else if (warn_redundant_move
+	       /* This doesn't apply for return {std::move (t)};.  */
+	       && !wrapped_p
 	       && !warning_suppressed_p (expr, OPT_Wredundant_move)
 	       && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
 	{

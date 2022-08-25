@@ -1,3 +1,7 @@
+typedef __bf16 __m128bf16 __attribute__((__vector_size__(16), __aligned__(16)));
+typedef __bf16 __m256bf16 __attribute__((__vector_size__(32), __aligned__(32)));
+typedef __bf16 __m512bf16 __attribute__((__vector_size__(64), __aligned__(64)));
+
 typedef union
 {
   float f;

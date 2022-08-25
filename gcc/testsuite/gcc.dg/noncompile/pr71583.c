@@ -5,7 +5,7 @@ void
 f (int i)
 {
   (int (*)[++i]) { int }; /* { dg-error "expected" } */
-  (int (*)[++i]) { }; /* { dg-error "empty" } */
+  (int (*)[++i]) { };
   (int (*)[++i]) { , }; /* { dg-error "expected" } */
   (int (*)[++i]) { f () }; /* { dg-error "too few" } */
 }

@@ -54,5 +54,6 @@ OPTSTR_CMODEL	      cmodel
 STR_CMODEL_NORMAL     normal
 STR_CMODEL_TINY	      tiny
 STR_CMODEL_TS	      tiny-static
+STR_CMODEL_MEDIUM     medium
 STR_CMODEL_LARGE      large
 STR_CMODEL_EXTREME    extreme

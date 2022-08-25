@@ -6031,6 +6031,21 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       return GS_ALL_DONE;
     }
 
+  /* Convert initialization from an empty variable-size CONSTRUCTOR to
+     memset.  */
+  if (TREE_TYPE (*from_p) != error_mark_node
+      && TYPE_SIZE_UNIT (TREE_TYPE (*from_p))
+      && !poly_int_tree_p (TYPE_SIZE_UNIT (TREE_TYPE (*from_p)))
+      && TREE_CODE (*from_p) == CONSTRUCTOR
+      && CONSTRUCTOR_NELTS (*from_p) == 0)
+    {
+      maybe_with_size_expr (from_p);
+      gcc_assert (TREE_CODE (*from_p) == WITH_SIZE_EXPR);
+      return gimplify_modify_expr_to_memset (expr_p,
+					     TREE_OPERAND (*from_p, 1),
+					     want_value, pre_p);
+    }
+
   /* Insert pointer conversions required by the middle-end that are not
      required by the frontend.  This fixes middle-end type checking for
      for example gcc.dg/redecl-6.c.  */

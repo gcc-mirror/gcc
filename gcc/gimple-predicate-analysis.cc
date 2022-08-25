@@ -40,24 +40,31 @@
 #include "builtins.h"
 #include "calls.h"
 #include "value-query.h"
+#include "cfganal.h"
 
 #include "gimple-predicate-analysis.h"
 
 #define DEBUG_PREDICATE_ANALYZER 1
 
-/* Return true if BB1 is postdominating BB2 and BB1 is not a loop exit
-   bb.  The loop exit bb check is simple and does not cover all cases.  */
+/* In our predicate normal form we have MAX_NUM_CHAINS or predicates
+   and in those MAX_CHAIN_LEN (inverted) and predicates.  */
+#define MAX_NUM_CHAINS 8
+#define MAX_CHAIN_LEN 5
+
+/* When enumerating paths between two blocks this limits the number of
+   post-dominator skips between two edges possibly defining a predicate.  */
+#define MAX_POSTDOM_CHECK 8
+
+/* The limit for the number of switch cases when we do the linear search
+   for the case corresponding to an edge.  */
+#define MAX_SWITCH_CASES 40
+
+/* Return true if, when BB1 is postdominating BB2, BB1 is a loop exit.  */
 
 static bool
-is_non_loop_exit_postdominating (basic_block bb1, basic_block bb2)
+is_loop_exit (basic_block bb2, basic_block bb1)
 {
-  if (!dominated_by_p (CDI_POST_DOMINATORS, bb2, bb1))
-    return false;
-
-  if (single_pred_p (bb1) && !single_succ_p (bb2))
-    return false;
-
-  return true;
+  return single_pred_p (bb1) && !single_succ_p (bb2);
 }
 
 /* Find BB's closest postdominator that is its control equivalent (i.e.,
@@ -69,7 +76,7 @@ find_control_equiv_block (basic_block bb)
   basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
   /* Skip the postdominating bb that is also a loop exit.  */
-  if (!is_non_loop_exit_postdominating (pdom, bb))
+  if (is_loop_exit (bb, pdom))
     return NULL;
 
   /* If the postdominator is dominated by BB, return it.  */
@@ -476,19 +483,18 @@ find_var_cmp_const (pred_chain_union preds, gphi *phi, gimple **flag_def,
    Checking recursively into (1), the compiler can find out that only
    some_val (which is defined) can flow into (3) which is OK.  */
 
-static bool
-prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
-		 tree boundary_cst, tree_code cmp_code,
-		 predicate::func_t &eval,
-		 hash_set<gphi *> *visited_phis,
-		 bitmap *visited_flag_phis)
+bool
+uninit_analysis::prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
+				  tree boundary_cst, tree_code cmp_code,
+				  hash_set<gphi *> *visited_phis,
+				  bitmap *visited_flag_phis)
 {
   /* The Boolean predicate guarding the PHI definition.  Initialized
      lazily from PHI in the first call to is_use_guarded() and cached
      for subsequent iterations.  */
-  predicate def_preds (eval);
+  uninit_analysis def_preds (m_eval);
 
-  unsigned n = MIN (eval.max_phi_args, gimple_phi_num_args (flag_def));
+  unsigned n = MIN (m_eval.max_phi_args, gimple_phi_num_args (flag_def));
   for (unsigned i = 0; i < n; i++)
     {
       if (!MASK_TEST_BIT (opnds, i))
@@ -525,9 +531,9 @@ prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
 	  bitmap_set_bit (*visited_flag_phis, SSA_NAME_VERSION (phi_result));
 
 	  /* Now recursively try to prune the interesting phi args.  */
-	  unsigned opnds_arg_phi = eval.phi_arg_set (phi_arg_def);
+	  unsigned opnds_arg_phi = m_eval.phi_arg_set (phi_arg_def);
 	  if (!prune_phi_opnds (phi_arg_def, opnds_arg_phi, flag_arg_def,
-				boundary_cst, cmp_code, eval, visited_phis,
+				boundary_cst, cmp_code, visited_phis,
 				visited_flag_phis))
 	    return false;
 
@@ -547,7 +553,7 @@ prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
 	  gimple *opnd_def = SSA_NAME_DEF_STMT (opnd);
 	  if (gphi *opnd_def_phi = dyn_cast <gphi *> (opnd_def))
 	    {
-	      unsigned opnds2 = eval.phi_arg_set (opnd_def_phi);
+	      unsigned opnds2 = m_eval.phi_arg_set (opnd_def_phi);
 	      if (!MASK_EMPTY (opnds2))
 		{
 		  edge opnd_edge = gimple_phi_arg_edge (phi, i);
@@ -571,9 +577,10 @@ prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
    up the CFG nodes that it's dominated by.  *EDGES holds the result, and
    VISITED is used for detecting cycles.  */
 
-static void
-collect_phi_def_edges (gphi *phi, basic_block cd_root, auto_vec<edge> *edges,
-		       predicate::func_t &eval, hash_set<gimple *> *visited)
+void
+uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
+					vec<edge> *edges,
+					hash_set<gimple *> *visited)
 {
   if (visited->elements () == 0
       && DEBUG_PREDICATE_ANALYZER
@@ -600,9 +607,9 @@ collect_phi_def_edges (gphi *phi, basic_block cd_root, auto_vec<edge> *edges,
 
 	  if (gimple_code (def) == GIMPLE_PHI
 	      && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
-	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges, eval,
+	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
 				   visited);
-	  else if (!eval (opnd))
+	  else if (!m_eval (opnd))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -628,7 +635,7 @@ collect_phi_def_edges (gphi *phi, basic_block cd_root, auto_vec<edge> *edges,
 	      print_gimple_stmt (dump_file, phi, 0);
 	    }
 
-	  if (!eval (opnd))
+	  if (!m_eval (opnd))
 	    edges->safe_push (opnd_edge);
 	}
     }
@@ -682,7 +689,7 @@ build_pred_expr (const pred_chain_union &preds, bool invert = false)
 /* Return a bitset of all PHI arguments or zero if there are too many.  */
 
 unsigned
-predicate::func_t::phi_arg_set (gphi *phi)
+uninit_analysis::func_t::phi_arg_set (gphi *phi)
 {
   unsigned n = gimple_phi_num_args (phi);
 
@@ -765,7 +772,8 @@ predicate::func_t::phi_arg_set (gphi *phi)
      checked.  */
 
 bool
-predicate::overlap (gphi *phi, unsigned opnds, hash_set<gphi *> *visited)
+uninit_analysis::overlap (gphi *phi, unsigned opnds, hash_set<gphi *> *visited,
+			  const predicate &use_preds)
 {
   gimple *flag_def = NULL;
   tree boundary_cst = NULL_TREE;
@@ -774,7 +782,7 @@ predicate::overlap (gphi *phi, unsigned opnds, hash_set<gphi *> *visited)
   /* Find within the common prefix of multiple predicate chains
      a predicate that is a comparison of a flag variable against
      a constant.  */
-  tree_code cmp_code = find_var_cmp_const (m_preds, phi, &flag_def,
+  tree_code cmp_code = find_var_cmp_const (use_preds.chain (), phi, &flag_def,
 					   &boundary_cst);
   if (cmp_code == ERROR_MARK)
     return true;
@@ -783,7 +791,7 @@ predicate::overlap (gphi *phi, unsigned opnds, hash_set<gphi *> *visited)
      value that is in conflict with the use guard/predicate.  */
   gphi *phi_def = as_a<gphi *> (flag_def);
   bool all_pruned = prune_phi_opnds (phi, opnds, phi_def, boundary_cst,
-				     cmp_code, m_eval, visited,
+				     cmp_code, visited,
 				     &visited_flag_phis);
 
   if (visited_flag_phis)
@@ -1040,6 +1048,36 @@ is_degenerate_phi (gimple *phi, pred_info *pred)
   return true;
 }
 
+/* If compute_control_dep_chain bailed out due to limits this routine
+   tries to build a partial sparse path using dominators.  Returns
+   path edges whose predicates are always true when reaching E.  */
+
+static void
+simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
+{
+  if (!dominated_by_p (CDI_DOMINATORS, to, from))
+    return;
+
+  basic_block src = to;
+  while (src != from
+	 && chain.length () <= MAX_CHAIN_LEN)
+    {
+      basic_block dest = src;
+      src = get_immediate_dominator (CDI_DOMINATORS, src);
+      edge pred_e;
+      if (single_pred_p (dest)
+	  && (pred_e = find_edge (src, dest)))
+	chain.safe_push (pred_e);
+    }
+}
+
+static void
+simple_control_dep_chain (vec<edge>& chain, basic_block from, edge to)
+{
+  chain.safe_push (to);
+  simple_control_dep_chain (chain, from, to->src);
+}
+
 /* Recursively compute the control dependence chains (paths of edges)
    from the dependent basic block, DEP_BB, up to the dominating basic
    block, DOM_BB (the head node of a chain should be dominated by it),
@@ -1113,7 +1151,8 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
       basic_block cd_bb = e->dest;
       cur_cd_chain.safe_push (e);
-      while (!is_non_loop_exit_postdominating (cd_bb, dom_bb))
+      while (!dominated_by_p (CDI_POST_DOMINATORS, dom_bb, cd_bb)
+	     || is_loop_exit (dom_bb, cd_bb))
 	{
 	  if (cd_bb == dep_bb)
 	    {
@@ -1217,20 +1256,49 @@ can_be_invalidated_p (const pred_chain_union &preds, const pred_chain &guard)
    the use guards in *THIS that guard the PHI's use.  */
 
 bool
-predicate::use_cannot_happen (gphi *phi, unsigned opnds)
+uninit_analysis::use_cannot_happen (gphi *phi, unsigned opnds, const predicate &use_preds)
 {
   if (!m_eval.phi_arg_set (phi))
     return false;
 
   /* PHI_USE_GUARDS are OR'ed together.  If we have more than one
      possible guard, there's no way of knowing which guard was true.
-     Since we need to be absolutely sure that the uninitialized
-     operands will be invalidated, bail.  */
-  const pred_chain_union &phi_use_guards = m_preds;
-  if (phi_use_guards.length () != 1)
-    return false;
+     In that case compute the intersection of all use predicates
+     and use that.  */
+  const predicate &phi_use_guards = use_preds;
+  const pred_chain *use_guard = &phi_use_guards.chain() [0];
+  pred_chain phi_use_guard_intersection = vNULL;
+  if (phi_use_guards.chain ().length () != 1)
+    {
+      phi_use_guard_intersection = use_guard->copy ();
+      for (unsigned i = 1; i < phi_use_guards.chain ().length (); ++i)
+	{
+	  for (unsigned j = 0; j < phi_use_guard_intersection.length ();)
+	    {
+	      unsigned k;
+	      for (k = 0; k < phi_use_guards.chain ()[i].length (); ++k)
+		if (pred_equal_p (phi_use_guards.chain ()[i][k],
+				  phi_use_guard_intersection[j]))
+		  break;
+	      if (k == phi_use_guards.chain ()[i].length ())
+		phi_use_guard_intersection.unordered_remove (j);
+	      else
+		j++;
+	    }
+	}
+      if (phi_use_guard_intersection.is_empty ())
+	{
+	  phi_use_guard_intersection.release ();
+	  return false;
+	}
+      use_guard = &phi_use_guard_intersection;
+    }
 
-  const pred_chain &use_guard = phi_use_guards[0];
+  basic_block phi_bb = gimple_bb (phi);
+  /* Find the closest dominating bb to be the control dependence root.  */
+  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
+  if (!cd_root)
+    return false;
 
   /* Look for the control dependencies of all the interesting operands
      and build guard predicates describing them.  */
@@ -1247,10 +1315,23 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
       unsigned num_calls = 0;
 
       /* Build the control dependency chain for the PHI argument...  */
-      if (!compute_control_dep_chain (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+      if (!compute_control_dep_chain (cd_root,
 				      e->src, dep_chains, &num_chains,
 				      cur_chain, &num_calls))
-	return false;
+	{
+	  gcc_assert (num_chains == 0);
+	  /* If compute_control_dep_chain bailed out due to limits
+	     build a partial sparse path using dominators.  Collect
+	     only edges whose predicates are always true when reaching E.  */
+	  simple_control_dep_chain (dep_chains[0], cd_root, e);
+	  num_chains++;
+	}
+      /* Update the chains with the phi operand edge.  */
+      else if (EDGE_COUNT (e->src->succs) > 1)
+	{
+	  for (unsigned j = 0; j < num_chains; j++)
+	    dep_chains[j].safe_push (e);
+	}
 
       if (DEBUG_PREDICATE_ANALYZER && dump_file)
 	{
@@ -1261,7 +1342,7 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 
       /* ...and convert it into a set of predicates guarding its
 	 definition.  */
-      predicate def_preds (m_eval);
+      predicate def_preds;
       def_preds.init_from_control_deps (dep_chains, num_chains);
       if (def_preds.is_empty ())
 	/* If there's no predicate there's no basis to rule the use out.  */
@@ -1272,10 +1353,14 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 
       /* Can the guard for this PHI argument be negated by the one
 	 guarding the PHI use?  */
-      if (!can_be_invalidated_p (def_preds.chain (), use_guard))
-	return false;
+      if (!can_be_invalidated_p (def_preds.chain (), *use_guard))
+	{
+	  phi_use_guard_intersection.release ();
+	  return false;
+	}
     }
 
+  phi_use_guard_intersection.release ();
   return true;
 }
 
@@ -1609,302 +1694,6 @@ predicate::simplify (gimple *use_or_def, bool is_use)
   (_2 RELOP1 _1) AND (_5 RELOP2 _4) AND (_8 RELOP3 _7) AND (_0 != 0)
   */
 
-/* Store a PRED in *THIS.  */
-
-void
-predicate::push_pred (const pred_info &pred)
-{
-  pred_chain chain = vNULL;
-  chain.safe_push (pred);
-  m_preds.safe_push (chain);
-}
-
-/* Dump predicates in *THIS for STMT prepended by MSG.  */
-
-void
-predicate::dump (gimple *stmt, const char *msg) const
-{
-  fprintf (dump_file, "%s", msg);
-  if (stmt)
-    {
-      fputc ('\t', dump_file);
-      print_gimple_stmt (dump_file, stmt, 0);
-      fprintf (dump_file, "  is conditional on:\n");
-    }
-
-  unsigned np = m_preds.length ();
-  if (np == 0)
-    {
-      fprintf (dump_file, "\t(empty)\n");
-      return;
-    }
-
-  {
-    tree expr = build_pred_expr (m_preds);
-    char *str = print_generic_expr_to_str (expr);
-    fprintf (dump_file, "\t%s (expanded)\n", str);
-    free (str);
-  }
-
-  if (np > 1)
-    fprintf (dump_file, "\tOR (");
-  else
-    fputc ('\t', dump_file);
-  for (unsigned i = 0; i < np; i++)
-    {
-      dump_pred_chain (m_preds[i]);
-      if (i < np - 1)
-	fprintf (dump_file, ", ");
-      else if (i > 0)
-	fputc (')', dump_file);
-    }
-  fputc ('\n', dump_file);
-}
-
-/* Initialize *THIS with the predicates of the control dependence chains
-   between the basic block DEF_BB that defines a variable of interst and
-   USE_BB that uses the variable, respectively.  */
-
-predicate::predicate (basic_block def_bb, basic_block use_bb, func_t &eval)
-  : m_preds (vNULL), m_eval (eval)
-{
-  /* Set CD_ROOT to the basic block closest to USE_BB that is the control
-     equivalent of (is guarded by the same predicate as) DEF_BB that also
-     dominates USE_BB.  */
-  basic_block cd_root = def_bb;
-  while (dominated_by_p (CDI_DOMINATORS, use_bb, cd_root))
-    {
-      /* Find CD_ROOT's closest postdominator that's its control
-	 equivalent.  */
-      if (basic_block bb = find_control_equiv_block (cd_root))
-	if (dominated_by_p (CDI_DOMINATORS, use_bb, bb))
-	  {
-	    cd_root = bb;
-	    continue;
-	  }
-
-      break;
-    }
-
-  /* Set DEP_CHAINS to the set of edges between CD_ROOT and USE_BB.
-     Each DEP_CHAINS element is a series of edges whose conditions
-     are logical conjunctions.  Together, the DEP_CHAINS vector is
-     used below to initialize an OR expression of the conjunctions.  */
-  unsigned num_calls = 0;
-  unsigned num_chains = 0;
-  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
-  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
-
-  compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
-			     cur_chain, &num_calls);
-
-  if (DEBUG_PREDICATE_ANALYZER && dump_file)
-    {
-      fprintf (dump_file, "predicate::predicate (def_bb = %u, use_bb = %u, func_t) "
-	       "initialized from %u dep_chains:\n\t",
-	       def_bb->index, use_bb->index, num_chains);
-      dump_dep_chains (dep_chains, num_chains);
-    }
-
-  /* From the set of edges computed above initialize *THIS as the OR
-     condition under which the definition in DEF_BB is used in USE_BB.
-     Each OR subexpression is represented by one element of DEP_CHAINS,
-     where each element consists of a series of AND subexpressions.  */
-  init_from_control_deps (dep_chains, num_chains);
-}
-
-/* Release resources in *THIS.  */
-
-predicate::~predicate ()
-{
-  unsigned n = m_preds.length ();
-  for (unsigned i = 0; i != n; ++i)
-    m_preds[i].release ();
-  m_preds.release ();
-}
-
-/* Copy-assign RHS to *THIS.  */
-
-predicate&
-predicate::operator= (const predicate &rhs)
-{
-  if (this == &rhs)
-    return *this;
-
-  /* FIXME: Make this a compile-time constraint?  */
-  gcc_assert (&m_eval == &rhs.m_eval);
-
-  unsigned n = m_preds.length ();
-  for (unsigned i = 0; i != n; ++i)
-    m_preds[i].release ();
-  m_preds.release ();
-
-  n = rhs.m_preds.length ();
-  for (unsigned i = 0; i != n; ++i)
-    {
-      const pred_chain &chain = rhs.m_preds[i];
-      m_preds.safe_push (chain.copy ());
-    }
-
-  return *this;
-}
-
-/* For each use edge of PHI, compute all control dependence chains
-   and convert those to the composite predicates in M_PREDS.
-   Return true if a nonempty predicate has been obtained.  */
-
-bool
-predicate::init_from_phi_def (gphi *phi)
-{
-  gcc_assert (is_empty ());
-
-  basic_block phi_bb = gimple_bb (phi);
-  /* Find the closest dominating bb to be the control dependence root.  */
-  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
-  if (!cd_root)
-    return false;
-
-  /* Set DEF_EDGES to the edges to the PHI from the bb's that provide
-     definitions of each of the PHI operands for which M_EVAL is false.  */
-  auto_vec<edge> def_edges;
-  hash_set<gimple *> visited_phis;
-  collect_phi_def_edges (phi, cd_root, &def_edges, m_eval, &visited_phis);
-
-  unsigned nedges = def_edges.length ();
-  if (nedges == 0)
-    return false;
-
-  unsigned num_chains = 0;
-  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
-  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
-  for (unsigned i = 0; i < nedges; i++)
-    {
-      edge e = def_edges[i];
-      unsigned num_calls = 0;
-      unsigned prev_nc = num_chains;
-      compute_control_dep_chain (cd_root, e->src, dep_chains,
-				 &num_chains, cur_chain, &num_calls);
-
-      /* Update the newly added chains with the phi operand edge.  */
-      if (EDGE_COUNT (e->src->succs) > 1)
-	{
-	  if (prev_nc == num_chains && num_chains < MAX_NUM_CHAINS)
-	    dep_chains[num_chains++] = vNULL;
-	  for (unsigned j = prev_nc; j < num_chains; j++)
-	    dep_chains[j].safe_push (e);
-	}
-    }
-
-  /* Convert control dependence chains to the predicate in *THIS under
-     which the PHI operands are defined to values for which M_EVAL is
-     false.  */
-  init_from_control_deps (dep_chains, num_chains);
-  return !is_empty ();
-}
-
-/* Compute the predicates that guard the use USE_STMT and check if
-   the incoming paths that have an empty (or possibly empty) definition
-   can be pruned.  Return true if it can be determined that the use of
-   PHI's def in USE_STMT is guarded by a predicate set that does not
-   overlap with the predicate sets of all runtime paths that do not
-   have a definition.
-
-   Return false if the use is not guarded or if it cannot be determined.
-   USE_BB is the bb of the use (for phi operand use, the bb is not the bb
-   of the phi stmt, but the source bb of the operand edge).
-
-   OPNDS is a bitmap with a bit set for each PHI operand of interest.
-
-   THIS->M_PREDS contains the (memoized) defining predicate chains of
-   a PHI.  If THIS->M_PREDS is empty, the PHI's defining predicate
-   chains are computed and stored into THIS->M_PREDS as needed.
-
-   VISITED_PHIS is a pointer set of phis being visited.  */
-
-bool
-predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
-			   gphi *phi, unsigned opnds,
-			   hash_set<gphi *> *visited)
-{
-  if (visited->add (phi))
-    return false;
-
-  /* The basic block where the PHI is defined.  */
-  basic_block def_bb = gimple_bb (phi);
-
-  /* Try to build the predicate expression under which the PHI flows
-     into its use.  This will be empty if the PHI is defined and used
-     in the same bb.  */
-  predicate use_preds (def_bb, use_bb, m_eval);
-
-  if (is_non_loop_exit_postdominating (use_bb, def_bb))
-    {
-      if (is_empty ())
-	{
-	  /* Lazily initialize *THIS from the PHI and build its use
-	     expression.  */
-	  init_from_phi_def (phi);
-	  m_use_expr = build_pred_expr (use_preds.m_preds);
-	}
-
-      /* The use is not guarded.  */
-      return false;
-    }
-
-  if (use_preds.is_empty ())
-    return false;
-
-  /* Try to prune the dead incoming phi edges.  */
-  if (!use_preds.overlap (phi, opnds, visited))
-    {
-      if (DEBUG_PREDICATE_ANALYZER && dump_file)
-	fputs ("found predicate overlap\n", dump_file);
-
-      return true;
-    }
-
-  /* We might be able to prove that if the control dependencies for OPNDS
-     are true, the control dependencies for USE_STMT can never be true.  */
-  if (use_preds.use_cannot_happen (phi, opnds))
-    return true;
-
-  if (is_empty ())
-    {
-      /* Lazily initialize *THIS from PHI.  */
-      if (!init_from_phi_def (phi))
-	{
-	  m_use_expr = build_pred_expr (use_preds.m_preds);
-	  return false;
-	}
-
-      simplify (phi);
-      normalize (phi);
-    }
-
-  use_preds.simplify (use_stmt, /*is_use=*/true);
-  use_preds.normalize (use_stmt, /*is_use=*/true);
-
-  /* Return true if the predicate guarding the valid definition (i.e.,
-     *THIS) is a superset of the predicate guarding the use (i.e.,
-     USE_PREDS).  */
-  if (superset_of (use_preds))
-    return true;
-
-  m_use_expr = build_pred_expr (use_preds.m_preds);
-
-  return false;
-}
-
-/* Public interface to the above. */
-
-bool
-predicate::is_use_guarded (gimple *stmt, basic_block use_bb, gphi *phi,
-			   unsigned opnds)
-{
-  hash_set<gphi *> visited;
-  return is_use_guarded (stmt, use_bb, phi, opnds, &visited);
-}
-
 /* Normalize predicate PRED:
    1) if PRED can no longer be normalized, append it to *THIS.
    2) otherwise if PRED is of the form x != 0, follow x's definition
@@ -2068,7 +1857,7 @@ predicate::normalize (const pred_chain &chain)
   while (!work_list.is_empty ())
     {
       pred_info pi = work_list.pop ();
-      predicate pred (m_eval);
+      predicate pred;
       /* The predicate object is not modified here, only NORM_CHAIN and
 	 WORK_LIST are appended to.  */
       pred.normalize (&norm_chain, pi, BIT_AND_EXPR, &work_list, &mark_set);
@@ -2089,7 +1878,7 @@ predicate::normalize (gimple *use_or_def, bool is_use)
       dump (use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
-  predicate norm_preds (m_eval);
+  predicate norm_preds;
   for (unsigned i = 0; i < m_preds.length (); i++)
     {
       if (m_preds[i].length () != 1)
@@ -2278,38 +2067,289 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
     /* Clear M_PREDS to indicate failure.  */
     m_preds.release ();
 }
+/* Store a PRED in *THIS.  */
 
-/* Return the predicate expression guarding the definition of
-   the interesting variable.  When INVERT is set, return the logical
-   NOT of the predicate.  */
-
-tree
-predicate::def_expr (bool invert /* = false */) const
+void
+predicate::push_pred (const pred_info &pred)
 {
-  /* The predicate is stored in an inverted form.  */
-  return build_pred_expr (m_preds, !invert);
+  pred_chain chain = vNULL;
+  chain.safe_push (pred);
+  m_preds.safe_push (chain);
 }
 
-/* Return the predicate expression guarding the use of the interesting
-   variable or null if the use predicate hasn't been determined yet.  */
+/* Dump predicates in *THIS for STMT prepended by MSG.  */
 
-tree
-predicate::use_expr () const
+void
+predicate::dump (gimple *stmt, const char *msg) const
 {
-  return m_use_expr;
+  fprintf (dump_file, "%s", msg);
+  if (stmt)
+    {
+      fputc ('\t', dump_file);
+      print_gimple_stmt (dump_file, stmt, 0);
+      fprintf (dump_file, "  is conditional on:\n");
+    }
+
+  unsigned np = m_preds.length ();
+  if (np == 0)
+    {
+      fprintf (dump_file, "\t(empty)\n");
+      return;
+    }
+
+  {
+    tree expr = build_pred_expr (m_preds);
+    char *str = print_generic_expr_to_str (expr);
+    fprintf (dump_file, "\t%s (expanded)\n", str);
+    free (str);
+  }
+
+  if (np > 1)
+    fprintf (dump_file, "\tOR (");
+  else
+    fputc ('\t', dump_file);
+  for (unsigned i = 0; i < np; i++)
+    {
+      dump_pred_chain (m_preds[i]);
+      if (i < np - 1)
+	fprintf (dump_file, ", ");
+      else if (i > 0)
+	fputc (')', dump_file);
+    }
+  fputc ('\n', dump_file);
 }
 
-/* Return a logical AND expression with the (optionally inverted) predicate
-   expression guarding the definition of the interesting variable and one
-   guarding its use.  Return null if the use predicate hasn't yet been
-   determined.  */
+/* Initialize USE_PREDS with the predicates of the control dependence chains
+   between the basic block DEF_BB that defines a variable of interst and
+   USE_BB that uses the variable, respectively.  */
 
-tree
-predicate::expr (bool invert /* = false */) const
+bool
+uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
+				 basic_block use_bb)
 {
-  if (!m_use_expr)
-    return NULL_TREE;
+  gcc_assert (use_preds.is_empty ());
 
-  tree expr = build_pred_expr (m_preds, !invert);
-  return build2 (TRUTH_AND_EXPR, boolean_type_node, expr, m_use_expr);
+  /* Set CD_ROOT to the basic block closest to USE_BB that is the control
+     equivalent of (is guarded by the same predicate as) DEF_BB that also
+     dominates USE_BB.  */
+  basic_block cd_root = def_bb;
+  while (dominated_by_p (CDI_DOMINATORS, use_bb, cd_root))
+    {
+      /* Find CD_ROOT's closest postdominator that's its control
+	 equivalent.  */
+      if (basic_block bb = find_control_equiv_block (cd_root))
+	if (dominated_by_p (CDI_DOMINATORS, use_bb, bb))
+	  {
+	    cd_root = bb;
+	    continue;
+	  }
+
+      break;
+    }
+
+  /* Set DEP_CHAINS to the set of edges between CD_ROOT and USE_BB.
+     Each DEP_CHAINS element is a series of edges whose conditions
+     are logical conjunctions.  Together, the DEP_CHAINS vector is
+     used below to initialize an OR expression of the conjunctions.  */
+  unsigned num_calls = 0;
+  unsigned num_chains = 0;
+  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
+  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
+
+  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
+				  cur_chain, &num_calls))
+    {
+      gcc_assert (num_chains == 0);
+      simple_control_dep_chain (dep_chains[0], cd_root, use_bb);
+      num_chains++;
+    }
+
+  if (DEBUG_PREDICATE_ANALYZER && dump_file)
+    {
+      fprintf (dump_file, "predicate::predicate (def_bb = %u, use_bb = %u, func_t) "
+	       "initialized from %u dep_chains:\n\t",
+	       def_bb->index, use_bb->index, num_chains);
+      dump_dep_chains (dep_chains, num_chains);
+    }
+
+  /* From the set of edges computed above initialize *THIS as the OR
+     condition under which the definition in DEF_BB is used in USE_BB.
+     Each OR subexpression is represented by one element of DEP_CHAINS,
+     where each element consists of a series of AND subexpressions.  */
+  use_preds.init_from_control_deps (dep_chains, num_chains);
+  return !use_preds.is_empty ();
 }
+
+/* Release resources in *THIS.  */
+
+predicate::~predicate ()
+{
+  unsigned n = m_preds.length ();
+  for (unsigned i = 0; i != n; ++i)
+    m_preds[i].release ();
+  m_preds.release ();
+}
+
+/* Copy-assign RHS to *THIS.  */
+
+predicate&
+predicate::operator= (const predicate &rhs)
+{
+  if (this == &rhs)
+    return *this;
+
+  unsigned n = m_preds.length ();
+  for (unsigned i = 0; i != n; ++i)
+    m_preds[i].release ();
+  m_preds.release ();
+
+  n = rhs.m_preds.length ();
+  for (unsigned i = 0; i != n; ++i)
+    {
+      const pred_chain &chain = rhs.m_preds[i];
+      m_preds.safe_push (chain.copy ());
+    }
+
+  return *this;
+}
+
+/* For each use edge of PHI, compute all control dependence chains
+   and convert those to the composite predicates in M_PREDS.
+   Return true if a nonempty predicate has been obtained.  */
+
+bool
+uninit_analysis::init_from_phi_def (gphi *phi)
+{
+  gcc_assert (m_phi_def_preds.is_empty ());
+
+  basic_block phi_bb = gimple_bb (phi);
+  /* Find the closest dominating bb to be the control dependence root.  */
+  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
+  if (!cd_root)
+    return false;
+
+  /* Set DEF_EDGES to the edges to the PHI from the bb's that provide
+     definitions of each of the PHI operands for which M_EVAL is false.  */
+  auto_vec<edge> def_edges;
+  hash_set<gimple *> visited_phis;
+  collect_phi_def_edges (phi, cd_root, &def_edges, &visited_phis);
+
+  unsigned nedges = def_edges.length ();
+  if (nedges == 0)
+    return false;
+
+  unsigned num_chains = 0;
+  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
+  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
+  for (unsigned i = 0; i < nedges; i++)
+    {
+      edge e = def_edges[i];
+      unsigned num_calls = 0;
+      unsigned prev_nc = num_chains;
+      compute_control_dep_chain (cd_root, e->src, dep_chains,
+				 &num_chains, cur_chain, &num_calls);
+
+      /* Update the newly added chains with the phi operand edge.  */
+      if (EDGE_COUNT (e->src->succs) > 1)
+	{
+	  if (prev_nc == num_chains && num_chains < MAX_NUM_CHAINS)
+	    dep_chains[num_chains++] = vNULL;
+	  for (unsigned j = prev_nc; j < num_chains; j++)
+	    dep_chains[j].safe_push (e);
+	}
+    }
+
+  /* Convert control dependence chains to the predicate in *THIS under
+     which the PHI operands are defined to values for which M_EVAL is
+     false.  */
+  m_phi_def_preds.init_from_control_deps (dep_chains, num_chains);
+  return !m_phi_def_preds.is_empty ();
+}
+
+/* Compute the predicates that guard the use USE_STMT and check if
+   the incoming paths that have an empty (or possibly empty) definition
+   can be pruned.  Return true if it can be determined that the use of
+   PHI's def in USE_STMT is guarded by a predicate set that does not
+   overlap with the predicate sets of all runtime paths that do not
+   have a definition.
+
+   Return false if the use is not guarded or if it cannot be determined.
+   USE_BB is the bb of the use (for phi operand use, the bb is not the bb
+   of the phi stmt, but the source bb of the operand edge).
+
+   OPNDS is a bitmap with a bit set for each PHI operand of interest.
+
+   THIS->M_PREDS contains the (memoized) defining predicate chains of
+   a PHI.  If THIS->M_PREDS is empty, the PHI's defining predicate
+   chains are computed and stored into THIS->M_PREDS as needed.
+
+   VISITED_PHIS is a pointer set of phis being visited.  */
+
+bool
+uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
+				 gphi *phi, unsigned opnds,
+				 hash_set<gphi *> *visited)
+{
+  if (visited->add (phi))
+    return false;
+
+  /* The basic block where the PHI is defined.  */
+  basic_block def_bb = gimple_bb (phi);
+
+  if (dominated_by_p (CDI_POST_DOMINATORS, def_bb, use_bb))
+    /* The use is not guarded.  */
+    return false;
+
+  /* Try to build the predicate expression under which the PHI flows
+     into its use.  This will be empty if the PHI is defined and used
+     in the same bb.  */
+  predicate use_preds;
+  if (!init_use_preds (use_preds, def_bb, use_bb))
+    return false;
+
+  /* Try to prune the dead incoming phi edges.  */
+  if (!overlap (phi, opnds, visited, use_preds))
+    {
+      if (DEBUG_PREDICATE_ANALYZER && dump_file)
+	fputs ("found predicate overlap\n", dump_file);
+
+      return true;
+    }
+
+  /* We might be able to prove that if the control dependencies for OPNDS
+     are true, the control dependencies for USE_STMT can never be true.  */
+  if (use_cannot_happen (phi, opnds, use_preds))
+    return true;
+
+  if (m_phi_def_preds.is_empty ())
+    {
+      /* Lazily initialize *THIS from PHI.  */
+      if (!init_from_phi_def (phi))
+	return false;
+
+      m_phi_def_preds.simplify (phi);
+      m_phi_def_preds.normalize (phi);
+    }
+
+  use_preds.simplify (use_stmt, /*is_use=*/true);
+  use_preds.normalize (use_stmt, /*is_use=*/true);
+
+  /* Return true if the predicate guarding the valid definition (i.e.,
+     *THIS) is a superset of the predicate guarding the use (i.e.,
+     USE_PREDS).  */
+  if (m_phi_def_preds.superset_of (use_preds))
+    return true;
+
+  return false;
+}
+
+/* Public interface to the above. */
+
+bool
+uninit_analysis::is_use_guarded (gimple *stmt, basic_block use_bb, gphi *phi,
+				 unsigned opnds)
+{
+  hash_set<gphi *> visited;
+  return is_use_guarded (stmt, use_bb, phi, opnds, &visited);
+}
+

@@ -2385,12 +2385,12 @@ build_real (tree type, REAL_VALUE_TYPE d)
   tree v;
   int overflow = 0;
 
-  /* dconst{1,2,m1,half} are used in various places in
+  /* dconst{0,1,2,m1,half} are used in various places in
      the middle-end and optimizers, allow them here
      even for decimal floating point types as an exception
      by converting them to decimal.  */
   if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type))
-      && d.cl == rvc_normal
+      && (d.cl == rvc_normal || d.cl == rvc_zero)
       && !d.decimal)
     {
       if (memcmp (&d, &dconst1, sizeof (d)) == 0)
@@ -2401,6 +2401,15 @@ build_real (tree type, REAL_VALUE_TYPE d)
 	decimal_real_from_string (&d, "-1");
       else if (memcmp (&d, &dconsthalf, sizeof (d)) == 0)
 	decimal_real_from_string (&d, "0.5");
+      else if (memcmp (&d, &dconst0, sizeof (d)) == 0)
+	{
+	  /* Make sure to give zero the minimum quantum exponent for
+	     the type (which corresponds to all bits zero).  */
+	  const struct real_format *fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
+	  char buf[16];
+	  sprintf (buf, "0e%d", fmt->emin - fmt->p);
+	  decimal_real_from_string (&d, buf);
+	}
       else
 	gcc_unreachable ();
     }

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-predicate-analysis.h"
 #include "domwalk.h"
 #include "tree-ssa-sccvn.h"
+#include "cfganal.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -1110,7 +1111,7 @@ compute_uninit_opnds_pos (gphi *phi)
 
   unsigned n = gimple_phi_num_args (phi);
   /* Bail out for phi with too many args.  */
-  if (n > predicate::func_t::max_phi_args)
+  if (n > uninit_analysis::func_t::max_phi_args)
     return 0;
 
   for (unsigned i = 0; i < n; ++i)
@@ -1136,7 +1137,7 @@ compute_uninit_opnds_pos (gphi *phi)
 /* Function object type used to determine whether an expression
    is of interest to the predicate analyzer.  */
 
-struct uninit_undef_val_t: public predicate::func_t
+struct uninit_undef_val_t: public uninit_analysis::func_t
 {
   virtual bool operator()(tree) override;
   virtual unsigned phi_arg_set (gphi *) override;
@@ -1178,7 +1179,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
      lazily from PHI in the first call to is_use_guarded() and cached
      for subsequent iterations.  */
   uninit_undef_val_t eval;
-  predicate def_preds (eval);
+  uninit_analysis def_preds (eval);
 
   use_operand_p use_p;
   imm_use_iterator iter;
@@ -1191,8 +1192,16 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
 
       basic_block use_bb;
       if (gphi *use_phi = dyn_cast<gphi *> (use_stmt))
-	use_bb = gimple_phi_arg_edge (use_phi,
-				      PHI_ARG_INDEX_FROM_USE (use_p))->src;
+	{
+	  edge e = gimple_phi_arg_edge (use_phi,
+					PHI_ARG_INDEX_FROM_USE (use_p));
+	  use_bb = e->src;
+	  /* Do not look for uses in the next iteration of a loop, predicate
+	     analysis will not use the appropriate predicates to prove
+	     reachability.  */
+	  if (e->flags & EDGE_DFS_BACK)
+	    continue;
+	}
       else
 	use_bb = gimple_bb (use_stmt);
 
@@ -1342,6 +1351,7 @@ execute_late_warn_uninitialized (function *fun)
   /* Mark all edges executable, warn_uninitialized_vars will skip
      unreachable blocks.  */
   set_all_edges_as_executable (fun);
+  mark_dfs_back_edges (fun);
 
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally

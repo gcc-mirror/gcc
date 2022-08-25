@@ -8646,6 +8646,13 @@ proc check_effective_target_bswap { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget rs6000-*-*]
 	     || [istarget s390*-*-*]
+	     || ([istarget riscv*-*-*]
+	         && [check_no_compiler_messages_nocache riscv_zbb object {
+		     #if __riscv_zbb  <= 0
+		     #error ZBB is not enabled
+		     #endif
+		     int i;
+		 } ""])
 	     || ([istarget arm*-*-*]
 		 && [check_no_compiler_messages_nocache arm_v6_or_later object {
 		     #if __ARM_ARCH < 6

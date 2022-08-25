@@ -1378,7 +1378,6 @@ operator_minus::lhs_op1_relation (const irange &, const irange &op1,
     switch (rel)
       {
       case VREL_GT:
-	return VREL_LT;
       case VREL_GE:
 	return VREL_LE;
       default:

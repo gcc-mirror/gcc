@@ -58,3 +58,8 @@ static_assert( std::chrono::round<seconds>(2501ms) == 3s );
 
 static_assert( std::chrono::abs(100ms) == 100ms );
 static_assert( std::chrono::abs(-100ms) == 100ms );
+
+// LWG 3741. std::chrono::abs(duration) is ill-formed with non-reduced periods
+using D1000 = std::chrono::duration<int, std::ratio<1000, 1000>>;
+static_assert( std::chrono::abs(D1000(-2)) == D1000(2) );
+static_assert( std::is_same_v<decltype(std::chrono::abs(D1000(-2))), D1000> );

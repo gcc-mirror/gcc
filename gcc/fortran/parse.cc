@@ -5709,7 +5709,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	    }
 	  return st;
 	}
-      else if (st != omp_end_st)
+      else if (st != omp_end_st || block_construct)
 	{
 	  unexpected_statement (st);
 	  st = next_statement ();

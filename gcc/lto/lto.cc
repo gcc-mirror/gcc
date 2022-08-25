@@ -213,11 +213,11 @@ wait_for_child ()
     }
   while (!WIFEXITED (status) && !WIFSIGNALED (status));
 
-    --nruns;
+  --nruns;
 
-    /* Return token to the jobserver if active.  */
-    if (jinfo != NULL && jinfo->is_active)
-      jinfo->return_token ();
+  /* Return token to the jobserver if active.  */
+  if (jinfo != NULL && jinfo->is_connected)
+    jinfo->return_token ();
 }
 #endif
 
@@ -254,7 +254,7 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
      streaming process.  */
   if (!last)
     {
-      if (jinfo != NULL && jinfo->is_active)
+      if (jinfo != NULL && jinfo->is_connected)
 	while (true)
 	  {
 	    if (jinfo->get_token ())
@@ -291,7 +291,7 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
       while (nruns > 0)
 	wait_for_child ();
 
-      if (jinfo != NULL && jinfo->is_active)
+      if (jinfo != NULL && jinfo->is_connected)
 	jinfo->disconnect ();
     }
   asm_nodes_output = true;

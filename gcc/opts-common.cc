@@ -2064,7 +2064,16 @@ void
 jobserver_info::connect ()
 {
   if (!pipe_path.empty ())
-    pipefd = open (pipe_path.c_str (), O_RDWR | O_NONBLOCK);
+    {
+#if HOST_HAS_O_NONBLOCK
+      pipefd = open (pipe_path.c_str (), O_RDWR | O_NONBLOCK);
+      is_connected = true;
+#else
+      is_connected = false;
+#endif
+    }
+  else
+    is_connected = true;
 }
 
 void

@@ -5180,27 +5180,13 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	  initialized = false;
 	else if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	  {
-	    /* A complete type is ok if size is fixed.  */
-
-	    if (!poly_int_tree_p (TYPE_SIZE (TREE_TYPE (decl)))
-		|| C_DECL_VARIABLE_SIZE (decl))
-	      {
-		error ("variable-sized object may not be initialized");
-		initialized = false;
-	      }
+	    /* A complete type is ok if size is fixed.  If the size is
+	       variable, an empty initializer is OK and nonempty
+	       initializers will be diagnosed in the parser.  */
 	  }
 	else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
 	  {
 	    error ("variable %qD has initializer but incomplete type", decl);
-	    initialized = false;
-	  }
-	else if (C_DECL_VARIABLE_SIZE (decl))
-	  {
-	    /* Although C99 is unclear about whether incomplete arrays
-	       of VLAs themselves count as VLAs, it does not make
-	       sense to permit them to be initialized given that
-	       ordinary VLAs may not be initialized.  */
-	    error ("variable-sized object may not be initialized");
 	    initialized = false;
 	  }
       }

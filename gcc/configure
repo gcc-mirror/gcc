@@ -12460,6 +12460,31 @@ $as_echo "#define HOST_HAS_O_CLOEXEC 1" >>confdefs.h
 
 fi
 
+# Check if O_NONBLOCK is defined by fcntl
+for ac_header in fcntl.h
+do :
+  ac_fn_cxx_check_header_preproc "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h"
+if test "x$ac_cv_header_fcntl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FCNTL_H 1
+_ACEOF
+
+fi
+done
+
+ac_fn_cxx_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "#include <fcntl.h>
+"
+if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
+
+fi
+
+if test $ac_cv_have_decl_O_NONBLOCK = yes; then
+
+$as_echo "#define HOST_HAS_O_NONBLOCK 1" >>confdefs.h
+
+fi
+
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some
@@ -19678,7 +19703,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19681 "configure"
+#line 19706 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19784,7 +19809,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19787 "configure"
+#line 19812 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

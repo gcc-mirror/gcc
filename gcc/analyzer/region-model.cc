@@ -5093,7 +5093,7 @@ public:
     return "float_as_size_arg_diagnostic";
   }
 
-  bool subclass_equal_p (const pending_diagnostic &other) const
+  bool subclass_equal_p (const pending_diagnostic &other) const final override
   {
     return same_tree_p (m_arg, ((const float_as_size_arg &) other).m_arg);
   }

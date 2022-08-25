@@ -7314,6 +7314,7 @@ attributes.
 * Blackfin Variable Attributes::
 * H8/300 Variable Attributes::
 * IA-64 Variable Attributes::
+* LoongArch Variable Attributes::
 * M32R/D Variable Attributes::
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
@@ -8096,6 +8097,22 @@ instruction).  Caveat: such addressing is by definition not position
 independent and hence this attribute must not be used for objects
 defined by shared libraries.
 
+@end table
+
+@node LoongArch Variable Attributes
+@subsection LoongArch Variable Attributes
+
+One attribute is currently defined for the LoongArch.
+
+@table @code
+@item model("@var{name}")
+@cindex @code{model} variable attribute, LoongArch
+Use this attribute on the LoongArch to use a different code model for
+addressing this variable, than the code model specified by the global
+@option{-mcmodel} option.  This attribute is mostly useful if a
+@code{section} attribute and/or a linker script will locate this object
+specially.  Currently the only supported values of @var{name} are
+@code{normal} and @code{extreme}.
 @end table
 
 @node M32R/D Variable Attributes

@@ -19,6 +19,21 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+
+;; Keep this list and the one above riscv_print_operand in sync.
+;; The special asm out single letter directives following a '%' are:
+;; h -- Print the high-part relocation associated with OP, after stripping
+;;	  any outermost HIGH.
+;; R -- Print the low-part relocation associated with OP.
+;; C -- Print the integer branch condition for comparison OP.
+;; A -- Print the atomic operation suffix for memory model OP.
+;; F -- Print a FENCE if the memory model requires a release.
+;; z -- Print x0 if OP is zero, otherwise print OP normally.
+;; i -- Print i if the operand is not a register.
+;; S -- Print shift-index of single-bit mask OP.
+;; T -- Print shift-index of inverted single-bit mask OP.
+;; ~ -- Print w if TARGET_64BIT is true; otherwise not print anything.
+
 (define_c_enum "unspec" [
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -107,6 +122,7 @@
 
 (include "predicates.md")
 (include "constraints.md")
+(include "iterators.md")
 
 ;; ....................
 ;;
@@ -269,175 +285,6 @@
 (define_asm_attributes
   [(set_attr "type" "multi")])
 
-;; This mode iterator allows 32-bit and 64-bit GPR patterns to be generated
-;; from the same template.
-(define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
-
-;; This mode iterator allows :P to be used for patterns that operate on
-;; pointer-sized quantities.  Exactly one of the two alternatives will match.
-(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
-
-;; Likewise, but for XLEN-sized quantities.
-(define_mode_iterator X [(SI "!TARGET_64BIT") (DI "TARGET_64BIT")])
-
-;; Branches operate on XLEN-sized quantities, but for RV64 we accept
-;; QImode values so we can force zero-extension.
-(define_mode_iterator BR [(QI "TARGET_64BIT") SI (DI "TARGET_64BIT")])
-
-;; 32-bit moves for which we provide move patterns.
-(define_mode_iterator MOVE32 [SI])
-
-;; 64-bit modes for which we provide move patterns.
-(define_mode_iterator MOVE64 [DI DF])
-
-;; Iterator for sub-32-bit integer modes.
-(define_mode_iterator SHORT [QI HI])
-
-;; Iterator for HImode constant generation.
-(define_mode_iterator HISI [HI SI])
-
-;; Iterator for QImode extension patterns.
-(define_mode_iterator SUPERQI [HI SI (DI "TARGET_64BIT")])
-
-;; Iterator for hardware integer modes narrower than XLEN.
-(define_mode_iterator SUBX [QI HI (SI "TARGET_64BIT")])
-
-;; Iterator for hardware-supported integer modes.
-(define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT")])
-
-;; Iterator for hardware-supported floating-point modes.
-(define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
-			    (DF "TARGET_DOUBLE_FLOAT")
-			    (HF "TARGET_ZFH")])
-
-;; Iterator for floating-point modes that can be loaded into X registers.
-(define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
-
-;; This attribute gives the length suffix for a sign- or zero-extension
-;; instruction.
-(define_mode_attr size [(QI "b") (HI "h")])
-
-;; Mode attributes for loads.
-(define_mode_attr load [(QI "lb") (HI "lh") (SI "lw") (DI "ld") (HF "flh") (SF "flw") (DF "fld")])
-
-;; Instruction names for integer loads that aren't explicitly sign or zero
-;; extended.  See riscv_output_move and LOAD_EXTEND_OP.
-(define_mode_attr default_load [(QI "lbu") (HI "lhu") (SI "lw") (DI "ld")])
-
-;; Mode attribute for FP loads into integer registers.
-(define_mode_attr softload [(HF "lh") (SF "lw") (DF "ld")])
-
-;; Instruction names for stores.
-(define_mode_attr store [(QI "sb") (HI "sh") (SI "sw") (DI "sd") (HF "fsh") (SF "fsw") (DF "fsd")])
-
-;; Instruction names for FP stores from integer registers.
-(define_mode_attr softstore [(HF "sh") (SF "sw") (DF "sd")])
-
-;; This attribute gives the best constraint to use for registers of
-;; a given mode.
-(define_mode_attr reg [(SI "d") (DI "d") (CC "d")])
-
-;; This attribute gives the format suffix for floating-point operations.
-(define_mode_attr fmt [(HF "h") (SF "s") (DF "d")])
-
-;; This attribute gives the integer suffix for floating-point conversions.
-(define_mode_attr ifmt [(SI "w") (DI "l")])
-
-;; This attribute gives the format suffix for atomic memory operations.
-(define_mode_attr amo [(SI "w") (DI "d")])
-
-;; This attribute gives the upper-case mode name for one unit of a
-;; floating-point mode.
-(define_mode_attr UNITMODE [(HF "HF") (SF "SF") (DF "DF")])
-
-;; This attribute gives the integer mode that has half the size of
-;; the controlling mode.
-(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
-
-;; Iterator and attributes for floating-point rounding instructions.
-(define_int_iterator RINT [UNSPEC_LRINT UNSPEC_LROUND])
-(define_int_attr rint_pattern [(UNSPEC_LRINT "rint") (UNSPEC_LROUND "round")])
-(define_int_attr rint_rm [(UNSPEC_LRINT "dyn") (UNSPEC_LROUND "rmm")])
-
-;; Iterator and attributes for quiet comparisons.
-(define_int_iterator QUIET_COMPARISON [UNSPEC_FLT_QUIET UNSPEC_FLE_QUIET])
-(define_int_attr quiet_pattern [(UNSPEC_FLT_QUIET "lt") (UNSPEC_FLE_QUIET "le")])
-(define_int_attr QUIET_PATTERN [(UNSPEC_FLT_QUIET "LT") (UNSPEC_FLE_QUIET "LE")])
-
-;; This code iterator allows signed and unsigned widening multiplications
-;; to use the same template.
-(define_code_iterator any_extend [sign_extend zero_extend])
-
-;; This code iterator allows the two right shift instructions to be
-;; generated from the same template.
-(define_code_iterator any_shiftrt [ashiftrt lshiftrt])
-
-;; This code iterator allows the three shift instructions to be generated
-;; from the same template.
-(define_code_iterator any_shift [ashift ashiftrt lshiftrt])
-
-;; This code iterator allows the three bitwise instructions to be generated
-;; from the same template.
-(define_code_iterator any_bitwise [and ior xor])
-
-;; This code iterator allows unsigned and signed division to be generated
-;; from the same template.
-(define_code_iterator any_div [div udiv mod umod])
-
-;; This code iterator allows unsigned and signed modulus to be generated
-;; from the same template.
-(define_code_iterator any_mod [mod umod])
-
-;; These code iterators allow the signed and unsigned scc operations to use
-;; the same template.
-(define_code_iterator any_gt [gt gtu])
-(define_code_iterator any_ge [ge geu])
-(define_code_iterator any_lt [lt ltu])
-(define_code_iterator any_le [le leu])
-
-;; <u> expands to an empty string when doing a signed operation and
-;; "u" when doing an unsigned operation.
-(define_code_attr u [(sign_extend "") (zero_extend "u")
-		     (gt "") (gtu "u")
-		     (ge "") (geu "u")
-		     (lt "") (ltu "u")
-		     (le "") (leu "u")])
-
-;; <su> is like <u>, but the signed form expands to "s" rather than "".
-(define_code_attr su [(sign_extend "s") (zero_extend "u")])
-
-;; <optab> expands to the name of the optab for a particular code.
-(define_code_attr optab [(ashift "ashl")
-			 (ashiftrt "ashr")
-			 (lshiftrt "lshr")
-			 (div "div")
-			 (mod "mod")
-			 (udiv "udiv")
-			 (umod "umod")
-			 (ge "ge")
-			 (le "le")
-			 (gt "gt")
-			 (lt "lt")
-			 (ior "ior")
-			 (xor "xor")
-			 (and "and")
-			 (plus "add")
-			 (minus "sub")])
-
-;; <insn> expands to the name of the insn that implements a particular code.
-(define_code_attr insn [(ashift "sll")
-			(ashiftrt "sra")
-			(lshiftrt "srl")
-			(div "div")
-			(mod "rem")
-			(udiv "divu")
-			(umod "remu")
-			(ior "or")
-			(xor "xor")
-			(and "and")
-			(plus "add")
-			(minus "sub")])
-
 ;; Ghost instructions produce no real code and introduce no hazards.
 ;; They exist purely to express an effect on dataflow.
 (define_insn_reservation "ghost" 0
@@ -466,7 +313,7 @@
 	(plus:SI (match_operand:SI 1 "register_operand" " r,r")
 		 (match_operand:SI 2 "arith_operand"    " r,I")))]
   ""
-  { return TARGET_64BIT ? "add%i2w\t%0,%1,%2" : "add%i2\t%0,%1,%2"; }
+  "add%i2%~\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -606,7 +453,7 @@
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" " rJ")
 		  (match_operand:SI 2 "register_operand" "  r")))]
   ""
-  { return TARGET_64BIT ? "subw\t%0,%z1,%2" : "sub\t%0,%z1,%2"; }
+  "sub%~\t%0,%z1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -722,7 +569,7 @@
   [(set (match_operand:SI         0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "register_operand" " r")))]
   ""
-  { return TARGET_64BIT ? "negw\t%0,%1" : "neg\t%0,%1"; }
+  "neg%~\t%0,%1"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -767,7 +614,7 @@
 	(mult:SI (match_operand:SI 1 "register_operand" " r")
 		 (match_operand:SI 2 "register_operand" " r")))]
   "TARGET_MUL"
-  { return TARGET_64BIT ? "mulw\t%0,%1,%2" : "mul\t%0,%1,%2"; }
+  "mul%~\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
 
@@ -1037,7 +884,7 @@
 	(any_div:SI (match_operand:SI 1 "register_operand" " r")
 		    (match_operand:SI 2 "register_operand" " r")))]
   "TARGET_DIV"
-  { return TARGET_64BIT ? "<insn>%i2w\t%0,%1,%2" : "<insn>%i2\t%0,%1,%2"; }
+  "<insn>%i2%~\t%0,%1,%2"
   [(set_attr "type" "idiv")
    (set_attr "mode" "SI")])
 
@@ -1759,7 +1606,7 @@
 	(plus:HI (match_operand:HISI 1 "register_operand" " r,r")
 		 (match_operand:HISI 2 "arith_operand"    " r,I")))]
   ""
-  { return TARGET_64BIT ? "add%i2w\t%0,%1,%2" : "add%i2\t%0,%1,%2"; }
+  "add%i2%~\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "HI")])
 
@@ -1941,7 +1788,7 @@
     operands[2] = GEN_INT (INTVAL (operands[2])
 			   & (GET_MODE_BITSIZE (SImode) - 1));
 
-  return TARGET_64BIT ? "<insn>%i2w\t%0,%1,%2" : "<insn>%i2\t%0,%1,%2";
+  return "<insn>%i2%~\t%0,%1,%2";
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])

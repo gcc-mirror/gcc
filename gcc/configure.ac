@@ -1707,6 +1707,15 @@ if test $ac_cv_o_cloexec = yes; then
   [Define if O_CLOEXEC supported by fcntl.])
 fi
 
+# Check if O_NONBLOCK is defined by fcntl
+AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_DECL(O_NONBLOCK,,,[#include <fcntl.h>])
+if test $ac_cv_have_decl_O_NONBLOCK = yes; then
+  AC_DEFINE(HOST_HAS_O_NONBLOCK, 1,
+  [Define if O_NONBLOCK supported by fcntl.])
+fi
+
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some

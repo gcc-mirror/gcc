@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-xfail-if "" { bpf-*-* } } */
 
 typedef void  *(*T)(void);
 f1 ()
