@@ -1,3 +1,60 @@
+2022-08-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__min_fn, min): Move to ...
+	* include/bits/ranges_util.h: ... here, in order to avoid
+	including all of ranges_algo.h from <ranges>.
+	* include/std/ranges (__detail::__zip_is_common): Define for
+	C++23 as per P2321R2.
+	(__detail::__tuple_or_pair): Likewise.
+	(__detail::__tuple_or_pair_t): Likewise.
+	(__detail::__tuple_transform): Likewise.
+	(__detail::__tuple_for_each): Likewise.
+	(zip_view): Likewise.
+	(enable_borrowed_range<zip_view>): Likewise.
+	(__detail::__all_random_access): Likewise.
+	(__detail::__all_bidirectional): Likewise.
+	(__detail::__all_forward): Likewise.
+	(__detail::__zip_view_iter_cat): Likewise.
+	(zip_view::_Iterator): Likewise.
+	(zip_view::_Sentinel): Likewise.
+	* testsuite/std/ranges/zip/1.cc: New test.
+
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2022-08-24  Will Hawkins  <whh8b@obs.cr>
+
+	* include/bits/basic_string.h (operator+(const string&, const char*)):
+	Remove naive implementation.
+	* include/bits/basic_string.tcc (operator+(const string&, const char*)):
+	Add single-allocation implementation.
+
+2022-08-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_pair.h (pair::swap const): Add non-standard
+	is_swappable_v constraints.
+	* include/std/tuple (tuple::swap const): Likewise.
+	* testsuite/20_util/tuple/cons/noexcept_specs.cc: Correct some
+	asserts in C++23 mode.
+
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (__stable_sort): Cast size to
+	iterator's difference type.
+	* testsuite/25_algorithms/stable_sort/4.cc: New test.
+
+2022-08-24  Will Hawkins  <whh8b@obs.cr>
+
+	* include/bits/basic_string.h (operator+(const string&, const char*)):
+	Remove naive implementation.
+	* include/bits/basic_string.tcc (operator+(const string&, const char*)):
+	Add single-allocation implementation.
+
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration_cast/rounding.cc: Check abs with
+	non-reduced duration.
+
 2022-08-23  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/stl_bvector.h (_Bit_reference::operator=): Define

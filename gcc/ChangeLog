@@ -1,3 +1,208 @@
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/106632
+	PR target/106588
+	* config/riscv/bitmanip.md (*shNadduw): Use n constraint
+	instead of i.
+	(*slliuw): Likewise.
+	(*bexti): Likewise. Also add a check for operands[2] to be less
+	than the mode bitsize.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/constraints.md (DbS): New constraint.
+	(DnS): New constraint.
+	* config/riscv/bitmanip.md (*bset<mode>_1_mask): Use new constraint.
+	(*bclr<mode>): Likewise.
+	(*binvi<mode>): Likewise.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/106586
+	* config/riscv/predicates.md (single_bit_mask_operand):
+	Use SINGLE_BIT_MASK_OPERAND instead of directly calling pow2p_hwi.
+	(not_single_bit_mask_operand): Likewise.
+	* config/riscv/riscv.cc (riscv_build_integer_1): Don't special case
+	1<<31 for 32bits as it is already handled.
+	Call trunc_int_for_mode on the upper part after the subtraction.
+	(riscv_move_integer): Call trunc_int_for_mode before generating
+	the integer just make sure the constant has been sign extended
+	corectly.
+	(riscv_emit_int_compare): Call trunc_int_for_mode after doing the
+	addition for the new rhs.
+	* config/riscv/riscv.h (SINGLE_BIT_MASK_OPERAND): If !TARGET64BIT,
+	then mask off the upper 32bits of the HWI as it will be sign extended.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/constraints.md (DsS): New constraint.
+	(DsD): New constraint.
+	* config/riscv/iterators.md (shiftm1c): New iterator.
+	* config/riscv/bitmanip.md (*bset<mode>_mask):
+	Use shiftm1c.
+	(*bset<mode>_1_mask): Likewise.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/constraints.md (Ds3): New constraint.
+	* config/riscv/predicates.md (imm123_operand): New predicate.
+	* config/riscv/bitmanip.md (*shNadd): Use Ds3 and imm123_operand.
+	(*shNadduw): Likewise.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand):
+	Handle '~'.
+	(riscv_print_operand_punct_valid_p): New function
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+	* config/riscv/bitmanip.md (<bitmanip_optab>si2/clz_ctz_pcnt):
+	Use %~ instead of conditional the pattern on TARGET_64BIT.
+	(rotrsi3): Likewise.
+	(rotlsi3): Likewise.
+	* config/riscv/riscv.md: Add ~ to the list of modifiers.
+	(addsi3): Use %~ instead of conditional the pattern on TARGET_64BIT.
+	(subsi3): Likewise.
+	(negsi2): Likewise.
+	(mulsi3): Likewise.
+	(optab>si3/any_div): Likewise.
+	(*add<mode>hi3): Likewise.
+	(<optab>si3/any_shift): Likewise.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Make a mention to
+	keep the list in riscv.md in sync with this list.
+	* config/riscv/riscv.md: Add list of modifiers as comments.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/sync.md (any_atomic, atomic_optab): Move to ...
+	* config/riscv/iterators.md: Here.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/bitmanip.md
+	(bitmanip_bitwise, bitmanip_minmax, clz_ctz_pcna,
+	tbitmanip_optab, bitmanip_insn, shiftm1): Move to ...
+	* config/riscv/iterators.md: Here.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/riscv.md (GPR): Move to new file.
+	(P, X, BR): Likewise.
+	(MOVE32, MOVE64, SHORT): Likewise.
+	(HISI, SUPERQI, SUBX): Likewise.
+	(ANYI, ANYF, SOFTF): Likewise.
+	(size, load, default_load): Likewise.
+	(softload, store, softstore): Likewise.
+	(reg, fmt, ifmt, amo): Likewise.
+	(UNITMODE, HALFMODE): Likewise.
+	(RINT, rint_pattern, rint_rm): Likewise.
+	(QUIET_COMPARISON, quiet_pattern, QUIET_PATTERN): Likewise.
+	(any_extend, any_shiftrt, any_shift): Likewise.
+	(any_bitwise): Likewise.
+	(any_div, any_mod): Likewise.
+	(any_gt, any_ge, any_lt, any_le): Likewise.
+	(u, su): Likewise.
+	(optab, insn): Likewise.
+	* config/riscv/iterators.md: New file.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/106601
+	* config/riscv/bitmanip.md (bswaphi2): New pattern.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/106600
+	* config/riscv/bitmanip.md (bswap<mode>2): Remove
+	condition on TARGET_64BIT as X is already conditional there.
+
+2022-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* tree.cc (build_real): Give DFP dconst0 the minimum quantum
+	exponent for the type.
+
+2022-08-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/106733
+	* config/bpf/bpf.cc (bpf_legitimate_address_p): Recognize integer
+	constants as legitimate addresses for functions.
+	(bpf_small_register_classes_for_mode_p): Define target hook.
+
+2022-08-24  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc: Move predicate normalization
+	after the comment documenting it.
+
+2022-08-24  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h (predicate): Split out
+	non-predicate related functionality into ..
+	(uninit_analysis): .. this new class.
+	* gimple-predicate-analysis.cc: Refactor into two classes.
+	* tree-ssa-uninit.cc (find_uninit_use): Use uninit_analysis.
+
+2022-08-24  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (predicate::use_cannot_happen):
+	Do simple_control_dep_chain only up to cd_root, add the PHI
+	operand edge to the chains like init_from_phi_def does.
+	(predicate::is_use_guarded): Speedup early out, avoid half-way
+	initializing the PHI def predicate.
+
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106721
+	* config/i386/sse.md (shuffletype): Add V32BF, V16BF and V8BF entries.
+	Change V32HF, V16HF and V8HF entries from "f" to "i".
+	(iptr): Add V32BF, V16BF, V8BF and BF entries.
+	(i128vldq): Add V16HF and V16BF entries.
+	(avx512er_vmrcp28<mode><mask_name><round_saeonly_name>): Fix typo,
+	mask_opernad3 -> mask_operand3.
+
+2022-08-24  Martin Liska  <mliska@suse.cz>
+	    Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (add_line_counts): Add group functions to coverage
+	summary.
+	(accumulate_line_counts): Similarly for files.
+
+2022-08-24  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/genopts/loongarch-strings: Support code model medium.
+	* config/loongarch/genopts/loongarch.opt.in: Likewise.
+	* config/loongarch/loongarch-def.c: Likewise.
+	* config/loongarch/loongarch-def.h (CMODEL_LARGE): Likewise.
+	(CMODEL_EXTREME): Likewise.
+	(N_CMODEL_TYPES): Likewise.
+	(CMODEL_MEDIUM): Likewise.
+	* config/loongarch/loongarch-opts.cc: Likewise.
+	* config/loongarch/loongarch-opts.h (TARGET_CMODEL_MEDIUM): Likewise.
+	* config/loongarch/loongarch-str.h (STR_CMODEL_MEDIUM): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_call_tls_get_addr):
+	Tls symbol Loading support medium mode.
+	(loongarch_legitimize_call_address): When medium mode, make a symbolic
+	jump with two instructions.
+	(loongarch_option_override_internal): Support medium.
+	* config/loongarch/loongarch.md (@pcalau12i<mode>): New template.
+	(@sibcall_internal_1<mode>): New function call templates added to support
+	medium mode.
+	(@sibcall_value_internal_1<mode>): Likewise.
+	(@sibcall_value_multiple_internal_1<mode>): Likewise.
+	(@call_internal_1<mode>): Likewise.
+	(@call_value_internal_1<mode>): Likewise.
+	(@call_value_multiple_internal_1<mode>): Likewise.
+	* config/loongarch/loongarch.opt: Support medium.
+	* config/loongarch/predicates.md: Add processing about medium mode.
+	* doc/invoke.texi: Document for '-mcmodel=medium'.
+
+2022-08-24  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (predicate::use_cannot_happen):
+	Start the compute_control_dep_chain walk from the immediate
+	dominator of the PHI.
+
 2022-08-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/106714

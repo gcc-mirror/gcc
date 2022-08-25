@@ -1,3 +1,9 @@
+2022-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103694
+	* simplify.cc (simplify_size): The size expression of an array cannot
+	be simplified if an error occurs while resolving the array spec.
+
 2022-08-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106557

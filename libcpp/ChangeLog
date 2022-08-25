@@ -1,3 +1,11 @@
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106646
+	* init.cc: Implement C++23 P2437R1 - Support for #warning.
+	(lang_defaults): Set warning_directive for GNUCXX23 and CXX23.
+	* directives.cc (directive_diagnostics): Use different wording of
+	#warning pedwarn for C++.
+
 2022-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106645

@@ -1,3 +1,63 @@
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	* lib/target-supports.exp (check_effective_target_bswap):
+	Return true if riscv and ZBB ISA extension is enabled.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/106601
+	* gcc.target/riscv/zbb_32_bswap-2.c: New test.
+	* gcc.target/riscv/zbb_bswap-2.c: New test.
+
+2022-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/106600
+	* gcc.target/riscv/zbb_32_bswap-1.c: New test.
+	* gcc.target/riscv/zbb_bswap-1.c: New test.
+
+2022-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103694
+	* gfortran.dg/pr103694.f90: New test.
+
+2022-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/dfp-default-init-1.c,
+	gcc.dg/torture/dfp-default-init-2.c,
+	gcc.dg/torture/dfp-default-init-3.c: New tests.
+
+2022-08-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/106733
+	* gcc.target/bpf/constant-calls.c: Rename to ...
+	* gcc.target/bpf/constant-calls-1.c: and modify to not expect
+	failure anymore.
+	* gcc.target/bpf/constant-calls-2.c: New test.
+
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106721
+	* gcc.target/i386/avx512vl-pr106721.c: New test.
+
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106646
+	* g++.dg/cpp/warning-1.C: New test.
+	* g++.dg/cpp/warning-2.C: New test.
+	* g++.dg/cpp/warning-3.C: New test.
+
+2022-08-24  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/func-call-medium-1.c: New test.
+	* gcc.target/loongarch/func-call-medium-2.c: New test.
+	* gcc.target/loongarch/func-call-medium-3.c: New test.
+	* gcc.target/loongarch/func-call-medium-4.c: New test.
+	* gcc.target/loongarch/func-call-medium-5.c: New test.
+	* gcc.target/loongarch/func-call-medium-6.c: New test.
+	* gcc.target/loongarch/func-call-medium-7.c: New test.
+	* gcc.target/loongarch/func-call-medium-8.c: New test.
+	* gcc.target/loongarch/tls-gd-noplt.c: Add compile parameter '-mexplicit-relocs'.
+
 2022-08-23  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/Wpessimizing-move10.C: New test.
