@@ -2484,8 +2484,6 @@ transform_to_exit_first_loop_alt (class loop *loop,
   /* Recalculate dominance info.  */
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-
-  checking_verify_ssa (true, true);
 }
 
 /* Tries to moves the exit condition of LOOP to the beginning of its header
