@@ -605,11 +605,7 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
 	{
 	  gimple *def = SSA_NAME_DEF_STMT (opnd);
 
-	  if (gimple_code (def) == GIMPLE_PHI
-	      && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
-	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
-				   visited);
-	  else if (!m_eval (opnd))
+	  if (!m_eval (opnd))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -622,6 +618,10 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
 		}
 	      edges->safe_push (opnd_edge);
 	    }
+	  else if (gimple_code (def) == GIMPLE_PHI
+		   && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
+	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
+				   visited);
 	}
       else
 	{
