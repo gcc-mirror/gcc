@@ -1,3 +1,13 @@
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106589
+	* include/std/variant (__do_visit): Handle is_void<R> for zero
+	argument case.
+	* testsuite/20_util/variant/visit_r.cc: Check std::visit<void>(v).
+
 2022-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

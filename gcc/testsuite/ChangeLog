@@ -1,3 +1,20 @@
+2022-08-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-08-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/106322
+	* gcc.target/i386/pr106322.c: New test.
+	* gcc.target/powerpc/pr106322.c: New test.
+
+2022-08-24  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	Backported from master:
+	2022-08-16  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/103353
+	* gcc.target/powerpc/pr103353.c: New test.
+
 2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

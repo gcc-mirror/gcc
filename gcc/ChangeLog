@@ -1,3 +1,22 @@
+2022-08-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-08-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/106322
+	* tree-vect-stmts.cc (vectorizable_call): Don't allow
+	vect_emulated_vector_p type for both vectype_in and vectype_out.
+
+2022-08-24  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	Backported from master:
+	2022-08-16  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/103353
+	* config/rs6000/mma.md (define_expand movoo): Move TARGET_MMA condition
+	check to preparation statements and add handlings for !TARGET_MMA.
+	(define_expand movxo): Likewise.
+
 2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
