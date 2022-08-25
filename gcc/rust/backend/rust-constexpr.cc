@@ -88,6 +88,15 @@ unshare_constructor (tree t MEM_STAT_DECL);
 void
 maybe_save_constexpr_fundef (tree fun);
 
+static bool
+returns (tree *jump_target);
+static bool
+breaks (tree *jump_target);
+static bool
+continues (tree *jump_target);
+static bool
+switches (tree *jump_target);
+
 struct constexpr_global_ctx
 {
   /* Values for any temporaries or local variables within the
@@ -1800,11 +1809,95 @@ eval_component_reference (const constexpr_ctx *ctx, tree t, bool lval,
 				   overflow_p);
 }
 
+/* Subroutine of cxx_eval_statement_list.  Determine whether the statement
+   STMT matches *jump_target.  If we're looking for a case label and we see
+   the default label, note it in ctx->css_state.  */
+
+static bool
+label_matches (const constexpr_ctx *ctx, tree *jump_target, tree stmt)
+{
+  switch (TREE_CODE (*jump_target))
+    {
+    case LABEL_DECL:
+      if (TREE_CODE (stmt) == LABEL_EXPR
+	  && LABEL_EXPR_LABEL (stmt) == *jump_target)
+	return true;
+      break;
+
+    case INTEGER_CST:
+      if (TREE_CODE (stmt) == CASE_LABEL_EXPR)
+	{
+	  gcc_assert (ctx->css_state != NULL);
+	  if (!CASE_LOW (stmt))
+	    {
+	      /* default: should appear just once in a SWITCH_EXPR
+		 body (excluding nested SWITCH_EXPR).  */
+	      gcc_assert (*ctx->css_state != css_default_seen);
+	      /* When evaluating SWITCH_EXPR body for the second time,
+		 return true for the default: label.  */
+	      if (*ctx->css_state == css_default_processing)
+		return true;
+	      *ctx->css_state = css_default_seen;
+	    }
+	  else if (CASE_HIGH (stmt))
+	    {
+	      if (tree_int_cst_le (CASE_LOW (stmt), *jump_target)
+		  && tree_int_cst_le (*jump_target, CASE_HIGH (stmt)))
+		return true;
+	    }
+	  else if (tree_int_cst_equal (*jump_target, CASE_LOW (stmt)))
+	    return true;
+	}
+      break;
+
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      /* These two are handled directly in cxx_eval_loop_expr by testing
+	 breaks (jump_target) or continues (jump_target).  */
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
 static tree
 eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
 			  tree *jump_target /* = NULL */)
 {
+  if (jump_target && *jump_target)
+    {
+      /* If we are jumping, ignore all statements/expressions except those
+	 that could have LABEL_EXPR or CASE_LABEL_EXPR in their bodies.  */
+      switch (TREE_CODE (t))
+	{
+	case BIND_EXPR:
+	case STATEMENT_LIST:
+	case LOOP_EXPR:
+	case COND_EXPR:
+	case IF_STMT:
+	case DO_STMT:
+	case WHILE_STMT:
+	case FOR_STMT:
+	  break;
+	case LABEL_EXPR:
+	case CASE_LABEL_EXPR:
+	  if (label_matches (ctx, jump_target, t))
+	    /* Found it.  */
+	    *jump_target = NULL_TREE;
+	  return NULL_TREE;
+	default:
+	  return NULL_TREE;
+	}
+    }
+  if (error_operand_p (t))
+    {
+      *non_constant_p = true;
+      return t;
+    }
+
   location_t loc = EXPR_LOCATION (t);
 
   if (CONSTANT_CLASS_P (t))
@@ -1835,7 +1928,28 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
     {
+    case VAR_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (t))
+	{
+	  r = DECL_VALUE_EXPR (t);
+	  return eval_constant_expression (ctx, r, lval, non_constant_p,
+					   overflow_p);
+	}
+      /* fall through */
       case CONST_DECL: {
+	/* We used to not check lval for CONST_DECL, but darwin.cc uses
+	   CONST_DECL for aggregate constants.  */
+	if (lval)
+	  return t;
+	else if (t == ctx->object)
+	  return ctx->ctor;
+	if (VAR_P (t))
+	  if (tree *p = ctx->global->values.get (t))
+	    if (*p != NULL_TREE)
+	      {
+		r = *p;
+		break;
+	      }
 	r = decl_constant_value (t, /*unshare_p=*/false);
 	if (TREE_CODE (r) == TARGET_EXPR
 	    && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
@@ -1847,18 +1961,6 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	  }
       }
       break;
-
-    case VAR_DECL:
-      if (DECL_HAS_VALUE_EXPR_P (t))
-	{
-	  r = DECL_VALUE_EXPR (t);
-	  return eval_constant_expression (ctx, r, lval, non_constant_p,
-					   overflow_p);
-	}
-      else
-	r = DECL_VALUE_EXPR (t);
-      return eval_constant_expression (ctx, r, lval, non_constant_p,
-				       overflow_p);
 
     case PARM_DECL:
       if (lval && !TYPE_REF_P (TREE_TYPE (t)))
@@ -1923,7 +2025,7 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case LTGT_EXPR:
     case RANGE_EXPR:
     case COMPLEX_EXPR:
-      r = eval_binary_expression (ctx, t, false, non_constant_p, overflow_p);
+      r = eval_binary_expression (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
       /* fold can introduce non-IF versions of these; still treat them as
@@ -2004,15 +2106,14 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       break;
 
     case CALL_EXPR:
-      r = eval_call_expression (ctx, t, false, non_constant_p, overflow_p);
+      r = eval_call_expression (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
     case RETURN_EXPR:
-      rust_assert (TREE_OPERAND (t, 0) != NULL_TREE);
-      r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), false,
-				    non_constant_p, overflow_p);
-      break;
-
+      if (TREE_OPERAND (t, 0) != NULL_TREE)
+	r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				      non_constant_p, overflow_p);
+      /* FALLTHRU */
     case BREAK_STMT:
     case CONTINUE_STMT:
       if (jump_target)
@@ -2085,9 +2186,9 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       break;
 
     case STATEMENT_LIST:
-      // new_ctx = *ctx;
-      // new_ctx.ctor = new_ctx.object = NULL_TREE;
-      return eval_statement_list (ctx, t, non_constant_p, overflow_p,
+      new_ctx = *ctx;
+      new_ctx.ctor = new_ctx.object = NULL_TREE;
+      return eval_statement_list (&new_ctx, t, non_constant_p, overflow_p,
 				  jump_target);
 
     case BIND_EXPR:
@@ -3365,8 +3466,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
   if (depth_ok && !non_constant_args && ctx->strict)
     {
       new_call.hash = constexpr_fundef_hasher::hash (new_call.fundef);
-      // new_call.hash
-      //   = iterative_hash_template_arg (new_call.bindings, new_call.hash);
+      new_call.hash = iterative_hash_object (new_call.bindings, new_call.hash);
       new_call.hash
 	= iterative_hash_object (ctx->manifestly_const_eval, new_call.hash);
 
@@ -4555,24 +4655,22 @@ eval_statement_list (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
     {
       /* We've found a continue, so skip everything until we reach
 	 the label its jumping to.  */
-      // FIXME
-      // if (continues (jump_target))
-      //   {
-      //     if (label_matches (ctx, jump_target, stmt))
-      //       /* Found it.  */
-      //       *jump_target = NULL_TREE;
-      //     else
-      //       continue;
-      //   }
+      if (continues (jump_target))
+	{
+	  if (label_matches (ctx, jump_target, stmt))
+	    /* Found it.  */
+	    *jump_target = NULL_TREE;
+	  else
+	    continue;
+	}
       if (TREE_CODE (stmt) == DEBUG_BEGIN_STMT)
 	continue;
       r = eval_constant_expression (ctx, stmt, false, non_constant_p,
 				    overflow_p, jump_target);
       if (*non_constant_p)
 	break;
-      // FIXME
-      // if (returns (jump_target) || breaks (jump_target))
-      //   break;
+      if (returns (jump_target) || breaks (jump_target))
+	break;
     }
   if (*jump_target && jump_target == &local_target)
     {
@@ -4621,7 +4719,7 @@ eval_conditional_expression (const constexpr_ctx *ctx, tree t, bool lval,
     val = TREE_OPERAND (t, 2);
   else
     val = TREE_OPERAND (t, 1);
-  if (TREE_CODE (t) == IF_STMT && !val)
+  if (/*TREE_CODE (t) == IF_STMT && */ !val)
     val = void_node;
   return eval_constant_expression (ctx, val, lval, non_constant_p, overflow_p,
 				   jump_target);
