@@ -58,6 +58,7 @@ namespace Rust {
 const char *kLexDumpFile = "gccrs.lex.dump";
 const char *kASTDumpFile = "gccrs.ast.dump";
 const char *kASTPrettyDumpFile = "gccrs.ast-pretty.dump";
+const char *kASTPrettyDumpFileExpanded = "gccrs.ast-pretty-expanded.dump";
 const char *kASTExpandedDumpFile = "gccrs.ast-expanded.dump";
 const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRPrettyDumpFile = "gccrs.hir-pretty.dump";
@@ -509,6 +510,7 @@ Session::compile_crate (const char *filename)
       // dump AST with expanded stuff
       rust_debug ("BEGIN POST-EXPANSION AST DUMP");
       dump_ast_expanded (parser, parsed_crate);
+      dump_ast_pretty (parsed_crate, true);
       rust_debug ("END POST-EXPANSION AST DUMP");
     }
 
@@ -810,10 +812,14 @@ Session::dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const
 }
 
 void
-Session::dump_ast_pretty (AST::Crate &crate) const
+Session::dump_ast_pretty (AST::Crate &crate, bool expanded) const
 {
   std::ofstream out;
-  out.open (kASTPrettyDumpFile);
+  if (expanded)
+    out.open (kASTPrettyDumpFileExpanded);
+  else
+    out.open (kASTPrettyDumpFile);
+
   if (out.fail ())
     {
       rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
