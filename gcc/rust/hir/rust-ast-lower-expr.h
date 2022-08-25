@@ -643,10 +643,29 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
 
-    translated = new HIR::BorrowExpr (
-      mapping, std::unique_ptr<HIR::Expr> (borrow_lvalue),
-      expr.get_is_mut () ? Mutability::Mut : Mutability::Imm,
-      expr.get_is_double_borrow (), expr.get_outer_attrs (), expr.get_locus ());
+    HIR::BorrowExpr *borrow_expr
+      = new HIR::BorrowExpr (mapping,
+			     std::unique_ptr<HIR::Expr> (borrow_lvalue),
+			     expr.get_is_mut () ? Mutability::Mut
+						: Mutability::Imm,
+			     expr.get_outer_attrs (), expr.get_locus ());
+
+    if (expr.get_is_double_borrow ())
+      {
+	NodeId artifical_bouble_borrow_id = mappings->get_next_node_id ();
+	Analysis::NodeMapping mapping (crate_num, artifical_bouble_borrow_id,
+				       mappings->get_next_hir_id (crate_num),
+				       UNKNOWN_LOCAL_DEFID);
+
+	borrow_expr
+	  = new HIR::BorrowExpr (mapping,
+				 std::unique_ptr<HIR::Expr> (borrow_expr),
+				 expr.get_is_mut () ? Mutability::Mut
+						    : Mutability::Imm,
+				 expr.get_outer_attrs (), expr.get_locus ());
+      }
+
+    translated = borrow_expr;
   }
 
   void visit (AST::DereferenceExpr &expr) override
