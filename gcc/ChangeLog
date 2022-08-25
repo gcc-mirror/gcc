@@ -1,3 +1,13 @@
+2022-08-24  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	Backported from master:
+	2022-08-16  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/103353
+	* config/rs6000/mma.md (define_expand movoo): Move TARGET_MMA condition
+	check to preparation statements and add handlings for !TARGET_MMA.
+	(define_expand movxo): Likewise.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
