@@ -251,7 +251,6 @@ case ${target} in
  cr16-*-*				\
  | hppa[12]*-*-hpux10*			\
  | hppa[12]*-*-hpux11*			\
- | m32c-*-rtems*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -3555,11 +3554,6 @@ am33_2.0-*-linux*)
 	gas=yes gnu_ld=yes
 	use_collect2=no
 	;;
-m32c-*-rtems*)
-	tm_file="elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
-	c_target_objs="m32c-pragma.o"
-	cxx_target_objs="m32c-pragma.o"
- 	;;
 m32c-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	c_target_objs="m32c-pragma.o"

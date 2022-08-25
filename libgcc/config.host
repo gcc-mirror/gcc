@@ -1510,7 +1510,7 @@ am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	tmake_file="$tmake_file t-fdpbit"
 	;;
-m32c-*-elf*|m32c-*-rtems*)
+m32c-*-elf*)
 	tmake_file="$tmake_file m32c/t-m32c"
  	;;
 nvptx-*)

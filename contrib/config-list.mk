@@ -59,7 +59,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux \
   loongarch64-linux-gnuf64 loongarch64-linux-gnuf32 loongarch64-linux-gnusf \
-  m32c-rtems m32c-elf m32r-elf m32rle-elf \
+  m32c-elf m32r-elf m32rle-elf \
   m68k-elf m68k-netbsdelf \
   m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf microblaze-linux microblaze-elf \
