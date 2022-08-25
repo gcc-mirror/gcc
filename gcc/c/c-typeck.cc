@@ -8291,7 +8291,9 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   if (COMPLETE_TYPE_P (type) && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
-      error_init (init_loc, "variable-sized object may not be initialized");
+      error_init (init_loc,
+		  "variable-sized object may not be initialized except "
+		  "with an empty initializer");
       return error_mark_node;
     }
 
@@ -8641,8 +8643,9 @@ really_start_incremental_init (tree type)
 	    constructor_max_index = integer_minus_one_node;
 
 	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
-	     to initialize VLAs will cause a proper error; avoid tree
-	     checking errors as well by setting a safe value.  */
+	     to initialize VLAs with a nonempty initializer will cause a
+	     proper error; avoid tree checking errors as well by setting a
+	     safe value.  */
 	  if (constructor_max_index
 	      && TREE_CODE (constructor_max_index) != INTEGER_CST)
 	    constructor_max_index = integer_minus_one_node;
@@ -9024,12 +9027,14 @@ pop_init_level (location_t loc, int implicit,
 	   && !gnu_vector_type_p (constructor_type))
     {
       /* A nonincremental scalar initializer--just return
-	 the element, after verifying there is just one.  */
+	 the element, after verifying there is just one.
+         Empty scalar initializers are supported in C2X.  */
       if (vec_safe_is_empty (constructor_elements))
 	{
-	  if (!constructor_erroneous && constructor_type != error_mark_node)
-	    error_init (loc, "empty scalar initializer");
-	  ret.value = error_mark_node;
+	  if (constructor_erroneous || constructor_type == error_mark_node)
+	    ret.value = error_mark_node;
+	  else
+	    ret.value = build_zero_cst (constructor_type);
 	}
       else if (vec_safe_length (constructor_elements) != 1)
 	{
@@ -9114,7 +9119,7 @@ set_designator (location_t loc, bool array,
     return true;
 
   /* Likewise for an initializer for a variable-size type.  Those are
-     diagnosed in digest_init.  */
+     diagnosed in the parser, except for empty initializer braces.  */
   if (COMPLETE_TYPE_P (constructor_type)
       && TREE_CODE (TYPE_SIZE (constructor_type)) != INTEGER_CST)
     return true;
@@ -10275,7 +10280,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     return;
 
   /* Ignore elements of an initializer for a variable-size type.
-     Those are diagnosed in digest_init.  */
+     Those are diagnosed in the parser (empty initializer braces are OK).  */
   if (COMPLETE_TYPE_P (constructor_type)
       && !poly_int_tree_p (TYPE_SIZE (constructor_type)))
     return;

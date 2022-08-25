@@ -1523,7 +1523,7 @@ static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_gnu_attributes (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *, tree);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
-					   struct obstack *);
+					   struct obstack *, tree);
 static void c_parser_initelt (c_parser *, struct obstack *);
 static void c_parser_initval (c_parser *, struct c_expr *,
 			      struct obstack *);
@@ -5220,11 +5220,15 @@ static struct c_expr
 c_parser_initializer (c_parser *parser, tree decl)
 {
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-    return c_parser_braced_init (parser, NULL_TREE, false, NULL);
+    return c_parser_braced_init (parser, NULL_TREE, false, NULL, decl);
   else
     {
       struct c_expr ret;
       location_t loc = c_parser_peek_token (parser)->location;
+      if (decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
+	error_at (loc,
+		  "variable-sized object may not be initialized except "
+		  "with an empty initializer");
       ret = c_parser_expr_no_commas (parser, NULL);
       /* This is handled mostly by gimplify.cc, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
@@ -5251,11 +5255,12 @@ location_t last_init_list_comma;
    compound literal, and NULL_TREE for other initializers and for
    nested braced lists.  NESTED_P is true for nested braced lists,
    false for the list of a compound literal or the list that is the
-   top-level initializer in a declaration.  */
+   top-level initializer in a declaration.  DECL is the declaration for
+   the top-level initializer for a declaration, otherwise NULL_TREE.  */
 
 static struct c_expr
 c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
-		      struct obstack *outer_obstack)
+		      struct obstack *outer_obstack, tree decl)
 {
   struct c_expr ret;
   struct obstack braced_init_obstack;
@@ -5273,10 +5278,15 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
     really_start_incremental_init (type);
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
-      pedwarn (brace_loc, OPT_Wpedantic, "ISO C forbids empty initializer braces");
+      pedwarn_c11 (brace_loc, OPT_Wpedantic,
+		   "ISO C forbids empty initializer braces before C2X");
     }
   else
     {
+      if (decl && decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
+	error_at (brace_loc,
+		  "variable-sized object may not be initialized except "
+		  "with an empty initializer");
       /* Parse a non-empty initializer list, possibly with a trailing
 	 comma.  */
       while (true)
@@ -5532,7 +5542,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE) && !after)
     init = c_parser_braced_init (parser, NULL_TREE, true,
-				 braced_init_obstack);
+				 braced_init_obstack, NULL_TREE);
   else
     {
       init = c_parser_expr_no_commas (parser, after);
@@ -10307,7 +10317,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
       error_at (type_loc, "compound literal has variable size");
       type = error_mark_node;
     }
-  init = c_parser_braced_init (parser, type, false, NULL);
+  init = c_parser_braced_init (parser, type, false, NULL, NULL_TREE);
   finish_init ();
   maybe_warn_string_init (type_loc, type, init);
 

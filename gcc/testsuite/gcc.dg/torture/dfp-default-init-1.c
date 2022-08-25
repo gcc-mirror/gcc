@@ -19,6 +19,7 @@ int memcmp (const void *, const void *, __SIZE_TYPE__);
 TYPE zero_int = 0;
 TYPE zero_fp = ZEROFP;
 TYPE default_init;
+TYPE empty_init = {};
 TYPE zero_bytes;
 TYPE x;
 
@@ -64,6 +65,7 @@ main (void)
     abort ();
   CHECK_ZERO_BYTES (&zero_fp);
   CHECK_ZERO_BYTES (&default_init);
+  CHECK_ZERO_BYTES (&empty_init);
   CHECK_ZERO_BYTES (&s_default_init.a);
   CHECK_ZERO_BYTES (&s_default_init.b);
   CHECK_ZERO_BYTES (&s_empty_init.a);
