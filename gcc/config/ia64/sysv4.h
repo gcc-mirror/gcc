@@ -100,8 +100,8 @@ do {						\
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini,\"ax\",\"progbits\""
 
-#define DBX_REGISTER_NUMBER(REGNO) \
-  ia64_dbx_register_number(REGNO)
+#define DEBUGGER_REGNO(REGNO) \
+  ia64_debugger_regno(REGNO)
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"

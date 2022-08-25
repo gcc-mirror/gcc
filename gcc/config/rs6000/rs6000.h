@@ -791,7 +791,7 @@ enum data_align { align_abi, align_opt, align_both };
 #define FIRST_PSEUDO_REGISTER 111
 
 /* Use standard DWARF numbering for DWARF debugging information.  */
-#define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number ((REGNO), 0)
+#define DEBUGGER_REGNO(REGNO) rs6000_debugger_regno ((REGNO), 0)
 
 /* Use gcc hard register numbering for eh_frame.  */
 #define DWARF_FRAME_REGNUM(REGNO) (REGNO)
@@ -800,7 +800,7 @@ enum data_align { align_abi, align_opt, align_both };
    collected using DWARF_FRAME_REGNUM to those that should be output in
    .debug_frame and .eh_frame.  */
 #define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) \
-  rs6000_dbx_register_number ((REGNO), (FOR_EH) ? 2 : 1)
+  rs6000_debugger_regno ((REGNO), (FOR_EH) ? 2 : 1)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.

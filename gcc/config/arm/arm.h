@@ -1058,7 +1058,7 @@ extern const int arm_arch_cde_coproc_bits[];
 /* VFP (VFP3) adds 32 (64) + 1 VFPCC.  */
 #define FIRST_PSEUDO_REGISTER   107
 
-#define DBX_REGISTER_NUMBER(REGNO) arm_dbx_register_number (REGNO)
+#define DEBUGGER_REGNO(REGNO) arm_debugger_regno (REGNO)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed

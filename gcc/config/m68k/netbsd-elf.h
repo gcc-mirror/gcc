@@ -215,13 +215,13 @@ while (0)
 #define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a1"
 
 
-/* Now to renumber registers for dbx and gdb.
+/* Now to renumber registers for gdb.
    We use the Sun-3 convention, which is:
    floating point registers have numbers 18 to 25, not
    16 to 23 as they do in the compiler.  */
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(REGNO) ((REGNO) < 16 ? (REGNO) : (REGNO) + 2)
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(REGNO) ((REGNO) < 16 ? (REGNO) : (REGNO) + 2)
 
 
 /* 1 if N is a possible register number for a function value.  For

@@ -2030,14 +2030,14 @@ do {							\
   { "zmm28", XMM28_REG }, { "zmm29", XMM29_REG }, { "zmm30", XMM30_REG }, { "zmm31", XMM31_REG }  \
 }
 
-/* How to renumber registers for dbx and gdb.  */
+/* How to renumber registers for gdb.  */
 
-#define DBX_REGISTER_NUMBER(N) \
-  (TARGET_64BIT ? dbx64_register_map[(N)] : dbx_register_map[(N)])
+#define DEBUGGER_REGNO(N) \
+  (TARGET_64BIT ? debugger64_register_map[(N)] : debugger_register_map[(N)])
 
-extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
-extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern int const debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
+extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \

@@ -6510,7 +6510,7 @@ print_operand (FILE *file, rtx x, int code)
   gcc_unreachable ();
 }
 
-/* Implement DBX_REGISTER_NUMBER macro.
+/* Implement DEBUGGER_REGNO macro.
  
    Return the DWARF register number that corresponds to the GCC internal
    REGNO.  */

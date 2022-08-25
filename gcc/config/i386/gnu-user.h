@@ -26,9 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) \
-  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n) \
+  (TARGET_64BIT ? debugger64_register_map[n] : svr4_debugger_register_map[n])
 
 /* Output assembler code to FILE to call the profiler.
    To the best of my knowledge, no GNU userspace libc has required the label

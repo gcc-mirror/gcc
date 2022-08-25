@@ -878,7 +878,7 @@ rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
 bool aarch64_stepped_int_parallel_p (rtx, int);
 rtx aarch64_tls_get_addr (void);
-unsigned aarch64_dbx_register_number (unsigned);
+unsigned aarch64_debugger_regno (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
 void aarch64_cpu_cpp_builtins (cpp_reader *);

@@ -1491,7 +1491,7 @@ do									\
    This describes how to specify debugging information.
 
     mda is known to GDB, but not to GCC. */
-#define DBX_REGISTER_NUMBER(REGNO) \
+#define DEBUGGER_REGNO(REGNO) \
   ((REGNO) > MDB_REGNUM ? (REGNO) + 1 : (REGNO))
 
 /* `DEBUGGER_AUTO_OFFSET (X)'
@@ -1500,7 +1500,7 @@ do									\
    automatic variable having address X (an RTL expression).  The
    default computation assumes that X is based on the frame-pointer
    and gives the offset from the frame-pointer.  This is required for
-   targets that produce debugging output for DBX and allow the frame-pointer
+   targets that produce debugging output for debugger and allow the frame-pointer
    to be eliminated when the `-g' options is used. */
 #define DEBUGGER_AUTO_OFFSET(X) \
   (GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0)

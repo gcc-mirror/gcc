@@ -71,7 +71,7 @@ extern rtx xtensa_return_addr (int, rtx);
 #endif /* RTX_CODE */
 
 extern void xtensa_setup_frame_addresses (void);
-extern int xtensa_dbx_register_number (int);
+extern int xtensa_debugger_regno (int);
 extern long compute_frame_size (poly_int64);
 extern bool xtensa_use_return_instruction_p (void);
 extern void xtensa_expand_prologue (void);

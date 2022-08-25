@@ -23637,7 +23637,7 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
      2 -- DWARF .eh_frame section  */
 
 unsigned int
-rs6000_dbx_register_number (unsigned int regno, unsigned int format)
+rs6000_debugger_regno (unsigned int regno, unsigned int format)
 {
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */

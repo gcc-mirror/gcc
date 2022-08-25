@@ -997,7 +997,7 @@ while (0)
    is different from that used in other debug info sections.
    Given a GCC hard register number,
    this macro should return the .eh_frame register number.*/
-#define DWARF_FRAME_REGNUM(REG)	 DBX_REGISTER_NUMBER (REG)
+#define DWARF_FRAME_REGNUM(REG)	 DEBUGGER_REGNO (REG)
 
 /* If INCOMING_RETURN_ADDR_RTX is defined & the RTL is REG,
    define DWARF_FRAME_RETURN_COLUMN to DWARF_FRAME_REGNUM.  */
@@ -1006,9 +1006,9 @@ while (0)
 /* Use r0 and r1 to pass exception handling information.  */
 #define EH_RETURN_DATA_REGNO(N) ((N) < 2 ? N : INVALID_REGNUM)
 
-/* How to renumber registers for dbx and gdb.  */
-extern const int csky_dbx_regno[];
-#define DBX_REGISTER_NUMBER(REGNO) ((unsigned int) csky_dbx_regno[REGNO])
+/* How to renumber registers for gdb.  */
+extern const int csky_debugger_regno[];
+#define DEBUGGER_REGNO(REGNO) ((unsigned int) csky_debugger_regno[REGNO])
 
 
 /******************************************************************

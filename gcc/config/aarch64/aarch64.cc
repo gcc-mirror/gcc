@@ -3357,7 +3357,7 @@ aarch64_reassociation_width (unsigned opc, machine_mode mode)
 
 /* Provide a mapping from gcc register numbers to dwarf register numbers.  */
 unsigned
-aarch64_dbx_register_number (unsigned regno)
+aarch64_debugger_regno (unsigned regno)
 {
    if (GP_REGNUM_P (regno))
      return AARCH64_DWARF_R0 + regno - R0_REGNUM;
