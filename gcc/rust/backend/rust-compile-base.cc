@@ -652,65 +652,72 @@ HIRCompileBase::compile_constant_item (
   bool is_block_expr
     = const_value_expr->get_expression_type () == HIR::Expr::ExprType::Block;
 
-  // compile the expression
-  tree folded_expr = error_mark_node;
-  if (!is_block_expr)
+  // in order to compile a block expr we want to reuse as much existing
+  // machineary that we already have. This means the best approach is to
+  // make a _fake_ function with a block so it can hold onto temps then
+  // use our constexpr code to fold it completely or error_mark_node
+  Backend::typed_identifier receiver;
+  tree compiled_fn_type = ctx->get_backend ()->function_type (
+    receiver, {}, {Backend::typed_identifier ("_", const_type, locus)}, NULL,
+    locus);
+
+  tree fndecl
+    = ctx->get_backend ()->function (compiled_fn_type, ident, "", 0, locus);
+  TREE_READONLY (fndecl) = 1;
+
+  tree enclosing_scope = NULL_TREE;
+
+  Location start_location = const_value_expr->get_locus ();
+  Location end_location = const_value_expr->get_locus ();
+  if (is_block_expr)
     {
-      tree value = CompileExpr::Compile (const_value_expr, ctx);
-      folded_expr = fold_expr (value);
+      HIR::BlockExpr *function_body
+	= static_cast<HIR::BlockExpr *> (const_value_expr);
+      start_location = function_body->get_locus ();
+      end_location = function_body->get_end_locus ();
+    }
+
+  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+						start_location, end_location);
+  ctx->push_block (code_block);
+
+  bool address_is_taken = false;
+  tree ret_var_stmt = NULL_TREE;
+  Bvariable *return_address
+    = ctx->get_backend ()->temporary_variable (fndecl, code_block, const_type,
+					       NULL, address_is_taken, locus,
+					       &ret_var_stmt);
+
+  ctx->add_statement (ret_var_stmt);
+  ctx->push_fn (fndecl, return_address);
+
+  if (is_block_expr)
+    {
+      HIR::BlockExpr *function_body
+	= static_cast<HIR::BlockExpr *> (const_value_expr);
+      compile_function_body (ctx, fndecl, *function_body, true);
     }
   else
     {
-      // in order to compile a block expr we want to reuse as much existing
-      // machineary that we already have. This means the best approach is to
-      // make a _fake_ function with a block so it can hold onto temps then
-      // use our constexpr code to fold it completely or error_mark_node
-      Backend::typed_identifier receiver;
-      tree compiled_fn_type = ctx->get_backend ()->function_type (
-	receiver, {}, {Backend::typed_identifier ("_", const_type, locus)},
-	NULL, locus);
-
-      tree fndecl
-	= ctx->get_backend ()->function (compiled_fn_type, ident, "", 0, locus);
-      TREE_READONLY (fndecl) = 1;
-
-      tree enclosing_scope = NULL_TREE;
-      HIR::BlockExpr *function_body
-	= static_cast<HIR::BlockExpr *> (const_value_expr);
-      Location start_location = function_body->get_locus ();
-      Location end_location = function_body->get_end_locus ();
-
-      tree code_block
-	= ctx->get_backend ()->block (fndecl, enclosing_scope, {},
-				      start_location, end_location);
-      ctx->push_block (code_block);
-
-      bool address_is_taken = false;
-      tree ret_var_stmt = NULL_TREE;
-      Bvariable *return_address
-	= ctx->get_backend ()->temporary_variable (fndecl, code_block,
-						   const_type, NULL,
-						   address_is_taken, locus,
-						   &ret_var_stmt);
-
-      ctx->add_statement (ret_var_stmt);
-      ctx->push_fn (fndecl, return_address);
-
-      compile_function_body (ctx, fndecl, *function_body, true);
-      tree bind_tree = ctx->pop_block ();
-
-      gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-      DECL_SAVED_TREE (fndecl) = bind_tree;
-      DECL_DECLARED_CONSTEXPR_P (fndecl) = 1;
-      maybe_save_constexpr_fundef (fndecl);
-
-      ctx->pop_fn ();
-
-      // lets fold it into a call expr
-      tree call = build_call_array_loc (locus.gcc_location (), const_type,
-					fndecl, 0, NULL);
-      folded_expr = fold_expr (call);
+      tree value = CompileExpr::Compile (const_value_expr, ctx);
+      tree return_expr = ctx->get_backend ()->return_statement (
+	fndecl, {value}, const_value_expr->get_locus ());
+      ctx->add_statement (return_expr);
     }
+
+  tree bind_tree = ctx->pop_block ();
+
+  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
+  DECL_SAVED_TREE (fndecl) = bind_tree;
+  DECL_DECLARED_CONSTEXPR_P (fndecl) = 1;
+  maybe_save_constexpr_fundef (fndecl);
+
+  ctx->pop_fn ();
+
+  // lets fold it into a call expr
+  tree call
+    = build_call_array_loc (locus.gcc_location (), const_type, fndecl, 0, NULL);
+  tree folded_expr = fold_expr (call);
 
   return named_constant_expression (const_type, ident, folded_expr, locus);
 }
