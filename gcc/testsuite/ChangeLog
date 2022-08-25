@@ -1,3 +1,11 @@
+2022-08-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-08-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103353
+	* gcc.target/powerpc/pr103353.c: New test.
+
 2022-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backported from master:
