@@ -248,8 +248,9 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- hppa[12]*-*-hpux10*			\
- | hppa[12]*-*-hpux11*			\
+  *)
+  ;;
+  obsoleted-target \
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -1740,42 +1741,6 @@ hppa*-*-netbsd*)
 	tm_defines="${tm_defines} CHAR_FAST8=1 SHORT_FAST16=1"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
-hppa[12]*-*-hpux10*)
-	case ${target} in
-	hppa1.1-*-* | hppa2*-*-*)
-		target_cpu_default="MASK_PA_11"
-		;;
-	esac
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h \
-		 pa/pa-hpux.h pa/pa-hpux10.h"
-	extra_options="${extra_options} pa/pa-hpux.opt pa/pa-hpux10.opt"
-	case ${target} in
-	*-*-hpux10.[1-9]*)
-		tm_file="${tm_file} pa/pa-hpux1010.h"
-		extra_options="${extra_options} pa/pa-hpux1010.opt"
-		;;
-	esac
-	use_gcc_stdint=provide
-	tm_file="${tm_file} hpux-stdint.h"
-	tmake_file="pa/t-pa t-slibgcc"
-	d_target_objs="${d_target_objs} pa-d.o"
-	case ${enable_threads} in
-	  "")
-	    if test x$have_pthread_h = xyes ; then
-	      tmake_file="${tmake_file} pa/t-dce-thr"
-	    fi
-	    ;;
-	  yes | dce)
-	    tmake_file="${tmake_file} pa/t-dce-thr"
-	    ;;
-	esac
-	use_collect2=yes
-	gas=yes
-	if test "x$with_dwarf2" != x; then
-		echo "Warning: dwarf2 debug format is not supported for this target, --with-dwarf2 ignored" 1>&2
-		dwarf2=no
-	fi
-	;;
 hppa*64*-*-hpux11*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
 	if test x$gnu_ld = xyes
@@ -1818,50 +1783,6 @@ hppa*64*-*-hpux11*)
 		tm_file="${tm_file} hpux-stdint.h"
 		;;
 	esac
-	;;
-hppa[12]*-*-hpux11*)
-	case ${target} in
-	hppa1.1-*-* | hppa2*-*-*)
-		target_cpu_default="MASK_PA_11"
-		;;
-	esac
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h \
-		 pa/pa-hpux.h pa/pa-hpux1010.h pa/pa-hpux11.h"
-	extra_options="${extra_options} pa/pa-hpux.opt pa/pa-hpux1010.opt \
-		       hpux11.opt"
-	case ${target} in
-	*-*-hpux11.[12]*)
-		tm_file="${tm_file} pa/pa-hpux1111.h"
-		extra_options="${extra_options} pa/pa-hpux1111.opt"
-		;;
-	*-*-hpux11.[3-9]*)
-		tm_file="${tm_file} pa/pa-hpux1131.h"
-		extra_options="${extra_options} pa/pa-hpux1131.opt"
-		;;
-	esac
-	tmake_file="pa/t-pa t-slibgcc"
-	d_target_objs="${d_target_objs} pa-d.o"
-	case x${enable_threads} in
-	x | xyes | xposix )
-		thread_file=posix
-		;;
-	esac
-	use_collect2=yes
-	gas=yes
-	case ${target} in
-	  *-*-hpux11.[01]*)
-		use_gcc_stdint=provide
-		tm_file="${tm_file} hpux-stdint.h"
-		;;
-	  *-*-hpux11.[23]*)
-		use_gcc_stdint=wrap
-		tm_file="${tm_file} hpux-stdint.h"
-		;;
-	esac
-	if test "x$with_dwarf2" != x; then
-		echo "Warning: dwarf2 debug format is not supported for this target, --with-dwarf2 ignored" 1>&2
-		dwarf2=no
-	fi
 	;;
 i[34567]86-*-darwin1[89]* | i[34567]86-*-darwin2*)
 	echo "Error: 32bit target is not supported after Darwin17" 1>&2

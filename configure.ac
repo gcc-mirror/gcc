@@ -804,11 +804,6 @@ case "${target}" in
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
-  hppa*-hp-hpux11*)
-    ;;
-  hppa*-*-hpux*)
-    noconfigdirs="$noconfigdirs target-libffi"
-    ;;
   ia64*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
@@ -1112,13 +1107,8 @@ case "${target}" in
   h8500-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
-  hppa1.1-*-osf* | hppa1.1-*-bsd* )
-    ;;
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs gdb"
-    ;;
-  hppa*-*-hpux11*)
-    noconfigdirs="$noconfigdirs gdb ld"
     ;;
   hppa*64*-*-linux*)
     ;;
@@ -1313,9 +1303,6 @@ case "${host}" in
     ;;
   alpha*-linux*)
     host_makefile_frag="config/mh-alpha-linux"
-    ;;
-  hppa*-hp-hpux10*)
-    host_makefile_frag="config/mh-pa-hpux10"
     ;;
   hppa*-hp-hpux*)
     host_makefile_frag="config/mh-pa"
@@ -3780,7 +3767,6 @@ AC_SUBST(stage2_werror_flag)
 compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
-  hppa*-*-hpux*) compare_exclusions="$compare_exclusions | */libgcc/lib2funcs* | gcc/function-tests.o" ;;
   powerpc*-ibm-aix*) compare_exclusions="$compare_exclusions | *libgomp*\$(objext)" ;;
 esac
 AC_SUBST(compare_exclusions)

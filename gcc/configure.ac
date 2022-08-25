@@ -1802,19 +1802,6 @@ AC_ARG_ENABLE(sjlj-exceptions,
 [AS_HELP_STRING([--enable-sjlj-exceptions],
                 [arrange to use setjmp/longjmp exception handling])],
 [case $target in
-  *-*-hpux10*)
-    if test $enableval != yes; then
-      AC_MSG_WARN([dwarf2 exceptions not supported, sjlj exceptions forced])
-      enableval=yes
-    fi
-    ;;
-esac
-force_sjlj_exceptions=yes],
-[case $target in
-  *-*-hpux10*)
-    force_sjlj_exceptions=yes
-    enableval=yes
-    ;;
   lm32*-*-*)
      force_sjlj_exceptions=yes
      enableval=yes

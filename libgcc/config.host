@@ -648,17 +648,6 @@ hppa*-*-linux*)
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	md_unwind_header=pa/linux-unwind.h
 	;;
-hppa[12]*-*-hpux10*)
-	tmake_file="$tmake_file pa/t-hpux pa/t-hpux10 t-libgcc-pic t-slibgcc"
-	# Set the libgcc version number
-	if test x$ac_cv_sjlj_exceptions = xyes; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
-	tmake_file="$tmake_file pa/t-slibgcc-hpux t-slibgcc-hpux"
-	md_unwind_header=pa/hpux-unwind.h
-	;;
 hppa*64*-*-hpux11*)
 	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-dimode"
 	tmake_file="$tmake_file pa/t-stublib t-libgcc-pic t-slibgcc"
@@ -673,17 +662,6 @@ hppa*64*-*-hpux11*)
 	tm_file="$tm_file pa/pa64-hpux-lib.h"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 		     libgcc_stub.a"
-	md_unwind_header=pa/hpux-unwind.h
-	;;
-hppa[12]*-*-hpux11*)
-	tmake_file="$tmake_file pa/t-hpux pa/t-stublib t-libgcc-pic t-slibgcc"
-	# Set the libgcc version number
-	if test x$ac_cv_sjlj_exceptions = xyes; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
-	tmake_file="$tmake_file pa/t-slibgcc-hpux t-slibgcc-hpux"
 	md_unwind_header=pa/hpux-unwind.h
 	;;
 hppa*-*-openbsd*)

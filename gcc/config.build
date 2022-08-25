@@ -50,10 +50,7 @@ build_file_translate=
 
 # System-specific settings.
 case $build in
-  hppa1.0-*-hpux1[01]* | \
-  hppa*64*-*-hpux11* | \
-  hppa1.1-*-hpux11* | \
-  hppa2*-*-hpux11* )
+  hppa*64*-*-hpux11* )
     build_install_headers_dir=install-headers-cpio
     ;;
   i[34567]86-*-cygwin* | x86_64-*-cygwin* )

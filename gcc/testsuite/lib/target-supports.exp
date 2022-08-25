@@ -310,12 +310,6 @@ proc check_weak_available { } {
 	return 1
     }
 
-    # HP-UX 10.X doesn't support it
-
-    if { [istarget hppa*-*-hpux10*] } {
-	return 0
-    }
-
     # nvptx (nearly) supports it
 
     if { [istarget nvptx-*-*] } {
@@ -562,8 +556,6 @@ proc check_effective_target_trampolines { } {
     if { [istarget avr-*-*]
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
-	 || [istarget hppa2.0w-hp-hpux11.23]
-	 || [istarget hppa64-hp-hpux11.23]
 	 || [istarget pru-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0;
@@ -2827,10 +2819,7 @@ proc check_mkfifo_available {} {
 
 proc check_cxa_atexit_available { } {
     return [check_cached_effective_target cxa_atexit_available {
-	if { [istarget hppa*-*-hpux10*] } {
-	    # HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
-	    expr 0
-	} elseif { [istarget *-*-vxworks] } {
+	if { [istarget *-*-vxworks] } {
 	    # vxworks doesn't have __cxa_atexit but subsequent test passes.
 	    expr 0
 	} else {
