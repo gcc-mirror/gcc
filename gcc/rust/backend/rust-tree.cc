@@ -3269,19 +3269,19 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 
       if (show_notes && CLASS_TYPE_P (type) && (complain & tf_error))
 	{
-	  tree defaulted_ctor;
+	  // tree defaulted_ctor;
 
-	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		  "%q#T has no user-provided default constructor", type);
-	  defaulted_ctor = in_class_defaulted_default_constructor (type);
-	  if (defaulted_ctor)
-	    inform (DECL_SOURCE_LOCATION (defaulted_ctor),
-		    "constructor is not user-provided because it is "
-		    "explicitly defaulted in the class body");
-	  inform (DECL_SOURCE_LOCATION (field),
-		  "and the implicitly-defined constructor does not "
-		  "initialize %q#D",
-		  field);
+	  // inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+	  //         "%q#T has no user-provided default constructor", type);
+	  // defaulted_ctor = in_class_defaulted_default_constructor (type);
+	  // if (defaulted_ctor)
+	  //   inform (DECL_SOURCE_LOCATION (defaulted_ctor),
+	  //           "constructor is not user-provided because it is "
+	  //           "explicitly defaulted in the class body");
+	  // inform (DECL_SOURCE_LOCATION (field),
+	  //         "and the implicitly-defined constructor does not "
+	  //         "initialize %q#D",
+	  //         field);
 	}
 
       return false;
@@ -3823,24 +3823,24 @@ strip_top_quals (tree t)
 
 /* Print an inform about the declaration of the incomplete type TYPE.  */
 
-void
-cxx_incomplete_type_inform (const_tree type)
-{
-  if (!TYPE_MAIN_DECL (type))
-    return;
+// void
+// cxx_incomplete_type_inform (const_tree type)
+// {
+//   if (!TYPE_MAIN_DECL (type))
+//     return;
 
-  location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
-  tree ptype = strip_top_quals (CONST_CAST_TREE (type));
+//   location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
+//   tree ptype = strip_top_quals (CONST_CAST_TREE (type));
 
-  if (current_class_type && TYPE_BEING_DEFINED (current_class_type)
-      && same_type_p (ptype, current_class_type))
-    inform (loc,
-	    "definition of %q#T is not complete until "
-	    "the closing brace",
-	    ptype);
-  else
-    inform (loc, "forward declaration of %q#T", ptype);
-}
+//   if (current_class_type && TYPE_BEING_DEFINED (current_class_type)
+//       && same_type_p (ptype, current_class_type))
+//     inform (loc,
+// 	    "definition of %q#T is not complete until "
+// 	    "the closing brace",
+// 	    ptype);
+//   else
+//     inform (loc, "forward declaration of %q#T", ptype);
+// }
 
 // forked from gcc/cp/typeck2.cc cxx_incomplete_type_diagnostic
 
@@ -3853,7 +3853,7 @@ void
 cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 				const_tree type, diagnostic_t diag_kind)
 {
-  bool is_decl = false, complained = false;
+  //  bool is_decl = false, complained = false;
 
   gcc_assert (diag_kind == DK_WARNING || diag_kind == DK_PEDWARN
 	      || diag_kind == DK_ERROR);
@@ -3869,9 +3869,10 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
       if (VAR_P (value) || TREE_CODE (value) == PARM_DECL
 	  || TREE_CODE (value) == FIELD_DECL)
 	{
-	  complained = emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (value),
-					0, "%qD has incomplete type", value);
-	  is_decl = true;
+	  // complained = emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION
+	  // (value),
+	  //       			0, "%qD has incomplete type", value);
+	  // is_decl = true;
 	}
     }
 retry:
@@ -3879,16 +3880,16 @@ retry:
 
   switch (TREE_CODE (type))
     {
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case ENUMERAL_TYPE:
-      if (!is_decl)
-	complained
-	  = emit_diagnostic (diag_kind, loc, 0,
-			     "invalid use of incomplete type %q#T", type);
-      if (complained)
-	cxx_incomplete_type_inform (type);
-      break;
+      // case RECORD_TYPE:
+      // case UNION_TYPE:
+      // case ENUMERAL_TYPE:
+      //   if (!is_decl)
+      //     complained
+      //       = emit_diagnostic (diag_kind, loc, 0,
+      //     		     "invalid use of incomplete type %q#T", type);
+      //   if (complained)
+      //     cxx_incomplete_type_inform (type);
+      //   break;
 
     case VOID_TYPE:
       emit_diagnostic (diag_kind, loc, 0, "invalid use of %qT", type);

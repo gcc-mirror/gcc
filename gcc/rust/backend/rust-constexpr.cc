@@ -4539,10 +4539,14 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	ret = false;
 	if (complain)
 	  {
-	    auto_diagnostic_group d;
-	    error ("invalid type for parameter %d of %<constexpr%> "
-		   "function %q+#D",
-		   DECL_PARM_INDEX (parm), fun);
+	    // auto_diagnostic_group d;
+	    // error ("invalid type for parameter %d of %<constexpr%> "
+	    //        "function %q+#D",
+	    //        DECL_PARM_INDEX (parm), fun);
+	    Location locus = Location (DECL_SOURCE_LOCATION (fun));
+	    rust_error_at (
+	      locus, "invalid type for parameter %d of %<constexpr%> function",
+	      DECL_PARM_INDEX (parm));
 	  }
       }
 
