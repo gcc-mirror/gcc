@@ -1078,6 +1078,54 @@ simple_control_dep_chain (vec<edge>& chain, basic_block from, edge to)
   simple_control_dep_chain (chain, from, to->src);
 }
 
+/* Perform a DFS walk on predecessor edges to mark the region denoted
+   by the EXIT edge and DOM which dominates EXIT->src, including DOM.
+   Blocks in the region are marked with FLAG and added to BBS.  BBS is
+   filled up to its capacity only after which the walk is terminated
+   and false is returned.  If the whole region was marked, true is returned.  */
+
+static bool
+dfs_mark_dominating_region (edge exit, basic_block dom, int flag,
+			    vec<basic_block> &bbs)
+{
+  if (exit->src == dom || exit->src->flags & flag)
+    return true;
+  if (!bbs.space (1))
+    return false;
+  bbs.quick_push (exit->src);
+  exit->src->flags |= flag;
+  auto_vec<edge_iterator, 20> stack (bbs.allocated () - bbs.length () + 1);
+  stack.quick_push (ei_start (exit->src->preds));
+  while (!stack.is_empty ())
+    {
+      /* Look at the edge on the top of the stack.  */
+      edge_iterator ei = stack.last ();
+      basic_block src = ei_edge (ei)->src;
+
+      /* Check if the edge source has been visited yet.  */
+      if (!(src->flags & flag))
+	{
+	  /* Mark the source if there's still space.  If not, return early.  */
+	  if (!bbs.space (1))
+	    return false;
+	  src->flags |= flag;
+	  bbs.quick_push (src);
+
+	  /* Queue its predecessors if we didn't reach DOM.  */
+	  if (src != dom && EDGE_COUNT (src->preds) > 0)
+	    stack.quick_push (ei_start (src->preds));
+	}
+      else
+	{
+	  if (!ei_one_before_end_p (ei))
+	    ei_next (&stack.last ());
+	  else
+	    stack.pop ();
+	}
+    }
+  return true;
+}
+
 /* Recursively compute the control dependence chains (paths of edges)
    from the dependent basic block, DEP_BB, up to the dominating basic
    block, DOM_BB (the head node of a chain should be dominated by it),
@@ -1093,7 +1141,7 @@ static bool
 compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
 			   vec<edge> &cur_cd_chain, unsigned *num_calls,
-			   unsigned depth = 0)
+			   unsigned in_region = 0, unsigned depth = 0)
 {
   if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
     {
@@ -1167,10 +1215,14 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      break;
 	    }
 
+	  /* If the dominating region has been marked avoid walking outside.  */
+	  if (in_region != 0 && !(cd_bb->flags & in_region))
+	    break;
+
 	  /* Check if DEP_BB is indirectly control-dependent on DOM_BB.  */
 	  if (compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
 					 num_chains, cur_cd_chain,
-					 num_calls, depth + 1))
+					 num_calls, in_region, depth + 1))
 	    {
 	      found_cd_chain = true;
 	      break;
@@ -2238,6 +2290,25 @@ uninit_analysis::init_from_phi_def (gphi *phi)
   if (nedges == 0)
     return false;
 
+  auto_bb_flag in_region (cfun);
+  auto_vec<basic_block, 20> region (MIN (n_basic_blocks_for_fn (cfun),
+					 param_uninit_control_dep_attempts));
+  /* Pre-mark the PHI incoming edges PHI block to make sure we only walk
+     interesting edges from there.  */
+  for (unsigned i = 0; i < nedges; i++)
+    {
+      if (!(def_edges[i]->dest->flags & in_region))
+	{
+	  if (!region.space (1))
+	    break;
+	  def_edges[i]->dest->flags |= in_region;
+	  region.quick_push (def_edges[i]->dest);
+	}
+    }
+  for (unsigned i = 0; i < nedges; i++)
+    if (!dfs_mark_dominating_region (def_edges[i], cd_root, in_region, region))
+      break;
+
   unsigned num_chains = 0;
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
@@ -2247,7 +2318,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
       unsigned num_calls = 0;
       unsigned prev_nc = num_chains;
       compute_control_dep_chain (cd_root, e->src, dep_chains,
-				 &num_chains, cur_chain, &num_calls);
+				 &num_chains, cur_chain, &num_calls, in_region);
 
       /* Update the newly added chains with the phi operand edge.  */
       if (EDGE_COUNT (e->src->succs) > 1)
@@ -2258,6 +2329,10 @@ uninit_analysis::init_from_phi_def (gphi *phi)
 	    dep_chains[j].safe_push (e);
 	}
     }
+
+  /* Unmark the region.  */
+  for (auto bb : region)
+    bb->flags &= ~in_region;
 
   /* Convert control dependence chains to the predicate in *THIS under
      which the PHI operands are defined to values for which M_EVAL is
