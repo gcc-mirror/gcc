@@ -651,7 +651,32 @@ package body Sem_Ch9 is
 
             begin
                if not Support_Atomic_Primitives_On_Target then
+                  if Lock_Free_Given then
+                     Error_Msg_N
+                       ("Lock_Free aspect requires target support for "
+                          & "atomic primitives", N);
+                  end if;
                   return False;
+               end if;
+
+               --  Deal with case where Ceiling_Locking locking policy is
+               --  in effect.
+
+               if Locking_Policy = 'C' then
+                  if Lock_Free_Given then
+                     --  Explicit Lock_Free aspect spec overrides
+                     --  Ceiling_Locking so we generate a warning.
+
+                     Error_Msg_N
+                       ("Lock_Free aspect specification overrides "
+                          & "Ceiling_Locking locking policy??", N);
+                  else
+                     --  If Ceiling_Locking locking policy is in effect, then
+                     --  Lock_Free can be explicitly specified but it is
+                     --  never the default.
+
+                     return False;
+                  end if;
                end if;
 
                --  Get the number of errors detected by the compiler so far

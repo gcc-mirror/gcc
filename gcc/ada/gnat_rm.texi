@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Aug 25, 2022
+GNAT Reference Manual , Sep 09, 2022
 
 AdaCore
 
@@ -5272,6 +5272,12 @@ May not dereferenced access values
 @item 
 Function calls and attribute references must be static
 @end itemize
+
+If the Lock_Free aspect is specified to be True for a protected unit
+and the Ceiling_Locking locking policy is in effect, then the run-time
+actions associated with the Ceiling_Locking locking policy (described in
+Ada RM D.3) are not performed when a protected operation of the protected
+unit is executed.
 
 @node Pragma Loop_Invariant,Pragma Loop_Optimize,Pragma Lock_Free,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-loop-invariant}@anchor{95}
