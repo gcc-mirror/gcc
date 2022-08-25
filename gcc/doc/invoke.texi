@@ -879,12 +879,6 @@ Objective-C and Objective-C++ Dialects}.
 -melf  -maout  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
-@emph{CR16 Options}
-@gccoptlist{-mmac @gol
--mcr16cplus  -mcr16c @gol
--msim  -mint32  -mbit-ops
--mdata-model=@var{model}}
-
 @emph{C-SKY Options}
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
 -mbig-endian  -EB  -mlittle-endian  -EL @gol
@@ -11856,7 +11850,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
+defaults to off.  On AVR and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.
@@ -19403,7 +19397,6 @@ platform.
 * Blackfin Options::
 * C6X Options::
 * CRIS Options::
-* CR16 Options::
 * C-SKY Options::
 * Darwin Options::
 * DEC Alpha Options::
@@ -22982,46 +22975,6 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
-@end table
-
-@node CR16 Options
-@subsection CR16 Options
-@cindex CR16 Options
-
-These options are defined specifically for the CR16 ports.
-
-@table @gcctabopt
-
-@item -mmac
-@opindex mmac
-Enable the use of multiply-accumulate instructions. Disabled by default.
-
-@item -mcr16cplus
-@itemx -mcr16c
-@opindex mcr16cplus
-@opindex mcr16c
-Generate code for CR16C or CR16C+ architecture. CR16C+ architecture 
-is default.
-
-@item -msim
-@opindex msim
-Links the library libsim.a which is in compatible with simulator. Applicable
-to ELF compiler only.
-
-@item -mint32
-@opindex mint32
-Choose integer type as 32-bit wide.
-
-@item -mbit-ops
-@opindex mbit-ops
-Generates @code{sbit}/@code{cbit} instructions for bit manipulations.
-
-@item -mdata-model=@var{model}
-@opindex mdata-model
-Choose a data model. The choices for @var{model} are @samp{near},
-@samp{far} or @samp{medium}. @samp{medium} is default.
-However, @samp{far} is not valid with @option{-mcr16c}, as the
-CR16C architecture does not support the far data model.
 @end table
 
 @node C-SKY Options

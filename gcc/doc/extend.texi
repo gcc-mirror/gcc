@@ -2534,7 +2534,6 @@ GCC plugins may provide their own attributes.
 * AVR Function Attributes::
 * Blackfin Function Attributes::
 * BPF Function Attributes::
-* CR16 Function Attributes::
 * C-SKY Function Attributes::
 * Epiphany Function Attributes::
 * H8/300 Function Attributes::
@@ -5086,20 +5085,6 @@ attribute.  Example:
 int bpf_probe_read (void *dst, int size, const void *unsafe_ptr)
   __attribute__ ((kernel_helper (4)));
 @end smallexample
-@end table
-
-@node CR16 Function Attributes
-@subsection CR16 Function Attributes
-
-These function attributes are supported by the CR16 back end:
-
-@table @code
-@item interrupt
-@cindex @code{interrupt} function attribute, CR16
-Use this attribute to indicate
-that the specified function is an interrupt handler.  The compiler generates
-function entry and exit sequences suitable for use in an interrupt handler
-when this attribute is present.
 @end table
 
 @node C-SKY Function Attributes
