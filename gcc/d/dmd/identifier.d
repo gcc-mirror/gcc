@@ -88,7 +88,7 @@ nothrow:
         return name.ptr;
     }
 
-    extern (D) override const(char)[] toString() const pure
+    extern (D) override const(char)[] toString() const pure @safe
     {
         return name;
     }

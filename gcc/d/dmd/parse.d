@@ -1999,7 +1999,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             }
         }
         check(TOK.rightParenthesis);
-        check(TOK.semicolon);
+        check(TOK.semicolon, "static assert");
         return new AST.StaticAssert(loc, exp, msg);
     }
 
@@ -2648,7 +2648,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     }
                 }
                 check(TOK.rightParenthesis);
-                check(TOK.semicolon);
+                check(TOK.semicolon, "invariant");
                 e = new AST.AssertExp(loc, e, msg);
                 auto fbody = new AST.ExpStatement(loc, e);
                 auto f = new AST.InvariantDeclaration(loc, token.loc, stc, null, fbody);
@@ -4738,7 +4738,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         nextToken();        // advance past =
         auto t = parseType();
         AST.Dsymbol s = new AST.AliasAssign(loc, ident, t, null);
-        check(TOK.semicolon);
+        check(TOK.semicolon, "alias reassignment");
         addComment(s, comment);
         auto a = new AST.Dsymbols();
         a.push(s);
@@ -4774,7 +4774,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             auto s = new AST.AliasThis(loc, token.ident);
             nextToken();
             check(TOK.this_);
-            check(TOK.semicolon);
+            check(TOK.semicolon, "`alias Identifier this`");
             auto a = new AST.Dsymbols();
             a.push(s);
             addComment(s, comment);
@@ -4791,7 +4791,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 check(TOK.assign);
                 auto s = new AliasThis(loc, token.ident);
                 nextToken();
-                check(TOK.semicolon);
+                check(TOK.semicolon, "`alias this = Identifier`");
                 auto a = new Dsymbols();
                 a.push(s);
                 addComment(s, comment);
@@ -5329,6 +5329,33 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         const(char)* sp = !ident ? "" : " ";
         const(char)* s = !ident ? "" : ident.toChars();
         error(loc, "instead of C-style syntax, use D-style `%s%s%s`", t.toChars(), sp, s);
+    }
+
+    /*****************************
+     * Ad-hoc error message for missing or extra parens that close a condition.
+     * Params:
+     *  start = "if", "while", etc. Must be 0 terminated.
+     *  param = if the condition is a declaration, this will be non-null
+     *  condition = if param is null, then this is the conditional Expression. If condition is null,
+     *      then an error in the condition was already reported.
+     */
+    private void closeCondition(string start, AST.Parameter param, AST.Expression condition)
+    {
+        string format;
+        if (token.value != TOK.rightParenthesis && condition)
+        {
+            format = "missing closing `)` after `%s (%s`";
+        }
+        else
+            check(TOK.rightParenthesis);
+        if (token.value == TOK.rightParenthesis)
+        {
+            if (condition) // if not an error in condition
+                format = "extra `)` after `%s (%s)`";
+            nextToken();
+        }
+        if (format)
+            error(format.ptr, start.ptr, param ? "declaration".ptr : condition.toChars());
     }
 
     /*****************************************
@@ -5905,7 +5932,7 @@ LagainStc:
                 {
                     // mixin(string)
                     AST.Expression e = parseAssignExp();
-                    check(TOK.semicolon);
+                    check(TOK.semicolon, "mixin");
                     if (e.op == EXP.mixin_)
                     {
                         AST.MixinExp cpe = cast(AST.MixinExp)e;
@@ -5961,12 +5988,12 @@ LagainStc:
             }
         case TOK.while_:
             {
-                AST.Parameter param = null;
                 nextToken();
                 check(TOK.leftParenthesis);
-                param = parseAssignCondition();
-                AST.Expression condition = parseExpression();
-                check(TOK.rightParenthesis);
+                auto param = parseAssignCondition();
+                auto condition = parseExpression();
+                closeCondition("while", param, condition);
+
                 Loc endloc;
                 AST.Statement _body = parseStatement(ParseStatementFlags.scope_, null, &endloc);
                 s = new AST.WhileStatement(loc, condition, _body, endloc, param);
@@ -5987,7 +6014,6 @@ LagainStc:
         case TOK.do_:
             {
                 AST.Statement _body;
-                AST.Expression condition;
 
                 nextToken();
                 const lookingForElseSave = lookingForElse;
@@ -5996,8 +6022,8 @@ LagainStc:
                 lookingForElse = lookingForElseSave;
                 check(TOK.while_);
                 check(TOK.leftParenthesis);
-                condition = parseExpression();
-                check(TOK.rightParenthesis);
+                auto condition = parseExpression();
+                closeCondition("do .. while", null, condition);
                 if (token.value == TOK.semicolon)
                     nextToken();
                 else
@@ -6058,25 +6084,11 @@ LagainStc:
             }
         case TOK.if_:
             {
-                AST.Parameter param = null;
-                AST.Expression condition;
-
                 nextToken();
                 check(TOK.leftParenthesis);
-                param = parseAssignCondition();
-                condition = parseExpression();
-                if (token.value != TOK.rightParenthesis && condition)
-                {
-                    error("missing closing `)` after `if (%s`", param ? "declaration".ptr : condition.toChars());
-                }
-                else
-                    check(TOK.rightParenthesis);
-                if (token.value == TOK.rightParenthesis)
-                {
-                    if (condition) // if not an error in condition
-                        error("extra `)` after `if (%s)`", param ? "declaration".ptr : condition.toChars());
-                    nextToken();
-                }
+                auto param = parseAssignCondition();
+                auto condition = parseExpression();
+                closeCondition("if", param, condition);
 
                 {
                     const lookingForElseSave = lookingForElse;
@@ -6223,7 +6235,7 @@ LagainStc:
                 nextToken();
                 check(TOK.leftParenthesis);
                 AST.Expression condition = parseExpression();
-                check(TOK.rightParenthesis);
+                closeCondition("switch", null, condition);
                 AST.Statement _body = parseStatement(ParseStatementFlags.scope_);
                 s = new AST.SwitchStatement(loc, condition, _body, isfinal);
                 break;
@@ -6402,7 +6414,7 @@ LagainStc:
                 {
                     nextToken();
                     exp = parseExpression();
-                    check(TOK.rightParenthesis);
+                    closeCondition("synchronized", null, exp);
                 }
                 else
                     exp = null;
@@ -6419,7 +6431,7 @@ LagainStc:
                 nextToken();
                 check(TOK.leftParenthesis);
                 exp = parseExpression();
-                check(TOK.rightParenthesis);
+                closeCondition("with", null, exp);
                 _body = parseStatement(ParseStatementFlags.scope_, null, &endloc);
                 s = new AST.WithStatement(loc, exp, _body, endloc);
                 break;
@@ -6511,7 +6523,7 @@ LagainStc:
                 if (peekNext() == TOK.leftParenthesis)
                 {
                     AST.Expression e = parseExpression();
-                    check(TOK.semicolon);
+                    check(TOK.semicolon, "`import` Expression");
                     s = new AST.ExpStatement(loc, e);
                 }
                 else

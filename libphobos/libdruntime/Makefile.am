@@ -171,17 +171,18 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
 	core/exception.d core/gc/config.d core/gc/gcinterface.d \
 	core/gc/registry.d core/int128.d core/internal/abort.d \
-	core/internal/array/appending.d core/internal/array/capacity.d \
-	core/internal/array/casting.d core/internal/array/comparison.d \
-	core/internal/array/concatenation.d core/internal/array/construction.d \
-	core/internal/array/duplication.d core/internal/array/equality.d \
-	core/internal/array/operations.d core/internal/array/utils.d \
-	core/internal/atomic.d core/internal/attributes.d \
-	core/internal/container/array.d core/internal/container/common.d \
-	core/internal/container/hashtab.d core/internal/container/treap.d \
-	core/internal/convert.d core/internal/dassert.d \
-	core/internal/destruction.d core/internal/entrypoint.d \
-	core/internal/gc/bits.d core/internal/gc/impl/conservative/gc.d \
+	core/internal/array/appending.d core/internal/array/arrayassign.d \
+	core/internal/array/capacity.d core/internal/array/casting.d \
+	core/internal/array/comparison.d core/internal/array/concatenation.d \
+	core/internal/array/construction.d core/internal/array/duplication.d \
+	core/internal/array/equality.d core/internal/array/operations.d \
+	core/internal/array/utils.d core/internal/atomic.d \
+	core/internal/attributes.d core/internal/container/array.d \
+	core/internal/container/common.d core/internal/container/hashtab.d \
+	core/internal/container/treap.d core/internal/convert.d \
+	core/internal/dassert.d core/internal/destruction.d \
+	core/internal/entrypoint.d core/internal/gc/bits.d \
+	core/internal/gc/impl/conservative/gc.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
 	core/internal/gc/proxy.d core/internal/hash.d core/internal/lifetime.d \

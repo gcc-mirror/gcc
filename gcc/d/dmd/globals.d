@@ -116,10 +116,6 @@ extern (C++) struct Param
     DiagnosticReporting useDeprecated = DiagnosticReporting.inform;  // how use of deprecated features are handled
     bool useUnitTests;          // generate unittest code
     bool useInline = false;     // inline expand functions
-    FeatureState useDIP25;  // implement https://wiki.dlang.org/DIP25
-    FeatureState useDIP1000; // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
-    bool fixImmutableConv;  // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
-    bool useDIP1021;        // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
     bool release;           // build release version
     bool preservePaths;     // true means don't strip path from source file
     DiagnosticReporting warnings = DiagnosticReporting.off;  // how compiler warnings are handled
@@ -131,31 +127,10 @@ extern (C++) struct Param
     bool useModuleInfo = true;   // generate runtime module information
     bool useTypeInfo = true;     // generate runtime type information
     bool useExceptions = true;   // support exception handling
-    bool noSharedAccess;         // read/write access to shared memory objects
-    bool previewIn;         // `in` means `[ref] scope const`, accepts rvalues
-    bool shortenedMethods; // allow => in normal function declarations
     bool betterC;           // be a "better C" compiler; no dependency on D runtime
     bool addMain;           // add a default main() function
     bool allInst;           // generate code for all template instantiations
-    bool fix16997 = true;   // fix integral promotions for unary + - ~ operators
-                            // https://issues.dlang.org/show_bug.cgi?id=16997
-    bool fixAliasThis;      // if the current scope has an alias this, check it before searching upper scopes
-    bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
-    /** The --transition=safe switch should only be used to show code with
-     * silent semantics changes related to @safe improvements.  It should not be
-     * used to hide a feature that will have to go through deprecate-then-error
-     * before becoming default.
-     */
-    bool ehnogc;            // use @nogc exception handling
-    FeatureState dtorFields; // destruct fields of partially constructed objects
-                            // https://issues.dlang.org/show_bug.cgi?id=14246
-    bool fieldwise;         // do struct equality testing field-wise rather than by memcmp()
     bool bitfields;         // support C style bit fields
-    FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
-                                 // https://dconf.org/2019/talks/alexandrescu.html
-                                 // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
-                                 // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
-                                 // Implementation: https://github.com/dlang/dmd/pull/9817
 
     CppStdRevision cplusplus = CppStdRevision.cpp11;    // version of C++ standard to support
 
@@ -172,6 +147,28 @@ extern (C++) struct Param
     bool externStdUsage;    // print help on -extern-std switch
     bool hcUsage;           // print help on -HC switch
     bool logo;              // print compiler logo
+
+    // Options for `-preview=/-revert=`
+    FeatureState useDIP25;       // implement https://wiki.dlang.org/DIP25
+    FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
+    bool ehnogc;                 // use @nogc exception handling
+    bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
+    bool fieldwise;              // do struct equality testing field-wise rather than by memcmp()
+    bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
+    FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
+                                 // https://dconf.org/2019/talks/alexandrescu.html
+                                 // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
+                                 // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
+                                 // Implementation: https://github.com/dlang/dmd/pull/9817
+    bool noSharedAccess;         // read/write access to shared memory objects
+    bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
+    bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
+    bool shortenedMethods;       // allow => in normal function declarations
+    bool fixImmutableConv;       // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
+    bool fix16997 = true;        // fix integral promotions for unary + - ~ operators
+                                 // https://issues.dlang.org/show_bug.cgi?id=16997
+    FeatureState dtorFields;     // destruct fields of partially constructed objects
+                                 // https://issues.dlang.org/show_bug.cgi?id=14246
 
     CHECKENABLE useInvariants  = CHECKENABLE._default;  // generate class invariant checks
     CHECKENABLE useIn          = CHECKENABLE._default;  // generate precondition checks

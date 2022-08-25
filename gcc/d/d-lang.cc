@@ -1191,7 +1191,6 @@ d_parse_file (void)
     }
 
   /* Do deferred semantic analysis.  */
-  Module::dprogress = 1;
   Module::runDeferredSemantic ();
 
   if (Module::deferred.length)

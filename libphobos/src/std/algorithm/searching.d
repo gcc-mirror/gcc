@@ -13,7 +13,7 @@ $(T2 any,
         `any!"a > 0"([1, 2, -3, -4])` returns `true` because at least one
         element is positive)
 $(T2 balancedParens,
-        `balancedParens("((1 + 1) / 2)")` returns `true` because the
+        `balancedParens("((1 + 1) / 2)", '(', ')')` returns `true` because the
         string has balanced parentheses.)
 $(T2 boyerMooreFinder,
         `find("hello world", boyerMooreFinder("or"))` returns `"orld"`

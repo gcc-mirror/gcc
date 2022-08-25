@@ -1541,7 +1541,7 @@ Returns:
     number in upper case.
 
 */
-string toHex(const(BigInt) x) @safe
+string toHex(const(BigInt) x) pure @safe
 {
     import std.array : appender;
     auto outbuff = appender!string();

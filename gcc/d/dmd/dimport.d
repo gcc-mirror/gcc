@@ -223,7 +223,16 @@ extern (C++) final class Import : Dsymbol
     override void importAll(Scope* sc)
     {
         if (mod) return; // Already done
-        load(sc);
+
+        /*
+         * https://issues.dlang.org/show_bug.cgi?id=15525
+         *
+         * Loading the import has failed,
+         * most likely because of parsing errors.
+         * Therefore we cannot trust the resulting AST.
+         */
+        if (load(sc)) return;
+
         if (!mod) return; // Failed
 
         if (sc.stc & STC.static_)
