@@ -295,6 +295,12 @@ extern bool real_isneg (const REAL_VALUE_TYPE *);
 /* Determine whether a floating-point value X is minus zero.  */
 extern bool real_isnegzero (const REAL_VALUE_TYPE *);
 
+/* Determine whether a floating-point value X is plus or minus zero.  */
+extern bool real_iszero (const REAL_VALUE_TYPE *);
+
+/* Determine whether a floating-point value X is zero with SIGN.  */
+extern bool real_iszero (const REAL_VALUE_TYPE *, bool sign);
+
 /* Test relationships between reals.  */
 extern bool real_identical (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 extern bool real_equal (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);

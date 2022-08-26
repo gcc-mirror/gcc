@@ -1272,6 +1272,22 @@ real_isneg (const REAL_VALUE_TYPE *r)
   return r->sign;
 }
 
+/* Determine whether a floating-point value X is plus or minus zero.  */
+
+bool
+real_iszero (const REAL_VALUE_TYPE *r)
+{
+  return r->cl == rvc_zero;
+}
+
+/* Determine whether a floating-point value X is zero with SIGN.  */
+
+bool
+real_iszero (const REAL_VALUE_TYPE *r, bool sign)
+{
+  return real_iszero (r) && r->sign == sign;
+}
+
 /* Determine whether a floating-point value X is minus zero.  */
 
 bool
