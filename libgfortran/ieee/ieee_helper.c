@@ -26,13 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-/* Check support for issignaling macro.  If not, we include our own
-   fallback implementation.  */
-#ifndef issignaling
-# include "issignaling_fallback.h"
-#endif
-
-
 /* Prototypes.  */
 
 extern int ieee_class_helper_4 (GFC_REAL_4 *);
@@ -94,7 +87,7 @@ enum {
  \
     if (res == IEEE_QUIET_NAN) \
     { \
-      if (issignaling (*value)) \
+      if (__builtin_issignaling (*value)) \
 	return IEEE_SIGNALING_NAN; \
       else \
 	return IEEE_QUIET_NAN; \
