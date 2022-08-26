@@ -1,12 +1,15 @@
-/* { dg-additional-options "-fdump-tree-omplower" } */
+/* { dg-do run }  */
+/* { dg-additional-sources reverse-offload-1-aux.c } */
 
-/* { dg-final { scan-tree-dump-times "omp declare target\[^ \]" 3 "omplower" } }  */
+/* Check that reverse offload works in particular:
+   - no code is generated on the device side (i.e. no
+     implicit declare target of called functions and no
+     code gen for the target-region body)
+     -> would otherwise fail due to 'add_3' symbol
+   - Plus the usual (compiles, runs, produces correct result)
 
-/* { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target\\)\\)\[\n\r\]*int called_in_target1" 1 "omplower" } }  */
-/* { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target\\)\\)\[\n\r\]*int called_in_target2" 1 "omplower" } }  */
-/* { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target, omp declare target block\\)\\)\[\n\r\]*void tg_fn" 1 "omplower" } }  */
-
-/* { dg-prune-output "'reverse_offload' clause on 'requires' directive not supported yet" } */
+   Note: Running also the non-reverse-offload target regions
+   on the host (host fallback) is valid and will pass.  */
 
 #pragma omp requires reverse_offload
 
@@ -21,18 +24,6 @@ check_offload (int *x, int *y)
   *y = add_3 (*y);
 }
 
-int
-called_in_target1 ()
-{
-  return 42;
-}
-
-int
-called_in_target2 ()
-{
-  return -6;
-}
-
 #pragma omp declare target
 void
 tg_fn (int *x, int *y)
@@ -40,13 +31,13 @@ tg_fn (int *x, int *y)
   int x2 = *x, y2 = *y;
   if (x2 != 2 || y2 != 3)
     __builtin_abort ();
-  x2 = x2 + 2 + called_in_target1 ();
+  x2 = x2 + 2;
   y2 = y2 + 7;
 
   #pragma omp target device(ancestor : 1) map(tofrom: x2)
     check_offload(&x2, &y2);
 
-  if (x2 != 2+2+3+42 || y2 != 3 + 7)
+  if (x2 != 2+2+3 || y2 != 3 + 7)
     __builtin_abort ();
   *x = x2, *y = y2;
 }
@@ -74,10 +65,9 @@ main ()
   #pragma omp target
   {
      int x = -2, y = -1;
-     x += called_in_target2 ();
      #pragma omp target device ( ancestor:1 ) firstprivate(y) map(tofrom:x)
      {
-       if (x != -2-6 || y != -1)
+       if (x != -2 || y != -1)
          __builtin_abort ();
        my_func (&x, &y);
        if (x != 2*(3-2) || y != 3*(3-1))

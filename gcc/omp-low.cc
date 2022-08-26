@@ -2101,6 +2101,11 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 	  else
 	    target_attr = NULL;
 	}
+      if (target_attr
+	  && is_gimple_omp_offloaded (ctx->stmt)
+	  && lookup_attribute ("noclone", DECL_ATTRIBUTES (decl)) == NULL_TREE)
+	DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("noclone"),
+					   NULL_TREE, DECL_ATTRIBUTES (decl));
       if (target_attr)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier (target_attr),
