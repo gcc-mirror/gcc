@@ -1110,6 +1110,10 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> &cur_cd_chain, unsigned *num_calls,
 			   unsigned in_region = 0, unsigned depth = 0)
 {
+  /* In our recursive calls this doesn't happen.  */
+  if (single_succ_p (dom_bb))
+    return false;
+
   if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
     {
       if (dump_file)
@@ -1167,7 +1171,21 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
       basic_block cd_bb = e->dest;
       cur_cd_chain.safe_push (e);
       while (!dominated_by_p (CDI_POST_DOMINATORS, dom_bb, cd_bb)
-	     || is_loop_exit (dom_bb, cd_bb))
+	     /* We want to stop when the CFG merges back from the
+		branch in dom_bb.  The post-dominance check alone
+		falls foul of the case of a loop exit test branch
+		where the path on the loop exit post-dominates
+		the branch block.
+		The following catches this but will not allow
+		exploring the post-dom path further.  For the
+		outermost recursion this means we will fail to
+		reach dep_bb while for others it means at least
+		dropping the loop exit predicate from the path
+		which is problematic as it increases the domain
+		spanned by the resulting predicate.
+		See gcc.dg/uninit-pred-11.c for the first case
+		and PR106754 for the second.  */
+	     || single_pred_p (cd_bb))
 	{
 	  if (cd_bb == dep_bb)
 	    {
@@ -1187,9 +1205,10 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	    break;
 
 	  /* Check if DEP_BB is indirectly control-dependent on DOM_BB.  */
-	  if (compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
-					 num_chains, cur_cd_chain,
-					 num_calls, in_region, depth + 1))
+	  if (!single_succ_p (cd_bb)
+	      && compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
+					    num_chains, cur_cd_chain,
+					    num_calls, in_region, depth + 1))
 	    {
 	      found_cd_chain = true;
 	      break;
