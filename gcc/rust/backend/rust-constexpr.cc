@@ -1672,7 +1672,7 @@ eval_array_reference (const constexpr_ctx *ctx, tree t, bool lval,
      initializer, it's initialized from {}.  But use build_value_init
      directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
   tree val = NULL_TREE;
-  sorry ("array size expression is not supported yet.");
+  sorry ("array size expression is not supported yet");
 
   constexpr_ctx new_ctx;
   if (is_really_empty_class (elem_type, /*ignore_vptr*/ false))
