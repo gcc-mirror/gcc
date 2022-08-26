@@ -59,33 +59,6 @@
    for the case corresponding to an edge.  */
 #define MAX_SWITCH_CASES 40
 
-/* Return true if, when BB1 is postdominating BB2, BB1 is a loop exit.  */
-
-static bool
-is_loop_exit (basic_block bb2, basic_block bb1)
-{
-  return single_pred_p (bb1) && !single_succ_p (bb2);
-}
-
-/* Find BB's closest postdominator that is its control equivalent (i.e.,
-   that's controlled by the same predicate).  */
-
-static inline basic_block
-find_control_equiv_block (basic_block bb)
-{
-  basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
-
-  /* Skip the postdominating bb that is also a loop exit.  */
-  if (is_loop_exit (bb, pdom))
-    return NULL;
-
-  /* If the postdominator is dominated by BB, return it.  */
-  if (dominated_by_p (CDI_DOMINATORS, pdom, bb))
-    return pdom;
-
-  return NULL;
-}
-
 /* Return true if X1 is the negation of X2.  */
 
 static inline bool
@@ -1991,25 +1964,29 @@ bool
 uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
 				 basic_block use_bb)
 {
-  gcc_assert (use_preds.is_empty ());
+  gcc_assert (use_preds.is_empty ()
+	      && dominated_by_p (CDI_DOMINATORS, use_bb, def_bb));
 
   /* Set CD_ROOT to the basic block closest to USE_BB that is the control
      equivalent of (is guarded by the same predicate as) DEF_BB that also
-     dominates USE_BB.  */
+     dominates USE_BB.  This mimics the inner loop in
+     compute_control_dep_chain.  */
   basic_block cd_root = def_bb;
-  while (dominated_by_p (CDI_DOMINATORS, use_bb, cd_root))
+  do
     {
-      /* Find CD_ROOT's closest postdominator that's its control
-	 equivalent.  */
-      if (basic_block bb = find_control_equiv_block (cd_root))
-	if (dominated_by_p (CDI_DOMINATORS, use_bb, bb))
-	  {
-	    cd_root = bb;
-	    continue;
-	  }
+      basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, cd_root);
 
-      break;
+      /* Stop at a loop exit which is also postdominating cd_root.  */
+      if (single_pred_p (pdom) && !single_succ_p (cd_root))
+	break;
+
+      if (!dominated_by_p (CDI_DOMINATORS, pdom, cd_root)
+	  || !dominated_by_p (CDI_DOMINATORS, use_bb, pdom))
+	break;
+
+      cd_root = pdom;
     }
+  while (1);
 
   /* Set DEP_CHAINS to the set of edges between CD_ROOT and USE_BB.
      Each DEP_CHAINS element is a series of edges whose conditions
