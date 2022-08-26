@@ -7049,7 +7049,6 @@ package body Sem_Util is
 
          if Present (Asp) then
             Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
-            Set_Has_Aspects (To, True);
          end if;
       end if;
    end Copy_Ghost_Aspect;
@@ -7101,7 +7100,6 @@ package body Sem_Util is
 
          if Present (Asp) then
             Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
-            Set_Has_Aspects (To, True);
          end if;
       end if;
    end Copy_SPARK_Mode_Aspect;

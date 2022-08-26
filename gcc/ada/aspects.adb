@@ -373,7 +373,6 @@ package body Aspects is
          else
             Asps := New_List;
             Set_Aspect_Specifications (To, Asps);
-            Set_Has_Aspects (To);
          end if;
 
          --  Remove the aspect from its original owner and relocate it to node

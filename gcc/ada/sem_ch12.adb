@@ -3121,7 +3121,6 @@ package body Sem_Ch12 is
       if Present (Aspect_Specifications (Gen_Decl)) then
          if No (Aspect_Specifications (N)) then
             Set_Aspect_Specifications (N, New_List);
-            Set_Has_Aspects (N);
          end if;
 
          declare
