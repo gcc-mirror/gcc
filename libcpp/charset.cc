@@ -2593,7 +2593,11 @@ wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
      character constant is guaranteed to overflow.  */
   if (str.len > nbwc * 2)
     cpp_error (pfile, (CPP_OPTION (pfile, cplusplus)
-		       && (type == CPP_CHAR16 || type == CPP_CHAR32))
+		       && (type == CPP_CHAR16
+			   || type == CPP_CHAR32
+			   /* In C++23 this is error even for L'ab'.  */
+			   || (type == CPP_WCHAR
+			       && CPP_OPTION (pfile, size_t_literals))))
 		      ? CPP_DL_ERROR : CPP_DL_WARNING,
 	       "character constant too long for its type");
 
