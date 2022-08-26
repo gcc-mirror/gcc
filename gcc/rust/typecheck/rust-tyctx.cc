@@ -142,12 +142,14 @@ TypeCheckContext::push_return_type (TypeCheckContextItem item,
 void
 TypeCheckContext::pop_return_type ()
 {
+  rust_assert (!return_type_stack.empty ());
   return_type_stack.pop_back ();
 }
 
 TypeCheckContextItem &
 TypeCheckContext::peek_context ()
 {
+  rust_assert (!return_type_stack.empty ());
   return return_type_stack.back ().first;
 }
 
