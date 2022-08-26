@@ -1,3 +1,9 @@
+2022-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (parse_omp_structured_block): When parsing strictly
+	structured blocks, issue an error if the end-directive comes
+	before the 'end block'.
+
 2022-08-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103694

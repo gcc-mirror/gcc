@@ -1,3 +1,63 @@
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/c11-nullptr-1.c: New test.
+	* gcc.dg/c17-nullptr-1.c: New test.
+	* gcc.dg/c17-nullptr-2.c: New test.
+	* gcc.dg/c2x-nullptr-1.c: New test.
+	* gcc.dg/c2x-nullptr-2.c: New test.
+	* gcc.dg/c2x-nullptr-3.c: New test.
+	* gcc.dg/c2x-nullptr-4.c: New test.
+	* gcc.dg/c2x-nullptr-5.c: New test.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-empty-init-1.c, gcc.dg/c11-empty-init-2.c,
+	gcc.dg/c11-empty-init-3.c, gcc.dg/c2x-empty-init-1.c,
+	gcc.dg/c2x-empty-init-2.c, gcc.dg/c2x-empty-init-3.c,
+	gcc.dg/gnu2x-empty-init-1.c, gcc.dg/gnu2x-empty-init-2.c: New
+	tests.
+	* gcc.dg/torture/dfp-default-init-1.c: Also test empty
+	initializers.
+	* gcc.dg/init-bad-1.c, gcc.dg/noncompile/pr71583.c,
+	gcc.dg/pr61096-1.c, gcc.dg/vla-init-2.c, gcc.dg/vla-init-3.c,
+	gcc.target/i386/sse2-bfloat16-scalar-typecheck.c: Update expected
+	diagnostics.
+	* gcc.dg/ubsan/c-shift-1.c: Use nonempty initializers for VLA
+	initializations expected to be diagnosed.
+
+2022-08-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/elide8.C: New test.
+
+2022-08-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/debug/dwarf2/utf-1.C: New test.
+
+2022-08-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/106101
+	* gcc.c-torture/compile/pr106101.c: New test.
+
+2022-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/attr-model-test.c: New test.
+	* gcc.target/loongarch/attr-model-1.c: New test.
+	* gcc.target/loongarch/attr-model-2.c: New test.
+	* gcc.target/loongarch/attr-model-diag.c: New test.
+
+2022-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106737
+	* gcc.dg/autopar/pr106737.c: New testcase.
+
+2022-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/strictly-structured-block-4.f90: New test.
+
+2022-08-25  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	* gcc.target/loongarch/pr106459.c: New test.
+
 2022-08-24  Andrew Pinski  <apinski@marvell.com>
 
 	* lib/target-supports.exp (check_effective_target_bswap):

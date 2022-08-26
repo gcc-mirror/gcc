@@ -1,3 +1,18 @@
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Remove CTI_NULLPTR, CTI_NULLPTR_TYPE.
+	Move it to c_tree_index.
+	(nullptr_node): No longer define here.
+	(nullptr_type_node): Likewise.
+	(NULLPTR_TYPE_P): Likewise.
+	* decl.cc (cxx_init_decl_processing): Only keep C++-specific nullptr
+	initialization; move the shared code to c_common_nodes_and_builtins.
+
+2022-08-25  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (unsafe_return_slot_p): Return 2 for *this in a
+	constructor.
+
 2022-08-23  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.cc (maybe_warn_pessimizing_move): Don't warn about

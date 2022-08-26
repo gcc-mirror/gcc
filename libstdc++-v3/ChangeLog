@@ -1,3 +1,12 @@
+2022-08-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (lazy_split_view::_OuterIter::_M_current):
+	Remove redundant comment.
+	(lazy_split_view::_M_current): Likewise.
+	(common_view::common_view): Remove commented out view-converting
+	constructor as per LWG3405.
+	(elements_view::_Iterator::_Iterator): Uglify 'current' and 'i'.
+
 2022-08-24  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_algo.h (__min_fn, min): Move to ...

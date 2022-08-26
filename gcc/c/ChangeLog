@@ -1,3 +1,38 @@
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.cc (c_convert) <case POINTER_TYPE>: Handle NULLPTR_TYPE.
+	Give a better diagnostic when converting to nullptr_t.
+	* c-decl.cc (c_init_decl_processing): Perform C-specific nullptr
+	initialization.
+	* c-parser.cc (c_parse_init): Maybe OR D_C2X into mask.
+	(c_parser_postfix_expression): Handle RID_NULLPTR.
+	* c-typeck.cc (null_pointer_constant_p): Return true when expr is
+	nullptr_node.
+	(build_unary_op) <case TRUTH_NOT_EXPR>: Handle NULLPTR_TYPE.
+	(build_conditional_expr): Handle the case when the second/third operand
+	is NULLPTR_TYPE and third/second operand is POINTER_TYPE.
+	(convert_for_assignment): Handle converting an expression of type
+	nullptr_t to pointer/bool.
+	(build_binary_op) <case TRUTH_XOR_EXPR>: Handle NULLPTR_TYPE.
+	<case EQ_EXPR>: Handle comparing operands of type nullptr_t.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (start_decl): Do not diagnose initialization of
+	variable-sized objects here.
+	* c-parser.cc (c_parser_braced_init): Add argument DECL.  All
+	callers changed.
+	(c_parser_initializer): Diagnose initialization of variable-sized
+	objects other than with braced initializer.
+	(c_parser_braced_init): Use pedwarn_c11 for empty initializer
+	braces and update diagnostic text.  Diagnose initialization of
+	variable-sized objects with nonempty braces.
+	* c-typeck.cc (digest_init): Update diagnostic for initialization
+	of variable-sized objects.
+	(really_start_incremental_init, set_designator)
+	(process_init_element): Update comments.
+	(pop_init_level): Allow scalar empty initializers.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

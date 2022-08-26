@@ -1,3 +1,78 @@
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* ginclude/stddef.h: Define nullptr_t.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gimplify.cc (gimplify_modify_expr): Convert initialization from
+	a variable-size CONSTRUCTOR to memset before call to
+	gimplify_modify_expr_rhs.
+
+2022-08-25  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.cc (base_type_die): Also use DW_ATE_UTF for char8_t.
+
+2022-08-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/106101
+	* config/s390/predicates.md (subreg_register_operand): New
+	predicate.
+	* config/s390/s390-protos.h (s390_gen_lowpart_subreg): New
+	function prototype.
+	* config/s390/s390.cc (s390_gen_lowpart_subreg): New function.
+	(s390_expand_insv): Use s390_gen_lowpart_subreg instead of
+	gen_lowpart.
+	* config/s390/s390.md ("*get_tp_64", "*zero_extendhisi2_31")
+	("*zero_extendqisi2_31", "*zero_extendqihi2_31"): Likewise.
+	("movstrictqi", "movstricthi", "movstrictsi"): Use the
+	subreg_register_operand predicate instead of register_operand.
+
+2022-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-protos.h (loongarch_symbol_type):
+	Add SYMBOL_PCREL64 and change the description for SYMBOL_PCREL.
+	* config/loongarch/loongarch.cc (loongarch_attribute_table):
+	New attribute table.
+	(TARGET_ATTRIBUTE_TABLE): Define the target hook.
+	(loongarch_handle_model_attribute): New static function.
+	(loongarch_classify_symbol): Take TARGET_CMODEL_EXTREME and the
+	model attribute of SYMBOL_REF_DECL into account returning
+	SYMBOL_PCREL or SYMBOL_PCREL64.
+	(loongarch_use_anchors_for_symbol_p): New static function.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Define the target hook.
+	(loongarch_symbol_extreme_p): New static function.
+	(loongarch_symbolic_constant_p): Handle SYMBOL_PCREL64.
+	(loongarch_symbol_insns): Likewise.
+	(loongarch_split_symbol_type): Likewise.
+	(loongarch_split_symbol): Check SYMBOL_PCREL64 instead of
+	TARGET_CMODEL_EXTREME for PC-relative addressing.
+	(loongarch_print_operand_reloc): Likewise.
+	* doc/extend.texi (Variable Attributes): Document new
+	LoongArch specific attribute.
+
+2022-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_classify_symbol):
+	Return early if the rtx is not SYMBOL_REF.
+
+2022-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106737
+	* tree-parloops.cc (transform_to_exit_first_loop_alt): Do not
+	verify SSA form.
+
+2022-08-25  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	PR target/106459
+	* config/loongarch/loongarch.cc (loongarch_build_integer):
+	Use HOST_WIDE_INT.
+	* config/loongarch/loongarch.h (IMM_REACH): Likewise.
+	(HWIT_1U): New Defined.
+	(LU12I_OPERAND): Use HOST_WIDE_INT.
+	(LU32I_OPERAND): Likewise.
+	(LU52I_OPERAND): Likewise.
+	(HWIT_UC_0xFFF): Likwise.
+
 2022-08-24  Andrew Pinski  <apinski@marvell.com>
 
 	PR target/106632
