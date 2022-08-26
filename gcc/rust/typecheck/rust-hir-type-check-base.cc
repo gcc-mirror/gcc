@@ -25,6 +25,11 @@
 namespace Rust {
 namespace Resolver {
 
+TypeCheckBase::TypeCheckBase ()
+  : mappings (Analysis::Mappings::get ()), resolver (Resolver::get ()),
+    context (TypeCheckContext::get ())
+{}
+
 bool
 TypeCheckBase::check_for_unconstrained (
   const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,
@@ -332,9 +337,12 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, Location locus)
 }
 
 TyTy::BaseType *
-TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
-			      TyTy::BaseType *expr, Location locus)
+TypeCheckBase::coercion_site (HirId id, TyTy::TyWithLocation lhs,
+			      TyTy::TyWithLocation rhs, Location locus)
 {
+  TyTy::BaseType *expected = lhs.get_ty ();
+  TyTy::BaseType *expr = rhs.get_ty ();
+
   rust_debug ("coercion_site id={%u} expected={%s} expr={%s}", id,
 	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
 

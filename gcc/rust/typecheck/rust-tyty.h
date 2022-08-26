@@ -314,8 +314,8 @@ private:
 class TyWithLocation
 {
 public:
-  TyWithLocation (BaseType *ty, Location locus);
-  TyWithLocation (BaseType *ty);
+  explicit TyWithLocation (BaseType *ty, Location locus);
+  explicit TyWithLocation (BaseType *ty);
 
   BaseType *get_ty () const { return ty; }
   Location get_locus () const { return locus; }
@@ -472,8 +472,8 @@ private:
 class StructFieldType
 {
 public:
-  StructFieldType (HirId ref, std::string name, BaseType *ty)
-    : ref (ref), name (name), ty (ty)
+  StructFieldType (HirId ref, std::string name, BaseType *ty, Location locus)
+    : ref (ref), name (name), ty (ty), locus (locus)
   {}
 
   HirId get_ref () const { return ref; }
@@ -496,10 +496,13 @@ public:
 
   void debug () const { rust_debug ("%s", as_string ().c_str ()); }
 
+  Location get_locus () const { return locus; }
+
 private:
   HirId ref;
   std::string name;
   BaseType *ty;
+  Location locus;
 };
 
 class TupleType : public BaseType

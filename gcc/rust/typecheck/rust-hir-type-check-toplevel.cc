@@ -72,7 +72,8 @@ TypeCheckTopLevel::visit (HIR::TupleStruct &struct_decl)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     std::to_string (idx), field_type);
+				     std::to_string (idx), field_type,
+				     field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
       idx++;
@@ -132,7 +133,8 @@ TypeCheckTopLevel::visit (HIR::StructStruct &struct_decl)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type);
+				     field.get_field_name (), field_type,
+				     field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
@@ -221,7 +223,8 @@ TypeCheckTopLevel::visit (HIR::Union &union_decl)
 	= TypeCheckType::Resolve (variant.get_field_type ().get ());
       TyTy::StructFieldType *ty_variant
 	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
-				     variant.get_field_name (), variant_type);
+				     variant.get_field_name (), variant_type,
+				     variant.get_locus ());
       fields.push_back (ty_variant);
       context->insert_type (variant.get_mappings (),
 			    ty_variant->get_field_type ());

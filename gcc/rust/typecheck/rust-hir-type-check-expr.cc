@@ -224,7 +224,9 @@ TypeCheckExpr::visit (HIR::AssignmentExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
-  coercion_site (expr.get_mappings ().get_hirid (), lhs, rhs,
+  coercion_site (expr.get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
+		 TyTy::TyWithLocation (rhs, expr.get_rhs ()->get_locus ()),
 		 expr.get_locus ());
 }
 

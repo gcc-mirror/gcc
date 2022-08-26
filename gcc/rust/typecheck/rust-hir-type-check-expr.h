@@ -25,7 +25,7 @@
 namespace Rust {
 namespace Resolver {
 
-class TypeCheckExpr : public TypeCheckBase, private HIR::HIRExpressionVisitor
+class TypeCheckExpr : private TypeCheckBase, private HIR::HIRExpressionVisitor
 {
 public:
   static TyTy::BaseType *Resolve (HIR::Expr *expr);

@@ -27,6 +27,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-ref.h"
 #include "rust-hir-type-bounds.h"
+#include "options.h"
 
 namespace Rust {
 namespace TyTy {
@@ -559,14 +560,14 @@ StructFieldType *
 StructFieldType::clone () const
 {
   return new StructFieldType (get_ref (), get_name (),
-			      get_field_type ()->clone ());
+			      get_field_type ()->clone (), locus);
 }
 
 StructFieldType *
 StructFieldType::monomorphized_clone () const
 {
   return new StructFieldType (get_ref (), get_name (),
-			      get_field_type ()->monomorphized_clone ());
+			      get_field_type ()->monomorphized_clone (), locus);
 }
 
 bool
