@@ -297,9 +297,9 @@
 (define_mode_iterator V_256
   [V32QI V16HI V8SI V4DI V8SF V4DF])
 
-;; All 256bit vector modes including HF vector mode
+;; All 256bit vector modes including HF/BF vector modes
 (define_mode_iterator V_256H
-  [V32QI V16HI V8SI V4DI V8SF V4DF V16HF])
+  [V32QI V16HI V8SI V4DI V8SF V4DF V16HF V16BF])
 
 ;; All 128bit and 256bit vector modes
 (define_mode_iterator V_128_256
