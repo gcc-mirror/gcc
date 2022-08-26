@@ -921,6 +921,342 @@ struct ucnrange {
 /* ISO 10646 defines the UCS codespace as the range 0-0x10FFFF inclusive.  */
 #define UCS_LIMIT 0x10FFFF
 
+#include "uname2c.h"
+
+static const char hangul_syllables[][4] = {
+  /* L */
+  "G", "GG", "N", "D", "DD", "R", "M", "B", "BB", "S", "SS", "",
+  "J", "JJ", "C", "K", "T", "P", "H",
+  /* V */
+  "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O", "WA", "WAE",
+  "OE", "YO", "U", "WEO", "WE", "WI", "YU", "EU", "YI", "I",
+  /* T */
+  "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM", "LB",
+  "LS", "LT", "LP", "LH", "M", "B", "BS", "S", "SS", "NG", "J", "C",
+  "K", "T", "P", "H"
+};
+
+static const short hangul_count[6] = { 19, 21, 28 };
+
+/* Used for Unicode loose matching rule UAX44-LM2 matching.  */
+
+struct uname2c_data
+{
+  char *canon_name;
+  char prev_char;
+};
+
+/* Map NAME, a Unicode character name or correction/control/alternate
+   alias, to a Unicode codepoint, or return (cppchar_t) -1 if
+   not found.  This uses a space optimized radix tree precomputed
+   by the makeuname2c utility, with binary format documented in its
+   source makeuname2c.cc.  */
+
+static cppchar_t
+_cpp_uname2c (const char *name, size_t len, const unsigned char *n,
+	      struct uname2c_data *data)
+{
+  do
+    {
+      char k;
+      const char *key;
+      size_t key_len, len_adj;
+      bool has_value = *n & 0x40;
+      bool has_children, no_sibling = false;
+      cppchar_t codepoint = -1;
+      const unsigned char *child = NULL;
+      int ret;
+
+      if (*n & 0x80)
+	{
+	  k = ' ' + (*n++ & 0x3f);
+	  key = &k;
+	  key_len = 1;
+	}
+      else
+	{
+	  key_len = *n++ & 0x3f;
+	  key = &uname2c_dict[*n++];
+	  key += (*n++ << 8);
+	}
+      if (has_value)
+	{
+	  codepoint = *n + (n[1] << 8) + ((n[2] & 0x1f) << 16);
+	  has_children = n[2] & 0x80;
+	  no_sibling = n[2] & 0x40;
+	  n += 3;
+	}
+      else
+	has_children = true;
+      if (has_children)
+	{
+	  unsigned int shift = 0;
+	  size_t child_off = 0;
+
+	  do
+	    {
+	      child_off |= (*n & 0x7f) << shift;
+	      shift += 7;
+	    }
+	  while ((*n++ & 0x80) != 0);
+	  child = n + child_off;
+	}
+      if (__builtin_expect (data == NULL, 1))
+	{
+	  ret = memcmp (name, key, len > key_len ? key_len : len);
+	  len_adj = key_len;
+	}
+      else
+	{
+	  const char *p = name, *q = key;
+
+	  while (1)
+	    {
+	      if ((size_t) (p - name) == len || (size_t) (q - key) == key_len)
+		break;
+	      if (*q == ' ')
+		{
+		  ++q;
+		  continue;
+		}
+	      if (*q == '-')
+		{
+		  /* This is the hard case.  Only medial hyphens
+		     should be removed, where medial means preceded
+		     and followed by alnum.  */
+		  if (ISALNUM (q == key ? data->prev_char : q[-1]))
+		    {
+		      if (q + 1 == key + key_len)
+			{
+			  /* We don't know what the next letter will be.
+			     It could be ISALNUM, then we are supposed
+			     to omit it, or it could be a space and then
+			     we should not omit it and need to compare it.
+			     Fortunately the only 3 names with hyphen
+			     followed by non-letter are
+			     U+0F0A TIBETAN MARK BKA- SHOG YIG MGO
+			     U+0FD0 TIBETAN MARK BKA- SHOG GI MGO RGYAN
+			     U+0FD0 TIBETAN MARK BSKA- SHOG GI MGO RGYAN
+			     Furthermore, prefixes of NR2 generated
+			     ranges all end with a hyphen, but the generated
+			     part is then followed by alpha-numeric.
+			     So, let's just assume that - at the end of
+			     key is always followed by alphanumeric and
+			     so should be omitted.
+			     makeuname2c.cc verifies that this is true.  */
+			  ++q;
+			  continue;
+			}
+		      else if (ISALNUM (q[1]))
+			{
+			  ++q;
+			  continue;
+			}
+		    }
+		}
+	      if (*p != *q)
+		break;
+	      ++p;
+	      ++q;
+	    }
+	  len_adj = p - name;
+	  /* If we don't consume the whole key, signal a mismatch,
+	     but always with ret = 1, so that we keep looking through
+	     siblings.  */
+	  ret = q < key + key_len;
+	}
+      if (ret < 0)
+	return -1;
+      else if (ret == 0)
+	{
+	  if (len < len_adj)
+	    return -1;
+	  else if (codepoint >= 0xd800
+		   && codepoint < 0xd800 + ARRAY_SIZE (uname2c_generated))
+	    {
+	      name += len_adj;
+	      len -= len_adj;
+	      if (codepoint == 0xd800)
+		{
+		  /* NR1 - Hangul syllables.  */
+		  size_t start = 0, end, i, j;
+		  int this_len, max_len;
+		  char winner[3];
+
+		  for (i = 0; i < 3; ++i)
+		    {
+		      end = start + hangul_count[i];
+		      max_len = -1;
+		      winner[i] = -1;
+		      for (j = start; j < end; j++)
+			{
+			  this_len = strlen (hangul_syllables[j]);
+			  if (len >= (size_t) this_len
+			      && this_len > max_len
+			      && memcmp (name, hangul_syllables[j],
+					 this_len) == 0)
+			    {
+			      max_len = this_len;
+			      winner[i] = j - start;
+			    }
+			}
+		      if (max_len == -1)
+			return -1;
+		      name += max_len;
+		      len -= max_len;
+		      start = end;
+		    }
+		  if (__builtin_expect (data != NULL, 0))
+		    {
+		      memcpy (data->canon_name, key, key_len);
+		      data->canon_name[key_len] = '\0';
+		      for (i = 0, start = 0; i < 3; ++i)
+			{
+			  strcat (data->canon_name,
+				  hangul_syllables[start + winner[i]]);
+			  start += hangul_count[i];
+			}
+		    }
+		  return (0xac00 + 21 * 28 * winner[0]
+			  + 28 * winner[1] + winner[2]);
+		}
+	      else
+		{
+		  /* NR2 - prefix followed by hexadecimal codepoint.  */
+		  const cppchar_t *p;
+		  size_t i;
+
+		  if (len < 4 || len > 5)
+		    return -1;
+		  p = uname2c_pairs + uname2c_generated[codepoint - 0xd800];
+		  codepoint = 0;
+		  for (i = 0; i < len; ++i)
+		    {
+		      codepoint <<= 4;
+		      if (!ISXDIGIT (name[i]))
+			return -1;
+		      codepoint += hex_value (name[i]);
+		    }
+		  for (; *p; p += 2)
+		    if (codepoint < *p)
+		      return -1;
+		    else if (codepoint <= p[1])
+		      {
+			if (__builtin_expect (data != NULL, 0))
+			  {
+			    memcpy (data->canon_name, key, key_len);
+			    memcpy (data->canon_name + key_len, name, len);
+			    data->canon_name[key_len + len] = '\0';
+			  }
+			return codepoint;
+		      }
+		  return -1;
+		}
+	    }
+	  else if (__builtin_expect (data != NULL, 0))
+	    {
+	      if (len == len_adj)
+		{
+		  memcpy (data->canon_name, key, key_len);
+		  data->canon_name[key_len] = '\0';
+		  return codepoint;
+		}
+	      if (has_children)
+		{
+		  struct uname2c_data save = *data;
+		  memcpy (data->canon_name, key, key_len);
+		  data->canon_name += key_len;
+		  data->prev_char = key[key_len - 1];
+		  codepoint = _cpp_uname2c (name + len_adj, len - len_adj,
+					    child, data);
+		  if (codepoint != (cppchar_t) -1)
+		    return codepoint;
+		  *data = save;
+		}
+	    }
+	  else if (len == len_adj)
+	    return codepoint;
+	  else if (!has_children)
+	    return -1;
+	  else
+	    {
+	      name += len_adj;
+	      len -= len_adj;
+	      n = child;
+	      continue;
+	    }
+	}
+      if (no_sibling || (!has_value && *n == 0xff))
+	break;
+    }
+  while (1);
+  return -1;
+}
+
+/* Try to do a loose name lookup according to Unicode loose matching rule
+   UAX44-LM2.  First ignore medial hyphens, whitespace, underscore
+   characters and convert to upper case.  */
+
+static cppchar_t
+_cpp_uname2c_uax44_lm2 (const char *name, size_t len, char *canon_name)
+{
+  char name_after_uax44_lm2[uname2c_max_name_len];
+  char *q = name_after_uax44_lm2;
+  const char *p;
+
+  for (p = name; p < name + len; p++)
+    if (*p == '_' || *p == ' ')
+      continue;
+    else if (*p == '-' && p != name && ISALNUM (p[-1]) && ISALNUM (p[1]))
+      continue;
+    else if (q == name_after_uax44_lm2 + uname2c_max_name_len)
+      return -1;
+    else if (ISLOWER (*p))
+      *q++ = TOUPPER (*p);
+    else
+      *q++ = *p;
+
+  struct uname2c_data data;
+  data.canon_name = canon_name;
+  data.prev_char = ' ';
+  /* Hangul Jungseong O- E after UAX44-LM2 should be HANGULJUNGSEONGO-E
+     and so should match U+1180.  */
+  if (q - name_after_uax44_lm2 == sizeof ("HANGULJUNGSEONGO-E") - 1
+      && memcmp (name_after_uax44_lm2, "HANGULJUNGSEONGO-E",
+		 sizeof ("HANGULJUNGSEONGO-E") - 1) == 0)
+    {
+      name_after_uax44_lm2[sizeof ("HANGULJUNGSEONGO") - 1] = 'E';
+      --q;
+    }
+  cppchar_t result
+    = _cpp_uname2c (name_after_uax44_lm2, q - name_after_uax44_lm2,
+		    uname2c_tree, &data);
+
+  /* Unicode UAX44-LM2 exception:
+     U+116C HANGUL JUNGSEONG OE
+     U+1180 HANGUL JUNGSEONG O-E
+     We remove all medial hyphens when we shouldn't remote the U+1180 one.
+     The U+1180 entry sorts before U+116C lexicographilly, so we get U+1180
+     in both cases.  Thus, if result is U+1180, check if user's name doesn't
+     have a hyphen there and adjust.  */
+  if (result == 0x1180)
+    {
+      while (p[-1] == ' ' || p[-1] == '_')
+	--p;
+      gcc_assert (TOUPPER (p[-1]) == 'E');
+      --p;
+      while (p[-1] == ' ' || p[-1] == '_')
+	--p;
+      if (p[-1] != '-')
+	{
+	  result = 0x116c;
+	  memcpy (canon_name + sizeof ("HANGUL JUNGSEONG O") - 1, "E", 2);
+	}
+    }
+  return result;
+}
+
+
 /* Returns 1 if C is valid in an identifier, 2 if C is valid except at
    the start of an identifier, and 0 if C is not valid in an
    identifier.  We assume C has already gone through the checks of
@@ -1094,7 +1430,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   unsigned int length;
   const uchar *str = *pstr;
   const uchar *base = str - 2;
-  bool delimited = false;
+  bool delimited = false, named = false;
 
   if (!CPP_OPTION (pfile, cplusplus) && !CPP_OPTION (pfile, c99))
     cpp_error (pfile, CPP_DL_WARNING,
@@ -1108,6 +1444,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	         "the meaning of '\\%c' is different in traditional C",
 	         (int) str[-1]);
 
+  result = 0;
   if (str[-1] == 'u')
     {
       length = 4;
@@ -1122,44 +1459,130 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
     }
   else if (str[-1] == 'U')
     length = 8;
+  else if (str[-1] == 'N')
+    {
+      length = 4;
+      if (str == limit || *str != '{')
+	cpp_error (pfile, CPP_DL_ERROR, "'\\N' not followed by '{'");
+      else
+	{
+	  str++;
+	  named = true;
+	  extend_char_range (char_range, loc_reader);
+	  length = 0;
+	  const uchar *name = str;
+	  bool strict = true;
+
+	  do
+	    {
+	      if (str == limit)
+		break;
+	      c = *str;
+	      if (!ISIDNUM (c) && c != ' ' && c != '-')
+		break;
+	      if (ISLOWER (c) || c == '_')
+		strict = false;
+	      str++;
+	      extend_char_range (char_range, loc_reader);
+	    }
+	  while (1);
+
+	  if (str < limit && *str == '}')
+	    {
+	      if (name == str && identifier_pos)
+		{
+		  *cp = 0;
+		  return false;
+		}
+	      if (name == str)
+		cpp_error (pfile, CPP_DL_ERROR,
+			   "empty named universal character escape sequence");
+	      else if (!CPP_OPTION (pfile, delimited_escape_seqs)
+		       && CPP_OPTION (pfile, cpp_pedantic))
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "named universal character escapes are only valid "
+			   "in C++23");
+	      if (name == str)
+		result = 0x40;
+	      else
+		{
+		  /* If the name is longer than maximum length of a Unicode
+		     name, it can't be strictly valid.  */
+		  if ((size_t) (str - name) > uname2c_max_name_len || !strict)
+		    result = -1;
+		  else
+		    result = _cpp_uname2c ((const char *) name, str - name,
+					   uname2c_tree, NULL);
+		  if (result == (cppchar_t) -1)
+		    {
+		      cpp_error (pfile, CPP_DL_ERROR,
+				 "\\N{%.*s} is not a valid universal "
+				 "character", (int) (str - name), name);
+
+		      /* Try to do a loose name lookup according to
+			 Unicode loose matching rule UAX44-LM2.  */
+		      char canon_name[uname2c_max_name_len + 1];
+		      result = _cpp_uname2c_uax44_lm2 ((const char *) name,
+						       str - name, canon_name);
+		      if (result != (cppchar_t) -1)
+			cpp_error (pfile, CPP_DL_NOTE,
+				   "did you mean \\N{%s}?", canon_name);
+		      else
+			result = 0x40;
+		    }
+		}
+	      str++;
+	      extend_char_range (char_range, loc_reader);
+	    }
+	  else if (identifier_pos)
+	    length = 1;
+	  else
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR,
+			 "'\\N{' not terminated with '}' after %.*s",
+			 (int) (str - base), base);
+	      result = 1;
+	    }
+	}
+    }
   else
     {
       cpp_error (pfile, CPP_DL_ICE, "In _cpp_valid_ucn but not a UCN");
       length = 4;
     }
 
-  result = 0;
-  do
-    {
-      if (str == limit)
-	break;
-      c = *str;
-      if (!ISXDIGIT (c))
-	break;
-      str++;
-      extend_char_range (char_range, loc_reader);
-      if (delimited)
-	{
-	  if (!result)
-	    /* Accept arbitrary number of leading zeros.
-	       16 is another magic value, smaller than 32 above
-	       and bigger than 8, so that upon encountering first
-	       non-zero digit we can count 8 digits and after that
-	       or in overflow bit and ensure length doesn't decrease
-	       to 0, as delimited escape sequence doesn't have upper
-	       bound on the number of hex digits.  */
-	    length = 16;
-	  else if (length == 16 - 8)
-	    {
-	      /* Make sure we detect overflows.  */
-	      result |= 0x8000000;
-	      ++length;
-	    }
-	}
+  if (!named)
+    do
+      {
+	if (str == limit)
+	  break;
+	c = *str;
+	if (!ISXDIGIT (c))
+	  break;
+	str++;
+	extend_char_range (char_range, loc_reader);
+	if (delimited)
+	  {
+	    if (!result)
+	      /* Accept arbitrary number of leading zeros.
+		 16 is another magic value, smaller than 32 above
+		 and bigger than 8, so that upon encountering first
+		 non-zero digit we can count 8 digits and after that
+		 or in overflow bit and ensure length doesn't decrease
+		 to 0, as delimited escape sequence doesn't have upper
+		 bound on the number of hex digits.  */
+	      length = 16;
+	    else if (length == 16 - 8)
+	      {
+		/* Make sure we detect overflows.  */
+		result |= 0x8000000;
+		++length;
+	      }
+	  }
 
-      result = (result << 4) + hex_value (c);
-    }
-  while (--length);
+	result = (result << 4) + hex_value (c);
+      }
+    while (--length);
 
   if (delimited
       && str < limit
@@ -1274,7 +1697,7 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
   /* loc_reader and ranges must either be both NULL, or both be non-NULL.  */
   gcc_assert ((loc_reader != NULL) == (ranges != NULL));
 
-  from++;  /* Skip u/U.  */
+  from++;  /* Skip u/U/N.  */
 
   /* The u/U is part of the spelling of this character.  */
   extend_char_range (&char_range, loc_reader);
@@ -1665,7 +2088,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
   switch (c)
     {
       /* UCNs, hex escapes, and octal escapes are processed separately.  */
-    case 'u': case 'U':
+    case 'u': case 'U': case 'N':
       return convert_ucn (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
@@ -2256,31 +2679,47 @@ _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
       *bufp++ = id[idp];
     else
       {
-	unsigned length = id[idp+1] == 'u' ? 4 : 8;
+	unsigned length = id[idp + 1] == 'u' ? 4 : 8;
 	cppchar_t value = 0;
 	size_t bufleft = len - (bufp - buf);
 	int rval;
 	bool delimited = false;
 
 	idp += 2;
-	if (length == 4 && id[idp] == '{')
+	if (id[idp - 1] == 'N' && id[idp] == '{')
 	  {
-	    delimited = true;
 	    idp++;
+	    const uchar *name = &id[idp];
+	    while (idp < len
+		   && (ISIDNUM (id[idp]) || id[idp] == ' ' || id[idp] == '-'))
+	      idp++;
+	    if (id[idp] == '}')
+	      {
+		value = _cpp_uname2c ((const char *) name, &id[idp] - name,
+				      uname2c_tree, NULL);
+		if (value == (cppchar_t) -1)
+		  value = 1;
+	      }
+	    else
+	      idp--;
 	  }
-	while (length && idp < len && ISXDIGIT (id[idp]))
+	else
 	  {
-	    value = (value << 4) + hex_value (id[idp]);
-	    idp++;
-	    if (!delimited)
-	      length--;
+	    if (length == 4 && id[idp] == '{')
+	      {
+		delimited = true;
+		idp++;
+	      }
+	    while (length && idp < len && ISXDIGIT (id[idp]))
+	      {
+		value = (value << 4) + hex_value (id[idp]);
+		idp++;
+		if (!delimited)
+		  length--;
+	      }
+	    if (!delimited || id[idp] != '}')
+	      idp--;
 	  }
-	if (!delimited)
-	  idp--;
-	/* else
-	     assert (id[idp] == '}');
-	   As the caller ensures it is a valid identifier, if it is
-	   delimited escape sequence, it must be terminated by }.  */
 
 	/* Special case for EBCDIC: if the identifier contains
 	   a '$' specified using a UCN, translate it to EBCDIC.  */

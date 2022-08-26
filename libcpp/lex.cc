@@ -1512,7 +1512,7 @@ get_bidi_ucn_1 (const unsigned char *p, bool is_U, const unsigned char **end)
 }
 
 /* Parse a UCN where P points just past \u or \U and return its bidi code.
-   If the kind is not NONE, write the location to *OUT.*/
+   If the kind is not NONE, write the location to *OUT.  */
 
 static bidi::kind
 get_bidi_ucn (cpp_reader *pfile, const unsigned char *p, bool is_U,
@@ -1526,6 +1526,56 @@ get_bidi_ucn (cpp_reader *pfile, const unsigned char *p, bool is_U,
       size_t num_bytes = end - start;
       *out = get_location_for_byte_range_in_cur_line (pfile, start, num_bytes);
     }
+  return result;
+}
+
+/* Parse a named universal character escape where P points just past \N and
+   return its bidi code.  If the kind is not NONE, write the location to
+   *OUT.  */
+
+static bidi::kind
+get_bidi_named (cpp_reader *pfile, const unsigned char *p, location_t *out)
+{
+  bidi::kind result = bidi::kind::NONE;
+  if (*p != '{')
+    return bidi::kind::NONE;
+  if (strncmp ((const char *) (p + 1), "LEFT-TO-RIGHT ", 14) == 0)
+    {
+      if (strncmp ((const char *) (p + 15), "MARK}", 5) == 0)
+	result = bidi::kind::LTR;
+      else if (strncmp ((const char *) (p + 15), "EMBEDDING}", 10) == 0)
+	result = bidi::kind::LRE;
+      else if (strncmp ((const char *) (p + 15), "OVERRIDE}", 9) == 0)
+	result = bidi::kind::LRO;
+      else if (strncmp ((const char *) (p + 15), "ISOLATE}", 8) == 0)
+	result = bidi::kind::LRI;
+    }
+  else if (strncmp ((const char *) (p + 1), "RIGHT-TO-LEFT ", 14) == 0)
+    {
+      if (strncmp ((const char *) (p + 15), "MARK}", 5) == 0)
+	result = bidi::kind::RTL;
+      else if (strncmp ((const char *) (p + 15), "EMBEDDING}", 10) == 0)
+	result = bidi::kind::RLE;
+      else if (strncmp ((const char *) (p + 15), "OVERRIDE}", 9) == 0)
+	result = bidi::kind::RLO;
+      else if (strncmp ((const char *) (p + 15), "ISOLATE}", 8) == 0)
+	result = bidi::kind::RLI;
+    }
+  else if (strncmp ((const char *) (p + 1), "POP DIRECTIONAL ", 16) == 0)
+    {
+      if (strncmp ((const char *) (p + 16), "FORMATTING}", 11) == 0)
+	result = bidi::kind::PDF;
+      else if (strncmp ((const char *) (p + 16), "ISOLATE}", 8) == 0)
+	result = bidi::kind::PDI;
+    }
+  else if (strncmp ((const char *) (p + 1), "FIRST STRONG ISOLATE}", 21) == 0)
+    result = bidi::kind::FSI;
+  if (result != bidi::kind::NONE)
+    *out = get_location_for_byte_range_in_cur_line (pfile, p - 2,
+						    (strchr ((const char *)
+							     (p + 1), '}')
+						     - (const char *) p)
+						    + 3);
   return result;
 }
 
@@ -1914,16 +1964,20 @@ forms_identifier_p (cpp_reader *pfile, int first,
 	    return true;
 	}
       else if (*buffer->cur == '\\'
-	       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
+	       && (buffer->cur[1] == 'u'
+		   || buffer->cur[1] == 'U'
+		   || buffer->cur[1] == 'N'))
 	{
 	  buffer->cur += 2;
 	  if (warn_bidi_p)
 	    {
 	      location_t loc;
-	      bidi::kind kind = get_bidi_ucn (pfile,
-					      buffer->cur,
-					      buffer->cur[-1] == 'U',
-					      &loc);
+	      bidi::kind kind;
+	      if (buffer->cur[-1] == 'N')
+		kind = get_bidi_named (pfile, buffer->cur, &loc);
+	      else
+		kind = get_bidi_ucn (pfile, buffer->cur,
+				     buffer->cur[-1] == 'U', &loc);
 	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/true, loc);
 	    }
 	  if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
@@ -2657,11 +2711,14 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
       /* In #include-style directives, terminators are not escapable.  */
       if (c == '\\' && !pfile->state.angled_headers && *cur != '\n')
 	{
-	  if ((cur[0] == 'u' || cur[0] == 'U') && warn_bidi_p)
+	  if ((cur[0] == 'u' || cur[0] == 'U' || cur[0] == 'N') && warn_bidi_p)
 	    {
 	      location_t loc;
-	      bidi::kind kind = get_bidi_ucn (pfile, cur + 1, cur[0] == 'U',
-					      &loc);
+	      bidi::kind kind;
+	      if (cur[0] == 'N')
+		kind = get_bidi_named (pfile, cur + 1, &loc);
+	      else
+		kind = get_bidi_ucn (pfile, cur + 1, cur[0] == 'U', &loc);
 	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/true, loc);
 	    }
 	  cur++;

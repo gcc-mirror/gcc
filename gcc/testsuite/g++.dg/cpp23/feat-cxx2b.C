@@ -557,3 +557,9 @@
 #elif __cpp_multidimensional_subscript != 202110
 #  error "__cpp_multidimensional_subscript != 202110"
 #endif
+
+#ifndef __cpp_named_character_escapes
+#  error "__cpp_named_character_escapes"
+#elif __cpp_named_character_escapes != 202207
+#  error "__cpp_named_character_escapes != 202207"
+#endif
