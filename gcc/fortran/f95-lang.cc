@@ -1013,6 +1013,8 @@ gfc_init_builtin_functions (void)
 		      "__builtin_isnan", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isnormal", ftype, BUILT_IN_ISNORMAL,
 		      "__builtin_isnormal", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_issignaling", ftype, BUILT_IN_ISSIGNALING,
+		      "__builtin_issignaling", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_signbit", ftype, BUILT_IN_SIGNBIT,
 		      "__builtin_signbit", ATTR_CONST_NOTHROW_LEAF_LIST);
 

@@ -6150,6 +6150,10 @@ floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{issignaling@var{m}2} instruction pattern
+@item @samp{issignaling@var{m}2}
+Set operand 0 to 1 if operand 1 is a signaling NaN and to 0 otherwise.
+
 @cindex @code{cadd90@var{m}3} instruction pattern
 @item @samp{cadd90@var{m}3}
 Perform vector add and subtract on even/odd number pairs.  The operation being

@@ -6308,6 +6308,7 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ISINF_SIGN:
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNORMAL:
+    case BUILT_IN_ISSIGNALING:
     case BUILT_IN_SIGNBIT:
       if (builtin_function_validate_nargs (loc, fndecl, nargs, 1))
 	{

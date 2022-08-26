@@ -13003,6 +13003,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_isless
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
+@findex __builtin_issignaling
 @findex __builtin_isunordered
 @findex __builtin_object_size
 @findex __builtin_powi
@@ -13558,6 +13559,8 @@ In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
 @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
+With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
+built-in functions will always return 0.
 
 GCC provides built-in versions of the ISO C99 floating-point rounding and
 exceptions handling functions @code{fegetround}, @code{feclearexcept} and
@@ -14489,6 +14492,20 @@ Similar to @code{__builtin_nans}, except the return type is
 @deftypefn {Built-in Function} _Float@var{n}x __builtin_nansf@var{n}x (const char *str)
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}x}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_issignaling (...)
+Return non-zero if the argument is a signaling NaN and zero otherwise.
+Note while the parameter list is an
+ellipsis, this function only accepts exactly one floating-point
+argument.  GCC treats this parameter as type-generic, which means it
+does not do default promotion from float to double.
+This built-in function can work even without the non-default
+@code{-fsignaling-nans} option, although if a signaling NaN is computed,
+stored or passed as argument to some function other than this built-in
+in the current translation unit, it is safer to use @code{-fsignaling-nans}.
+With @code{-ffinite-math-only} option this built-in function will always
+return 0.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_ffs (int x)

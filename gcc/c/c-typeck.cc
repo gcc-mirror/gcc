@@ -3553,6 +3553,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  case BUILT_IN_ISINF_SIGN:
 	  case BUILT_IN_ISNAN:
 	  case BUILT_IN_ISNORMAL:
+	  case BUILT_IN_ISSIGNALING:
 	  case BUILT_IN_FPCLASSIFY:
 	    type_generic_remove_excess_precision = true;
 	    break;
