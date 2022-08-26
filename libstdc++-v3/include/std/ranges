@@ -4616,30 +4616,9 @@ namespace views::__adaptor
 	}(make_index_sequence<sizeof...(_Vs)>{});
     }
 
-    friend constexpr bool
-    operator<(const _Iterator& __x, const _Iterator& __y)
-      requires __detail::__all_random_access<_Const, _Vs...>
-    { return __x._M_current < __y._M_current; }
-
-    friend constexpr bool
-    operator>(const _Iterator& __x, const _Iterator& __y)
-      requires __detail::__all_random_access<_Const, _Vs...>
-    { return __y < __x; }
-
-    friend constexpr bool
-    operator<=(const _Iterator& __x, const _Iterator& __y)
-      requires __detail::__all_random_access<_Const, _Vs...>
-    { return !(__y < __x); }
-
-    friend constexpr bool
-    operator>=(const _Iterator& __x, const _Iterator& __y)
-      requires __detail::__all_random_access<_Const, _Vs...>
-    { return !(__x < __y); }
-
     friend constexpr auto
     operator<=>(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__all_random_access<_Const, _Vs...>
-	&& (three_way_comparable<iterator_t<__detail::__maybe_const_t<_Const, _Vs>>> && ...)
     { return __x._M_current <=> __y._M_current; }
 
     friend constexpr _Iterator
@@ -5006,29 +4985,9 @@ namespace views::__adaptor
       requires equality_comparable<__ziperator<_Const>>
     { return __x._M_inner == __y._M_inner; }
 
-    friend constexpr bool
-    operator<(const _Iterator& __x, const _Iterator& __y)
-      requires random_access_range<_Base<_Const>>
-    { return __x._M_inner < __y._M_inner; }
-
-    friend constexpr bool
-    operator>(const _Iterator& __x, const _Iterator& __y)
-      requires random_access_range<_Base<_Const>>
-    { return __x._M_inner > __y._M_inner; }
-
-    friend constexpr bool
-    operator<=(const _Iterator& __x, const _Iterator& __y)
-      requires random_access_range<_Base<_Const>>
-    { return __x._M_inner <= __y._M_inner; }
-
-    friend constexpr bool
-    operator>=(const _Iterator& __x, const _Iterator& __y)
-      requires random_access_range<_Base<_Const>>
-    { return __x._M_inner >= __y._M_inner; }
-
     friend constexpr auto
     operator<=>(const _Iterator& __x, const _Iterator& __y)
-      requires random_access_range<_Base<_Const>> && three_way_comparable<__ziperator<_Const>>
+      requires random_access_range<_Base<_Const>>
     { return __x._M_inner <=> __y._M_inner; }
 
     friend constexpr _Iterator
