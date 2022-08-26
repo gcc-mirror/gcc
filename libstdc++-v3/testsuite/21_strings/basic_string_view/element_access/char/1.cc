@@ -49,7 +49,7 @@ test01()
   VERIFY( cref3 == 'a' );
   try
   {
-    str01.at(csz01);
+    (void) str01.at(csz01);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch (std::out_of_range& fail)
