@@ -49,6 +49,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     {
       StructFieldType *field = variant.get_field_at_index (i);
       BaseType *field_tyty = field->get_field_type ();
+      Location arg_locus = argument->get_locus ();
 
       BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (arg->get_kind () == TyTy::TypeKind::ERROR)
@@ -58,9 +59,10 @@ TypeCheckCallExpr::visit (ADTType &type)
 	  return;
 	}
 
+      HirId coercion_side_id = argument->get_mappings ().get_hirid ();
       auto res = Resolver::TypeCheckBase::coercion_site (
-	argument->get_mappings ().get_hirid (), field_tyty, arg,
-	argument->get_locus ());
+	coercion_side_id, TyWithLocation (field_tyty),
+	TyWithLocation (arg, arg_locus), argument->get_locus ());
       if (res->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  return;
@@ -111,6 +113,7 @@ TypeCheckCallExpr::visit (FnType &type)
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
+      Location arg_locus = argument->get_locus ();
       auto argument_expr_tyty
 	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
@@ -125,9 +128,18 @@ TypeCheckCallExpr::visit (FnType &type)
       if (i < type.num_params ())
 	{
 	  auto fnparam = type.param_at (i);
+	  HIR::Pattern *fn_param_pattern = fnparam.first;
+	  BaseType *param_ty = fnparam.second;
+	  Location param_locus
+	    = fn_param_pattern == nullptr
+		? mappings->lookup_location (param_ty->get_ref ())
+		: fn_param_pattern->get_locus ();
+
+	  HirId coercion_side_id = argument->get_mappings ().get_hirid ();
 	  auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
-	    argument->get_mappings ().get_hirid (), fnparam.second,
-	    argument_expr_tyty, argument->get_locus ());
+	    coercion_side_id, TyWithLocation (param_ty, param_locus),
+	    TyWithLocation (argument_expr_tyty, arg_locus),
+	    argument->get_locus ());
 	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	    {
 	      rust_error_at (argument->get_locus (),
@@ -166,7 +178,8 @@ TypeCheckCallExpr::visit (FnPtr &type)
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
-      auto fnparam = type.param_at (i);
+      Location arg_locus = argument->get_locus ();
+      BaseType *fnparam = type.param_at (i);
       auto argument_expr_tyty
 	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
@@ -178,8 +191,8 @@ TypeCheckCallExpr::visit (FnPtr &type)
 	}
 
       auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
-	argument->get_mappings ().get_hirid (), fnparam, argument_expr_tyty,
-	argument->get_locus ());
+	argument->get_mappings ().get_hirid (), TyWithLocation (fnparam),
+	TyWithLocation (argument_expr_tyty, arg_locus), argument->get_locus ());
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),
@@ -222,7 +235,16 @@ TypeCheckMethodCallExpr::visit (FnType &type)
   size_t i = 1;
   for (auto &argument : call.get_arguments ())
     {
+      Location arg_locus = argument->get_locus ();
+
       auto fnparam = type.param_at (i);
+      HIR::Pattern *fn_param_pattern = fnparam.first;
+      BaseType *param_ty = fnparam.second;
+      Location param_locus
+	= fn_param_pattern == nullptr
+	    ? mappings->lookup_location (param_ty->get_ref ())
+	    : fn_param_pattern->get_locus ();
+
       auto argument_expr_tyty
 	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
@@ -233,9 +255,10 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 	  return;
 	}
 
+      HirId coercion_side_id = argument->get_mappings ().get_hirid ();
       auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
-	argument->get_mappings ().get_hirid (), fnparam.second,
-	argument_expr_tyty, argument->get_locus ());
+	coercion_side_id, TyWithLocation (param_ty, param_locus),
+	TyWithLocation (argument_expr_tyty, arg_locus), argument->get_locus ());
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),

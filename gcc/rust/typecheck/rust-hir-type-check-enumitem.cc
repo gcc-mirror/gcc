@@ -129,7 +129,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     std::to_string (idx), field_type);
+				     std::to_string (idx), field_type,
+				     field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
       idx++;
@@ -176,7 +177,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type);
+				     field.get_field_name (), field_type,
+				     field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
