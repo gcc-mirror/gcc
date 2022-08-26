@@ -49,8 +49,9 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 
-/* Generate DBX debugging information.  */
 #define TARGET_40_PLUS		(TARGET_40 || TARGET_45)
 #define TARGET_10		(! TARGET_40_PLUS)
 
