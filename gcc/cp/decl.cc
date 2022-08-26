@@ -13474,7 +13474,7 @@ grokdeclarator (const cp_declarator *declarator,
       /* [dcl.meaning]/1: The optional attribute-specifier-seq following
 	 a declarator-id appertains to the entity that is declared.  */
       if (declarator->std_attributes != error_mark_node)
-	*attrlist = attr_chainon (*attrlist, declarator->std_attributes);
+	*attrlist = attr_chainon (declarator->std_attributes, *attrlist);
       else
 	/* We should have already diagnosed the issue (c++/78344).  */
 	gcc_assert (seen_error ());
