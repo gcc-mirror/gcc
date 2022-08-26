@@ -1,5 +1,3 @@
-// { dg-additional-options -fdump-tree-ccp1-raw }
-
 macro_rules! stmt {
     ($s:stmt) => {
         $s
@@ -22,11 +20,10 @@ pub fn test() -> i32 {
         let e = 5,
         let f = b + c + d + e
     );
+
     f
-    // { dg-final { scan-tree-dump-times {gimple_return <14>} 1 ccp1 { target __OPTIMIZE__ } } }
 }
 
-fn main() {
-    let _ = test();
+fn main() -> i32 {
+    test() - 14
 }
-

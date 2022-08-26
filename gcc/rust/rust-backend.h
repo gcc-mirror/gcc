@@ -235,13 +235,24 @@ public:
   // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
   virtual tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
 						 tree left, tree right,
-						 Location)
+						 Location loc)
+    = 0;
+
+  // Return an expression for the operation LEFT OP RIGHT.
+  // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
+  // This function adds overflow checking and returns a list of statements to
+  // add to the current function context. The `receiver` variable refers to the
+  // variable which will contain the result of that operation.
+  virtual tree
+  arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
+					    tree left, tree right, Location loc,
+					    Bvariable *receiver)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ComparisonOperator.
   virtual tree comparison_expression (ComparisonOperator op, tree left,
-				      tree right, Location)
+				      tree right, Location loc)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
@@ -416,8 +427,8 @@ public:
   // variable, and may not be very useful.  This function should
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
-  virtual Bvariable *temporary_variable (tree, tree, tree, tree init,
-					 bool address_is_taken,
+  virtual Bvariable *temporary_variable (tree fndecl, tree bind_tree, tree type,
+					 tree init, bool address_is_taken,
 					 Location location, tree *pstatement)
     = 0;
 
