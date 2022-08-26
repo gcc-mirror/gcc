@@ -158,17 +158,17 @@ void
 TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 {
   auto fn_return_tyty = context->peek_return_type ();
-  rust_assert (fn_return_tyty != nullptr);
-
+  Location expr_locus = expr.has_return_expr () ? expr.get_expr ()->get_locus ()
+						: expr.get_locus ();
   TyTy::BaseType *expr_ty
     = expr.has_return_expr ()
 	? TypeCheckExpr::Resolve (expr.get_expr ())
 	: TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
-  infered = fn_return_tyty->unify (expr_ty);
-  fn_return_tyty->append_reference (expr_ty->get_ref ());
-  for (auto &ref : infered->get_combined_refs ())
-    fn_return_tyty->append_reference (ref);
+  infered = unify_site (expr.get_mappings ().get_hirid (),
+			TyTy::TyWithLocation (fn_return_tyty),
+			TyTy::TyWithLocation (expr_ty, expr_locus),
+			expr.get_locus ());
 
   infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
 }
@@ -240,9 +240,12 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 
   // we dont care about the result of the unify from a compound assignment
   // since this is a unit-type expr
-  auto result = lhs->unify (rhs);
-  if (result->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  coercion_site (expr.get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (lhs,
+				       expr.get_left_expr ()->get_locus ()),
+		 TyTy::TyWithLocation (rhs,
+				       expr.get_right_expr ()->get_locus ()),
+		 expr.get_locus ());
 
   auto lang_item_type
     = Analysis::RustLangItem::CompoundAssignmentOperatorToLangItem (
@@ -306,8 +309,13 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       }
       break;
 
-    default:
-      infered = lhs->unify (rhs);
+      default: {
+	infered = unify_site (
+	  expr.get_mappings ().get_hirid (),
+	  TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
+	  TyTy::TyWithLocation (rhs, expr.get_rhs ()->get_locus ()),
+	  expr.get_locus ());
+      }
       break;
     }
 }
@@ -318,9 +326,10 @@ TypeCheckExpr::visit (HIR::ComparisonExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
-  auto result = lhs->unify (rhs);
-  if (result == nullptr || result->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  unify_site (expr.get_mappings ().get_hirid (),
+	      TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
+	      TyTy::TyWithLocation (rhs, expr.get_rhs ()->get_locus ()),
+	      expr.get_locus ());
 
   bool ok = context->lookup_builtin ("bool", &infered);
   rust_assert (ok);
@@ -333,17 +342,28 @@ TypeCheckExpr::visit (HIR::LazyBooleanExpr &expr)
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
   // we expect the lhs and rhs must be bools at this point
-  TyTy::BoolType elhs (expr.get_mappings ().get_hirid ());
-  lhs = elhs.unify (lhs);
-  if (lhs->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  TyTy::BaseType *boolean_node = nullptr;
+  bool ok = context->lookup_builtin ("bool", &boolean_node);
+  rust_assert (ok);
 
-  TyTy::BoolType rlhs (expr.get_mappings ().get_hirid ());
-  rhs = elhs.unify (rhs);
-  if (lhs->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  // verify the lhs and rhs before unifying together
+  lhs = unify_site (expr.get_mappings ().get_hirid (),
+		    TyTy::TyWithLocation (boolean_node,
+					  expr.get_lhs ()->get_locus ()),
+		    TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
+		    expr.get_locus ());
 
-  infered = lhs->unify (rhs);
+  rhs = unify_site (expr.get_mappings ().get_hirid (),
+		    TyTy::TyWithLocation (boolean_node,
+					  expr.get_rhs ()->get_locus ()),
+		    TyTy::TyWithLocation (rhs, expr.get_rhs ()->get_locus ()),
+		    expr.get_locus ());
+
+  infered
+    = unify_site (expr.get_mappings ().get_hirid (),
+		  TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
+		  TyTy::TyWithLocation (rhs, expr.get_rhs ()->get_locus ()),
+		  expr.get_locus ());
 }
 
 void
@@ -428,7 +448,15 @@ TypeCheckExpr::visit (HIR::IfExprConseqElse &expr)
   else if (else_blk_resolved->get_kind () == TyTy::NEVER)
     infered = if_blk_resolved;
   else
-    infered = if_blk_resolved->unify (else_blk_resolved);
+    {
+      infered = unify_site (
+	expr.get_mappings ().get_hirid (),
+	TyTy::TyWithLocation (if_blk_resolved,
+			      expr.get_if_block ()->get_locus ()),
+	TyTy::TyWithLocation (else_blk_resolved,
+			      expr.get_else_block ()->get_locus ()),
+	expr.get_locus ());
+    }
 }
 
 void
@@ -443,7 +471,15 @@ TypeCheckExpr::visit (HIR::IfExprConseqIf &expr)
   else if (else_blk_resolved->get_kind () == TyTy::NEVER)
     infered = if_blk_resolved;
   else
-    infered = if_blk_resolved->unify (else_blk_resolved);
+    {
+      infered = unify_site (
+	expr.get_mappings ().get_hirid (),
+	TyTy::TyWithLocation (if_blk_resolved,
+			      expr.get_if_block ()->get_locus ()),
+	TyTy::TyWithLocation (else_blk_resolved,
+			      expr.get_conseq_if_expr ()->get_locus ()),
+	expr.get_locus ());
+    }
 }
 
 void
@@ -459,9 +495,10 @@ TypeCheckExpr::visit (HIR::IfLetExpr &expr)
       TyTy::BaseType *kase_arm_ty
 	= TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
 
-      TyTy::BaseType *checked_kase = scrutinee_tyty->unify (kase_arm_ty);
-      if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
-	return;
+      unify_site (expr.get_mappings ().get_hirid (),
+		  TyTy::TyWithLocation (scrutinee_tyty),
+		  TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
+		  expr.get_locus ());
     }
 
   TypeCheckExpr::Resolve (expr.get_if_block ());
@@ -502,7 +539,10 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	{
 	  auto unit
 	    = TyTy::TupleType::get_unit_type (s->get_mappings ().get_hirid ());
-	  resolved = unit->unify (resolved);
+	  resolved
+	    = unify_site (s->get_mappings ().get_hirid (),
+			  TyTy::TyWithLocation (unit),
+			  TyTy::TyWithLocation (resolved), s->get_locus ());
 	}
     }
 
@@ -512,7 +552,10 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
   else
-    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
+    {
+      // FIXME this seems wrong
+      infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
+    }
 }
 
 void
@@ -552,7 +595,12 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   TyTy::BaseType *from_ty
     = TypeCheckExpr::Resolve (expr.get_from_expr ().get ());
   TyTy::BaseType *to_ty = TypeCheckExpr::Resolve (expr.get_to_expr ().get ());
-  TyTy::BaseType *unified = from_ty->unify (to_ty);
+
+  TyTy::BaseType *unified = unify_site (
+    expr.get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (from_ty, expr.get_from_expr ()->get_locus ()),
+    TyTy::TyWithLocation (to_ty, expr.get_to_expr ()->get_locus ()),
+    expr.get_locus ());
 
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
@@ -722,7 +770,11 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   TyTy::BaseType *from_ty
     = TypeCheckExpr::Resolve (expr.get_from_expr ().get ());
   TyTy::BaseType *to_ty = TypeCheckExpr::Resolve (expr.get_to_expr ().get ());
-  TyTy::BaseType *unified = from_ty->unify (to_ty);
+  TyTy::BaseType *unified = unify_site (
+    expr.get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (from_ty, expr.get_from_expr ()->get_locus ()),
+    TyTy::TyWithLocation (to_ty, expr.get_to_expr ()->get_locus ()),
+    expr.get_locus ());
 
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
@@ -763,9 +815,11 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   if (maybe_simple_array_access
       && direct_array_expr_ty->get_kind () == TyTy::TypeKind::ARRAY)
     {
-      auto resolved_index_expr = size_ty->unify (index_expr_ty);
-      if (resolved_index_expr->get_kind () == TyTy::TypeKind::ERROR)
-	return;
+      unify_site (expr.get_index_expr ()->get_mappings ().get_hirid (),
+		  TyTy::TyWithLocation (size_ty),
+		  TyTy::TyWithLocation (index_expr_ty,
+					expr.get_index_expr ()->get_locus ()),
+		  expr.get_locus ());
 
       TyTy::ArrayType *array_type
 	= static_cast<TyTy::ArrayType *> (direct_array_expr_ty);
@@ -821,9 +875,11 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	context->insert_type (elems.get_num_copies_expr ()->get_mappings (),
 			      expected_ty);
 
-	auto unified = expected_ty->unify (capacity_type);
-	if (unified->get_kind () == TyTy::TypeKind::ERROR)
-	  return;
+	unify_site (
+	  expr.get_mappings ().get_hirid (), TyTy::TyWithLocation (expected_ty),
+	  TyTy::TyWithLocation (capacity_type,
+				elems.get_num_copies_expr ()->get_locus ()),
+	  expr.get_locus ());
 
 	capacity_expr = elems.get_num_copies_expr ();
       }
@@ -839,11 +895,16 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	    types.push_back (TypeCheckExpr::Resolve (elem.get ()));
 	  }
 
+	// this is a LUB
 	element_type
 	  = TyTy::TyVar::get_implicit_infer_var (expr.get_locus ()).get_tyty ();
 	for (auto &type : types)
 	  {
-	    element_type = element_type->unify (type);
+	    element_type
+	      = unify_site (expr.get_mappings ().get_hirid (),
+			    TyTy::TyWithLocation (element_type),
+			    TyTy::TyWithLocation (type, type->get_locus ()),
+			    expr.get_locus ());
 	  }
 
 	auto crate_num = mappings->get_current_crate ();
@@ -1165,7 +1226,12 @@ TypeCheckExpr::visit (HIR::BreakExpr &expr)
 	  return;
 	}
 
-      TyTy::BaseType *unified_ty = loop_context->unify (break_expr_tyty);
+      TyTy::BaseType *unified_ty
+	= unify_site (expr.get_mappings ().get_hirid (),
+		      TyTy::TyWithLocation (loop_context),
+		      TyTy::TyWithLocation (break_expr_tyty,
+					    expr.get_expr ()->get_locus ()),
+		      expr.get_locus ());
       context->swap_head_loop_context (unified_ty);
     }
 
@@ -1290,7 +1356,12 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 	  TyTy::BaseType *kase_arm_ty
 	    = TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
 
-	  TyTy::BaseType *checked_kase = scrutinee_tyty->unify (kase_arm_ty);
+	  TyTy::BaseType *checked_kase = unify_site (
+	    expr.get_mappings ().get_hirid (),
+	    TyTy::TyWithLocation (scrutinee_tyty,
+				  expr.get_scrutinee_expr ()->get_locus ()),
+	    TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
+	    expr.get_locus ());
 	  if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
 	    return;
 	}
@@ -1308,13 +1379,14 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
       return;
     }
 
+  // this is a LUB
   infered = kase_block_tys.at (0);
   for (size_t i = 1; i < kase_block_tys.size (); i++)
     {
       TyTy::BaseType *kase_ty = kase_block_tys.at (i);
-      infered = infered->unify (kase_ty);
-      if (infered->get_kind () == TyTy::TypeKind::ERROR)
-	return;
+      infered = unify_site (expr.get_mappings ().get_hirid (),
+			    TyTy::TyWithLocation (infered),
+			    TyTy::TyWithLocation (kase_ty), expr.get_locus ());
     }
 }
 
@@ -1470,7 +1542,11 @@ TypeCheckExpr::resolve_operator_overload (
   TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
   rust_assert (type->num_params () > 0);
   auto fnparam = type->param_at (0);
-  fnparam.second->unify (adjusted_self); // typecheck the self
+
+  // typecheck the self
+  unify_site (expr.get_mappings ().get_hirid (),
+	      TyTy::TyWithLocation (fnparam.second),
+	      TyTy::TyWithLocation (adjusted_self), expr.get_locus ());
   if (rhs == nullptr)
     {
       rust_assert (type->num_params () == 1);
@@ -1479,7 +1555,9 @@ TypeCheckExpr::resolve_operator_overload (
     {
       rust_assert (type->num_params () == 2);
       auto fnparam = type->param_at (1);
-      fnparam.second->unify (rhs); // typecheck the rhs
+      unify_site (expr.get_mappings ().get_hirid (),
+		  TyTy::TyWithLocation (fnparam.second),
+		  TyTy::TyWithLocation (rhs), expr.get_locus ());
     }
 
   rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);

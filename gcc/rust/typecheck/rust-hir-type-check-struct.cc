@@ -57,14 +57,20 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
     {
       TyTy::BaseType *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
-      struct_def = static_cast<TyTy::ADTType *> (
-	struct_path_resolved->unify (base_resolved));
-      if (struct_def == nullptr)
+      TyTy::BaseType *base_unify = unify_site (
+	struct_expr.struct_base->base_struct->get_mappings ().get_hirid (),
+	TyTy::TyWithLocation (struct_path_resolved),
+	TyTy::TyWithLocation (base_resolved),
+	struct_expr.struct_base->base_struct->get_locus ());
+
+      if (base_unify->get_kind () != struct_path_ty->get_kind ())
 	{
 	  rust_fatal_error (struct_expr.struct_base->base_struct->get_locus (),
 			    "incompatible types for base struct reference");
 	  return;
 	}
+
+      struct_def = static_cast<TyTy::ADTType *> (base_unify);
     }
 
   // figure out the variant

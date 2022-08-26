@@ -34,6 +34,10 @@ class TypeCheckBase
 public:
   virtual ~TypeCheckBase () {}
 
+  static TyTy::BaseType *unify_site (HirId id, TyTy::TyWithLocation lhs,
+				     TyTy::TyWithLocation rhs,
+				     Location unify_locus);
+
   static TyTy::BaseType *coercion_site (HirId id, TyTy::TyWithLocation lhs,
 					TyTy::TyWithLocation rhs,
 					Location coercion_locus);

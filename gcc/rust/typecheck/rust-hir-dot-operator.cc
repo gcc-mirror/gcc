@@ -171,12 +171,21 @@ MethodResolver::select (const TyTy::BaseType &receiver)
     TyTy::FnType *fntype;
   };
 
+  rust_debug ("inherent_impl_fns found {%lu}, trait_fns found {%lu}, "
+	      "predicate_items found {%lu}",
+	      (unsigned long) inherent_impl_fns.size (),
+	      (unsigned long) trait_fns.size (),
+	      (unsigned long) predicate_items.size ());
+
   for (auto impl_item : inherent_impl_fns)
     {
       TyTy::FnType *fn = impl_item.ty;
       rust_assert (fn->is_method ());
 
       TyTy::BaseType *fn_self = fn->get_self_type ();
+      rust_debug ("dot-operator impl_item fn_self={%s} can_eq receiver={%s}",
+		  fn_self->debug_str ().c_str (),
+		  receiver.debug_str ().c_str ());
       if (fn_self->can_eq (&receiver, false))
 	{
 	  PathProbeCandidate::ImplItemCandidate c{impl_item.item,
@@ -195,6 +204,9 @@ MethodResolver::select (const TyTy::BaseType &receiver)
       rust_assert (fn->is_method ());
 
       TyTy::BaseType *fn_self = fn->get_self_type ();
+      rust_debug ("dot-operator trait_item fn_self={%s} can_eq receiver={%s}",
+		  fn_self->debug_str ().c_str (),
+		  receiver.debug_str ().c_str ());
       if (fn_self->can_eq (&receiver, false))
 	{
 	  PathProbeCandidate::TraitItemCandidate c{trait_item.reference,
@@ -214,6 +226,9 @@ MethodResolver::select (const TyTy::BaseType &receiver)
       rust_assert (fn->is_method ());
 
       TyTy::BaseType *fn_self = fn->get_self_type ();
+      rust_debug ("dot-operator predicate fn_self={%s} can_eq receiver={%s}",
+		  fn_self->debug_str ().c_str (),
+		  receiver.debug_str ().c_str ());
       if (fn_self->can_eq (&receiver, false))
 	{
 	  const TraitReference *trait_ref

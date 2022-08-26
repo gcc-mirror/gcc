@@ -219,7 +219,10 @@ TypeCheckCallExpr::visit (FnPtr &type)
 void
 TypeCheckMethodCallExpr::visit (FnType &type)
 {
-  type.get_self_type ()->unify (adjusted_self);
+  Resolver::TypeCheckBase::unify_site (
+    call.get_mappings ().get_hirid (), TyWithLocation (type.get_self_type ()),
+    TyWithLocation (adjusted_self, call.get_receiver ()->get_locus ()),
+    call.get_locus ());
 
   // +1 for the receiver self
   size_t num_args_to_call = call.num_params () + 1;

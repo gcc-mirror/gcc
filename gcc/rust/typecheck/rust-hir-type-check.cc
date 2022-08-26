@@ -70,7 +70,12 @@ TypeResolution::Resolve (HIR::Crate &crate)
       }
     else
       {
-	auto result = ty->unify (default_type);
+	auto result
+	  = TypeCheckBase::unify_site (id, TyTy::TyWithLocation (ty),
+				       TyTy::TyWithLocation (default_type),
+				       Location ());
+	rust_assert (result);
+	rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
 	result->set_ref (id);
 	context->insert_type (
 	  Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
@@ -144,7 +149,10 @@ TraitItemReference::get_type_from_constant (
       TyTy::BaseType *expr
 	= TypeCheckExpr::Resolve (constant.get_expr ().get ());
 
-      return type->unify (expr);
+      return TypeCheckBase::unify_site (constant.get_mappings ().get_hirid (),
+					TyTy::TyWithLocation (type),
+					TyTy::TyWithLocation (expr),
+					constant.get_locus ());
     }
   return type;
 }

@@ -214,10 +214,15 @@ TypeCheckItem::visit (HIR::Function &function)
   auto block_expr_ty
     = TypeCheckExpr::Resolve (function.get_definition ().get ());
 
-  context->pop_return_type ();
+  Location fn_return_locus = function.has_function_return_type ()
+			       ? function.get_return_type ()->get_locus ()
+			       : function.get_locus ();
+  coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
+		 TyTy::TyWithLocation (block_expr_ty),
+		 function.get_definition ()->get_locus ());
 
-  if (block_expr_ty->get_kind () != TyTy::NEVER)
-    expected_ret_tyty->unify (block_expr_ty);
+  context->pop_return_type ();
 }
 
 void

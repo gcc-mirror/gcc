@@ -1,4 +1,4 @@
-/* { dg-output "mut_deref\n123\n" } */
+/* { dg-output "imm_deref\n123\n" } */
 extern "C" {
     fn printf(s: *const i8, ...);
 }
