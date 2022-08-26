@@ -26,6 +26,7 @@
 #include "rust-compile-block.h"
 #include "rust-compile-implitem.h"
 #include "rust-constexpr.h"
+#include "rust-gcc.h"
 
 #include "fold-const.h"
 #include "realmpfr.h"
@@ -146,9 +147,26 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       return;
     }
 
-  translated
-    = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
-							     expr.get_locus ());
+  if (ctx->in_fn () && !ctx->const_context_p ())
+    {
+      auto receiver_tmp = NULL_TREE;
+      auto receiver
+	= ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl,
+						   NULL_TREE, TREE_TYPE (lhs),
+						   lhs, true, expr.get_locus (),
+						   &receiver_tmp);
+      auto check
+	= ctx->get_backend ()->arithmetic_or_logical_expression_checked (
+	  op, lhs, rhs, expr.get_locus (), receiver);
+
+      ctx->add_statement (check);
+      translated = receiver->get_tree (expr.get_locus ());
+    }
+  else
+    {
+      translated = ctx->get_backend ()->arithmetic_or_logical_expression (
+	op, lhs, rhs, expr.get_locus ());
+    }
 }
 
 void
@@ -176,13 +194,27 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
       return;
     }
 
-  auto operator_expr
-    = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
-							     expr.get_locus ());
-  tree assignment
-    = ctx->get_backend ()->assignment_statement (lhs, operator_expr,
-						 expr.get_locus ());
-  ctx->add_statement (assignment);
+  if (ctx->in_fn () && !ctx->const_context_p ())
+    {
+      auto tmp = NULL_TREE;
+      auto receiver
+	= ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl,
+						   NULL_TREE, TREE_TYPE (lhs),
+						   lhs, true, expr.get_locus (),
+						   &tmp);
+      auto check
+	= ctx->get_backend ()->arithmetic_or_logical_expression_checked (
+	  op, lhs, rhs, expr.get_locus (), receiver);
+      ctx->add_statement (check);
+
+      translated = ctx->get_backend ()->assignment_statement (
+	lhs, receiver->get_tree (expr.get_locus ()), expr.get_locus ());
+    }
+  else
+    {
+      translated = ctx->get_backend ()->arithmetic_or_logical_expression (
+	op, lhs, rhs, expr.get_locus ());
+    }
 }
 
 void
@@ -2378,7 +2410,10 @@ CompileExpr::array_copied_expr (Location expr_locus,
       return error_mark_node;
     }
 
+  ctx->push_const_context ();
   tree capacity_expr = CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
+  ctx->pop_const_context ();
+
   if (!TREE_CONSTANT (capacity_expr))
     {
       rust_error_at (expr_locus, "non const num copies %qT", array_type);

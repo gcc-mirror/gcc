@@ -160,6 +160,9 @@ CompileItem::visit (HIR::Function &function)
     function.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
+  if (function.get_qualifiers ().is_const ())
+    ctx->push_const_context ();
+
   tree fndecl
     = compile_function (ctx, function.get_function_name (),
 			function.get_self_param (),
@@ -169,6 +172,9 @@ CompileItem::visit (HIR::Function &function)
 			function.get_definition ().get (), canonical_path,
 			fntype, function.has_function_return_type ());
   reference = address_expression (fndecl, ref_locus);
+
+  if (function.get_qualifiers ().is_const ())
+    ctx->pop_const_context ();
 }
 
 void
