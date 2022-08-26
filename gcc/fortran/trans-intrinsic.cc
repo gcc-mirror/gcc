@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "dependency.h"	/* For CAF array alias analysis.  */
 #include "attribs.h"
+#include "realmpfr.h"
 
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 
@@ -10090,6 +10091,122 @@ conv_intrinsic_ieee_class (gfc_se *se, gfc_expr *expr)
 }
 
 
+/* Generate code for IEEE_VALUE.  */
+
+static void
+conv_intrinsic_ieee_value (gfc_se *se, gfc_expr *expr)
+{
+  tree args[2], arg, ret, tmp;
+  stmtblock_t body;
+
+  /* Convert args, evaluate the second one only once.  */
+  conv_ieee_function_args (se, expr, args, 2);
+  arg = gfc_evaluate_now (args[1], &se->pre);
+
+  tree type = TREE_TYPE (arg);
+  /* Perform a quick sanity check that the second argument's type is
+     IEEE_CLASS_TYPE derived type defined in
+     libgfortran/ieee/ieee_arithmetic.F90
+     Primarily check that it is a derived type with a single
+     member in it.  */
+  gcc_assert (TREE_CODE (type) == RECORD_TYPE);
+  tree field = NULL_TREE;
+  for (tree f = TYPE_FIELDS (type); f != NULL_TREE; f = DECL_CHAIN (f))
+    if (TREE_CODE (f) == FIELD_DECL)
+      {
+	gcc_assert (field == NULL_TREE);
+	field = f;
+      }
+  gcc_assert (field);
+  arg = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
+			 arg, field, NULL_TREE);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gcc_assert (TREE_CODE (type) == REAL_TYPE);
+  ret = gfc_create_var (type, NULL);
+
+  gfc_init_block (&body);
+
+  tree end_label = gfc_build_label_decl (NULL_TREE);
+  for (int c = IEEE_SIGNALING_NAN; c <= IEEE_POSITIVE_INF; ++c)
+    {
+      tree label = gfc_build_label_decl (NULL_TREE);
+      tree low = build_int_cst (TREE_TYPE (arg), c);
+      tmp = build_case_label (low, low, label);
+      gfc_add_expr_to_block (&body, tmp);
+
+      REAL_VALUE_TYPE real;
+      int k;
+      switch (c)
+	{
+	case IEEE_SIGNALING_NAN:
+	  real_nan (&real, "", 0, TYPE_MODE (type));
+	  break;
+	case IEEE_QUIET_NAN:
+	  real_nan (&real, "", 1, TYPE_MODE (type));
+	  break;
+	case IEEE_NEGATIVE_INF:
+	  real_inf (&real);
+	  real = real_value_negate (&real);
+	  break;
+	case IEEE_NEGATIVE_NORMAL:
+	  real_from_integer (&real, TYPE_MODE (type), -42, SIGNED);
+	  break;
+	case IEEE_NEGATIVE_DENORMAL:
+	  k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
+	  real_from_mpfr (&real, gfc_real_kinds[k].tiny,
+			  type, GFC_RND_MODE);
+	  real_arithmetic (&real, RDIV_EXPR, &real, &dconst2);
+	  real = real_value_negate (&real);
+	  break;
+	case IEEE_NEGATIVE_ZERO:
+	  real_from_integer (&real, TYPE_MODE (type), 0, SIGNED);
+	  real = real_value_negate (&real);
+	  break;
+	case IEEE_POSITIVE_ZERO:
+	  /* Make this also the default: label.  The other possibility
+	     would be to add a separate default: label followed by
+	     __builtin_unreachable ().  */
+	  label = gfc_build_label_decl (NULL_TREE);
+	  tmp = build_case_label (NULL_TREE, NULL_TREE, label);
+	  gfc_add_expr_to_block (&body, tmp);
+	  real_from_integer (&real, TYPE_MODE (type), 0, SIGNED);
+	  break;
+	case IEEE_POSITIVE_DENORMAL:
+	  k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
+	  real_from_mpfr (&real, gfc_real_kinds[k].tiny,
+			  type, GFC_RND_MODE);
+	  real_arithmetic (&real, RDIV_EXPR, &real, &dconst2);
+	  break;
+	case IEEE_POSITIVE_NORMAL:
+	  real_from_integer (&real, TYPE_MODE (type), 42, SIGNED);
+	  break;
+	case IEEE_POSITIVE_INF:
+	  real_inf (&real);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      tree val = build_real (type, real);
+      gfc_add_modify (&body, ret, val);
+
+      tmp = build1_v (GOTO_EXPR, end_label);
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  tmp = gfc_finish_block (&body);
+  tmp = fold_build2_loc (input_location, SWITCH_EXPR, NULL_TREE, arg, tmp);
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  tmp = build1_v (LABEL_EXPR, end_label);
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  se->expr = ret;
+}
+
+
 /* Generate code for an intrinsic function from the IEEE_ARITHMETIC
    module.  */
 
@@ -10122,6 +10239,8 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_RINT);
   else if (startswith (name, "ieee_class_") && ISDIGIT (name[11]))
     conv_intrinsic_ieee_class (se, expr);
+  else if (startswith (name, "ieee_value_") && ISDIGIT (name[11]))
+    conv_intrinsic_ieee_value (se, expr);
   else
     /* It is not among the functions we translate directly.  We return
        false, so a library function call is emitted.  */
