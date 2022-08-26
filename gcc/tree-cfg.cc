@@ -9878,16 +9878,16 @@ execute_fixup_cfg (void)
 	    {
 	      if (stmt && is_gimple_call (stmt))
 		gimple_call_set_ctrl_altering (stmt, false);
-	      tree fndecl = builtin_decl_unreachable ();
-	      stmt = gimple_build_call (fndecl, 0);
+	      stmt = gimple_build_builtin_unreachable (UNKNOWN_LOCATION);
 	      gimple_stmt_iterator gsi = gsi_last_bb (bb);
 	      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 	      if (!cfun->after_inlining)
-		{
-		  gcall *call_stmt = dyn_cast <gcall *> (stmt);
-		  node->create_edge (cgraph_node::get_create (fndecl),
-				     call_stmt, bb->count);
-		}
+		if (tree fndecl = gimple_call_fndecl (stmt))
+		  {
+		    gcall *call_stmt = dyn_cast <gcall *> (stmt);
+		    node->create_edge (cgraph_node::get_create (fndecl),
+				       call_stmt, bb->count);
+		  }
 	    }
 	}
     }
