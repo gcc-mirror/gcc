@@ -94,8 +94,9 @@ vrange::singleton_p (tree *) const
 }
 
 void
-vrange::set (tree, tree, value_range_kind)
+vrange::set (tree min, tree, value_range_kind)
 {
+  set_varying (TREE_TYPE (min));
 }
 
 tree
@@ -168,18 +169,21 @@ vrange::nonzero_p () const
 }
 
 void
-vrange::set_nonzero (tree)
+vrange::set_nonzero (tree type)
 {
+  set_varying (type);
 }
 
 void
-vrange::set_zero (tree)
+vrange::set_zero (tree type)
 {
+  set_varying (type);
 }
 
 void
-vrange::set_nonnegative (tree)
+vrange::set_nonnegative (tree type)
 {
+  set_varying (type);
 }
 
 bool
