@@ -10013,6 +10013,83 @@ conv_intrinsic_ieee_copy_sign (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Generate code for IEEE_CLASS.  */
+
+static void
+conv_intrinsic_ieee_class (gfc_se *se, gfc_expr *expr)
+{
+  tree arg, c, t1, t2, t3, t4;
+
+  /* Convert arg, evaluate it only once.  */
+  conv_ieee_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  c = build_call_expr_loc (input_location,
+			   builtin_decl_explicit (BUILT_IN_FPCLASSIFY), 6,
+			   build_int_cst (integer_type_node, IEEE_QUIET_NAN),
+			   build_int_cst (integer_type_node,
+					  IEEE_POSITIVE_INF),
+			   build_int_cst (integer_type_node,
+					  IEEE_POSITIVE_NORMAL),
+			   build_int_cst (integer_type_node,
+					  IEEE_POSITIVE_DENORMAL),
+			   build_int_cst (integer_type_node,
+					  IEEE_POSITIVE_ZERO),
+			   arg);
+  c = gfc_evaluate_now (c, &se->pre);
+  t1 = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			c, build_int_cst (integer_type_node,
+					  IEEE_QUIET_NAN));
+  t2 = build_call_expr_loc (input_location,
+			    builtin_decl_explicit (BUILT_IN_ISSIGNALING), 1,
+			    arg);
+  t2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			t2, build_zero_cst (TREE_TYPE (t2)));
+  t1 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+			logical_type_node, t1, t2);
+  t3 = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+			c, build_int_cst (integer_type_node,
+					  IEEE_POSITIVE_ZERO));
+  t4 = build_call_expr_loc (input_location,
+			    builtin_decl_explicit (BUILT_IN_SIGNBIT), 1,
+			    arg);
+  t4 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			t4, build_zero_cst (TREE_TYPE (t4)));
+  t3 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+			logical_type_node, t3, t4);
+  int s = IEEE_NEGATIVE_ZERO + IEEE_POSITIVE_ZERO;
+  gcc_assert (IEEE_NEGATIVE_INF == s - IEEE_POSITIVE_INF);
+  gcc_assert (IEEE_NEGATIVE_NORMAL == s - IEEE_POSITIVE_NORMAL);
+  gcc_assert (IEEE_NEGATIVE_DENORMAL == s - IEEE_POSITIVE_DENORMAL);
+  gcc_assert (IEEE_NEGATIVE_SUBNORMAL == s - IEEE_POSITIVE_SUBNORMAL);
+  gcc_assert (IEEE_NEGATIVE_ZERO == s - IEEE_POSITIVE_ZERO);
+  t4 = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE (c),
+			build_int_cst (TREE_TYPE (c), s), c);
+  t3 = fold_build3_loc (input_location, COND_EXPR, TREE_TYPE (c),
+			t3, t4, c);
+  t1 = fold_build3_loc (input_location, COND_EXPR, TREE_TYPE (c), t1,
+			build_int_cst (TREE_TYPE (c), IEEE_SIGNALING_NAN),
+			t3);
+  tree type = gfc_typenode_for_spec (&expr->ts);
+  /* Perform a quick sanity check that the return type is
+     IEEE_CLASS_TYPE derived type defined in
+     libgfortran/ieee/ieee_arithmetic.F90
+     Primarily check that it is a derived type with a single
+     member in it.  */
+  gcc_assert (TREE_CODE (type) == RECORD_TYPE);
+  tree field = NULL_TREE;
+  for (tree f = TYPE_FIELDS (type); f != NULL_TREE; f = DECL_CHAIN (f))
+    if (TREE_CODE (f) == FIELD_DECL)
+      {
+	gcc_assert (field == NULL_TREE);
+	field = f;
+      }
+  gcc_assert (field);
+  t1 = fold_convert (TREE_TYPE (field), t1);
+  se->expr = build_constructor_single (type, field, t1);
+}
+
+
 /* Generate code for an intrinsic function from the IEEE_ARITHMETIC
    module.  */
 
@@ -10043,6 +10120,8 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_LOGB);
   else if (startswith (name, "_gfortran_ieee_rint"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_RINT);
+  else if (startswith (name, "ieee_class_") && ISDIGIT (name[11]))
+    conv_intrinsic_ieee_class (se, expr);
   else
     /* It is not among the functions we translate directly.  We return
        false, so a library function call is emitted.  */
