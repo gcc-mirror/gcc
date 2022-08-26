@@ -209,32 +209,6 @@ dump_pred_chain (const pred_chain &chain)
     }
 }
 
-/* Dump the predicate chain PREDS for STMT, prefixed by MSG.  */
-
-static void
-dump_predicates (gimple *stmt, const pred_chain_union &preds, const char *msg)
-{
-  fprintf (dump_file, "%s", msg);
-  if (stmt)
-    {
-      print_gimple_stmt (dump_file, stmt, 0);
-      fprintf (dump_file, "is guarded by:\n");
-    }
-
-  unsigned np = preds.length ();
-  if (np > 1)
-    fprintf (dump_file, "OR (");
-  for (unsigned i = 0; i < np; i++)
-    {
-      dump_pred_chain (preds[i]);
-      if (i < np - 1)
-	fprintf (dump_file, ", ");
-      else if (i > 0)
-	fputc (')', dump_file);
-    }
-  fputc ('\n', dump_file);
-}
-
 /* Dump the first NCHAINS elements of the DEP_CHAINS array into DUMP_FILE.  */
 
 static void
@@ -1071,13 +1045,6 @@ simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
     }
 }
 
-static void
-simple_control_dep_chain (vec<edge>& chain, basic_block from, edge to)
-{
-  chain.safe_push (to);
-  simple_control_dep_chain (chain, from, to->src);
-}
-
 /* Perform a DFS walk on predecessor edges to mark the region denoted
    by the EXIT edge and DOM which dominates EXIT->src, including DOM.
    Blocks in the region are marked with FLAG and added to BBS.  BBS is
@@ -1240,180 +1207,6 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
   gcc_assert (cur_cd_chain.length () == cur_chain_len);
   return found_cd_chain;
-}
-
-/* Return true if PRED can be invalidated by any predicate in GUARD.  */
-
-static bool
-can_be_invalidated_p (const pred_info &pred, const pred_chain &guard)
-{
-  if (dump_file && dump_flags & TDF_DETAILS)
-    {
-      fprintf (dump_file, "Testing if predicate: ");
-      dump_pred_info (pred);
-      fprintf (dump_file, "\n...can be invalidated by a USE guard of: ");
-      dump_pred_chain (guard);
-      fputc ('\n', dump_file);
-    }
-
-  unsigned n = guard.length ();
-  for (unsigned i = 0; i < n; ++i)
-    {
-      if (pred_neg_p (pred, guard[i]))
-	{
-	  if (dump_file && dump_flags & TDF_DETAILS)
-	    {
-	      fprintf (dump_file, "  Predicate invalidated by: ");
-	      dump_pred_info (guard[i]);
-	      fputc ('\n', dump_file);
-	    }
-	  return true;
-	}
-    }
-
-  return false;
-}
-
-/* Return true if all predicates in PREDS are invalidated by GUARD being
-   true.  */
-
-static bool
-can_be_invalidated_p (const pred_chain_union &preds, const pred_chain &guard)
-{
-  if (preds.is_empty ())
-    return false;
-
-  if (dump_file && dump_flags & TDF_DETAILS)
-    dump_predicates (NULL, preds,
-		     "Testing if anything here can be invalidated: ");
-
-  for (unsigned i = 0; i < preds.length (); ++i)
-    {
-      const pred_chain &chain = preds[i];
-      unsigned j;
-      for (j = 0; j < chain.length (); ++j)
-	if (can_be_invalidated_p (chain[j], guard))
-	  break;
-
-      /* If we were unable to invalidate any predicate in C, then there
-	 is a viable path from entry to the PHI where the PHI takes
-	 an interesting value and continues to a use of the PHI.  */
-      if (j == chain.length ())
-	return false;
-    }
-  return true;
-}
-
-/* Return true if none of the PHI arguments in OPNDS is used given
-   the use guards in *THIS that guard the PHI's use.  */
-
-bool
-uninit_analysis::use_cannot_happen (gphi *phi, unsigned opnds, const predicate &use_preds)
-{
-  if (!m_eval.phi_arg_set (phi))
-    return false;
-
-  /* PHI_USE_GUARDS are OR'ed together.  If we have more than one
-     possible guard, there's no way of knowing which guard was true.
-     In that case compute the intersection of all use predicates
-     and use that.  */
-  const predicate &phi_use_guards = use_preds;
-  const pred_chain *use_guard = &phi_use_guards.chain() [0];
-  pred_chain phi_use_guard_intersection = vNULL;
-  if (phi_use_guards.chain ().length () != 1)
-    {
-      phi_use_guard_intersection = use_guard->copy ();
-      for (unsigned i = 1; i < phi_use_guards.chain ().length (); ++i)
-	{
-	  for (unsigned j = 0; j < phi_use_guard_intersection.length ();)
-	    {
-	      unsigned k;
-	      for (k = 0; k < phi_use_guards.chain ()[i].length (); ++k)
-		if (pred_equal_p (phi_use_guards.chain ()[i][k],
-				  phi_use_guard_intersection[j]))
-		  break;
-	      if (k == phi_use_guards.chain ()[i].length ())
-		phi_use_guard_intersection.unordered_remove (j);
-	      else
-		j++;
-	    }
-	}
-      if (phi_use_guard_intersection.is_empty ())
-	{
-	  phi_use_guard_intersection.release ();
-	  return false;
-	}
-      use_guard = &phi_use_guard_intersection;
-    }
-
-  basic_block phi_bb = gimple_bb (phi);
-  /* Find the closest dominating bb to be the control dependence root.  */
-  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
-  if (!cd_root)
-    return false;
-
-  /* Look for the control dependencies of all the interesting operands
-     and build guard predicates describing them.  */
-  unsigned n = gimple_phi_num_args (phi);
-  for (unsigned i = 0; i < n; ++i)
-    {
-      if (!MASK_TEST_BIT (opnds, i))
-	continue;
-
-      edge e = gimple_phi_arg_edge (phi, i);
-      auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
-      auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
-      unsigned num_chains = 0;
-      unsigned num_calls = 0;
-
-      /* Build the control dependency chain for the PHI argument...  */
-      if (!compute_control_dep_chain (cd_root,
-				      e->src, dep_chains, &num_chains,
-				      cur_chain, &num_calls))
-	{
-	  gcc_assert (num_chains == 0);
-	  /* If compute_control_dep_chain bailed out due to limits
-	     build a partial sparse path using dominators.  Collect
-	     only edges whose predicates are always true when reaching E.  */
-	  simple_control_dep_chain (dep_chains[0], cd_root, e);
-	  num_chains++;
-	}
-      /* Update the chains with the phi operand edge.  */
-      else if (EDGE_COUNT (e->src->succs) > 1)
-	{
-	  for (unsigned j = 0; j < num_chains; j++)
-	    dep_chains[j].safe_push (e);
-	}
-
-      if (DEBUG_PREDICATE_ANALYZER && dump_file)
-	{
-	  fprintf (dump_file, "predicate::use_cannot_happen (...) "
-		   "dep_chains for arg %u:\n\t", i);
-	  dump_dep_chains (dep_chains, num_chains);
-	}
-
-      /* ...and convert it into a set of predicates guarding its
-	 definition.  */
-      predicate def_preds;
-      def_preds.init_from_control_deps (dep_chains, num_chains);
-      if (def_preds.is_empty ())
-	/* If there's no predicate there's no basis to rule the use out.  */
-	return false;
-
-      def_preds.simplify ();
-      def_preds.normalize ();
-
-      /* Can the guard for this PHI argument be negated by the one
-	 guarding the PHI use?  */
-      if (!can_be_invalidated_p (def_preds.chain (), *use_guard))
-	{
-	  phi_use_guard_intersection.release ();
-	  return false;
-	}
-    }
-
-  phi_use_guard_intersection.release ();
-  return true;
 }
 
 /* Implemented simplifications:
@@ -2390,11 +2183,6 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 
       return true;
     }
-
-  /* We might be able to prove that if the control dependencies for OPNDS
-     are true, the control dependencies for USE_STMT can never be true.  */
-  if (use_cannot_happen (phi, opnds, use_preds))
-    return true;
 
   if (m_phi_def_preds.is_empty ())
     {

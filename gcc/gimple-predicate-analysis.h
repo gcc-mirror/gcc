@@ -137,7 +137,6 @@ private:
   bool prune_phi_opnds (gphi *, unsigned, gphi *, tree, tree_code,
 			hash_set<gphi *> *, bitmap *);
   bool overlap (gphi *, unsigned, hash_set<gphi *> *, const predicate &);
-  bool use_cannot_happen (gphi *, unsigned, const predicate &);
 
   void collect_phi_def_edges (gphi *, basic_block, vec<edge> *,
 			      hash_set<gimple *> *);
