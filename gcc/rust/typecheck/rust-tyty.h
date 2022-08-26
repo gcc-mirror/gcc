@@ -230,28 +230,11 @@ public:
 
   bool contains_type_parameters () const { return !is_concrete (); }
 
-  std::string mappings_str () const
-  {
-    std::string buffer = "Ref: " + std::to_string (get_ref ())
-			 + " TyRef: " + std::to_string (get_ty_ref ());
-    buffer += "[";
-    for (auto &ref : combined)
-      buffer += std::to_string (ref) + ",";
-    buffer += "]";
-    return "(" + buffer + ")";
-  }
+  std::string mappings_str () const;
 
-  std::string debug_str () const
-  {
-    return TypeKindFormat::to_string (get_kind ()) + ":" + as_string () + ":"
-	   + mappings_str () + ":" + bounds_as_string ();
-  }
+  std::string debug_str () const;
 
-  void debug () const
-  {
-    rust_debug ("[%p] %s", static_cast<const void *> (this),
-		debug_str ().c_str ());
-  }
+  void debug () const;
 
   // FIXME this will eventually go away
   const BaseType *get_root () const;
@@ -560,7 +543,7 @@ public:
 
   const std::vector<TyVar> &get_fields () const { return fields; }
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final;
 
   TupleType *handle_substitions (SubstitutionArgumentMappings mappings);
 
@@ -2164,10 +2147,7 @@ public:
 
   std::string as_string () const override;
 
-  std::string get_name () const override final
-  {
-    return "&" + get_base ()->get_name ();
-  }
+  std::string get_name () const override final;
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
@@ -2249,11 +2229,7 @@ public:
   void accept_vis (TyConstVisitor &vis) const override;
 
   std::string as_string () const override;
-
-  std::string get_name () const override final
-  {
-    return "*" + get_base ()->get_name ();
-  }
+  std::string get_name () const override final;
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;

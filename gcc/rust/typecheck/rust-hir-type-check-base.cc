@@ -337,6 +337,30 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, Location locus)
 }
 
 TyTy::BaseType *
+TypeCheckBase::unify_site (HirId id, TyTy::TyWithLocation lhs,
+			   TyTy::TyWithLocation rhs, Location unify_locus)
+{
+  TyTy::BaseType *expected = lhs.get_ty ();
+  TyTy::BaseType *expr = rhs.get_ty ();
+
+  rust_debug ("unify_site id={%u} expected={%s} expr={%s}", id,
+	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+
+  TyTy::BaseType *unified = expected->unify (expr);
+  if (unified->get_kind () == TyTy::TypeKind::ERROR)
+    {
+      RichLocation r (unify_locus);
+      r.add_range (lhs.get_locus ());
+      r.add_range (rhs.get_locus ());
+      rust_error_at (r, "expected %<%s%> got %<%s%>",
+		     expected->get_name ().c_str (),
+		     expr->get_name ().c_str ());
+    }
+
+  return unified;
+}
+
+TyTy::BaseType *
 TypeCheckBase::coercion_site (HirId id, TyTy::TyWithLocation lhs,
 			      TyTy::TyWithLocation rhs, Location locus)
 {
@@ -363,7 +387,9 @@ TypeCheckBase::coercion_site (HirId id, TyTy::TyWithLocation lhs,
 
   rust_debug ("coerce_default_unify(a={%s}, b={%s})",
 	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
-  TyTy::BaseType *coerced = expected->unify (receiver);
+  TyTy::BaseType *coerced
+    = unify_site (id, lhs, TyTy::TyWithLocation (receiver, rhs.get_locus ()),
+		  locus);
   context->insert_autoderef_mappings (id, std::move (result.adjustments));
   return coerced;
 }
@@ -393,7 +419,11 @@ TypeCheckBase::cast_site (HirId id, TyTy::TyWithLocation from,
   rust_debug ("cast_default_unify(a={%s}, b={%s})",
 	      casted_result->debug_str ().c_str (),
 	      to.get_ty ()->debug_str ().c_str ());
-  TyTy::BaseType *casted = to.get_ty ()->unify (casted_result);
+
+  TyTy::BaseType *casted
+    = unify_site (id, to,
+		  TyTy::TyWithLocation (casted_result, from.get_locus ()),
+		  cast_locus);
   context->insert_cast_autoderef_mappings (id, std::move (result.adjustments));
   return casted;
 }
@@ -411,6 +441,7 @@ TypeCheckBase::resolve_generic_params (
 	  // FIXME: Skipping Lifetime completely until better
 	  // handling.
 	  break;
+
 	  case HIR::GenericParam::GenericKind::CONST: {
 	    auto param
 	      = static_cast<HIR::ConstGenericParam *> (generic_param.get ());
@@ -422,7 +453,12 @@ TypeCheckBase::resolve_generic_params (
 		auto expr_type = TypeCheckExpr::Resolve (
 		  param->get_default_expression ().get ());
 
-		specified_type->unify (expr_type);
+		coercion_site (
+		  param->get_mappings ().get_hirid (),
+		  TyTy::TyWithLocation (specified_type),
+		  TyTy::TyWithLocation (
+		    expr_type, param->get_default_expression ()->get_locus ()),
+		  param->get_locus ());
 	      }
 
 	    context->insert_type (generic_param->get_mappings (),

@@ -68,7 +68,11 @@ TypeCheckStmt::visit (HIR::ConstantItem &constant)
   TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
   TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
-  infered = type->unify (expr_type);
+  infered = unify_site (
+    constant.get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
+    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
+    constant.get_locus ());
   context->insert_type (constant.get_mappings (), infered);
 }
 
@@ -498,8 +502,13 @@ TypeCheckStmt::visit (HIR::Function &function)
 
   context->pop_return_type ();
 
-  if (block_expr_ty->get_kind () != TyTy::NEVER)
-    expected_ret_tyty->unify (block_expr_ty);
+  Location fn_return_locus = function.has_function_return_type ()
+			       ? function.get_return_type ()->get_locus ()
+			       : function.get_locus ();
+  coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
+		 TyTy::TyWithLocation (block_expr_ty),
+		 function.get_definition ()->get_locus ());
 
   infered = fnType;
 }

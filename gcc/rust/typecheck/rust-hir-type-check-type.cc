@@ -623,9 +623,11 @@ TypeCheckType::visit (HIR::ArrayType &type)
   rust_assert (ok);
   context->insert_type (type.get_size_expr ()->get_mappings (), expected_ty);
 
-  auto unified = expected_ty->unify (capacity_type);
-  if (unified->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  unify_site (type.get_size_expr ()->get_mappings ().get_hirid (),
+	      TyTy::TyWithLocation (expected_ty),
+	      TyTy::TyWithLocation (capacity_type,
+				    type.get_size_expr ()->get_locus ()),
+	      type.get_size_expr ()->get_locus ());
 
   TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
   translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),

@@ -100,9 +100,9 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
     = new TyTy::ISizeType (discriminant->get_mappings ().get_hirid ());
   context->insert_type (discriminant->get_mappings (), expected_ty);
 
-  auto unified = expected_ty->unify (capacity_type);
-  if (unified->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  unify_site (item.get_mappings ().get_hirid (),
+	      TyTy::TyWithLocation (expected_ty),
+	      TyTy::TyWithLocation (capacity_type), item.get_locus ());
 
   const CanonicalPath *canonical_path = nullptr;
   bool ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
