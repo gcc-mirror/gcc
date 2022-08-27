@@ -1,3 +1,7 @@
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove cr16.
+
 2022-08-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* clang-format: Add further FOR_EACH_ macros.

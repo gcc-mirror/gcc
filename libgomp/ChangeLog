@@ -1,3 +1,12 @@
+2022-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Mark 'ancestor' as implemented but
+	refer to 'requires'.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1.c: New test.
+	* testsuite/libgomp.fortran/reverse-offload-1-aux.f90: New test.
+	* testsuite/libgomp.fortran/reverse-offload-1.f90: New test.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/106548

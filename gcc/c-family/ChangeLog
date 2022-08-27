@@ -1,3 +1,19 @@
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* c.opt (Wself-move): New option.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (check_builtin_function_arguments): Handle
+	BUILT_IN_ISSIGNALING.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_named_character_escapes to 202207L.
+
 2022-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.cc (c_common_reswords): Enable nullptr in C2X.

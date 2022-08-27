@@ -1,3 +1,7 @@
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Handle BUILT_IN_ISSIGNALING.
+
 2022-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* c-convert.cc (c_convert) <case POINTER_TYPE>: Handle NULLPTR_TYPE.

@@ -1,3 +1,104 @@
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* g++.dg/warn/Wself-move1.C: New test.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106647
+	* g++.dg/cpp23/wchar-multi1.C: New test.
+	* g++.dg/cpp23/wchar-multi2.C: New test.
+
+2022-08-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/uninit-pred-11.c: New testcase.
+
+2022-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/reverse-offload-1.c: Remove dg-sorry.
+	* c-c++-common/gomp/target-device-ancestor-4.c: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-5.f90: Likewise.
+	* c-c++-common/goacc/classify-kernels-parloops.c: Add 'noclone' to
+	scan-tree-dump-times.
+	* c-c++-common/goacc/classify-kernels-unparallelized-parloops.c:
+	Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Likewise.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-serial.c: Likewise.
+	* c-c++-common/goacc/kernels-counter-vars-function-scope.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-3.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-update.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-g.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-mod-not-zero.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-n.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-nest.c: Likewise.
+	* c-c++-common/goacc/kernels-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-one-counter-var.c: Likewise.
+	* c-c++-common/goacc/kernels-parallel-loop-data-enter-exit.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-parloops.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized-parloops.f95:
+	Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-update.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-n.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop.f95: Likewise.
+	* gfortran.dg/goacc/kernels-parallel-loop-data-enter-exit.f95: Likewise.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/builtin-issignaling-2.c: New test.
+	* gcc.dg/torture/float16-builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/float32-builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/float32x-builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/float64-builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/float64x-builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/float128-builtin-issignaling-1.c: New test.
+	* gcc.dg/torture/float128x-builtin-issignaling-1.c: New test.
+	* gcc.target/i386/builtin-issignaling-1.c: New test.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106099
+	* gcc.dg/pr106099.c: New test.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* c-c++-common/cpp/named-universal-char-escape-1.c: New test.
+	* c-c++-common/cpp/named-universal-char-escape-2.c: New test.
+	* c-c++-common/cpp/named-universal-char-escape-3.c: New test.
+	* c-c++-common/cpp/named-universal-char-escape-4.c: New test.
+	* c-c++-common/Wbidi-chars-25.c: New test.
+	* gcc.dg/cpp/named-universal-char-escape-1.c: New test.
+	* gcc.dg/cpp/named-universal-char-escape-2.c: New test.
+	* g++.dg/cpp/named-universal-char-escape-1.C: New test.
+	* g++.dg/cpp/named-universal-char-escape-2.C: New test.
+	* g++.dg/cpp23/feat-cxx2b.C: Test __cpp_named_character_escapes.
+
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* lib/target-supports.exp: Remove cr16 related stuff.
+
+2022-08-26  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106704.c: New test.
+
 2022-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/c11-nullptr-1.c: New test.

@@ -1,3 +1,31 @@
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106647
+	* charset.cc (wide_str_to_charconst): Implement P2362R3 - Remove
+	non-encodable wide character literals and multicharacter.  For
+	C++23 use CPP_DL_ERROR instead of CPP_DL_WARNING for
+	"character constant too long for its type" diagnostics on CPP_WCHAR
+	literals.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* charset.cc: Implement C++23 P2071R2 - Named universal character
+	escapes.  Include uname2c.h.
+	(hangul_syllables, hangul_count): New variables.
+	(struct uname2c_data): New type.
+	(_cpp_uname2c, _cpp_uname2c_uax44_lm2): New functions.
+	(_cpp_valid_ucn): Use them.  Handle named universal character escapes.
+	(convert_ucn): Adjust comment.
+	(convert_escape): Call convert_ucn even for \N.
+	(_cpp_interpret_identifier): Handle named universal character escapes.
+	* lex.cc (get_bidi_ucn): Fix up function comment formatting.
+	(get_bidi_named): New function.
+	(forms_identifier_p, lex_string): Handle named universal character
+	escapes.
+	* makeuname2c.cc: New file.  Small parts copied from makeucnid.cc.
+	* uname2c.h: New generated file.
+
 2022-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106646

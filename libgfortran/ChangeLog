@@ -1,3 +1,20 @@
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/106579
+	* ieee/ieee_helper.c (IEEE_OTHER_VALUE, IEEE_SIGNALING_NAN,
+	IEEE_QUIET_NAN, IEEE_NEGATIVE_INF, IEEE_NEGATIVE_NORMAL,
+	IEEE_NEGATIVE_DENORMAL, IEEE_NEGATIVE_SUBNORMAL,
+	IEEE_NEGATIVE_ZERO, IEEE_POSITIVE_ZERO, IEEE_POSITIVE_DENORMAL,
+	IEEE_POSITIVE_SUBNORMAL, IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF):
+	Move to gcc/fortran/libgfortran.h.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/105105
+	* ieee/ieee_helper.c: Don't include issignaling_fallback.h.
+	(CLASSMACRO): Use __builtin_issignaling instead of issignaling.
+	* ieee/issignaling_fallback.h: Removed.
+
 2022-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

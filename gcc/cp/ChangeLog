@@ -1,3 +1,9 @@
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* typeck.cc (maybe_warn_self_move): New.
+	(cp_build_modify_expr): Call maybe_warn_self_move.
+
 2022-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h (enum cp_tree_index): Remove CTI_NULLPTR, CTI_NULLPTR_TYPE.

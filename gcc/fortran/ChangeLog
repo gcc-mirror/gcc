@@ -1,3 +1,29 @@
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/106579
+	* trans-intrinsic.cc: Include realmpfr.h.
+	(conv_intrinsic_ieee_value): New function.
+	(gfc_conv_ieee_arithmetic_function): Handle ieee_value.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/106579
+	* f95-lang.cc (gfc_init_builtin_functions): Initialize
+	BUILT_IN_FPCLASSIFY.
+	* libgfortran.h (IEEE_OTHER_VALUE, IEEE_SIGNALING_NAN,
+	IEEE_QUIET_NAN, IEEE_NEGATIVE_INF, IEEE_NEGATIVE_NORMAL,
+	IEEE_NEGATIVE_DENORMAL, IEEE_NEGATIVE_SUBNORMAL,
+	IEEE_NEGATIVE_ZERO, IEEE_POSITIVE_ZERO, IEEE_POSITIVE_DENORMAL,
+	IEEE_POSITIVE_SUBNORMAL, IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF):
+	New enum.
+	* trans-intrinsic.cc (conv_intrinsic_ieee_class): New function.
+	(gfc_conv_ieee_arithmetic_function): Handle ieee_class.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.cc (gfc_init_builtin_functions): Initialize
+	BUILT_IN_ISSIGNALING.
+
 2022-08-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parse.cc (parse_omp_structured_block): When parsing strictly
