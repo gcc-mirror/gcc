@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target fgraphite } } */
 /* { dg-options "-O -floop-parallelize-all -ftree-parallelize-loops=2 -fno-tree-dce" } */
 
 void
