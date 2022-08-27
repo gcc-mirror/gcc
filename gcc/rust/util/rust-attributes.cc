@@ -26,21 +26,23 @@ namespace Rust {
 namespace Analysis {
 
 // https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_feature/builtin_attrs.rs.html#248
-static const BuiltinAttrDefinition __definitions[] = {
-  {"inline", CODE_GENERATION},
-  {"cold", CODE_GENERATION},
-  {"cfg", EXPANSION},
-  {"cfg_attr", EXPANSION},
-  {"deprecated", STATIC_ANALYSIS},
-  {"allow", STATIC_ANALYSIS},
-  {"doc", HIR_LOWERING},
-  {"must_use", STATIC_ANALYSIS},
-  {"lang", HIR_LOWERING},
-  {"link_section", CODE_GENERATION},
-  {"no_mangle", CODE_GENERATION},
-  {"repr", CODE_GENERATION},
-  {"path", EXPANSION},
-};
+static const BuiltinAttrDefinition __definitions[]
+  = {{"inline", CODE_GENERATION},
+     {"cold", CODE_GENERATION},
+     {"cfg", EXPANSION},
+     {"cfg_attr", EXPANSION},
+     {"deprecated", STATIC_ANALYSIS},
+     {"allow", STATIC_ANALYSIS},
+     {"doc", HIR_LOWERING},
+     {"must_use", STATIC_ANALYSIS},
+     {"lang", HIR_LOWERING},
+     {"link_section", CODE_GENERATION},
+     {"no_mangle", CODE_GENERATION},
+     {"repr", CODE_GENERATION},
+     {"path", EXPANSION},
+     // From now on, these are reserved by the compiler and gated through
+     // #![feature(rustc_attrs)]
+     {"rustc_inherit_overflow_checks", CODE_GENERATION}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
