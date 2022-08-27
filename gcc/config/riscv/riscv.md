@@ -195,10 +195,108 @@
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
+;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
+;; rdvlenb     vector byte length vlenb csrr read
+;; rdvl        vector length vl csrr read
+;; 7. Vector Loads and Stores
+;; vlde        vector unit-stride load instructions
+;; vste        vector unit-stride store instructions
+;; vldm        vector unit-stride mask load instructions
+;; vstm        vector unit-stride mask store instructions
+;; vlds        vector strided load instructions
+;; vsts        vector strided store instructions
+;; vldux       vector unordered indexed load instructions
+;; vldox       vector ordered indexed load instructions
+;; vstux       vector unordered indexed store instructions
+;; vstox       vector ordered indexed store instructions
+;; vldff       vector unit-stride fault-only-first load instructions
+;; vldr        vector whole register load instructions
+;; vstr        vector whole register store instructions
+;; 11. Vector integer arithmetic instructions
+;; vialu       vector single-width integer add and subtract and logical nstructions
+;; viwalu      vector widening integer add/subtract
+;; vext        vector integer extension
+;; vicalu      vector arithmetic with carry or borrow instructions
+;; vshift      vector single-width bit shift instructions
+;; vnshift     vector narrowing integer shift instructions
+;; vicmp       vector integer comparison/min/max instructions
+;; vimul       vector single-width integer multiply instructions
+;; vidiv       vector single-width integer divide instructions
+;; viwmul      vector widening integer multiply instructions
+;; vimuladd    vector single-width integer multiply-add instructions
+;; viwmuladd   vector widening integer multiply-add instructions
+;; vimerge     vector integer merge instructions
+;; vimov       vector integer move vector instructions
+;; 12. Vector fixed-point arithmetic instructions
+;; vsalu       vector single-width saturating add and subtract and logical instructions
+;; vaalu       vector single-width averaging add and subtract and logical instructions
+;; vsmul       vector single-width fractional multiply with rounding and saturation instructions
+;; vsshift     vector single-width scaling shift instructions
+;; vnclip      vector narrowing fixed-point clip instructions
+;; 13. Vector floating-point instructions
+;; vfalu       vector single-width floating-point add/subtract instructions
+;; vfwalu      vector widening floating-point add/subtract instructions
+;; vfmul       vector single-width floating-point multiply instructions
+;; vfdiv       vector single-width floating-point divide instructions
+;; vfwmul      vector widening floating-point multiply instructions
+;; vfmuladd    vector single-width floating-point multiply-add instructions
+;; vfwmuladd   vector widening floating-point multiply-add instructions
+;; vfsqrt      vector floating-point square-root instructions
+;; vfrecp      vector floating-point reciprocal square-root instructions
+;; vfcmp       vector floating-point comparison/min/max instructions
+;; vfsgnj      vector floating-point sign-injection instructions
+;; vfclass     vector floating-point classify instruction
+;; vfmerge     vector floating-point merge instruction
+;; vfmov       vector floating-point move instruction
+;; vfcvtitof   vector single-width integer to floating-point instruction
+;; vfcvtftoi   vector single-width floating-point to integer instruction
+;; vfwcvtitof  vector widening integer to floating-point instruction
+;; vfwcvtftoi  vector widening floating-point to integer instruction
+;; vfwcvtftof  vector widening floating-point to floating-point instruction
+;; vfncvtitof  vector narrowing integer to floating-point instruction
+;; vfncvtftoi  vector narrowing floating-point to integer instruction
+;; vfncvtftof  vector narrowing floating-point to floating-point instruction
+;; 14. Vector reduction operations
+;; vired       vector single-width integer reduction instructions
+;; viwred      vector widening integer reduction instructions
+;; vfred       vector single-width floating-point un-ordered reduction instruction
+;; vfredo      vector single-width floating-point ordered reduction instruction
+;; vfwred      vector widening floating-point un-ordered reduction instruction
+;; vfwredo     vector widening floating-point ordered reduction instruction
+;; 15. Vector mask instructions
+;; vmalu       vector mask-register logical instructions
+;; vmpop       vector mask population count
+;; vmffs       vector find-first-set mask bit
+;; vmsfs       vector set mask bit
+;; vmiota      vector iota
+;; vmidx       vector element index instruction
+;; 16. Vector permutation instructions
+;; vimovvx     integer scalar move instructions
+;; vimovxv     integer scalar move instructions
+;; vfmovvf     floating-point scalar move instructions
+;; vfmovfv     floating-point scalar move instructions
+;; vislide     vector slide instructions
+;; vislide1    vector slide instructions
+;; vfslide1    vector slide instructions
+;; vgather     vector register gather instructions
+;; vcompress   vector compress instruction
+;; vmov        whole vector register move
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate"
+   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
+   rdvlenb,rdvl,vlde,vste,vldm,vstm,vlds,vsts,
+   vldux,vldox,vstux,vstox,vldff,vldr,vstr,
+   vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,
+   vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
+   vsalu,vaalu,vsmul,vsshift,vnclip,
+   vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,
+   vfcmp,vfsgnj,vfclass,vfmerge,vfmov,
+   vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
+   vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
+   vired,viwred,vfred,vfredo,vfwred,vfwredo,
+   vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
+   vislide,vislide1,vfslide1,vgather,vcompress,vmov"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
