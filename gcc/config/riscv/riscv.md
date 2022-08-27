@@ -118,6 +118,8 @@
    (NORMAL_RETURN		0)
    (SIBCALL_RETURN		1)
    (EXCEPTION_RETURN		2)
+   (VL_REGNUM			66)
+   (VTYPE_REGNUM		67)
 ])
 
 (include "predicates.md")
