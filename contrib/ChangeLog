@@ -1,3 +1,8 @@
+2022-08-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* gen_autofdo_event.py: Port to Python 3, and use grep -E
+	instead of egrep.
+
 2022-08-26  Martin Liska  <mliska@suse.cz>
 
 	* config-list.mk: Remove cr16.

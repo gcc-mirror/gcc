@@ -1,3 +1,7 @@
+2022-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/logical_traits/requirements/base_classes.cc: New test.
+
 2022-08-26  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (zip_view::_Iterator::operator<): Remove

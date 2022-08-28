@@ -1,3 +1,7 @@
+2022-08-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/i386/gcc-auto-profile: Regenerate.
+
 2022-08-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* real.cc (real_iszero): New.

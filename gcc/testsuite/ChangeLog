@@ -1,3 +1,8 @@
+2022-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106737
+	* gcc.dg/autopar/pr106737.c: Require fgraphite effective target.
+
 2022-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81159
