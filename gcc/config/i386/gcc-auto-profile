@@ -33,8 +33,15 @@ if grep -q hypervisor /proc/cpuinfo ; then
   echo >&2 "Warning: branch profiling may not be functional in VMs"
 fi
 
-case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
-  egrep "^model\s*:" /proc/cpuinfo | head -n1` in
+case `grep -E -q "^cpu family\s*: 6" /proc/cpuinfo &&
+  grep -E "^model\s*:" /proc/cpuinfo | head -n1` in
+model*:\ 46|\
+model*:\ 30|\
+model*:\ 31|\
+model*:\ 26|\
+model*:\ 47|\
+model*:\ 37|\
+model*:\ 44) E="cpu/event=0x88,umask=0x40/$FLAGS" ;;
 model*:\ 55|\
 model*:\ 77|\
 model*:\ 76|\
@@ -43,6 +50,11 @@ model*:\ 95|\
 model*:\ 87|\
 model*:\ 133|\
 model*:\ 122) E="cpu/event=0xC4,umask=0xFE/p$FLAGS" ;;
+model*:\ 28|\
+model*:\ 38|\
+model*:\ 39|\
+model*:\ 54|\
+model*:\ 53) E="cpu/event=0x88,umask=0x41/$FLAGS" ;;
 model*:\ 42|\
 model*:\ 45|\
 model*:\ 58|\
@@ -63,23 +75,14 @@ model*:\ 165|\
 model*:\ 166|\
 model*:\ 85|\
 model*:\ 85) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
-model*:\ 46|\
-model*:\ 30|\
-model*:\ 31|\
-model*:\ 26|\
-model*:\ 47|\
-model*:\ 37|\
-model*:\ 44) E="cpu/event=0x88,umask=0x40/p$FLAGS" ;;
-model*:\ 28|\
-model*:\ 38|\
-model*:\ 39|\
-model*:\ 54|\
-model*:\ 53) E="cpu/event=0x88,umask=0x41/p$FLAGS" ;;
 model*:\ 126|\
 model*:\ 140|\
 model*:\ 141|\
+model*:\ 143|\
 model*:\ 106|\
 model*:\ 108) E="cpu/event=0xc4,umask=0x20/p$FLAGS" ;;
+model*:\ 134|\
+model*:\ 150) E="cpu/event=0xc4,umask=0xfe/p$FLAGS" ;;
 *)
 echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
 	exit 1 ;;

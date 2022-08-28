@@ -6564,10 +6564,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
      *      tiargs  array of template arguments
      *      flags   1: replace const variables with their initializers
      *              2: don't devolve Parameter to Type
+     *      atd     tuple being optimized. If found, it's not expanded here
+     *              but in AliasAssign semantic.
      * Returns:
      *      false if one or more arguments have errors.
      */
-    extern (D) static bool semanticTiargs(const ref Loc loc, Scope* sc, Objects* tiargs, int flags)
+    extern (D) static bool semanticTiargs(const ref Loc loc, Scope* sc, Objects* tiargs, int flags, TupleDeclaration atd = null)
     {
         // Run semantic on each argument, place results in tiargs[]
         //printf("+TemplateInstance.semanticTiargs()\n");
@@ -6767,6 +6769,11 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 TupleDeclaration d = sa.toAlias().isTupleDeclaration();
                 if (d)
                 {
+                    if (d is atd)
+                    {
+                        (*tiargs)[j] = d;
+                        continue;
+                    }
                     // Expand tuple
                     tiargs.remove(j);
                     tiargs.insert(j, d.objects);

@@ -1,3 +1,8 @@
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* plugin/configure: Regenerate.
+
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>

@@ -119,6 +119,8 @@ c_parse_init (void)
   mask |= D_CXXONLY;
   if (!flag_isoc99)
     mask |= D_C99;
+  if (!flag_isoc2x)
+    mask |= D_C2X;
   if (flag_no_asm)
     {
       mask |= D_ASM | D_EXT;
@@ -10252,6 +10254,14 @@ c_parser_postfix_expression (c_parser *parser)
 	  error_at (loc, "%<omp_all_memory%> may only be used in OpenMP "
 			 "%<depend%> clause");
 	  expr.set_error ();
+	  break;
+	/* C23 'nullptr' literal.  */
+	case RID_NULLPTR:
+	  c_parser_consume_token (parser);
+	  expr.value = nullptr_node;
+	  set_c_expr_source_range (&expr, tok_range);
+	  pedwarn_c11 (loc, OPT_Wpedantic,
+		       "ISO C does not support %qs before C2X", "nullptr");
 	  break;
 	default:
 	  c_parser_error (parser, "expected expression");

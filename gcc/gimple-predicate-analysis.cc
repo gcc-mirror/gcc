@@ -209,32 +209,6 @@ dump_pred_chain (const pred_chain &chain)
     }
 }
 
-/* Dump the predicate chain PREDS for STMT, prefixed by MSG.  */
-
-static void
-dump_predicates (gimple *stmt, const pred_chain_union &preds, const char *msg)
-{
-  fprintf (dump_file, "%s", msg);
-  if (stmt)
-    {
-      print_gimple_stmt (dump_file, stmt, 0);
-      fprintf (dump_file, "is guarded by:\n");
-    }
-
-  unsigned np = preds.length ();
-  if (np > 1)
-    fprintf (dump_file, "OR (");
-  for (unsigned i = 0; i < np; i++)
-    {
-      dump_pred_chain (preds[i]);
-      if (i < np - 1)
-	fprintf (dump_file, ", ");
-      else if (i > 0)
-	fputc (')', dump_file);
-    }
-  fputc ('\n', dump_file);
-}
-
 /* Dump the first NCHAINS elements of the DEP_CHAINS array into DUMP_FILE.  */
 
 static void
@@ -605,11 +579,7 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
 	{
 	  gimple *def = SSA_NAME_DEF_STMT (opnd);
 
-	  if (gimple_code (def) == GIMPLE_PHI
-	      && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
-	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
-				   visited);
-	  else if (!m_eval (opnd))
+	  if (!m_eval (opnd))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -622,6 +592,10 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
 		}
 	      edges->safe_push (opnd_edge);
 	    }
+	  else if (gimple_code (def) == GIMPLE_PHI
+		   && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
+	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
+				   visited);
 	}
       else
 	{
@@ -1071,11 +1045,52 @@ simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
     }
 }
 
-static void
-simple_control_dep_chain (vec<edge>& chain, basic_block from, edge to)
+/* Perform a DFS walk on predecessor edges to mark the region denoted
+   by the EXIT edge and DOM which dominates EXIT->src, including DOM.
+   Blocks in the region are marked with FLAG and added to BBS.  BBS is
+   filled up to its capacity only after which the walk is terminated
+   and false is returned.  If the whole region was marked, true is returned.  */
+
+static bool
+dfs_mark_dominating_region (edge exit, basic_block dom, int flag,
+			    vec<basic_block> &bbs)
 {
-  chain.safe_push (to);
-  simple_control_dep_chain (chain, from, to->src);
+  if (exit->src == dom || exit->src->flags & flag)
+    return true;
+  if (!bbs.space (1))
+    return false;
+  bbs.quick_push (exit->src);
+  exit->src->flags |= flag;
+  auto_vec<edge_iterator, 20> stack (bbs.allocated () - bbs.length () + 1);
+  stack.quick_push (ei_start (exit->src->preds));
+  while (!stack.is_empty ())
+    {
+      /* Look at the edge on the top of the stack.  */
+      edge_iterator ei = stack.last ();
+      basic_block src = ei_edge (ei)->src;
+
+      /* Check if the edge source has been visited yet.  */
+      if (!(src->flags & flag))
+	{
+	  /* Mark the source if there's still space.  If not, return early.  */
+	  if (!bbs.space (1))
+	    return false;
+	  src->flags |= flag;
+	  bbs.quick_push (src);
+
+	  /* Queue its predecessors if we didn't reach DOM.  */
+	  if (src != dom && EDGE_COUNT (src->preds) > 0)
+	    stack.quick_push (ei_start (src->preds));
+	}
+      else
+	{
+	  if (!ei_one_before_end_p (ei))
+	    ei_next (&stack.last ());
+	  else
+	    stack.pop ();
+	}
+    }
+  return true;
 }
 
 /* Recursively compute the control dependence chains (paths of edges)
@@ -1093,7 +1108,7 @@ static bool
 compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
 			   vec<edge> &cur_cd_chain, unsigned *num_calls,
-			   unsigned depth = 0)
+			   unsigned in_region = 0, unsigned depth = 0)
 {
   if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
     {
@@ -1167,10 +1182,14 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      break;
 	    }
 
+	  /* If the dominating region has been marked avoid walking outside.  */
+	  if (in_region != 0 && !(cd_bb->flags & in_region))
+	    break;
+
 	  /* Check if DEP_BB is indirectly control-dependent on DOM_BB.  */
 	  if (compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
 					 num_chains, cur_cd_chain,
-					 num_calls, depth + 1))
+					 num_calls, in_region, depth + 1))
 	    {
 	      found_cd_chain = true;
 	      break;
@@ -1188,180 +1207,6 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
   gcc_assert (cur_cd_chain.length () == cur_chain_len);
   return found_cd_chain;
-}
-
-/* Return true if PRED can be invalidated by any predicate in GUARD.  */
-
-static bool
-can_be_invalidated_p (const pred_info &pred, const pred_chain &guard)
-{
-  if (dump_file && dump_flags & TDF_DETAILS)
-    {
-      fprintf (dump_file, "Testing if predicate: ");
-      dump_pred_info (pred);
-      fprintf (dump_file, "\n...can be invalidated by a USE guard of: ");
-      dump_pred_chain (guard);
-      fputc ('\n', dump_file);
-    }
-
-  unsigned n = guard.length ();
-  for (unsigned i = 0; i < n; ++i)
-    {
-      if (pred_neg_p (pred, guard[i]))
-	{
-	  if (dump_file && dump_flags & TDF_DETAILS)
-	    {
-	      fprintf (dump_file, "  Predicate invalidated by: ");
-	      dump_pred_info (guard[i]);
-	      fputc ('\n', dump_file);
-	    }
-	  return true;
-	}
-    }
-
-  return false;
-}
-
-/* Return true if all predicates in PREDS are invalidated by GUARD being
-   true.  */
-
-static bool
-can_be_invalidated_p (const pred_chain_union &preds, const pred_chain &guard)
-{
-  if (preds.is_empty ())
-    return false;
-
-  if (dump_file && dump_flags & TDF_DETAILS)
-    dump_predicates (NULL, preds,
-		     "Testing if anything here can be invalidated: ");
-
-  for (unsigned i = 0; i < preds.length (); ++i)
-    {
-      const pred_chain &chain = preds[i];
-      unsigned j;
-      for (j = 0; j < chain.length (); ++j)
-	if (can_be_invalidated_p (chain[j], guard))
-	  break;
-
-      /* If we were unable to invalidate any predicate in C, then there
-	 is a viable path from entry to the PHI where the PHI takes
-	 an interesting value and continues to a use of the PHI.  */
-      if (j == chain.length ())
-	return false;
-    }
-  return true;
-}
-
-/* Return true if none of the PHI arguments in OPNDS is used given
-   the use guards in *THIS that guard the PHI's use.  */
-
-bool
-uninit_analysis::use_cannot_happen (gphi *phi, unsigned opnds, const predicate &use_preds)
-{
-  if (!m_eval.phi_arg_set (phi))
-    return false;
-
-  /* PHI_USE_GUARDS are OR'ed together.  If we have more than one
-     possible guard, there's no way of knowing which guard was true.
-     In that case compute the intersection of all use predicates
-     and use that.  */
-  const predicate &phi_use_guards = use_preds;
-  const pred_chain *use_guard = &phi_use_guards.chain() [0];
-  pred_chain phi_use_guard_intersection = vNULL;
-  if (phi_use_guards.chain ().length () != 1)
-    {
-      phi_use_guard_intersection = use_guard->copy ();
-      for (unsigned i = 1; i < phi_use_guards.chain ().length (); ++i)
-	{
-	  for (unsigned j = 0; j < phi_use_guard_intersection.length ();)
-	    {
-	      unsigned k;
-	      for (k = 0; k < phi_use_guards.chain ()[i].length (); ++k)
-		if (pred_equal_p (phi_use_guards.chain ()[i][k],
-				  phi_use_guard_intersection[j]))
-		  break;
-	      if (k == phi_use_guards.chain ()[i].length ())
-		phi_use_guard_intersection.unordered_remove (j);
-	      else
-		j++;
-	    }
-	}
-      if (phi_use_guard_intersection.is_empty ())
-	{
-	  phi_use_guard_intersection.release ();
-	  return false;
-	}
-      use_guard = &phi_use_guard_intersection;
-    }
-
-  basic_block phi_bb = gimple_bb (phi);
-  /* Find the closest dominating bb to be the control dependence root.  */
-  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
-  if (!cd_root)
-    return false;
-
-  /* Look for the control dependencies of all the interesting operands
-     and build guard predicates describing them.  */
-  unsigned n = gimple_phi_num_args (phi);
-  for (unsigned i = 0; i < n; ++i)
-    {
-      if (!MASK_TEST_BIT (opnds, i))
-	continue;
-
-      edge e = gimple_phi_arg_edge (phi, i);
-      auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
-      auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
-      unsigned num_chains = 0;
-      unsigned num_calls = 0;
-
-      /* Build the control dependency chain for the PHI argument...  */
-      if (!compute_control_dep_chain (cd_root,
-				      e->src, dep_chains, &num_chains,
-				      cur_chain, &num_calls))
-	{
-	  gcc_assert (num_chains == 0);
-	  /* If compute_control_dep_chain bailed out due to limits
-	     build a partial sparse path using dominators.  Collect
-	     only edges whose predicates are always true when reaching E.  */
-	  simple_control_dep_chain (dep_chains[0], cd_root, e);
-	  num_chains++;
-	}
-      /* Update the chains with the phi operand edge.  */
-      else if (EDGE_COUNT (e->src->succs) > 1)
-	{
-	  for (unsigned j = 0; j < num_chains; j++)
-	    dep_chains[j].safe_push (e);
-	}
-
-      if (DEBUG_PREDICATE_ANALYZER && dump_file)
-	{
-	  fprintf (dump_file, "predicate::use_cannot_happen (...) "
-		   "dep_chains for arg %u:\n\t", i);
-	  dump_dep_chains (dep_chains, num_chains);
-	}
-
-      /* ...and convert it into a set of predicates guarding its
-	 definition.  */
-      predicate def_preds;
-      def_preds.init_from_control_deps (dep_chains, num_chains);
-      if (def_preds.is_empty ())
-	/* If there's no predicate there's no basis to rule the use out.  */
-	return false;
-
-      def_preds.simplify ();
-      def_preds.normalize ();
-
-      /* Can the guard for this PHI argument be negated by the one
-	 guarding the PHI use?  */
-      if (!can_be_invalidated_p (def_preds.chain (), *use_guard))
-	{
-	  phi_use_guard_intersection.release ();
-	  return false;
-	}
-    }
-
-  phi_use_guard_intersection.release ();
-  return true;
 }
 
 /* Implemented simplifications:
@@ -2238,6 +2083,25 @@ uninit_analysis::init_from_phi_def (gphi *phi)
   if (nedges == 0)
     return false;
 
+  auto_bb_flag in_region (cfun);
+  auto_vec<basic_block, 20> region (MIN (n_basic_blocks_for_fn (cfun),
+					 param_uninit_control_dep_attempts));
+  /* Pre-mark the PHI incoming edges PHI block to make sure we only walk
+     interesting edges from there.  */
+  for (unsigned i = 0; i < nedges; i++)
+    {
+      if (!(def_edges[i]->dest->flags & in_region))
+	{
+	  if (!region.space (1))
+	    break;
+	  def_edges[i]->dest->flags |= in_region;
+	  region.quick_push (def_edges[i]->dest);
+	}
+    }
+  for (unsigned i = 0; i < nedges; i++)
+    if (!dfs_mark_dominating_region (def_edges[i], cd_root, in_region, region))
+      break;
+
   unsigned num_chains = 0;
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
@@ -2247,7 +2111,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
       unsigned num_calls = 0;
       unsigned prev_nc = num_chains;
       compute_control_dep_chain (cd_root, e->src, dep_chains,
-				 &num_chains, cur_chain, &num_calls);
+				 &num_chains, cur_chain, &num_calls, in_region);
 
       /* Update the newly added chains with the phi operand edge.  */
       if (EDGE_COUNT (e->src->succs) > 1)
@@ -2258,6 +2122,10 @@ uninit_analysis::init_from_phi_def (gphi *phi)
 	    dep_chains[j].safe_push (e);
 	}
     }
+
+  /* Unmark the region.  */
+  for (auto bb : region)
+    bb->flags &= ~in_region;
 
   /* Convert control dependence chains to the predicate in *THIS under
      which the PHI operands are defined to values for which M_EVAL is
@@ -2315,11 +2183,6 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 
       return true;
     }
-
-  /* We might be able to prove that if the control dependencies for OPNDS
-     are true, the control dependencies for USE_STMT can never be true.  */
-  if (use_cannot_happen (phi, opnds, use_preds))
-    return true;
 
   if (m_phi_def_preds.is_empty ())
     {

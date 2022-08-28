@@ -1229,6 +1229,10 @@ Wselector
 ObjC ObjC++ Var(warn_selector) Warning
 Warn if a selector has multiple methods.
 
+Wself-move
+C++ ObjC++ Var(warn_self_move) Warning LangEnabledBy(C++ ObjC++, Wall)
+Warn when a value is moved to itself with std::move.
+
 Wsequence-point
 C ObjC C++ ObjC++ Var(warn_sequence_point) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possible violations of sequence point rules.

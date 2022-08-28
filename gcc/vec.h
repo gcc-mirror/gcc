@@ -1469,6 +1469,9 @@ public:
   bool is_empty (void) const
   { return m_vec ? m_vec->is_empty () : true; }
 
+  unsigned allocated (void) const
+  { return m_vec ? m_vec->allocated () : 0; }
+
   unsigned length (void) const
   { return m_vec ? m_vec->length () : 0; }
 

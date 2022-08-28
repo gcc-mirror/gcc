@@ -252,8 +252,21 @@ foperator_equal::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      // If it's true, the result is the same as OP2.
-      r = op2;
+      if (HONOR_SIGNED_ZEROS (type)
+	  && op2.contains_p (build_zero_cst (type)))
+	{
+	  // With signed zeros, x == -0.0 does not mean we can replace
+	  // x with -0.0, because x may be either +0.0 or -0.0.
+	  r.set_varying (type);
+	}
+      else
+	{
+	  // If it's true, the result is the same as OP2.
+	  //
+	  // If the range does not actually contain zeros, this should
+	  // always be OK.
+	  r = op2;
+	}
       // The TRUE side of op1 == op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;

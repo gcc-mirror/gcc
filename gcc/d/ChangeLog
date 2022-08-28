@@ -1,3 +1,14 @@
+2022-08-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 817610b16d.
+	* d-ctfloat.cc (CTFloat::parse): Update for new front-end interface.
+	* d-lang.cc (d_parse_file): Likewise.
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Remove handling of array
+	assignments to non-trivial static and dynamic arrays.
+	* runtime.def (ARRAYASSIGN): Remove.
+	(ARRAYASSIGN_L): Remove.
+	(ARRAYASSIGN_R): Remove.
+
 2022-08-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/106638

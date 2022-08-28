@@ -110,8 +110,6 @@ bfin*-*)
 bpf-*-*)
         cpu_type=bpf
         ;;
-cr16-*-*)
-	;;
 csky*-*-*)
 	cpu_type=csky
 	;;
@@ -591,10 +589,6 @@ bpf-*-*)
         tmake_file="$tmake_file ${cpu_type}/t-${cpu_type}"
         extra_parts="crti.o crtn.o"
 	;;
-cr16-*-elf)
-	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
-	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
-        ;;
 cris-*-elf)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-elfmulti"
 	;;

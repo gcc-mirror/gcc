@@ -39,7 +39,7 @@ end program main
 
 ! Check that only three loops are analyzed, and that all can be parallelized.
 ! { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 2 "parloops1" { xfail *-*-* } } }
-! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 2 "parloops1" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint, noclone\\)\\)" 2 "parloops1" { xfail *-*-* } } }
 ! { dg-final { scan-tree-dump-not "FAILED:" "parloops1" { xfail *-*-* } } }
 
 ! Check that the loop has been split off into a function.

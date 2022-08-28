@@ -986,11 +986,9 @@ public:
 	    else if ((postblit || destructor)
 		     && e->op != EXP::blit && e->op != EXP::construct)
 	      {
-		/* Generate: _d_arrayassign(ti, from, to);  */
-		this->result_ = build_libcall (LIBCALL_ARRAYASSIGN, e->type, 3,
-					       build_typeinfo (e, etype),
-					       d_array_convert (e->e2),
-					       d_array_convert (e->e1));
+		/* Assigning to a non-trivially copyable array has already been
+		   handled by the front-end.  */
+		gcc_unreachable ();
 	      }
 	    else
 	      {
@@ -1124,27 +1122,7 @@ public:
 	/* All other kinds of lvalue or rvalue static array assignment.
 	   Array construction has already been handled by the front-end.  */
 	gcc_assert (e->op != EXP::construct);
-
-	/* Generate: _d_arrayassign_l()
-		 or: _d_arrayassign_r()  */
-	libcall_fn libcall = (lvalue)
-	  ? LIBCALL_ARRAYASSIGN_L : LIBCALL_ARRAYASSIGN_R;
-	tree elembuf = build_local_temp (build_ctype (etype));
-	Type *arrtype = (e->type->ty == TY::Tsarray)
-	  ? etype->arrayOf () : e->type;
-	tree result = build_libcall (libcall, arrtype, 4,
-				     build_typeinfo (e, etype),
-				     d_array_convert (e->e2),
-				     d_array_convert (e->e1),
-				     build_address (elembuf));
-
-	/* Cast the libcall result back to a static array.  */
-	if (e->type->ty == TY::Tsarray)
-	  result = indirect_ref (build_ctype (e->type),
-				 d_array_ptr (result));
-
-	this->result_ = result;
-	return;
+	gcc_unreachable ();
       }
 
     /* Simple assignment.  */

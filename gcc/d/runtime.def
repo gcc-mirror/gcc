@@ -115,14 +115,7 @@ DEF_D_RUNTIME (ALLOCMEMORY, "_d_allocmemory", RT(VOIDPTR), P1(SIZE_T),
 DEF_D_RUNTIME (ARRAYCOPY, "_d_arraycopy", RT(ARRAY_VOID),
 	       P3(SIZE_T, ARRAY_VOID, ARRAY_VOID), 0)
 
-/* Used for array assignments from an existing array.  The `set' variant is for
-   when the assignment value is a single element.  */
-DEF_D_RUNTIME (ARRAYASSIGN, "_d_arrayassign", RT(ARRAY_VOID),
-	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
-DEF_D_RUNTIME (ARRAYASSIGN_L, "_d_arrayassign_l", RT(ARRAY_VOID),
-	       P4(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID, VOIDPTR), 0)
-DEF_D_RUNTIME (ARRAYASSIGN_R, "_d_arrayassign_r", RT(ARRAY_VOID),
-	       P4(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID, VOIDPTR), 0)
+/* Used for array assignments from a single element.  */
 DEF_D_RUNTIME (ARRAYSETASSIGN, "_d_arraysetassign", RT(VOIDPTR),
 	       P4(VOIDPTR, VOIDPTR, SIZE_T, CONST_TYPEINFO), 0)
 

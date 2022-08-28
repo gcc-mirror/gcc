@@ -2297,7 +2297,7 @@ if (isInputRange!RoR &&
 // https://issues.dlang.org/show_bug.cgi?id=10895
 @safe unittest
 {
-    class A
+    static class A
     {
         string name;
         alias name this;
@@ -4376,8 +4376,8 @@ unittest
             return app[];
     }
 
-    class C {}
-    struct S { const(C) c; }
+    static class C {}
+    static struct S { const(C) c; }
     S[] s = [ S(new C) ];
 
     auto t = fastCopy(s); // Does not compile

@@ -226,12 +226,12 @@ private final class ParamSection : Section
                     buf.writestring("$(DDOC_PARAM_ID ");
                     {
                         size_t o = buf.length;
-                        Parameter fparam = isFunctionParameter(a, namestart, namelen);
+                        Parameter fparam = isFunctionParameter(a, namestart[0 .. namelen]);
                         if (!fparam)
                         {
                             // Comments on a template might refer to function parameters within.
                             // Search the parameters of nested eponymous functions (with the same name.)
-                            fparam = isEponymousFunctionParameter(a, namestart, namelen);
+                            fparam = isEponymousFunctionParameter(a, namestart[0 ..  namelen]);
                         }
                         bool isCVariadic = isCVariadicParameter(a, namestart[0 .. namelen]);
                         if (isCVariadic)
@@ -328,7 +328,7 @@ private final class MacroSection : Section
 private alias Sections = Array!(Section);
 
 // Workaround for missing Parameter instance for variadic params. (it's unnecessary to instantiate one).
-private bool isCVariadicParameter(Dsymbols* a, const(char)[] p)
+private bool isCVariadicParameter(Dsymbols* a, const(char)[] p) @safe
 {
     foreach (member; *a)
     {
@@ -339,7 +339,7 @@ private bool isCVariadicParameter(Dsymbols* a, const(char)[] p)
     return false;
 }
 
-private Dsymbol getEponymousMember(TemplateDeclaration td)
+private Dsymbol getEponymousMember(TemplateDeclaration td) @safe
 {
     if (!td.onemember)
         return null;
@@ -456,7 +456,11 @@ extern(C++) void gendocfile(Module m)
     OutBuffer buf2;
     buf2.writestring("$(DDOC)");
     size_t end = buf2.length;
-    m.macrotable.expand(buf2, 0, end, null);
+
+    const success = m.macrotable.expand(buf2, 0, end, null, global.recursionLimit);
+    if (!success)
+        error(Loc.initial, "DDoc macro expansion limit exceeded; more than %d expansions.", global.recursionLimit);
+
     version (all)
     {
         /* Remove all the escape sequences from buf2,
@@ -2561,17 +2565,17 @@ private size_t replaceMarkdownEmphasis(ref OutBuffer buf, const ref Loc loc, ref
 
 /****************************************************
  */
-private bool isIdentifier(Dsymbols* a, const(char)* p, size_t len)
+private bool isIdentifier(Dsymbols* a, const(char)[] s)
 {
     foreach (member; *a)
     {
         if (auto imp = member.isImport())
         {
             // For example: `public import str = core.stdc.string;`
-            // This checks if `p` is equal to `str`
+            // This checks if `s` is equal to `str`
             if (imp.aliasId)
             {
-                if (p[0 .. len] == imp.aliasId.toString())
+                if (s == imp.aliasId.toString())
                     return true;
             }
             else
@@ -2586,14 +2590,14 @@ private bool isIdentifier(Dsymbols* a, const(char)* p, size_t len)
                 }
                 fullyQualifiedImport ~= imp.id.toString();
 
-                // Check if `p` == `core.stdc.string`
-                if (p[0 .. len] == fullyQualifiedImport)
+                // Check if `s` == `core.stdc.string`
+                if (s == fullyQualifiedImport)
                     return true;
             }
         }
         else if (member.ident)
         {
-            if (p[0 .. len] == member.ident.toString())
+            if (s == member.ident.toString())
                 return true;
         }
 
@@ -2603,12 +2607,12 @@ private bool isIdentifier(Dsymbols* a, const(char)* p, size_t len)
 
 /****************************************************
  */
-private bool isKeyword(const(char)* p, size_t len)
+private bool isKeyword(const(char)[] str) @safe
 {
     immutable string[3] table = ["true", "false", "null"];
     foreach (s; table)
     {
-        if (p[0 .. len] == s)
+        if (str == s)
             return true;
     }
     return false;
@@ -2616,7 +2620,7 @@ private bool isKeyword(const(char)* p, size_t len)
 
 /****************************************************
  */
-private TypeFunction isTypeFunction(Dsymbol s)
+private TypeFunction isTypeFunction(Dsymbol s) @safe
 {
     FuncDeclaration f = s.isFuncDeclaration();
     /* f.type may be NULL for template members.
@@ -2632,14 +2636,14 @@ private TypeFunction isTypeFunction(Dsymbol s)
 
 /****************************************************
  */
-private Parameter isFunctionParameter(Dsymbol s, const(char)* p, size_t len)
+private Parameter isFunctionParameter(Dsymbol s, const(char)[] str) @safe
 {
     TypeFunction tf = isTypeFunction(s);
     if (tf && tf.parameterList.parameters)
     {
         foreach (fparam; *tf.parameterList.parameters)
         {
-            if (fparam.ident && p[0 .. len] == fparam.ident.toString())
+            if (fparam.ident && str == fparam.ident.toString())
             {
                 return fparam;
             }
@@ -2650,11 +2654,11 @@ private Parameter isFunctionParameter(Dsymbol s, const(char)* p, size_t len)
 
 /****************************************************
  */
-private Parameter isFunctionParameter(Dsymbols* a, const(char)* p, size_t len)
+private Parameter isFunctionParameter(Dsymbols* a, const(char)[] p) @safe
 {
-    for (size_t i = 0; i < a.dim; i++)
+    foreach (Dsymbol sym; *a)
     {
-        Parameter fparam = isFunctionParameter((*a)[i], p, len);
+        Parameter fparam = isFunctionParameter(sym, p);
         if (fparam)
         {
             return fparam;
@@ -2665,11 +2669,11 @@ private Parameter isFunctionParameter(Dsymbols* a, const(char)* p, size_t len)
 
 /****************************************************
  */
-private Parameter isEponymousFunctionParameter(Dsymbols *a, const(char) *p, size_t len)
+private Parameter isEponymousFunctionParameter(Dsymbols *a, const(char)[] p) @safe
 {
-    for (size_t i = 0; i < a.dim; i++)
+    foreach (Dsymbol dsym; *a)
     {
-        TemplateDeclaration td = (*a)[i].isTemplateDeclaration();
+        TemplateDeclaration td = dsym.isTemplateDeclaration();
         if (td && td.onemember)
         {
             /* Case 1: we refer to a template declaration inside the template
@@ -2688,7 +2692,7 @@ private Parameter isEponymousFunctionParameter(Dsymbols *a, const(char) *p, size
                /// ...ddoc...
                alias case2 = case1!int;
              */
-            AliasDeclaration ad = (*a)[i].isAliasDeclaration();
+            AliasDeclaration ad = dsym.isAliasDeclaration();
             if (ad && ad.aliassym)
             {
                 td = ad.aliassym.isTemplateDeclaration();
@@ -2699,7 +2703,7 @@ private Parameter isEponymousFunctionParameter(Dsymbols *a, const(char) *p, size
             Dsymbol sym = getEponymousMember(td);
             if (sym)
             {
-                Parameter fparam = isFunctionParameter(sym, p, len);
+                Parameter fparam = isFunctionParameter(sym, p);
                 if (fparam)
                 {
                     return fparam;
@@ -4956,17 +4960,17 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
                     i = buf.bracket(i, "$(DDOC_AUTO_PSYMBOL_SUPPRESS ", j - 1, ")") - 1;
                     break;
                 }
-                if (isIdentifier(a, start, len))
+                if (isIdentifier(a, start[0 .. len]))
                 {
                     i = buf.bracket(i, "$(DDOC_AUTO_PSYMBOL ", j, ")") - 1;
                     break;
                 }
-                if (isKeyword(start, len))
+                if (isKeyword(start[0 .. len]))
                 {
                     i = buf.bracket(i, "$(DDOC_AUTO_KEYWORD ", j, ")") - 1;
                     break;
                 }
-                if (isFunctionParameter(a, start, len))
+                if (isFunctionParameter(a, start[0 .. len]))
                 {
                     //printf("highlighting arg '%s', i = %d, j = %d\n", arg.ident.toChars(), i, j);
                     i = buf.bracket(i, "$(DDOC_AUTO_PARAM ", j, ")") - 1;
@@ -5055,7 +5059,7 @@ private void highlightCode(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t off
             if (i < j)
             {
                 size_t len = j - i;
-                if (isIdentifier(a, start, len))
+                if (isIdentifier(a, start[0 .. len]))
                 {
                     i = buf.bracket(i, "$(DDOC_PSYMBOL ", j, ")") - 1;
                     continue;
@@ -5066,12 +5070,12 @@ private void highlightCode(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t off
             if (i < j)
             {
                 size_t len = j - i;
-                if (isIdentifier(a, start, len))
+                if (isIdentifier(a, start[0 .. len]))
                 {
                     i = buf.bracket(i, "$(DDOC_PSYMBOL ", j, ")") - 1;
                     continue;
                 }
-                if (isFunctionParameter(a, start, len))
+                if (isFunctionParameter(a, start[0 .. len]))
                 {
                     //printf("highlighting arg '%s', i = %d, j = %d\n", arg.ident.toChars(), i, j);
                     i = buf.bracket(i, "$(DDOC_PARAM ", j, ")") - 1;
@@ -5195,12 +5199,12 @@ private void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t of
                 if (!sc)
                     break;
                 size_t len = lex.p - tok.ptr;
-                if (isIdentifier(a, tok.ptr, len))
+                if (isIdentifier(a, tok.ptr[0 .. len]))
                 {
                     highlight = "$(D_PSYMBOL ";
                     break;
                 }
-                if (isFunctionParameter(a, tok.ptr, len))
+                if (isFunctionParameter(a, tok.ptr[0 .. len]))
                 {
                     //printf("highlighting arg '%s', i = %d, j = %d\n", arg.ident.toChars(), i, j);
                     highlight = "$(D_PARAM ";
@@ -5246,7 +5250,7 @@ private void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t of
 /****************************************
  * Determine if p points to the start of a "..." parameter identifier.
  */
-private bool isCVariadicArg(const(char)[] p)
+private bool isCVariadicArg(const(char)[] p) @nogc nothrow pure @safe
 {
     return p.length >= 3 && p[0 .. 3] == "...";
 }
@@ -5254,7 +5258,7 @@ private bool isCVariadicArg(const(char)[] p)
 /****************************************
  * Determine if p points to the start of an identifier.
  */
-bool isIdStart(const(char)* p)
+bool isIdStart(const(char)* p) @nogc nothrow pure
 {
     dchar c = *p;
     if (isalpha(c) || c == '_')
@@ -5273,7 +5277,7 @@ bool isIdStart(const(char)* p)
 /****************************************
  * Determine if p points to the rest of an identifier.
  */
-bool isIdTail(const(char)* p)
+bool isIdTail(const(char)* p) @nogc nothrow pure
 {
     dchar c = *p;
     if (isalnum(c) || c == '_')
@@ -5292,7 +5296,7 @@ bool isIdTail(const(char)* p)
 /****************************************
  * Determine if p points to the indentation space.
  */
-private bool isIndentWS(const(char)* p)
+private bool isIndentWS(const(char)* p) @nogc nothrow pure @safe
 {
     return (*p == ' ') || (*p == '\t');
 }
@@ -5300,7 +5304,7 @@ private bool isIndentWS(const(char)* p)
 /*****************************************
  * Return number of bytes in UTF character.
  */
-int utfStride(const(char)* p)
+int utfStride(const(char)* p) @nogc nothrow pure
 {
     dchar c = *p;
     if (c < 0x80)
@@ -5310,7 +5314,7 @@ int utfStride(const(char)* p)
     return cast(int)i;
 }
 
-private inout(char)* stripLeadingNewlines(inout(char)* s)
+private inout(char)* stripLeadingNewlines(inout(char)* s) @nogc nothrow pure
 {
     while (s && *s == '\n' || *s == '\r')
         s++;

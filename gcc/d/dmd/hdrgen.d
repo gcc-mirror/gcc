@@ -1890,7 +1890,17 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
                 buf.printf("%uu", cast(uint)v);
                 break;
             case Tint64:
-                buf.printf("%lldL", v);
+                if (v == long.min)
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=23173
+                    // This is a special case because - is not part of the
+                    // integer literal and 9223372036854775808L overflows a long
+                    buf.writestring("cast(long)-9223372036854775808");
+                }
+                else
+                {
+                    buf.printf("%lldL", v);
+                }
                 break;
             case Tuns64:
                 buf.printf("%lluLU", v);
@@ -2651,7 +2661,9 @@ void floatToBuffer(Type type, const real_t value, OutBuffer* buf, const bool all
     assert(strlen(buffer.ptr) < BUFFER_LEN);
     if (allowHex)
     {
-        real_t r = CTFloat.parse(buffer.ptr);
+        bool isOutOfRange;
+        real_t r = CTFloat.parse(buffer.ptr, isOutOfRange);
+        //assert(!isOutOfRange); // test/compilable/test22725.c asserts here
         if (r != value) // if exact duplication
             CTFloat.sprint(buffer.ptr, 'a', value);
     }

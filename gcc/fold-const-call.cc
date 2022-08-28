@@ -952,6 +952,10 @@ fold_const_call_ss (wide_int *result, combined_fn fn,
       *result = wi::shwi (real_isfinite (arg) ? 1 : 0, precision);
       return true;
 
+    case CFN_BUILT_IN_ISSIGNALING:
+      *result = wi::shwi (real_issignaling_nan (arg) ? 1 : 0, precision);
+      return true;
+
     CASE_CFN_ISINF:
     case CFN_BUILT_IN_ISINFD32:
     case CFN_BUILT_IN_ISINFD64:

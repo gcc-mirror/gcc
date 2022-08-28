@@ -1,3 +1,34 @@
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* c.opt (Wself-move): New option.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (check_builtin_function_arguments): Handle
+	BUILT_IN_ISSIGNALING.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_named_character_escapes to 202207L.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.cc (c_common_reswords): Enable nullptr in C2X.
+	(c_common_nodes_and_builtins): Create the built-in node for nullptr.
+	* c-common.h (enum c_tree_index): Add CTI_NULLPTR, CTI_NULLPTR_TYPE.
+	(struct c_common_resword): Resize the disable member.
+	(D_C2X): Add.
+	(nullptr_node): Define.
+	(nullptr_type_node): Define.
+	(NULLPTR_TYPE_P): Define.
+	* c-pretty-print.cc (c_pretty_printer::simple_type_specifier): Handle
+	NULLPTR_TYPE.
+	(c_pretty_printer::direct_abstract_declarator): Likewise.
+	(c_pretty_printer::constant): Likewise.
+
 2022-08-16  Tom Honermann  <tom@honermann.net>
 
 	PR c++/106423

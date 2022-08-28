@@ -4407,30 +4407,46 @@ extern (C++) final class TypeFunction : TypeNext
 
         purityLevel();
 
+        static bool mayHavePointers(Type t)
+        {
+            if (auto ts = t.isTypeStruct())
+            {
+                auto sym = ts.sym;
+                if (sym.members && !sym.determineFields() && sym.type != Type.terror)
+                    // struct is forward referenced, so "may have" pointers
+                    return true;
+            }
+            return t.hasPointers();
+        }
+
         // See if p can escape via any of the other parameters
         if (purity == PURE.weak)
         {
             // Check escaping through parameters
             foreach (i, fparam; parameterList)
             {
-                if (fparam == p)
-                    continue;
                 Type t = fparam.type;
                 if (!t)
                     continue;
-                t = t.baseElemOf();
+                t = t.baseElemOf();     // punch thru static arrays
                 if (t.isMutable() && t.hasPointers())
                 {
-                    if (fparam.isReference())
+                    if (fparam.isReference() && fparam != p)
+                        return stc;
+
+                    if (t.ty == Tdelegate)
+                        return stc;     // could escape thru delegate
+
+                    if (t.ty == Tclass)
+                        return stc;
+
+                    /* if t is a pointer to mutable pointer
+                     */
+                    if (auto tn = t.nextOf())
                     {
+                        if (tn.isMutable() && mayHavePointers(tn))
+                            return stc;   // escape through pointers
                     }
-                    else if (t.ty == Tarray || t.ty == Tpointer)
-                    {
-                        Type tn = t.nextOf().toBasetype();
-                        if (!(tn.isMutable() && tn.hasPointers()))
-                            continue;
-                    }
-                    return stc;
                 }
             }
 

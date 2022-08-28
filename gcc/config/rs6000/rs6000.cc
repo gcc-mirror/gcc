@@ -28188,28 +28188,6 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
       if (tomode == OOmode)
 	return N_("invalid conversion to type %<__vector_pair%>");
     }
-  else if (POINTER_TYPE_P (fromtype) && POINTER_TYPE_P (totype))
-    {
-      /* We really care about the modes of the base types.  */
-      frommode = TYPE_MODE (TREE_TYPE (fromtype));
-      tomode = TYPE_MODE (TREE_TYPE (totype));
-
-      /* Do not allow conversions to/from XOmode and OOmode pointer
-	 types, except to/from void pointers.  */
-      if (frommode != tomode
-	  && frommode != VOIDmode
-	  && tomode != VOIDmode)
-	{
-	  if (frommode == XOmode)
-	    return N_("invalid conversion from type %<__vector_quad *%>");
-	  if (tomode == XOmode)
-	    return N_("invalid conversion to type %<__vector_quad *%>");
-	  if (frommode == OOmode)
-	    return N_("invalid conversion from type %<__vector_pair *%>");
-	  if (tomode == OOmode)
-	    return N_("invalid conversion to type %<__vector_pair *%>");
-	}
-    }
 
   /* Conversion allowed.  */
   return NULL;

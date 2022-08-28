@@ -1,3 +1,211 @@
+2022-08-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/i386/gcc-auto-profile: Regenerate.
+
+2022-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.cc (real_iszero): New.
+	* real.h (real_iszero): New.
+
+2022-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.cc (real_isinf): New overload.
+	(real_inf): Add sign argument.
+	* real.h (real_isinf): New overload.
+	(real_inf): Add sign argument.
+
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* doc/invoke.texi: Document -Wself-move.
+
+2022-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (vrange::set): Set varying.
+	(vrange::set_nonzero): Same.
+	(vrange::set_zero): Same.
+	(vrange::set_nonnegative): Same.
+
+2022-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_equal::op1_range): Do not blindly
+	copy op2 range when honoring signed zeros.
+
+2022-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.cc (possibly_profitable_path_p): Always
+	add newline.
+	(profitable_path_p): Same.
+
+2022-08-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h
+	(uninit_analysis::use_cannot_happen): Remove.
+	* gimple-predicate-analysis.cc (can_be_invalidated_p): Remove.
+	(uninit_analysis::use_cannot_happen): Likewise.
+	(uninit_analysis::is_use_guarded): Do not call
+	use_cannot_happen.
+	(dump_predicates): Remove.
+	(simple_control_dep_chain): Remove edge overload.
+
+2022-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* internal-fn.cc (expand_GOMP_TARGET_REV): New.
+	* internal-fn.def (GOMP_TARGET_REV): New.
+	* lto-cgraph.cc (lto_output_node, verify_node_partition): Mark
+	'omp target device_ancestor_host' as in_other_partition and don't
+	error if absent.
+	* omp-low.cc (create_omp_child_function): Mark as 'noclone'.
+	* omp-expand.cc (expand_omp_target): For reverse offload, remove
+	sorry, use device = GOMP_DEVICE_HOST_FALLBACK and create
+	empty-body nohost function.
+	* omp-offload.cc (execute_omp_device_lower): Handle
+	IFN_GOMP_TARGET_REV.
+	(pass_omp_target_link::execute): For ACCEL_COMPILER, don't
+	nullify fn argument for reverse offload
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_ISSIGNALING): New built-in.
+	* builtins.cc (expand_builtin_issignaling): New function.
+	(expand_builtin_signbit): Don't overwrite target.
+	(expand_builtin): Handle BUILT_IN_ISSIGNALING.
+	(fold_builtin_classify): Likewise.
+	(fold_builtin_1): Likewise.
+	* optabs.def (issignaling_optab): New.
+	* fold-const-call.cc (fold_const_call_ss): Handle
+	BUILT_IN_ISSIGNALING.
+	* config/i386/i386.md (issignalingxf2): New expander.
+	* doc/extend.texi (__builtin_issignaling): Document.
+	(__builtin_isinf, __builtin_isnan): Clarify behavior with
+	-ffinite-math-only.
+	* doc/md.texi (issignaling<mode>2): Likewise.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106099
+	* internal-fn.def (TRAP): Add ECF_LOOPING_CONST_OR_PURE flag.
+	* tree-cfg.cc (execute_fixup_cfg): Add IFN_TRAP instead of
+	__builtin_trap to avoid the need of vops.
+
+2022-08-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (dfs_mark_dominating_region):
+	New helper.
+	(compute_control_dep_chain): Adjust to honor marked region
+	if provided.
+	(uninit_analysis::init_from_phi_def): Pre-mark the dominating
+	region to improve compute_control_dep_chain walking.
+	* vec.h (vec<T, va_heap, vl_ptr>::allocated): Add forwarder.
+
+2022-08-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc
+	(uninit_analysis::collect_phi_def_edges): Only expand a
+	PHI def edge when it is possibly undefined.
+
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Remove cr16 related stuff.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* function-tests.cc (test_expansion_to_rtl): Likewise.
+	* common/config/cr16/cr16-common.cc: Removed.
+	* config/cr16/constraints.md: Removed.
+	* config/cr16/cr16-protos.h: Removed.
+	* config/cr16/cr16.cc: Removed.
+	* config/cr16/cr16.h: Removed.
+	* config/cr16/cr16.md: Removed.
+	* config/cr16/cr16.opt: Removed.
+	* config/cr16/predicates.md: Removed.
+	* config/cr16/t-cr16: Removed.
+
+2022-08-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/106704
+	* config/i386/i386-builtin.def (BDESC): Add
+	CODE_FOR_avx_blendvpd256/CODE_FOR_avx_blendvps256 to
+	corresponding builtins.
+	* config/i386/i386.cc (ix86_gimple_fold_builtin):
+	Don't fold IX86_BUILTIN_PBLENDVB256, IX86_BUILTIN_BLENDVPS256,
+	IX86_BUILTIN_BLENDVPD256 w/o TARGET_AVX2.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* ginclude/stddef.h: Define nullptr_t.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gimplify.cc (gimplify_modify_expr): Convert initialization from
+	a variable-size CONSTRUCTOR to memset before call to
+	gimplify_modify_expr_rhs.
+
+2022-08-25  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.cc (base_type_die): Also use DW_ATE_UTF for char8_t.
+
+2022-08-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/106101
+	* config/s390/predicates.md (subreg_register_operand): New
+	predicate.
+	* config/s390/s390-protos.h (s390_gen_lowpart_subreg): New
+	function prototype.
+	* config/s390/s390.cc (s390_gen_lowpart_subreg): New function.
+	(s390_expand_insv): Use s390_gen_lowpart_subreg instead of
+	gen_lowpart.
+	* config/s390/s390.md ("*get_tp_64", "*zero_extendhisi2_31")
+	("*zero_extendqisi2_31", "*zero_extendqihi2_31"): Likewise.
+	("movstrictqi", "movstricthi", "movstrictsi"): Use the
+	subreg_register_operand predicate instead of register_operand.
+
+2022-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-protos.h (loongarch_symbol_type):
+	Add SYMBOL_PCREL64 and change the description for SYMBOL_PCREL.
+	* config/loongarch/loongarch.cc (loongarch_attribute_table):
+	New attribute table.
+	(TARGET_ATTRIBUTE_TABLE): Define the target hook.
+	(loongarch_handle_model_attribute): New static function.
+	(loongarch_classify_symbol): Take TARGET_CMODEL_EXTREME and the
+	model attribute of SYMBOL_REF_DECL into account returning
+	SYMBOL_PCREL or SYMBOL_PCREL64.
+	(loongarch_use_anchors_for_symbol_p): New static function.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Define the target hook.
+	(loongarch_symbol_extreme_p): New static function.
+	(loongarch_symbolic_constant_p): Handle SYMBOL_PCREL64.
+	(loongarch_symbol_insns): Likewise.
+	(loongarch_split_symbol_type): Likewise.
+	(loongarch_split_symbol): Check SYMBOL_PCREL64 instead of
+	TARGET_CMODEL_EXTREME for PC-relative addressing.
+	(loongarch_print_operand_reloc): Likewise.
+	* doc/extend.texi (Variable Attributes): Document new
+	LoongArch specific attribute.
+
+2022-08-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_classify_symbol):
+	Return early if the rtx is not SYMBOL_REF.
+
+2022-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106737
+	* tree-parloops.cc (transform_to_exit_first_loop_alt): Do not
+	verify SSA form.
+
+2022-08-25  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	PR target/106459
+	* config/loongarch/loongarch.cc (loongarch_build_integer):
+	Use HOST_WIDE_INT.
+	* config/loongarch/loongarch.h (IMM_REACH): Likewise.
+	(HWIT_1U): New Defined.
+	(LU12I_OPERAND): Use HOST_WIDE_INT.
+	(LU32I_OPERAND): Likewise.
+	(LU52I_OPERAND): Likewise.
+	(HWIT_UC_0xFFF): Likwise.
+
 2022-08-24  Andrew Pinski  <apinski@marvell.com>
 
 	PR target/106632

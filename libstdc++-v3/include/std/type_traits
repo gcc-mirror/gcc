@@ -100,6 +100,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Metaprogramming helper types.
 
+  // Primary template.
+  /// Define a member typedef `type` only if a boolean constant is true.
+  template<bool, typename _Tp = void>
+    struct enable_if
+    { };
+
+  // Partial specialization for true.
+  template<typename _Tp>
+    struct enable_if<true, _Tp>
+    { typedef _Tp type; };
+
+  // __enable_if_t (std::enable_if_t for C++11)
+  template<bool _Cond, typename _Tp = void>
+    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
+
   template<bool>
     struct __conditional
     {
@@ -127,56 +142,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     using __type_identity_t = typename __type_identity<_Tp>::type;
 
-  template<typename...>
-    struct __or_;
+  namespace __detail
+  {
+    // A variadic alias template that resolves to its first argument.
+    template<typename _Tp, typename...>
+      using __first_t = _Tp;
 
-  template<>
-    struct __or_<>
-    : public false_type
-    { };
+    // These are deliberately not defined.
+    template<typename... _Bn>
+      auto __or_fn(int) -> __first_t<false_type,
+				     __enable_if_t<!bool(_Bn::value)>...>;
 
-  template<typename _B1>
-    struct __or_<_B1>
-    : public _B1
-    { };
+    template<typename... _Bn>
+      auto __or_fn(...) -> true_type;
 
-  template<typename _B1, typename _B2>
-    struct __or_<_B1, _B2>
-    : public __conditional_t<_B1::value, _B1, _B2>
-    { };
+    template<typename... _Bn>
+      auto __and_fn(int) -> __first_t<true_type,
+				      __enable_if_t<bool(_Bn::value)>...>;
 
-  template<typename _B1, typename _B2, typename _B3, typename... _Bn>
-    struct __or_<_B1, _B2, _B3, _Bn...>
-    : public __conditional_t<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>
-    { };
+    template<typename... _Bn>
+      auto __and_fn(...) -> false_type;
+  } // namespace detail
 
-  template<typename...>
-    struct __and_;
+  // Like C++17 std::dis/conjunction, but usable in C++11 and resolves
+  // to either true_type or false_type which allows for a more efficient
+  // implementation that avoids recursive class template instantiation.
+  template<typename... _Bn>
+    using __or_ = decltype(__detail::__or_fn<_Bn...>(0));
 
-  template<>
-    struct __and_<>
-    : public true_type
-    { };
-
-  template<typename _B1>
-    struct __and_<_B1>
-    : public _B1
-    { };
-
-  template<typename _B1, typename _B2>
-    struct __and_<_B1, _B2>
-    : public __conditional_t<_B1::value, _B2, _B1>
-    { };
-
-  template<typename _B1, typename _B2, typename _B3, typename... _Bn>
-    struct __and_<_B1, _B2, _B3, _Bn...>
-    : public __conditional_t<_B1::value, __and_<_B2, _B3, _Bn...>, _B1>
-    { };
+  template<typename... _Bn>
+    using __and_ = decltype(__detail::__and_fn<_Bn...>(0));
 
   template<typename _Pp>
-    struct __not_
-    : public __bool_constant<!bool(_Pp::value)>
-    { };
+    using __not_ = __bool_constant<!bool(_Pp::value)>;
   /// @endcond
 
 #if __cplusplus >= 201703L
@@ -186,18 +184,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool __or_v = __or_<_Bn...>::value;
   template<typename... _Bn>
     inline constexpr bool __and_v = __and_<_Bn...>::value;
+
+  namespace __detail
+  {
+    template<typename /* = void */, typename _B1, typename... _Bn>
+      struct __disjunction_impl
+      { using type = _B1; };
+
+    template<typename _B1, typename _B2, typename... _Bn>
+      struct __disjunction_impl<__enable_if_t<!bool(_B1::value)>, _B1, _B2, _Bn...>
+      { using type = typename __disjunction_impl<void, _B2, _Bn...>::type; };
+
+    template<typename /* = void */, typename _B1, typename... _Bn>
+      struct __conjunction_impl
+      { using type = _B1; };
+
+    template<typename _B1, typename _B2, typename... _Bn>
+      struct __conjunction_impl<__enable_if_t<bool(_B1::value)>, _B1, _B2, _Bn...>
+      { using type = typename __conjunction_impl<void, _B2, _Bn...>::type; };
+  } // namespace __detail
   /// @endcond
 
 #define __cpp_lib_logical_traits 201510L
 
   template<typename... _Bn>
     struct conjunction
-    : __and_<_Bn...>
+    : __detail::__conjunction_impl<void, _Bn...>::type
+    { };
+
+  template<>
+    struct conjunction<>
+    : true_type
     { };
 
   template<typename... _Bn>
     struct disjunction
-    : __or_<_Bn...>
+    : __detail::__disjunction_impl<void, _Bn...>::type
+    { };
+
+  template<>
+    struct disjunction<>
+    : false_type
     { };
 
   template<typename _Pp>
@@ -2219,22 +2246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __decay_and_strip = __strip_reference_wrapper<__decay_t<_Tp>>;
   /// @endcond
 
-  // Primary template.
-  /// Define a member typedef `type` only if a boolean constant is true.
-  template<bool, typename _Tp = void>
-    struct enable_if
-    { };
-
-  // Partial specialization for true.
-  template<typename _Tp>
-    struct enable_if<true, _Tp>
-    { typedef _Tp type; };
-
   /// @cond undocumented
-
-  // __enable_if_t (std::enable_if_t for C++11)
-  template<bool _Cond, typename _Tp = void>
-    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
 
   // Helper for SFINAE constraints
   template<typename... _Cond>

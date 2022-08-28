@@ -6,6 +6,7 @@
  * $(TR $(TD Arrays) $(TD
  *     $(MYREF assumeSafeAppend)
  *     $(MYREF capacity)
+ *     $(A #.dup.2, $(TT dup))
  *     $(MYREF idup)
  *     $(MYREF reserve)
  * ))
@@ -14,6 +15,7 @@
  *     $(MYREF byKeyValue)
  *     $(MYREF byValue)
  *     $(MYREF clear)
+ *     $(MYREF dup)
  *     $(MYREF get)
  *     $(MYREF keys)
  *     $(MYREF rehash)
@@ -23,15 +25,15 @@
  * ))
  * $(TR $(TD General) $(TD
  *     $(MYREF destroy)
- *     $(MYREF dup)
  *     $(MYREF hashOf)
- *     $(MYREF opEquals)
+ *     $(MYREF imported)
+ *     $(MYREF noreturn)
  * ))
- * $(TR $(TD Types) $(TD
+ * $(TR $(TD Classes) $(TD
  *     $(MYREF Error)
  *     $(MYREF Exception)
- *     $(MYREF noreturn)
  *     $(MYREF Object)
+ *     $(MYREF opEquals)
  *     $(MYREF Throwable)
  * ))
  * $(TR $(TD Type info) $(TD
@@ -61,7 +63,11 @@ alias size_t = typeof(int.sizeof);
 alias ptrdiff_t = typeof(cast(void*)0 - cast(void*)0);
 
 alias sizediff_t = ptrdiff_t; // For backwards compatibility only.
-alias noreturn = typeof(*null);  /// bottom type
+/**
+ * Bottom type.
+ * See $(DDSUBLINK spec/type, noreturn).
+ */
+alias noreturn = typeof(*null);
 
 alias hash_t = size_t; // For backwards compatibility only.
 alias equals_t = bool; // For backwards compatibility only.
@@ -266,7 +272,9 @@ class Object
     the typeinfo name string compare. This is because of dmd's dll implementation. However,
     it can infer to @safe if your class' opEquals is.
 +/
-bool opEquals(LHS, RHS)(LHS lhs, RHS rhs) if (is(LHS : const Object) && is(RHS : const Object))
+bool opEquals(LHS, RHS)(LHS lhs, RHS rhs)
+if ((is(LHS : const Object) || is(LHS : const shared Object)) &&
+    (is(RHS : const Object) || is(RHS : const shared Object)))
 {
     static if (__traits(compiles, lhs.opEquals(rhs)) && __traits(compiles, rhs.opEquals(lhs)))
     {
@@ -503,6 +511,16 @@ unittest
 
     assert(obj1 == obj1);
     assert(obj1 != obj2);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23291
+@system unittest
+{
+    static shared class C { bool opEquals(const(shared(C)) rhs) const shared  { return true;}}
+    const(C) c = new C();
+    const(C)[] a = [c];
+    const(C)[] b = [c];
+    assert(a[0] == b[0]);
 }
 
 private extern(C) void _d_setSameMutex(shared Object ownee, shared Object owner) nothrow;
@@ -3473,13 +3491,18 @@ ref V require(K, V)(ref V[K] aa, K key, lazy V value = V.init)
 private enum bool isSafeCopyable(T) = is(typeof(() @safe { union U { T x; } T *x; auto u = U(*x); }));
 
 /***********************************
- * Looks up key; if it exists applies the update callable else evaluates the
- * create callable and adds it to the associative array
+ * Calls `create` if `key` doesn't exist in the associative array,
+ * otherwise calls `update`.
+ * `create` returns a corresponding value for `key`.
+ * `update` accepts a key parameter. If it returns a value, the value is
+ * set for `key`.
  * Params:
  *      aa =     The associative array.
  *      key =    The key.
- *      create = The callable to apply on create.
- *      update = The callable to apply on update.
+ *      create = The callable to create a value for `key`.
+ *               Must return V.
+ *      update = The callable to call if `key` exists.
+ *               Takes a K argument, returns a V or void.
  */
 void update(K, V, C, U)(ref V[K] aa, K key, scope C create, scope U update)
 if (is(typeof(create()) : V) && (is(typeof(update(aa[K.init])) : V) || is(typeof(update(aa[K.init])) == void)))
@@ -3509,23 +3532,39 @@ if (is(typeof(create()) : V) && (is(typeof(update(aa[K.init])) : V) || is(typeof
 }
 
 ///
-@system unittest
+@safe unittest
 {
-    auto aa = ["k1": 1];
+    int[string] aa;
 
-    aa.update("k1", {
-        return -1; // create (won't be executed)
-    }, (ref int v) {
-        v += 1; // update
-    });
-    assert(aa["k1"] == 2);
+    // create
+    aa.update("key",
+        () => 1,
+        (int) {} // not executed
+        );
+    assert(aa["key"] == 1);
 
-    aa.update("k2", {
-        return 0; // create
-    }, (ref int v) {
-        v = -1; // update (won't be executed)
-    });
-    assert(aa["k2"] == 0);
+    // update value by ref
+    aa.update("key",
+        () => 0, // not executed
+        (ref int v) {
+            v += 1;
+        });
+    assert(aa["key"] == 2);
+
+    // update from return value
+    aa.update("key",
+        () => 0, // not executed
+        (int v) => v * 2
+        );
+    assert(aa["key"] == 4);
+
+    // 'update' without changing value
+    aa.update("key",
+        () => 0, // not executed
+        (int) {
+            // do something else
+        });
+    assert(aa["key"] == 4);
 }
 
 @safe unittest
@@ -4576,6 +4615,8 @@ public import core.internal.array.casting: __ArrayCast;
 public import core.internal.array.concatenation : _d_arraycatnTXImpl;
 public import core.internal.array.construction : _d_arrayctor;
 public import core.internal.array.construction : _d_arraysetctor;
+public import core.internal.array.arrayassign : _d_arrayassign_l;
+public import core.internal.array.arrayassign : _d_arrayassign_r;
 public import core.internal.array.capacity: _d_arraysetlengthTImpl;
 
 public import core.internal.dassert: _d_assert_fail;
