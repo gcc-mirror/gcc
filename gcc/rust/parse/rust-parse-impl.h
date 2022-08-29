@@ -14102,9 +14102,13 @@ std::unique_ptr<AST::RangeExpr>
 Parser<ManagedTokenSource>::parse_nud_range_exclusive_expr (
   const_TokenPtr tok, AST::AttrVec outer_attrs ATTRIBUTE_UNUSED)
 {
+  auto restrictions = ParseRestrictions ();
+  restrictions.expr_can_be_null = true;
+
   // FIXME: this probably parses expressions accidently or whatever
   // try parsing RHS (as tok has already been consumed in parse_expression)
-  std::unique_ptr<AST::Expr> right = parse_expr (LBP_DOT_DOT, AST::AttrVec ());
+  std::unique_ptr<AST::Expr> right
+    = parse_expr (LBP_DOT_DOT, AST::AttrVec (), restrictions);
 
   Location locus = tok->get_locus ();
 
