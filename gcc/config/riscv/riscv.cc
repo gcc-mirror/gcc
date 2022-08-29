@@ -123,6 +123,9 @@ struct GTY(())  riscv_frame_info {
 
   /* The offset of arg_pointer_rtx from the bottom of the frame.  */
   poly_int64 arg_pointer_offset;
+
+  /* Reset this struct, clean all field to zero.  */
+  void reset(void);
 };
 
 enum riscv_privilege_levels {
@@ -391,6 +394,23 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "thead-c906", generic, &thead_c906_tune_info },
   { "size", generic, &optimize_size_tune_info },
 };
+
+void riscv_frame_info::reset(void)
+{
+  total_size = 0;
+  mask = 0;
+  fmask = 0;
+  save_libcall_adjustment = 0;
+
+  gp_sp_offset = 0;
+  fp_sp_offset = 0;
+
+  frame_pointer_offset = 0;
+
+  hard_frame_pointer_offset = 0;
+
+  arg_pointer_offset = 0;
+}
 
 /* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
 
@@ -4179,7 +4199,7 @@ riscv_compute_frame_info (void)
 	interrupt_save_prologue_temp = true;
     }
 
-  memset (frame, 0, sizeof (*frame));
+  frame->reset();
 
   if (!cfun->machine->naked_p)
     {
