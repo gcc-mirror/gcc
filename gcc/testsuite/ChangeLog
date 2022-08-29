@@ -1,3 +1,8 @@
+2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* gcc.target/powerpc/pr106017.c: New test.
+
 2022-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/106737

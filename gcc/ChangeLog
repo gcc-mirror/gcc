@@ -1,3 +1,9 @@
+2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* config/rs6000/rs6000.cc (rs6000_invalid_conversion): Remove handling
+	of MMA pointer conversions.
+
 2022-08-27  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/i386/gcc-auto-profile: Regenerate.
