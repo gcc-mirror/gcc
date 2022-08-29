@@ -24,6 +24,7 @@
 #include "rust-hir-map.h"
 #include "rust-token.h"
 #include "rust-location.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
@@ -1868,6 +1869,10 @@ private:
    */
 
   bool is_single_fragment () const { return nodes.size () == 1; }
+  bool is_single_fragment (SingleASTNode::NodeType expected) const
+  {
+    return is_single_fragment () && nodes[0].get_kind () == expected;
+  }
 
   bool is_single_fragment_kind (SingleASTNode::NodeType kind) const
   {
@@ -1912,6 +1917,16 @@ public:
   bool is_error () const { return fragment_is_error; }
 
   bool should_expand () const { return !is_error (); }
+
+  bool is_expression_fragment () const
+  {
+    return is_single_fragment (SingleASTNode::NodeType::EXPRESSION);
+  }
+
+  bool is_type_fragment () const
+  {
+    return is_single_fragment (SingleASTNode::NodeType::TYPE);
+  }
 
   std::unique_ptr<Expr> take_expression_fragment ()
   {

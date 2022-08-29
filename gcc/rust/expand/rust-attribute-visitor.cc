@@ -2662,7 +2662,7 @@ AttrVisitor::visit (AST::InherentImpl &impl)
   for (auto &param : impl.get_generic_params ())
     param->accept_vis (*this);
 
-  expander.push_context (MacroExpander::ContextType::TYPE);
+  expander.push_context (MacroExpander::ContextType::ITEM);
 
   auto &type = impl.get_type ();
   type->accept_vis (*this);
@@ -2706,7 +2706,7 @@ AttrVisitor::visit (AST::TraitImpl &impl)
   for (auto &param : impl.get_generic_params ())
     param->accept_vis (*this);
 
-  expander.push_context (MacroExpander::ContextType::TYPE);
+  expander.push_context (MacroExpander::ContextType::ITEM);
 
   auto &type = impl.get_type ();
   type->accept_vis (*this);
@@ -3427,11 +3427,13 @@ AttrVisitor::visit (AST::BareFunctionType &type)
 
   // no where clause, apparently
 }
+
 void
 AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 {
   auto final_fragment = expand_macro_fragment_recursive ();
-  if (final_fragment.should_expand ())
+  if (final_fragment.should_expand ()
+      && final_fragment.is_expression_fragment ())
     expr = final_fragment.take_expression_fragment ();
 }
 
@@ -3439,7 +3441,8 @@ void
 AttrVisitor::maybe_expand_type (std::unique_ptr<AST::Type> &type)
 {
   auto final_fragment = expand_macro_fragment_recursive ();
-  if (final_fragment.should_expand ())
+  if (final_fragment.should_expand () && final_fragment.is_type_fragment ())
     type = final_fragment.take_type_fragment ();
 }
+
 } // namespace Rust
