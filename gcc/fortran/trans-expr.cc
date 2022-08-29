@@ -6527,8 +6527,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  && !e->symtree->n.sym->attr.dimension
 			  && !e->symtree->n.sym->attr.pointer
 			  && !e->symtree->n.sym->attr.allocatable
-			  /* See PR 41453.  */
-			  && !e->symtree->n.sym->attr.dummy
 			  /* FIXME - PR 87395 and PR 41453  */
 			  && e->symtree->n.sym->attr.save == SAVE_NONE
 			  && !e->symtree->n.sym->attr.associate_var
@@ -6538,8 +6536,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  && !sym->attr.elemental)
 			{
 			  tree var;
-			  /* FIXME: This fails if var is passed by reference, see PR
-			     41453.  */
 			  var = build_fold_indirect_ref_loc (input_location,
 							     parmse.expr);
 			  tree clobber = build_clobber (TREE_TYPE (var));
