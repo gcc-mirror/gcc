@@ -543,35 +543,13 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
     return;
 
   unsigned n = gimple_phi_num_args (phi);
+  unsigned opnds_arg_phi = m_eval.phi_arg_set (phi);
   for (unsigned i = 0; i < n; i++)
     {
-      edge opnd_edge = gimple_phi_arg_edge (phi, i);
-      tree opnd = gimple_phi_arg_def (phi, i);
-
-      if (TREE_CODE (opnd) == SSA_NAME)
+      if (!MASK_TEST_BIT (opnds_arg_phi, i))
 	{
-	  gimple *def = SSA_NAME_DEF_STMT (opnd);
-
-	  if (!m_eval (opnd))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file,
-			   "\tFound def edge %i -> %i for cd_root %i "
-			   "and operand %u of: ",
-			   opnd_edge->src->index, opnd_edge->dest->index,
-			   cd_root->index, i);
-		  print_gimple_stmt (dump_file, phi, 0);
-		}
-	      edges->safe_push (opnd_edge);
-	    }
-	  else if (gimple_code (def) == GIMPLE_PHI
-		   && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
-	    collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
-				   visited);
-	}
-      else
-	{
+	  /* Add the edge for a not maybe-undefined edge value.  */
+	  edge opnd_edge = gimple_phi_arg_edge (phi, i);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
@@ -581,9 +559,22 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
 		       cd_root->index, i);
 	      print_gimple_stmt (dump_file, phi, 0);
 	    }
-
-	  if (!m_eval (opnd))
-	    edges->safe_push (opnd_edge);
+	  edges->safe_push (opnd_edge);
+	  continue;
+	}
+      else
+	{
+	  tree opnd = gimple_phi_arg_def (phi, i);
+	  if (TREE_CODE (opnd) == SSA_NAME)
+	    {
+	      gimple *def = SSA_NAME_DEF_STMT (opnd);
+	      if (gimple_code (def) == GIMPLE_PHI
+		  && dominated_by_p (CDI_DOMINATORS, gimple_bb (def), cd_root))
+		/* Process PHI defs of maybe-undefined edge values
+		   recursively.  */
+		collect_phi_def_edges (as_a<gphi *> (def), cd_root, edges,
+				       visited);
+	    }
 	}
     }
 }

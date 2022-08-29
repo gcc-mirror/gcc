@@ -95,7 +95,8 @@ class best_match
   : m_goal (goal_traits::get_string (goal)),
     m_goal_len (goal_traits::get_length (goal)),
     m_best_candidate (NULL),
-    m_best_distance (best_distance_so_far)
+    m_best_distance (best_distance_so_far),
+    m_best_candidate_len (0)
   {}
 
   /* Compare the edit distance between CANDIDATE and m_goal,

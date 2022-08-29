@@ -104,8 +104,6 @@ class uninit_analysis
   {
     typedef unsigned phi_arg_set_t;
 
-    /* Return true if the argument is an expression of interest.  */
-    virtual bool operator()(tree) = 0;
     /* Return a bitset of PHI arguments of interest.  By default returns
        bitset with a bit set for each argument.  Should be called in
        the overriden function first and, if nonzero, the result then
