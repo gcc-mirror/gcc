@@ -52,6 +52,22 @@ public:
   void go (AST::Crate &crate);
   void go (AST::Item &item);
 
+  /**
+   * Use the AST Dump as a debugging tool
+   */
+  template <typename T> static void debug (T &instance)
+  {
+    auto dump = Dump (std::cerr);
+
+    std::cerr << '\n';
+    instance.accept_vis (dump);
+    std::cerr << '\n';
+  }
+  template <typename T> static void debug (std::unique_ptr<T> &instance)
+  {
+    debug (*instance);
+  }
+
 private:
   std::ostream &stream;
   Indent indentation;
