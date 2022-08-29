@@ -727,6 +727,14 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 	break;
 
       auto node = parse_fn ();
+      if (node.is_error ())
+	{
+	  for (auto err : parser.get_errors ())
+	    err.emit_error ();
+
+	  return AST::ASTFragment::create_error ();
+	}
+
       nodes.emplace_back (std::move (node));
     }
 
