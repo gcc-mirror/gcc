@@ -1819,7 +1819,7 @@ public:
     return true;
   }
 
-  std::string as_string ()
+  std::string as_string () const
   {
     switch (kind)
       {
@@ -1869,14 +1869,45 @@ private:
    */
 
   bool is_single_fragment () const { return nodes.size () == 1; }
-  bool is_single_fragment (SingleASTNode::NodeType expected) const
+
+  bool is_single_fragment_of_kind (SingleASTNode::NodeType expected) const
   {
     return is_single_fragment () && nodes[0].get_kind () == expected;
   }
 
-  bool is_single_fragment_kind (SingleASTNode::NodeType kind) const
+  void assert_single_fragment (SingleASTNode::NodeType expected) const
   {
-    return is_single_fragment () && nodes[0].get_kind () == kind;
+    static const std::map<SingleASTNode::NodeType, const char *> str_map = {
+      {SingleASTNode::NodeType::IMPL, "impl"},
+      {SingleASTNode::NodeType::ITEM, "item"},
+      {SingleASTNode::NodeType::TYPE, "type"},
+      {SingleASTNode::NodeType::EXPRESSION, "expr"},
+      {SingleASTNode::NodeType::STMT, "stmt"},
+      {SingleASTNode::NodeType::EXTERN, "extern"},
+      {SingleASTNode::NodeType::TRAIT, "trait"},
+      {SingleASTNode::NodeType::TRAIT_IMPL, "trait impl"},
+    };
+
+    auto actual = nodes[0].get_kind ();
+    auto fail = false;
+
+    if (!is_single_fragment ())
+      {
+	rust_error_at (Location (), "fragment is not single");
+	fail = true;
+      }
+
+    if (actual != expected)
+      {
+	rust_error_at (
+	  Location (),
+	  "invalid fragment operation: expected %qs node, got %qs node",
+	  str_map.find (expected)->second,
+	  str_map.find (nodes[0].get_kind ())->second);
+	fail = true;
+      }
+
+    rust_assert (!fail);
   }
 
 public:
@@ -1920,23 +1951,23 @@ public:
 
   bool is_expression_fragment () const
   {
-    return is_single_fragment (SingleASTNode::NodeType::EXPRESSION);
+    return is_single_fragment_of_kind (SingleASTNode::NodeType::EXPRESSION);
   }
 
   bool is_type_fragment () const
   {
-    return is_single_fragment (SingleASTNode::NodeType::TYPE);
+    return is_single_fragment_of_kind (SingleASTNode::NodeType::TYPE);
   }
 
   std::unique_ptr<Expr> take_expression_fragment ()
   {
-    rust_assert (is_single_fragment_kind (SingleASTNode::NodeType::EXPRESSION));
+    assert_single_fragment (SingleASTNode::NodeType::EXPRESSION);
     return nodes[0].take_expr ();
   }
 
   std::unique_ptr<Type> take_type_fragment ()
   {
-    rust_assert (is_single_fragment_kind (SingleASTNode::NodeType::TYPE));
+    assert_single_fragment (SingleASTNode::NodeType::TYPE);
     return nodes[0].take_type ();
   }
 
