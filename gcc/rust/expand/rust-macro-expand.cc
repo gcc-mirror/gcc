@@ -864,7 +864,9 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
 static AST::ASTFragment
 transcribe_type (Parser<MacroInvocLexer> &parser)
 {
-  auto type = parser.parse_type ();
+  auto type = parser.parse_type (true);
+  for (auto err : parser.get_errors ())
+    err.emit_error ();
 
   return AST::ASTFragment ({std::move (type)});
 }
