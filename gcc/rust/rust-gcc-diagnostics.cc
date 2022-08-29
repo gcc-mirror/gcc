@@ -83,8 +83,7 @@ public:
 
   char *make_url () const final override
   {
-    return concat ("https://doc.rust-lang.org/error-index.html#",
-		   m_code.m_str,
+    return concat ("https://doc.rust-lang.org/error-index.html#", m_code.m_str,
 		   NULL);
   }
 
