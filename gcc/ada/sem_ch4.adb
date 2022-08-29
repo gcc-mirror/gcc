@@ -4798,7 +4798,7 @@ package body Sem_Ch4 is
       Name          : constant Node_Id := Prefix (N);
       Sel           : constant Node_Id := Selector_Name (N);
       Act_Decl      : Node_Id;
-      Comp          : Entity_Id;
+      Comp          : Entity_Id := Empty;
       Has_Candidate : Boolean := False;
       Hidden_Comp   : Entity_Id;
       In_Scope      : Boolean;
