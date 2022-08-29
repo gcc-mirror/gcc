@@ -5187,7 +5187,16 @@ package body Sem_Ch4 is
           and then not Is_Derived_Type (Prefix_Type)
           and then Is_Entity_Name (Name);
 
-      Comp := First_Entity (Type_To_Use);
+      --  Avoid initializing Comp if that initialization is not needed
+      --  (and, more importantly, if the call to First_Entity could fail).
+
+      if Has_Discriminants (Type_To_Use)
+        or else Is_Record_Type (Type_To_Use)
+        or else Is_Private_Type (Type_To_Use)
+        or else Is_Concurrent_Type (Type_To_Use)
+      then
+         Comp := First_Entity (Type_To_Use);
+      end if;
 
       --  If the selector has an original discriminant, the node appears in
       --  an instance. Replace the discriminant with the corresponding one
