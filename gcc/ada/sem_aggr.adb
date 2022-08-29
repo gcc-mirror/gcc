@@ -1987,6 +1987,11 @@ package body Sem_Aggr is
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Iterated_Component_Association then
                Resolve_Iterated_Component_Association (Assoc, Index_Typ);
+
+            elsif Nkind (Assoc) /= N_Component_Association then
+               Error_Msg_N
+                 ("invalid component association for aggregate", Assoc);
+               return Failure;
             end if;
 
             Choice := First (Choice_List (Assoc));
