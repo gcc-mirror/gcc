@@ -84,7 +84,7 @@
 ../../gcc/config/i386/i386.cc:2565:8: warning: too many arguments for format [-Wformat-extra-args]
 ../../gcc/config/i386/i386.cc:2565:8: warning: unknown conversion type character ‘{’ in format [-Wformat=]
 ../../gcc/config/i386/i386.cc:2565:8: warning: unknown conversion type character ‘}’ in format [-Wformat=]
-../../gcc/diagnostic.cc:2191:52: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/diagnostic.cc:2206:52: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../gcc/doc/sourcebuild.texi:1452: warning: node `Add Options' is next for `Effective-Target Keywords' in menu but not in sectioning
 ../../gcc/doc/sourcebuild.texi:2946: warning: node `Effective-Target Keywords' is prev for `Add Options' in menu but not in sectioning
 ../../gcc/fold-const.cc:314:42: warning: format not a string literal and no format arguments [-Wformat-security]
