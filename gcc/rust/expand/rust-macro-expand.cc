@@ -435,7 +435,7 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
 
 bool
 MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
-			      AST::MacroMatcher &matcher)
+			      AST::MacroMatcher &matcher, bool in_repetition)
 {
   if (depth_exceeds_recursion_limit ())
     {
@@ -485,8 +485,12 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
 	    // matched fragment get the offset in the token stream
 	    size_t offs_end = source.get_offs ();
-	    sub_stack.insert_metavar (
-	      MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
+	    if (in_repetition)
+	      sub_stack.append_fragment (
+		MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
+	    else
+	      sub_stack.insert_metavar (
+		MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
 	  }
 	  break;
 
@@ -509,7 +513,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	    AST::MacroMatcher *m
 	      = static_cast<AST::MacroMatcher *> (match.get ());
 	    expansion_depth++;
-	    if (!match_matcher (parser, *m))
+	    if (!match_matcher (parser, *m, in_repetition))
 	      {
 		expansion_depth--;
 		return false;
@@ -619,7 +623,7 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 	      case AST::MacroMatch::MacroMatchType::Matcher: {
 		AST::MacroMatcher *m
 		  = static_cast<AST::MacroMatcher *> (match.get ());
-		valid_current_match = match_matcher (parser, *m);
+		valid_current_match = match_matcher (parser, *m, true);
 	      }
 	      break;
 	    }

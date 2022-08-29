@@ -273,7 +273,7 @@ struct MacroExpander
 			 AST::MacroMatchRepetition &rep);
 
   bool match_matcher (Parser<MacroInvocLexer> &parser,
-		      AST::MacroMatcher &matcher);
+		      AST::MacroMatcher &matcher, bool in_repetition = false);
 
   /**
    * Match any amount of matches
