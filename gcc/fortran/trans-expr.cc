@@ -6528,7 +6528,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  tree var;
 			  /* FIXME: This fails if var is passed by reference, see PR
 			     41453.  */
-			  var = e->symtree->n.sym->backend_decl;
+			  var = build_fold_indirect_ref_loc (input_location,
+							     parmse.expr);
 			  tree clobber = build_clobber (TREE_TYPE (var));
 			  gfc_add_modify (&se->pre, var, clobber);
 			}
