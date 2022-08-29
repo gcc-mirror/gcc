@@ -1154,6 +1154,21 @@ uninit_undef_val_t::phi_arg_set (gphi *phi)
   return compute_uninit_opnds_pos (phi);
 }
 
+/* sort helper for find_uninit_use.  */
+
+static int
+cand_cmp (const void *a, const void *b, void *data)
+{
+  int *bb_to_rpo = (int *)data;
+  const gimple *sa = *(const gimple * const *)a;
+  const gimple *sb = *(const gimple * const *)b;
+  if (bb_to_rpo[gimple_bb (sa)->index] < bb_to_rpo[gimple_bb (sb)->index])
+    return -1;
+  else if (bb_to_rpo[gimple_bb (sa)->index] > bb_to_rpo[gimple_bb (sb)->index])
+    return 1;
+  return 0;
+}
+
 /* Searches through all uses of a potentially
    uninitialized variable defined by PHI and returns a use
    statement if the use is not properly guarded.  It returns
@@ -1161,7 +1176,7 @@ uninit_undef_val_t::phi_arg_set (gphi *phi)
    holding the position(s) of uninit PHI operands.  */
 
 static gimple *
-find_uninit_use (gphi *phi, unsigned uninit_opnds)
+find_uninit_use (gphi *phi, unsigned uninit_opnds, int *bb_to_rpo)
 {
   /* The Boolean predicate guarding the PHI definition.  Initialized
      lazily from PHI in the first call to is_use_guarded() and cached
@@ -1169,54 +1184,70 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds)
   uninit_undef_val_t eval;
   uninit_analysis def_preds (eval);
 
+  /* First process PHIs and record other candidates.  */
+  auto_vec<gimple *, 64> cands;
   use_operand_p use_p;
   imm_use_iterator iter;
   tree phi_result = gimple_phi_result (phi);
-  gimple *uninit_use = NULL;
   FOR_EACH_IMM_USE_FAST (use_p, iter, phi_result)
     {
       gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
 
-      basic_block use_bb;
       if (gphi *use_phi = dyn_cast<gphi *> (use_stmt))
 	{
-	  edge e = gimple_phi_arg_edge (use_phi,
-					PHI_ARG_INDEX_FROM_USE (use_p));
-	  use_bb = e->src;
+	  unsigned idx = PHI_ARG_INDEX_FROM_USE (use_p);
+	  edge e = gimple_phi_arg_edge (use_phi, idx);
 	  /* Do not look for uses in the next iteration of a loop, predicate
 	     analysis will not use the appropriate predicates to prove
 	     reachability.  */
 	  if (e->flags & EDGE_DFS_BACK)
 	    continue;
-	}
-      else if (uninit_use)
-	/* Only process the first real uninitialized use, but continue
-	   looking for unguarded uses in PHIs.  */
-	continue;
-      else
-	use_bb = gimple_bb (use_stmt);
 
-      if (def_preds.is_use_guarded (use_stmt, use_bb, phi, uninit_opnds))
-	{
-	  /* For a guarded use in a PHI record the PHI argument as
-	     initialized.  */
-	  if (gphi *use_phi = dyn_cast<gphi *> (use_stmt))
+	  basic_block use_bb = e->src;
+	  if (def_preds.is_use_guarded (use_stmt, use_bb, phi, uninit_opnds))
 	    {
-	      unsigned idx = PHI_ARG_INDEX_FROM_USE (use_p);
+	      /* For a guarded use in a PHI record the PHI argument as
+		 initialized.  */
 	      if (idx < uninit_analysis::func_t::max_phi_args)
 		{
 		  bool existed_p;
 		  auto &def_mask
-		    = defined_args->get_or_insert (use_phi, &existed_p);
+		      = defined_args->get_or_insert (use_phi, &existed_p);
 		  if (!existed_p)
 		    def_mask = 0;
 		  MASK_SET_BIT (def_mask, idx);
 		}
+	      continue;
 	    }
-	  continue;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Found unguarded use in bb %u: ",
+		       use_bb->index);
+	      print_gimple_stmt (dump_file, use_stmt, 0);
+	    }
+	  /* Found a phi use that is not guarded, mark the phi_result as
+	     possibly undefined.  */
+	  possibly_undefined_names->add (phi_result);
 	}
+      else
+	cands.safe_push (use_stmt);
+    }
+
+  /* Sort candidates after RPO.  */
+  cands.stablesort (cand_cmp, bb_to_rpo);
+  basic_block use_bb = NULL;
+  for (gimple *use_stmt : cands)
+    {
+      /* We only have to try diagnosing the first use in each block.  */
+      if (gimple_bb (use_stmt) == use_bb)
+	continue;
+
+      use_bb = gimple_bb (use_stmt);
+      if (def_preds.is_use_guarded (use_stmt, use_bb, phi, uninit_opnds))
+	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1224,15 +1255,10 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds)
 		   use_bb->index);
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
-      /* Found a phi use that is not guarded, mark the phi_result as
-	 possibly undefined.  */
-      if (is_a <gphi *> (use_stmt))
-	possibly_undefined_names->add (phi_result);
-      else
-	uninit_use = use_stmt;
+      return use_stmt;
     }
 
-  return uninit_use;
+  return NULL;
 }
 
 /* Look for inputs to PHI that are SSA_NAMEs that have empty definitions
@@ -1242,7 +1268,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds)
    by the compiler, the fewer false positives the warning is.  */
 
 static void
-warn_uninitialized_phi (gphi *phi, unsigned uninit_opnds)
+warn_uninitialized_phi (gphi *phi, unsigned uninit_opnds, int *bb_to_rpo)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1250,7 +1276,7 @@ warn_uninitialized_phi (gphi *phi, unsigned uninit_opnds)
       print_gimple_stmt (dump_file, phi, 0);
     }
 
-  gimple *uninit_use_stmt = find_uninit_use (phi, uninit_opnds);
+  gimple *uninit_use_stmt = find_uninit_use (phi, uninit_opnds, bb_to_rpo);
 
   /* All uses are properly guarded.  */
   if (!uninit_use_stmt)
@@ -1336,6 +1362,9 @@ execute_late_warn_uninitialized (function *fun)
   mark_dfs_back_edges (fun);
   int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun));
   int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  for (int i = 0; i < n; ++i)
+    bb_to_rpo[rpo[i]] = i;
 
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally
@@ -1365,10 +1394,11 @@ execute_late_warn_uninitialized (function *fun)
 	if (MASK_EMPTY (uninit_opnds))
 	  continue;
 
-	warn_uninitialized_phi (phi, uninit_opnds);
+	warn_uninitialized_phi (phi, uninit_opnds, bb_to_rpo);
       }
 
   free (rpo);
+  free (bb_to_rpo);
   delete possibly_undefined_names;
   possibly_undefined_names = NULL;
   delete defined_args;
