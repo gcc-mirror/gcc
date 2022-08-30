@@ -462,7 +462,7 @@ enum reg_class
   FP_REGS,			/* floating-point registers */
   FRAME_REGS,			/* arg pointer and frame pointer */
   VL_REGS,			/* vl register */
-  VTYPE_REGS,			/* vype register */
+  VTYPE_REGS,			/* vtype register */
   VM_REGS,			/* v0.t registers */
   VD_REGS,			/* vector registers except v0.t */
   V_REGS,			/* vector registers */
