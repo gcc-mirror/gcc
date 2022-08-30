@@ -1666,7 +1666,7 @@ predicate::normalize (gimple *use_or_def, bool is_use)
 
 void
 predicate::init_from_control_deps (const vec<edge> *dep_chains,
-				   unsigned num_chains)
+				   unsigned num_chains, bool is_use)
 {
   gcc_assert (is_empty ());
 
@@ -1675,7 +1675,8 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
     return;
 
   if (DEBUG_PREDICATE_ANALYZER && dump_file)
-    fprintf (dump_file, "init_from_control_deps {%s}:\n",
+    fprintf (dump_file, "init_from_control_deps [%s] {%s}:\n",
+	     is_use ? "USE" : "DEF",
 	     format_edge_vecs (dep_chains, num_chains).c_str ());
 
   /* Convert the control dependency chain into a set of predicates.  */
@@ -1711,8 +1712,12 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	  if (is_gimple_call (cond_stmt) && EDGE_COUNT (e->src->succs) >= 2)
 	    /* Ignore EH edge.  Can add assertion on the other edge's flag.  */
 	    continue;
-	  /* Skip if there is essentially one succesor.  */
-	  if (EDGE_COUNT (e->src->succs) == 2)
+	  /* Skip this edge if it is bypassing an abort - when the
+	     condition is not satisfied we are neither reaching the
+	     definition nor the use so it isn't meaningful.  Note if
+	     we are processing the use predicate the condition is
+	     meaningful.  See PR65244.  */
+	  if (!is_use && EDGE_COUNT (e->src->succs) == 2)
 	    {
 	      edge e1;
 	      edge_iterator ei1;
@@ -1941,7 +1946,7 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
      condition under which the definition in DEF_BB is used in USE_BB.
      Each OR subexpression is represented by one element of DEP_CHAINS,
      where each element consists of a series of AND subexpressions.  */
-  use_preds.init_from_control_deps (dep_chains, num_chains);
+  use_preds.init_from_control_deps (dep_chains, num_chains, true);
   return !use_preds.is_empty ();
 }
 
@@ -2050,7 +2055,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
   /* Convert control dependence chains to the predicate in *THIS under
      which the PHI operands are defined to values for which M_EVAL is
      false.  */
-  m_phi_def_preds.init_from_control_deps (dep_chains, num_chains);
+  m_phi_def_preds.init_from_control_deps (dep_chains, num_chains, false);
   return !m_phi_def_preds.is_empty ();
 }
 

@@ -65,7 +65,7 @@ class predicate
     return m_preds;
   }
 
-  void init_from_control_deps (const vec<edge> *, unsigned);
+  void init_from_control_deps (const vec<edge> *, unsigned, bool);
 
   void dump (gimple *, const char *) const;
 
