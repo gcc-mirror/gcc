@@ -1674,13 +1674,6 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
   if (num_chains == 0)
     return;
 
-  if (num_chains >= MAX_NUM_CHAINS)
-    {
-      if (dump_file)
-	fprintf (dump_file, "MAX_NUM_CHAINS exceeded: %u\n", num_chains);
-      return;
-    }
-
   /* Convert the control dependency chain into a set of predicates.  */
   m_preds.reserve (num_chains);
 
