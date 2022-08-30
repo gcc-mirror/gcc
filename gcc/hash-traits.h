@@ -85,6 +85,32 @@ typed_noop_remove <Type>::remove (Type &)
 {
 }
 
+/* Base traits for integer type Type, providing just the hash and
+   comparison functionality.  */
+
+template <typename Type>
+struct int_hash_base : typed_noop_remove <Type>
+{
+  typedef Type value_type;
+  typedef Type compare_type;
+
+  static inline hashval_t hash (value_type);
+  static inline bool equal (value_type existing, value_type candidate);
+};
+
+template <typename Type>
+inline hashval_t
+int_hash_base <Type>::hash (value_type x)
+{
+  return x;
+}
+
+template <typename Type>
+inline bool
+int_hash_base <Type>::equal (value_type x, value_type y)
+{
+  return x == y;
+}
 
 /* Hasher for integer type Type in which Empty is a spare value that can be
    used to mark empty slots.  If Deleted != Empty then Deleted is another
@@ -92,33 +118,17 @@ typed_noop_remove <Type>::remove (Type &)
    hash table entries cannot be deleted.  */
 
 template <typename Type, Type Empty, Type Deleted = Empty>
-struct int_hash : typed_noop_remove <Type>
+struct int_hash : int_hash_base <Type>
 {
   typedef Type value_type;
   typedef Type compare_type;
 
-  static inline hashval_t hash (value_type);
-  static inline bool equal (value_type existing, value_type candidate);
   static inline void mark_deleted (Type &);
   static const bool empty_zero_p = Empty == 0;
   static inline void mark_empty (Type &);
   static inline bool is_deleted (Type);
   static inline bool is_empty (Type);
 };
-
-template <typename Type, Type Empty, Type Deleted>
-inline hashval_t
-int_hash <Type, Empty, Deleted>::hash (value_type x)
-{
-  return x;
-}
-
-template <typename Type, Type Empty, Type Deleted>
-inline bool
-int_hash <Type, Empty, Deleted>::equal (value_type x, value_type y)
-{
-  return x == y;
-}
 
 template <typename Type, Type Empty, Type Deleted>
 inline void
