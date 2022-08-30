@@ -81,12 +81,7 @@ void InitializePlatformInterceptors();
 #if ASAN_HAS_EXCEPTIONS && !SANITIZER_WINDOWS && !SANITIZER_SOLARIS && \
     !SANITIZER_NETBSD
 # define ASAN_INTERCEPT___CXA_THROW 1
-# if ! defined(ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION) \
-     || ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
-# else
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 0
-# endif
+# define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
 # if defined(_GLIBCXX_SJLJ_EXCEPTIONS) || (SANITIZER_IOS && defined(__arm__))
 #  define ASAN_INTERCEPT__UNWIND_SJLJ_RAISEEXCEPTION 1
 # else
@@ -138,7 +133,7 @@ DECLARE_REAL(char*, strncpy, char *to, const char *from, uptr size)
 DECLARE_REAL(uptr, strnlen, const char *s, uptr maxlen)
 DECLARE_REAL(char*, strstr, const char *s1, const char *s2)
 
-#  if !SANITIZER_MAC
+#  if !SANITIZER_APPLE
 #    define ASAN_INTERCEPT_FUNC(name)                                        \
       do {                                                                   \
         if (!INTERCEPT_FUNCTION(name))                                       \
@@ -161,7 +156,7 @@ DECLARE_REAL(char*, strstr, const char *s1, const char *s2)
 #  else
 // OS X interceptors don't need to be initialized with INTERCEPT_FUNCTION.
 #    define ASAN_INTERCEPT_FUNC(name)
-#  endif  // SANITIZER_MAC
+#  endif  // SANITIZER_APPLE
 
 #endif  // !SANITIZER_FUCHSIA
 

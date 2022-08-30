@@ -46,9 +46,15 @@ void NORETURN ReportMmapFailureAndDie(uptr size, const char *mem_type,
     Die();
   }
   recursion_count++;
-  Report("ERROR: %s failed to "
-         "%s 0x%zx (%zd) bytes of %s (error code: %d)\n",
-         SanitizerToolName, mmap_type, size, size, mem_type, err);
+  if (ErrorIsOOM(err)) {
+    ERROR_OOM("failed to %s 0x%zx (%zd) bytes of %s (error code: %d)\n",
+              mmap_type, size, size, mem_type, err);
+  } else {
+    Report(
+        "ERROR: %s failed to "
+        "%s 0x%zx (%zd) bytes of %s (error code: %d)\n",
+        SanitizerToolName, mmap_type, size, size, mem_type, err);
+  }
 #if !SANITIZER_GO
   DumpProcessMap();
 #endif
@@ -350,6 +356,13 @@ void SleepForSeconds(unsigned seconds) {
   internal_usleep((u64)seconds * 1000 * 1000);
 }
 void SleepForMillis(unsigned millis) { internal_usleep((u64)millis * 1000); }
+
+void WaitForDebugger(unsigned seconds, const char *label) {
+  if (seconds) {
+    Report("Sleeping for %u second(s) %s\n", seconds, label);
+    SleepForSeconds(seconds);
+  }
+}
 
 } // namespace __sanitizer
 

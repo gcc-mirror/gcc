@@ -86,10 +86,11 @@ static void ReportGlobal(const Global &g, const char *prefix) {
       "odr_indicator=%p\n",
       prefix, (void *)&g, (void *)g.beg, g.size, g.size_with_redzone, g.name,
       g.module_name, g.has_dynamic_init, (void *)g.odr_indicator);
-  if (g.location) {
-    Report("  location (%p): name=%s[%p], %d %d\n", (void *)g.location,
-           g.location->filename, (void *)g.location->filename,
-           g.location->line_no, g.location->column_no);
+
+  DataInfo info;
+  Symbolizer::GetOrInit()->SymbolizeData(g.beg, &info);
+  if (info.line != 0) {
+    Report("  location: name=%s, %d\n", info.file, static_cast<int>(info.line));
   }
 }
 
@@ -153,6 +154,23 @@ static void CheckODRViolationViaIndicator(const Global *g) {
   }
 }
 
+// Check ODR violation for given global G by checking if it's already poisoned.
+// We use this method in case compiler doesn't use private aliases for global
+// variables.
+static void CheckODRViolationViaPoisoning(const Global *g) {
+  if (__asan_region_is_poisoned(g->beg, g->size_with_redzone)) {
+    // This check may not be enough: if the first global is much larger
+    // the entire redzone of the second global may be within the first global.
+    for (ListOfGlobals *l = list_of_all_globals; l; l = l->next) {
+      if (g->beg == l->g->beg &&
+          (flags()->detect_odr_violation >= 2 || g->size != l->g->size) &&
+          !IsODRViolationSuppressed(g->name))
+        ReportODRViolation(g, FindRegistrationSite(g),
+                           l->g, FindRegistrationSite(l->g));
+    }
+  }
+}
+
 // Clang provides two different ways for global variables protection:
 // it can poison the global itself or its private alias. In former
 // case we may poison same symbol multiple times, that can help us to
@@ -198,6 +216,8 @@ static void RegisterGlobal(const Global *g) {
     // where two globals with the same name are defined in different modules.
     if (UseODRIndicator(g))
       CheckODRViolationViaIndicator(g);
+    else
+      CheckODRViolationViaPoisoning(g);
   }
   if (CanPoisonMemory())
     PoisonRedZones(*g);
@@ -276,19 +296,15 @@ void PrintGlobalNameIfASCII(InternalScopedString *str, const __asan_global &g) {
               (char *)g.beg);
 }
 
-static const char *GlobalFilename(const __asan_global &g) {
-  const char *res = g.module_name;
-  // Prefer the filename from source location, if is available.
-  if (g.location) res = g.location->filename;
-  CHECK(res);
-  return res;
-}
-
 void PrintGlobalLocation(InternalScopedString *str, const __asan_global &g) {
-  str->append("%s", GlobalFilename(g));
-  if (!g.location) return;
-  if (g.location->line_no) str->append(":%d", g.location->line_no);
-  if (g.location->column_no) str->append(":%d", g.location->column_no);
+  DataInfo info;
+  Symbolizer::GetOrInit()->SymbolizeData(g.beg, &info);
+
+  if (info.line != 0) {
+    str->append("%s:%d", info.file, static_cast<int>(info.line));
+  } else {
+    str->append("%s", g.module_name);
+  }
 }
 
 } // namespace __asan

@@ -76,7 +76,7 @@ enum TypeCheckKind {
   TCK_DynamicOperation
 };
 
-const char *TypeCheckKinds[] = {
+extern const char *const TypeCheckKinds[] = {
     "load of", "store to", "reference binding to", "member access within",
     "member call on", "constructor call on", "downcast of", "downcast of",
     "upcast of", "cast to virtual base of", "_Nonnull binding to",
@@ -893,21 +893,6 @@ void __ubsan_handle_cfi_bad_type(CFICheckFailData *Data, ValueHandle Vtable,
 #endif
 
 }  // namespace __ubsan
-
-void __ubsan::__ubsan_handle_cfi_bad_icall(CFIBadIcallData *CallData,
-                                           ValueHandle Function) {
-  GET_REPORT_OPTIONS(false);
-  CFICheckFailData Data = {CFITCK_ICall, CallData->Loc, CallData->Type};
-  handleCFIBadIcall(&Data, Function, Opts);
-}
-
-void __ubsan::__ubsan_handle_cfi_bad_icall_abort(CFIBadIcallData *CallData,
-                                                 ValueHandle Function) {
-  GET_REPORT_OPTIONS(true);
-  CFICheckFailData Data = {CFITCK_ICall, CallData->Loc, CallData->Type};
-  handleCFIBadIcall(&Data, Function, Opts);
-  Die();
-}
 
 void __ubsan::__ubsan_handle_cfi_check_fail(CFICheckFailData *Data,
                                             ValueHandle Value,

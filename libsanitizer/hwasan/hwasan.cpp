@@ -218,8 +218,8 @@ void HandleTagMismatch(AccessInfo ai, uptr pc, uptr frame, void *uc,
                     registers_frame);
 }
 
-void HwasanTagMismatch(uptr addr, uptr access_info, uptr *registers_frame,
-                       size_t outsize) {
+void HwasanTagMismatch(uptr addr, uptr pc, uptr frame, uptr access_info,
+                       uptr *registers_frame, size_t outsize) {
   __hwasan::AccessInfo ai;
   ai.is_store = access_info & 0x10;
   ai.is_load = !ai.is_store;
@@ -230,9 +230,7 @@ void HwasanTagMismatch(uptr addr, uptr access_info, uptr *registers_frame,
   else
     ai.size = 1 << (access_info & 0xf);
 
-  HandleTagMismatch(ai, (uptr)__builtin_return_address(0),
-                    (uptr)__builtin_frame_address(0), nullptr, registers_frame);
-  __builtin_unreachable();
+  HandleTagMismatch(ai, pc, frame, nullptr, registers_frame);
 }
 
 Thread *GetCurrentThread() {
@@ -576,6 +574,12 @@ u8 __hwasan_generate_tag() {
   return t->GenerateRandomTag();
 }
 
+void __hwasan_add_frame_record(u64 frame_record_info) {
+  Thread *t = GetCurrentThread();
+  if (t)
+    t->stack_allocations()->push(frame_record_info);
+}
+
 #if !SANITIZER_SUPPORTS_WEAK_HOOKS
 extern "C" {
 SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
@@ -594,7 +598,9 @@ void __sanitizer_print_stack_trace() {
 // rest of the mismatch handling code (C++).
 void __hwasan_tag_mismatch4(uptr addr, uptr access_info, uptr *registers_frame,
                             size_t outsize) {
-  __hwasan::HwasanTagMismatch(addr, access_info, registers_frame, outsize);
+  __hwasan::HwasanTagMismatch(addr, (uptr)__builtin_return_address(0),
+                              (uptr)__builtin_frame_address(0), access_info,
+                              registers_frame, outsize);
 }
 
 } // extern "C"
