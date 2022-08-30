@@ -1,4 +1,4 @@
-# Swedish messages for Sc's.
+# Swedish messages for gcc.
 # Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
@@ -26,10 +26,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 12.1.0\n"
+"Project-Id-Version: gcc 12.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-08-17 22:17+0000\n"
-"PO-Revision-Date: 2022-06-09 23:09+0200\n"
+"PO-Revision-Date: 2022-08-26 22:47+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -58837,10 +58837,9 @@ msgid "redeclared here as %q#D"
 msgstr "omdeklarerad här som %q#D"
 
 #: cp/pt.cc:6321
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid "redeclared here"
-msgstr "deklarerad här"
+msgstr "omdeklarerad här"
 
 #: cp/pt.cc:6332
 #, gcc-internal-format
@@ -62203,10 +62202,9 @@ msgid "toHash() must be declared as extern (D) size_t toHash() const nothrow @sa
 msgstr "toHash() måste deklareras som extern (D) size_t toHash() const nothrow @safe, inte %s"
 
 #: d/typeinfo.cc:1415
-#, fuzzy, gcc-internal-format
-#| msgid "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>"
+#, gcc-internal-format
 msgid "expression %qs requires %<object.TypeInfo%> and cannot be used with %<-fno-rtti%>"
-msgstr "%<object.TypeInfo%> kan inte användas med %<-fno-rtti%>"
+msgstr "uttrycket %qs kräver %<object.TypeInfo%> och kan inte användas med %<-fno-rtti%>"
 
 #: d/typeinfo.cc:1419
 #, gcc-internal-format
@@ -64853,10 +64851,9 @@ msgid "BIND(C) statement at %C"
 msgstr "BIND(C)-sats vid %C"
 
 #: fortran/decl.cc:6268
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "CLASS variable %qs at %L cannot have the PARAMETER attribute"
+#, gcc-internal-format, gfc-internal-format
 msgid "CLASS entity at %C cannot have the PARAMETER attribute"
-msgstr "CLASS-variabeln %qs vid %L får inte ha attributet PARAMETER"
+msgstr "CLASS-enheten vid %C får inte ha attributet PARAMETER"
 
 #: fortran/decl.cc:6300
 #, gcc-internal-format, gfc-internal-format
