@@ -2105,6 +2105,9 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
   if (!init_use_preds (use_preds, def_bb, use_bb))
     return false;
 
+  use_preds.simplify (use_stmt, /*is_use=*/true);
+  use_preds.normalize (use_stmt, /*is_use=*/true);
+
   /* Try to prune the dead incoming phi edges.  */
   if (!overlap (phi, opnds, visited, use_preds))
     {
@@ -2123,9 +2126,6 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
       m_phi_def_preds.simplify (phi);
       m_phi_def_preds.normalize (phi);
     }
-
-  use_preds.simplify (use_stmt, /*is_use=*/true);
-  use_preds.normalize (use_stmt, /*is_use=*/true);
 
   /* Return true if the predicate guarding the valid definition (i.e.,
      *THIS) is a superset of the predicate guarding the use (i.e.,

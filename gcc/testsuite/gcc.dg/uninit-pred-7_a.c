@@ -23,7 +23,7 @@ int foo (int n, int l, int m, int r)
       blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
 
   if ( l )
-      blah(v); /* { dg-bogus "uninitialized" "bogus warning" { xfail *-*-* } } */
+      blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
 
   return 0;
 }
