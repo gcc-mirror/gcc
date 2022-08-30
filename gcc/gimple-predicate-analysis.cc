@@ -169,16 +169,14 @@ static void
 dump_pred_chain (const pred_chain &chain)
 {
   unsigned np = chain.length ();
-  if (np > 1)
-    fprintf (dump_file, "AND (");
-
   for (unsigned j = 0; j < np; j++)
     {
+      if (j > 0)
+	fprintf (dump_file, " AND (");
+      else
+	fputc ('(', dump_file);
       dump_pred_info (chain[j]);
-      if (j < np - 1)
-	fprintf (dump_file, ", ");
-      else if (j > 0)
-	fputc (')', dump_file);
+      fputc (')', dump_file);
     }
 }
 
@@ -577,51 +575,6 @@ uninit_analysis::collect_phi_def_edges (gphi *phi, basic_block cd_root,
 	    }
 	}
     }
-}
-
-/* Return an expression corresponding to the predicate PRED.  */
-
-static tree
-build_pred_expr (const pred_info &pred)
-{
-  tree_code cond_code = pred.cond_code;
-  tree lhs = pred.pred_lhs;
-  tree rhs = pred.pred_rhs;
-
-  if (pred.invert)
-    cond_code = invert_tree_comparison (cond_code, false);
-
-  return build2 (cond_code, TREE_TYPE (lhs), lhs, rhs);
-}
-
-/* Return an expression corresponding to PREDS.  */
-
-static tree
-build_pred_expr (const pred_chain_union &preds, bool invert = false)
-{
-  tree_code code = invert ? TRUTH_AND_EXPR : TRUTH_OR_EXPR;
-  tree_code subcode = invert ? TRUTH_OR_EXPR : TRUTH_AND_EXPR;
-
-  tree expr = NULL_TREE;
-  for (unsigned i = 0; i != preds.length (); ++i)
-    {
-      tree subexpr = NULL_TREE;
-      for (unsigned j = 0; j != preds[i].length (); ++j)
-       {
-         const pred_info &pi = preds[i][j];
-         tree cond = build_pred_expr (pi);
-	 if (invert)
-	   cond = invert_truthvalue (cond);
-         subexpr = subexpr ? build2 (subcode, boolean_type_node,
-                                     subexpr, cond) : cond;
-       }
-      if (expr)
-       expr = build2 (code, boolean_type_node, expr, subexpr);
-      else
-       expr = subexpr;
-    }
-
-  return expr;
 }
 
 /* Return a bitset of all PHI arguments or zero if there are too many.  */
@@ -1925,24 +1878,14 @@ predicate::dump (gimple *stmt, const char *msg) const
       return;
     }
 
-  {
-    tree expr = build_pred_expr (m_preds);
-    char *str = print_generic_expr_to_str (expr);
-    fprintf (dump_file, "\t%s (expanded)\n", str);
-    free (str);
-  }
-
-  if (np > 1)
-    fprintf (dump_file, "\tOR (");
-  else
-    fputc ('\t', dump_file);
   for (unsigned i = 0; i < np; i++)
     {
+      if (i > 0)
+	fprintf (dump_file, "\tOR (");
+      else
+	fprintf (dump_file, "\t(");
       dump_pred_chain (m_preds[i]);
-      if (i < np - 1)
-	fprintf (dump_file, ", ");
-      else if (i > 0)
-	fputc (')', dump_file);
+      fputc (')', dump_file);
     }
   fputc ('\n', dump_file);
 }
