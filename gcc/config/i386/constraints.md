@@ -78,10 +78,10 @@
  "TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387 ? FP_SECOND_REG : NO_REGS"
  "Second from top of 80387 floating-point stack (@code{%st(1)}).")
 
-(define_register_constraint "Yk" "TARGET_AVX512F ? MASK_REGS : NO_REGS"
+(define_register_constraint "Yk" "(TARGET_AVX512F || TARGET_AVX10_1) ? MASK_REGS : NO_REGS"
 "@internal Any mask register that can be used as predicate, i.e. k1-k7.")
 
-(define_register_constraint "k" "TARGET_AVX512F ? ALL_MASK_REGS : NO_REGS"
+(define_register_constraint "k" "(TARGET_AVX512F || TARGET_AVX10_1) ? ALL_MASK_REGS : NO_REGS"
 "@internal Any mask register.")
 
 ;; Vector registers (also used for plain floating point nowadays).
@@ -146,7 +146,7 @@
  "@internal Lower SSE register when avoiding REX prefix and all SSE registers otherwise.")
 
 (define_register_constraint "Yv"
- "TARGET_AVX512VL ? ALL_SSE_REGS : TARGET_SSE ? SSE_REGS : NO_REGS"
+ "(TARGET_AVX512VL || TARGET_AVX10_1) ? ALL_SSE_REGS : TARGET_SSE ? SSE_REGS : NO_REGS"
  "@internal For AVX512VL, any EVEX encodable SSE register (@code{%xmm0-%xmm31}), otherwise any SSE register.")
 
 (define_register_constraint "Yw"

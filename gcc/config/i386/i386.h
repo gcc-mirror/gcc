@@ -1080,6 +1080,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
+#define VALID_MASK_AVX10_MODE(MODE) ((MODE) == SImode || (MODE) == HImode \
+				       || (MODE) == QImode)
+
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
    || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)
