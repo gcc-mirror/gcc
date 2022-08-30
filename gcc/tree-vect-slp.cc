@@ -6976,20 +6976,22 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   SLP_TREE_VEC_STMTS (node).quick_push (perm_stmt);
 }
 
-/* Vectorize the SLP permutations in NODE as specified
-   in SLP_TREE_LANE_PERMUTATION which is a vector of pairs of SLP
-   child number and lane number.
-   Interleaving of two two-lane two-child SLP subtrees (not supported):
-     [ { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } ]
-   A blend of two four-lane two-child SLP subtrees:
-     [ { 0, 0 }, { 1, 1 }, { 0, 2 }, { 1, 3 } ]
-   Highpart of a four-lane one-child SLP subtree (not supported):
-     [ { 0, 2 }, { 0, 3 } ]
-   Where currently only a subset is supported by code generating below.  */
+/* Subroutine of vectorizable_slp_permutation.  Check whether the target
+   can perform permutation PERM on the (1 or 2) input nodes in CHILDREN.
+   If GSI is nonnull, emit the permutation there.
 
-static bool
-vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
-			      slp_tree node, stmt_vector_for_cost *cost_vec)
+   When GSI is null, the only purpose of NODE is to give properties
+   of the result, such as the vector type and number of SLP lanes.
+   The node does not need to be a VEC_PERM_EXPR.
+
+   If the target supports the operation, return the number of individual
+   VEC_PERM_EXPRs needed, otherwise return -1.  Print information to the
+   dump file if DUMP_P is true.  */
+
+static int
+vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
+				slp_tree node, lane_permutation_t &perm,
+				vec<slp_tree> &children, bool dump_p)
 {
   tree vectype = SLP_TREE_VECTYPE (node);
 
@@ -7001,7 +7003,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   bool repeating_p = multiple_p (nunits, SLP_TREE_LANES (node));
   tree op_vectype = NULL_TREE;
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+  FOR_EACH_VEC_ELT (children, i, child)
     if (SLP_TREE_VECTYPE (child))
       {
 	op_vectype = SLP_TREE_VECTYPE (child);
@@ -7009,25 +7011,24 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
       }
   if (!op_vectype)
     op_vectype = vectype;
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+  FOR_EACH_VEC_ELT (children, i, child)
     {
       if ((SLP_TREE_DEF_TYPE (child) != vect_internal_def
 	   && !vect_maybe_update_slp_op_vectype (child, op_vectype))
 	  || !types_compatible_p (SLP_TREE_VECTYPE (child), op_vectype)
 	  || !types_compatible_p (TREE_TYPE (vectype), TREE_TYPE (op_vectype)))
 	{
-	  if (dump_enabled_p ())
+	  if (dump_p)
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Unsupported vector types in lane permutation\n");
-	  return false;
+	  return -1;
 	}
       if (SLP_TREE_LANES (child) != SLP_TREE_LANES (node))
 	repeating_p = false;
     }
 
-  vec<std::pair<unsigned, unsigned> > &perm = SLP_TREE_LANE_PERMUTATION (node);
   gcc_assert (perm.length () == SLP_TREE_LANES (node));
-  if (dump_enabled_p ())
+  if (dump_p)
     {
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "vectorizing permutation");
@@ -7076,11 +7077,11 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
       /* Calculate every element of every permute mask vector explicitly,
 	 instead of relying on the pattern described above.  */
       if (!nunits.is_constant (&npatterns))
-	return false;
+	return -1;
       nelts_per_pattern = ncopies = 1;
       if (loop_vec_info linfo = dyn_cast <loop_vec_info> (vinfo))
 	if (!LOOP_VINFO_VECT_FACTOR (linfo).is_constant (&ncopies))
-	  return false;
+	  return -1;
       noutputs_per_mask = 1;
     }
   unsigned olanes = ncopies * SLP_TREE_LANES (node);
@@ -7093,13 +7094,13 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   auto_vec<std::pair<std::pair<unsigned, unsigned>, unsigned> > vperm;
   auto_vec<unsigned> active_lane;
   vperm.create (olanes);
-  active_lane.safe_grow_cleared (SLP_TREE_CHILDREN (node).length (), true);
+  active_lane.safe_grow_cleared (children.length (), true);
   for (unsigned i = 0; i < ncopies; ++i)
     {
       for (unsigned pi = 0; pi < perm.length (); ++pi)
 	{
 	  std::pair<unsigned, unsigned> p = perm[pi];
-	  tree vtype = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (node)[p.first]);
+	  tree vtype = SLP_TREE_VECTYPE (children[p.first]);
 	  if (repeating_p)
 	    vperm.quick_push ({{p.first, 0}, p.second + active_lane[p.first]});
 	  else
@@ -7112,12 +7113,19 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	    }
 	}
       /* Advance to the next group.  */
-      for (unsigned j = 0; j < SLP_TREE_CHILDREN (node).length (); ++j)
-	active_lane[j] += SLP_TREE_LANES (SLP_TREE_CHILDREN (node)[j]);
+      for (unsigned j = 0; j < children.length (); ++j)
+	active_lane[j] += SLP_TREE_LANES (children[j]);
     }
 
-  if (dump_enabled_p ())
+  if (dump_p)
     {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "vectorizing permutation");
+      for (unsigned i = 0; i < perm.length (); ++i)
+	dump_printf (MSG_NOTE, " op%u[%u]", perm[i].first, perm[i].second);
+      if (repeating_p)
+	dump_printf (MSG_NOTE, " (repeat %d)\n", SLP_TREE_LANES (node));
+      dump_printf (MSG_NOTE, "\n");
       dump_printf_loc (MSG_NOTE, vect_location, "as");
       for (unsigned i = 0; i < vperm.length (); ++i)
 	{
@@ -7163,12 +7171,12 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  if (dump_enabled_p ())
+	  if (dump_p)
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "permutation requires at "
 			     "least three vectors\n");
 	  gcc_assert (!gsi);
-	  return false;
+	  return -1;
 	}
 
       mask[index++] = mask_element;
@@ -7190,7 +7198,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 					    TYPE_VECTOR_SUBPARTS (op_vectype),
 					    &c) || c != 2)))
 	    {
-	      if (dump_enabled_p ())
+	      if (dump_p)
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
 				   vect_location,
@@ -7203,7 +7211,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 		  dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
 		}
 	      gcc_assert (!gsi);
-	      return false;
+	      return -1;
 	    }
 
 	  if (!identity_p)
@@ -7214,8 +7222,8 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 		second_vec = first_vec;
 
 	      slp_tree
-		first_node = SLP_TREE_CHILDREN (node)[first_vec.first],
-		second_node = SLP_TREE_CHILDREN (node)[second_vec.first];
+		first_node = children[first_vec.first],
+		second_node = children[second_vec.first];
 
 	      tree mask_vec = NULL_TREE;
 	      if (!identity_p)
@@ -7239,6 +7247,32 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  second_vec = std::make_pair (-1U, -1U);
 	}
     }
+
+  return nperms;
+}
+
+/* Vectorize the SLP permutations in NODE as specified
+   in SLP_TREE_LANE_PERMUTATION which is a vector of pairs of SLP
+   child number and lane number.
+   Interleaving of two two-lane two-child SLP subtrees (not supported):
+     [ { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } ]
+   A blend of two four-lane two-child SLP subtrees:
+     [ { 0, 0 }, { 1, 1 }, { 0, 2 }, { 1, 3 } ]
+   Highpart of a four-lane one-child SLP subtree (not supported):
+     [ { 0, 2 }, { 0, 3 } ]
+   Where currently only a subset is supported by code generating below.  */
+
+static bool
+vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
+			      slp_tree node, stmt_vector_for_cost *cost_vec)
+{
+  tree vectype = SLP_TREE_VECTYPE (node);
+  lane_permutation_t &perm = SLP_TREE_LANE_PERMUTATION (node);
+  int nperms = vectorizable_slp_permutation_1 (vinfo, gsi, node, perm,
+					       SLP_TREE_CHILDREN (node),
+					       dump_enabled_p ());
+  if (nperms < 0)
+    return false;
 
   if (!gsi)
     record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
