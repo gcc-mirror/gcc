@@ -211,10 +211,19 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
+      if (TREE_OVERFLOW_P (expr))
+	expr = drop_tree_overflow (expr);
+      r.set (expr, expr);
+      return true;
+
     case REAL_CST:
       if (TREE_OVERFLOW_P (expr))
 	expr = drop_tree_overflow (expr);
       r.set (expr, expr);
+      if (real_isnan (TREE_REAL_CST_PTR (expr)))
+	as_a <frange> (r).set_nan (fp_prop::YES);
+      else
+	as_a <frange> (r).set_nan (fp_prop::NO);
       return true;
 
     case SSA_NAME:

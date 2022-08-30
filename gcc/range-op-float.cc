@@ -150,6 +150,18 @@ range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) cons
   return VREL_VARYING;
 }
 
+// Set R to [NAN, NAN].
+
+static inline void
+frange_set_nan (frange &r, tree type)
+{
+  REAL_VALUE_TYPE rv;
+  bool res = real_nan (&rv, "", 1, TYPE_MODE (type));
+  if (flag_checking)
+    gcc_assert (res);
+  r.set (type, rv, rv);
+}
+
 // Return TRUE if OP1 and OP2 are known to be free of NANs.
 
 static inline bool
@@ -176,6 +188,40 @@ frelop_early_resolve (irange &r, tree type,
   // are free of NANs, or when -ffinite-math-only.
   return (finite_operands_p (op1, op2)
 	  && relop_early_resolve (r, type, op1, op2, rel, my_rel));
+}
+
+// Crop R to [-INF, MAX] where MAX is the maximum representable number
+// for TYPE.
+
+static inline void
+frange_drop_inf (frange &r, tree type)
+{
+  // FIXME: build_real() bails on decimal float modes when called with
+  // a max representable endpoint.
+  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
+    return;
+
+  REAL_VALUE_TYPE max;
+  real_max_representable (&max, type);
+  frange tmp (type, r.lower_bound (), max);
+  r.intersect (tmp);
+}
+
+// Crop R to [MIN, +INF] where MIN is the minimum representable number
+// for TYPE.
+
+static inline void
+frange_drop_ninf (frange &r, tree type)
+{
+  // FIXME: build_real() bails on decimal float modes when called with
+  // a max representable endpoint.
+  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
+    return;
+
+  REAL_VALUE_TYPE min;
+  real_min_representable (&min, type);
+  frange tmp (type, min, r.upper_bound ());
+  r.intersect (tmp);
 }
 
 // Default implementation of fold_range for relational operators.
@@ -252,21 +298,8 @@ foperator_equal::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (HONOR_SIGNED_ZEROS (type)
-	  && op2.contains_p (build_zero_cst (type)))
-	{
-	  // With signed zeros, x == -0.0 does not mean we can replace
-	  // x with -0.0, because x may be either +0.0 or -0.0.
-	  r.set_varying (type);
-	}
-      else
-	{
-	  // If it's true, the result is the same as OP2.
-	  //
-	  // If the range does not actually contain zeros, this should
-	  // always be OK.
-	  r = op2;
-	}
+      // If it's true, the result is the same as OP2.
+      r = op2;
       // The TRUE side of op1 == op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;
@@ -275,7 +308,7 @@ foperator_equal::op1_range (frange &r, tree type,
       r.set_varying (type);
       // The FALSE side of op1 == op1 implies op1 is a NAN.
       if (rel == VREL_EQ)
-	r.set_nan (fp_prop::YES);
+	frange_set_nan (r, type);
       break;
 
     default:
@@ -365,7 +398,8 @@ foperator_lt::op1_range (frange &r,
       r.set_varying (type);
       // The TRUE side of op1 < op2 implies op1 is !NAN and !INF.
       r.set_nan (fp_prop::NO);
-      r.set_inf (fp_prop::NO);
+      // x < y implies x is not +INF.
+      frange_drop_inf (r, type);
       break;
 
     case BRS_FALSE:
@@ -391,7 +425,8 @@ foperator_lt::op2_range (frange &r,
       r.set_varying (type);
       // The TRUE side of op1 < op2 implies op2 is !NAN and !NINF.
       r.set_nan (fp_prop::NO);
-      r.set_ninf (fp_prop::NO);
+      // x < y implies y is not -INF.
+      frange_drop_ninf (r, type);
       break;
 
     case BRS_FALSE:
@@ -493,7 +528,8 @@ foperator_gt::op1_range (frange &r,
       r.set_varying (type);
       // The TRUE side of op1 > op2 implies op1 is !NAN and !NINF.
       r.set_nan (fp_prop::NO);
-      r.set_ninf (fp_prop::NO);
+      // x > y implies x is not -INF.
+      frange_drop_ninf (r, type);
       break;
 
     case BRS_FALSE:
@@ -519,7 +555,8 @@ foperator_gt::op2_range (frange &r,
       r.set_varying (type);
       // The TRUE side of op1 > op2 implies op2 is !NAN and !INF.
       r.set_nan (fp_prop::NO);
-      r.set_inf (fp_prop::NO);
+      // x > y implies y is not +INF.
+      frange_drop_inf (r, type);
       break;
 
     case BRS_FALSE:
@@ -636,7 +673,7 @@ foperator_unordered::op1_range (frange &r, tree type,
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
       if (op2.get_nan ().no_p ())
-	r.set_nan (fp_prop::YES);
+	frange_set_nan (r, type);
       break;
 
     case BRS_FALSE:

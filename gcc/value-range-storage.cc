@@ -261,6 +261,18 @@ frange_storage_slot::get_frange (frange &r, tree type) const
 {
   gcc_checking_assert (r.supports_type_p (type));
 
+  // FIXME: NANs get special treatment, because we need [NAN, NAN] in
+  // the range to properly represent it, not just the NAN flag in the
+  // property bits.  This will go away when we stream out the
+  // endpoints.
+  if (m_props.get_nan ().yes_p ())
+    {
+      REAL_VALUE_TYPE rv;
+      real_nan (&rv, "", 1, TYPE_MODE (type));
+      r.set (type, rv, rv);
+      return;
+    }
+
   r.set_varying (type);
   r.m_props = m_props;
   r.normalize_kind ();
