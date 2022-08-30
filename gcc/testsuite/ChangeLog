@@ -1,3 +1,54 @@
+2022-08-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106712
+	* g++.dg/cpp0x/gen-attrs-77.C: New test.
+
+2022-08-29  David Faust  <david.faust@oracle.com>
+
+	PR target/106745
+	* gcc.target/bpf/core-pr106745.c: New test.
+
+2022-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106748
+	* gcc.target/i386/pr106748.c: New test.
+
+2022-08-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/func-call-medium-1.c: Refine test
+	depending on __tls_get_addr with { target tls_native }.
+	* gcc.target/loongarch/func-call-medium-2.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-3.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-4.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-5.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-6.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-7.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-8.c: Likewise.
+	* gcc.target/loongarch/tls-gd-noplt.c: Likewise.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-sum-across-no-lower-subreg-1.c: New test.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vperm-rev-z14.c: New test.
+	* gcc.target/s390/vector/vperm-rev-z15.c: New test.
+	* gcc.target/s390/zvector/vec-reve-store-byte.c: Adjust test
+	expectation.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-reve-int-long.c: New test.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-copysign.c: Do not unroll.
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: Dito.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt.c: Dito.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: Dito.
+	* gcc.target/s390/zvector/autovec-float-signaling-ltgt.c: Dito.
+
 2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/106017

@@ -1,3 +1,116 @@
+2022-08-29  David Faust  <david.faust@oracle.com>
+
+	PR target/106745
+	* config/bpf/coreout.cc (bpf_core_get_sou_member_index): Fix
+	computation of index for anonymous members.
+
+2022-08-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_target_macros): Define __bpf__ as a
+	target macro.
+
+2022-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106748
+	* config/i386/i386-expand.cc
+	(ix86_avx256_split_vector_move_misalign): Handle E_V16BFmode.
+	* config/i386/sse.md (V_256H): Add V16BF.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_address_cost): Declare.
+	(s390_hard_regno_nregs): Declare.
+	(s390_rtx_costs): Add handling for REG and MEM in SET.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_with_vpdi): Recognize swap pattern.
+	(is_reverse_perm_mask): New function.
+	(expand_perm_with_rot): Recognize reverse pattern.
+	(expand_perm_with_vstbrq): New function.
+	(expand_perm_with_vster): Use vler/vster for element reversal on z15.
+	(vectorize_vec_perm_const_1): Use.
+	(s390_vectorize_vec_perm_const): Add expand functions.
+	* config/s390/vx-builtins.md: Prefer vster over vler.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.md: Remove UNSPEC_VEC_EXTRACT.
+	* config/s390/vector.md: Rewrite patterns to use vec_select.
+	* config/s390/vx-builtins.md (vec_scatter_element<V_HW_2:mode>_SI):
+	Likewise.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/100869
+	* config/s390/vector.md (@vpdi4_2<mode>): New pattern.
+	(rotl<mode>3_di): New pattern.
+	* config/s390/vx-builtins.md: Use vpdi and verll for reversing
+	elements.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_issue_rate): Add z15.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* common/config/s390/s390-common.cc: Enable -funroll-loops and
+	-munroll-only-small-loops for OPT_LEVELS_2_PLUS_SPEED_ONLY.
+	* config/s390/s390.cc (s390_loop_unroll_adjust): Do not unroll
+	loops larger than 12 instructions.
+	(s390_override_options_after_change): Set unroll options.
+	(s390_option_override_internal): Likewise.
+	* config/s390/s390.opt: Document munroll-only-small-loops.
+
+2022-08-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (is_loop_exit,
+	find_control_equiv_block): Inline into single caller ...
+	(uninit_analysis::init_use_preds): ... here and refactor.
+
+2022-08-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Inline is_loop_exit and refactor, add comment about
+	loop exits.
+
+2022-08-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_frame_info): Introduce `reset(void)`;
+	(riscv_frame_info::reset(void)): New.
+	(riscv_compute_frame_info): Use riscv_frame_info::reset instead
+	of memset when clean frame.
+
+2022-08-29  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_v_ext_vector_mode_p): New function.
+	(riscv_classify_address): Disallow PLUS/LO_SUM/CONST_INT address types for RVV.
+	(riscv_address_insns): Add RVV modes condition.
+	(riscv_binary_cost): Ditto.
+	(riscv_rtx_costs): Adjust cost for RVV.
+	(riscv_secondary_memory_needed): Add RVV modes condition.
+	(riscv_hard_regno_nregs): Add RVV register allocation.
+	(riscv_hard_regno_mode_ok): Add RVV register allocation.
+	(riscv_class_max_nregs): Add RVV register allocation.
+	* config/riscv/riscv.h (DWARF_FRAME_REGNUM): Add VL/VTYPE and vector registers in Dwarf.
+	(UNITS_PER_V_REG): New macro.
+	(FIRST_PSEUDO_REGISTER): Adjust first pseudo num for RVV.
+	(V_REG_FIRST): New macro.
+	(V_REG_LAST): Ditto.
+	(V_REG_NUM): Ditto.
+	(V_REG_P): Ditto.
+	(VL_REG_P): Ditto.
+	(VTYPE_REG_P): Ditto.
+	(RISCV_DWARF_VL): Ditto.
+	(RISCV_DWARF_VTYPE): Ditto.
+	(enum reg_class): Add RVV register types.
+	(REG_CLASS_CONTENTS): Add RVV register types.
+	* config/riscv/riscv.md: Add VL/VTYPE register number constants.
+
+2022-08-29  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.md: Add new type for vector instructions.
+
 2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/106017

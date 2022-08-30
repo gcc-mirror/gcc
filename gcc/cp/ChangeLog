@@ -1,3 +1,9 @@
+2022-08-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106712
+	* decl.cc (grokdeclarator): Reverse the order of arguments to
+	attr_chainon.
+
 2022-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81159
