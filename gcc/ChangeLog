@@ -1,3 +1,44 @@
+2022-08-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* config/rs6000/rs6000.cc (rs6000_invalid_conversion): Remove handling
+	of MMA pointer conversions.
+
+2022-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106714
+	* config/i386/amxtileintrin.h (_tile_loadd_internal): Cast to
+	__PTRDIFF_TYPE__.
+	(_tile_stream_loadd_internal): Likewise.
+	(_tile_stored_internal): Likewise.
+
+2022-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106721
+	* config/i386/sse.md (i128vldq): Add V16HF entry.
+	(avx512er_vmrcp28<mode><mask_name><round_saeonly_name>): Fix typo,
+	mask_opernad3 -> mask_operand3.
+
+2022-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106590
+	* ifcvt.cc (check_for_cc_cmp_clobbers): New function.
+	(noce_convert_multiple_sets_1): If SEQ sets or clobbers any regs
+	mentioned in cc_cmp or rev_cc_cmp, don't consider seq2 for any
+	further conditional moves.
+
 2022-08-26  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/106704

@@ -1,3 +1,14 @@
+2022-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc (cp_build_modify_expr): Implement
+	P2327R1 - De-deprecating volatile compound operations.  Don't warn
+	for |=, &= or ^= with volatile lhs.
+	* expr.cc (mark_use) <case MODIFY_EXPR>: Adjust warning wording,
+	leave out simple.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.

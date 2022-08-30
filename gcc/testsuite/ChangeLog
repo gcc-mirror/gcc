@@ -1,3 +1,29 @@
+2022-08-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* gcc.target/powerpc/pr106017.c: New test.
+
+2022-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/volatile1.C: Adjust for de-deprecation of volatile
+	compound |=, &= and ^= operations.
+	* g++.dg/cpp2a/volatile3.C: Likewise.
+	* g++.dg/cpp2a/volatile5.C: Likewise.
+
+2022-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106590
+	* gcc.dg/torture/pr106590.c: New test.
+
 2022-08-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
