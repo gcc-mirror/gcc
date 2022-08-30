@@ -3724,7 +3724,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    case MEM: {
 	      rtx address = XEXP (dest, 0);
 	      rtx tmp;
-	      long tmp2;
+	      HOST_WIDE_INT tmp2;
 	      if (s390_loadrelative_operand_p (address, &tmp, &tmp2))
 		*total = COSTS_N_INSNS (1);
 	      else
