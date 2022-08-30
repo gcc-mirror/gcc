@@ -1319,6 +1319,18 @@ package body Contracts is
       if Present (Items) then
          if Analyzed (Items) then
             return;
+
+         --  Do not analyze the contract of the internal package
+         --  created to check conformance of an actual package.
+         --  Such an internal package is removed from the tree after
+         --  legality checks are completed, and it does not contain
+         --  the declarations of all local entities of the generic.
+
+         elsif Is_Internal (Pack_Id)
+           and then Is_Generic_Instance (Pack_Id)
+         then
+            return;
+
          else
             Set_Analyzed (Items);
          end if;
