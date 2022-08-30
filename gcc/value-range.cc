@@ -403,7 +403,7 @@ early_nan_resolve (frange &r, const frange &other)
   // There's nothing to do for both NANs.
   if (r.get_nan ().yes_p () == other.get_nan ().yes_p ())
     return false;
-  // But only one NAN complicates things.
+  // ?? Perhaps the intersection of a NAN and anything is a NAN ??.
   r.set_varying (r.type ());
   return true;
 }
@@ -420,10 +420,22 @@ frange::union_ (const vrange &v)
       *this = r;
       return true;
     }
-  // ?? We could do better here.  [5,6] U NAN should be [5,6] with the
-  // NAN maybe bits set.  For now, this is conservatively correct.
-  if (get_nan ().yes_p () || r.get_nan ().yes_p ())
-    return early_nan_resolve (*this, r);
+
+  // If one side has a NAN, the union is just the other side plus the
+  // NAN bit.
+  if (get_nan ().yes_p ())
+    {
+      *this = r;
+      // NOP if NAN already set.
+      set_nan (fp_prop::VARYING);
+      return true;
+    }
+  if (r.get_nan ().yes_p ())
+    {
+      // NOP if NAN already set.
+      set_nan (fp_prop::VARYING);
+      return true;
+    }
 
   bool changed = m_props.union_ (r.m_props);
 
@@ -3520,6 +3532,7 @@ static void
 range_tests_nan ()
 {
   frange r0, r1;
+  REAL_VALUE_TYPE q, r;
 
   // Equal ranges but with differing NAN bits are not equal.
   r1 = frange_float ("10", "12");
@@ -3537,13 +3550,24 @@ range_tests_nan ()
   ASSERT_FALSE (r0 == r0);
   ASSERT_TRUE (r0 != r0);
 
-  // Make sure that combining NAN and INF doesn't give any crazy results.
-  r0 = frange_nan (float_type_node);
-  ASSERT_TRUE (r0.get_nan ().yes_p ());
-  r1 = frange_float ("+Inf", "+Inf");
+  // [5,6] U NAN is [5,6] with an unknown NAN bit.
+  r0 = frange_float ("5", "6");
+  r0.set_nan (fp_prop::NO);
+  r1 = frange_nan (float_type_node);
   r0.union_ (r1);
-  // [INF, INF] U NAN = VARYING
-  ASSERT_TRUE (r0.varying_p ());
+  real_from_string (&q, "5");
+  real_from_string (&r, "6");
+  ASSERT_TRUE (real_identical (&q, &r0.lower_bound ()));
+  ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
+  ASSERT_TRUE (r0.get_nan ().varying_p ());
+
+  // NAN U NAN = NAN
+  r0 = frange_nan (float_type_node);
+  r1 = frange_nan (float_type_node);
+  r0.union_ (r1);
+  ASSERT_TRUE (real_isnan (&r0.lower_bound ()));
+  ASSERT_TRUE (real_isnan (&r1.upper_bound ()));
+  ASSERT_TRUE (r0.get_nan ().yes_p ());
 
   // [INF, INF] ^ NAN = VARYING
   r0 = frange_nan (float_type_node);
