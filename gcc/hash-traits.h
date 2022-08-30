@@ -408,6 +408,61 @@ pair_hash <T1, T2>::is_empty (const value_type &x)
   return T1::is_empty (x.first);
 }
 
+/* Base traits for vectors, providing just the hash and comparison
+   functionality.  Type gives the corresponding traits for the element
+   type.  */
+
+template <typename Type>
+struct vec_hash_base
+{
+  typedef vec<typename Type::value_type> value_type;
+  typedef vec<typename Type::compare_type> compare_type;
+
+  static inline hashval_t hash (value_type);
+  static inline bool equal (value_type, compare_type);
+};
+
+template <typename Type>
+inline hashval_t
+vec_hash_base <Type>::hash (value_type x)
+{
+  inchash::hash hstate;
+  hstate.add_int (x.length ());
+  for (auto &value : x)
+    hstate.merge_hash (Type::hash (value));
+  return hstate.end ();
+}
+
+template <typename Type>
+inline bool
+vec_hash_base <Type>::equal (value_type x, compare_type y)
+{
+  if (x.length () != y.length ())
+    return false;
+  for (unsigned int i = 0; i < x.length (); ++i)
+    if (!Type::equal (x[i], y[i]))
+      return false;
+  return true;
+}
+
+/* Traits for vectors whose contents should be freed normally.  */
+
+template <typename Type>
+struct vec_free_hash_base : vec_hash_base <Type>
+{
+  static void remove (typename vec_hash_base <Type>::value_type &);
+};
+
+template <typename Type>
+void
+vec_free_hash_base <Type>
+::remove (typename vec_hash_base <Type>::value_type &x)
+{
+  for (auto &value : x)
+    Type::remove (x);
+  x.release ();
+}
+
 template <typename T> struct default_hash_traits : T {};
 
 template <typename T>
