@@ -267,6 +267,29 @@ tree_compare (tree_code code, tree op1, tree op2)
   return !integer_zerop (fold_build2 (code, integer_type_node, op1, op2));
 }
 
+// Set the NAN property.  Adjust the range if appopriate.
+
+void
+frange::set_nan (fp_prop::kind k)
+{
+  if (k == fp_prop::YES)
+    {
+      gcc_checking_assert (!undefined_p ());
+      *this = frange_nan (m_type);
+      return;
+    }
+
+  // Setting NO on an obviously NAN range is nonsensical.
+  gcc_checking_assert (k != fp_prop::NO || !real_isnan (&m_min));
+
+  // Setting VARYING on an obviously NAN range is a no-op.
+  if (k == fp_prop::VARYING && real_isnan (&m_min))
+    return;
+
+  m_props.set_nan (k);
+  normalize_kind ();
+}
+
 // Setter for franges.
 
 void
@@ -3493,17 +3516,6 @@ frange_float (const char *lb, const char *ub, tree type = float_type_node)
   return frange (type, min, max);
 }
 
-// Build a NAN of type TYPE.
-
-static inline frange
-frange_nan (tree type = float_type_node)
-{
-  REAL_VALUE_TYPE r;
-
-  gcc_assert (real_nan (&r, "", 1, TYPE_MODE (type)));
-  return frange (type, r, r);
-}
-
 static void
 range_tests_nan ()
 {
@@ -3517,18 +3529,16 @@ range_tests_nan ()
   ASSERT_NE (r0, r1);
   r0.set_nan (fp_prop::YES);
   ASSERT_NE (r0, r1);
-  r0.set_nan (fp_prop::VARYING);
-  ASSERT_EQ (r0, r1);
 
   // NAN ranges are not equal to each other.
-  r0 = frange_nan ();
+  r0 = frange_nan (float_type_node);
   r1 = r0;
   ASSERT_FALSE (r0 == r1);
   ASSERT_FALSE (r0 == r0);
   ASSERT_TRUE (r0 != r0);
 
   // Make sure that combining NAN and INF doesn't give any crazy results.
-  r0 = frange_nan ();
+  r0 = frange_nan (float_type_node);
   ASSERT_TRUE (r0.get_nan ().yes_p ());
   r1 = frange_float ("+Inf", "+Inf");
   r0.union_ (r1);
@@ -3536,22 +3546,29 @@ range_tests_nan ()
   ASSERT_TRUE (r0.varying_p ());
 
   // [INF, INF] ^ NAN = VARYING
-  r0 = frange_nan ();
+  r0 = frange_nan (float_type_node);
   r1 = frange_float ("+Inf", "+Inf");
   r0.intersect (r1);
   ASSERT_TRUE (r0.varying_p ());
 
   // NAN ^ NAN = NAN
-  r0 = frange_nan ();
-  r1 = frange_nan ();
+  r0 = frange_nan (float_type_node);
+  r1 = frange_nan (float_type_node);
   r0.intersect (r1);
   ASSERT_TRUE (r0.get_nan ().yes_p ());
 
   // VARYING ^ NAN = NAN.
-  r0 = frange_nan ();
+  r0 = frange_nan (float_type_node);
   r1.set_varying (float_type_node);
   r0.intersect (r1);
   ASSERT_TRUE (r0.get_nan ().yes_p ());
+
+  // Setting the NAN bit to yes, forces to range to [NAN, NAN].
+  r0.set_varying (float_type_node);
+  r0.set_nan (fp_prop::YES);
+  ASSERT_TRUE (r0.get_nan ().yes_p ());
+  ASSERT_TRUE (real_isnan (&r0.lower_bound ()));
+  ASSERT_TRUE (real_isnan (&r0.upper_bound ()));
 }
 
 static void

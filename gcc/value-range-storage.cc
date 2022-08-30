@@ -267,9 +267,7 @@ frange_storage_slot::get_frange (frange &r, tree type) const
   // endpoints.
   if (m_props.get_nan ().yes_p ())
     {
-      REAL_VALUE_TYPE rv;
-      real_nan (&rv, "", 1, TYPE_MODE (type));
-      r.set (type, rv, rv);
+      r = frange_nan (type);
       return;
     }
 

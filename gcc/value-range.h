@@ -323,16 +323,6 @@ private:
   } u;
 };
 
-// Accessors for getting/setting all FP properties at once.
-
-#define FRANGE_PROP_ACCESSOR(NAME)				\
-  fp_prop get_##NAME () const { return m_props.get_##NAME (); }	\
-  void set_##NAME (fp_prop::kind f)				\
-  {								\
-    m_props.set_##NAME (f);					\
-    normalize_kind ();						\
-  }
-
 // A floating point range.
 
 class frange : public vrange
@@ -371,8 +361,9 @@ public:
   const REAL_VALUE_TYPE &lower_bound () const;
   const REAL_VALUE_TYPE &upper_bound () const;
 
-  // Each fp_prop can be accessed with get_PROP() and set_PROP().
-  FRANGE_PROP_ACCESSOR(nan)
+  // Accessors for FP properties.
+  fp_prop get_nan () const { return m_props.get_nan (); }
+  void set_nan (fp_prop::kind f);
 private:
   void verify_range ();
   bool normalize_kind ();
@@ -1184,6 +1175,17 @@ real_min_representable (REAL_VALUE_TYPE *r, tree type)
 {
   real_max_representable (r, type);
   *r = real_value_negate (r);
+}
+
+// Build a NAN of type TYPE.
+
+inline frange
+frange_nan (tree type)
+{
+  REAL_VALUE_TYPE r;
+
+  gcc_assert (real_nan (&r, "", 1, TYPE_MODE (type)));
+  return frange (type, r, r);
 }
 
 #endif // GCC_VALUE_RANGE_H
