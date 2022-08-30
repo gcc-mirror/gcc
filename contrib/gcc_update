@@ -94,6 +94,7 @@ gcc/config/rs6000/rs6000-tables.opt: gcc/config/rs6000/rs6000-cpus.def gcc/confi
 gcc/config/rs6000/fusion.md: gcc/config/rs6000/genfusion.pl
 # And then, language-specific files
 gcc/cp/cfns.h: gcc/cp/cfns.gperf
+gcc/cp/std-name-hint.h: gcc/cp/std-name-hint.gperf
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
