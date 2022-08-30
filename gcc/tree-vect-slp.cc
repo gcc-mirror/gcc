@@ -6631,23 +6631,23 @@ vect_get_slp_defs (vec_info *,
     }
 }
 
-/* Generate vector permute statements from a list of loads in DR_CHAIN.
-   If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
-   permute statements for the SLP node NODE.  Store the number of vector
-   permute instructions in *N_PERMS and the number of vector load
-   instructions in *N_LOADS.  If DCE_CHAIN is true, remove all definitions
-   that were not needed.  */
+/* A subroutine of vect_transform_slp_perm_load with two extra arguments:
+   - PERM gives the permutation that the caller wants to use for NODE,
+     which might be different from SLP_LOAD_PERMUTATION.
+   - DUMP_P controls whether the function dumps information.  */
 
-bool
-vect_transform_slp_perm_load (vec_info *vinfo,
-			      slp_tree node, const vec<tree> &dr_chain,
-			      gimple_stmt_iterator *gsi, poly_uint64 vf,
-			      bool analyze_only, unsigned *n_perms,
-			      unsigned int *n_loads, bool dce_chain)
+static bool
+vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
+				load_permutation_t &perm,
+				const vec<tree> &dr_chain,
+				gimple_stmt_iterator *gsi, poly_uint64 vf,
+				bool analyze_only, bool dump_p,
+				unsigned *n_perms, unsigned int *n_loads,
+				bool dce_chain)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   int vec_index = 0;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (node);
   unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
   unsigned int mask_element;
   machine_mode mode;
@@ -6732,8 +6732,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
     {
       unsigned int iter_num = j / group_size;
       unsigned int stmt_num = j % group_size;
-      unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info)
-			+ SLP_TREE_LOAD_PERMUTATION (node)[stmt_num]);
+      unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info) + perm[stmt_num]);
       bitmap_set_bit (used_in_lanes, i);
       if (repeating_p)
 	{
@@ -6759,7 +6758,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	    }
 	  else
 	    {
-	      if (dump_enabled_p ())
+	      if (dump_p)
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "permutation requires at "
 				 "least three vectors %G",
@@ -6780,7 +6779,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	  indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
 	  if (!can_vec_perm_const_p (mode, mode, indices))
 	    {
-	      if (dump_enabled_p ())
+	      if (dump_p)
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
 				   vect_location,
@@ -6894,6 +6893,27 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	}
 
   return true;
+}
+
+/* Generate vector permute statements from a list of loads in DR_CHAIN.
+   If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
+   permute statements for the SLP node NODE.  Store the number of vector
+   permute instructions in *N_PERMS and the number of vector load
+   instructions in *N_LOADS.  If DCE_CHAIN is true, remove all definitions
+   that were not needed.  */
+
+bool
+vect_transform_slp_perm_load (vec_info *vinfo,
+			      slp_tree node, const vec<tree> &dr_chain,
+			      gimple_stmt_iterator *gsi, poly_uint64 vf,
+			      bool analyze_only, unsigned *n_perms,
+			      unsigned int *n_loads, bool dce_chain)
+{
+  return vect_transform_slp_perm_load_1 (vinfo, node,
+					 SLP_TREE_LOAD_PERMUTATION (node),
+					 dr_chain, gsi, vf, analyze_only,
+					 dump_enabled_p (), n_perms, n_loads,
+					 dce_chain);
 }
 
 /* Produce the next vector result for SLP permutation NODE by adding a vector
