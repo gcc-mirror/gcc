@@ -44,4 +44,4 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { { vect_strided4 || vect_perm } && vect_int_mult } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm && vect_int_mult } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm && vect_int_mult } xfail vect_load_lanes } } } */
