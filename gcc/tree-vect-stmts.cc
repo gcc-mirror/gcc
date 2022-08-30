@@ -11486,6 +11486,16 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
 
   unsigned int nbytes = GET_MODE_SIZE (inner_mode);
 
+  /* Interoperability between modes requires one to be a constant multiple
+     of the other, so that the number of vectors required for each operation
+     is a compile-time constant.  */
+  if (prevailing_mode != VOIDmode
+      && !constant_multiple_p (nunits * nbytes,
+			       GET_MODE_SIZE (prevailing_mode))
+      && !constant_multiple_p (GET_MODE_SIZE (prevailing_mode),
+			       nunits * nbytes))
+    return NULL_TREE;
+
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode
      precision.  The vectorization routines will have to make sure
