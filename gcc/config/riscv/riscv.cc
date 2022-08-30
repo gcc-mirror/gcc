@@ -1136,6 +1136,12 @@ riscv_const_insns (rtx x)
     case LABEL_REF:
       return riscv_symbol_insns (riscv_classify_symbol (x));
 
+    /* TODO: In RVV, we get CONST_POLY_INT by using csrr VLENB
+       instruction and several scalar shift or mult instructions,
+       it is so far unknown. We set it to 4 temporarily.  */
+    case CONST_POLY_INT:
+      return 4;
+
     default:
       return 0;
     }
@@ -2506,6 +2512,12 @@ riscv_output_move (rtx dest, rtx src)
 	  case 8:
 	    return "fld\t%0,%1";
 	  }
+    }
+  if (dest_code == REG && GP_REG_P (REGNO (dest)) && src_code == CONST_POLY_INT)
+    {
+      /* We only want a single full vector register VLEN read after reload. */
+      gcc_assert (known_eq (rtx_to_poly_int64 (src), BYTES_PER_RISCV_VECTOR));
+      return "csrr\t%0,vlenb";
     }
   gcc_unreachable ();
 }
