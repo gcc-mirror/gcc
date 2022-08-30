@@ -794,7 +794,7 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	 words or to cope with mode punning between equal-sized modes.
 	 In the latter case, use subreg on the rhs side, not lhs.  */
       rtx sub;
-      HOST_WIDE_INT regnum;
+      HOST_WIDE_INT regnum = 0;
       poly_uint64 regsize = REGMODE_NATURAL_SIZE (GET_MODE (op0));
       if (known_eq (bitnum, 0U)
 	  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (op0))))
