@@ -1,3 +1,22 @@
+2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* internal-fn.cc (expand_GOMP_TARGET_REV): New.
+	* internal-fn.def (GOMP_TARGET_REV): New.
+	* lto-cgraph.cc (lto_output_node, verify_node_partition): Mark
+	'omp target device_ancestor_host' as in_other_partition and don't
+	error if absent.
+	* omp-low.cc (create_omp_child_function): Mark as 'noclone'.
+	* omp-expand.cc (expand_omp_target): For reverse offload, remove
+	sorry, use device = GOMP_DEVICE_HOST_FALLBACK and create
+	empty-body nohost function.
+	* omp-offload.cc (execute_omp_device_lower): Handle
+	IFN_GOMP_TARGET_REV.
+	(pass_omp_target_link::execute): For ACCEL_COMPILER, don't
+	nullify fn argument for reverse offload
+
 2022-08-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

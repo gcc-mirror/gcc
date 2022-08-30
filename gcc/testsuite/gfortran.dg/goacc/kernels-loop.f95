@@ -31,7 +31,7 @@ program main
 end program main
 
 ! Check that only one loop is analyzed, and that it can be parallelized.
-! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(, , \\), oacc parallel_kernels_graphite, omp target entrypoint\\)\\)" 1 "graphite" } }
+! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(, , \\), oacc parallel_kernels_graphite, omp target entrypoint, noclone\\)\\)" 1 "graphite" } }
 ! { dg-final { scan-tree-dump-times "loop has no data-dependences" 2 "graphite" } } ! Two CFG loops per OpenACC loop
 
 ! Check that the loop has been split off into a function.

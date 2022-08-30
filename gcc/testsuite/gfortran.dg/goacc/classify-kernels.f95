@@ -33,4 +33,4 @@ end program main
 ! always be 1 x 1 x 1 for non-offloading compilation).
 ! { dg-final { scan-tree-dump-times "(?n)Function is parallel_kernels_graphite OpenACC kernels offload" 1 "oaccloops1" } }
 ! { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccloops1" } }
-! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc parallel_kernels_graphite, omp target entrypoint\\)\\)" 1 "oaccloops1" } }
+! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc parallel_kernels_graphite, omp target entrypoint, noclone\\)\\)" 1 "oaccloops1" } }
