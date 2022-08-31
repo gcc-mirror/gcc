@@ -253,6 +253,8 @@ frange_storage_slot::set_frange (const frange &r)
   gcc_checking_assert (fits_p (r));
   gcc_checking_assert (!r.undefined_p ());
 
+  m_min = r.m_min;
+  m_max = r.m_max;
   m_props = r.m_props;
 }
 
@@ -261,18 +263,12 @@ frange_storage_slot::get_frange (frange &r, tree type) const
 {
   gcc_checking_assert (r.supports_type_p (type));
 
-  // FIXME: NANs get special treatment, because we need [NAN, NAN] in
-  // the range to properly represent it, not just the NAN flag in the
-  // property bits.  This will go away when we stream out the
-  // endpoints.
-  if (m_props.get_nan ().yes_p ())
-    {
-      r = frange_nan (type);
-      return;
-    }
-
-  r.set_varying (type);
+  r.set_undefined ();
+  r.m_kind = VR_RANGE;
   r.m_props = m_props;
+  r.m_type = type;
+  r.m_min = m_min;
+  r.m_max = m_max;
   r.normalize_kind ();
 
   if (flag_checking)
