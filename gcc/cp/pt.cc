@@ -30408,6 +30408,26 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 				  cp_type_quals (ptype));
 }
 
+/* Return true if INIT is an unparenthesized id-expression or an
+   unparenthesized class member access.  Used for the argument of
+   decltype(auto).  */
+
+bool
+unparenthesized_id_or_class_member_access_p (tree init)
+{
+  STRIP_ANY_LOCATION_WRAPPER (init);
+
+  /* We need to be able to tell '(r)' and 'r' apart (when it's of
+     reference type).  Only the latter is an id-expression.  */
+  if (REFERENCE_REF_P (init)
+      && !REF_PARENTHESIZED_P (init))
+    init = TREE_OPERAND (init, 0);
+  return (DECL_P (init)
+	  || ((TREE_CODE (init) == COMPONENT_REF
+	       || TREE_CODE (init) == SCOPE_REF)
+	      && !REF_PARENTHESIZED_P (init)));
+}
+
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.
    The CONTEXT determines the context in which auto deduction is performed
@@ -30442,6 +30462,23 @@ do_auto_deduction (tree type, tree init, tree auto_node,
   /* We may be doing a partial substitution, but we still want to replace
      auto_node.  */
   complain &= ~tf_partial;
+
+  /* In C++23, we must deduce the type to int&& for code like
+       decltype(auto) f(int&& x) { return (x); }
+     or
+       auto&& f(int x) { return x; }
+     so we use treat_lvalue_as_rvalue_p.  But don't do it for
+       decltype(auto) f(int x) { return x; }
+     where we should deduce 'int' rather than 'int&&'; transmogrifying
+     INIT to an rvalue would break that.  */
+  tree r;
+  if (cxx_dialect >= cxx23
+      && context == adc_return_type
+      && (!AUTO_IS_DECLTYPE (auto_node)
+	  || !unparenthesized_id_or_class_member_access_p (init))
+      && (r = treat_lvalue_as_rvalue_p (maybe_undo_parenthesized_ref (init),
+					/*return*/true)))
+    init = r;
 
   if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
     /* C++17 class template argument deduction.  */
@@ -30504,18 +30541,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     }
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
-      /* Figure out if INIT is an unparenthesized id-expression or an
-	 unparenthesized class member access.  */
-      tree stripped_init = tree_strip_any_location_wrapper (init);
-      /* We need to be able to tell '(r)' and 'r' apart (when it's of
-	 reference type).  Only the latter is an id-expression.  */
-      if (REFERENCE_REF_P (stripped_init)
-	  && !REF_PARENTHESIZED_P (stripped_init))
-	stripped_init = TREE_OPERAND (stripped_init, 0);
-      const bool id = (DECL_P (stripped_init)
-		       || ((TREE_CODE (stripped_init) == COMPONENT_REF
-			    || TREE_CODE (stripped_init) == SCOPE_REF)
-			   && !REF_PARENTHESIZED_P (stripped_init)));
+      const bool id = unparenthesized_id_or_class_member_access_p (init);
       tree deduced = finish_decltype_type (init, id, complain);
       deduced = canonicalize_type_argument (deduced, complain);
       if (deduced == error_mark_node)

@@ -569,3 +569,9 @@
 #elif __cpp_static_call_operator != 202207
 #  error "__cpp_static_call_operator != 202207"
 #endif
+
+#ifndef __cpp_implicit_move
+#  error "__cpp_implicit_move"
+#elif __cpp_implicit_move != 202207
+#  error "__cpp_implicit_move != 202207"
+#endif

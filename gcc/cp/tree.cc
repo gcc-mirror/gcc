@@ -382,7 +382,7 @@ obvalue_p (const_tree ref)
 bool
 xvalue_p (const_tree ref)
 {
-  return (lvalue_kind (ref) == clk_rvalueref);
+  return (lvalue_kind (ref) & clk_rvalueref);
 }
 
 /* True if REF is a bit-field.  */

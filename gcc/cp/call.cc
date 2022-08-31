@@ -1880,8 +1880,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
       /* Nor the reverse.  */
       if (!is_lvalue && !TYPE_REF_IS_RVALUE (rto)
-	  /* Unless it's really an lvalue.  */
-	  && !(cxx_dialect >= cxx20
+	  /* Unless it's really a C++20 lvalue being treated as an xvalue.
+	     But in C++23, such an expression is just an xvalue, not a special
+	     lvalue, so the binding is once again ill-formed.  */
+	  && !(cxx_dialect == cxx20
 	       && (gl_kind & clk_implicit_rval))
 	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
 	      || (flags & LOOKUP_NO_RVAL_BIND))

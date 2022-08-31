@@ -1082,6 +1082,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_multidimensional_subscript=202110L");
 	  cpp_define (pfile, "__cpp_named_character_escapes=202207L");
 	  cpp_define (pfile, "__cpp_static_call_operator=202207L");
+	  cpp_define (pfile, "__cpp_implicit_move=202207L");
 	}
       if (flag_concepts)
         {

@@ -7292,6 +7292,7 @@ extern tree make_constrained_decltype_auto	(tree, tree);
 extern tree make_template_placeholder		(tree);
 extern bool template_placeholder_p		(tree);
 extern bool ctad_template_p			(tree);
+extern bool unparenthesized_id_or_class_member_access_p (tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
                                                  tsubst_flags_t
 						 = tf_warning_or_error,
