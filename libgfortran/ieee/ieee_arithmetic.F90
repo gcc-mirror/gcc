@@ -73,6 +73,7 @@ module IEEE_ARITHMETIC
     IEEE_TO_ZERO           = IEEE_ROUND_TYPE(GFC_FPE_TOWARDZERO), &
     IEEE_UP                = IEEE_ROUND_TYPE(GFC_FPE_UPWARD), &
     IEEE_DOWN              = IEEE_ROUND_TYPE(GFC_FPE_DOWNWARD), &
+    IEEE_AWAY              = IEEE_ROUND_TYPE(GFC_FPE_AWAY), &
     IEEE_OTHER             = IEEE_ROUND_TYPE(0)
 
 
@@ -1044,9 +1045,10 @@ contains
 
   ! IEEE_GET_ROUNDING_MODE
 
-  subroutine IEEE_GET_ROUNDING_MODE (ROUND_VALUE)
+  subroutine IEEE_GET_ROUNDING_MODE (ROUND_VALUE, RADIX)
     implicit none
     type(IEEE_ROUND_TYPE), intent(out) :: ROUND_VALUE
+    integer, intent(in), optional :: RADIX
 
     interface
       integer function helper() &
@@ -1060,9 +1062,10 @@ contains
 
   ! IEEE_SET_ROUNDING_MODE
 
-  subroutine IEEE_SET_ROUNDING_MODE (ROUND_VALUE)
+  subroutine IEEE_SET_ROUNDING_MODE (ROUND_VALUE, RADIX)
     implicit none
     type(IEEE_ROUND_TYPE), intent(in) :: ROUND_VALUE
+    integer, intent(in), optional :: RADIX
 
     interface
       subroutine helper(val) &
