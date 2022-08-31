@@ -1,3 +1,12 @@
+2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (parse_omp_structured_block): When parsing strictly
+	structured blocks, issue an error if the end-directive comes
+	before the 'end block'.
+
 2022-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

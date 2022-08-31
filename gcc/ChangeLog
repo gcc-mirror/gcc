@@ -1,3 +1,12 @@
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2022-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/106524
+	* config/aarch64/aarch64-sve.md (*fcmuo<mode>_nor_combine,
+	*fcmuo<mode>_bic_combine): Don't accept comparisons against zero.
+
 2022-08-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
