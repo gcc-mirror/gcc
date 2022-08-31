@@ -2916,27 +2916,7 @@ comptypes (tree t1, tree t2, int strict)
 	   perform a deep check. */
 	return structural_comptypes (t1, t2, strict);
 
-      if (flag_checking && param_use_canonical_types)
-	{
-	  bool result = structural_comptypes (t1, t2, strict);
-
-	  if (result && TYPE_CANONICAL (t1) != TYPE_CANONICAL (t2))
-	    /* The two types are structurally equivalent, but their
-	       canonical types were different. This is a failure of the
-	       canonical type propagation code.*/
-	    internal_error (
-	      "canonical types differ for identical types %qT and %qT", t1, t2);
-	  else if (!result && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
-	    /* Two types are structurally different, but the canonical
-	       types are the same. This means we were over-eager in
-	       assigning canonical types. */
-	    internal_error (
-	      "same canonical type node for different types %qT and %qT", t1,
-	      t2);
-
-	  return result;
-	}
-      if (!flag_checking && param_use_canonical_types)
+      if (!flag_checking)
 	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
       else
 	return structural_comptypes (t1, t2, strict);
