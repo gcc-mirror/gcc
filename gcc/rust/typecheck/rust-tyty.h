@@ -1362,6 +1362,11 @@ public:
 
   bool is_concrete () const override final
   {
+    if (is_unit ())
+      {
+	return !needs_substitution ();
+      }
+
     for (auto &variant : variants)
       {
 	for (auto &field : variant->get_fields ())
