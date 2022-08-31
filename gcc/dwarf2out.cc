@@ -2833,11 +2833,7 @@ build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
       head = build_span_loc (cfa->reg);
 
       if (maybe_ne (offset, 0))
-	{
-	  add_loc_descr (&head, new_loc_descr (DW_OP_LLVM_piece_end, 0, 0));
-	  add_loc_descr (&head, new_loc_descr (DW_OP_deref, 0, 0));
 	  loc_descr_plus_const (&head, offset);
-	}
     }
   else if (cfa->indirect)
     {

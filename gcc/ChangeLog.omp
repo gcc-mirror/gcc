@@ -1,3 +1,16 @@
+2022-08-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	Revert:
+	2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* dwarf2cfi.cc (get_cfa_from_loc_descr): Check op against DW_OP_bregx.
+
+	2020-07-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2cfi.cc (get_cfa_from_loc_descr): Support register spans
+	with DW_OP_piece and DW_OP_LLVM_piece_end.
+	* dwarf2out.cc (build_cfa_loc): Support register spans.
+
 2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

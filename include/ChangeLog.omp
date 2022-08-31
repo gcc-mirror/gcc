@@ -1,3 +1,10 @@
+2022-08-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	Revert:
+	2020-07-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2.def (DW_OP_LLVM_piece_end): New extension operator.
+
 2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

@@ -704,12 +704,6 @@ DW_OP (DW_OP_PGI_omp_thread_num, 0xf8)
    to 0 except explicitly documented for one action.  Please refer AArch64 DWARF
    ABI documentation for details.  */
 DW_OP (DW_OP_AARCH64_operation, 0xea)
-
-/* AMD GCN extensions (originally for LLVM).  See
-   http://llvm.org/docs/AMDGPUDwarfExtensionsForHeterogeneousDebugging.html  */
-// This clashes with DW_OP_AARCH64_operation, so use an alias instead
-// DW_OP (DW_OP_LLVM_piece_end, 0xea)
-#define DW_OP_LLVM_piece_end DW_OP_AARCH64_operation
 DW_END_OP
 
 DW_FIRST_ATE (DW_ATE_void, 0x0)

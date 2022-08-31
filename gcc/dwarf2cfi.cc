@@ -540,10 +540,6 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
   cfa->indirect = 0;
   cfa->reg.set_by_dwreg (INVALID_REGNUM);
 
-  /* Record previous register pieces here.  */
-  struct cfa_reg span;
-  span.set_by_dwreg (INVALID_REGNUM);
-
   for (ptr = loc; ptr != NULL; ptr = ptr->dw_loc_next)
     {
       enum dwarf_location_atom op = ptr->dw_loc_opc;
@@ -626,9 +622,7 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 		= (op == DW_OP_bregx
 		   ? ptr->dw_loc_oprnd1.v.val_int : op - DW_OP_breg0);
 	      cfa->reg.set_by_dwreg (regno);
-	      cfa->base_offset = (op == DW_OP_bregx
-				  ? ptr->dw_loc_oprnd2.v.val_int
-				  : ptr->dw_loc_oprnd1.v.val_int);
+	      cfa->base_offset = ptr->dw_loc_oprnd1.v.val_int;
 	    }
 	  else
 	    {
@@ -652,24 +646,6 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 	      cfa->reg.span_width = cfa->offset.to_constant () / 8;
 	      cfa->offset = 0;
 	    }
-	  break;
-	case DW_OP_piece:
-	  if (span.reg != INVALID_REGNUM)
-	    {
-	      /* We only support contiguous pieces, for now.  */
-	      gcc_assert (cfa->reg.reg == span.reg + span.span);
-	      gcc_assert (known_eq (ptr->dw_loc_oprnd1.v.val_int,
-				    span.span_width));
-	      span.span++;
-	      cfa->reg = span;
-	    }
-	  else
-	    {
-	      cfa->reg.span_width = ptr->dw_loc_oprnd1.v.val_int;
-	      span = cfa->reg;
-	    }
-	  break;
-	case DW_OP_LLVM_piece_end:
 	  break;
 	case DW_OP_deref:
 	  cfa->indirect = 1;
@@ -729,7 +705,6 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 	  /* The offset is already in place.  */
 	  break;
 	case DW_OP_plus_uconst:
-	  gcc_assert (known_eq (cfa->offset, 0));
 	  cfa->offset = ptr->dw_loc_oprnd1.v.val_unsigned;
 	  break;
 	default:
