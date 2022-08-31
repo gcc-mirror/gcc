@@ -1,3 +1,12 @@
+2022-08-30  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* config/rs6000/rs6000.c (rs6000_invalid_conversion): Remove handling
+	of MMA pointer conversions.
+
 2022-08-24  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
