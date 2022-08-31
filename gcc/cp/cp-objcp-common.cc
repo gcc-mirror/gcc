@@ -460,6 +460,8 @@ names_builtin_p (const char *name)
     case RID_IS_UNION:
     case RID_IS_ASSIGNABLE:
     case RID_IS_CONSTRUCTIBLE:
+    case RID_IS_NOTHROW_ASSIGNABLE:
+    case RID_IS_NOTHROW_CONSTRUCTIBLE:
     case RID_UNDERLYING_TYPE:
       return true;
     default:
