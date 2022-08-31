@@ -190,7 +190,6 @@ package Snames is
    Name_uMaster                        : constant Name_Id := N + $;
    Name_uObject                        : constant Name_Id := N + $;
    Name_uPost                          : constant Name_Id := N + $;
-   Name_uPostconditions                : constant Name_Id := N + $;
    Name_uPostcond_Enabled              : constant Name_Id := N + $;
    Name_uPre                           : constant Name_Id := N + $;
    Name_uPriority                      : constant Name_Id := N + $;
@@ -208,6 +207,7 @@ package Snames is
    Name_uTask_Name                     : constant Name_Id := N + $;
    Name_uType_Invariant                : constant Name_Id := N + $;
    Name_uVariants                      : constant Name_Id := N + $;
+   Name_uWrapped_Statements            : constant Name_Id := N + $;
 
    --  Names of predefined primitives used in the expansion of dispatching
    --  requeue and select statements, Abort, 'Callable and 'Terminated.

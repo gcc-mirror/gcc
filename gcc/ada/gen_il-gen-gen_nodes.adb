@@ -1098,7 +1098,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Elsif_Parts, List_Id, Default_No_List),
         Sy (Else_Statements, List_Id, Default_No_List),
         Sy (End_Span, Unat, Default_Uint_0),
-        Sm (From_Conditional_Expression, Flag)));
+        Sm (From_Conditional_Expression, Flag),
+        Sm (Comes_From_Check_Or_Contract, Flag)));
 
    Cc (N_Accept_Alternative, Node_Kind,
        (Sy (Accept_Statement, Node_Id),

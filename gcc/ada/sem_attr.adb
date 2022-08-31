@@ -1430,12 +1430,11 @@ package body Sem_Attr is
                Placement_Error;
             end if;
 
-         --  'Old attribute reference ok in a _Postconditions procedure
+         --  'Old attribute reference ok in a _Wrapped_Statements procedure
 
          elsif Nkind (Prag) = N_Subprogram_Body
-           and then not Comes_From_Source (Prag)
-           and then Nkind (Corresponding_Spec (Prag)) = N_Defining_Identifier
-           and then Chars (Corresponding_Spec (Prag)) = Name_uPostconditions
+           and then Ekind (Defining_Entity (Prag)) in Subprogram_Kind
+           and then Present (Wrapped_Statements (Defining_Entity (Prag)))
          then
             null;
 
@@ -1450,16 +1449,16 @@ package body Sem_Attr is
          if Nkind (Prag) = N_Aspect_Specification then
             Subp_Decl := Parent (Prag);
          elsif Nkind (Prag) = N_Subprogram_Body then
-            declare
-               Enclosing_Scope : constant Node_Id :=
-                 Scope (Corresponding_Spec (Prag));
-            begin
-               pragma Assert (Postconditions_Proc (Enclosing_Scope)
-                               = Corresponding_Spec (Prag));
-               Subp_Decl := Parent (Parent (Enclosing_Scope));
-            end;
+            Subp_Decl := Prag;
          else
             Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
+         end if;
+
+         --  'Old objects appear in extended return statements as part of
+         --  the expansion of contract wrappers.
+
+         if Nkind (Subp_Decl) = N_Extended_Return_Statement then
+            Subp_Decl := Parent (Parent (Subp_Decl));
          end if;
 
          --  The aspect or pragma where the attribute resides should be
@@ -1506,7 +1505,7 @@ package body Sem_Attr is
 
          if Modify_Tree_For_C
            and then Chars (Spec_Id) = Name_uParent
-           and then Chars (Scope (Spec_Id)) = Name_uPostconditions
+           and then Chars (Scope (Spec_Id)) = Name_uWrapped_Statements
          then
             --  This situation occurs only when analyzing the body-to-inline
 
@@ -1750,7 +1749,7 @@ package body Sem_Attr is
          if Is_Entry_Wrapper (Spec_Id) then
             Legal := True;
 
-         elsif Chars (Spec_Id) = Name_uPostconditions
+         elsif Chars (Spec_Id) = Name_uWrapped_Statements
            and then Is_Entry_Wrapper (Scope (Spec_Id))
          then
             Spec_Id := Scope (Spec_Id);
@@ -5881,13 +5880,13 @@ package body Sem_Attr is
             Error_Attr ("prefix of % attribute must be a function", P);
          end if;
 
-         --  Attribute 'Result is part of a _Postconditions procedure. There is
+         --  Attribute 'Result is part of postconditions expansion. There is
          --  no need to perform the semantic checks below as they were already
          --  verified when the attribute was analyzed in its original context.
          --  Instead, rewrite the attribute as a reference to formal parameter
-         --  _Result of the _Postconditions procedure.
+         --  _Result of the _Wrapped_Statements procedure.
 
-         if Chars (Spec_Id) = Name_uPostconditions
+         if Chars (Spec_Id) = Name_uWrapped_Statements
            or else
              (In_Inlined_C_Postcondition
                and then Nkind (Parent (Spec_Id)) = N_Block_Statement)

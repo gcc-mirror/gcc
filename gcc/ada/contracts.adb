@@ -68,6 +68,19 @@ package body Contracts is
    --
    --    Part_Of
 
+   procedure Build_Subprogram_Contract_Wrapper
+     (Body_Id : Entity_Id;
+      Stmts   : List_Id;
+      Decls   : List_Id;
+      Result  : Entity_Id);
+   --  Generate a wrapper for a given subprogram body when the expansion of
+   --  postconditions require it by moving its declarations and statements
+   --  into a locally declared subprogram _Wrapped_Statements.
+
+   --  Postcondition and precondition checks then get inserted in place of
+   --  the original statements and declarations along with a call to
+   --  _Wrapped_Statements.
+
    procedure Check_Class_Condition
      (Cond            : Node_Id;
       Subp            : Entity_Id;
@@ -77,6 +90,10 @@ package body Contracts is
    --  from Par_Subp. Is_Precondition enables check specific for preconditions.
    --  In SPARK_Mode, an inherited operation that is not overridden but has
    --  inherited modified conditions pre/postconditions is illegal.
+
+   function Is_Prologue_Renaming (Decl : Node_Id) return Boolean;
+   --  Determine whether arbitrary declaration Decl denotes a renaming of
+   --  a discriminant or protection field _object.
 
    procedure Check_Type_Or_Object_External_Properties
      (Type_Or_Obj_Id : Entity_Id);
@@ -488,6 +505,45 @@ package body Contracts is
       end loop;
    end Analyze_Contracts;
 
+   -------------------------------------
+   -- Analyze_Pragmas_In_Declarations --
+   -------------------------------------
+
+   procedure Analyze_Pragmas_In_Declarations (Body_Id : Entity_Id) is
+      Curr_Decl : Node_Id;
+
+   begin
+      --  Move through the body's declarations analyzing all pragmas which
+      --  appear at the top of the declarations.
+
+      Curr_Decl := First (Declarations (Unit_Declaration_Node (Body_Id)));
+      while Present (Curr_Decl) loop
+
+         if Nkind (Curr_Decl) = N_Pragma then
+
+            if Pragma_Significant_To_Subprograms
+                 (Get_Pragma_Id (Curr_Decl))
+            then
+               Analyze (Curr_Decl);
+            end if;
+
+         --  Skip the renamings of discriminants and protection fields
+
+         elsif Is_Prologue_Renaming (Curr_Decl) then
+            null;
+
+         --  We have reached something which is not a pragma so we can be sure
+         --  there are no more contracts or pragmas which need to be taken into
+         --  account.
+
+         else
+            exit;
+         end if;
+
+         Next (Curr_Decl);
+      end loop;
+   end Analyze_Pragmas_In_Declarations;
+
    -----------------------------------------------
    -- Analyze_Entry_Or_Subprogram_Body_Contract --
    -----------------------------------------------
@@ -644,7 +700,7 @@ package body Contracts is
 
          else
             declare
-               Bod          : Node_Id;
+               Bod          : Node_Id := Empty;
                Freeze_Types : Boolean := False;
 
             begin
@@ -1499,6 +1555,442 @@ package body Contracts is
         (Type_Or_Obj_Id => Type_Id);
    end Analyze_Type_Contract;
 
+   ---------------------------------------
+   -- Build_Subprogram_Contract_Wrapper --
+   ---------------------------------------
+
+   procedure Build_Subprogram_Contract_Wrapper
+     (Body_Id : Entity_Id;
+      Stmts   : List_Id;
+      Decls   : List_Id;
+      Result  : Entity_Id)
+   is
+      Actuals   : constant List_Id    := Empty_List;
+      Body_Decl : constant Entity_Id  := Unit_Declaration_Node (Body_Id);
+      Loc       : constant Source_Ptr := Sloc (Body_Decl);
+      Spec_Id   : constant Entity_Id  := Corresponding_Spec (Body_Decl);
+      Subp_Id   : Entity_Id;
+      Ret_Type  : Entity_Id;
+
+      Wrapper_Id   : Entity_Id;
+      Wrapper_Body : Node_Id;
+      Wrapper_Spec : Node_Id;
+
+   begin
+      --  When there are no postcondition statements we do not need to
+      --  generate a wrapper.
+
+      if No (Stmts) then
+         return;
+      end if;
+
+      --  Obtain the related subprogram id from the body id.
+
+      if Present (Spec_Id) then
+         Subp_Id := Spec_Id;
+      else
+         Subp_Id := Body_Id;
+      end if;
+      Ret_Type := Etype (Subp_Id);
+
+      --  Generate the contracts wrapper by moving the original declarations
+      --  and statements within a local subprogram and calling it within
+      --  an extended return to preserve the result for the purpose of
+      --  evaluating postconditions, contracts, type invariants, etc.
+
+      --  Generate:
+      --
+      --  function Original_Func (X : in out Integer) return Typ is
+      --     <prologue renamings>
+      --     <preconditions>
+      --
+      --     function _Wrapped_Statements return Typ is
+      --        <original declarations>
+      --     begin
+      --        <original statements>
+      --     end;
+      --
+      --  begin
+      --     return
+      --        Result_Obj : constant Typ := _Wrapped_Statements
+      --     do
+      --        <postconditions statments>
+      --     end return;
+      --  end;
+      --
+      --  Or, in the case of a procedure:
+      --
+      --  procedure Original_Proc (X : in out Integer) is
+      --     <prologue renamings>
+      --     <preconditions>
+      --
+      --     procedure _Wrapped_Statements is
+      --        <original declarations>
+      --     begin
+      --        <original statements>
+      --     end;
+      --
+      --  begin
+      --     _Wrapped_Statements;
+      --     <postconditions statments>
+      --  end;
+      --
+
+      --  Create Identifier
+
+      Wrapper_Id := Make_Defining_Identifier (Loc, Name_uWrapped_Statements);
+      Set_Debug_Info_Needed  (Wrapper_Id);
+      Set_Wrapped_Statements (Subp_Id, Wrapper_Id);
+
+      --  Create specification and declaration for the wrapper
+
+      if No (Ret_Type) or else Ret_Type = Standard_Void_Type then
+         Wrapper_Spec :=
+           Make_Procedure_Specification (Loc,
+             Defining_Unit_Name => Wrapper_Id);
+      else
+         Wrapper_Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name => Wrapper_Id,
+             Result_Definition  => New_Occurrence_Of (Ret_Type, Loc));
+      end if;
+
+      --  Create the wrapper body using Body_Id's statements and declarations
+
+      Wrapper_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              => Wrapper_Spec,
+          Declarations               => Declarations (Body_Decl),
+          Handled_Statement_Sequence =>
+            Relocate_Node (Handled_Statement_Sequence (Body_Decl)));
+
+      Append_To (Decls, Wrapper_Body);
+      Set_Declarations (Body_Decl, Decls);
+      Set_Handled_Statement_Sequence (Body_Decl,
+        Make_Handled_Sequence_Of_Statements (Loc,
+          End_Label  => Make_Identifier (Loc, Chars (Wrapper_Id)),
+          Statements => New_List));
+
+      --  Move certain flags which are relevant to the body
+
+      --  Wouldn't a better way be to perform some sort of copy of Body_Decl
+      --  for Wrapper_Body be less error-prone ???
+
+      if Was_Expression_Function (Body_Decl) then
+         Set_Was_Expression_Function (Body_Decl, False);
+         Set_Was_Expression_Function (Wrapper_Body);
+      end if;
+
+      Set_Has_Pragma_Inline (Wrapper_Id, Has_Pragma_Inline (Subp_Id));
+      Set_Has_Pragma_Inline_Always
+        (Wrapper_Id, Has_Pragma_Inline_Always (Subp_Id));
+
+      --  Generate call to the wrapper
+
+      if No (Ret_Type) or else Ret_Type = Standard_Void_Type then
+         Prepend_To (Stmts,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Occurrence_Of (Wrapper_Id, Loc)));
+         Set_Statements
+           (Handled_Statement_Sequence (Body_Decl), Stmts);
+
+      --  Generate the post-execution statements and the extended return
+      --  when the subprogram being wrapped is a function.
+
+      else
+         Set_Statements (Handled_Statement_Sequence (Body_Decl), New_List (
+           Make_Extended_Return_Statement (Loc,
+             Return_Object_Declarations => New_List (
+                Make_Object_Declaration (Loc,
+                  Defining_Identifier => Result,
+                  Object_Definition   =>
+                    New_Occurrence_Of (Ret_Type, Loc),
+                  Expression          =>
+                    Make_Function_Call (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (Wrapper_Id, Loc),
+                      Parameter_Associations => Actuals))),
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Stmts))));
+      end if;
+   end Build_Subprogram_Contract_Wrapper;
+
+   ----------------------------------
+   -- Build_Entry_Contract_Wrapper --
+   ----------------------------------
+
+   procedure Build_Entry_Contract_Wrapper (E : Entity_Id; Decl : Node_Id) is
+      Conc_Typ : constant Entity_Id  := Scope (E);
+      Loc      : constant Source_Ptr := Sloc (E);
+
+      procedure Add_Discriminant_Renamings
+        (Obj_Id : Entity_Id;
+         Decls  : List_Id);
+      --  Add renaming declarations for all discriminants of concurrent type
+      --  Conc_Typ. Obj_Id is the entity of the wrapper formal parameter which
+      --  represents the concurrent object.
+
+      procedure Add_Matching_Formals
+        (Formals : List_Id;
+         Actuals : in out List_Id);
+      --  Add formal parameters that match those of entry E to list Formals.
+      --  The routine also adds matching actuals for the new formals to list
+      --  Actuals.
+
+      procedure Transfer_Pragma (Prag : Node_Id; To : in out List_Id);
+      --  Relocate pragma Prag to list To. The routine creates a new list if
+      --  To does not exist.
+
+      --------------------------------
+      -- Add_Discriminant_Renamings --
+      --------------------------------
+
+      procedure Add_Discriminant_Renamings
+        (Obj_Id : Entity_Id;
+         Decls  : List_Id)
+      is
+         Discr         : Entity_Id;
+         Renaming_Decl : Node_Id;
+
+      begin
+         --  Inspect the discriminants of the concurrent type and generate a
+         --  renaming for each one.
+
+         if Has_Discriminants (Conc_Typ) then
+            Discr := First_Discriminant (Conc_Typ);
+            while Present (Discr) loop
+               Renaming_Decl :=
+                 Make_Object_Renaming_Declaration (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Chars (Discr)),
+                   Subtype_Mark        =>
+                     New_Occurrence_Of (Etype (Discr), Loc),
+                   Name                =>
+                     Make_Selected_Component (Loc,
+                       Prefix        => New_Occurrence_Of (Obj_Id, Loc),
+                       Selector_Name =>
+                         Make_Identifier (Loc, Chars (Discr))));
+
+               Prepend_To (Decls, Renaming_Decl);
+
+               Next_Discriminant (Discr);
+            end loop;
+         end if;
+      end Add_Discriminant_Renamings;
+
+      --------------------------
+      -- Add_Matching_Formals --
+      --------------------------
+
+      procedure Add_Matching_Formals
+        (Formals : List_Id;
+         Actuals : in out List_Id)
+      is
+         Formal     : Entity_Id;
+         New_Formal : Entity_Id;
+
+      begin
+         --  Inspect the formal parameters of the entry and generate a new
+         --  matching formal with the same name for the wrapper. A reference
+         --  to the new formal becomes an actual in the entry call.
+
+         Formal := First_Formal (E);
+         while Present (Formal) loop
+            New_Formal := Make_Defining_Identifier (Loc, Chars (Formal));
+            Append_To (Formals,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => New_Formal,
+                In_Present          => In_Present  (Parent (Formal)),
+                Out_Present         => Out_Present (Parent (Formal)),
+                Parameter_Type      =>
+                  New_Occurrence_Of (Etype (Formal), Loc)));
+
+            if No (Actuals) then
+               Actuals := New_List;
+            end if;
+
+            Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
+            Next_Formal (Formal);
+         end loop;
+      end Add_Matching_Formals;
+
+      ---------------------
+      -- Transfer_Pragma --
+      ---------------------
+
+      procedure Transfer_Pragma (Prag : Node_Id; To : in out List_Id) is
+         New_Prag : Node_Id;
+
+      begin
+         if No (To) then
+            To := New_List;
+         end if;
+
+         New_Prag := Relocate_Node (Prag);
+
+         Set_Analyzed (New_Prag, False);
+         Append       (New_Prag, To);
+      end Transfer_Pragma;
+
+      --  Local variables
+
+      Items      : constant Node_Id := Contract (E);
+      Actuals    : List_Id := No_List;
+      Call       : Node_Id;
+      Call_Nam   : Node_Id;
+      Decls      : List_Id := No_List;
+      Formals    : List_Id;
+      Has_Pragma : Boolean := False;
+      Index_Id   : Entity_Id;
+      Obj_Id     : Entity_Id;
+      Prag       : Node_Id;
+      Wrapper_Id : Entity_Id;
+
+   --  Start of processing for Build_Entry_Contract_Wrapper
+
+   begin
+      --  This routine generates a specialized wrapper for a protected or task
+      --  entry [family] which implements precondition/postcondition semantics.
+      --  Preconditions and case guards of contract cases are checked before
+      --  the protected action or rendezvous takes place.
+
+      --    procedure Wrapper
+      --      (Obj_Id    : Conc_Typ;    --  concurrent object
+      --       [Index    : Index_Typ;]  --  index of entry family
+      --       [Formal_1 : ...;         --  parameters of original entry
+      --        Formal_N : ...])
+      --    is
+      --       [Discr_1 : ... renames Obj_Id.Discr_1;   --  discriminant
+      --        Discr_N : ... renames Obj_Id.Discr_N;]  --  renamings
+
+      --       <contracts pragmas>
+      --       <case guard checks>
+
+      --    begin
+      --       Entry_Call (Obj_Id, [Index,] [Formal_1, Formal_N]);
+      --    end Wrapper;
+
+      --  Create the wrapper only when the entry has at least one executable
+      --  contract item such as contract cases, precondition or postcondition.
+
+      if Present (Items) then
+
+         --  Inspect the list of pre/postconditions and transfer all available
+         --  pragmas to the declarative list of the wrapper.
+
+         Prag := Pre_Post_Conditions (Items);
+         while Present (Prag) loop
+            if Pragma_Name_Unmapped (Prag) in Name_Postcondition
+                                            | Name_Precondition
+              and then Is_Checked (Prag)
+            then
+               Has_Pragma := True;
+               Transfer_Pragma (Prag, To => Decls);
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+
+         --  Inspect the list of test/contract cases and transfer only contract
+         --  cases pragmas to the declarative part of the wrapper.
+
+         Prag := Contract_Test_Cases (Items);
+         while Present (Prag) loop
+            if Pragma_Name (Prag) = Name_Contract_Cases
+              and then Is_Checked (Prag)
+            then
+               Has_Pragma := True;
+               Transfer_Pragma (Prag, To => Decls);
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+      end if;
+
+      --  The entry lacks executable contract items and a wrapper is not needed
+
+      if not Has_Pragma then
+         return;
+      end if;
+
+      --  Create the profile of the wrapper. The first formal parameter is the
+      --  concurrent object.
+
+      Obj_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Conc_Typ), 'A'));
+
+      Formals := New_List (
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier => Obj_Id,
+          Out_Present         => True,
+          In_Present          => True,
+          Parameter_Type      => New_Occurrence_Of (Conc_Typ, Loc)));
+
+      --  Construct the call to the original entry. The call will be gradually
+      --  augmented with an optional entry index and extra parameters.
+
+      Call_Nam :=
+        Make_Selected_Component (Loc,
+          Prefix        => New_Occurrence_Of (Obj_Id, Loc),
+          Selector_Name => New_Occurrence_Of (E, Loc));
+
+      --  When creating a wrapper for an entry family, the second formal is the
+      --  entry index.
+
+      if Ekind (E) = E_Entry_Family then
+         Index_Id := Make_Defining_Identifier (Loc, Name_I);
+
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier => Index_Id,
+             Parameter_Type      =>
+               New_Occurrence_Of (Entry_Index_Type (E), Loc)));
+
+         --  The call to the original entry becomes an indexed component to
+         --  accommodate the entry index.
+
+         Call_Nam :=
+           Make_Indexed_Component (Loc,
+             Prefix      => Call_Nam,
+             Expressions => New_List (New_Occurrence_Of (Index_Id, Loc)));
+      end if;
+
+      --  Add formal parameters to match those of the entry and build actuals
+      --  for the entry call.
+
+      Add_Matching_Formals (Formals, Actuals);
+
+      Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => Call_Nam,
+          Parameter_Associations => Actuals);
+
+      --  Add renaming declarations for the discriminants of the enclosing type
+      --  as the various contract items may reference them.
+
+      Add_Discriminant_Renamings (Obj_Id, Decls);
+
+      Wrapper_Id :=
+        Make_Defining_Identifier (Loc, New_External_Name (Chars (E), 'E'));
+      Set_Contract_Wrapper (E, Wrapper_Id);
+      Set_Is_Entry_Wrapper (Wrapper_Id);
+
+      --  The wrapper body is analyzed when the enclosing type is frozen
+
+      Append_Freeze_Action (Defining_Entity (Decl),
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name       => Wrapper_Id,
+              Parameter_Specifications => Formals),
+          Declarations               => Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Call))));
+   end Build_Entry_Contract_Wrapper;
+
    ---------------------------
    -- Check_Class_Condition --
    ---------------------------
@@ -1804,16 +2296,9 @@ package body Contracts is
       --  the item denotes a pragma, it is added to the list only when it is
       --  enabled.
 
-      procedure Build_Postconditions_Procedure
-        (Subp_Id : Entity_Id;
-         Stmts   : List_Id;
-         Result  : Entity_Id);
-      --  Create the body of procedure _Postconditions which handles various
-      --  assertion actions on exit from subprogram Subp_Id. Stmts is the list
-      --  of statements to be checked on exit. Parameter Result is the entity
-      --  of parameter _Result when Subp_Id denotes a function.
-
-      procedure Process_Contract_Cases (Stmts : in out List_Id);
+      procedure Process_Contract_Cases
+        (Stmts : in out List_Id;
+         Decls : List_Id);
       --  Process pragma Contract_Cases. This routine prepends items to the
       --  body declarations and appends items to list Stmts.
 
@@ -1821,7 +2306,7 @@ package body Contracts is
       --  Collect all [inherited] spec and body postconditions and accumulate
       --  their pragma Check equivalents in list Stmts.
 
-      procedure Process_Preconditions;
+      procedure Process_Preconditions (Decls : in out List_Id);
       --  Collect all [inherited] spec and body preconditions and prepend their
       --  pragma Check equivalents to the declarations of the body.
 
@@ -2309,260 +2794,14 @@ package body Contracts is
          end if;
       end Append_Enabled_Item;
 
-      ------------------------------------
-      -- Build_Postconditions_Procedure --
-      ------------------------------------
-
-      procedure Build_Postconditions_Procedure
-        (Subp_Id : Entity_Id;
-         Stmts   : List_Id;
-         Result  : Entity_Id)
-      is
-         Loc       : constant Source_Ptr := Sloc (Body_Decl);
-         Last_Decl : Node_Id;
-         Params    : List_Id := No_List;
-         Proc_Bod  : Node_Id;
-         Proc_Decl : Node_Id;
-         Proc_Id   : Entity_Id;
-         Proc_Spec : Node_Id;
-
-         --  Extra declarations needed to handle interactions between
-         --  postconditions and finalization.
-
-         Postcond_Enabled_Decl : Node_Id;
-         Return_Success_Decl   : Node_Id;
-         Result_Obj_Decl       : Node_Id;
-         Result_Obj_Type_Decl  : Node_Id;
-         Result_Obj_Type       : Entity_Id;
-
-      --  Start of processing for Build_Postconditions_Procedure
-
-      begin
-         --  Nothing to do if there are no actions to check on exit
-
-         if No (Stmts) then
-            return;
-         end if;
-
-         --  Otherwise, we generate the postcondition procedure and add
-         --  associated objects and conditions used to coordinate postcondition
-         --  evaluation with finalization.
-
-         --  Generate:
-         --
-         --    procedure _postconditions (Return_Exp : Result_Typ);
-         --
-         --    --  Result_Obj_Type created when Result_Type is non-elementary
-         --    [type Result_Obj_Type is access all Result_Typ;]
-         --
-         --    Result_Obj : Result_Obj_Type;
-         --
-         --    Postcond_Enabled            : Boolean := True;
-         --    Return_Success_For_Postcond : Boolean := False;
-         --
-         --    procedure _postconditions (Return_Exp : Result_Typ) is
-         --    begin
-         --       if Postcond_Enabled and then Return_Success_For_Postcond then
-         --          [stmts];
-         --       end if;
-         --    end;
-
-         Proc_Id := Make_Defining_Identifier (Loc, Name_uPostconditions);
-         Set_Debug_Info_Needed   (Proc_Id);
-         Set_Postconditions_Proc (Subp_Id, Proc_Id);
-
-         --  Mark it inlined to speed up the call
-
-         Set_Is_Inlined (Proc_Id);
-
-         --  Force the front-end inlining of _Postconditions when generating C
-         --  code, since its body may have references to itypes defined in the
-         --  enclosing subprogram, which would cause problems for unnesting
-         --  routines in the absence of inlining.
-
-         if Modify_Tree_For_C then
-            Set_Has_Pragma_Inline        (Proc_Id);
-            Set_Has_Pragma_Inline_Always (Proc_Id);
-         end if;
-
-         --  The related subprogram is a function: create the specification of
-         --  parameter _Result.
-
-         if Present (Result) then
-            Params := New_List (
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => Result,
-                Parameter_Type      =>
-                  New_Occurrence_Of (Etype (Result), Loc)));
-         end if;
-
-         Proc_Spec :=
-           Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       => Proc_Id,
-             Parameter_Specifications => Params);
-
-         Proc_Decl := Make_Subprogram_Declaration (Loc, Proc_Spec);
-
-         --  Insert _Postconditions before the first source declaration of the
-         --  body. This ensures that the body will not cause any premature
-         --  freezing, as it may mention types:
-
-         --  Generate:
-         --
-         --    procedure Proc (Obj : Array_Typ) is
-         --       procedure _postconditions is
-         --       begin
-         --          ... Obj ...
-         --       end _postconditions;
-         --
-         --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
-         --    begin
-
-         --  In the example above, Obj is of type T but the incorrect placement
-         --  of _Postconditions will cause a crash in gigi due to an out-of-
-         --  order reference. The body of _Postconditions must be placed after
-         --  the declaration of Temp to preserve correct visibility.
-
-         Insert_Before_First_Source_Declaration
-           (Proc_Decl, Declarations (Body_Decl));
-         Analyze (Proc_Decl);
-         Last_Decl := Proc_Decl;
-
-         --  When Result is present (e.g. the postcondition checks apply to a
-         --  function) we make a local object to capture the result, so, if
-         --  needed, we can call the generated postconditions procedure during
-         --  finalization instead of at the point of return.
-
-         --  Note: The placement of the following declarations before the
-         --  declaration of the body of the postconditions, but after the
-         --  declaration of the postconditions spec is deliberate and required
-         --  since other code within the expander expects them to be located
-         --  here. Perhaps when more space is available in the tree this will
-         --  no longer be necessary ???
-
-         if Present (Result) then
-            --  Elementary result types mean a copy is cheap and preferred over
-            --  using pointers.
-
-            if Is_Elementary_Type (Etype (Result)) then
-               Result_Obj_Type := Etype (Result);
-
-            --  Otherwise, we create a named access type to capture the result
-
-            --  Generate:
-            --
-            --  type Result_Obj_Type is access all [Result_Type];
-
-            else
-               Result_Obj_Type := Make_Temporary (Loc, 'R');
-
-               Result_Obj_Type_Decl :=
-                 Make_Full_Type_Declaration (Loc,
-                   Defining_Identifier => Result_Obj_Type,
-                   Type_Definition     =>
-                     Make_Access_To_Object_Definition (Loc,
-                       All_Present        => True,
-                       Subtype_Indication => New_Occurrence_Of
-                                               (Etype (Result), Loc)));
-               Insert_After_And_Analyze (Proc_Decl, Result_Obj_Type_Decl);
-               Last_Decl := Result_Obj_Type_Decl;
-            end if;
-
-            --  Create the result obj declaration
-
-            --  Generate:
-            --
-            --  Result_Object_For_Postcond : Result_Obj_Type;
-
-            Result_Obj_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier
-                    (Loc, Name_uResult_Object_For_Postcond),
-                Object_Definition   =>
-                  New_Occurrence_Of
-                    (Result_Obj_Type, Loc));
-            Set_No_Initialization (Result_Obj_Decl);
-            Insert_After_And_Analyze (Last_Decl, Result_Obj_Decl);
-            Last_Decl := Result_Obj_Decl;
-         end if;
-
-         --  Build the Postcond_Enabled flag used to delay evaluation of
-         --  postconditions until finalization has been performed when cleanup
-         --  actions are present.
-
-         --  NOTE: This flag could be made into a predicate since we should be
-         --  able at compile time to recognize when finalization and cleanup
-         --  actions occur, but in practice this is not possible ???
-
-         --  Generate:
-         --
-         --    Postcond_Enabled : Boolean := True;
-
-         Postcond_Enabled_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier
-                 (Loc, Name_uPostcond_Enabled),
-             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
-             Expression          => New_Occurrence_Of (Standard_True, Loc));
-         Insert_After_And_Analyze (Last_Decl, Postcond_Enabled_Decl);
-         Last_Decl := Postcond_Enabled_Decl;
-
-         --  Create a flag to indicate that return has been reached
-
-         --  This is necessary for deciding whether to execute _postconditions
-         --  during finalization.
-
-         --  Generate:
-         --
-         --    Return_Success_For_Postcond : Boolean := False;
-
-         Return_Success_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier
-                 (Loc, Name_uReturn_Success_For_Postcond),
-             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
-             Expression          => New_Occurrence_Of (Standard_False, Loc));
-         Insert_After_And_Analyze (Last_Decl, Return_Success_Decl);
-         Last_Decl := Return_Success_Decl;
-
-         --  Set an explicit End_Label to override the sloc of the implicit
-         --  RETURN statement, and prevent it from inheriting the sloc of one
-         --  the postconditions: this would cause confusing debug info to be
-         --  produced, interfering with coverage-analysis tools.
-
-         --  NOTE: Coverage-analysis and static-analysis tools rely on the
-         --  postconditions procedure being free of internally generated code
-         --  since some of these tools, like CodePeer, treat _postconditions
-         --  as original source.
-
-         --  Generate:
-         --
-         --    procedure _postconditions is
-         --    begin
-         --       [Stmts];
-         --    end;
-
-         Proc_Bod :=
-           Make_Subprogram_Body (Loc,
-             Specification              =>
-               Copy_Subprogram_Spec (Proc_Spec),
-             Declarations               => Empty_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id)),
-                 Statements => Stmts));
-         Insert_After_And_Analyze (Last_Decl, Proc_Bod);
-
-      end Build_Postconditions_Procedure;
-
       ----------------------------
       -- Process_Contract_Cases --
       ----------------------------
 
-      procedure Process_Contract_Cases (Stmts : in out List_Id) is
+      procedure Process_Contract_Cases
+        (Stmts : in out List_Id;
+         Decls : List_Id)
+      is
          procedure Process_Contract_Cases_For (Subp_Id : Entity_Id);
          --  Process pragma Contract_Cases for subprogram Subp_Id
 
@@ -2583,14 +2822,14 @@ package body Contracts is
                         Expand_Pragma_Contract_Cases
                           (CCs     => Prag,
                            Subp_Id => Subp_Id,
-                           Decls   => Declarations (Body_Decl),
+                           Decls   => Decls,
                            Stmts   => Stmts);
 
                      elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
                         Expand_Pragma_Subprogram_Variant
                           (Prag       => Prag,
                            Subp_Id    => Subp_Id,
-                           Body_Decls => Declarations (Body_Decl));
+                           Body_Decls => Decls);
                      end if;
                   end if;
 
@@ -2598,11 +2837,6 @@ package body Contracts is
                end loop;
             end if;
          end Process_Contract_Cases_For;
-
-         pragma Unmodified (Stmts);
-         --  Stmts is passed as IN OUT to signal that the list can be updated,
-         --  even if the corresponding integer value representing the list does
-         --  not change.
 
       --  Start of processing for Process_Contract_Cases
 
@@ -2829,14 +3063,10 @@ package body Contracts is
       -- Process_Preconditions --
       ---------------------------
 
-      procedure Process_Preconditions is
+      procedure Process_Preconditions (Decls : in out List_Id) is
          Insert_Node : Node_Id := Empty;
          --  The insertion node after which all pragma Check equivalents are
          --  inserted.
-
-         function Is_Prologue_Renaming (Decl : Node_Id) return Boolean;
-         --  Determine whether arbitrary declaration Decl denotes a renaming of
-         --  a discriminant or protection field _object.
 
          procedure Prepend_To_Decls (Item : Node_Id);
          --  Prepend a single item to the declarations of the subprogram body
@@ -2849,64 +3079,12 @@ package body Contracts is
          --  Collect all preconditions of subprogram Subp_Id and prepend their
          --  pragma Check equivalents to the declarations of the body.
 
-         --------------------------
-         -- Is_Prologue_Renaming --
-         --------------------------
-
-         function Is_Prologue_Renaming (Decl : Node_Id) return Boolean is
-            Nam  : Node_Id;
-            Obj  : Entity_Id;
-            Pref : Node_Id;
-            Sel  : Node_Id;
-
-         begin
-            if Nkind (Decl) = N_Object_Renaming_Declaration then
-               Obj := Defining_Entity (Decl);
-               Nam := Name (Decl);
-
-               if Nkind (Nam) = N_Selected_Component then
-                  Pref := Prefix (Nam);
-                  Sel  := Selector_Name (Nam);
-
-                  --  A discriminant renaming appears as
-                  --    Discr : constant ... := Prefix.Discr;
-
-                  if Ekind (Obj) = E_Constant
-                    and then Is_Entity_Name (Sel)
-                    and then Present (Entity (Sel))
-                    and then Ekind (Entity (Sel)) = E_Discriminant
-                  then
-                     return True;
-
-                  --  A protection field renaming appears as
-                  --    Prot : ... := _object._object;
-
-                  --  A renamed private component is just a component of
-                  --  _object, with an arbitrary name.
-
-                  elsif Ekind (Obj) in E_Variable | E_Constant
-                    and then Nkind (Pref) = N_Identifier
-                    and then Chars (Pref) = Name_uObject
-                    and then Nkind (Sel) = N_Identifier
-                  then
-                     return True;
-                  end if;
-               end if;
-            end if;
-
-            return False;
-         end Is_Prologue_Renaming;
-
          ----------------------
          -- Prepend_To_Decls --
          ----------------------
 
          procedure Prepend_To_Decls (Item : Node_Id) is
-            Decls : List_Id;
-
          begin
-            Decls := Declarations (Body_Decl);
-
             --  Ensure that the body has a declarative list
 
             if No (Decls) then
@@ -2937,14 +3115,8 @@ package body Contracts is
 
             else
                Check_Prag := Build_Pragma_Check_Equivalent (Prag);
+               Prepend_To_Decls (Check_Prag);
 
-               if Present (Insert_Node) then
-                  Insert_After (Insert_Node, Check_Prag);
-               else
-                  Prepend_To_Decls (Check_Prag);
-               end if;
-
-               Analyze (Check_Prag);
             end if;
          end Prepend_Pragma_To_Decls;
 
@@ -3037,16 +3209,17 @@ package body Contracts is
 
          --  Local variables
 
-         Decls : constant List_Id := Declarations (Body_Decl);
-         Decl  : Node_Id;
+         Body_Decls : constant List_Id := Declarations (Body_Decl);
+         Decl       : Node_Id;
+         Next_Decl  : Node_Id;
 
       --  Start of processing for Process_Preconditions
 
       begin
          --  Find the proper insertion point for all pragma Check equivalents
 
-         if Present (Decls) then
-            Decl := First (Decls);
+         if Present (Body_Decls) then
+            Decl := First (Body_Decls);
             while Present (Decl) loop
 
                --  First source declaration terminates the search, because all
@@ -3091,6 +3264,19 @@ package body Contracts is
             --    <preconditions from body>
 
             Process_Preconditions_For (Body_Id);
+
+            --  Move the generated entry-call prologue renamings into the
+            --  outer declarations for use in the preconditions.
+
+            Decl := First (Body_Decls);
+            while Present (Decl) and then Present (Insert_Node) loop
+               Next_Decl := Next (Decl);
+               Remove (Decl);
+               Prepend_To_Decls (Decl);
+
+               exit when Decl = Insert_Node;
+               Decl := Next_Decl;
+            end loop;
          end if;
 
          if Present (Spec_Id) then
@@ -3103,6 +3289,7 @@ package body Contracts is
       Restore_Scope : Boolean := False;
       Result        : Entity_Id;
       Stmts         : List_Id := No_List;
+      Decls         : List_Id := New_List;
       Subp_Id       : Entity_Id;
 
    --  Start of processing for Expand_Subprogram_Contract
@@ -3181,33 +3368,33 @@ package body Contracts is
       --  pragmas to verify the contract assertions of the spec and body in a
       --  particular order. The order is as follows:
 
-      --    function Example (...) return ... is
-      --       procedure _Postconditions (...) is
+      --    function Original_Code (...) return ... is
+      --       <prologue renamings>
+      --       <inherited preconditions>
+      --       <preconditions from spec>
+      --       <preconditions from body>
+      --       <contract case conditions>
+
+      --       function _wrapped_statements (...) return ... is
+      --          <source declarations>
       --       begin
+      --          <source statements>
+      --       end _wrapped_statements;
+
+      --    begin
+      --       return
+      --          Result : ... := _wrapped_statements
+      --       do
       --          <refined postconditions from body>
       --          <postconditions from body>
       --          <postconditions from spec>
       --          <inherited postconditions>
       --          <contract case consequences>
       --          <invariant check of function result>
-      --          <invariant and predicate checks of parameters>
-      --       end _Postconditions;
-
-      --       <inherited preconditions>
-      --       <preconditions from spec>
-      --       <preconditions from body>
-      --       <contract case conditions>
-
-      --       <source declarations>
-      --    begin
-      --       <source statements>
-
-      --       _Preconditions (Result);
-      --       return Result;
-      --    end Example;
-
-      --  Routine _Postconditions holds all contract assertions that must be
-      --  verified on exit from the related subprogram.
+      --          <invariant and predicate checks of parameters
+      --          return Result;
+      --       end return;
+      --    end Original_Code;
 
       --  Step 1: augment contracts list with postconditions associated with
       --  Stable_Properties and Stable_Properties'Class aspects. This must
@@ -3222,7 +3409,7 @@ package body Contracts is
       --  processing of pragma Contract_Cases because the pragma prepends items
       --  to the body declarations.
 
-      Process_Preconditions;
+      Process_Preconditions (Decls);
 
       --  Step 3: Handle all postconditions. This action must come before the
       --  processing of pragma Contract_Cases because the pragma appends items
@@ -3234,16 +3421,26 @@ package body Contracts is
       --  the processing of invariants and predicates because those append
       --  items to list Stmts.
 
-      Process_Contract_Cases (Stmts);
+      Process_Contract_Cases (Stmts, Decls);
 
       --  Step 5: Apply invariant and predicate checks on a function result and
       --  all formals. The resulting checks are accumulated in list Stmts.
 
       Add_Invariant_And_Predicate_Checks (Subp_Id, Stmts, Result);
 
-      --  Step 6: Construct procedure _Postconditions
+      --  Step 6: Construct subprogram _wrapped_statements
 
-      Build_Postconditions_Procedure (Subp_Id, Stmts, Result);
+      --  When no statements are present we still need to insert contract
+      --  related declarations.
+
+      if No (Stmts) then
+         Prepend_List_To (Declarations (Body_Decl), Decls);
+
+      --  Otherwise, we need a wrapper
+
+      else
+         Build_Subprogram_Contract_Wrapper (Body_Id, Stmts, Decls, Result);
+      end if;
 
       if Restore_Scope then
          End_Scope;
@@ -3448,81 +3645,6 @@ package body Contracts is
       Freeze_Contracts;
    end Freeze_Previous_Contracts;
 
-   --------------------------
-   -- Get_Postcond_Enabled --
-   --------------------------
-
-   function Get_Postcond_Enabled (Subp : Entity_Id) return Entity_Id is
-      Decl : Node_Id;
-   begin
-      Decl :=
-        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
-      while Present (Decl) loop
-
-         if Nkind (Decl) = N_Object_Declaration
-          and then Chars (Defining_Identifier (Decl))
-                     = Name_uPostcond_Enabled
-         then
-            return Defining_Identifier (Decl);
-         end if;
-
-         Next (Decl);
-      end loop;
-
-      return Empty;
-   end Get_Postcond_Enabled;
-
-   ------------------------------------
-   -- Get_Result_Object_For_Postcond --
-   ------------------------------------
-
-   function Get_Result_Object_For_Postcond
-     (Subp : Entity_Id) return Entity_Id
-   is
-      Decl : Node_Id;
-   begin
-      Decl :=
-        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
-      while Present (Decl) loop
-
-         if Nkind (Decl) = N_Object_Declaration
-           and then Chars (Defining_Identifier (Decl))
-                      = Name_uResult_Object_For_Postcond
-         then
-            return Defining_Identifier (Decl);
-         end if;
-
-         Next (Decl);
-      end loop;
-
-      return Empty;
-   end Get_Result_Object_For_Postcond;
-
-   -------------------------------------
-   -- Get_Return_Success_For_Postcond --
-   -------------------------------------
-
-   function Get_Return_Success_For_Postcond (Subp : Entity_Id) return Entity_Id
-   is
-      Decl : Node_Id;
-   begin
-      Decl :=
-        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
-      while Present (Decl) loop
-
-         if Nkind (Decl) = N_Object_Declaration
-          and then Chars (Defining_Identifier (Decl))
-                     = Name_uReturn_Success_For_Postcond
-         then
-            return Defining_Identifier (Decl);
-         end if;
-
-         Next (Decl);
-      end loop;
-
-      return Empty;
-   end Get_Return_Success_For_Postcond;
-
    ---------------------------------
    -- Inherit_Subprogram_Contract --
    ---------------------------------
@@ -3616,6 +3738,65 @@ package body Contracts is
          Instantiate_Pragmas (Classifications     (Items));
       end if;
    end Instantiate_Subprogram_Contract;
+
+   --------------------------
+   -- Is_Prologue_Renaming --
+   --------------------------
+
+   --  This should be turned into a flag and set during the expansion of
+   --  task and protected types when the renamings get generated ???
+
+   function Is_Prologue_Renaming (Decl : Node_Id) return Boolean is
+      Nam  : Node_Id;
+      Obj  : Entity_Id;
+      Pref : Node_Id;
+      Sel  : Node_Id;
+
+   begin
+      if Nkind (Decl) = N_Object_Renaming_Declaration
+        and then not Comes_From_Source (Decl)
+      then
+         Obj := Defining_Entity (Decl);
+         Nam := Name (Decl);
+
+         if Nkind (Nam) = N_Selected_Component then
+            --  Analyze the renaming declaration so we can further examine it
+
+            if not Analyzed (Decl) then
+               Analyze (Decl);
+            end if;
+
+            Pref := Prefix (Nam);
+            Sel  := Selector_Name (Nam);
+
+            --  A discriminant renaming appears as
+            --    Discr : constant ... := Prefix.Discr;
+
+            if Ekind (Obj) = E_Constant
+              and then Is_Entity_Name (Sel)
+              and then Present (Entity (Sel))
+              and then Ekind (Entity (Sel)) = E_Discriminant
+            then
+               return True;
+
+            --  A protection field renaming appears as
+            --    Prot : ... := _object._object;
+
+            --  A renamed private component is just a component of
+            --  _object, with an arbitrary name.
+
+            elsif Ekind (Obj) in E_Variable | E_Constant
+              and then Nkind (Pref) = N_Identifier
+              and then Chars (Pref) = Name_uObject
+              and then Nkind (Sel) = N_Identifier
+            then
+               return True;
+            end if;
+         end if;
+      end if;
+
+      return False;
+   end Is_Prologue_Renaming;
 
    -----------------------------------
    -- Make_Class_Precondition_Subps --

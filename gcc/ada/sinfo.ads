@@ -82,6 +82,12 @@ package Sinfo is
    --                 for this purpose, so e.g. in X := (if A then B else C);
    --                 Paren_Count for the right side will be 1.
 
+   --   Comes_From_Check_Or_Contract
+   --                 This flag is present in all N_If_Statement nodes and
+   --                 gets set when an N_If_Statement is generated as part of
+   --                 the expansion of a Check, Assert, or contract-related
+   --                 pragma.
+
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
    --                 node is built by the scanner or parser, and clear if

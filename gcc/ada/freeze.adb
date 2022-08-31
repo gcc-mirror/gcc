@@ -6248,6 +6248,32 @@ package body Freeze is
         and then Scope (Test_E) /= Current_Scope
         and then Ekind (Test_E) /= E_Constant
       then
+         --  Here we deal with the special case of the expansion of
+         --  postconditions. Previously this was handled by the loop below,
+         --  since these postcondition checks got isolated to a separate,
+         --  internally generated, subprogram. Now, however, the postcondition
+         --  checks get contained within their corresponding subprogram
+         --  directly.
+
+         if not Comes_From_Source (N)
+           and then Nkind (N) = N_Pragma
+           and then From_Aspect_Specification (N)
+           and then Is_Valid_Assertion_Kind (Original_Aspect_Pragma_Name (N))
+
+           --  Now, verify the placement of the pragma is within an expanded
+           --  subprogram which contains postcondition expansion - detected
+           --  through the presence of the "Wrapped_Statements" field.
+
+           and then Present (Enclosing_Subprogram (Current_Scope))
+           and then Present (Wrapped_Statements
+                              (Enclosing_Subprogram (Current_Scope)))
+         then
+            goto Leave;
+         end if;
+
+         --  Otherwise, loop through scopes checking if an enclosing scope
+         --  comes from source or is a generic.
+
          declare
             S : Entity_Id;
 
@@ -8330,9 +8356,9 @@ package body Freeze is
             --  If the parent is a subprogram body, the candidate insertion
             --  point is just ahead of it.
 
-            if  Nkind (Parent_P) = N_Subprogram_Body
-                and then Unique_Defining_Entity (Parent_P) =
-                           Freeze_Outside_Subp
+            if Nkind (Parent_P) = N_Subprogram_Body
+              and then Unique_Defining_Entity (Parent_P) =
+                         Freeze_Outside_Subp
             then
                P := Parent_P;
                exit;

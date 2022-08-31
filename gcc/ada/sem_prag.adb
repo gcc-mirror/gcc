@@ -5548,6 +5548,14 @@ package body Sem_Prag is
                then
                   OK := True;
 
+               --  Special case for postconditions wrappers
+
+               elsif Ekind (Scop) in Subprogram_Kind
+                 and then Present (Wrapped_Statements (Scop))
+                 and then Wrapped_Statements (Scop) = Current_Scope
+               then
+                  OK := True;
+
                --  Default case, just check that the pragma occurs in the scope
                --  of the entity denoted by the name.
 
@@ -32236,10 +32244,10 @@ package body Sem_Prag is
       then
          return;
 
-      --  Do not process internally generated routine _Postconditions
+      --  Do not process internally generated routine _Wrapped_Statements
 
       elsif Ekind (Body_Id) = E_Procedure
-        and then Chars (Body_Id) = Name_uPostconditions
+        and then Chars (Body_Id) = Name_uWrapped_Statements
       then
          return;
       end if;

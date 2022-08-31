@@ -8412,6 +8412,7 @@ package body Sem_Res is
       if Is_Entry (Nam)
         and then Present (Contract_Wrapper (Nam))
         and then Current_Scope /= Contract_Wrapper (Nam)
+        and then Current_Scope /= Wrapped_Statements (Contract_Wrapper (Nam))
       then
          --  Note the entity being called before rewriting the call, so that
          --  it appears used at this point.

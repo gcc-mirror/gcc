@@ -1911,14 +1911,18 @@ package body Sem_Ch6 is
             Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
          end if;
 
+         --  Process the contract of the subprogram body after analyzing all
+         --  the contract-related pragmas within the declarations.
+
+         Analyze_Pragmas_In_Declarations (Body_Id);
+         Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
+
+         --  Continue on with analyzing the declarations and statements once
+         --  contract expansion is done and we are done expanding contract
+         --  related wrappers.
+
          Analyze_Declarations (Declarations (N));
          Check_Completion;
-
-         --  Process the contract of the subprogram body after all declarations
-         --  have been analyzed. This ensures that any contract-related pragmas
-         --  are available through the N_Contract node of the body.
-
-         Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
 
          Analyze (Handled_Statement_Sequence (N));
          Save_Global_References (Original_Node (N));
@@ -2895,7 +2899,6 @@ package body Sem_Ch6 is
       Conformant : Boolean;
       Desig_View : Entity_Id := Empty;
       Exch_Views : Elist_Id  := No_Elist;
-      HSS        : Node_Id;
       Mask_Types : Elist_Id  := No_Elist;
       Prot_Typ   : Entity_Id := Empty;
       Spec_Decl  : Node_Id   := Empty;
@@ -3530,6 +3533,8 @@ package body Sem_Ch6 is
       --------------------------
 
       procedure Check_Missing_Return is
+         HSS : constant Node_Id := Handled_Statement_Sequence (N);
+
          Id          : Entity_Id;
          Missing_Ret : Boolean;
 
@@ -3968,18 +3973,9 @@ package body Sem_Ch6 is
 
                --  Move relevant pragmas to the spec
 
-               elsif Pragma_Name_Unmapped (Decl) in Name_Depends
-                                                  | Name_Ghost
-                                                  | Name_Global
-                                                  | Name_Pre
-                                                  | Name_Precondition
-                                                  | Name_Post
-                                                  | Name_Refined_Depends
-                                                  | Name_Refined_Global
-                                                  | Name_Refined_Post
-                                                  | Name_Inline
-                                                  | Name_Pure_Function
-                                                  | Name_Volatile_Function
+               elsif
+                 Pragma_Significant_To_Subprograms
+                   (Get_Pragma_Id (Decl))
                then
                   Remove (Decl);
                   Insert_After (Insert_Nod, Decl);
@@ -4223,7 +4219,6 @@ package body Sem_Ch6 is
             Analyze_Generic_Subprogram_Body (N, Spec_Id);
 
             if Nkind (N) = N_Subprogram_Body then
-               HSS := Handled_Statement_Sequence (N);
                Check_Missing_Return;
             end if;
 
@@ -5157,9 +5152,27 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  Now we can go on to analyze the body
+      --  Ada 2012 (AI05-0151): Incomplete types coming from a limited context
+      --  may now appear in parameter and result profiles. Since the analysis
+      --  of a subprogram body may use the parameter and result profile of the
+      --  spec, swap any limited views with their non-limited counterpart.
 
-      HSS := Handled_Statement_Sequence (N);
+      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
+         Exch_Views := Exchange_Limited_Views (Spec_Id);
+      end if;
+
+      --  Analyze any aspect specifications that appear on the subprogram body
+
+      if Has_Aspects (N) then
+         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
+      end if;
+
+      --  Process the contract of the subprogram body after analyzing all the
+      --  contract-related pragmas within the declarations.
+
+      Analyze_Pragmas_In_Declarations (Body_Id);
+      Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
+
       Set_Actual_Subtypes (N, Current_Scope);
 
       --  Add a declaration for the Protection object, renaming declarations
@@ -5178,15 +5191,6 @@ package body Sem_Ch6 is
       then
          Install_Private_Data_Declarations
            (Sloc (N), Spec_Id, Prot_Typ, N, Declarations (N));
-      end if;
-
-      --  Ada 2012 (AI05-0151): Incomplete types coming from a limited context
-      --  may now appear in parameter and result profiles. Since the analysis
-      --  of a subprogram body may use the parameter and result profile of the
-      --  spec, swap any limited views with their non-limited counterpart.
-
-      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
-         Exch_Views := Exchange_Limited_Views (Spec_Id);
       end if;
 
       --  If the return type is an anonymous access type whose designated type
@@ -5223,12 +5227,6 @@ package body Sem_Ch6 is
                Set_Directly_Designated_Type (Etype (Spec_Id), Etyp);
             end if;
          end;
-      end if;
-
-      --  Analyze any aspect specifications that appear on the subprogram body
-
-      if Has_Aspects (N) then
-         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
       end if;
 
       Analyze_Declarations (Declarations (N));
@@ -5269,17 +5267,11 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  A subprogram body freezes its own contract. Analyze the contract
-      --  after the declarations of the body have been processed as pragmas
-      --  are now chained on the contract of the subprogram body.
-
-      Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
-
       --  Check completion, and analyze the statements
 
       Check_Completion;
       Inspect_Deferred_Constant_Completion (Declarations (N));
-      Analyze (HSS);
+      Analyze (Handled_Statement_Sequence (N));
 
       --  Add the generated minimum accessibility objects to the subprogram
       --  body's list of declarations after analysis of the statements and
@@ -5296,7 +5288,8 @@ package body Sem_Ch6 is
 
       --  Deal with end of scope processing for the body
 
-      Process_End_Label (HSS, 't', Current_Scope);
+      Process_End_Label
+        (Handled_Statement_Sequence (N), 't', Current_Scope);
       Update_Use_Clause_Chain;
       End_Scope;
 
@@ -5410,7 +5403,7 @@ package body Sem_Ch6 is
       --  the warning.
 
       declare
-         Stm : Node_Id := First (Statements (HSS));
+         Stm : Node_Id := First (Statements (Handled_Statement_Sequence (N)));
       begin
          --  Skip call markers installed by the ABE mechanism, labels, and
          --  Push_xxx_Error_Label to find the first real statement.

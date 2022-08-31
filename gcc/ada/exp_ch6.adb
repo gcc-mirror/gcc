@@ -26,7 +26,6 @@
 with Atree;          use Atree;
 with Aspects;        use Aspects;
 with Checks;         use Checks;
-with Contracts;      use Contracts;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
@@ -2729,11 +2728,16 @@ package body Exp_Ch6 is
                                 | N_Function_Call
                                 | N_Procedure_Call_Statement);
 
-      --  Check that this is not the call in the body of the wrapper
+      --  Check that this is not the call in the body of the access
+      --  subprogram wrapper or the postconditions wrapper.
 
       if Must_Rewrite_Indirect_Call
         and then (not Is_Overloadable (Current_Scope)
-             or else not Is_Access_Subprogram_Wrapper (Current_Scope))
+             or else not (Is_Access_Subprogram_Wrapper (Current_Scope)
+                           or else
+                             (Chars (Current_Scope) = Name_uWrapped_Statements
+                               and then Is_Access_Subprogram_Wrapper
+                                          (Scope (Current_Scope)))))
       then
          declare
             Loc      : constant Source_Ptr := Sloc (N);
@@ -4871,11 +4875,12 @@ package body Exp_Ch6 is
                   then
                      Must_Inline := not In_Extended_Main_Source_Unit (Subp);
 
-                  --  Inline calls to _postconditions when generating C code
+                  --  Inline calls to _Wrapped_Statements when generating C
 
                   elsif Modify_Tree_For_C
                     and then In_Same_Extended_Unit (Sloc (Bod), Loc)
-                    and then Chars (Name (Call_Node)) = Name_uPostconditions
+                    and then Chars (Name (Call_Node))
+                               = Name_uWrapped_Statements
                   then
                      Must_Inline := True;
                   end if;
@@ -5567,45 +5572,6 @@ package body Exp_Ch6 is
             Append_To (Stmts, Stmt);
             Set_Analyzed (Stmt);
 
-            --  Call the _Postconditions procedure if the related subprogram
-            --  has contract assertions that need to be verified on exit.
-
-            --  Also, mark the successful return to signal that postconditions
-            --  need to be evaluated when finalization occurs by setting
-            --  Return_Success_For_Postcond to be True.
-
-            if Ekind (Spec_Id) = E_Procedure
-              and then Present (Postconditions_Proc (Spec_Id))
-            then
-               --  Generate:
-               --
-               --    Return_Success_For_Postcond := True;
-               --    if Postcond_Enabled then
-               --       _postconditions;
-               --    end if;
-
-               Insert_Action (Stmt,
-                 Make_Assignment_Statement (Loc,
-                   Name       =>
-                     New_Occurrence_Of
-                       (Get_Return_Success_For_Postcond (Spec_Id), Loc),
-                   Expression => New_Occurrence_Of (Standard_True, Loc)));
-
-               --  Wrap the call to _postconditions within a test of the
-               --  Postcond_Enabled flag to delay postcondition evaluation
-               --  until after finalization when required.
-
-               Insert_Action (Stmt,
-                 Make_If_Statement (Loc,
-                   Condition       =>
-                     New_Occurrence_Of (Get_Postcond_Enabled (Spec_Id), Loc),
-                   Then_Statements => New_List (
-                     Make_Procedure_Call_Statement (Loc,
-                       Name =>
-                         New_Occurrence_Of
-                           (Postconditions_Proc (Spec_Id), Loc)))));
-            end if;
-
             --  Ada 2022 (AI12-0279): append the call to 'Yield unless this is
             --  a generic subprogram (since in such case it will be added to
             --  the instantiations).
@@ -6013,44 +5979,6 @@ package body Exp_Ch6 is
       Lab_Node  : Node_Id;
 
    begin
-      --  Call the _Postconditions procedure if the related subprogram has
-      --  contract assertions that need to be verified on exit.
-
-      --  Also, mark the successful return to signal that postconditions need
-      --  to be evaluated when finalization occurs.
-
-      if Ekind (Scope_Id) in E_Entry | E_Entry_Family | E_Procedure
-        and then Present (Postconditions_Proc (Scope_Id))
-      then
-         --  Generate:
-         --
-         --    Return_Success_For_Postcond := True;
-         --    if Postcond_Enabled then
-         --       _postconditions;
-         --    end if;
-
-         Insert_Action (N,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
-             Expression => New_Occurrence_Of (Standard_True, Loc)));
-
-         --  Wrap the call to _postconditions within a test of the
-         --  Postcond_Enabled flag to delay postcondition evaluation until
-         --  after finalization when required.
-
-         Insert_Action (N,
-           Make_If_Statement (Loc,
-             Condition       =>
-               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name =>
-                   New_Occurrence_Of
-                     (Postconditions_Proc (Scope_Id), Loc)))));
-      end if;
-
       --  Ada 2022 (AI12-0279)
 
       if Has_Yield_Aspect (Scope_Id)
@@ -6993,84 +6921,6 @@ package body Exp_Ch6 is
               Suppress => All_Checks);
             Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
          end;
-      end if;
-
-      --  Call the _Postconditions procedure if the related function has
-      --  contract assertions that need to be verified on exit.
-
-      if Ekind (Scope_Id) = E_Function
-        and then Present (Postconditions_Proc (Scope_Id))
-      then
-         --  In the case of discriminated objects, we have created a
-         --  constrained subtype above, and used the underlying type. This
-         --  transformation is post-analysis and harmless, except that now the
-         --  call to the post-condition will be analyzed and the type kinds
-         --  have to match.
-
-         if Nkind (Exp) = N_Unchecked_Type_Conversion
-           and then Is_Private_Type (R_Type) /= Is_Private_Type (Etype (Exp))
-         then
-            Rewrite (Exp, Expression (Relocate_Node (Exp)));
-         end if;
-
-         --  We are going to reference the returned value twice in this case,
-         --  once in the call to _Postconditions, and once in the actual return
-         --  statement, but we can't have side effects happening twice.
-
-         Force_Evaluation (Exp, Mode => Strict);
-
-         --  Save the return value or a pointer to the return value since we
-         --  may need to call postconditions after finalization when cleanup
-         --  actions are present.
-
-         --  Generate:
-         --
-         --    Result_Object_For_Postcond := [Exp]'Unrestricted_Access;
-
-         Insert_Action (Exp,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                (Get_Result_Object_For_Postcond (Scope_Id), Loc),
-             Expression =>
-               (if Is_Elementary_Type (Etype (R_Type)) then
-                   New_Copy_Tree (Exp)
-                else
-                   Make_Attribute_Reference (Loc,
-                     Attribute_Name => Name_Unrestricted_Access,
-                     Prefix         => New_Copy_Tree (Exp)))));
-
-         --  Mark the successful return to signal that postconditions need to
-         --  be evaluated when finalization occurs.
-
-         --  Generate:
-         --
-         --    Return_Success_For_Postcond := True;
-         --    if Postcond_Enabled then
-         --       _Postconditions ([exp]);
-         --    end if;
-
-         Insert_Action (Exp,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
-             Expression => New_Occurrence_Of (Standard_True, Loc)));
-
-         --  Wrap the call to _postconditions within a test of the
-         --  Postcond_Enabled flag to delay postcondition evaluation until
-         --  after finalization when required.
-
-         Insert_Action (Exp,
-           Make_If_Statement (Loc,
-             Condition       =>
-               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name                   =>
-                   New_Occurrence_Of
-                     (Postconditions_Proc (Scope_Id), Loc),
-                 Parameter_Associations => New_List (New_Copy_Tree (Exp))))));
       end if;
 
       --  Ada 2005 (AI-251): If this return statement corresponds with an

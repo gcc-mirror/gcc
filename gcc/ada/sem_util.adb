@@ -597,6 +597,7 @@ package body Sem_Util is
                --  Anonymous access types
 
                elsif Nkind (Pre) in N_Has_Entity
+                 and then Ekind (Entity (Pre)) not in Subprogram_Kind
                  and then Present (Get_Dynamic_Accessibility (Entity (Pre)))
                  and then Level = Dynamic_Level
                then
@@ -14122,9 +14123,10 @@ package body Sem_Util is
       if Subp_Nam = Name_uFinalizer then
          return False;
 
-      --  _Postconditions procedure
+      --  _Wrapped_Statements procedure which gets generated as part of the
+      --  expansion of postconditions.
 
-      elsif Subp_Nam = Name_uPostconditions then
+      elsif Subp_Nam = Name_uWrapped_Statements then
          return False;
 
       --  Predicate function
@@ -28013,8 +28015,18 @@ package body Sem_Util is
       E : Entity_Id) return Boolean
    is
       Subp_Alias : constant Entity_Id := Alias (S);
+      Subp       : Entity_Id := E;
    begin
-      return S = E or else (Present (Subp_Alias) and then Subp_Alias = E);
+      --  During expansion of subprograms with postconditions the original
+      --  subprogram's declarations and statements get wrapped into a local
+      --  _Wrapped_Statements subprogram.
+
+      if Chars (Subp) = Name_uWrapped_Statements then
+         Subp := Enclosing_Subprogram (Subp);
+      end if;
+
+      return S = Subp
+        or else (Present (Subp_Alias) and then Subp_Alias = Subp);
    end Same_Or_Aliased_Subprograms;
 
    ---------------
@@ -32462,7 +32474,7 @@ package body Sem_Util is
                and then Ekind (Scope (T))
                  in E_Entry | E_Entry_Family | E_Function | E_Procedure
                and then
-                 (Present (Postconditions_Proc (Scope (T)))
+                 (Present (Wrapped_Statements (Scope (T)))
                   or else Present (Contract (Scope (T))))
             then
                --  ??? Should define a flag for this. We could incorrectly

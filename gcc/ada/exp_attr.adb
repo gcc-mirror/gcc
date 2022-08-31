@@ -4895,24 +4895,25 @@ package body Exp_Attr is
          use Old_Attr_Util.Indirect_Temps;
       begin
          --  Generating C code we don't need to expand this attribute when
-         --  we are analyzing the internally built nested postconditions
+         --  we are analyzing the internally built nested _Wrapped_Statements
          --  procedure since it will be expanded inline (and later it will
          --  be removed by Expand_N_Subprogram_Body). It this expansion is
          --  performed in such case then the compiler generates unreferenced
          --  extra temporaries.
 
          if Modify_Tree_For_C
-           and then Chars (Current_Scope) = Name_uPostconditions
+           and then Chars (Current_Scope) = Name_uWrapped_Statements
          then
             return;
          end if;
 
-         --  Climb the parent chain looking for subprogram _Postconditions
+         --  Climb the parent chain looking for subprogram _Wrapped_Statements
 
          Subp := N;
          while Present (Subp) loop
             exit when Nkind (Subp) = N_Subprogram_Body
-              and then Chars (Defining_Entity (Subp)) = Name_uPostconditions;
+              and then Chars (Defining_Entity (Subp))
+                         = Name_uWrapped_Statements;
 
             --  If assertions are disabled, no need to create the declaration
             --  that preserves the value. The postcondition pragma in which
@@ -4925,14 +4926,11 @@ package body Exp_Attr is
 
             Subp := Parent (Subp);
          end loop;
+         Subp := Empty;
 
-         --  'Old can only appear in a postcondition, the generated body of
-         --  _Postconditions must be in the tree (or inlined if we are
-         --  generating C code).
-
-         pragma Assert
-           (Present (Subp)
-             or else (Modify_Tree_For_C and then In_Inlined_Body));
+         --  'Old can only appear in the case where local contract-related
+         --  wrapper has been generated with the purpose of wrapping the
+         --  original declarations and statements.
 
          Temp := Make_Temporary (Loc, 'T', Pref);
 
@@ -4952,8 +4950,7 @@ package body Exp_Attr is
          --  No need to push the scope when generating C code since the
          --  _Postcondition procedure has been inlined.
 
-         else pragma Assert (Modify_Tree_For_C);
-            pragma Assert (In_Inlined_Body);
+         else
             null;
          end if;
 
@@ -4963,17 +4960,23 @@ package body Exp_Attr is
          if Present (Subp) then
             Ins_Nod := Subp;
 
-         --  Generating C, the postcondition procedure has been inlined and the
-         --  temporary is added before the first declaration of the enclosing
-         --  subprogram.
+         --  General case where the postcondtion checks occur after the call
+         --  to _Wrapped_Statements.
 
-         else pragma Assert (Modify_Tree_For_C);
+         else
             Ins_Nod := N;
             while Nkind (Ins_Nod) /= N_Subprogram_Body loop
                Ins_Nod := Parent (Ins_Nod);
             end loop;
 
-            Ins_Nod := First (Declarations (Ins_Nod));
+            if Present (Corresponding_Spec (Ins_Nod))
+              and then Present
+                         (Wrapped_Statements (Corresponding_Spec (Ins_Nod)))
+            then
+               Ins_Nod := Last (Declarations (Ins_Nod));
+            else
+               Ins_Nod := First (Declarations (Ins_Nod));
+            end if;
          end if;
 
          if Eligible_For_Conditional_Evaluation (N) then
@@ -4986,9 +4989,9 @@ package body Exp_Attr is
                --  unconditionally) or an evaluation statement (which is
                --  to be executed conditionally).
 
-               -------------------------------
-               --  Append_For_Indirect_Temp --
-               -------------------------------
+               ------------------------------
+               -- Append_For_Indirect_Temp --
+               ------------------------------
 
                procedure Append_For_Indirect_Temp
                  (N : Node_Id; Is_Eval_Stmt : Boolean)
@@ -5008,7 +5011,7 @@ package body Exp_Attr is
                Declare_Indirect_Temporary
                  (Attr_Prefix => Pref, Indirect_Temp => Temp);
 
-               Insert_Before_And_Analyze (
+               Insert_After_And_Analyze (
                  Ins_Nod,
                  Make_If_Statement
                    (Sloc            => Loc,
