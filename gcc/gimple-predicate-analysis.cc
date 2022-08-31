@@ -41,6 +41,7 @@
 #include "calls.h"
 #include "value-query.h"
 #include "cfganal.h"
+#include "tree-eh.h"
 
 #include "gimple-predicate-analysis.h"
 
@@ -1709,9 +1710,6 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	    }
 	  /* Get the conditional controlling the bb exit edge.  */
 	  gimple *cond_stmt = gsi_stmt (gsi);
-	  if (is_gimple_call (cond_stmt) && EDGE_COUNT (e->src->succs) >= 2)
-	    /* Ignore EH edge.  Can add assertion on the other edge's flag.  */
-	    continue;
 	  /* Skip this edge if it is bypassing an abort - when the
 	     condition is not satisfied we are neither reaching the
 	     definition nor the use so it isn't meaningful.  Note if
@@ -1819,10 +1817,15 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		  has_valid_pred = true;
 		}
 	    }
+	  else if (stmt_can_throw_internal (cfun, cond_stmt)
+		   && !(e->flags & EDGE_EH))
+	    /* Ignore the exceptional control flow and proceed as if
+	       E were a fallthru without a controlling predicate for
+	       both the USE (valid) and DEF (questionable) case.  */
+	    has_valid_pred = true;
 	  else
 	    {
-	      /* Disabled.  See PR 90994.
-		 has_valid_pred = false;  */
+	      has_valid_pred = false;
 	      break;
 	    }
 	}
