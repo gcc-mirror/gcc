@@ -5461,7 +5461,7 @@ vect_optimize_slp_pass::dump ()
 	      combined_cost.add_serial_cost (layout_costs.out_cost);
 #define TEMPLATE "{depth: %f, total: %f}"
 	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "        " TEMPLATE "\n", layout_i,
+			       "        " TEMPLATE "\n",
 			       layout_costs.in_cost.depth.to_double (),
 			       layout_costs.in_cost.total.to_double ());
 	      dump_printf_loc (MSG_NOTE, vect_location,
