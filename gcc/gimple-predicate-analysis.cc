@@ -1671,7 +1671,6 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 {
   gcc_assert (is_empty ());
 
-  bool has_valid_pred = false;
   if (num_chains == 0)
     return;
 
@@ -1689,27 +1688,16 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	 of the predicates.  */
       const vec<edge> &path = dep_chains[i];
 
-      has_valid_pred = false;
+      bool has_valid_pred = false;
       /* The chain of predicates guarding the definition along this path.  */
       pred_chain t_chain{ };
       for (unsigned j = 0; j < path.length (); j++)
 	{
 	  edge e = path[j];
 	  basic_block guard_bb = e->src;
-	  /* Ignore empty forwarder blocks.  */
-	  if (empty_block_p (guard_bb) && single_succ_p (guard_bb))
-	    continue;
 
-	  /* An empty basic block here is likely a PHI, and is not one
-	     of the cases we handle below.  */
-	  gimple_stmt_iterator gsi = gsi_last_bb (guard_bb);
-	  if (gsi_end_p (gsi))
-	    {
-	      has_valid_pred = false;
-	      break;
-	    }
-	  /* Get the conditional controlling the bb exit edge.  */
-	  gimple *cond_stmt = gsi_stmt (gsi);
+	  gcc_assert (!empty_block_p (guard_bb) && !single_succ_p (guard_bb));
+
 	  /* Skip this edge if it is bypassing an abort - when the
 	     condition is not satisfied we are neither reaching the
 	     definition nor the use so it isn't meaningful.  Note if
@@ -1730,8 +1718,13 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		    }
 		}
 	      if (skip)
-		continue;
+		{
+		  has_valid_pred = true;
+		  continue;
+		}
 	    }
+	  /* Get the conditional controlling the bb exit edge.  */
+	  gimple *cond_stmt = last_stmt (guard_bb);
 	  if (gimple_code (cond_stmt) == GIMPLE_COND)
 	    {
 	      /* The true edge corresponds to the uninteresting condition.
@@ -1757,37 +1750,29 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	    }
 	  else if (gswitch *gs = dyn_cast<gswitch *> (cond_stmt))
 	    {
-	      /* Avoid quadratic behavior.  */
-	      if (gimple_switch_num_labels (gs) > MAX_SWITCH_CASES)
-		{
-		  has_valid_pred = false;
-		  break;
-		}
-	      /* Find the case label.  */
 	      tree l = NULL_TREE;
-	      unsigned idx;
-	      for (idx = 0; idx < gimple_switch_num_labels (gs); ++idx)
-		{
-		  tree tl = gimple_switch_label (gs, idx);
-		  if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
-		    {
-		      if (!l)
-			l = tl;
-		      else
-			{
-			  l = NULL_TREE;
-			  break;
-			}
-		    }
-		}
+	      /* Find the case label, but avoid quadratic behavior.  */
+	      if (gimple_switch_num_labels (gs) <= MAX_SWITCH_CASES)
+		for (unsigned idx = 0;
+		     idx < gimple_switch_num_labels (gs); ++idx)
+		  {
+		    tree tl = gimple_switch_label (gs, idx);
+		    if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
+		      {
+			if (!l)
+			  l = tl;
+			else
+			  {
+			    l = NULL_TREE;
+			    break;
+			  }
+		      }
+		  }
 	      /* If more than one label reaches this block or the case
 		 label doesn't have a contiguous range of values (like the
 		 default one) fail.  */
 	      if (!l || !CASE_LOW (l))
-		{
-		  has_valid_pred = false;
-		  break;
-		}
+		has_valid_pred = false;
 	      else if (!CASE_HIGH (l)
 		      || operand_equal_p (CASE_LOW (l), CASE_HIGH (l)))
 		{
@@ -1824,31 +1809,37 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	       both the USE (valid) and DEF (questionable) case.  */
 	    has_valid_pred = true;
 	  else
-	    {
-	      has_valid_pred = false;
-	      break;
-	    }
+	    has_valid_pred = false;
+
+	  /* For USE predicates we can drop components of the
+	     AND chain.  */
+	  if (!has_valid_pred && !is_use)
+	    break;
 	}
 
-      if (!has_valid_pred)
-	break;
-      else
-	m_preds.quick_push (t_chain);
+      /* For DEF predicates we have to drop components of the OR chain
+	 on failure.  */
+      if (!has_valid_pred && !is_use)
+	{
+	  t_chain.release ();
+	  continue;
+	}
+
+      /* When we add || 1 simply prune the chain and return.  */
+      if (t_chain.is_empty ())
+	{
+	  t_chain.release ();
+	  for (auto chain : m_preds)
+	    chain.release ();
+	  m_preds.truncate (0);
+	  break;
+	}
+
+      m_preds.quick_push (t_chain);
     }
 
-  if (has_valid_pred)
-    {
-      gcc_assert (m_preds.length () != 0);
-      if (DEBUG_PREDICATE_ANALYZER && dump_file)
-	dump (NULL, "");
-    }
-  else
-    {
-      if (DEBUG_PREDICATE_ANALYZER && dump_file)
-	fprintf (dump_file, "\tFAILED\n");
-      /* Clear M_PREDS to indicate failure.  */
-      m_preds.release ();
-    }
+  if (DEBUG_PREDICATE_ANALYZER && dump_file)
+    dump (NULL, "");
 }
 
 /* Store a PRED in *THIS.  */
@@ -1877,7 +1868,7 @@ predicate::dump (gimple *stmt, const char *msg) const
   unsigned np = m_preds.length ();
   if (np == 0)
     {
-      fprintf (dump_file, "\t(empty)\n");
+      fprintf (dump_file, "\tTRUE (empty)\n");
       return;
     }
 
