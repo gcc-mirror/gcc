@@ -232,22 +232,6 @@ frange_drop_ninf (frange &r, tree type)
   r.intersect (tmp);
 }
 
-// Default implementation of fold_range for relational operators.
-// This amounts to passing on any known relations from the oracle, iff
-// we know the operands are not NAN or -ffinite-math-only holds.
-
-static inline bool
-default_frelop_fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_kind rel, relation_kind my_rel)
-{
-  if (frelop_early_resolve (r, type, op1, op2, rel, my_rel))
-    return true;
-
-  r.set_varying (type);
-  return true;
-}
-
 // (X <= VAL) produces the range of [MIN, VAL].
 
 static void
