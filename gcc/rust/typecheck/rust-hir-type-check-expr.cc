@@ -1024,6 +1024,11 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       return;
     }
 
+  rust_debug_loc (expr.get_method_name ().get_locus (),
+		  "resolved method to: {%u} {%s}",
+		  candidate.candidate.ty->get_ref (),
+		  candidate.candidate.ty->debug_str ().c_str ());
+
   // Get the adjusted self
   Adjuster adj (receiver_tyty);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
@@ -1120,6 +1125,9 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   // apply any remaining generic arguments
   if (expr.get_method_name ().has_generic_args ())
     {
+      rust_debug_loc (expr.get_method_name ().get_generic_args ().get_locus (),
+		      "applying generic arguments to method_call: {%s}",
+		      lookup->debug_str ().c_str ());
       HIR::GenericArgs &args = expr.get_method_name ().get_generic_args ();
       lookup
 	= SubstMapper::Resolve (lookup, expr.get_method_name ().get_locus (),
@@ -1129,9 +1137,13 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
     }
   else if (lookup->needs_generic_substitutions ())
     {
+      rust_debug ("method needs inference: {%s}",
+		  lookup->debug_str ().c_str ());
       lookup = SubstMapper::InferSubst (lookup,
 					expr.get_method_name ().get_locus ());
     }
+
+  rust_debug ("type-checking method_call: {%s}", lookup->debug_str ().c_str ());
 
   TyTy::BaseType *function_ret_tyty
     = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self, context);
