@@ -350,10 +350,10 @@ public:
   virtual bool singleton_p (tree *result = NULL) const override;
   virtual bool supports_type_p (const_tree type) const override;
   virtual void accept (const vrange_visitor &v) const override;
-  virtual bool zero_p () const;
-  virtual bool nonzero_p () const;
-  virtual void set_nonzero (tree type);
-  virtual void set_zero (tree type);
+  virtual bool zero_p () const override;
+  virtual bool nonzero_p () const override;
+  virtual void set_nonzero (tree type) override;
+  virtual void set_zero (tree type) override;
   virtual void set_nonnegative (tree type) override;
   frange& operator= (const frange &);
   bool operator== (const frange &) const;
