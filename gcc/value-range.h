@@ -354,7 +354,7 @@ public:
   virtual bool nonzero_p () const;
   virtual void set_nonzero (tree type);
   virtual void set_zero (tree type);
-  virtual void set_nonnegative (tree type);
+  virtual void set_nonnegative (tree type) override;
   frange& operator= (const frange &);
   bool operator== (const frange &) const;
   bool operator!= (const frange &r) const { return !(*this == r); }
