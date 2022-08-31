@@ -248,8 +248,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- cr16-*-*				\
- | hppa[12]*-*-hpux10*			\
+ hppa[12]*-*-hpux10*			\
  | hppa[12]*-*-hpux11*			\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -1550,11 +1549,6 @@ bpf-*-*)
         use_gcc_stdint=provide
         extra_objs="coreout.o"
         target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.cc"
-        ;;
-cr16-*-elf)
-        tm_file="elfos.h ${tm_file} newlib-stdint.h"
-        tmake_file="${tmake_file} cr16/t-cr16 "
-        use_collect2=no
         ;;
 cris-*-elf | cris-*-none)
 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
