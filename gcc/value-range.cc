@@ -3535,13 +3535,16 @@ range_tests_nan ()
   REAL_VALUE_TYPE q, r;
 
   // Equal ranges but with differing NAN bits are not equal.
-  r1 = frange_float ("10", "12");
-  r0 = r1;
-  ASSERT_EQ (r0, r1);
-  r0.set_nan (fp_prop::NO);
-  ASSERT_NE (r0, r1);
-  r0.set_nan (fp_prop::YES);
-  ASSERT_NE (r0, r1);
+  if (HONOR_NANS (float_type_node))
+    {
+      r1 = frange_float ("10", "12");
+      r0 = r1;
+      ASSERT_EQ (r0, r1);
+      r0.set_nan (fp_prop::NO);
+      ASSERT_NE (r0, r1);
+      r0.set_nan (fp_prop::YES);
+      ASSERT_NE (r0, r1);
+    }
 
   // NAN ranges are not equal to each other.
   r0 = frange_nan (float_type_node);
@@ -3624,9 +3627,11 @@ range_tests_floats ()
   if (HONOR_SIGNED_ZEROS (float_type_node))
     range_tests_signed_zeros ();
 
-  // A range of [-INF,+INF] is actually VARYING...
+  // A range of [-INF,+INF] is actually VARYING if no other properties
+  // are set.
   r0 = frange_float ("-Inf", "+Inf");
-  ASSERT_TRUE (r0.varying_p ());
+  if (r0.get_nan ().varying_p ())
+    ASSERT_TRUE (r0.varying_p ());
   // ...unless it has some special property...
   r0.set_nan (fp_prop::NO);
   ASSERT_FALSE (r0.varying_p ());
