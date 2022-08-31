@@ -374,6 +374,21 @@ TypeBoundPredicate::requires_generic_args () const
   return substitutions.size () > 1;
 }
 
+bool
+TypeBoundPredicate::contains_associated_types () const
+{
+  auto trait_ref = get ();
+  for (const auto &trait_item : trait_ref->get_trait_items ())
+    {
+      bool is_associated_type
+	= trait_item.get_trait_item_type ()
+	  == Resolver::TraitItemReference::TraitItemType::TYPE;
+      if (is_associated_type)
+	return true;
+    }
+  return false;
+}
+
 // trait item reference
 
 const Resolver::TraitItemReference *

@@ -368,6 +368,9 @@ void
 AssociatedImplTrait::setup_associated_types (
   const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound)
 {
+  if (!bound.contains_associated_types ())
+    return;
+
   // compute the constrained impl block generic arguments based on self and the
   // higher ranked trait bound
   TyTy::BaseType *receiver = self->clone ();
