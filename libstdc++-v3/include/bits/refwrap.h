@@ -348,8 +348,9 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 
       template<typename... _Args>
 	_GLIBCXX20_CONSTEXPR
-	typename result_of<_Tp&(_Args&&...)>::type
+	typename __invoke_result<_Tp&, _Args...>::type
 	operator()(_Args&&... __args) const
+	noexcept(__is_nothrow_invocable<_Tp&, _Args...>::value)
 	{
 #if __cplusplus > 201703L
 	  if constexpr (is_object_v<type>)
