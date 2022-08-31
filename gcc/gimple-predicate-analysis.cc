@@ -1674,6 +1674,10 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
   if (num_chains == 0)
     return;
 
+  if (DEBUG_PREDICATE_ANALYZER && dump_file)
+    fprintf (dump_file, "init_from_control_deps {%s}:\n",
+	     format_edge_vecs (dep_chains, num_chains).c_str ());
+
   /* Convert the control dependency chain into a set of predicates.  */
   m_preds.reserve (num_chains);
 
@@ -1740,7 +1744,8 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 
 	      if (DEBUG_PREDICATE_ANALYZER && dump_file)
 		{
-		  fprintf (dump_file, "one_pred = ");
+		  fprintf (dump_file, "%d -> %d: one_pred = ",
+			   e->src->index, e->dest->index);
 		  dump_pred_info (one_pred);
 		  fputc ('\n', dump_file);
 		}
@@ -1773,24 +1778,41 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		    }
 		}
 	      /* If more than one label reaches this block or the case
-		 label doesn't have a single value (like the default one)
-		 fail.  */
-	      if (!l
-		  || !CASE_LOW (l)
-		  || (CASE_HIGH (l)
-		      && !operand_equal_p (CASE_LOW (l), CASE_HIGH (l), 0)))
+		 label doesn't have a contiguous range of values (like the
+		 default one) fail.  */
+	      if (!l || !CASE_LOW (l))
 		{
 		  has_valid_pred = false;
 		  break;
 		}
-
-	      pred_info one_pred;
-	      one_pred.pred_lhs = gimple_switch_index (gs);
-	      one_pred.pred_rhs = CASE_LOW (l);
-	      one_pred.cond_code = EQ_EXPR;
-	      one_pred.invert = false;
-	      t_chain.safe_push (one_pred);
-	      has_valid_pred = true;
+	      else if (!CASE_HIGH (l)
+		      || operand_equal_p (CASE_LOW (l), CASE_HIGH (l)))
+		{
+		  pred_info one_pred;
+		  one_pred.pred_lhs = gimple_switch_index (gs);
+		  one_pred.pred_rhs = CASE_LOW (l);
+		  one_pred.cond_code = EQ_EXPR;
+		  one_pred.invert = false;
+		  t_chain.safe_push (one_pred);
+		  has_valid_pred = true;
+		}
+	      else
+		{
+		  /* Support a case label with a range with
+		     two predicates.  We're overcommitting on
+		     the MAX_CHAIN_LEN budget by at most a factor
+		     of two here.  */
+		  pred_info one_pred;
+		  one_pred.pred_lhs = gimple_switch_index (gs);
+		  one_pred.pred_rhs = CASE_LOW (l);
+		  one_pred.cond_code = GE_EXPR;
+		  one_pred.invert = false;
+		  t_chain.safe_push (one_pred);
+		  one_pred.pred_rhs = CASE_HIGH (l);
+		  one_pred.cond_code = LE_EXPR;
+		  t_chain.safe_push (one_pred);
+		  has_valid_pred = true;
+		}
 	    }
 	  else
 	    {
@@ -1803,22 +1825,24 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
       if (!has_valid_pred)
 	break;
       else
-	m_preds.safe_push (t_chain);
-    }
-
-  if (DEBUG_PREDICATE_ANALYZER && dump_file)
-    {
-      fprintf (dump_file, "init_from_control_deps {%s}:\n",
-	       format_edge_vecs (dep_chains, num_chains).c_str ());
-      dump (NULL, "");
+	m_preds.quick_push (t_chain);
     }
 
   if (has_valid_pred)
-    gcc_assert (m_preds.length () != 0);
+    {
+      gcc_assert (m_preds.length () != 0);
+      if (DEBUG_PREDICATE_ANALYZER && dump_file)
+	dump (NULL, "");
+    }
   else
-    /* Clear M_PREDS to indicate failure.  */
-    m_preds.release ();
+    {
+      if (DEBUG_PREDICATE_ANALYZER && dump_file)
+	fprintf (dump_file, "\tFAILED\n");
+      /* Clear M_PREDS to indicate failure.  */
+      m_preds.release ();
+    }
 }
+
 /* Store a PRED in *THIS.  */
 
 void
@@ -1856,9 +1880,8 @@ predicate::dump (gimple *stmt, const char *msg) const
       else
 	fprintf (dump_file, "\t(");
       dump_pred_chain (m_preds[i]);
-      fputc (')', dump_file);
+      fprintf (dump_file, ")\n");
     }
-  fputc ('\n', dump_file);
 }
 
 /* Initialize USE_PREDS with the predicates of the control dependence chains
