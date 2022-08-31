@@ -11172,10 +11172,10 @@ c_start_switch (location_t switch_loc,
   return add_stmt (cs->switch_stmt);
 }
 
-/* Process a case label at location LOC.  */
+/* Process a case label at location LOC, with attributes ATTRS.  */
 
 tree
-do_case (location_t loc, tree low_value, tree high_value)
+do_case (location_t loc, tree low_value, tree high_value, tree attrs)
 {
   tree label = NULL_TREE;
 
@@ -11211,7 +11211,7 @@ do_case (location_t loc, tree low_value, tree high_value)
 
   label = c_add_case_label (loc, c_switch_stack->cases,
 			    SWITCH_STMT_COND (c_switch_stack->switch_stmt),
-			    low_value, high_value);
+			    low_value, high_value, attrs);
   if (label == error_mark_node)
     label = NULL_TREE;
   return label;

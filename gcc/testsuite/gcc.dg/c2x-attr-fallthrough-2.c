@@ -33,6 +33,10 @@ f (int a)
     case 5:
       b += 5;
       break;
+    [[fallthrough]] case 6: break; /* { dg-error "ignored" } */
+    [[fallthrough]] default: break; /* { dg-error "ignored" } */
     }
   [[fallthrough]] return b; /* { dg-error "ignored" } */
+ [[fallthrough]] label: ; /* { dg-error "ignored" } */
+  goto label;
 }

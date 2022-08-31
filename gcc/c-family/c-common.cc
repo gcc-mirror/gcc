@@ -5068,11 +5068,12 @@ case_compare (splay_tree_key k1, splay_tree_key k2)
    CASES is a tree containing all the case ranges processed so far;
    COND is the condition for the switch-statement itself.
    Returns the CASE_LABEL_EXPR created, or ERROR_MARK_NODE if no
-   CASE_LABEL_EXPR is created.  */
+   CASE_LABEL_EXPR is created.  ATTRS are the attributes to be applied
+   to the label.  */
 
 tree
 c_add_case_label (location_t loc, splay_tree cases, tree cond,
-		  tree low_value, tree high_value)
+		  tree low_value, tree high_value, tree attrs)
 {
   tree type;
   tree label;
@@ -5081,6 +5082,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond,
 
   /* Create the LABEL_DECL itself.  */
   label = create_artificial_label (loc);
+  decl_attributes (&label, attrs, 0);
 
   /* If there was an error processing the switch condition, bail now
      before we get more confused.  */
