@@ -3165,11 +3165,11 @@ template <typename _Tp>
   inline constexpr bool is_member_function_pointer_v =
     is_member_function_pointer<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_enum_v = is_enum<_Tp>::value;
+  inline constexpr bool is_enum_v = __is_enum(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_union_v = is_union<_Tp>::value;
+  inline constexpr bool is_union_v = __is_union(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_class_v = is_class<_Tp>::value;
+  inline constexpr bool is_class_v = __is_class(_Tp);
 template <typename _Tp>
   inline constexpr bool is_function_v = is_function<_Tp>::value;
 template <typename _Tp>
@@ -3206,14 +3206,14 @@ template <typename _Tp>
   _GLIBCXX17_DEPRECATED
   inline constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;
 #pragma GCC diagnostic pop
- template <typename _Tp>
-  inline constexpr bool is_empty_v = is_empty<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_polymorphic_v = is_polymorphic<_Tp>::value;
+  inline constexpr bool is_empty_v = __is_empty(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_abstract_v = is_abstract<_Tp>::value;
+  inline constexpr bool is_polymorphic_v = __is_polymorphic(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_final_v = is_final<_Tp>::value;
+  inline constexpr bool is_abstract_v = __is_abstract(_Tp);
+template <typename _Tp>
+  inline constexpr bool is_final_v = __is_final(_Tp);
 template <typename _Tp>
   inline constexpr bool is_signed_v = is_signed<_Tp>::value;
 template <typename _Tp>
@@ -3318,7 +3318,7 @@ template <typename _Tp, typename _Up>
   inline constexpr bool is_same_v = std::is_same<_Tp, _Up>::value;
 #endif
 template <typename _Base, typename _Derived>
-  inline constexpr bool is_base_of_v = is_base_of<_Base, _Derived>::value;
+  inline constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 template<typename _Fn, typename... _Args>
@@ -3356,16 +3356,19 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 # define __cpp_lib_is_aggregate 201703L
-  /// is_aggregate
+  /// is_aggregate - true if the type is an aggregate.
   /// @since C++17
   template<typename _Tp>
     struct is_aggregate
     : bool_constant<__is_aggregate(remove_cv_t<_Tp>)>
     { };
 
-  /// @ingroup variable_templates
+  /** is_aggregate_v - true if the type is an aggregate.
+   *  @ingroup variable_templates
+   *  @since C++17
+   */
   template<typename _Tp>
-    inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
+    inline constexpr bool is_aggregate_v = __is_aggregate(remove_cv_t<_Tp>);
 #endif
 #endif // C++17
 
