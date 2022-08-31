@@ -53,7 +53,7 @@ public:
   void visit (HIR::Function &function) override
   {
     HirId hirId = function.get_mappings ().get_hirid ();
-    if (should_warn (hirId))
+    if (should_warn (hirId) && !function.get_visibility ().is_public ())
       {
 	if (mappings->is_impl_item (hirId))
 	  {
@@ -78,7 +78,7 @@ public:
   void visit (HIR::StructStruct &stct) override
   {
     HirId hirId = stct.get_mappings ().get_hirid ();
-    if (should_warn (hirId))
+    if (should_warn (hirId) && !stct.get_visibility ().is_public ())
       {
 	bool name_starts_underscore = stct.get_identifier ().at (0) == '_';
 	if (!name_starts_underscore)
@@ -92,7 +92,8 @@ public:
 	for (auto &field : stct.get_fields ())
 	  {
 	    HirId field_hir_id = field.get_mappings ().get_hirid ();
-	    if (should_warn (field_hir_id))
+	    if (should_warn (field_hir_id)
+		&& !field.get_visibility ().is_public ())
 	      {
 		rust_warning_at (field.get_locus (), 0,
 				 "field is never read: %<%s%>",
@@ -106,7 +107,7 @@ public:
   {
     // only warn tuple struct unconstructed, and ignoring unused field
     HirId hirId = stct.get_mappings ().get_hirid ();
-    if (should_warn (hirId))
+    if (should_warn (hirId) && !stct.get_visibility ().is_public ())
       {
 	rust_warning_at (stct.get_locus (), 0,
 			 "struct is never constructed: %<%s%>",

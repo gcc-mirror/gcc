@@ -50,37 +50,10 @@
 #include "rust-linemap.h"
 #include "rust-backend.h"
 #include "rust-object-export.h"
+#include "rust-gcc.h"
 
 #include "backend/rust-tree.h"
-
-// TODO: this will have to be significantly modified to work with Rust
-
-// Bvariable is a bit more complicated, because of zero-sized types.
-// The GNU linker does not permit dynamic variables with zero size.
-// When we see such a variable, we generate a version of the type with
-// non-zero size.  However, when referring to the global variable, we
-// want an expression of zero size; otherwise, if, say, the global
-// variable is passed to a function, we will be passing a
-// non-zero-sized value to a zero-sized value, which can lead to a
-// miscompilation.
-
-class Bvariable
-{
-public:
-  Bvariable (tree t) : t_ (t), orig_type_ (NULL) {}
-
-  Bvariable (tree t, tree orig_type) : t_ (t), orig_type_ (orig_type) {}
-
-  // Get the tree for use as an expression.
-  tree get_tree (Location) const;
-
-  // Get the actual decl;
-  tree get_decl () const { return this->t_; }
-
-private:
-  tree t_;
-  tree orig_type_;
-};
+#include "backend/rust-builtins.h"
 
 // Get the tree of a variable for use as an expression.  If this is a
 // zero-sized global, create an expression that refers to the decl but
@@ -233,6 +206,10 @@ public:
 
   tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
 					 tree left, tree right, Location);
+
+  tree arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
+						 tree left, tree right,
+						 Location, Bvariable *receiver);
 
   tree comparison_expression (ComparisonOperator op, tree left, tree right,
 			      Location);
@@ -1408,25 +1385,26 @@ Gcc_backend::negation_expression (NegationOperator op, tree expr_tree,
   return new_tree;
 }
 
-// Return an expression for the arithmetic or logical operation LEFT OP RIGHT.
 tree
 Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
-					       tree left_tree, tree right_tree,
+					       tree left, tree right,
 					       Location location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
-  if (left_tree == error_mark_node || right_tree == error_mark_node)
+  if (left == error_mark_node || right == error_mark_node)
     return error_mark_node;
 
   /* We need to determine if we're doing floating point arithmetics of integer
      arithmetics. */
-  bool floating_point = is_floating_point (left_tree);
+  bool floating_point = is_floating_point (left);
+  auto ret = NULL_TREE;
 
   /* For arithmetic or logical operators, the resulting type should be the same
      as the lhs operand. */
-  auto tree_type = TREE_TYPE (left_tree);
+  auto tree_type = TREE_TYPE (left);
   auto original_type = tree_type;
+  auto loc = location.gcc_location ();
   auto tree_code = operator_to_tree_code (op, floating_point);
 
   /* For floating point operations we may need to extend the precision of type.
@@ -1437,21 +1415,127 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
       extended_type = excess_precision_type (tree_type);
       if (extended_type != NULL_TREE)
 	{
-	  left_tree = convert (extended_type, left_tree);
-	  right_tree = convert (extended_type, right_tree);
+	  left = convert (extended_type, left);
+	  right = convert (extended_type, right);
 	  tree_type = extended_type;
 	}
     }
 
-  /* Construct a new tree and build an expression from it. */
-  auto new_tree = fold_build2_loc (location.gcc_location (), tree_code,
-				   tree_type, left_tree, right_tree);
-  TREE_CONSTANT (new_tree)
-    = TREE_CONSTANT (left_tree) && TREE_CONSTANT (right_tree);
+  ret = fold_build2_loc (loc, tree_code, tree_type, left, right);
+  TREE_CONSTANT (ret) = TREE_CONSTANT (left) & TREE_CONSTANT (right);
 
+  // TODO: How do we handle floating point?
   if (floating_point && extended_type != NULL_TREE)
-    new_tree = convert (original_type, new_tree);
-  return new_tree;
+    ret = convert (original_type, ret);
+
+  return ret;
+}
+
+static bool
+is_overflowing_expr (ArithmeticOrLogicalOperator op)
+{
+  switch (op)
+    {
+    case ArithmeticOrLogicalOperator::ADD:
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      return true;
+    default:
+      return false;
+    }
+}
+
+static std::pair<tree, tree>
+fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
+{
+  auto builtin_ctx = Rust::Compile::BuiltinsContext::get ();
+
+  auto builtin = NULL_TREE;
+  auto abort = NULL_TREE;
+
+  switch (op)
+    {
+    case ArithmeticOrLogicalOperator::ADD:
+      builtin_ctx.lookup_simple_builtin ("add_overflow", &builtin);
+      break;
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+      builtin_ctx.lookup_simple_builtin ("sub_overflow", &builtin);
+      break;
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      builtin_ctx.lookup_simple_builtin ("mul_overflow", &builtin);
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    };
+
+  builtin_ctx.lookup_simple_builtin ("abort", &abort);
+
+  rust_assert (abort);
+  rust_assert (builtin);
+
+  // FIXME: ARTHUR: This is really ugly. The builtin context should take care of
+  // that
+  TREE_SIDE_EFFECTS (abort) = 1;
+  TREE_READONLY (abort) = 0;
+
+  // FIXME: ARTHUR: Same here. Remove these!
+  TREE_SIDE_EFFECTS (builtin) = 1;
+  TREE_READONLY (builtin) = 0;
+
+  return {abort, builtin};
+}
+
+// Return an expression for the arithmetic or logical operation LEFT OP RIGHT
+// with overflow checking when possible
+tree
+Gcc_backend::arithmetic_or_logical_expression_checked (
+  ArithmeticOrLogicalOperator op, tree left, tree right, Location location,
+  Bvariable *receiver_var)
+{
+  /* Check if either expression is an error, in which case we return an error
+     expression. */
+  if (left == error_mark_node || right == error_mark_node)
+    return error_mark_node;
+
+  auto loc = location.gcc_location ();
+
+  // FIXME: Add `if (!debug_mode)`
+  // No overflow checks for floating point operations or divisions. In that
+  // case, simply assign the result of the operation to the receiver variable
+  if (is_floating_point (left) || !is_overflowing_expr (op))
+    return assignment_statement (
+      receiver_var->get_tree (location),
+      arithmetic_or_logical_expression (op, left, right, location), location);
+
+  auto receiver = receiver_var->get_tree (location);
+  TREE_ADDRESSABLE (receiver) = 1;
+  auto result_ref = build_fold_addr_expr_loc (loc, receiver);
+
+  auto builtins = fetch_overflow_builtins (op);
+  auto abort = builtins.first;
+  auto builtin = builtins.second;
+
+  auto abort_call = build_call_expr_loc (loc, abort, 0);
+
+  // FIXME: ARTHUR: Is that needed?
+  TREE_SIDE_EFFECTS (abort_call) = 1;
+  TREE_READONLY (abort_call) = 0;
+
+  auto builtin_call
+    = build_call_expr_loc (loc, builtin, 3, left, right, result_ref);
+  auto overflow_check
+    = build2_loc (loc, EQ_EXPR, boolean_type_node, builtin_call,
+		  boolean_constant_expression (true));
+
+  auto if_block = build3_loc (loc, COND_EXPR, void_type_node, overflow_check,
+			      abort_call, NULL_TREE);
+
+  // FIXME: ARTHUR: Needed?
+  TREE_SIDE_EFFECTS (if_block) = 1;
+  TREE_READONLY (if_block) = 0;
+
+  return if_block;
 }
 
 // Return an expression for the comparison operation LEFT OP RIGHT.

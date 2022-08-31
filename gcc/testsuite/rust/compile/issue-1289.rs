@@ -23,12 +23,10 @@ impl<T> *mut T {
 #[lang = "const_ptr"]
 impl<T> *const T {
     pub const unsafe fn offset(self, count: isize) -> *mut T {
-        // { dg-warning "associated function is never used" "" { target *-*-* } .-1 }
         unsafe { intrinsics::offset(self, count) as *mut T }
     }
 
     pub const unsafe fn add(self, count: usize) -> Self {
-        // { dg-warning "associated function is never used" "" { target *-*-* } .-1 }
         unsafe { self.offset(count as isize) }
     }
 }
