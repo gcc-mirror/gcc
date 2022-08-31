@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-hir-type-check-base.h"
 #include "rust-coercion.h"
 
 namespace Rust {
@@ -52,6 +53,49 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
   // FIXME this is not finished and might be super simplified
   // see:
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs
+
+  // handle never
+  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs#L155
+  if (receiver->get_kind () == TyTy::TypeKind::NEVER)
+    {
+      // Subtle: If we are coercing from `!` to `?T`, where `?T` is an unbound
+      // type variable, we want `?T` to fallback to `!` if not
+      // otherwise constrained. An example where this arises:
+      //
+      //     let _: Option<?T> = Some({ return; });
+      //
+      // here, we would coerce from `!` to `?T`.
+      if (expected->has_subsititions_defined () && !expected->is_concrete ())
+	{
+	  Location locus = mappings->lookup_location (receiver->get_ref ());
+	  TyTy::TyVar implicit_var
+	    = TyTy::TyVar::get_implicit_infer_var (locus);
+	  try_result = CoercionResult{{}, implicit_var.get_tyty ()};
+	  return true;
+	}
+      else
+	{
+	  bool expected_is_infer_var
+	    = expected->get_kind () == TyTy::TypeKind::INFER;
+	  bool expected_is_general_infer_var
+	    = expected_is_infer_var
+	      && (static_cast<TyTy::InferType *> (expected)->get_infer_kind ()
+		  == TyTy::InferType::InferTypeKind::GENERAL);
+
+	  // FIXME this 'expected_is_general_infer_var' case needs to eventually
+	  // should go away see: compile/never_type_err1.rs
+	  //
+	  // I think we need inference obligations to say that yes we have a
+	  // general inference variable but we add the oligation to the expected
+	  // type that it could default to '!'
+	  if (expected_is_general_infer_var)
+	    try_result = CoercionResult{{}, receiver};
+	  else
+	    try_result = CoercionResult{{}, expected->clone ()};
+
+	  return true;
+	}
+    }
 
   // unsize
   bool unsafe_error = false;
@@ -163,13 +207,17 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
   switch (receiver->get_kind ())
     {
       case TyTy::TypeKind::REF: {
-	TyTy::ReferenceType *ref
+	TyTy::ReferenceType *from
 	  = static_cast<TyTy::ReferenceType *> (receiver);
-	from_mutbl = ref->mutability ();
+	from_mutbl = from->mutability ();
       }
       break;
 
       default: {
+	// FIXME
+	// we might be able to replace this with a can_eq because we default
+	// back to a final unity anyway
+	rust_debug ("coerce_borrowed_pointer -- unify");
 	TyTy::BaseType *result = receiver->unify (expected);
 	return CoercionResult{{}, result};
       }
@@ -183,7 +231,12 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
       return TypeCoercionRules::CoercionResult::get_error ();
     }
 
+  rust_debug ("coerce_borrowed_pointer -- autoderef cycle");
   AutoderefCycle::cycle (receiver);
+  rust_debug ("coerce_borrowed_pointer -- result: [%s] with adjustments: [%zu]",
+	      try_result.is_error () ? "failed" : "matched",
+	      try_result.adjustments.size ());
+
   return try_result;
 }
 
@@ -310,7 +363,10 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 bool
 TypeCoercionRules::select (const TyTy::BaseType &autoderefed)
 {
-  if (autoderefed.can_eq (expected, false))
+  rust_debug (
+    "autoderef type-coercion select autoderefed={%s} can_eq expected={%s}",
+    autoderefed.debug_str ().c_str (), expected->debug_str ().c_str ());
+  if (expected->can_eq (&autoderefed, false))
     {
       try_result = CoercionResult{adjustments, autoderefed.clone ()};
       return true;

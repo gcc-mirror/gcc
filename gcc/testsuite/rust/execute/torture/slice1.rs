@@ -12,9 +12,10 @@ union Repr<T> {
 
 const fn slice_from_raw_parts<T>(data: *const T, len: usize) -> *const [T] {
     unsafe {
-        let a = FatPtr { data, len };
-        let b = Repr { raw: a };
-        b.rust
+        Repr {
+            raw: FatPtr { data, len },
+        }
+        .rust
     }
 }
 

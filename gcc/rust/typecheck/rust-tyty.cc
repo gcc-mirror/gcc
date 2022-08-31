@@ -27,6 +27,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-ref.h"
 #include "rust-hir-type-bounds.h"
+#include "options.h"
 
 namespace Rust {
 namespace TyTy {
@@ -295,6 +296,33 @@ BaseType::destructure () const
   return x;
 }
 
+std::string
+BaseType::mappings_str () const
+{
+  std::string buffer = "Ref: " + std::to_string (get_ref ())
+		       + " TyRef: " + std::to_string (get_ty_ref ());
+  buffer += "[";
+  for (auto &ref : combined)
+    buffer += std::to_string (ref) + ",";
+  buffer += "]";
+  return "(" + buffer + ")";
+}
+
+std::string
+BaseType::debug_str () const
+{
+  // return TypeKindFormat::to_string (get_kind ()) + ":" + as_string () + ":"
+  //        + mappings_str () + ":" + bounds_as_string ();
+  return get_name ();
+}
+
+void
+BaseType::debug () const
+{
+  rust_debug ("[%p] %s", static_cast<const void *> (this),
+	      debug_str ().c_str ());
+}
+
 TyVar::TyVar (HirId ref) : ref (ref)
 {
   // ensure this reference is defined within the context
@@ -559,14 +587,14 @@ StructFieldType *
 StructFieldType::clone () const
 {
   return new StructFieldType (get_ref (), get_name (),
-			      get_field_type ()->clone ());
+			      get_field_type ()->clone (), locus);
 }
 
 StructFieldType *
 StructFieldType::monomorphized_clone () const
 {
   return new StructFieldType (get_ref (), get_name (),
-			      get_field_type ()->monomorphized_clone ());
+			      get_field_type ()->monomorphized_clone (), locus);
 }
 
 bool
@@ -1158,11 +1186,29 @@ TupleType::accept_vis (TyConstVisitor &vis) const
 std::string
 TupleType::as_string () const
 {
+  size_t i = 0;
   std::string fields_buffer;
   for (const TyVar &field : get_fields ())
     {
       fields_buffer += field.get_tyty ()->as_string ();
-      fields_buffer += ", ";
+      bool has_next = (i + 1) < get_fields ().size ();
+      fields_buffer += has_next ? ", " : "";
+      i++;
+    }
+  return "(" + fields_buffer + ")";
+}
+
+std::string
+TupleType::get_name () const
+{
+  size_t i = 0;
+  std::string fields_buffer;
+  for (const TyVar &field : get_fields ())
+    {
+      fields_buffer += field.get_tyty ()->as_string ();
+      bool has_next = (i + 1) < get_fields ().size ();
+      fields_buffer += has_next ? ", " : "";
+      i++;
     }
   return "(" + fields_buffer + ")";
 }
@@ -2193,6 +2239,13 @@ ReferenceType::as_string () const
 	 + get_base ()->as_string ();
 }
 
+std::string
+ReferenceType::get_name () const
+{
+  return std::string ("&") + (is_mutable () ? "mut" : "") + " "
+	 + get_base ()->get_name ();
+}
+
 BaseType *
 ReferenceType::unify (BaseType *other)
 {
@@ -2274,6 +2327,13 @@ PointerType::as_string () const
 {
   return std::string ("* ") + (is_mutable () ? "mut" : "const") + " "
 	 + get_base ()->as_string ();
+}
+
+std::string
+PointerType::get_name () const
+{
+  return std::string ("* ") + (is_mutable () ? "mut" : "const") + " "
+	 + get_base ()->get_name ();
 }
 
 BaseType *

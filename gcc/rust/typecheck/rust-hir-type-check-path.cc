@@ -390,7 +390,10 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    impl_block_ty
 	      = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
 
-	  prev_segment = prev_segment->unify (impl_block_ty);
+	  prev_segment = unify_site (seg.get_mappings ().get_hirid (),
+				     TyTy::TyWithLocation (prev_segment),
+				     TyTy::TyWithLocation (impl_block_ty),
+				     seg.get_locus ());
 	}
 
       if (tyseg->needs_generic_substitutions ())

@@ -375,7 +375,9 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
       break;
     }
 
-  infered = upper->unify (lower);
+  infered = unify_site (pattern.get_pattern_mappings ().get_hirid (),
+			TyTy::TyWithLocation (upper),
+			TyTy::TyWithLocation (lower), pattern.get_locus ());
 }
 
 void

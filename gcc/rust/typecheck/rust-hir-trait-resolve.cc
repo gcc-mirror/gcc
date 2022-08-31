@@ -324,10 +324,18 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
 
   auto block_expr_ty = TypeCheckExpr::Resolve (func.get_block_expr ().get ());
 
-  context->pop_return_type ();
+  Location fn_return_locus
+    = func.get_decl ().has_return_type ()
+	? func.get_decl ().get_return_type ()->get_locus ()
+	: func.get_locus ();
 
-  if (block_expr_ty->get_kind () != TyTy::NEVER)
-    expected_ret_tyty->unify (block_expr_ty);
+  TypeCheckBase::coercion_site (func.get_mappings ().get_hirid (),
+				TyTy::TyWithLocation (expected_ret_tyty,
+						      fn_return_locus),
+				TyTy::TyWithLocation (block_expr_ty),
+				func.get_locus ());
+
+  context->pop_return_type ();
 }
 
 void
@@ -457,7 +465,10 @@ AssociatedImplTrait::setup_associated_types (
   // the type correctly as our receiver may be generic and we are inferring its
   // generic arguments and this Self might be the concrete version or vice
   // versa.
-  auto result = receiver->unify (impl_self_infer);
+  auto result = TypeCheckBase::unify_site (
+    get_impl_block ()->get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (receiver), TyTy::TyWithLocation (impl_self_infer),
+    impl_predicate.get_locus ());
   rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
 
   // unify the bounds arguments
@@ -479,7 +490,10 @@ AssociatedImplTrait::setup_associated_types (
       TyTy::BaseType *a = impl_trait_predicate_args.at (i);
       TyTy::BaseType *b = hrtb_bound_arguments.at (i);
 
-      result = a->unify (b);
+      result
+	= TypeCheckBase::unify_site (a->get_ref (), TyTy::TyWithLocation (a),
+				     TyTy::TyWithLocation (b),
+				     impl_predicate.get_locus ());
       rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
     }
 

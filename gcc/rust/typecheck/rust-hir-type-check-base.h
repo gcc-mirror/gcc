@@ -24,7 +24,6 @@
 #include "rust-name-resolver.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir-map.h"
-#include "rust-backend.h"
 
 namespace Rust {
 namespace Resolver {
@@ -35,8 +34,12 @@ class TypeCheckBase
 public:
   virtual ~TypeCheckBase () {}
 
-  static TyTy::BaseType *coercion_site (HirId id, TyTy::BaseType *lhs,
-					TyTy::BaseType *rhs,
+  static TyTy::BaseType *unify_site (HirId id, TyTy::TyWithLocation lhs,
+				     TyTy::TyWithLocation rhs,
+				     Location unify_locus);
+
+  static TyTy::BaseType *coercion_site (HirId id, TyTy::TyWithLocation lhs,
+					TyTy::TyWithLocation rhs,
 					Location coercion_locus);
 
   static TyTy::BaseType *cast_site (HirId id, TyTy::TyWithLocation from,
@@ -44,10 +47,7 @@ public:
 				    Location cast_locus);
 
 protected:
-  TypeCheckBase ()
-    : mappings (Analysis::Mappings::get ()), resolver (Resolver::get ()),
-      context (TypeCheckContext::get ())
-  {}
+  TypeCheckBase ();
 
   TraitReference *resolve_trait_path (HIR::TypePath &);
 

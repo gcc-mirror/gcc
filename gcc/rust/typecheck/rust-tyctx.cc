@@ -129,6 +129,7 @@ TypeCheckContext::lookup_type_by_node_id (NodeId ref, HirId *id)
 TyTy::BaseType *
 TypeCheckContext::peek_return_type ()
 {
+  rust_assert (!return_type_stack.empty ());
   return return_type_stack.back ().second;
 }
 
@@ -142,12 +143,14 @@ TypeCheckContext::push_return_type (TypeCheckContextItem item,
 void
 TypeCheckContext::pop_return_type ()
 {
+  rust_assert (!return_type_stack.empty ());
   return_type_stack.pop_back ();
 }
 
 TypeCheckContextItem &
 TypeCheckContext::peek_context ()
 {
+  rust_assert (!return_type_stack.empty ());
   return return_type_stack.back ().first;
 }
 

@@ -57,14 +57,20 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
     {
       TyTy::BaseType *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
-      struct_def = static_cast<TyTy::ADTType *> (
-	struct_path_resolved->unify (base_resolved));
-      if (struct_def == nullptr)
+      TyTy::BaseType *base_unify = unify_site (
+	struct_expr.struct_base->base_struct->get_mappings ().get_hirid (),
+	TyTy::TyWithLocation (struct_path_resolved),
+	TyTy::TyWithLocation (base_resolved),
+	struct_expr.struct_base->base_struct->get_locus ());
+
+      if (base_unify->get_kind () != struct_path_ty->get_kind ())
 	{
 	  rust_fatal_error (struct_expr.struct_base->base_struct->get_locus (),
 			    "incompatible types for base struct reference");
 	  return;
 	}
+
+      struct_def = static_cast<TyTy::ADTType *> (base_unify);
     }
 
   // figure out the variant
@@ -252,9 +258,15 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
     }
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  Location value_locus = field.get_value ()->get_locus ();
+
+  HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
-    = coercion_site (field.get_mappings ().get_hirid (),
-		     field_type->get_field_type (), value, field.get_locus ());
+    = coercion_site (coercion_site_id,
+		     TyTy::TyWithLocation (field_type->get_field_type (),
+					   field_type->get_locus ()),
+		     TyTy::TyWithLocation (value, value_locus),
+		     field.get_locus ());
   if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field.field_name);
@@ -283,9 +295,15 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
     }
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  Location value_locus = field.get_value ()->get_locus ();
+
+  HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
-    = coercion_site (field.get_mappings ().get_hirid (),
-		     field_type->get_field_type (), value, field.get_locus ());
+    = coercion_site (coercion_site_id,
+		     TyTy::TyWithLocation (field_type->get_field_type (),
+					   field_type->get_locus ()),
+		     TyTy::TyWithLocation (value, value_locus),
+		     field.get_locus ());
   if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field_name);
@@ -324,10 +342,15 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
 			      {});
   TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr);
+  Location value_locus = expr.get_locus ();
 
+  HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
-    = coercion_site (field.get_mappings ().get_hirid (),
-		     field_type->get_field_type (), value, field.get_locus ());
+    = coercion_site (coercion_site_id,
+		     TyTy::TyWithLocation (field_type->get_field_type (),
+					   field_type->get_locus ()),
+		     TyTy::TyWithLocation (value, value_locus),
+		     field.get_locus ());
   if (resolved_field_value_expr != nullptr)
 
     {

@@ -123,269 +123,53 @@ public:
     return resolved;
   }
 
-  virtual void visit (TupleType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (TupleType &type) override {}
 
-  virtual void visit (ADTType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ADTType &type) override {}
 
-  virtual void visit (InferType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (InferType &type) override {}
 
-  virtual void visit (FnType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (FnType &type) override {}
 
-  virtual void visit (FnPtr &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (FnPtr &type) override {}
 
-  virtual void visit (ArrayType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ArrayType &type) override {}
 
-  virtual void visit (SliceType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (SliceType &type) override {}
 
-  virtual void visit (BoolType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (BoolType &type) override {}
 
-  virtual void visit (IntType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (IntType &type) override {}
 
-  virtual void visit (UintType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (UintType &type) override {}
 
-  virtual void visit (USizeType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (USizeType &type) override {}
 
-  virtual void visit (ISizeType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ISizeType &type) override {}
 
-  virtual void visit (FloatType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (FloatType &type) override {}
 
-  virtual void visit (ErrorType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ErrorType &type) override {}
 
-  virtual void visit (CharType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (CharType &type) override {}
 
-  virtual void visit (ReferenceType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ReferenceType &type) override {}
 
-  virtual void visit (PointerType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (PointerType &type) override {}
 
-  virtual void visit (ParamType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ParamType &type) override {}
 
-  virtual void visit (StrType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (StrType &type) override {}
 
-  virtual void visit (NeverType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (NeverType &type) override {}
 
-  virtual void visit (PlaceholderType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (PlaceholderType &type) override {}
 
-  virtual void visit (ProjectionType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ProjectionType &type) override {}
 
-  virtual void visit (DynamicObjectType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (DynamicObjectType &type) override {}
 
-  virtual void visit (ClosureType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
-    RichLocation r (ref_locus);
-    r.add_range (base_locus);
-    rust_error_at (r, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
+  virtual void visit (ClosureType &type) override {}
 
 protected:
   BaseRules (BaseType *base)

@@ -68,7 +68,11 @@ TypeCheckStmt::visit (HIR::ConstantItem &constant)
   TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
   TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
-  infered = type->unify (expr_type);
+  infered = unify_site (
+    constant.get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
+    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
+    constant.get_locus ());
   context->insert_type (constant.get_mappings (), infered);
 }
 
@@ -79,8 +83,10 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 
   const HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   TyTy::BaseType *init_expr_ty = nullptr;
+  Location init_expr_locus;
   if (stmt.has_init_expr ())
     {
+      init_expr_locus = stmt.get_init_expr ()->get_locus ();
       init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
       if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	return;
@@ -90,15 +96,20 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
     }
 
   TyTy::BaseType *specified_ty = nullptr;
+  Location specified_ty_locus;
   if (stmt.has_type ())
-    specified_ty = TypeCheckType::Resolve (stmt.get_type ());
+    {
+      specified_ty = TypeCheckType::Resolve (stmt.get_type ());
+      specified_ty_locus = stmt.get_type ()->get_locus ();
+    }
 
   // let x:i32 = 123;
   if (specified_ty != nullptr && init_expr_ty != nullptr)
     {
-      // FIXME use this result and look at the regressions
-      coercion_site (stmt.get_mappings ().get_hirid (), specified_ty,
-		     init_expr_ty, stmt.get_locus ());
+      coercion_site (stmt.get_mappings ().get_hirid (),
+		     TyTy::TyWithLocation (specified_ty, specified_ty_locus),
+		     TyTy::TyWithLocation (init_expr_ty, init_expr_locus),
+		     stmt.get_locus ());
       context->insert_type (stmt_pattern.get_pattern_mappings (), specified_ty);
     }
   else
@@ -165,7 +176,8 @@ TypeCheckStmt::visit (HIR::TupleStruct &struct_decl)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     std::to_string (idx), field_type);
+				     std::to_string (idx), field_type,
+				     field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
       idx++;
@@ -297,7 +309,8 @@ TypeCheckStmt::visit (HIR::StructStruct &struct_decl)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type);
+				     field.get_field_name (), field_type,
+				     field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
@@ -368,7 +381,8 @@ TypeCheckStmt::visit (HIR::Union &union_decl)
 	= TypeCheckType::Resolve (variant.get_field_type ().get ());
       TyTy::StructFieldType *ty_variant
 	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
-				     variant.get_field_name (), variant_type);
+				     variant.get_field_name (), variant_type,
+				     variant.get_locus ());
       fields.push_back (ty_variant);
       context->insert_type (variant.get_mappings (),
 			    ty_variant->get_field_type ());
@@ -488,8 +502,13 @@ TypeCheckStmt::visit (HIR::Function &function)
 
   context->pop_return_type ();
 
-  if (block_expr_ty->get_kind () != TyTy::NEVER)
-    expected_ret_tyty->unify (block_expr_ty);
+  Location fn_return_locus = function.has_function_return_type ()
+			       ? function.get_return_type ()->get_locus ()
+			       : function.get_locus ();
+  coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
+		 TyTy::TyWithLocation (block_expr_ty),
+		 function.get_definition ()->get_locus ());
 
   infered = fnType;
 }
