@@ -18,11 +18,17 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define REQUIRES_FLOAT false
+DEF_MVE_FUNCTION (vaddq, binary_opt_n, all_integer, mx_or_none)
+DEF_MVE_FUNCTION (vmulq, binary_opt_n, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vreinterpretq, unary_convert, reinterpret_integer, none)
+DEF_MVE_FUNCTION (vsubq, binary_opt_n, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vuninitializedq, inherent, all_integer_with_64, none)
 #undef REQUIRES_FLOAT
 
 #define REQUIRES_FLOAT true
+DEF_MVE_FUNCTION (vaddq, binary_opt_n, all_float, mx_or_none)
+DEF_MVE_FUNCTION (vmulq, binary_opt_n, all_float, mx_or_none)
 DEF_MVE_FUNCTION (vreinterpretq, unary_convert, reinterpret_float, none)
+DEF_MVE_FUNCTION (vsubq, binary_opt_n, all_float, mx_or_none)
 DEF_MVE_FUNCTION (vuninitializedq, inherent, all_float, none)
 #undef REQUIRES_FLOAT

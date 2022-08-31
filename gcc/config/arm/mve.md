@@ -1353,18 +1353,6 @@
 ;; [vmulq_u, vmulq_s]
 ;; [vsubq_s, vsubq_u]
 ;;
-(define_insn "mve_vmulq_<supf><mode>"
-  [
-    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VMULQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmul.i%#<V_sz_elem>\t%q0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
 (define_insn "mve_<mve_addsubmul>q<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
@@ -1739,21 +1727,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vshl.<supf>%#<V_sz_elem>\t%q0, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vsubq_s, vsubq_u])
-;;
-(define_insn "mve_vsubq_<supf><mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VSUBQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vsub.i%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 

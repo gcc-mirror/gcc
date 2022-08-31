@@ -86,7 +86,18 @@ class vuninitializedq_impl : public quiet<function_base>
 
 namespace arm_mve {
 
+  /* Helper for builtins with RTX codes, _m predicated and _n overrides.  */
+#define FUNCTION_WITH_RTX_M_N(NAME, RTX, UNSPEC) FUNCTION		\
+  (NAME, unspec_based_mve_function_exact_insn,				\
+   (RTX, RTX, RTX,							\
+    UNSPEC##_N_S, UNSPEC##_N_U, UNSPEC##_N_F,				\
+    UNSPEC##_M_S, UNSPEC##_M_U, UNSPEC##_M_F,				\
+    UNSPEC##_M_N_S, UNSPEC##_M_N_U, UNSPEC##_M_N_F))
+
+FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
+FUNCTION_WITH_RTX_M_N (vmulq, MULT, VMULQ)
 FUNCTION (vreinterpretq, vreinterpretq_impl,)
+FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 
 } /* end namespace arm_mve */

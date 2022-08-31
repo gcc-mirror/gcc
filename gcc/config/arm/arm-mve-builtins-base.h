@@ -23,7 +23,10 @@
 namespace arm_mve {
 namespace functions {
 
+extern const function_base *const vaddq;
+extern const function_base *const vmulq;
 extern const function_base *const vreinterpretq;
+extern const function_base *const vsubq;
 extern const function_base *const vuninitializedq;
 
 } /* end namespace arm_mve::functions */
