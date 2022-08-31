@@ -1057,6 +1057,8 @@ public:
 
   bool requires_generic_args () const;
 
+  bool contains_associated_types () const;
+
 private:
   DefId reference;
   Location locus;
