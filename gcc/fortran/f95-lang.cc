@@ -1281,6 +1281,22 @@ gfc_init_builtin_functions (void)
 		      "__builtin_assume_aligned",
 		      ATTR_CONST_NOTHROW_LEAF_LIST);
 
+  ftype = build_function_type_list (long_double_type_node, long_double_type_node,
+				    long_double_type_node, long_double_type_node,
+				    NULL_TREE);
+  gfc_define_builtin ("__builtin_fmal", ftype, BUILT_IN_FMAL,
+		      "fmal", ATTR_CONST_NOTHROW_LEAF_LIST);
+  ftype = build_function_type_list (double_type_node, double_type_node,
+				    double_type_node, double_type_node,
+				    NULL_TREE);
+  gfc_define_builtin ("__builtin_fma", ftype, BUILT_IN_FMA,
+		      "fma", ATTR_CONST_NOTHROW_LEAF_LIST);
+  ftype = build_function_type_list (float_type_node, float_type_node,
+				    float_type_node, float_type_node,
+				    NULL_TREE);
+  gfc_define_builtin ("__builtin_fmaf", ftype, BUILT_IN_FMAF,
+		      "fmaf", ATTR_CONST_NOTHROW_LEAF_LIST);
+
   gfc_define_builtin ("__emutls_get_address",
 		      builtin_types[BT_FN_PTR_PTR],
 		      BUILT_IN_EMUTLS_GET_ADDRESS,
