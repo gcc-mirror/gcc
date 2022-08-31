@@ -6505,10 +6505,21 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    {
 		      gfc_conv_expr_reference (&parmse, e);
 
-		      if (fsym
-			  && fsym->attr.intent == INTENT_OUT
-			  && !fsym->attr.allocatable
-			  && !fsym->attr.pointer
+		      gfc_symbol *dsym = fsym;
+		      gfc_dummy_arg *dummy;
+
+		      /* Use associated dummy as fallback for formal
+			 argument if there is no explicit interface.  */
+		      if (dsym == NULL
+			  && (dummy = arg->associated_dummy)
+			  && dummy->intrinsicness == GFC_NON_INTRINSIC_DUMMY_ARG
+			  && dummy->u.non_intrinsic->sym)
+			dsym = dummy->u.non_intrinsic->sym;
+
+		      if (dsym
+			  && dsym->attr.intent == INTENT_OUT
+			  && !dsym->attr.allocatable
+			  && !dsym->attr.pointer
 			  && e->expr_type == EXPR_VARIABLE
 			  && e->ref == NULL
 			  && e->symtree
