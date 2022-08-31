@@ -361,6 +361,9 @@ foperator_equal::op1_range (frange &r, tree type,
     case BRS_TRUE:
       // If it's true, the result is the same as OP2.
       r = op2;
+      // Make sure we don't copy the sign bit if we may have a zero.
+      if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
+	r.set_signbit (fp_prop::VARYING);
       // The TRUE side of op1 == op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;
@@ -462,6 +465,9 @@ foperator_not_equal::op1_range (frange &r, tree type,
     case BRS_FALSE:
       // If it's false, the result is the same as OP2.
       r = op2;
+      // Make sure we don't copy the sign bit if we may have a zero.
+      if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
+	r.set_signbit (fp_prop::VARYING);
       // The FALSE side of op1 != op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;

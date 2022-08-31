@@ -314,10 +314,12 @@ public:
   bool intersect (const frange_props &other);
   bool operator== (const frange_props &other) const;
   FP_PROP_ACCESSOR(nan)
+  FP_PROP_ACCESSOR(signbit)
 private:
   union {
     struct {
       unsigned char nan : 2;
+      unsigned char signbit : 2;
     } bits;
     unsigned char bytes;
   } u;
@@ -364,6 +366,8 @@ public:
   // Accessors for FP properties.
   fp_prop get_nan () const { return m_props.get_nan (); }
   void set_nan (fp_prop::kind f);
+  fp_prop get_signbit () const { return m_props.get_signbit (); }
+  void set_signbit (fp_prop::kind);
 private:
   void verify_range ();
   bool normalize_kind ();

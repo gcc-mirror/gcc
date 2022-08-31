@@ -146,6 +146,7 @@ vrange_printer::visit (const frange &r) const
   pp_string (pp, "] ");
 
   print_frange_prop ("NAN", r.get_nan ());
+  print_frange_prop ("SIGN", r.get_signbit ());
 }
 
 // Print the FP properties in an frange.

@@ -288,6 +288,58 @@ frange::set_nan (fp_prop::kind k)
 
   m_props.set_nan (k);
   normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+}
+
+// Set the SIGNBIT property.  Adjust the range if appropriate.
+
+void
+frange::set_signbit (fp_prop::kind k)
+{
+  gcc_checking_assert (m_type);
+
+  // No additional adjustments are needed for a NAN.
+  if (get_nan ().yes_p ())
+    {
+      m_props.set_signbit (k);
+      return;
+    }
+  // Ignore sign changes when they're set correctly.
+  if (real_less (&m_max, &dconst0))
+    {
+      gcc_checking_assert (get_signbit ().yes_p ());
+      return;
+    }
+  if (real_less (&dconst0, &m_min))
+    {
+      gcc_checking_assert (get_signbit ().no_p ());
+      return;
+    }
+  // Adjust the range depending on the sign bit.
+  if (k == fp_prop::YES)
+    {
+      // Crop the range to [-INF, 0].
+      REAL_VALUE_TYPE min;
+      real_inf (&min, 1);
+      frange crop (m_type, min, dconst0);
+      intersect (crop);
+      m_props.set_signbit (fp_prop::YES);
+    }
+  else if (k == fp_prop::NO)
+    {
+      // Crop the range to [0, +INF].
+      REAL_VALUE_TYPE max;
+      real_inf (&max, 0);
+      frange crop (m_type, dconst0, max);
+      intersect (crop);
+      m_props.set_signbit (fp_prop::NO);
+    }
+  else
+    m_props.set_signbit (fp_prop::VARYING);
+
+  if (flag_checking)
+    verify_range ();
 }
 
 // Setter for franges.
@@ -329,6 +381,12 @@ frange::set (tree min, tree max, value_range_kind kind)
   else if (!HONOR_NANS (m_type))
     m_props.nan_set_no ();
 
+  // Set SIGNBIT property for positive and negative ranges.
+  if (real_less (&m_max, &dconst0))
+    m_props.signbit_set_yes ();
+  else if (real_less (&dconst0, &m_min))
+    m_props.signbit_set_no ();
+
   // Check for swapped ranges.
   gcc_checking_assert (is_nan || tree_compare (LE_EXPR, min, max));
 
@@ -360,7 +418,7 @@ bool
 frange::normalize_kind ()
 {
   // Undefined is viral.
-  if (m_props.nan_undefined_p ())
+  if (m_props.nan_undefined_p () || m_props.signbit_undefined_p ())
     {
       set_undefined ();
       return true;
@@ -438,13 +496,6 @@ frange::union_ (const vrange &v)
     }
 
   bool changed = m_props.union_ (r.m_props);
-
-  // Note: for the combination of zeros that differ in sign we keep
-  // the endpoints untouched.  This means that for -0.0 U +0.0, the
-  // result will be -0.0.  Ultimately this doesn't matter, because we
-  // keep singleton zeros ambiguous throughout to avoid propagating
-  // them.  See frange::singleton_p().
-
   if (real_less (&r.m_min, &m_min))
     {
       m_min = r.m_min;
@@ -483,12 +534,6 @@ frange::intersect (const vrange &v)
     return early_nan_resolve (*this, r);
 
   bool changed = m_props.intersect (r.m_props);
-
-  // Note: for the combination of zeros that differ in sign we keep
-  // the endpoints untouched.  This means that for -0.0 ^ +0.0, the
-  // result will be -0.0.  Ultimately this doesn't matter, because we
-  // keep singleton zeros ambiguous throughout to avoid propagating
-  // them.  See frange::singleton_p().
 
   if (real_less (&m_min, &r.m_min))
     {
@@ -563,26 +608,51 @@ frange::contains_p (tree cst) const
 
   gcc_checking_assert (m_kind == VR_RANGE);
 
-  return (real_compare (GE_EXPR, TREE_REAL_CST_PTR (cst), &m_min)
-	  && real_compare (LE_EXPR, TREE_REAL_CST_PTR (cst), &m_max));
+  const REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (cst);
+  if (real_compare (GE_EXPR, rv, &m_min)
+      && real_compare (LE_EXPR, rv, &m_max))
+    {
+      if (HONOR_SIGNED_ZEROS (m_type) && real_iszero (rv))
+	{
+	  if (get_signbit ().yes_p ())
+	    return real_isneg (rv);
+	  else if (get_signbit ().no_p ())
+	    return !real_isneg (rv);
+	  else
+	    return true;
+	}
+      return true;
+    }
+  return false;
 }
 
 // If range is a singleton, place it in RESULT and return TRUE.  If
 // RESULT is NULL, just return TRUE.
 //
-// A NAN can never be a singleton, and neither can a 0.0 if we're
-// honoring signed zeros because we have no way of telling which zero
-// it is.
+// A NAN can never be a singleton.
 
 bool
 frange::singleton_p (tree *result) const
 {
   if (m_kind == VR_RANGE && real_identical (&m_min, &m_max))
     {
-      // If we're honoring signed zeros, fail because we don't know
-      // which zero we have.  This avoids propagating the wrong zero.
+      // Return the appropriate zero if known.
       if (HONOR_SIGNED_ZEROS (m_type) && zero_p ())
-	return false;
+	{
+	  if (get_signbit ().no_p ())
+	    {
+	      if (result)
+		*result = build_real (m_type, dconst0);
+	      return true;
+	    }
+	  if (get_signbit ().yes_p ())
+	    {
+	      if (result)
+		*result = build_real (m_type, real_value_negate (&dconst0));
+	      return true;
+	    }
+	  return false;
+	}
 
       // Return false for any singleton that may be a NAN.
       if (HONOR_NANS (m_type) && !get_nan ().no_p ())
@@ -638,6 +708,14 @@ frange::verify_range ()
     {
       gcc_checking_assert (real_isnan (&m_min));
       gcc_checking_assert (real_isnan (&m_max));
+    }
+  else
+    {
+      // Make sure the signbit and range agree.
+      if (m_props.get_signbit ().yes_p ())
+	gcc_checking_assert (real_compare (LE_EXPR, &m_max, &dconst0));
+      else if (m_props.get_signbit ().no_p ())
+	gcc_checking_assert (real_compare (GE_EXPR, &m_min, &dconst0));
     }
 
   // If all the properties are clear, we better not span the entire
@@ -3605,16 +3683,85 @@ range_tests_signed_zeros ()
   tree neg_zero = fold_build1 (NEGATE_EXPR, float_type_node, zero);
   frange r0, r1;
 
-  // ?? If -0.0 == +0.0, then a range of [-0.0, -0.0] should
-  // contain +0.0 and vice versa.  We probably need a property to
-  // track signed zeros in the frange like we do for NAN, to
-  // properly model all this.
+  // Since -0.0 == +0.0, a range of [-0.0, -0.0] should contain +0.0
+  // and vice versa.
   r0 = frange (zero, zero);
   r1 = frange (neg_zero, neg_zero);
   ASSERT_TRUE (r0.contains_p (zero));
   ASSERT_TRUE (r0.contains_p (neg_zero));
   ASSERT_TRUE (r1.contains_p (zero));
   ASSERT_TRUE (r1.contains_p (neg_zero));
+
+  // Test contains_p() when we know the sign of the zero.
+  r0 = frange(zero, zero);
+  r0.set_signbit (fp_prop::NO);
+  ASSERT_TRUE (r0.contains_p (zero));
+  ASSERT_FALSE (r0.contains_p (neg_zero));
+  r0.set_signbit (fp_prop::YES);
+  ASSERT_TRUE (r0.contains_p (neg_zero));
+  ASSERT_FALSE (r0.contains_p (zero));
+
+  // The intersection of zeros that differ in sign is the empty set.
+  r0 = frange (zero, zero);
+  r0.set_signbit (fp_prop::YES);
+  r1 = frange (zero, zero);
+  r1.set_signbit (fp_prop::NO);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+
+  // The union of zeros that differ in sign is a zero with unknown sign.
+  r0 = frange (zero, zero);
+  r0.set_signbit (fp_prop::NO);
+  r1 = frange (zero, zero);
+  r1.set_signbit (fp_prop::YES);
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.zero_p () && r0.get_signbit ().varying_p ());
+}
+
+static void
+range_tests_signbit ()
+{
+  frange r0, r1;
+
+  // Setting the signbit drops the range to [-INF, 0].
+  r0.set_varying (float_type_node);
+  r0.set_signbit (fp_prop::YES);
+  ASSERT_TRUE (real_isinf (&r0.lower_bound (), 1));
+  ASSERT_TRUE (real_iszero (&r0.upper_bound ()));
+
+  // Setting the signbit for [-5, 10] crops the range to [-5, 0] with
+  // the signbit property set.
+  r0 = frange_float ("-5", "10");
+  r0.set_signbit (fp_prop::YES);
+  ASSERT_TRUE (r0.get_signbit ().yes_p ());
+  r1 = frange_float ("-5", "0");
+  ASSERT_TRUE (real_identical (&r0.lower_bound (), &r1.lower_bound ()));
+  ASSERT_TRUE (real_identical (&r0.upper_bound (), &r1.upper_bound ()));
+
+  // Negative numbers should have the SIGNBIT set.
+  r0 = frange_float ("-5", "-1");
+  ASSERT_TRUE (r0.get_signbit ().yes_p ());
+  // Positive numbers should have the SIGNBIT clear.
+  r0 = frange_float ("1", "10");
+  ASSERT_TRUE (r0.get_signbit ().no_p ());
+  // Numbers containing zero should have an unknown SIGNBIT.
+  r0 = frange_float ("0", "10");
+  ASSERT_TRUE (r0.get_signbit ().varying_p ());
+  // Numbers spanning both positive and negative should have an
+  // unknown SIGNBIT.
+  r0 = frange_float ("-10", "10");
+  ASSERT_TRUE (r0.get_signbit ().varying_p ());
+  r0.set_varying (float_type_node);
+  ASSERT_TRUE (r0.get_signbit ().varying_p ());
+
+  // Ignore signbit changes when the sign bit is obviously known from
+  // the range.
+  r0 = frange_float ("5", "10");
+  r0.set_signbit (fp_prop::VARYING);
+  ASSERT_TRUE (r0.get_signbit ().no_p ());
+  r0 = frange_float ("-5", "-1");
+  r0.set_signbit (fp_prop::NO);
+  ASSERT_TRUE (r0.get_signbit ().yes_p ());
 }
 
 static void
@@ -3623,6 +3770,7 @@ range_tests_floats ()
   frange r0, r1;
 
   range_tests_nan ();
+  range_tests_signbit ();
 
   if (HONOR_SIGNED_ZEROS (float_type_node))
     range_tests_signed_zeros ();
