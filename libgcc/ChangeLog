@@ -1,3 +1,7 @@
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config.host: Remove the port.
+
 2022-08-26  Martin Liska  <mliska@suse.cz>
 
 	* config.host: Remove cr16 related stuff.

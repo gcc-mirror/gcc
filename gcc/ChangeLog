@@ -1,3 +1,253 @@
+2022-08-30  Martin Jambor  <mjambor@suse.cz>
+
+	* vec.h (array_slice): Add constructors for non-const reference to
+	heap vector and pointers to heap vectors.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (early_nan_resolve): Change comment.
+	(frange::union_): Handle union when one side is a NAN.
+	(range_tests_nan): Add tests for NAN union.
+
+2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_simd_clone_compute_vecsize_and_simdlen): New.
+	(gcn_simd_clone_adjust): New.
+	(gcn_simd_clone_usable): New.
+	(TARGET_SIMD_CLONE_ADJUST): New.
+	(TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN): New.
+	(TARGET_SIMD_CLONE_USABLE): New.
+
+2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* doc/tm.texi: Regenerate.
+	* omp-simd-clone.cc (simd_clone_adjust_return_type): Allow zero
+	vecsize.
+	(simd_clone_adjust_argument_types): Likewise.
+	* target.def (compute_vecsize_and_simdlen): Document the new
+	vecsize_int and vecsize_float semantics.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.cc (store_bit_field_1): Fix byte offset calculation
+	for undefined structures.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* params.opt (-param=vect-max-layout-candidates=): New parameter.
+	* doc/invoke.texi (vect-max-layout-candidates): Document it.
+	* tree-vectorizer.h (auto_lane_permutation_t): New typedef.
+	(auto_load_permutation_t): Likewise.
+	* tree-vect-slp.cc (vect_slp_node_weight): New function.
+	(slpg_layout_cost): New class.
+	(slpg_vertex): Replace perm_in and perm_out with partition,
+	out_degree, weight and out_weight.
+	(slpg_partition_info, slpg_partition_layout_costs): New classes.
+	(vect_optimize_slp_pass): Likewise, cannibalizing some part of
+	the previous vect_optimize_slp.
+	(vect_optimize_slp): Use it.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-traits.h (vec_hash_base): New class.
+	(vec_free_hash_base): Likewise.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-traits.h (int_hash_base): New struct, split out from...
+	(int_hash): ...this class, which now inherits from int_hash_base.
+	* hash-map-traits.h (unbounded_hashmap_traits): Take a template
+	parameter for the key that provides hash and equality functions.
+	(unbounded_int_hashmap_traits): Turn into a type alias of
+	unbounded_hashmap_traits.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* graphds.cc (graphds_scc): Add a pass-back parameter for the
+	final node order.
+	* graphds.h (graphds_scc): Update prototype accordingly.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_transform_slp_perm_load_1): Split out from...
+	(vect_transform_slp_perm_load): ...here.  Use SLP_TREE_VECTYPE instead
+	of STMT_VINFO_VECTYPE.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Split out from...
+	(vectorizable_slp_permutation): ...here.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.cc (get_related_vectype_for_scalar_type): Check
+	that the requested number of units is interoperable with the requested
+	prevailing mode.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config.gcc: Remove the port.
+	* config/m32c/rtems.h: Removed.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/73550
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Do not apply MAX_NUM_CHAINS again.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (format_edge_vec): Dump
+	both source and destination.
+	(dump_dep_chains): Remove.
+	(uninit_analysis::init_use_preds): Remove redundant
+	dumping of chains.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (frange_storage_slot::get_frange): Use
+	frange_nan.
+	* value-range.cc (frange::set_nan): New.
+	(frange_nan): Move to header file.
+	(range_tests_nan): Adjust frange_nan callers to pass type.
+	New test.
+	* value-range.h (FRANGE_PROP_ACCESSOR): Remove.
+	(frange_nan): New.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67196
+	* gimple-predicate-analysis.cc (uninit_analysis::is_use_guarded):
+	Simplify and normalize use prediates before first use.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (dump_pred_chain): Fix
+	parentizing and AND prepending.
+	(predicate::dump): Do not dump the GENERIC expanded
+	predicate, properly parentize and prepend ORs to the
+	piecewise predicate dump.
+	(build_pred_expr): Remove.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (finite_operand_p): New.
+	(build_le): New.
+	(build_lt): New.
+	(build_ge): New.
+	(build_gt): New.
+	(foperator_equal::fold_range): New implementation with endpoints.
+	(foperator_equal::op1_range): Same.
+	(foperator_not_equal::fold_range): Same.
+	(foperator_not_equal::op1_range): Same.
+	(foperator_lt::fold_range): Same.
+	(foperator_lt::op1_range): Same.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::fold_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_ge::fold_range): Same.
+	(foperator_ge::op1_range): Same.
+	(foperator_ge::op2_range): Same.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frange_set_nan): New.
+	(frange_drop_inf): New.
+	(frange_drop_ninf): New.
+	(foperator_equal::op1_range): Adjust for endpoints.
+	(foperator_lt::op1_range): Same.
+	(foperator_lt::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_unordered::op1_range): Same.
+	* value-query.cc (range_query::get_tree_range): Same.
+	* value-range-pretty-print.cc (vrange_printer::visit): Same.
+	* value-range-storage.cc (frange_storage_slot::get_frange): Same.
+	* value-range.cc (frange::set): Same.
+	(frange::normalize_kind): Same.
+	(frange::union_): Same.
+	(frange::intersect): Same.
+	(frange::operator=): Same.
+	(early_nan_resolve): New.
+	(frange::contains_p): New.
+	(frange::singleton_p): New.
+	(frange::set_nonzero): New.
+	(frange::nonzero_p): New.
+	(frange::set_zero): New.
+	(frange::zero_p): New.
+	(frange::set_nonnegative): New.
+	(frange_float): New.
+	(frange_nan): New.
+	(range_tests_nan): New.
+	(range_tests_signed_zeros): New.
+	(range_tests_floats): New.
+	(range_tests): New.
+	* value-range.h (frange::lower_bound): New.
+	(frange::upper_bound): New.
+	(vrp_val_min): Use real_inf with a sign instead of negating inf.
+	(frange::frange): New.
+	(frange::set_varying): Adjust for endpoints.
+	(real_max_representable): New.
+	(real_min_representable): New.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* match.pd ((cmp @0 zerop) real_zerop (negate@1 @0)): Add variant
+	for real zero.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc (s390_rtx_costs): Use proper type as
+	  argument.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Pre-compute
+	the set of fallthru reachable blocks from function entry
+	and use that to determine wlims.always_executed.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56654
+	* tree-ssa-uninit.cc (cand_cmp): New.
+	(find_uninit_use): First process all PHIs and collect candidate
+	stmts, then sort those after RPO.
+	(warn_uninitialized_phi): Pass on bb_to_rpo.
+	(execute_late_warn_uninitialized): Compute and pass on
+	reverse lookup of RPO number from basic block index.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h (uninit_analysis::operator()):
+	Remove.
+	* gimple-predicate-analysis.cc
+	(uninit_analysis::collect_phi_def_edges): Use phi_arg_set,
+	simplify a bit.
+	* tree-ssa-uninit.cc (defined_args): New global.
+	(compute_uninit_opnds_pos): Mask with the recorded set
+	of guarded maybe-uninitialized uses.
+	(uninit_undef_val_t::operator()): Remove.
+	(find_uninit_use): Process all PHI uses, recording the
+	guarded ones and marking the PHI result as uninitialized
+	consistently.
+	(warn_uninitialized_phi): Adjust.
+	(execute_late_warn_uninitialized): Get rid of the PHI worklist
+	and instead walk the function in RPO order.
+	* spellcheck.h (best_match::m_best_candidate_len): Initialize.
+
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106744
+	* tree-ssa-phiopt.cc (minmax_replacement): Correct arguments.
+
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	* expmed.cc (store_bit_field_1): Initialize regnum to 0.
+
 2022-08-29  David Faust  <david.faust@oracle.com>
 
 	PR target/106745

@@ -1,3 +1,82 @@
+2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-2.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-3.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-4.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-5.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-8.c: Add dg-warning.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_var_shift):
+	Return true for aarch64.
+	* gcc.dg/vect/bb-slp-layout-1.c: New test.
+	* gcc.dg/vect/bb-slp-layout-2.c: New test.
+	* gcc.dg/vect/bb-slp-layout-3.c: New test.
+	* gcc.dg/vect/bb-slp-layout-4.c: New test.
+	* gcc.dg/vect/bb-slp-layout-5.c: New test.
+	* gcc.dg/vect/bb-slp-layout-6.c: New test.
+	* gcc.dg/vect/bb-slp-layout-7.c: New test.
+	* gcc.dg/vect/bb-slp-layout-8.c: New test.
+	* gcc.dg/vect/bb-slp-layout-9.c: New test.
+	* gcc.dg/vect/bb-slp-layout-10.c: New test.
+	* gcc.dg/vect/bb-slp-layout-11.c: New test.
+	* gcc.dg/vect/bb-slp-layout-13.c: New test.
+	* gcc.dg/vect/bb-slp-layout-14.c: New test.
+	* gcc.dg/vect/bb-slp-layout-15.c: New test.
+	* gcc.dg/vect/bb-slp-layout-16.c: New test.
+	* gcc.dg/vect/bb-slp-layout-17.c: New test.
+	* gcc.dg/vect/slp-11b.c: XFAIL SLP test for load-lanes targets.
+	* gcc.dg/vect/bb-slp-layout-12.c: New file.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/slp_15.c: New test.
+	* g++.target/aarch64/sve/pr96974.C: Remove scan test.
+
+2022-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106759
+	* g++.dg/ext/has-builtin-1.C: New test.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67196
+	* gcc.dg/uninit-pred-7_a.c: Un-XFAIL.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/recip-3.c: Avoid premature optimization so test
+	has a chance to succeed.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63660
+	* gcc.dg/uninit-pr63660.c: New testcase.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/uninit-pred-5.C: New testcase.
+
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106744
+	* gcc.dg/tree-ssa/minmax-10.c: Make runtime test.
+	* gcc.dg/tree-ssa/minmax-11.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-12.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-13.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-14.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-15.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-16.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-3.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-4.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-5.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-6.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-7.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-8.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-9.c: Likewise.
+
 2022-08-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106712

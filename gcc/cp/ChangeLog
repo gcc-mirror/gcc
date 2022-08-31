@@ -1,3 +1,19 @@
+2022-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* Make-lang.in: Add rule to rebuild std-name-hint.h from
+	std-name-hint.gperf.
+	* name-lookup.cc (get_std_name_hint): Remove hints array.
+	Use gperf-generated class std_name_hint_lookup.
+	Include "std-name-hint.h".
+	* std-name-hint.gperf: New file.
+	* std-name-hint.h: New file.  Generated from the .gperf file.
+
+2022-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106759
+	* cp-objcp-common.cc (names_builtin_p): Handle RID_IS_NOTHROW_ASSIGNABLE
+	and RID_IS_NOTHROW_CONSTRUCTIBLE.
+
 2022-08-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106712

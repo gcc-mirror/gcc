@@ -1,3 +1,12 @@
+2022-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* gcc_update (files_and_dependencies): Add rule for
+	gcc/cp/std-name-hint.h.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove the port.
+
 2022-08-27  Xi Ruoyao  <xry111@xry111.site>
 
 	* gen_autofdo_event.py: Port to Python 3, and use grep -E
