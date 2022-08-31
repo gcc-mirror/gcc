@@ -2510,6 +2510,12 @@ then
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
 fi
 
+
+if test x$enable_fixincludes = xno;
+then
+    STMP_FIXINC=''
+fi
+
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
 extra_headers_list=
