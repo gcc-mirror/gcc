@@ -2121,8 +2121,8 @@ namespace views::__adaptor
       take_view() requires default_initializable<_Vp> = default;
 
       constexpr
-      take_view(_Vp base, range_difference_t<_Vp> __count)
-	: _M_base(std::move(base)), _M_count(std::move(__count))
+      take_view(_Vp __base, range_difference_t<_Vp> __count)
+	: _M_base(std::move(__base)), _M_count(std::move(__count))
       { }
 
       constexpr _Vp
@@ -2355,8 +2355,8 @@ namespace views::__adaptor
 	= default;
 
       constexpr
-      take_while_view(_Vp base, _Pred __pred)
-	: _M_base(std::move(base)), _M_pred(std::move(__pred))
+      take_while_view(_Vp __base, _Pred __pred)
+	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
 
       constexpr _Vp
@@ -3982,8 +3982,8 @@ namespace views::__adaptor
       elements_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
-      elements_view(_Vp base)
-	: _M_base(std::move(base))
+      elements_view(_Vp __base)
+	: _M_base(std::move(__base))
       { }
 
       constexpr _Vp
@@ -4753,9 +4753,8 @@ namespace views::__adaptor
     {
       template<typename... _Ts>
 	requires (sizeof...(_Ts) == 0 || __detail::__can_zip_view<_Ts...>)
-	[[nodiscard]]
 	constexpr auto
-	operator()(_Ts&&... __ts) const
+	operator() [[nodiscard]] (_Ts&&... __ts) const
 	{
 	  if constexpr (sizeof...(_Ts) == 0)
 	    return views::empty<tuple<>>;
@@ -5036,22 +5035,22 @@ namespace views::__adaptor
       : _M_inner(std::move(__i._M_inner))
     { }
 
-    template<bool OtherConst>
-      requires sentinel_for<__zentinel<_Const>, __ziperator<OtherConst>>
+    template<bool _OtherConst>
+      requires sentinel_for<__zentinel<_Const>, __ziperator<_OtherConst>>
     friend constexpr bool
-    operator==(const _Iterator<OtherConst>& __x, const _Sentinel& __y)
+    operator==(const _Iterator<_OtherConst>& __x, const _Sentinel& __y)
     { return __x._M_inner == __y._M_inner; }
 
-    template<bool OtherConst>
-      requires sized_sentinel_for<__zentinel<_Const>, __ziperator<OtherConst>>
-    friend constexpr range_difference_t<__detail::__maybe_const_t<OtherConst, _InnerView>>
-    operator-(const _Iterator<OtherConst>& __x, const _Sentinel& __y)
+    template<bool _OtherConst>
+      requires sized_sentinel_for<__zentinel<_Const>, __ziperator<_OtherConst>>
+    friend constexpr range_difference_t<__detail::__maybe_const_t<_OtherConst, _InnerView>>
+    operator-(const _Iterator<_OtherConst>& __x, const _Sentinel& __y)
     { return __x._M_inner - __y._M_inner; }
 
-    template<bool OtherConst>
-      requires sized_sentinel_for<__zentinel<_Const>, __ziperator<OtherConst>>
-    friend constexpr range_difference_t<__detail::__maybe_const_t<OtherConst, _InnerView>>
-    operator-(const _Sentinel& __x, const _Iterator<OtherConst>& __y)
+    template<bool _OtherConst>
+      requires sized_sentinel_for<__zentinel<_Const>, __ziperator<_OtherConst>>
+    friend constexpr range_difference_t<__detail::__maybe_const_t<_OtherConst, _InnerView>>
+    operator-(const _Sentinel& __x, const _Iterator<_OtherConst>& __y)
     { return __x._M_inner - __y._M_inner; }
   };
 
@@ -5068,9 +5067,8 @@ namespace views::__adaptor
     {
       template<typename _Fp, typename... _Ts>
 	requires (sizeof...(_Ts) == 0) || __detail::__can_zip_transform_view<_Fp, _Ts...>
-	[[nodiscard]]
 	constexpr auto
-	operator()(_Fp&& __f, _Ts&&... __ts) const
+	operator() [[nodiscard]] (_Fp&& __f, _Ts&&... __ts) const
 	{
 	  if constexpr (sizeof...(_Ts) == 0)
 	    return views::empty<decay_t<invoke_result_t<_Fp>>>;
