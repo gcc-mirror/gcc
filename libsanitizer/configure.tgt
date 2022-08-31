@@ -72,6 +72,8 @@ case "${target}" in
 	;;
   riscv64-*-linux*)
 	;;
+  loongarch64-*-linux*)
+	;;
   *)
 	UNSUPPORTED=1
 	;;
