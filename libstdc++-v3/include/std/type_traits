@@ -2203,34 +2203,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Decay trait for arrays and functions, used for perfect forwarding
   // in make_pair, make_tuple, etc.
-  template<typename _Up,
-	   bool _IsArray = is_array<_Up>::value,
-	   bool _IsFunction = is_function<_Up>::value>
-    struct __decay_selector;
-
-  // NB: DR 705.
   template<typename _Up>
-    struct __decay_selector<_Up, false, false>
-    { typedef __remove_cv_t<_Up> __type; };
+    struct __decay_selector
+    : __conditional_t<is_const<const _Up>::value, // false for functions
+		      remove_cv<_Up>,		  // N.B. DR 705.
+		      add_pointer<_Up>>		  // function decays to pointer
+    { };
 
-  template<typename _Up>
-    struct __decay_selector<_Up, true, false>
-    { typedef typename remove_extent<_Up>::type* __type; };
+  template<typename _Up, size_t _Nm>
+    struct __decay_selector<_Up[_Nm]>
+    { using type = _Up*; };
 
   template<typename _Up>
-    struct __decay_selector<_Up, false, true>
-    { typedef typename add_pointer<_Up>::type __type; };
+    struct __decay_selector<_Up[]>
+    { using type = _Up*; };
+
   /// @endcond
 
   /// decay
   template<typename _Tp>
-    class decay
-    {
-      typedef typename remove_reference<_Tp>::type __remove_type;
+    struct decay
+    { using type = typename __decay_selector<_Tp>::type; };
 
-    public:
-      typedef typename __decay_selector<__remove_type>::__type type;
-    };
+  template<typename _Tp>
+    struct decay<_Tp&>
+    { using type = typename __decay_selector<_Tp>::type; };
+
+  template<typename _Tp>
+    struct decay<_Tp&&>
+    { using type = typename __decay_selector<_Tp>::type; };
 
   /// @cond undocumented
 
