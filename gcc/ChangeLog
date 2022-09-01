@@ -1,3 +1,96 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config.build: Remove deprecated ports.
+	* config.gcc: Likewise.
+	* config.host: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* config/pa/pa-hpux10.h: Removed.
+	* config/pa/pa-hpux10.opt: Removed.
+	* config/pa/t-dce-thr: Removed.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Always install limits.h and syslimits.h to
+	include folder.
+	* configure.ac: Assign STMP_FIXINC blank if
+	--disable-fixincludes is used.
+	* configure: Regenerate.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Assert the guard_bb isn't empty and has more than one successor.
+	Drop appropriate parts of the predicate when an edge fails to
+	register a predicate.
+	(predicate::dump): Dump empty predicate as TRUE.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90994
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Ignore exceptional control flow and skip the edge for the purpose of
+	predicate generation also for non-calls.
+
+2022-08-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (frange_storage_slot::set_frange): Save
+	endpoints.
+	(frange_storage_slot::get_frange): Restore endpoints.
+	* value-range-storage.h (class frange_storage_slot): Add endpoint
+	fields.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/106789
+	* range-op-float.cc (default_frelop_fold_range): Remove the
+	  function.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* value-range.h: Add more override keywords.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* value-range.h: Add override.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65244
+	* gimple-predicate-analysis.h (predicate::init_from_control_deps):
+	Add argument to specify whether the predicate is for the USE.
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Also include predicates effective fallthru control edges when
+	the predicate is for the USE.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/73550
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Sanitize debug dumping.  Handle case labels with a CASE_HIGH.
+	(predicate::dump): Adjust for better readability.
+
+2022-08-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-simd-clone.cc (simd_clone_adjust_return_type,
+	simd_clone_adjust_argument_types): Use known_eq (veclen, 0U)
+	instead of known_eq (veclen, 0) to avoid -Wsign-compare warnings.
+
+2022-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_optimize_slp_pass::dump): Remove bogus
+	argument.
+
+2022-08-31  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Simply
+	initialize const_vf to 0.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config.gcc: Remove cr16.
+
 2022-08-30  Martin Jambor  <mjambor@suse.cz>
 
 	* vec.h (array_slice): Add constructors for non-const reference to

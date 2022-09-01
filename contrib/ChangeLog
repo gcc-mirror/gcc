@@ -1,3 +1,7 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove deprecated ports.
+
 2022-08-30  Ulrich Drepper  <drepper@gmail.com>
 
 	* gcc_update (files_and_dependencies): Add rule for

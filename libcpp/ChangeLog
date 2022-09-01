@@ -1,3 +1,9 @@
+2022-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/106778
+	* makeuname2c.cc (write_nodes): Reverse order of && operands in
+	assert.
+
 2022-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106647

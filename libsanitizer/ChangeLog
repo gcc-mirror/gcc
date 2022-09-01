@@ -1,3 +1,7 @@
+2022-08-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.tgt: Allow loongarch64-*-linux*.
+
 2022-08-30  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Update.

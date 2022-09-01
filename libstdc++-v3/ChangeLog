@@ -1,3 +1,140 @@
+2022-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__advance_fn::operator()): Add
+	parentheses in assert condition to avoid -Wparentheses warning.
+	* include/std/ranges: (take_view::take_view): Uglify 'base'.
+	(take_while_view::take_while_view): Likewise.
+	(elements_view::elements_view): Likewise.
+	(views::_Zip::operator()): Adjust position of [[nodiscard]] for
+	compatibility with -fconcepts-ts.
+	(zip_transform_view::_Sentinel): Uglify 'OtherConst'.
+	(views::_ZipTransform::operator()): Adjust position of
+	[[nodiscard]] for compatibilty with -fconcepts-ts.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* crossconfig.m4: Remove deprecated ports.
+
+2022-08-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h: Use nullptr rather than '0' in checks in post-C++11.
+	* include/debug/string: Likewise.
+	* testsuite/21_strings/basic_string/operations/ends_with/char.cc: Use __gnu_test::string.
+	* testsuite/21_strings/basic_string/operations/ends_with/nonnull.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/ends_with/wchar_t.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/wchar_t.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/nonnull.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/char.cc: Likewise..
+
+2022-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (adjacent_view): Define.
+	(enable_borrowed_range<adjacent_view>): Define.
+	(__detail::__repeated_tuple): Define.
+	(adjacent_view::_Iterator): Define.
+	(adjacent_view::_Sentinel): Define.
+	(views::__detail::__can_adjacent_view): Define.
+	(views::_Adjacent): Define.
+	(views::adjacent): Define.
+	(views::pairwise): Define.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc: New test.
+
+2022-08-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_state): Declare.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_create_state): Declare.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_full_callback): Define.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_error_callback): Define.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_full_func): Define.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_full): Declare.
+	[_GLIBCXX_HAVE_STACKTRACE](_Error_formatter::_M_backtrace_state): New.
+	[_GLIBCXX_HAVE_STACKTRACE](_Error_formatter::_M_backtrace_full): New.
+	* src/c++11/debug.cc [_GLIBCXX_HAVE_STACKTRACE](print_backtrace): New.
+	(_Error_formatter::_M_error()): Adapt.
+	* src/libbacktrace/Makefile.am: Add backtrace.c.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* src/libbacktrace/backtrace-rename.h (backtrace_full): New.
+	* testsuite/23_containers/vector/debug/assign4_backtrace_neg.cc: New test.
+	* doc/xml/manual/debug_mode.xml: Document _GLIBCXX_DEBUG_BACKTRACE.
+	* doc/xml/manual/using.xml: Likewise.
+
+2022-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/logical_traits/requirements/short_circuit.cc: New test.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h (reference_wrapper::operator()): Add
+	noexcept-specifier and use __invoke_result instead of result_of.
+	* testsuite/20_util/reference_wrapper/invoke-noexcept.cc: New test.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: Improve
+	comments.
+	* testsuite/20_util/reference_wrapper/invoke-3.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/invoke.cc: Likewise.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string): Add nodiscard
+	attribute to all relevant functions.
+	* include/std/string_view (basic_string_view): Likewise.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Cast unused
+	results to void.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/self_move.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/char/21674.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/lwg2758.cc: Likewise.
+	* testsuite/21_strings/basic_string/lwg2946.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/contains/nonnull.cc:
+	Add -Wno-unused-result to options.
+	* testsuite/21_strings/basic_string/operations/ends_with/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operators/char/1.cc: Cast
+	unused results to void.
+	* testsuite/21_strings/basic_string/operators/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/capacity/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/contains/nonnull.cc:
+	Likewise.
+	Add -Wno-unused-result to options.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/nonnull.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/1.cc: Cast
+	unused results to void.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc:
+	Likewise.
+
 2022-08-27  Patrick Palka  <ppalka@redhat.com>
 
 	* testsuite/20_util/logical_traits/requirements/base_classes.cc: New test.

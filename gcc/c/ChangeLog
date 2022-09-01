@@ -1,3 +1,9 @@
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_label): Pass attributes to do_case.
+	* c-typeck.cc (do_case): Add argument ATTRS.  Pass it to
+	c_add_case_label.
+
 2022-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.cc (convert_arguments): Handle BUILT_IN_ISSIGNALING.

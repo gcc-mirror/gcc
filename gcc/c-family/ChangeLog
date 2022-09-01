@@ -1,3 +1,13 @@
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.cc (handle_deprecated_attribute): Check and pedwarn
+	for LABEL_DECL.
+	* c-common.cc (c_add_case_label): Add argument ATTRS.  Call
+	decl_attributes.
+	* c-common.h (do_case, c_add_case_label): Update declarations.
+	* c-lex.cc (c_common_has_attribute): For C, produce a result of
+	201910 for fallthrough and 202106 for maybe_unused.
+
 2022-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81159

@@ -1,3 +1,46 @@
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-2.c, gcc.dg/c2x-attr-fallthrough-2.c,
+	gcc.dg/c2x-attr-maybe_unused-1.c, gcc.dg/c2x-attr-nodiscard-2.c:
+	Add tests of attributes on labels.
+	* gcc.dg/c2x-has-c-attribute-2.c: Update expected results for
+	maybe_unused and fallthrough.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp0x/lambda/lambda-conv.C: Remove useless test.
+	* gcc.c-torture/execute/ieee/hugeval.x: Likewise.
+	* gcc.dg/torture/pr47917.c: Likewise.
+	* lib/target-supports.exp: Likewise.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/106795
+	* g++.dg/tree-ssa/empty-loop.C: Use -Wno-unused-result.
+
+2022-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: Update
+	tests for empty initializers.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90994
+	* g++.dg/torture/pr90994.C: New testcase.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65244
+	* gcc.dg/uninit-pr65244-2.c: New testcase.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65244
+	* gcc.dg/uninit-pr65244-1.c: New testcase.
+
 2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-warning.
