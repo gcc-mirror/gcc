@@ -1842,6 +1842,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 					     TREE_TYPE (TREE_TYPE (vec))));
 	  SLP_TREE_VECTYPE (vnode) = TREE_TYPE (vec);
 	}
+      auto nunits = TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (vnode));
+      unsigned HOST_WIDE_INT const_nunits;
+      if (nunits.is_constant (&const_nunits))
+	SLP_TREE_LANES (vnode) = const_nunits;
       SLP_TREE_VEC_DEFS (vnode).safe_push (vec);
       /* We are always building a permutation node even if it is an identity
 	 permute to shield the rest of the vectorizer from the odd node
@@ -4331,8 +4335,6 @@ vect_optimize_slp_pass::is_compatible_layout (slp_tree node,
   if (layout_i == 0)
     return true;
 
-  /* SLP_TREE_LANES is zero for existing vectors, but those only support
-     layout 0 anyway.  */
   if (SLP_TREE_LANES (node) != m_perms[layout_i].length ())
     return false;
 
@@ -4527,38 +4529,57 @@ vect_optimize_slp_pass::start_choosing_layouts ()
   m_perms.safe_push (vNULL);
 
   /* Create layouts from existing permutations.  */
-  for (unsigned int node_i : m_leafs)
+  auto_load_permutation_t tmp_perm;
+  for (unsigned int node_i : m_partitioned_nodes)
     {
-      auto &vertex = m_vertices[node_i];
-      if (vertex.partition < 0)
-	continue;
-
       /* Leafs also double as entries to the reverse graph.  Allow the
 	 layout of those to be changed.  */
+      auto &vertex = m_vertices[node_i];
       auto &partition = m_partitions[vertex.partition];
       if (!m_slpg->vertices[node_i].succ)
 	partition.layout = 0;
 
-      /* Loads are the only thing generating permutes.  */
+      /* Loads and VEC_PERM_EXPRs are the only things generating permutes.  */
       slp_tree node = vertex.node;
-      if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
+      stmt_vec_info dr_stmt = SLP_TREE_REPRESENTATIVE (node);
+      slp_tree child;
+      unsigned HOST_WIDE_INT imin, imax = 0;
+      bool any_permute = false;
+      tmp_perm.truncate (0);
+      if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+	{
+	  /* If splitting out a SLP_TREE_LANE_PERMUTATION can make the node
+	     unpermuted, record a layout that reverses this permutation.  */
+	  gcc_assert (partition.layout == 0);
+	  if (!STMT_VINFO_GROUPED_ACCESS (dr_stmt))
+	    continue;
+	  dr_stmt = DR_GROUP_FIRST_ELEMENT (dr_stmt);
+	  imin = DR_GROUP_SIZE (dr_stmt) + 1;
+	  tmp_perm.safe_splice (SLP_TREE_LOAD_PERMUTATION (node));
+	}
+      else if (SLP_TREE_CODE (node) == VEC_PERM_EXPR
+	       && SLP_TREE_CHILDREN (node).length () == 1
+	       && (child = SLP_TREE_CHILDREN (node)[0])
+	       && (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (child))
+		   .is_constant (&imin)))
+	{
+	  /* If the child has the same vector size as this node,
+	     reversing the permutation can make the permutation a no-op.
+	     In other cases it can change a true permutation into a
+	     full-vector extract.  */
+	  tmp_perm.reserve (SLP_TREE_LANES (node));
+	  for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
+	    tmp_perm.quick_push (SLP_TREE_LANE_PERMUTATION (node)[j].second);
+	}
+      else
 	continue;
 
-      /* If splitting out a SLP_TREE_LANE_PERMUTATION can make the node
-	 unpermuted, record a layout that reverses this permutation.  */
-      gcc_assert (partition.layout == 0);
-      stmt_vec_info dr_stmt = SLP_TREE_REPRESENTATIVE (node);
-      if (!STMT_VINFO_GROUPED_ACCESS (dr_stmt))
-	continue;
-      dr_stmt = DR_GROUP_FIRST_ELEMENT (dr_stmt);
-      unsigned imin = DR_GROUP_SIZE (dr_stmt) + 1, imax = 0;
-      bool any_permute = false;
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
 	{
-	  unsigned idx = SLP_TREE_LOAD_PERMUTATION (node)[j];
+	  unsigned idx = tmp_perm[j];
 	  imin = MIN (imin, idx);
 	  imax = MAX (imax, idx);
-	  if (idx - SLP_TREE_LOAD_PERMUTATION (node)[0] != j)
+	  if (idx - tmp_perm[0] != j)
 	    any_permute = true;
 	}
       /* If the span doesn't match we'd disrupt VF computation, avoid
@@ -4566,7 +4587,7 @@ vect_optimize_slp_pass::start_choosing_layouts ()
       if (imax - imin + 1 != SLP_TREE_LANES (node))
 	continue;
       /* If there's no permute no need to split one out.  In this case
-	 we can consider turning the load into a permuted load, if that
+	 we can consider turning a load into a permuted load, if that
 	 turns out to be cheaper than alternatives.  */
       if (!any_permute)
 	{
@@ -4581,7 +4602,7 @@ vect_optimize_slp_pass::start_choosing_layouts ()
       auto_sbitmap load_index (SLP_TREE_LANES (node));
       bitmap_clear (load_index);
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
-	bitmap_set_bit (load_index, SLP_TREE_LOAD_PERMUTATION (node)[j] - imin);
+	bitmap_set_bit (load_index, tmp_perm[j] - imin);
       unsigned j;
       for (j = 0; j < SLP_TREE_LANES (node); ++j)
 	if (!bitmap_bit_p (load_index, j))
@@ -4592,7 +4613,7 @@ vect_optimize_slp_pass::start_choosing_layouts ()
       vec<unsigned> perm = vNULL;
       perm.safe_grow (SLP_TREE_LANES (node), true);
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
-	perm[j] = SLP_TREE_LOAD_PERMUTATION (node)[j] - imin;
+	perm[j] = tmp_perm[j] - imin;
 
       if (int (m_perms.length ()) >= param_vect_max_layout_candidates)
 	{
