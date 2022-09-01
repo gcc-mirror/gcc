@@ -5555,7 +5555,7 @@ namespace views::__adaptor
       using __detail::__unarize;
       using _Res = invoke_result_t<__unarize<__maybe_const_t<_Const, _Fp>&, _Nm>,
 				   range_reference_t<_Base>>;
-      using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+      using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
       if constexpr (!is_lvalue_reference_v<_Res>)
 	return input_iterator_tag{};
       else if constexpr (derived_from<_Cat, random_access_iterator_tag>)
