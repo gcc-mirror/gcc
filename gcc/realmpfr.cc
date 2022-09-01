@@ -68,7 +68,7 @@ real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, const real_format *format,
   /* Take care of Infinity and NaN.  */
   if (mpfr_inf_p (m))
     {
-      real_inf (r);
+      *r = dconstinf;
       if (mpfr_sgn (m) < 0)
 	*r = real_value_negate (r);
       return;

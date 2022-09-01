@@ -8696,8 +8696,6 @@ fold_builtin_strlen (location_t loc, tree expr, tree type, tree arg)
 static tree
 fold_builtin_inf (location_t loc, tree type, int warn)
 {
-  REAL_VALUE_TYPE real;
-
   /* __builtin_inff is intended to be usable to define INFINITY on all
      targets.  If an infinity is not available, INFINITY expands "to a
      positive constant of type float that overflows at translation
@@ -8708,8 +8706,7 @@ fold_builtin_inf (location_t loc, tree type, int warn)
   if (!MODE_HAS_INFINITIES (TYPE_MODE (type)) && warn)
     pedwarn (loc, 0, "target format does not support infinity");
 
-  real_inf (&real);
-  return build_real (type, real);
+  return build_real (type, dconstinf);
 }
 
 /* Fold function call to builtin sincos, sincosf, or sincosl.  Return
@@ -9336,9 +9333,8 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 
   if (tree_expr_maybe_infinite_p (arg))
     {
-      real_inf (&r);
       tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, arg,
-			 build_real (type, r));
+			 build_real (type, dconstinf));
       res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
 			 fp_infinite, res);
     }

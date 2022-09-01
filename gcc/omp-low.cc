@@ -4524,12 +4524,9 @@ omp_reduction_init_op (location_t loc, enum tree_code op, tree type)
     case MAX_EXPR:
       if (SCALAR_FLOAT_TYPE_P (type))
 	{
-	  REAL_VALUE_TYPE max, min;
+	  REAL_VALUE_TYPE min;
 	  if (HONOR_INFINITIES (type))
-	    {
-	      real_inf (&max);
-	      real_arithmetic (&min, NEGATE_EXPR, &max, NULL);
-	    }
+	    real_arithmetic (&min, NEGATE_EXPR, &dconstinf, NULL);
 	  else
 	    real_maxval (&min, 1, TYPE_MODE (type));
 	  return build_real (type, min);
@@ -4551,7 +4548,7 @@ omp_reduction_init_op (location_t loc, enum tree_code op, tree type)
 	{
 	  REAL_VALUE_TYPE max;
 	  if (HONOR_INFINITIES (type))
-	    real_inf (&max);
+	    max = dconstinf;
 	  else
 	    real_maxval (&max, 0, TYPE_MODE (type));
 	  return build_real (type, max);
