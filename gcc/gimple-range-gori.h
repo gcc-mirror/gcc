@@ -170,17 +170,18 @@ private:
 			      tree name, class fur_source &src);
   bool compute_operand_range_switch (vrange &r, gswitch *s, const vrange &lhs,
 				     tree name, fur_source &src);
-  bool compute_operand1_range (vrange &r, gimple *stmt, const vrange &lhs,
-			       tree name, fur_source &src);
-  bool compute_operand2_range (vrange &r, gimple *stmt, const vrange &lhs,
-			       tree name, fur_source &src);
-  bool compute_operand1_and_operand2_range (vrange &r, gimple *stmt,
+  bool compute_operand1_range (vrange &r, gimple_range_op_handler &handler,
+			       const vrange &lhs, tree name, fur_source &src);
+  bool compute_operand2_range (vrange &r, gimple_range_op_handler &handler,
+			       const vrange &lhs, tree name, fur_source &src);
+  bool compute_operand1_and_operand2_range (vrange &r,
+					    gimple_range_op_handler &handler,
 					    const vrange &lhs, tree name,
 					    fur_source &src);
   void compute_logical_operands (vrange &true_range, vrange &false_range,
-				 gimple *stmt, const irange &lhs,
-				 tree name, fur_source &src, tree op,
-				 bool op_in_chain);
+				 gimple_range_op_handler &handler,
+				 const irange &lhs, tree name, fur_source &src,
+				 tree op, bool op_in_chain);
   bool logical_combine (vrange &r, enum tree_code code, const irange &lhs,
 			const vrange &op1_true, const vrange &op1_false,
 			const vrange &op2_true, const vrange &op2_false);
@@ -191,16 +192,6 @@ private:
   range_tracer tracer;
   int m_not_executable_flag;
 };
-
-// These routines provide a GIMPLE interface to the range-ops code.
-extern bool gimple_range_calc_op1 (vrange &r, const gimple *s,
-				   const vrange &lhs_range);
-extern bool gimple_range_calc_op1 (vrange &r, const gimple *s,
-				   const vrange &lhs_range,
-				   const vrange &op2_range);
-extern bool gimple_range_calc_op2 (vrange &r, const gimple *s,
-				   const vrange &lhs_range,
-				   const vrange &op1_range);
 
 // For each name that is an import into BB's exports..
 #define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\

@@ -4182,41 +4182,18 @@ range_op_handler::set_op_handler (tree_code code, tree type)
     }
 }
 
+range_op_handler::range_op_handler ()
+{
+  m_int = NULL;
+  m_float = NULL;
+  m_valid = false;
+}
+
 range_op_handler::range_op_handler (tree_code code, tree type)
 {
   set_op_handler (code, type);
 }
 
-range_op_handler::range_op_handler (const gimple *s)
-{
-  tree_code code = NOP_EXPR;
-  tree type = NULL_TREE;
-
-  if (const gassign *ass = dyn_cast<const gassign *> (s))
-    {
-      code = gimple_assign_rhs_code (ass);
-      // The LHS of a comparison is always an int, so we must look at
-      // the operands.
-      if (TREE_CODE_CLASS (code) == tcc_comparison)
-	type = TREE_TYPE (gimple_assign_rhs1 (ass));
-      else
-	type = TREE_TYPE (gimple_assign_lhs (ass));
-    }
-  else if (const gcond *cond = dyn_cast<const gcond *> (s))
-    {
-      code = gimple_cond_code (cond);
-      type = TREE_TYPE (gimple_cond_lhs (cond));
-    }
-
-  if (!type)
-    {
-      m_int = NULL;
-      m_float = NULL;
-      m_valid = false;
-    }
-  else
-    set_op_handler (code, type);
-}
 
 bool
 range_op_handler::fold_range (vrange &r, tree type,
