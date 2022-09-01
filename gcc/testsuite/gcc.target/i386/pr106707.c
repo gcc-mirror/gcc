@@ -10,9 +10,9 @@ unsigned x, y;
 V v;
 
 void
-foo (long a)
+foo (long long a)
 {
-  long l = a != x;
+  long long l = a != x;
   int i = __builtin_add_overflow_p (y * ii, 0, 0);
   V u = ii < x | v, w = x <= u < i & y <= x / ii;
   v = __builtin_shufflevector (v, w, 1, 2) + (V) l;
