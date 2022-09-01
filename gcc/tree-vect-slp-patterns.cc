@@ -96,8 +96,8 @@ vect_pattern_validate_optab (internal_fn ifn, slp_tree node)
         {
 	  if (!vectype)
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Target does not support vector type for %T\n",
-			     SLP_TREE_DEF_TYPE (node));
+			     "Target does not support vector type for %G\n",
+			     STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (node)));
 	  else
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Target does not support %s for vector type "

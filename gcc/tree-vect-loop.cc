@@ -4287,7 +4287,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "can't unroll as unrolled vectorization factor larger"
-			 " than maximum vectorization factor: %d\n",
+			 " than maximum vectorization factor: "
+			 HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 			 LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo));
       *suggested_unroll_factor = 1;
     }
