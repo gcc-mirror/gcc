@@ -249,7 +249,8 @@ static void Integer (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopse
 static void Real (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   FileUnit := DefinitionModule  | ImplementationOrProgramModule 
+   FileUnit := DefinitionModule  | 
+               ImplementationOrProgramModule 
 
    first  symbols:implementationtok, moduletok, definitiontok
    
@@ -265,8 +266,8 @@ static void FileUnit (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stops
                     % enterScope (curmodule)  %
                     
                     % resetConstExpPos (curmodule)  %
-                    [ Priority  ] ';' { Import  } Block Ident 
-                    
+                    [ Priority  ] ';' { Import  } Block 
+                    Ident 
                     % checkEndName (curmodule, curident, 'program module')  %
                     
                     % leaveScope  %
@@ -280,7 +281,8 @@ static void FileUnit (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stops
 static void ProgramModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ImplementationModule := 'IMPLEMENTATION' 'MODULE' Ident 
+   ImplementationModule := 'IMPLEMENTATION' 'MODULE' 
+                           Ident 
                            % curmodule := lookupImp (curident)  %
                            
                            % enterScope (lookupDef (curident))  %
@@ -288,8 +290,8 @@ static void ProgramModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
                            % enterScope (curmodule)  %
                            
                            % resetConstExpPos (curmodule)  %
-                           [ Priority  ] ';' { Import  } Block 
-                           Ident 
+                           [ Priority  ] ';' { Import  } 
+                           Block Ident 
                            % checkEndName (curmodule, curident, 'implementation module')  %
                            
                            % leaveScope ; leaveScope  %
@@ -382,8 +384,8 @@ static void ConstantDeclaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
 static void ConstExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   Relation := '='  | '#'  | '<>'  | '<'  | '<='  | '>'  | 
-               '>='  | 'IN' 
+   Relation := '='  | '#'  | '<>'  | '<'  | '<='  | 
+               '>'  | '>='  | 'IN' 
 
    first  symbols:intok, greaterequaltok, greatertok, lessequaltok, lesstok, lessgreatertok, hashtok, equaltok
    
@@ -459,8 +461,8 @@ static void AddOperator (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 static void ConstTerm (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 'REM'  | 
-                  'AND'  | '&' 
+   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 
+                  'REM'  | 'AND'  | '&' 
 
    first  symbols:ambersandtok, andtok, remtok, modtok, divtok, dividetok, timestok
    
@@ -484,9 +486,11 @@ static void MulOperator (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 static void NotConstFactor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ConstFactor := Number  | ConstString  | ConstSetOrQualidentOrFunction  | 
+   ConstFactor := Number  | ConstString  | 
+                  ConstSetOrQualidentOrFunction  | 
                   '(' ConstExpression ')'  | 
-                  NotConstFactor  | ConstAttribute 
+                  NotConstFactor  | 
+                  ConstAttribute 
 
    first  symbols:identtok, attributetok, lcbratok, stringtok, nottok, lparatok, integertok, realtok
    
@@ -517,6 +521,7 @@ static void ConstString (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
                             
                             % h := NIL  %
                             [ '..' ConstExpression 
+                              
                               % h := pop ()  %
                               
                               % ErrorArray ('implementation restriction range is not allowed')  %
@@ -533,6 +538,7 @@ static void ConstComponentElement (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
 
 /*
    ConstComponentValue := ConstComponentElement [ 'BY' 
+                                                  
                                                   % ErrorArray ('implementation restriction BY not allowed')  %
                                                   ConstExpression  ] 
 
@@ -544,7 +550,8 @@ static void ConstComponentElement (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
 static void ConstComponentValue (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ConstArraySetRecordValue := ConstComponentValue { ',' ConstComponentValue  } 
+   ConstArraySetRecordValue := ConstComponentValue 
+                               { ',' ConstComponentValue  } 
 
    first  symbols:identtok, stringtok, lcbratok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
    
@@ -558,7 +565,8 @@ static void ConstArraySetRecordValue (SetOfStop0 stopset0, SetOfStop1 stopset1, 
                        % VAR n: node ;  %
                        
                        % n := push (makeSetValue ())  %
-                       [ ConstArraySetRecordValue  ] '}' 
+                       [ ConstArraySetRecordValue  ] 
+                       '}' 
 
    first  symbols:lcbratok
    
@@ -575,6 +583,7 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
                                     PushQualident 
                                     % assert (d+1 = depth ())  %
                                     [ ConstConstructor 
+                                      
                                       % p := pop ()  %
                                       
                                       % q := pop ()  %
@@ -582,7 +591,8 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
                                       % n := push (putSetValue (p, q))  %
                                       
                                       % assert (d+1 = depth ())  %
-                                       | ConstActualParameters 
+                                       | 
+                                      ConstActualParameters 
                                       
                                       % p := pop ()  %
                                       
@@ -595,6 +605,7 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
                                     
                                     % d := depth ()  %
                                     ConstConstructor 
+                                    
                                     % assert (d+1 = depth ())  %
                                     
 
@@ -648,7 +659,8 @@ static void ConstActualParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
 static void ConstExpList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' '(' '(' ConstAttributeExpression 
+   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' 
+                     '(' '(' ConstAttributeExpression 
                      ')' ')' 
 
    first  symbols:attributetok
@@ -663,7 +675,8 @@ static void ConstAttribute (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
                                % VAR n: node ;  %
                                
                                % n := push (getBuiltinConst (curident))  %
-                                | '<' Qualident ',' Ident '>' 
+                                | '<' Qualident ',' 
+                               Ident '>' 
 
    first  symbols:lesstok, identtok
    
@@ -743,7 +756,8 @@ static void IdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stop
 static void PushIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   SubrangeType := '[' ConstExpression '..' ConstExpression ']' 
+   SubrangeType := '[' ConstExpression '..' ConstExpression 
+                   ']' 
 
    first  symbols:lsbratok
    
@@ -753,7 +767,8 @@ static void PushIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 static void SubrangeType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ArrayType := 'ARRAY' SimpleType { ',' SimpleType  } 'OF' Type 
+   ArrayType := 'ARRAY' SimpleType { ',' SimpleType  } 
+                'OF' Type 
 
    first  symbols:arraytok
    
@@ -763,8 +778,8 @@ static void SubrangeType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 static void ArrayType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   RecordType := 'RECORD' [ DefaultRecordAttributes  ] FieldListSequence 
-                 'END' 
+   RecordType := 'RECORD' [ DefaultRecordAttributes  ] 
+                 FieldListSequence 'END' 
 
    first  symbols:recordtok
    
@@ -814,7 +829,8 @@ static void FieldPragmaExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
 static void PragmaConstExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   AttributeExpression := Ident '(' ConstExpression ')' 
+   AttributeExpression := Ident '(' ConstExpression 
+                          ')' 
 
    first  symbols:identtok
    
@@ -888,7 +904,8 @@ static void CaseTag (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopse
 static void Varient (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   VarientCaseLabelList := VarientCaseLabels { ',' VarientCaseLabels  } 
+   VarientCaseLabelList := VarientCaseLabels { ',' 
+                                               VarientCaseLabels  } 
 
    first  symbols:identtok, attributetok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
    
@@ -939,7 +956,8 @@ static void ProcedureType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 /*
    FormalTypeList := '(' ( ')' FormalReturn  | 
-                           ProcedureParameters ')' FormalReturn  ) 
+                           ProcedureParameters ')' 
+                           FormalReturn  ) 
 
    first  symbols:lparatok
    
@@ -959,7 +977,8 @@ static void FormalTypeList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 static void FormalReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   OptReturnType := '[' Qualident ']'  | Qualident 
+   OptReturnType := '[' Qualident ']'  | 
+                    Qualident 
 
    first  symbols:identtok, lsbratok
    
@@ -969,7 +988,8 @@ static void FormalReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 static void OptReturnType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ProcedureParameters := ProcedureParameter { ',' ProcedureParameter  } 
+   ProcedureParameters := ProcedureParameter { ',' 
+                                               ProcedureParameter  } 
 
    first  symbols:identtok, arraytok, periodperiodperiodtok, vartok
    
@@ -1085,7 +1105,8 @@ static void Expression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 static void SimpleExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   UnaryOrTerm := '+' Term  | '-' Term  | Term 
+   UnaryOrTerm := '+' Term  | '-' Term  | 
+                  Term 
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok, minustok, plustok
    
@@ -1106,7 +1127,8 @@ static void Term (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 
 /*
    Factor := Number  | string  | SetOrDesignatorOrFunction  | 
-             '(' Expression ')'  | 'NOT' ( Factor  | ConstAttribute  ) 
+             '(' Expression ')'  | 
+             'NOT' ( Factor  | ConstAttribute  ) 
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok
    
@@ -1117,6 +1139,7 @@ static void Factor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset
 
 /*
    ComponentElement := Expression [ '..' Expression 
+                                    
                                     % ErrorArray ('implementation restriction range not allowed')  %
                                      ] 
 
@@ -1161,7 +1184,8 @@ static void Constructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 
 /*
    SetOrDesignatorOrFunction := Qualident [ Constructor  | 
-                                            SimpleDes [ ActualParameters  ]  ]  | 
+                                            SimpleDes 
+                                            [ ActualParameters  ]  ]  | 
                                 Constructor 
 
    first  symbols:lcbratok, identtok
@@ -1214,7 +1238,8 @@ static void ReturnStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 /*
    Statement := [ AssignmentOrProcedureCall  | 
                   IfStatement  | CaseStatement  | 
-                  WhileStatement  | RepeatStatement  | 
+                  WhileStatement  | 
+                  RepeatStatement  | 
                   LoopStatement  | ForStatement  | 
                   WithStatement  | AsmStatement  | 
                   ExitStatement  | ReturnStatement  | 
@@ -1262,9 +1287,9 @@ static void AssignmentOrProcedureCall (SetOfStop0 stopset0, SetOfStop1 stopset1,
 static void StatementSequence (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   IfStatement := 'IF' Expression 'THEN' StatementSequence { 
-   'ELSIF' Expression 'THEN' StatementSequence  } [ 'ELSE' StatementSequence  ] 
-                  'END' 
+   IfStatement := 'IF' Expression 'THEN' StatementSequence 
+                  { 'ELSIF' Expression 'THEN' StatementSequence  } 
+                  [ 'ELSE' StatementSequence  ] 'END' 
 
    first  symbols:iftok
    
@@ -1274,7 +1299,8 @@ static void StatementSequence (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 static void IfStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   CaseStatement := 'CASE' Expression 'OF' Case { '|' Case  } 
+   CaseStatement := 'CASE' Expression 'OF' Case { '|' 
+                                                  Case  } 
                     CaseEndStatement 
 
    first  symbols:casetok
@@ -1285,7 +1311,8 @@ static void IfStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 static void CaseStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   CaseEndStatement := 'END'  | 'ELSE' StatementSequence 'END' 
+   CaseEndStatement := 'END'  | 'ELSE' StatementSequence 
+                       'END' 
 
    first  symbols:elsetok, endtok
    
@@ -1336,7 +1363,8 @@ static void CaseLabels (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 static void WhileStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' Expression 
+   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' 
+                      Expression 
 
    first  symbols:repeattok
    
@@ -1346,9 +1374,9 @@ static void WhileStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 static void RepeatStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ForStatement := 'FOR' Ident ':=' Expression 'TO' Expression 
-                   [ 'BY' ConstExpression  ] 'DO' StatementSequence 
-                   'END' 
+   ForStatement := 'FOR' Ident ':=' Expression 'TO' 
+                   Expression [ 'BY' ConstExpression  ] 
+                   'DO' StatementSequence 'END' 
 
    first  symbols:fortok
    
@@ -1430,9 +1458,9 @@ static void DefProcedureIdent (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 static void DefineBuiltinProcedure (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure ( ProcedureIdent 
-                                                            [ 
-   FormalParameters  ] AttributeNoReturn  ) 
+   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure 
+                       ( ProcedureIdent [ FormalParameters  ] 
+                         AttributeNoReturn  ) 
 
    first  symbols:proceduretok
    
@@ -1475,7 +1503,8 @@ static void DefProcedureHeading (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
 static void ProcedureBlock (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   Block := { Declaration  } InitialBlock FinalBlock 'END' 
+   Block := { Declaration  } InitialBlock FinalBlock 
+            'END' 
 
    first  symbols:proceduretok, moduletok, finallytok, begintok, consttok, typetok, vartok, endtok
    
@@ -1572,6 +1601,7 @@ static void Declaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
    DefFormalParameters := '(' 
                           % paramEnter (curproc)  %
                           [ DefMultiFPSection  ] ')' 
+                          
                           % paramLeave (curproc)  %
                           FormalReturn 
 
@@ -1583,7 +1613,8 @@ static void Declaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 static void DefFormalParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   DefMultiFPSection := DefExtendedFP  | FPSection [ ';' DefMultiFPSection  ] 
+   DefMultiFPSection := DefExtendedFP  | 
+                        FPSection [ ';' DefMultiFPSection  ] 
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
    
@@ -1617,7 +1648,8 @@ static void FormalParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
 static void AttributeNoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   MultiFPSection := ExtendedFP  | FPSection [ ';' MultiFPSection  ] 
+   MultiFPSection := ExtendedFP  | FPSection [ ';' 
+                                               MultiFPSection  ] 
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
    
@@ -1627,7 +1659,8 @@ static void AttributeNoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 static void MultiFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   FPSection := NonVarFPSection  | VarFPSection 
+   FPSection := NonVarFPSection  | 
+                VarFPSection 
 
    first  symbols:vartok, identtok
    
@@ -1709,8 +1742,9 @@ static void DefOptArg (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stop
 static void FormalType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   ModuleDeclaration := 'MODULE' Ident [ Priority  ] ';' { Import  } 
-                        [ Export  ] Block Ident 
+   ModuleDeclaration := 'MODULE' Ident [ Priority  ] 
+                        ';' { Import  } [ Export  ] 
+                        Block Ident 
 
    first  symbols:moduletok
    
@@ -1752,7 +1786,8 @@ static void Export (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset
 static void FromIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   FromImport := 'FROM' Ident 'IMPORT' FromIdentList ';' 
+   FromImport := 'FROM' Ident 'IMPORT' FromIdentList 
+                 ';' 
 
    first  symbols:fromtok
    
@@ -1792,7 +1827,8 @@ static void WithoutFromImport (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 static void Import (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' string  ] 
+   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' 
+                                               string  ] 
                        Ident 
                        % curmodule := lookupDef (curident)  %
                        
@@ -1884,7 +1920,8 @@ static void EnumIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 static void Enumeration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   SimpleType := TypeEquiv  | Enumeration  | SubrangeType 
+   SimpleType := TypeEquiv  | Enumeration  | 
+                 SubrangeType 
 
    first  symbols:lsbratok, lparatok, identtok
    
@@ -1905,7 +1942,8 @@ static void SimpleType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 static void Type (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   TypeDeclaration := { Ident ( ';'  | '=' Type Alignment ';'  )  } 
+   TypeDeclaration := { Ident ( ';'  | '=' Type Alignment 
+                                ';'  )  } 
 
    first  symbols:identtok
    
@@ -1979,8 +2017,9 @@ static void DefEnumeration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 static void DefSimpleType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   DefType := DefSimpleType  | ArrayType  | RecordType  | 
-              SetType  | PointerType  | ProcedureType 
+   DefType := DefSimpleType  | ArrayType  | 
+              RecordType  | SetType  | PointerType  | 
+              ProcedureType 
 
    first  symbols:proceduretok, pointertok, settok, packedsettok, oftok, recordtok, arraytok, identtok, lparatok, lsbratok
    
@@ -1990,8 +2029,8 @@ static void DefSimpleType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 static void DefType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   DefTypeDeclaration := { Ident ( ';'  | '=' DefType Alignment 
-                                   ';'  )  } 
+   DefTypeDeclaration := { Ident ( ';'  | '=' DefType 
+                                   Alignment ';'  )  } 
 
    first  symbols:identtok
    
@@ -2024,7 +2063,8 @@ static void DefConstantDeclaration (SetOfStop0 stopset0, SetOfStop1 stopset1, Se
 static void Definition (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands ')' 
+   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands 
+                   ')' 
 
    first  symbols:asmtok
    
@@ -2044,7 +2084,8 @@ static void AsmStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 static void AsmOperands (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ ':' TrashList  ]  ]  ] 
+   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ 
+   ':' TrashList  ]  ]  ] 
 
    first  symbols:colontok
    
@@ -2084,7 +2125,8 @@ static void NamedOperand (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 static void AsmOperandName (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
-   AsmElement := AsmOperandName string '(' Expression ')' 
+   AsmElement := AsmOperandName string '(' Expression 
+                 ')' 
 
    first  symbols:stringtok, lsbratok
    
@@ -3383,7 +3425,8 @@ static void Real (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 
 
 /*
-   FileUnit := DefinitionModule  | ImplementationOrProgramModule 
+   FileUnit := DefinitionModule  | 
+               ImplementationOrProgramModule 
 
    first  symbols:implementationtok, moduletok, definitiontok
    
@@ -3416,8 +3459,8 @@ static void FileUnit (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stops
                     % enterScope (curmodule)  %
                     
                     % resetConstExpPos (curmodule)  %
-                    [ Priority  ] ';' { Import  } Block Ident 
-                    
+                    [ Priority  ] ';' { Import  } Block 
+                    Ident 
                     % checkEndName (curmodule, curident, 'program module')  %
                     
                     % leaveScope  %
@@ -3454,7 +3497,8 @@ static void ProgramModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 
 /*
-   ImplementationModule := 'IMPLEMENTATION' 'MODULE' Ident 
+   ImplementationModule := 'IMPLEMENTATION' 'MODULE' 
+                           Ident 
                            % curmodule := lookupImp (curident)  %
                            
                            % enterScope (lookupDef (curident))  %
@@ -3462,8 +3506,8 @@ static void ProgramModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
                            % enterScope (curmodule)  %
                            
                            % resetConstExpPos (curmodule)  %
-                           [ Priority  ] ';' { Import  } Block 
-                           Ident 
+                           [ Priority  ] ';' { Import  } 
+                           Block Ident 
                            % checkEndName (curmodule, curident, 'implementation module')  %
                            
                            % leaveScope ; leaveScope  %
@@ -3662,8 +3706,8 @@ static void ConstExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 
 
 /*
-   Relation := '='  | '#'  | '<>'  | '<'  | '<='  | '>'  | 
-               '>='  | 'IN' 
+   Relation := '='  | '#'  | '<>'  | '<'  | '<='  | 
+               '>'  | '>='  | 'IN' 
 
    first  symbols:intok, greaterequaltok, greatertok, lessequaltok, lesstok, lessgreatertok, hashtok, equaltok
    
@@ -3870,8 +3914,8 @@ static void ConstTerm (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stop
 
 
 /*
-   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 'REM'  | 
-                  'AND'  | '&' 
+   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 
+                  'REM'  | 'AND'  | '&' 
 
    first  symbols:ambersandtok, andtok, remtok, modtok, divtok, dividetok, timestok
    
@@ -3945,9 +3989,11 @@ static void NotConstFactor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 
 
 /*
-   ConstFactor := Number  | ConstString  | ConstSetOrQualidentOrFunction  | 
+   ConstFactor := Number  | ConstString  | 
+                  ConstSetOrQualidentOrFunction  | 
                   '(' ConstExpression ')'  | 
-                  NotConstFactor  | ConstAttribute 
+                  NotConstFactor  | 
+                  ConstAttribute 
 
    first  symbols:identtok, attributetok, lcbratok, stringtok, nottok, lparatok, integertok, realtok
    
@@ -4024,6 +4070,7 @@ static void ConstString (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
                             
                             % h := NIL  %
                             [ '..' ConstExpression 
+                              
                               % h := pop ()  %
                               
                               % ErrorArray ('implementation restriction range is not allowed')  %
@@ -4058,6 +4105,7 @@ static void ConstComponentElement (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
 
 /*
    ConstComponentValue := ConstComponentElement [ 'BY' 
+                                                  
                                                   % ErrorArray ('implementation restriction BY not allowed')  %
                                                   ConstExpression  ] 
 
@@ -4079,7 +4127,8 @@ static void ConstComponentValue (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
 
 
 /*
-   ConstArraySetRecordValue := ConstComponentValue { ',' ConstComponentValue  } 
+   ConstArraySetRecordValue := ConstComponentValue 
+                               { ',' ConstComponentValue  } 
 
    first  symbols:identtok, stringtok, lcbratok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
    
@@ -4103,7 +4152,8 @@ static void ConstArraySetRecordValue (SetOfStop0 stopset0, SetOfStop1 stopset1, 
                        % VAR n: node ;  %
                        
                        % n := push (makeSetValue ())  %
-                       [ ConstArraySetRecordValue  ] '}' 
+                       [ ConstArraySetRecordValue  ] 
+                       '}' 
 
    first  symbols:lcbratok
    
@@ -4132,6 +4182,7 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
                                     PushQualident 
                                     % assert (d+1 = depth ())  %
                                     [ ConstConstructor 
+                                      
                                       % p := pop ()  %
                                       
                                       % q := pop ()  %
@@ -4139,7 +4190,8 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
                                       % n := push (putSetValue (p, q))  %
                                       
                                       % assert (d+1 = depth ())  %
-                                       | ConstActualParameters 
+                                       | 
+                                      ConstActualParameters 
                                       
                                       % p := pop ()  %
                                       
@@ -4152,6 +4204,7 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
                                     
                                     % d := depth ()  %
                                     ConstConstructor 
+                                    
                                     % assert (d+1 = depth ())  %
                                     
 
@@ -4287,7 +4340,8 @@ static void ConstExpList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 
 
 /*
-   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' '(' '(' ConstAttributeExpression 
+   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' 
+                     '(' '(' ConstAttributeExpression 
                      ')' ')' 
 
    first  symbols:attributetok
@@ -4312,7 +4366,8 @@ static void ConstAttribute (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
                                % VAR n: node ;  %
                                
                                % n := push (getBuiltinConst (curident))  %
-                                | '<' Qualident ',' Ident '>' 
+                                | '<' Qualident ',' 
+                               Ident '>' 
 
    first  symbols:lesstok, identtok
    
@@ -4468,7 +4523,8 @@ static void PushIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 
 /*
-   SubrangeType := '[' ConstExpression '..' ConstExpression ']' 
+   SubrangeType := '[' ConstExpression '..' ConstExpression 
+                   ']' 
 
    first  symbols:lsbratok
    
@@ -4486,7 +4542,8 @@ static void SubrangeType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 
 
 /*
-   ArrayType := 'ARRAY' SimpleType { ',' SimpleType  } 'OF' Type 
+   ArrayType := 'ARRAY' SimpleType { ',' SimpleType  } 
+                'OF' Type 
 
    first  symbols:arraytok
    
@@ -4509,8 +4566,8 @@ static void ArrayType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stop
 
 
 /*
-   RecordType := 'RECORD' [ DefaultRecordAttributes  ] FieldListSequence 
-                 'END' 
+   RecordType := 'RECORD' [ DefaultRecordAttributes  ] 
+                 FieldListSequence 'END' 
 
    first  symbols:recordtok
    
@@ -4605,7 +4662,8 @@ static void PragmaConstExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
 
 
 /*
-   AttributeExpression := Ident '(' ConstExpression ')' 
+   AttributeExpression := Ident '(' ConstExpression 
+                          ')' 
 
    first  symbols:identtok
    
@@ -4767,7 +4825,8 @@ static void Varient (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopse
 
 
 /*
-   VarientCaseLabelList := VarientCaseLabels { ',' VarientCaseLabels  } 
+   VarientCaseLabelList := VarientCaseLabels { ',' 
+                                               VarientCaseLabels  } 
 
    first  symbols:identtok, attributetok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
    
@@ -4870,7 +4929,8 @@ static void ProcedureType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 /*
    FormalTypeList := '(' ( ')' FormalReturn  | 
-                           ProcedureParameters ')' FormalReturn  ) 
+                           ProcedureParameters ')' 
+                           FormalReturn  ) 
 
    first  symbols:lparatok
    
@@ -4919,7 +4979,8 @@ static void FormalReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 
 
 /*
-   OptReturnType := '[' Qualident ']'  | Qualident 
+   OptReturnType := '[' Qualident ']'  | 
+                    Qualident 
 
    first  symbols:identtok, lsbratok
    
@@ -4948,7 +5009,8 @@ static void OptReturnType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 
 /*
-   ProcedureParameters := ProcedureParameter { ',' ProcedureParameter  } 
+   ProcedureParameters := ProcedureParameter { ',' 
+                                               ProcedureParameter  } 
 
    first  symbols:identtok, arraytok, periodperiodperiodtok, vartok
    
@@ -5200,7 +5262,8 @@ static void SimpleExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
 
 
 /*
-   UnaryOrTerm := '+' Term  | '-' Term  | Term 
+   UnaryOrTerm := '+' Term  | '-' Term  | 
+                  Term 
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok, minustok, plustok
    
@@ -5255,7 +5318,8 @@ static void Term (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 
 /*
    Factor := Number  | string  | SetOrDesignatorOrFunction  | 
-             '(' Expression ')'  | 'NOT' ( Factor  | ConstAttribute  ) 
+             '(' Expression ')'  | 
+             'NOT' ( Factor  | ConstAttribute  ) 
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok
    
@@ -5314,6 +5378,7 @@ static void Factor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset
 
 /*
    ComponentElement := Expression [ '..' Expression 
+                                    
                                     % ErrorArray ('implementation restriction range not allowed')  %
                                      ] 
 
@@ -5397,7 +5462,8 @@ static void Constructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 
 /*
    SetOrDesignatorOrFunction := Qualident [ Constructor  | 
-                                            SimpleDes [ ActualParameters  ]  ]  | 
+                                            SimpleDes 
+                                            [ ActualParameters  ]  ]  | 
                                 Constructor 
 
    first  symbols:lcbratok, identtok
@@ -5521,7 +5587,8 @@ static void ReturnStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 /*
    Statement := [ AssignmentOrProcedureCall  | 
                   IfStatement  | CaseStatement  | 
-                  WhileStatement  | RepeatStatement  | 
+                  WhileStatement  | 
+                  RepeatStatement  | 
                   LoopStatement  | ForStatement  | 
                   WithStatement  | AsmStatement  | 
                   ExitStatement  | ReturnStatement  | 
@@ -5671,9 +5738,9 @@ static void StatementSequence (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 
 
 /*
-   IfStatement := 'IF' Expression 'THEN' StatementSequence { 
-   'ELSIF' Expression 'THEN' StatementSequence  } [ 'ELSE' StatementSequence  ] 
-                  'END' 
+   IfStatement := 'IF' Expression 'THEN' StatementSequence 
+                  { 'ELSIF' Expression 'THEN' StatementSequence  } 
+                  [ 'ELSE' StatementSequence  ] 'END' 
 
    first  symbols:iftok
    
@@ -5704,7 +5771,8 @@ static void IfStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 
 
 /*
-   CaseStatement := 'CASE' Expression 'OF' Case { '|' Case  } 
+   CaseStatement := 'CASE' Expression 'OF' Case { '|' 
+                                                  Case  } 
                     CaseEndStatement 
 
    first  symbols:casetok
@@ -5729,7 +5797,8 @@ static void CaseStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 
 /*
-   CaseEndStatement := 'END'  | 'ELSE' StatementSequence 'END' 
+   CaseEndStatement := 'END'  | 'ELSE' StatementSequence 
+                       'END' 
 
    first  symbols:elsetok, endtok
    
@@ -5835,7 +5904,8 @@ static void WhileStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 
 
 /*
-   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' Expression 
+   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' 
+                      Expression 
 
    first  symbols:repeattok
    
@@ -5852,9 +5922,9 @@ static void RepeatStatement (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 
 
 /*
-   ForStatement := 'FOR' Ident ':=' Expression 'TO' Expression 
-                   [ 'BY' ConstExpression  ] 'DO' StatementSequence 
-                   'END' 
+   ForStatement := 'FOR' Ident ':=' Expression 'TO' 
+                   Expression [ 'BY' ConstExpression  ] 
+                   'DO' StatementSequence 'END' 
 
    first  symbols:fortok
    
@@ -6015,9 +6085,9 @@ static void DefineBuiltinProcedure (SetOfStop0 stopset0, SetOfStop1 stopset1, Se
 
 
 /*
-   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure ( ProcedureIdent 
-                                                            [ 
-   FormalParameters  ] AttributeNoReturn  ) 
+   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure 
+                       ( ProcedureIdent [ FormalParameters  ] 
+                         AttributeNoReturn  ) 
 
    first  symbols:proceduretok
    
@@ -6119,7 +6189,8 @@ static void ProcedureBlock (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 
 
 /*
-   Block := { Declaration  } InitialBlock FinalBlock 'END' 
+   Block := { Declaration  } InitialBlock FinalBlock 
+            'END' 
 
    first  symbols:proceduretok, moduletok, finallytok, begintok, consttok, typetok, vartok, endtok
    
@@ -6329,6 +6400,7 @@ static void Declaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
    DefFormalParameters := '(' 
                           % paramEnter (curproc)  %
                           [ DefMultiFPSection  ] ')' 
+                          
                           % paramLeave (curproc)  %
                           FormalReturn 
 
@@ -6352,7 +6424,8 @@ static void DefFormalParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
 
 
 /*
-   DefMultiFPSection := DefExtendedFP  | FPSection [ ';' DefMultiFPSection  ] 
+   DefMultiFPSection := DefExtendedFP  | 
+                        FPSection [ ';' DefMultiFPSection  ] 
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
    
@@ -6429,7 +6502,8 @@ static void AttributeNoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 
 
 /*
-   MultiFPSection := ExtendedFP  | FPSection [ ';' MultiFPSection  ] 
+   MultiFPSection := ExtendedFP  | FPSection [ ';' 
+                                               MultiFPSection  ] 
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
    
@@ -6461,7 +6535,8 @@ static void MultiFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 
 
 /*
-   FPSection := NonVarFPSection  | VarFPSection 
+   FPSection := NonVarFPSection  | 
+                VarFPSection 
 
    first  symbols:vartok, identtok
    
@@ -6640,8 +6715,9 @@ static void FormalType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 
 
 /*
-   ModuleDeclaration := 'MODULE' Ident [ Priority  ] ';' { Import  } 
-                        [ Export  ] Block Ident 
+   ModuleDeclaration := 'MODULE' Ident [ Priority  ] 
+                        ';' { Import  } [ Export  ] 
+                        Block Ident 
 
    first  symbols:moduletok
    
@@ -6746,7 +6822,8 @@ static void FromIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 
 /*
-   FromImport := 'FROM' Ident 'IMPORT' FromIdentList ';' 
+   FromImport := 'FROM' Ident 'IMPORT' FromIdentList 
+                 ';' 
 
    first  symbols:fromtok
    
@@ -6827,7 +6904,8 @@ static void Import (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset
 
 
 /*
-   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' string  ] 
+   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' 
+                                               string  ] 
                        Ident 
                        % curmodule := lookupDef (curident)  %
                        
@@ -7005,7 +7083,8 @@ static void Enumeration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 
 
 /*
-   SimpleType := TypeEquiv  | Enumeration  | SubrangeType 
+   SimpleType := TypeEquiv  | Enumeration  | 
+                 SubrangeType 
 
    first  symbols:lsbratok, lparatok, identtok
    
@@ -7085,7 +7164,8 @@ static void Type (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 
 
 /*
-   TypeDeclaration := { Ident ( ';'  | '=' Type Alignment ';'  )  } 
+   TypeDeclaration := { Ident ( ';'  | '=' Type Alignment 
+                                ';'  )  } 
 
    first  symbols:identtok
    
@@ -7246,8 +7326,9 @@ static void DefSimpleType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 
 /*
-   DefType := DefSimpleType  | ArrayType  | RecordType  | 
-              SetType  | PointerType  | ProcedureType 
+   DefType := DefSimpleType  | ArrayType  | 
+              RecordType  | SetType  | PointerType  | 
+              ProcedureType 
 
    first  symbols:proceduretok, pointertok, settok, packedsettok, oftok, recordtok, arraytok, identtok, lparatok, lsbratok
    
@@ -7294,8 +7375,8 @@ static void DefType (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopse
 
 
 /*
-   DefTypeDeclaration := { Ident ( ';'  | '=' DefType Alignment 
-                                   ';'  )  } 
+   DefTypeDeclaration := { Ident ( ';'  | '=' DefType 
+                                   Alignment ';'  )  } 
 
    first  symbols:identtok
    
@@ -7404,7 +7485,8 @@ static void Definition (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 
 
 /*
-   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands ')' 
+   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands 
+                   ')' 
 
    first  symbols:asmtok
    
@@ -7443,7 +7525,8 @@ static void AsmOperands (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
 
 
 /*
-   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ ':' TrashList  ]  ]  ] 
+   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ 
+   ':' TrashList  ]  ]  ] 
 
    first  symbols:colontok
    
@@ -7527,7 +7610,8 @@ static void AsmOperandName (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 
 
 /*
-   AsmElement := AsmOperandName string '(' Expression ')' 
+   AsmElement := AsmOperandName string '(' Expression 
+                 ')' 
 
    first  symbols:stringtok, lsbratok
    

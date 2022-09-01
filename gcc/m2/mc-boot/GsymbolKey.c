@@ -142,7 +142,7 @@ static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, sym
   (*father) = t;
   if (t == NULL)
     {
-      Debug_Halt ((const char *) "parameter t should never be NIL", 31, 203, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/symbolKey.mod", 74);
+      Debug_Halt ((const char *) "parameter t should never be NIL", 31, 203, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/symbolKey.mod", 51);
     }
   (*child) = t->left;
   if ((*child) != NULL)
@@ -285,7 +285,7 @@ extern "C" void symbolKey_putSymKey (symbolKey_symbolTree t, nameKey_Name name, 
     }
   else
     {
-      Debug_Halt ((const char *) "symbol already stored", 21, 119, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/symbolKey.mod", 74);
+      Debug_Halt ((const char *) "symbol already stored", 21, 119, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/symbolKey.mod", 51);
     }
 }
 
@@ -352,7 +352,7 @@ extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name)
     }
   else
     {
-      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, 186, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/symbolKey.mod", 74);
+      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, 186, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/symbolKey.mod", 51);
     }
 }
 

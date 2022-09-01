@@ -165,7 +165,7 @@ extern "C" void * mcStack_pop (mcStack_stack s)
       Indexing_DeleteIndice (s->list, Indexing_HighIndice (s->list));
       return a;
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcStack.def", 20, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/mcStack.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -215,7 +215,7 @@ extern "C" void * mcStack_access (mcStack_stack s, unsigned int i)
     {
       return Indexing_GetIndice (s->list, i);
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcStack.def", 20, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/mcStack.def", 20, 1);
   __builtin_unreachable ();
 }
 

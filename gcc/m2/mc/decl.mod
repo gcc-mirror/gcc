@@ -12702,9 +12702,40 @@ END tryCompleteFromPartial ;
 PROCEDURE visitIntrinsicFunction (v: alist; n: node; p: nodeProcedure) ;
 BEGIN
    assert (isIntrinsicFunction (n)) ;
-   WITH n^.unaryF DO
-      visitNode (v, arg, p) ;
-      visitNode (v, resultType, p)
+   CASE n^.kind OF
+
+   val,
+   cmplx:  WITH n^.binaryF DO
+             visitNode (v, left, p) ;
+             visitNode (v, right, p) ;
+             visitNode (v, resultType, p)
+           END |
+   adr,
+   size,
+   tsize,
+   float,
+   trunc,
+   ord,
+   chr,
+   cap,
+   abs,
+   high,
+   min,
+   max,
+   re,
+   im   : WITH n^.unaryF DO
+             visitNode (v, arg, p) ;
+             visitNode (v, resultType, p)
+          END |
+   length: WITH n^.unaryF DO
+             visitNode (v, arg, p) ;
+             visitNode (v, resultType, p)
+           END |
+   throw:  WITH n^.intrinsicF DO
+              visitNode (v, args, p) ;
+              visitNode (v, type, p)
+           END
+
    END
 END visitIntrinsicFunction ;
 

@@ -316,7 +316,7 @@ pge-help: force
 	@echo " make pge-verify"
 	@echo " make pge-push       # copy pge C++ sources (app and libs) into srcdir/m2/pge-boot"
 	@echo " make pge-libs-push  # copy C++ libraries which pge uses into srcdir/m2/pge-boot"
-	@echo " make pge-app-push   # copy pge C++ application modules into srcdir/m2/pge-boot"		
+	@echo " make pge-app-push   # copy pge C++ application modules into srcdir/m2/pge-boot"
 	@echo " make pge-clean"
 
 pge-maintainer: $(PGE)
@@ -342,7 +342,7 @@ pge-libs-push: force
         done
 
 pge-app-push: force
-	cp m2/gm2-pge-boot/*.c $(srcdir)/m2/pge-boot	
+	cp m2/gm2-pge-boot/*.c $(srcdir)/m2/pge-boot
 
 # Perform sanity checks.
 
@@ -470,7 +470,7 @@ m2/boot-bin/mc-devel$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/keyc.mod -o mc-obj/keyc.o
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcComment.mod -o mc-obj/mcComment.o
 	$(BOOTGM2) $(MCLINK) -I. -fscaffold-main -I$(GM2PATH) \
-            -fuselist=$(srcdir)/m2/init/mcinit $(srcdir)/m2/mc/top.mod -o mc \
+            -fuse-list=$(srcdir)/m2/init/mcinit $(srcdir)/m2/mc/top.mod -o mc \
             m2/gm2-libs-boot/RTcodummy.o \
             m2/gm2-libs-boot/dtoa.o m2/gm2-libs-boot/ldtoa.o mc-obj/*o m2/mc-boot-ch/Gabort.o
 
@@ -805,4 +805,3 @@ m2/gm2-compiler-paranoid/M2Version.o: m2/gm2-compiler-paranoid/M2Version.mod
 
 $(objdir)/m2/gm2-compiler-paranoid/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
 	$(PGE) -k -l $< -o $@
-

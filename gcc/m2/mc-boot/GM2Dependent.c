@@ -824,6 +824,7 @@ static void ForceDependencies (void)
               mptr = LookupModuleN (ordered, reinterpret_cast<void *> (start), count);
               if (mptr != NULL)
                 {
+                  mptr->dependency.forced = TRUE;
                   moveTo (user, mptr);
                 }
               pc += 1;
@@ -841,6 +842,7 @@ static void ForceDependencies (void)
           mptr = LookupModuleN (ordered, reinterpret_cast<void *> (start), count);
           if (mptr != NULL)
             {
+              mptr->dependency.forced = TRUE;
               moveTo (user, mptr);
             }
         }
@@ -894,6 +896,7 @@ static void SetupDebugFlags (void)
   DependencyTrace = FALSE;
   PostTrace = FALSE;
   PreTrace = FALSE;
+  ForceTrace = FALSE;
   pc = static_cast<_T1> (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("GCC_M2LINK_RTFLAG"))));
   while ((pc != NULL) && ((*pc) != ASCII_nul))
     {

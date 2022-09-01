@@ -553,7 +553,7 @@ static FIO_File GetNextFreeDescriptor (void)
         return f;  /* create new slot  */
       }
   }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -2260,7 +2260,7 @@ extern "C" void * FIO_getFileName (FIO_File f)
           return fd->name.address;
         }
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -2287,7 +2287,7 @@ extern "C" unsigned int FIO_getFileNameLength (FIO_File f)
           return fd->name.size;
         }
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 

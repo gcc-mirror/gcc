@@ -908,7 +908,7 @@ static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned 
         return TRUE;
       }
   }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/keyc.def", 20, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/keyc.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -942,6 +942,7 @@ static void initCP (void)
   add (keywords, (const char *) "operator", 8);
   add (keywords, (const char *) "complex", 7);
   add (keywords, (const char *) "export", 6);
+  add (keywords, (const char *) "public", 6);
 }
 
 

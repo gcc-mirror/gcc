@@ -719,7 +719,7 @@ static void AddHandler (RTExceptions_EHBlock e, Handler h)
 
 static void indexf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 612, 9, const_cast<void*> (reinterpret_cast<const void*>("indexf")), const_cast<void*> (reinterpret_cast<const void*>("array index out of bounds")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 612, 9, const_cast<void*> (reinterpret_cast<const void*>("indexf")), const_cast<void*> (reinterpret_cast<const void*>("array index out of bounds")));
 }
 
 
@@ -729,7 +729,7 @@ static void indexf (void * a)
 
 static void range (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 624, 9, const_cast<void*> (reinterpret_cast<const void*>("range")), const_cast<void*> (reinterpret_cast<const void*>("assignment out of range")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 624, 9, const_cast<void*> (reinterpret_cast<const void*>("range")), const_cast<void*> (reinterpret_cast<const void*>("assignment out of range")));
 }
 
 
@@ -739,7 +739,7 @@ static void range (void * a)
 
 static void casef (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 636, 9, const_cast<void*> (reinterpret_cast<const void*>("casef")), const_cast<void*> (reinterpret_cast<const void*>("case selector out of range")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 636, 9, const_cast<void*> (reinterpret_cast<const void*>("casef")), const_cast<void*> (reinterpret_cast<const void*>("case selector out of range")));
 }
 
 
@@ -749,7 +749,7 @@ static void casef (void * a)
 
 static void invalidloc (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 648, 9, const_cast<void*> (reinterpret_cast<const void*>("invalidloc")), const_cast<void*> (reinterpret_cast<const void*>("invalid address referenced")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 648, 9, const_cast<void*> (reinterpret_cast<const void*>("invalidloc")), const_cast<void*> (reinterpret_cast<const void*>("invalid address referenced")));
 }
 
 
@@ -759,7 +759,7 @@ static void invalidloc (void * a)
 
 static void function (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 660, 9, const_cast<void*> (reinterpret_cast<const void*>("function")), const_cast<void*> (reinterpret_cast<const void*>("... function ... ")));  /* --fixme-- what has happened ?  */
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 660, 9, const_cast<void*> (reinterpret_cast<const void*>("function")), const_cast<void*> (reinterpret_cast<const void*>("... function ... ")));  /* --fixme-- what has happened ?  */
 }
 
 
@@ -769,7 +769,7 @@ static void function (void * a)
 
 static void wholevalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 672, 9, const_cast<void*> (reinterpret_cast<const void*>("wholevalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 672, 9, const_cast<void*> (reinterpret_cast<const void*>("wholevalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
 }
 
 
@@ -779,7 +779,7 @@ static void wholevalue (void * a)
 
 static void wholediv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 684, 9, const_cast<void*> (reinterpret_cast<const void*>("wholediv")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 684, 9, const_cast<void*> (reinterpret_cast<const void*>("wholediv")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
 }
 
 
@@ -789,7 +789,7 @@ static void wholediv (void * a)
 
 static void realvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 696, 9, const_cast<void*> (reinterpret_cast<const void*>("realvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal real value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 696, 9, const_cast<void*> (reinterpret_cast<const void*>("realvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal real value exception")));
 }
 
 
@@ -799,7 +799,7 @@ static void realvalue (void * a)
 
 static void realdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 708, 9, const_cast<void*> (reinterpret_cast<const void*>("realdiv")), const_cast<void*> (reinterpret_cast<const void*>("real number division by zero exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 708, 9, const_cast<void*> (reinterpret_cast<const void*>("realdiv")), const_cast<void*> (reinterpret_cast<const void*>("real number division by zero exception")));
 }
 
 
@@ -809,7 +809,7 @@ static void realdiv (void * a)
 
 static void complexvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 720, 9, const_cast<void*> (reinterpret_cast<const void*>("complexvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal complex value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 720, 9, const_cast<void*> (reinterpret_cast<const void*>("complexvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal complex value exception")));
 }
 
 
@@ -819,7 +819,7 @@ static void complexvalue (void * a)
 
 static void complexdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 732, 9, const_cast<void*> (reinterpret_cast<const void*>("complexdiv")), const_cast<void*> (reinterpret_cast<const void*>("complex number division by zero exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 732, 9, const_cast<void*> (reinterpret_cast<const void*>("complexdiv")), const_cast<void*> (reinterpret_cast<const void*>("complex number division by zero exception")));
 }
 
 
@@ -829,7 +829,7 @@ static void complexdiv (void * a)
 
 static void protection (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 744, 9, const_cast<void*> (reinterpret_cast<const void*>("protection")), const_cast<void*> (reinterpret_cast<const void*>("protection exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 744, 9, const_cast<void*> (reinterpret_cast<const void*>("protection")), const_cast<void*> (reinterpret_cast<const void*>("protection exception")));
 }
 
 
@@ -839,7 +839,7 @@ static void protection (void * a)
 
 static void systemf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 756, 9, const_cast<void*> (reinterpret_cast<const void*>("systemf")), const_cast<void*> (reinterpret_cast<const void*>("system exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 756, 9, const_cast<void*> (reinterpret_cast<const void*>("systemf")), const_cast<void*> (reinterpret_cast<const void*>("system exception")));
 }
 
 
@@ -849,7 +849,7 @@ static void systemf (void * a)
 
 static void coroutine (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 768, 9, const_cast<void*> (reinterpret_cast<const void*>("coroutine")), const_cast<void*> (reinterpret_cast<const void*>("coroutine exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 768, 9, const_cast<void*> (reinterpret_cast<const void*>("coroutine")), const_cast<void*> (reinterpret_cast<const void*>("coroutine exception")));
 }
 
 
@@ -859,7 +859,7 @@ static void coroutine (void * a)
 
 static void exception (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod")), 780, 9, const_cast<void*> (reinterpret_cast<const void*>("exception")), const_cast<void*> (reinterpret_cast<const void*>("exception exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 780, 9, const_cast<void*> (reinterpret_cast<const void*>("exception")), const_cast<void*> (reinterpret_cast<const void*>("exception exception")));
 }
 
 
@@ -1178,13 +1178,13 @@ extern "C" RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void)
 {
   if (currentEHB == NULL)
     {
-      M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.mod", 83, 598, (const char *) "GetBaseExceptionBlock", 21, (const char *) "currentEHB has not been initialized yet", 39);
+      M2RTS_Halt ((const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 60, 598, (const char *) "GetBaseExceptionBlock", 21, (const char *) "currentEHB has not been initialized yet", 39);
     }
   else
     {
       return currentEHB;
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/RTExceptions.def", 25, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.def", 25, 1);
   __builtin_unreachable ();
 }
 

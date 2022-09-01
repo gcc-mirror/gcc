@@ -408,7 +408,7 @@ static void internalFormat (DynamicStrings_String s, int i, const char *m_, unsi
   s = DynamicStrings_ConCatChar (s, '^');
   s = SFIO_WriteS (FIO_StdOut, s);
   FIO_WriteLine (FIO_StdOut);
-  mcError_internalError ((const char *) m, _m_high, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcMetaError.mod", 76, 97);
+  mcError_internalError ((const char *) m, _m_high, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/mcMetaError.mod", 53, 97);
 }
 
 
@@ -420,7 +420,7 @@ static DynamicStrings_String x (DynamicStrings_String a, DynamicStrings_String b
 {
   if (a != b)
     {
-      mcError_internalError ((const char *) "different string returned", 25, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcMetaError.mod", 76, 109);
+      mcError_internalError ((const char *) "different string returned", 25, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/mcMetaError.mod", 53, 109);
     }
   return a;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -734,7 +734,7 @@ static mcError_error doError (mcError_error e, errorType t, unsigned int tok)
       case chained:
         if (e == NULL)
           {
-            mcError_internalError ((const char *) "should not be chaining an error onto an empty error note", 56, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcMetaError.mod", 76, 355);
+            mcError_internalError ((const char *) "should not be chaining an error onto an empty error note", 56, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/mcMetaError.mod", 53, 355);
           }
         else
           {
@@ -758,7 +758,7 @@ static mcError_error doError (mcError_error e, errorType t, unsigned int tok)
 
 
       default:
-        mcError_internalError ((const char *) "unexpected enumeration value", 28, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcMetaError.mod", 76, 369);
+        mcError_internalError ((const char *) "unexpected enumeration value", 28, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/mcMetaError.mod", 53, 369);
         break;
     }
   return e;

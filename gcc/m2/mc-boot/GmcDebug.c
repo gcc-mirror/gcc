@@ -54,7 +54,7 @@ extern "C" void mcDebug_assert (unsigned int q)
 {
   if (! q)
     {
-      mcError_internalError ((const char *) "assert failed", 13, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcDebug.mod", 72, 35);
+      mcError_internalError ((const char *) "assert failed", 13, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/mcDebug.mod", 49, 35);
     }
 }
 
