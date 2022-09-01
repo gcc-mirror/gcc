@@ -1124,6 +1124,18 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   return found_cd_chain;
 }
 
+static bool
+compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
+			   vec<edge> cd_chains[], unsigned *num_chains,
+			   unsigned in_region = 0)
+{
+  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_cd_chain;
+  unsigned num_calls = 0;
+  unsigned depth = 0;
+  return compute_control_dep_chain (dom_bb, dep_bb, cd_chains, num_chains,
+				    cur_cd_chain, &num_calls, in_region, depth);
+}
+
 /* Implemented simplifications:
 
    1) ((x IOR y) != 0) AND (x != 0) is equivalent to (x != 0);
@@ -1919,13 +1931,10 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
      Each DEP_CHAINS element is a series of edges whose conditions
      are logical conjunctions.  Together, the DEP_CHAINS vector is
      used below to initialize an OR expression of the conjunctions.  */
-  unsigned num_calls = 0;
   unsigned num_chains = 0;
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
-  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
 
-  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
-				  cur_chain, &num_calls))
+  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains))
     {
       gcc_assert (num_chains == 0);
       simple_control_dep_chain (dep_chains[0], cd_root, use_bb);
@@ -2023,14 +2032,12 @@ uninit_analysis::init_from_phi_def (gphi *phi)
 
   unsigned num_chains = 0;
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
-  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
   for (unsigned i = 0; i < nedges; i++)
     {
       edge e = def_edges[i];
-      unsigned num_calls = 0;
       unsigned prev_nc = num_chains;
       compute_control_dep_chain (cd_root, e->src, dep_chains,
-				 &num_chains, cur_chain, &num_calls, in_region);
+				 &num_chains, in_region);
 
       /* Update the newly added chains with the phi operand edge.  */
       if (EDGE_COUNT (e->src->succs) > 1)
