@@ -1610,6 +1610,9 @@ loongarch_weak_symbol_p (const_rtx x)
 bool
 loongarch_symbol_binds_local_p (const_rtx x)
 {
+  if (TARGET_DIRECT_EXTERN_ACCESS)
+    return true;
+
   if (SYMBOL_REF_P (x))
     return (SYMBOL_REF_DECL (x)
 	    ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
@@ -6093,6 +6096,9 @@ loongarch_option_override_internal (struct gcc_options *opts)
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
 
+  if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
+    error ("%qs cannot be used for compiling a shared library",
+	   "-mdirect-extern-access");
 
   switch (la_target.cmodel)
     {

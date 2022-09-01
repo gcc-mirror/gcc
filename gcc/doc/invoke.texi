@@ -1017,6 +1017,7 @@ Objective-C and Objective-C++ Dialects}.
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
 -mmax-inline-memcpy-size=@var{n} @gol
 -mexplicit-relocs -mno-explicit-relocs @gol
+-mdirect-extern-access -mno-direct-extern-access @gol
 -mcmodel=@var{code-model}}
 
 @emph{M32R/D Options}
@@ -25090,6 +25091,20 @@ GCC build-time by detecting corresponding assembler support:
 @code{-mno-explicit-relocs} otherwise.  This option is mostly useful for
 debugging, or interoperation with assemblers different from the build-time
 one.
+
+@item -mdirect-extern-access
+@itemx -mno-direct-extern-access
+@opindex mdirect-extern-access
+Do not use or use GOT to access external symbols.  The default is
+@option{-mno-direct-extern-access}: GOT is used for external symbols with
+default visibility, but not used for other external symbols.
+
+With @option{-mdirect-extern-access}, GOT is not used and all external
+symbols are PC-relatively addressed.  It is @strong{only} suitable for
+environments where no dynamic link is performed, like firmwares, OS
+kernels, executables linked with @option{-static} or @option{-static-pie}.
+@option{-mdirect-extern-access} is not compatible with @option{-fPIC} or
+@option{-fpic}.
 @end table
 
 @node M32C Options
