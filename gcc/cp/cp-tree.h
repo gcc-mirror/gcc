@@ -7598,7 +7598,6 @@ extern tree force_paren_expr			(tree, bool = false);
 inline tree force_paren_expr_uneval 		(tree t)
 { return force_paren_expr (t, true); }
 extern tree maybe_undo_parenthesized_ref	(tree);
-extern tree maybe_strip_ref_conversion		(tree);
 extern tree finish_non_static_data_member       (tree, tree, tree,
 						 tsubst_flags_t = tf_warning_or_error);
 extern tree begin_stmt_expr			(void);
