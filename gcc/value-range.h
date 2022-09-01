@@ -1050,11 +1050,7 @@ vrp_val_max (const_tree type)
       return wide_int_to_tree (const_cast<tree> (type), max);
     }
   if (frange::supports_p (type))
-    {
-      REAL_VALUE_TYPE real;
-      real_inf (&real);
-      return build_real (const_cast <tree> (type), real);
-    }
+    return build_real (const_cast <tree> (type), dconstinf);
   return NULL_TREE;
 }
 
@@ -1068,11 +1064,7 @@ vrp_val_min (const_tree type)
   if (POINTER_TYPE_P (type))
     return build_zero_cst (const_cast<tree> (type));
   if (frange::supports_p (type))
-    {
-      REAL_VALUE_TYPE ninf;
-      real_inf (&ninf, 1);
-      return build_real (const_cast <tree> (type), ninf);
-    }
+    return build_real (const_cast <tree> (type), dconstninf);
   return NULL_TREE;
 }
 
@@ -1145,8 +1137,8 @@ frange::set_varying (tree type)
 {
   m_kind = VR_VARYING;
   m_type = type;
-  real_inf (&m_min, 1);
-  real_inf (&m_max, 0);
+  m_min = dconstninf;
+  m_max = dconstinf;
   m_props.set_varying ();
 }
 

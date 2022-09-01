@@ -232,17 +232,15 @@ frange_drop_ninf (frange &r, tree type)
   r.intersect (tmp);
 }
 
-// (X <= VAL) produces the range of [MIN, VAL].
+// (X <= VAL) produces the range of [-INF, VAL].
 
 static void
 build_le (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
-  REAL_VALUE_TYPE min;
-  real_inf (&min, 1);
-  r.set (type, min, val);
+  r.set (type, dconstninf, val);
 }
 
-// (X < VAL) produces the range of [MIN, VAL).
+// (X < VAL) produces the range of [-INF, VAL).
 
 static void
 build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
@@ -251,17 +249,15 @@ build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
   build_le (r, type, val);
 }
 
-// (X >= VAL) produces the range of [VAL, MAX].
+// (X >= VAL) produces the range of [VAL, +INF].
 
 static void
 build_ge (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
-  REAL_VALUE_TYPE max;
-  real_inf (&max, 0);
-  r.set (type, val, max);
+  r.set (type, val, dconstinf);
 }
 
-// (X > VAL) produces the range of (VAL, MAX].
+// (X > VAL) produces the range of (VAL, +INF].
 
 static void
 build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)

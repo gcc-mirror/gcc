@@ -320,18 +320,14 @@ frange::set_signbit (fp_prop::kind k)
   if (k == fp_prop::YES)
     {
       // Crop the range to [-INF, 0].
-      REAL_VALUE_TYPE min;
-      real_inf (&min, 1);
-      frange crop (m_type, min, dconst0);
+      frange crop (m_type, dconstninf, dconst0);
       intersect (crop);
       m_props.set_signbit (fp_prop::YES);
     }
   else if (k == fp_prop::NO)
     {
       // Crop the range to [0, +INF].
-      REAL_VALUE_TYPE max;
-      real_inf (&max, 0);
-      frange crop (m_type, dconst0, max);
+      frange crop (m_type, dconst0, dconstinf);
       intersect (crop);
       m_props.set_signbit (fp_prop::NO);
     }
@@ -440,8 +436,8 @@ frange::normalize_kind ()
       if (!m_props.varying_p ())
 	{
 	  m_kind = VR_RANGE;
-	  real_inf (&m_min, 1);
-	  real_inf (&m_max, 0);
+	  m_min = dconstninf;
+	  m_max = dconstinf;
 	  return true;
 	}
     }
@@ -3785,12 +3781,9 @@ range_tests_floats ()
   ASSERT_FALSE (r0.varying_p ());
 
   // The endpoints of a VARYING are +-INF.
-  REAL_VALUE_TYPE inf, ninf;
-  real_inf (&inf, 0);
-  real_inf (&ninf, 1);
   r0.set_varying (float_type_node);
-  ASSERT_TRUE (real_identical (&r0.lower_bound (), &ninf));
-  ASSERT_TRUE (real_identical (&r0.upper_bound (), &inf));
+  ASSERT_TRUE (real_identical (&r0.lower_bound (), &dconstninf));
+  ASSERT_TRUE (real_identical (&r0.upper_bound (), &dconstinf));
 
   // The maximum representable range for a type is still a subset of VARYING.
   REAL_VALUE_TYPE q, r;
@@ -3800,9 +3793,9 @@ range_tests_floats ()
   // r0 is not a varying, because it does not include -INF/+INF.
   ASSERT_FALSE (r0.varying_p ());
   // The upper bound of r0 must be less than +INF.
-  ASSERT_TRUE (real_less (&r0.upper_bound (), &inf));
+  ASSERT_TRUE (real_less (&r0.upper_bound (), &dconstinf));
   // The lower bound of r0 must be greater than -INF.
-  ASSERT_TRUE (real_less (&ninf, &r0.lower_bound ()));
+  ASSERT_TRUE (real_less (&dconstninf, &r0.lower_bound ()));
 
   // For most architectures, where float and double are different
   // sizes, having the same endpoints does not necessarily mean the
