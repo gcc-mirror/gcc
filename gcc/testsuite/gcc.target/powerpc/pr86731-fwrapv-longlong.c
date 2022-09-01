@@ -31,5 +31,5 @@ vector signed long long splats4(void)
 
 /* { dg-final { scan-assembler-times {\mvspltis[bhw]\M} 0 } } */
 /* { dg-final { scan-assembler-times {\mvsl[bhwd]\M} 0 } } */
-/* { dg-final { scan-assembler-times {\mp?lxv\M|\mlxv\M|\mlxvd2x\M|\mxxspltidp\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mp?lxv\M|\mlvx\M|\mlxvd2x\M|\mxxspltidp\M} 2 } } */
 
