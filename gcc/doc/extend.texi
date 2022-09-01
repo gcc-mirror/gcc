@@ -13187,6 +13187,7 @@ is called and the @var{flag} argument passed to it.
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
 @cindex built-in functions
+@findex __builtin_iseqsig
 @findex __builtin_isfinite
 @findex __builtin_isnormal
 @findex __builtin_isgreater
@@ -13738,9 +13739,9 @@ the same names as the standard macros ( @code{isgreater},
 @code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
-In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
-@code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
-@code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
+In the same fashion, GCC provides @code{fpclassify}, @code{iseqsig},
+@code{isfinite}, @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins
+used with @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
 With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
 built-in functions will always return 0.

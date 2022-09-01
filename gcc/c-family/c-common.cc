@@ -6334,6 +6334,7 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ISLESSEQUAL:
     case BUILT_IN_ISLESSGREATER:
     case BUILT_IN_ISUNORDERED:
+    case BUILT_IN_ISEQSIG:
       if (builtin_function_validate_nargs (loc, fndecl, nargs, 2))
 	{
 	  enum tree_code code0, code1;

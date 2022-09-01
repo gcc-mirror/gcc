@@ -171,6 +171,7 @@ static tree fold_builtin_fabs (location_t, tree, tree);
 static tree fold_builtin_abs (location_t, tree, tree);
 static tree fold_builtin_unordered_cmp (location_t, tree, tree, tree, enum tree_code,
 					enum tree_code);
+static tree fold_builtin_iseqsig (location_t, tree, tree);
 static tree fold_builtin_varargs (location_t, tree, tree*, int);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree, tree);
@@ -9445,6 +9446,42 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 		      fold_build2_loc (loc, code, type, arg0, arg1));
 }
 
+/* Fold a call to __builtin_iseqsig().  ARG0 and ARG1 are the arguments.
+   After choosing the wider floating-point type for the comparison,
+   the code is folded to:
+     SAVE_EXPR<ARG0> >= SAVE_EXPR<ARG1> && SAVE_EXPR<ARG0> <= SAVE_EXPR<ARG1>  */
+
+static tree
+fold_builtin_iseqsig (location_t loc, tree arg0, tree arg1)
+{
+  tree type0, type1;
+  enum tree_code code0, code1;
+  tree cmp1, cmp2, cmp_type = NULL_TREE;
+
+  type0 = TREE_TYPE (arg0);
+  type1 = TREE_TYPE (arg1);
+
+  code0 = TREE_CODE (type0);
+  code1 = TREE_CODE (type1);
+
+  if (code0 == REAL_TYPE && code1 == REAL_TYPE)
+    /* Choose the wider of two real types.  */
+    cmp_type = TYPE_PRECISION (type0) >= TYPE_PRECISION (type1)
+      ? type0 : type1;
+  else if (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
+    cmp_type = type0;
+  else if (code0 == INTEGER_TYPE && code1 == REAL_TYPE)
+    cmp_type = type1;
+
+  arg0 = builtin_save_expr (fold_convert_loc (loc, cmp_type, arg0));
+  arg1 = builtin_save_expr (fold_convert_loc (loc, cmp_type, arg1));
+
+  cmp1 = fold_build2_loc (loc, GE_EXPR, integer_type_node, arg0, arg1);
+  cmp2 = fold_build2_loc (loc, LE_EXPR, integer_type_node, arg0, arg1);
+
+  return fold_build2_loc (loc, TRUTH_AND_EXPR, integer_type_node, cmp1, cmp2);
+}
+
 /* Fold __builtin_{,s,u}{add,sub,mul}{,l,ll}_overflow, either into normal
    arithmetics if it can never overflow, or into internal functions that
    return both result of arithmetics and overflowed boolean flag in
@@ -9877,6 +9914,9 @@ fold_builtin_2 (location_t loc, tree expr, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_unordered_cmp (loc, fndecl,
 					 arg0, arg1, UNORDERED_EXPR,
 					 NOP_EXPR);
+
+    case BUILT_IN_ISEQSIG:
+      return fold_builtin_iseqsig (loc, arg0, arg1);
 
       /* We do the folding for va_start in the expander.  */
     case BUILT_IN_VA_START:
@@ -11396,6 +11436,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_ISLESSEQUAL:
       case BUILT_IN_ISLESSGREATER:
       case BUILT_IN_ISUNORDERED:
+      case BUILT_IN_ISEQSIG:
       case BUILT_IN_VA_ARG_PACK:
       case BUILT_IN_VA_ARG_PACK_LEN:
       case BUILT_IN_VA_COPY:
