@@ -9042,7 +9042,8 @@ vectorizable_load (vec_info *vinfo,
 	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "hoisting out of the vectorized loop: %G", stmt);
+			     "hoisting out of the vectorized loop: %G",
+			     (gimple *) stmt);
 	  scalar_dest = copy_ssa_name (scalar_dest);
 	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
 	  edge pe = loop_preheader_edge (loop);

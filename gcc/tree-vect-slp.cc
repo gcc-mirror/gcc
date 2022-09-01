@@ -1046,7 +1046,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: unsupported call type %G",
-				 call_stmt);
+				 (gimple *) call_stmt);
 	      if (is_a <bb_vec_info> (vinfo) && i != 0)
 		continue;
 	      /* Fatal mismatch.  */
@@ -1553,7 +1553,8 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "re-using %sSLP tree %p\n",
-			 !(*leader)->failed ? "" : "failed ", *leader);
+			 !(*leader)->failed ? "" : "failed ",
+			 (void *) *leader);
       if (!(*leader)->failed)
 	{
 	  SLP_TREE_REF_COUNT (*leader)++;
@@ -1590,7 +1591,7 @@ vect_build_slp_tree (vec_info *vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "starting SLP discovery for node %p\n", res);
+		     "starting SLP discovery for node %p\n", (void *) res);
 
   poly_uint64 this_max_nunits = 1;
   slp_tree res_ = vect_build_slp_tree_2 (vinfo, res, stmts, group_size,
@@ -1600,7 +1601,7 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "SLP discovery for node %p failed\n", res);
+			 "SLP discovery for node %p failed\n", (void *) res);
       /* Mark the node invalid so we can detect those when still in use
 	 as backedge destinations.  */
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
@@ -1620,7 +1621,8 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "SLP discovery for node %p succeeded\n", res);
+			 "SLP discovery for node %p succeeded\n",
+			 (void *) res);
       gcc_assert (res_ == res);
       res->max_nunits = this_max_nunits;
       vect_update_max_nunits (max_nunits, this_max_nunits);
@@ -2525,12 +2527,14 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u, refcnt=%u)",
+  dump_printf_loc (metadata, user_loc,
+		   "node%s %p (max_nunits=" HOST_WIDE_INT_PRINT_UNSIGNED
+		   ", refcnt=%u)",
 		   SLP_TREE_DEF_TYPE (node) == vect_external_def
 		   ? " (external)"
 		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
 		      ? " (constant)"
-		      : ""), node,
+		      : ""), (void *) node,
 		   estimated_poly_value (node->max_nunits),
 					 SLP_TREE_REF_COUNT (node));
   if (SLP_TREE_VECTYPE (node))
@@ -2893,7 +2897,8 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "converting stmts on permute node %p\n", root);
+			 "converting stmts on permute node %p\n",
+			 (void *) root);
 
       bool *matches = XALLOCAVEC (bool, group_size);
       poly_uint64 max_nunits = 1;
@@ -3025,7 +3030,7 @@ vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Analyzing SLP tree %p for patterns\n",
-		     SLP_INSTANCE_TREE (instance));
+		     (void *) SLP_INSTANCE_TREE (instance));
 
   return vect_match_slp_patterns_2 (ref_node, vinfo, perm_cache, compat_cache,
 				    visited);
@@ -3217,7 +3222,8 @@ vect_build_slp_instance (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Final SLP tree for instance %p:\n", new_instance);
+			       "Final SLP tree for instance %p:\n",
+			       (void *) new_instance);
 	      vect_print_slp_graph (MSG_NOTE, vect_location,
 				    SLP_INSTANCE_TREE (new_instance));
 	    }
@@ -5153,11 +5159,11 @@ vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "duplicating permutation node %p with"
 			     " layout %d\n",
-			     node, to_layout_i);
+			     (void *) node, to_layout_i);
 	  else
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "inserting permutation node in place of %p\n",
-			     node);
+			     (void *) node);
 	}
 
       unsigned int num_lanes = SLP_TREE_LANES (node);
@@ -5245,7 +5251,8 @@ vect_optimize_slp_pass::materialize ()
 		  && !std::equal (tmp_perm.begin (), tmp_perm.end (),
 				  perm.begin ()))
 		dump_printf_loc (MSG_NOTE, vect_location,
-				 "absorbing input layouts into %p\n", node);
+				 "absorbing input layouts into %p\n",
+				 (void *) node);
 	      std::copy (tmp_perm.begin (), tmp_perm.end (), perm.begin ());
 	      bitmap_set_bit (fully_folded, node_i);
 	    }
@@ -5255,7 +5262,7 @@ vect_optimize_slp_pass::materialize ()
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "failed to absorb input layouts into %p\n",
-				 node);
+				 (void *) node);
 	      change_vec_perm_layout (nullptr, perm, layout_i, layout_i);
 	    }
 	}
@@ -5436,13 +5443,15 @@ vect_optimize_slp_pass::dump ()
 	      if (other_vertex.partition < vertex.partition)
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "      - %p [%d] --> %p\n",
-				 other_vertex.node, other_vertex.partition,
-				 vertex.node);
+				 (void *) other_vertex.node,
+				 other_vertex.partition,
+				 (void *) vertex.node);
 	      else
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "      - %p --> [%d] %p\n",
-				 vertex.node, other_vertex.partition,
-				 other_vertex.node);
+				 (void *) vertex.node,
+				 other_vertex.partition,
+				 (void *) other_vertex.node);
 	    };
 	  for_each_partition_edge (node_i, print_edge);
 	}
@@ -5886,7 +5895,8 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "Building vector operands of %p from scalars instead\n", node);
+		     "Building vector operands of %p from scalars instead\n",
+		     (void *) node);
 
   /* Don't remove and free the child nodes here, since they could be
      referenced by other structures.  The analysis and scheduling phases
@@ -6013,7 +6023,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Failed cyclic SLP reference in %p\n", node);
+			 "Failed cyclic SLP reference in %p\n", (void *) node);
       return false;
     }
   gcc_assert (SLP_TREE_DEF_TYPE (node) == vect_internal_def);
@@ -6045,7 +6055,8 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Cannot vectorize all-constant op node %p\n", node);
+			 "Cannot vectorize all-constant op node %p\n",
+			 (void *) node);
       res = false;
     }
 
@@ -6478,7 +6489,7 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
 	  && leader != instance)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "instance %p is leader of %p\n",
-			 leader, instance);
+			 (void *) leader, (void *) instance);
     }
 }
 
