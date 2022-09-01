@@ -1035,18 +1035,6 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	fprintf (dump_file, "chain length exceeds 5: %u\n", cur_chain_len);
     }
 
-  for (unsigned i = 0; i < cur_chain_len; i++)
-    {
-      edge e = cur_cd_chain[i];
-      /* Cycle detected.  */
-      if (e->src == dom_bb)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "cycle detected\n");
-	  return false;
-	}
-    }
-
   if (DEBUG_PREDICATE_ANALYZER && dump_file)
     fprintf (dump_file,
 	     "%*s%s (dom_bb = %u, dep_bb = %u, cd_chains = { %s }, ...)\n",
@@ -1061,7 +1049,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   FOR_EACH_EDGE (e, ei, dom_bb->succs)
     {
       int post_dom_check = 0;
-      if (e->flags & (EDGE_FAKE | EDGE_ABNORMAL))
+      if (e->flags & (EDGE_FAKE | EDGE_ABNORMAL | EDGE_DFS_BACK))
 	continue;
 
       basic_block cd_bb = e->dest;
@@ -1110,6 +1098,12 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      break;
 	    }
 
+	  /* The post-dominator walk will reach a backedge only
+	     from a forwarder, otherwise it should choose to exit
+	     the SCC.  */
+	  if (single_succ_p (cd_bb)
+	      && single_succ_edge (cd_bb)->flags & EDGE_DFS_BACK)
+	    break;
 	  cd_bb = get_immediate_dominator (CDI_POST_DOMINATORS, cd_bb);
 	  post_dom_check++;
 	  if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
