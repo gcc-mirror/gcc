@@ -3153,11 +3153,13 @@ template <typename _Tp, size_t _Num>
 template <typename _Tp>
   inline constexpr bool is_pointer_v = is_pointer<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_lvalue_reference_v =
-    is_lvalue_reference<_Tp>::value;
+  inline constexpr bool is_lvalue_reference_v = false;
 template <typename _Tp>
-  inline constexpr bool is_rvalue_reference_v =
-    is_rvalue_reference<_Tp>::value;
+  inline constexpr bool is_lvalue_reference_v<_Tp&> = true;
+template <typename _Tp>
+  inline constexpr bool is_rvalue_reference_v = false;
+template <typename _Tp>
+  inline constexpr bool is_rvalue_reference_v<_Tp&&> = true;
 template <typename _Tp>
   inline constexpr bool is_member_object_pointer_v =
     is_member_object_pointer<_Tp>::value;
@@ -3173,7 +3175,11 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_function_v = is_function<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_reference_v = is_reference<_Tp>::value;
+  inline constexpr bool is_reference_v = false;
+template <typename _Tp>
+  inline constexpr bool is_reference_v<_Tp&> = true;
+template <typename _Tp>
+  inline constexpr bool is_reference_v<_Tp&&> = true;
 template <typename _Tp>
   inline constexpr bool is_arithmetic_v = is_arithmetic<_Tp>::value;
 template <typename _Tp>
@@ -3187,9 +3193,13 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_const_v = is_const<_Tp>::value;
+  inline constexpr bool is_const_v = false;
 template <typename _Tp>
-  inline constexpr bool is_volatile_v = is_volatile<_Tp>::value;
+  inline constexpr bool is_const_v<const _Tp> = true;
+template <typename _Tp>
+  inline constexpr bool is_volatile_v = false;
+template <typename _Tp>
+  inline constexpr bool is_volatile_v<volatile _Tp> = true;
 template <typename _Tp>
   inline constexpr bool is_trivial_v = is_trivial<_Tp>::value;
 template <typename _Tp>
