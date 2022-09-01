@@ -6526,8 +6526,24 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  && e->symtree->n.sym
 			  && !e->symtree->n.sym->attr.dimension
 			  && e->ts.type != BT_CHARACTER
-			  && e->ts.type != BT_DERIVED
 			  && e->ts.type != BT_CLASS
+			  && (e->ts.type != BT_DERIVED
+			      || (dsym->ts.type == BT_DERIVED
+				  && e->ts.u.derived == dsym->ts.u.derived
+				  /* Types with allocatable components are
+				     excluded from clobbering because we need
+				     the unclobbered pointers to free the
+				     allocatable components in the callee.
+				     Same goes for finalizable types or types
+				     with finalizable components, we need to
+				     pass the unclobbered values to the
+				     finalization routines.
+				     For parameterized types, it's less clear
+				     but they may not have a constant size
+				     so better exclude them in any case.  */
+				  && !e->ts.u.derived->attr.alloc_comp
+				  && !e->ts.u.derived->attr.pdt_type
+				  && !gfc_is_finalizable (e->ts.u.derived, NULL)))
 			  && !sym->attr.elemental)
 			{
 			  tree var;
