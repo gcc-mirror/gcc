@@ -436,7 +436,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* If this is a numeric or enumeral type, or an access type, a nonzero Esize
      must be specified unless it was specified by the programmer.  Exceptions
      are for access-to-protected-subprogram types and all access subtypes, as
-     another GNAT type is used to lay out the GCC type for them.  */
+     another GNAT type is used to lay out the GCC type for them, as well as
+     access-to-subprogram types if front-end unnesting is enabled.  */
   gcc_assert (!is_type
 	      || Known_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
@@ -445,6 +446,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  && (!IN (kind, Access_Kind)
 		      || kind == E_Access_Protected_Subprogram_Type
 		      || kind == E_Anonymous_Access_Protected_Subprogram_Type
+		      || ((kind == E_Access_Subprogram_Type
+			   || kind == E_Anonymous_Access_Subprogram_Type)
+			  && Unnest_Subprogram_Mode)
 		      || kind == E_Access_Subtype
 		      || type_annotate_only)));
 
