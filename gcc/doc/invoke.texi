@@ -365,9 +365,9 @@ Objective-C and Objective-C++ Dialects}.
 -Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
--Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
--Wlogical-not-parentheses  -Wlogical-op  -Wlong-long @gol
--Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
+-Winvalid-pch  -Winvalid-utf8 -Wjump-misses-init  @gol
+-Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op  @gol
+-Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
 -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-format-attribute @gol
@@ -9568,6 +9568,13 @@ different size.
 @opindex Wno-invalid-pch
 Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
 the search path but cannot be used.
+
+@item -Winvalid-utf8
+@opindex Winvalid-utf8
+@opindex Wno-invalid-utf8
+Warn if an invalid UTF-8 character is found.
+This warning is on by default for C++23 if @option{-finput-charset=UTF-8}
+is used and turned into error with @option{-pedantic-errors}.
 
 @item -Wlong-long
 @opindex Wlong-long

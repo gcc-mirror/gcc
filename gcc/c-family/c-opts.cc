@@ -534,6 +534,7 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_finput_charset_:
       cpp_opts->input_charset = arg;
+      cpp_opts->cpp_input_charset_explicit = 1;
       break;
 
     case OPT_ftemplate_depth_:
@@ -1152,6 +1153,17 @@ c_common_post_options (const char **pfilename)
     lang_hooks.preprocess_options (parse_in);
   cpp_post_options (parse_in);
   init_global_opts_from_cpp (&global_options, cpp_get_options (parse_in));
+  /* For C++23 and explicit -finput-charset=UTF-8, turn on -Winvalid-utf8
+     by default and make it a pedwarn unless -Wno-invalid-utf8.  */
+  if (cxx_dialect >= cxx23
+      && cpp_opts->cpp_input_charset_explicit
+      && strcmp (cpp_opts->input_charset, "UTF-8") == 0
+      && (cpp_opts->cpp_warn_invalid_utf8
+	  || !global_options_set.x_warn_invalid_utf8))
+    {
+      global_options.x_warn_invalid_utf8 = 1;
+      cpp_opts->cpp_warn_invalid_utf8 = cpp_opts->cpp_pedantic ? 2 : 1;
+    }
 
   /* Let diagnostics infrastructure know how to convert input files the same
      way libcpp will do it, namely using the configured input charset and
