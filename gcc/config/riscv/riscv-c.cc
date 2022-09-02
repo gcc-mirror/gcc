@@ -93,11 +93,6 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
       break;
 
     case CM_PIC:
-      /* __riscv_cmodel_pic is deprecated, and will removed in next GCC release.
-	 see https://github.com/riscv/riscv-c-api-doc/pull/11  */
-      builtin_define ("__riscv_cmodel_pic");
-      /* FALLTHROUGH. */
-
     case CM_MEDANY:
       builtin_define ("__riscv_cmodel_medany");
       break;
