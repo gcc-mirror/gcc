@@ -24397,8 +24397,11 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 		location_t loc = type_specifier_seq.locations[ds_type_spec];
 		if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
 		  {
-		    error_at (loc, "missing template arguments after %qT",
-			      auto_node);
+		    auto_diagnostic_group g;
+		    gcc_rich_location richloc (loc);
+		    richloc.add_fixit_insert_after ("<>");
+		    error_at (&richloc, "missing template arguments after %qE",
+			      tmpl);
 		    inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here",
 			    tmpl);
 		  }
