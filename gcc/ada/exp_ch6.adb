@@ -1806,7 +1806,7 @@ package body Exp_Ch6 is
                Expr := New_Occurrence_Of (Temp, Loc);
             end if;
 
-            Rewrite (Actual, New_Occurrence_Of (Temp, Loc));
+            Rewrite (Actual, New_Occurrence_Of (Temp, Sloc (Actual)));
             Analyze (Actual);
 
             --  If the actual is a conversion of a packed reference, it may

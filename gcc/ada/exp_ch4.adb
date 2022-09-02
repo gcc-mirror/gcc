@@ -1424,33 +1424,52 @@ package body Exp_Ch4 is
             Remove_Side_Effects (Op1, Name_Req => True);
             Remove_Side_Effects (Op2, Name_Req => True);
 
-            Rewrite (Op1,
-              Make_Function_Call (Sloc (Op1),
-                Name => New_Occurrence_Of (RTE (Comp), Loc),
+            declare
+               Comp_Call : constant Node_Id :=
+                 Make_Function_Call (Loc,
+                   Name => New_Occurrence_Of (RTE (Comp), Loc),
 
-                Parameter_Associations => New_List (
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op1),
-                    Attribute_Name => Name_Address),
+                   Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op1),
+                       Attribute_Name => Name_Address),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op2),
-                    Attribute_Name => Name_Address),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op2),
+                       Attribute_Name => Name_Address),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op1),
-                    Attribute_Name => Name_Length),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op1),
+                       Attribute_Name => Name_Length),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op2),
-                    Attribute_Name => Name_Length))));
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op2),
+                       Attribute_Name => Name_Length)));
 
-            Rewrite (Op2,
-              Make_Integer_Literal (Sloc (Op2),
-                Intval => Uint_0));
+               Zero : constant Node_Id :=
+                 Make_Integer_Literal (Loc,
+                   Intval => Uint_0);
 
-            Analyze_And_Resolve (Op1, Standard_Integer);
-            Analyze_And_Resolve (Op2, Standard_Integer);
+               Comp_Op : Node_Id;
+
+            begin
+               case Nkind (N) is
+                  when N_Op_Lt =>
+                     Comp_Op := Make_Op_Lt (Loc, Comp_Call, Zero);
+                  when N_Op_Le =>
+                     Comp_Op := Make_Op_Le (Loc, Comp_Call, Zero);
+                  when N_Op_Gt =>
+                     Comp_Op := Make_Op_Gt (Loc, Comp_Call, Zero);
+                  when N_Op_Ge =>
+                     Comp_Op := Make_Op_Ge (Loc, Comp_Call, Zero);
+                  when others =>
+                     raise Program_Error;
+               end case;
+
+               Rewrite (N, Comp_Op);
+            end;
+
+            Analyze_And_Resolve (N, Standard_Boolean);
             return;
          end if;
       end if;
@@ -9819,7 +9838,7 @@ package body Exp_Ch4 is
          --  avoids anomalies when the replacement is done in an instance and
          --  is epsilon more efficient.
 
-         Set_Entity            (N, Standard_Entity (S_Op_Rem));
+         pragma Assert (Entity (N) = Standard_Op_Rem);
          Set_Etype             (N, Typ);
          Set_Do_Division_Check (N, DDC);
          Expand_N_Op_Rem (N);

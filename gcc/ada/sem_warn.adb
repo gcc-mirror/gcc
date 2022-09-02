@@ -1460,31 +1460,6 @@ package body Sem_Warn is
                  and then not Known_To_Have_Preelab_Init (Etype (E1))
                then
 
-                  --  For other than access type, go back to original node to
-                  --  deal with case where original unset reference has been
-                  --  rewritten during expansion.
-
-                  --  In some cases, the original node may be a type
-                  --  conversion, a qualification or an attribute reference and
-                  --  in this case we want the object entity inside. Same for
-                  --  an expression with actions.
-
-                  UR := Original_Node (UR);
-                  loop
-                     if Nkind (UR) in N_Expression_With_Actions
-                                    | N_Qualified_Expression
-                                    | N_Type_Conversion
-                     then
-                        UR := Expression (UR);
-
-                     elsif Nkind (UR) = N_Attribute_Reference then
-                        UR := Prefix (UR);
-
-                     else
-                        exit;
-                     end if;
-                  end loop;
-
                   --  Don't issue warning if appearing inside Initial_Condition
                   --  pragma or aspect, since that expression is not evaluated
                   --  at the point where it occurs in the source.

@@ -999,21 +999,26 @@ package body Checks is
                   Determine_Range (N, VOK, Vlo, Vhi, Assume_Valid => True);
 
                   if VOK and then Tlo <= Vlo and then Vhi <= Thi then
-                     Rewrite (Left_Opnd (N),
-                       Make_Type_Conversion (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                         Expression   => Relocate_Node (Left_Opnd (N))));
-
-                     Rewrite (Right_Opnd (N),
-                       Make_Type_Conversion (Loc,
-                        Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                        Expression   => Relocate_Node (Right_Opnd (N))));
-
                      --  Rewrite the conversion operand so that the original
                      --  node is retained, in order to avoid the warning for
                      --  redundant conversions in Resolve_Type_Conversion.
 
-                     Rewrite (N, Relocate_Node (N));
+                     declare
+                        Op : constant Node_Id := New_Op_Node (Nkind (N), Loc);
+                     begin
+                        Set_Left_Opnd (Op,
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of (Target_Type, Loc),
+                            Expression   => Relocate_Node (Left_Opnd (N))));
+                        Set_Right_Opnd (Op,
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of (Target_Type, Loc),
+                            Expression   => Relocate_Node (Right_Opnd (N))));
+
+                        Rewrite (N, Op);
+                     end;
 
                      Set_Etype (N, Target_Type);
 
