@@ -4436,18 +4436,19 @@ change_vec_perm_layout (slp_tree node, lane_permutation_t &perm,
 
    IN_LAYOUT_I has no meaning for other types of node.
 
-   Keeping the node as-is is always valid.  If the target doesn't appear to
-   support the node as-is then layout 0 has a high and arbitrary cost instead
-   of being invalid.  On the one hand, this ensures that every node has at
-   least one valid layout, avoiding what would otherwise be an awkward
-   special case.  On the other, it still encourages the pass to change
-   an invalid pre-existing layout choice into a valid one.  */
+   Keeping the node as-is is always valid.  If the target doesn't appear
+   to support the node as-is, but might realistically support other layouts,
+   then layout 0 instead has the cost of a worst-case permutation.  On the
+   one hand, this ensures that every node has at least one valid layout,
+   avoiding what would otherwise be an awkward special case.  On the other,
+   it still encourages the pass to change an invalid pre-existing layout
+   choice into a valid one.  */
 
 int
 vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
 					    unsigned int out_layout_i)
 {
-  const int fallback_cost = 100;
+  const int fallback_cost = 1;
 
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
     {
@@ -4457,8 +4458,9 @@ vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
       /* Check that the child nodes support the chosen layout.  Checking
 	 the first child is enough, since any second child would have the
 	 same shape.  */
+      auto first_child = SLP_TREE_CHILDREN (node)[0];
       if (in_layout_i > 0
-	  && !is_compatible_layout (SLP_TREE_CHILDREN (node)[0], in_layout_i))
+	  && !is_compatible_layout (first_child, in_layout_i))
 	return -1;
 
       change_vec_perm_layout (node, tmp_perm, in_layout_i, out_layout_i);
@@ -4469,7 +4471,15 @@ vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
       if (count < 0)
 	{
 	  if (in_layout_i == 0 && out_layout_i == 0)
-	    return fallback_cost;
+	    {
+	      /* Use the fallback cost if the node could in principle support
+		 some nonzero layout for both the inputs and the outputs.
+		 Otherwise assume that the node will be rejected later
+		 and rebuilt from scalars.  */
+	      if (SLP_TREE_LANES (node) == SLP_TREE_LANES (first_child))
+		return fallback_cost;
+	      return 0;
+	    }
 	  return -1;
 	}
 
@@ -4498,8 +4508,18 @@ vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
       if (!vect_transform_slp_perm_load_1 (m_vinfo, node, tmp_perm, vNULL,
 					   nullptr, vf, true, false, &n_perms))
 	{
+	  auto rep = SLP_TREE_REPRESENTATIVE (node);
 	  if (out_layout_i == 0)
-	    return fallback_cost;
+	    {
+	      /* Use the fallback cost if the load is an N-to-N permutation.
+		 Otherwise assume that the node will be rejected later
+		 and rebuilt from scalars.  */
+	      if (STMT_VINFO_GROUPED_ACCESS (rep)
+		  && (DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (rep))
+		      == SLP_TREE_LANES (node)))
+		return fallback_cost;
+	      return 0;
+	    }
 	  return -1;
 	}
 
