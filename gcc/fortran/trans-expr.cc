@@ -11436,6 +11436,9 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
       class_han = GFC_CLASS_TYPE_P (TREE_TYPE (lse->expr))
 	  ? gfc_class_data_get (lse->expr) : lse->expr;
 
+      if (!POINTER_TYPE_P (TREE_TYPE (class_han)))
+	class_han = gfc_build_addr_expr (NULL_TREE, class_han);
+
       /* Allocate block.  */
       gfc_init_block (&alloc);
       gfc_allocate_using_malloc (&alloc, class_han, size, NULL_TREE);
