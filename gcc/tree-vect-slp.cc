@@ -6435,47 +6435,64 @@ get_ultimate_leader (slp_instance instance,
   return instance;
 }
 
+namespace {
+/* Subroutine of vect_bb_partition_graph_r.  Map KEY to INSTANCE in
+   KEY_TO_INSTANCE, making INSTANCE the leader of any previous mapping
+   for KEY.  Return true if KEY was already in KEY_TO_INSTANCE.
+
+   INSTANCE_LEADER is as for get_ultimate_leader.  */
+
+template<typename T>
+bool
+vect_map_to_instance (slp_instance instance, T key,
+		      hash_map<T, slp_instance> &key_to_instance,
+		      hash_map<slp_instance, slp_instance> &instance_leader)
+{
+  bool existed_p;
+  slp_instance &key_instance = key_to_instance.get_or_insert (key, &existed_p);
+  if (!existed_p)
+    ;
+  else if (key_instance != instance)
+    {
+      /* If we're running into a previously marked key make us the
+	 leader of the current ultimate leader.  This keeps the
+	 leader chain acyclic and works even when the current instance
+	 connects two previously independent graph parts.  */
+      slp_instance key_leader
+	= get_ultimate_leader (key_instance, instance_leader);
+      if (key_leader != instance)
+	instance_leader.put (key_leader, instance);
+    }
+  key_instance = instance;
+  return existed_p;
+}
+}
+
 /* Worker of vect_bb_partition_graph, recurse on NODE.  */
 
 static void
 vect_bb_partition_graph_r (bb_vec_info bb_vinfo,
 			   slp_instance instance, slp_tree node,
 			   hash_map<stmt_vec_info, slp_instance> &stmt_to_instance,
-			   hash_map<slp_instance, slp_instance> &instance_leader,
-			   hash_set<slp_tree> &visited)
+			   hash_map<slp_tree, slp_instance> &node_to_instance,
+			   hash_map<slp_instance, slp_instance> &instance_leader)
 {
   stmt_vec_info stmt_info;
   unsigned i;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    {
-      bool existed_p;
-      slp_instance &stmt_instance
-	= stmt_to_instance.get_or_insert (stmt_info, &existed_p);
-      if (!existed_p)
-	;
-      else if (stmt_instance != instance)
-	{
-	  /* If we're running into a previously marked stmt make us the
-	     leader of the current ultimate leader.  This keeps the
-	     leader chain acyclic and works even when the current instance
-	     connects two previously independent graph parts.  */
-	  slp_instance stmt_leader
-	    = get_ultimate_leader (stmt_instance, instance_leader);
-	  if (stmt_leader != instance)
-	    instance_leader.put (stmt_leader, instance);
-	}
-      stmt_instance = instance;
-    }
+    vect_map_to_instance (instance, stmt_info, stmt_to_instance,
+			  instance_leader);
 
-  if (!SLP_TREE_SCALAR_STMTS (node).is_empty () && visited.add (node))
+  if (vect_map_to_instance (instance, node, node_to_instance,
+			    instance_leader))
     return;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (child && SLP_TREE_DEF_TYPE (child) == vect_internal_def)
       vect_bb_partition_graph_r (bb_vinfo, instance, child, stmt_to_instance,
-				 instance_leader, visited);
+				 node_to_instance, instance_leader);
 }
 
 /* Partition the SLP graph into pieces that can be costed independently.  */
@@ -6489,16 +6506,16 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
      corresponding SLP graph entry and upon visiting a previously
      marked stmt, make the stmts leader the current SLP graph entry.  */
   hash_map<stmt_vec_info, slp_instance> stmt_to_instance;
+  hash_map<slp_tree, slp_instance> node_to_instance;
   hash_map<slp_instance, slp_instance> instance_leader;
-  hash_set<slp_tree> visited;
   slp_instance instance;
   for (unsigned i = 0; bb_vinfo->slp_instances.iterate (i, &instance); ++i)
     {
       instance_leader.put (instance, instance);
       vect_bb_partition_graph_r (bb_vinfo,
 				 instance, SLP_INSTANCE_TREE (instance),
-				 stmt_to_instance, instance_leader,
-				 visited);
+				 stmt_to_instance, node_to_instance,
+				 instance_leader);
     }
 
   /* Then collect entries to each independent subgraph.  */
