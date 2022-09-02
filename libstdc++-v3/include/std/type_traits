@@ -168,13 +168,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // to either true_type or false_type which allows for a more efficient
   // implementation that avoids recursive class template instantiation.
   template<typename... _Bn>
-    using __or_ = decltype(__detail::__or_fn<_Bn...>(0));
+    struct __or_
+    : decltype(__detail::__or_fn<_Bn...>(0))
+    { };
 
   template<typename... _Bn>
-    using __and_ = decltype(__detail::__and_fn<_Bn...>(0));
+    struct __and_
+    : decltype(__detail::__and_fn<_Bn...>(0))
+    { };
 
   template<typename _Pp>
-    using __not_ = __bool_constant<!bool(_Pp::value)>;
+    struct __not_
+    : __bool_constant<!bool(_Pp::value)>
+    { };
   /// @endcond
 
 #if __cplusplus >= 201703L
