@@ -1,3 +1,69 @@
+2022-09-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106707
+	* gcc.target/i386/pr106707.c (foo): Replace long with long long.
+
+2022-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unproto-3.c, gcc.dg/c2x-unproto-3.c,
+	gcc.dg/c2x-unproto-4.c: New tests.
+	* gcc.dg/c2x-old-style-definition-6.c, gcc.dg/c2x-unproto-1.c,
+	gcc.dg/c2x-unproto-2.c: Update for removal of unprototyped
+	functions.
+
+2022-09-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-pr54400.c: Extend to aarch64.
+	* gcc.dg/vect/bb-slp-layout-18.c: New test.
+
+2022-09-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106707
+	* gcc.target/i386/pr106707.c: New test.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-signbit-1.c: New test.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* c-c++-common/cpp/Winvalid-utf8-1.c: New test.
+	* c-c++-common/cpp/Winvalid-utf8-2.c: New test.
+	* c-c++-common/cpp/Winvalid-utf8-3.c: New test.
+	* g++.dg/cpp23/Winvalid-utf8-1.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-2.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-3.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-4.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-5.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-6.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-7.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-8.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-9.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-10.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-11.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-12.C: New test.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106785
+	* gcc.dg/tree-ssa/vrp-float-nan-1.c: New test.
+
+2022-09-01  konglin1  <lingling.kong@intel.com>
+
+	* gcc.dg/tree-ssa/gen-vect-34.c: New test.
+	* gcc.dg/vect/vect-ifcvt-18.c: New test.
+
+2022-09-01  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106682
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: Fix typo.
+
+2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* g++.target/powerpc/pr101322.C: New test.
+
 2022-08-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-deprecated-2.c, gcc.dg/c2x-attr-fallthrough-2.c,

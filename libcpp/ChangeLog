@@ -1,3 +1,22 @@
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* include/cpplib.h (struct cpp_options): Implement C++23
+	P2295R6 - Support for UTF-8 as a portable source file encoding.
+	Add cpp_warn_invalid_utf8 and cpp_input_charset_explicit fields.
+	(enum cpp_warning_reason): Add CPP_W_INVALID_UTF8 enumerator.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_invalid_utf8
+	and cpp_input_charset_explicit.
+	* charset.cc (_cpp_valid_utf8): Adjust function comment.
+	* lex.cc (UCS_LIMIT): Define.
+	(utf8_continuation): New const variable.
+	(utf8_signifier): Move earlier in the file.
+	(_cpp_warn_invalid_utf8, _cpp_handle_multibyte_utf8): New functions.
+	(_cpp_skip_block_comment): Handle -Winvalid-utf8 warning.
+	(skip_line_comment): Likewise.
+	(lex_raw_string, lex_string): Likewise.
+	(_cpp_lex_direct): Likewise.
+
 2022-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/106778

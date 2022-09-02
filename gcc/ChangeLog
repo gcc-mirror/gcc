@@ -1,3 +1,173 @@
+2022-09-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR other/106782
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::prefer_unrolled_loop): Replace %u with
+	HOST_WIDE_INT_PRINT_UNSIGNED.
+
+2022-09-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): When building a
+	VEC_PERM_EXPR of an existing vector, set the SLP_TREE_LANES
+	to the number of vector elements, if that's a known constant.
+	(vect_optimize_slp_pass::is_compatible_layout): Remove associated
+	comment about zero SLP_TREE_LANES.
+	(vect_optimize_slp_pass::start_choosing_layouts): Iterate over
+	all partition members when looking for potential layouts.
+	Handle existing permutes of fixed-length vectors.
+
+2022-09-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106707
+	* config/i386/i386.md (moves to/from AX_REG into xchg peephole2):
+	Do not convert a move pattern where both operands are AX_REG.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_le): Convert to dconst*inf.
+	(build_ge): Same.
+	* value-range.cc (frange::set_signbit): Same.
+	(frange::normalize_kind): Same.
+	(range_tests_floats): Same.
+	* value-range.h (vrp_val_max): Same.
+	(vrp_val_min): Same.
+	(frange::set_varying): Same.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* emit-rtl.cc (init_emit_once): Initialize dconstinf and
+	dconstninf.
+	* real.h: Add dconstinf and dconstninf.
+
+2022-09-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Remove cycle detection, instead avoid walking backedges.
+
+2022-09-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	New wrapping overload.
+	(uninit_analysis::init_use_preds): Simplify.
+	(uninit_analysis::init_from_phi_def): Likewise.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Add case for
+	CFN_BUILT_IN_SIGNBIT.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_equal::op1_range): Do not copy sign
+	bit.
+	(foperator_not_equal::op1_range): Same.
+	* value-query.cc (range_query::get_tree_range): Set sign bit.
+	* value-range-pretty-print.cc (vrange_printer::visit): Dump sign bit.
+	* value-range.cc (frange::set_signbit): New.
+	(frange::set): Adjust for sign bit.
+	(frange::normalize_kind): Same.
+	(frange::union_): Remove useless comment.
+	(frange::intersect): Same.
+	(frange::contains_p): Adjust for sign bit.
+	(frange::singleton_p): Same.
+	(frange::verify_range): Same.
+	(range_tests_signbit): New tests.
+	(range_tests_floats): Call range_tests_signbit.
+	* value-range.h (class frange_props): Add signbit
+	(class frange): Same.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/106782
+	* dumpfile.h (dump_printf_loc): Use ATTRIBUTE_GCC_DUMP_PRINTF (3, 4)
+	instead of ATTRIBUTE_GCC_DUMP_PRINTF (3, 0).
+	* tree-parloops.cc (parloops_is_slp_reduction): Cast pointers to
+	derived types of gimple to gimple * to avoid -Wformat warnings.
+	* tree-vect-loop-manip.cc (vect_set_loop_condition,
+	vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-stmts.cc (vectorizable_load): Likewise.
+	* tree-vect-patterns.cc (vect_split_statement,
+	vect_recog_mulhs_pattern, vect_recog_average_pattern,
+	vect_determine_precisions_from_range,
+	vect_determine_precisions_from_users): Likewise.
+	* gimple-loop-versioning.cc
+	(loop_versioning::analyze_term_using_scevs): Likewise.
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Likewise.
+	(vect_build_slp_tree): Cast slp_tree to void * to avoid
+	-Wformat warnings.
+	(optimize_load_redistribution_1, vect_match_slp_patterns,
+	vect_build_slp_instance, vect_optimize_slp_pass::materialize,
+	vect_optimize_slp_pass::dump, vect_slp_convert_to_external,
+	vect_slp_analyze_node_operations, vect_bb_partition_graph): Likewise.
+	(vect_print_slp_tree): Likewise.  Also use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of %u.
+	* tree-vect-loop.cc (vect_determine_vectorization_factor,
+	vect_analyze_scalar_cycles_1, vect_analyze_loop_operations,
+	vectorizable_induction, vect_transform_loop): Cast pointers to derived
+	types of gimple to gimple * to avoid -Wformat warnings.
+	(vect_analyze_loop_2): Cast slp_tree to void * to avoid
+	-Wformat warnings.
+	(vect_estimate_min_profitable_iters): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of %d.
+	* tree-vect-slp-patterns.cc (vect_pattern_validate_optab): Use %G
+	instead of %T and STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (node))
+	instead of SLP_TREE_DEF_TYPE (node).
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* doc/invoke.texi (-Winvalid-utf8): Document it.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106785
+	* value-range.cc (range_tests_nan): Adjust tests for !HONOR_NANS.
+	(range_tests_floats): Same.
+
+2022-09-01  konglin1  <lingling.kong@intel.com>
+
+	* tree-if-conv.cc (is_cond_scalar_reduction): Add MULT_EXPR
+	recognition.
+
+2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin):
+	Enforce the use of a valid MMA pointer type.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Add vector
+	registers.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Add cost of poly_int.
+	(riscv_output_move): Add csrr vlenb assembly.
+	* config/riscv/riscv.md (move_type): Add csrr vlenb type.
+	(ext): New attribute.
+	(ext_enabled): Ditto.
+	(enabled): Ditto.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (TARGET_VECTOR ? V_REGS : NO_REGS): Add
+	"vr" constraint.
+	(TARGET_VECTOR ? VD_REGS : NO_REGS): Add "vd" constraint.
+	(TARGET_VECTOR ? VM_REGS : NO_REGS): Add "vm" constraint.
+	(vp): Add poly constraint.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.h (enum reg_class): Change vype to vtype.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_convert_vector_bits): Change
+	configuration according to TARGET_MIN_VLEN.
+	* config/riscv/riscv.h (UNITS_PER_FP_REG): Fix comment.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* config.build: Remove deprecated ports.

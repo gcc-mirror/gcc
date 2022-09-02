@@ -1,3 +1,102 @@
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (adjacent_transform_view::_Iterator): Add
+	typename keyword before dependent qualified-id.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_referenceable): Remove.
+	(__add_lvalue_reference_helper, __add_rvalue_reference_helper):
+	Use __void_t instead of __is_referenceable.
+	(__add_pointer_helper): Likewise.
+	(add_pointer): Add partial specializations for reference types.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_constructible_impl): Replace
+	class template with alias template.
+	(is_default_constructible, is_nothrow_constructible)
+	(is_nothrow_constructible): Simplify base-specifier.
+	(__is_copy_constructible_impl, __is_move_constructible_impl)
+	(__is_nothrow_copy_constructible_impl)
+	(__is_nothrow_move_constructible_impl): Remove class templates.
+	(is_copy_constructible, is_move_constructible)
+	(is_nothrow_constructible, is_nothrow_default_constructible)
+	(is_nothrow_copy_constructible, is_nothrow_move_constructible):
+	Adjust base-specifiers to use __is_constructible_impl.
+	(__is_copy_assignable_impl, __is_move_assignable_impl)
+	(__is_nt_copy_assignable_impl, __is_nt_move_assignable_impl):
+	Remove class templates.
+	(__is_assignable_impl): New alias template.
+	(is_assignable, is_copy_assignable, is_move_assignable):
+	Adjust base-specifiers to use new alias template.
+	(is_nothrow_copy_assignable, is_nothrow_move_assignable):
+	Adjust base-specifiers to use existing alias template.
+	(__is_trivially_constructible_impl): New alias template.
+	(is_trivially_constructible, is_trivially_default_constructible)
+	(is_trivially_copy_constructible)
+	(is_trivially_move_constructible): Adjust base-specifiers to use
+	new alias template.
+	(__is_trivially_assignable_impl): New alias template.
+	(is_trivially_assignable, is_trivially_copy_assignable)
+	(is_trivially_move_assignable): Adjust base-specifier to use
+	new alias template.
+	(__add_lval_ref_t, __add_rval_ref_t): New alias templates.
+	(add_lvalue_reference, add_rvalue_reference): Use new alias
+	templates.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__decay_selector): Add partial
+	specializations for array types. Only check for function types
+	when not dealing with an array.
+	(decay): Add partial specializations for reference types.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_lvalue_reference_v)
+	(is_rvalue_reference_v, is_reference_v, is_const_v)
+	(is_volatile_v): Define using partial specializations instead
+	of instantiating class templates.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_enum_v, is_class_v, is_union_v)
+	(is_empty_v, is_polymoprhic_v, is_abstract_v, is_final_v)
+	(is_base_of_v, is_aggregate_v): Use built-in directly instead of
+	instantiating class template.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_scoped_enum): Remove workaround.
+
+2022-09-01  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__unarize): Define.
+	(adjacent_view::_Iterator): Befriend adjacent_transform_view.
+	(adjacent_transform_view): Define.
+	(adjacent_transform_view::_Iterator): Define.
+	(adjacent_transform_view::_Sentinel): Define.
+	(views::__detail::__can_adjacent_transform_view): Define.
+	(views::_AdjacentTransform): Define.
+	(views::adjacent_transform): Define.
+	(views::pairwise_transform): Define.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc: New test.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_array_known_bounds): Add partial
+	specialization instead of using std::extent.
+	(__is_array_unknown_bounds): Likewise.
+	(extent): Add partial specializations to stop recursion after
+	the result is found.
+	(is_array_v): Add partial specializations instead of
+	instantiating the class template.
+	(rank_v, extent_v): Likewise.
+	(is_bounded_array_v, is_unbounded_array_v): Likewise.
+	(is_bounded_array, is_unbounded_array): Define in terms of the
+	variable templates.
+
 2022-08-31  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_base.h (__advance_fn::operator()): Add

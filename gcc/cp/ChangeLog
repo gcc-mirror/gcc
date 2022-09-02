@@ -1,3 +1,7 @@
+2022-09-01  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (maybe_strip_ref_conversion): Remove.
+
 2022-08-30  Ulrich Drepper  <drepper@gmail.com>
 
 	* Make-lang.in: Add rule to rebuild std-name-hint.h from
