@@ -1466,10 +1466,7 @@ execute_early_warn_uninitialized (struct function *fun)
      elimination to compute edge reachability.  Don't bother when
      we only warn for unconditionally executed code though.  */
   if (!optimize)
-    {
-      do_rpo_vn (fun, NULL, NULL, false, false, VN_NOWALK);
-      free_rpo_vn ();
-    }
+    do_rpo_vn (fun, NULL, NULL, false, false, VN_NOWALK);
   else
     set_all_edges_as_executable (fun);
 
