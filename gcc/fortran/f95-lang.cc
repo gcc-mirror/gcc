@@ -1047,6 +1047,8 @@ gfc_init_builtin_functions (void)
 		      ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isunordered", ftype, BUILT_IN_ISUNORDERED,
 		      "__builtin_isunordered", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_iseqsig", ftype, BUILT_IN_ISEQSIG,
+		      "__builtin_iseqsig", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
