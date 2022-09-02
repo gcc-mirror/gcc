@@ -1,3 +1,17 @@
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/106782
+	* tree-vect-slp.cc (vect_print_slp_tree): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of %u.
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of %d.
+	* tree-vect-slp-patterns.cc (vect_pattern_validate_optab): Use %G
+	instead of %T and STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (node))
+	instead of SLP_TREE_DEF_TYPE (node).
+
 2022-08-30  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
