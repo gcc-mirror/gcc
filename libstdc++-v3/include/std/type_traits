@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Pp>
     struct negation
-    : __not_<_Pp>
+    : __not_<_Pp>::type
     { };
 
   /** @ingroup variable_templates
@@ -845,7 +845,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_unsigned
   template<typename _Tp>
     struct is_unsigned
-    : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>
+    : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>::type
     { };
 
   /// @cond undocumented
@@ -1222,7 +1222,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp>
     struct __is_implicitly_default_constructible
     : public __and_<__is_constructible_impl<_Tp>,
-		    __is_implicitly_default_constructible_safe<_Tp>>
+		    __is_implicitly_default_constructible_safe<_Tp>>::type
     { };
 
   /// is_trivially_copy_constructible
@@ -1282,7 +1282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_trivially_destructible
     : public __and_<__is_destructible_safe<_Tp>,
-		    __bool_constant<__has_trivial_destructor(_Tp)>>
+		    __bool_constant<__has_trivial_destructor(_Tp)>>::type
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -2975,7 +2975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nt_invocable_impl<_Result, _Ret,
 				  __void_t<typename _Result::type>>
     : __or_<is_void<_Ret>,
-	    __is_nothrow_convertible<typename _Result::type, _Ret>>
+	    __is_nothrow_convertible<typename _Result::type, _Ret>>::type
     { };
   /// @endcond
 
