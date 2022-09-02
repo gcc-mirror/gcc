@@ -142,7 +142,7 @@ package body Debug is
    --  d_a  Stop elaboration checks on accept or select statement
    --  d_b  Use designated type model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
-   --  d_d
+   --  d_d  CUDA compilation : compile for the device
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
    --  d_g  Disable large static aggregates
@@ -345,8 +345,8 @@ package body Debug is
 
    --  d_a  Ignore the effects of pragma Elaborate_All
    --  d_b  Ignore the effects of pragma Elaborate_Body
-   --  d_c
-   --  d_d
+   --  d_c  CUDA compilation : compile/bind for the host
+   --  d_d  CUDA compilation : compile/bind for the device
    --  d_e  Ignore the effects of pragma Elaborate
    --  d_f
    --  d_g

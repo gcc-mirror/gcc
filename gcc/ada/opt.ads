@@ -544,6 +544,13 @@ package Opt is
    --  Set to True to enable CUDA host expansion:
    --    - Removal of CUDA_Global and CUDA_Device symbols
    --    - Generation of kernel registration code in packages
+   --    - Binder invokes device elaboration/finalization code
+
+   Enable_CUDA_Device_Expansion : Boolean := False;
+   --  GNATBIND
+   --  Set to True to enable CUDA device (as opposed to host) expansion:
+   --    - Binder generates elaboration/finalization code that can be
+   --      invoked from corresponding binder-generated host-side code.
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
