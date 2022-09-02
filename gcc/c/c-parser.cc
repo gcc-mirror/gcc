@@ -7531,6 +7531,7 @@ c_parser_string_literal (c_parser *parser, bool translate, bool wide_ok)
   ret.original_code = STRING_CST;
   ret.original_type = NULL_TREE;
   set_c_expr_source_range (&ret, get_range_from_loc (line_table, loc));
+  ret.m_decimal = 0;
   parser->seen_string_literal = true;
   return ret;
 }
@@ -7610,6 +7611,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
   ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
 				 code, exp_location, rhs.value,
 				 rhs.original_type);
+  ret.m_decimal = 0;
   set_c_expr_source_range (&ret, lhs.get_start (), rhs.get_finish ());
   if (code == NOP_EXPR)
     ret.original_code = MODIFY_EXPR;
@@ -7747,6 +7749,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 			   : NULL);
     }
   set_c_expr_source_range (&ret, start, exp2.get_finish ());
+  ret.m_decimal = 0;
   return ret;
 }
 
@@ -7936,6 +7939,7 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 	TREE_OPERAND (t, 0) = stack[0].expr.value;			      \
 	TREE_OPERAND (t, 1) = stack[1].expr.value;			      \
 	stack[0].expr.value = t;					      \
+	stack[0].expr.m_decimal = 0;					      \
       }									      \
     else								      \
       stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,	      \
@@ -8222,6 +8226,7 @@ c_parser_unary_expression (c_parser *parser)
 	ret.value = build_indirect_ref (combined_loc, op.value, RO_UNARY_STAR);
 	ret.src_range.m_start = op_loc;
 	ret.src_range.m_finish = finish;
+	ret.m_decimal = 0;
 	return ret;
       }
     case CPP_PLUS:
@@ -8595,6 +8600,7 @@ c_parser_has_attribute_expression (c_parser *parser)
     result.value =  boolean_false_node;
 
   set_c_expr_source_range (&result, start, finish);
+  result.m_decimal = 0;
   return result;
 }
 
@@ -8960,6 +8966,7 @@ c_parser_predefined_identifier (c_parser *parser)
   expr.value = fname_decl (loc, c_parser_peek_token (parser)->keyword,
 			   c_parser_peek_token (parser)->value);
   set_c_expr_source_range (&expr, loc, loc);
+  expr.m_decimal = 0;
   c_parser_consume_token (parser);
   return expr;
 }
@@ -9038,12 +9045,14 @@ c_parser_postfix_expression (c_parser *parser)
   source_range tok_range = c_parser_peek_token (parser)->get_range ();
   expr.original_code = ERROR_MARK;
   expr.original_type = NULL;
+  expr.m_decimal = 0;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_NUMBER:
       expr.value = c_parser_peek_token (parser)->value;
       set_c_expr_source_range (&expr, tok_range);
       loc = c_parser_peek_token (parser)->location;
+      expr.m_decimal = c_parser_peek_token (parser)->flags & DECIMAL_INT;
       c_parser_consume_token (parser);
       if (TREE_CODE (expr.value) == FIXED_CST
 	  && !targetm.fixed_point_supported_p ())

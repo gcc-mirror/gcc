@@ -1447,6 +1447,10 @@ Wwrite-strings
 C ObjC C++ ObjC++ Var(warn_write_strings) Warning
 In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
 
+Wxor-used-as-pow
+C ObjC C++ ObjC++ Var(warn_xor_used_as_pow) Warning Init(1)
+Warn about xor operators where it appears the user meant exponentiation.
+
 Wzero-as-null-pointer-constant
 C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.

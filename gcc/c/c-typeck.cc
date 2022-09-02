@@ -3829,6 +3829,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
 			struct c_expr arg1, struct c_expr arg2)
 {
   struct c_expr result;
+  result.m_decimal = 0;
 
   enum tree_code code1 = arg1.original_code;
   enum tree_code code2 = arg2.original_code;
@@ -3985,6 +3986,14 @@ parser_build_binary_op (location_t location, enum tree_code code,
     warning_at (location, OPT_Wenum_compare,
 		"comparison between %qT and %qT",
 		type1, type2);
+
+  if (warn_xor_used_as_pow
+      && code == BIT_XOR_EXPR
+      && arg1.m_decimal
+      && arg2.m_decimal)
+    check_for_xor_used_as_pow (arg1.get_location (), arg1.value,
+			       location,
+			       arg2.value);
 
   return result;
 }

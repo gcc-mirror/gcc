@@ -414,6 +414,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wvector-operation-performance @gol
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than @gol
 -Wvolatile-register-var  -Wwrite-strings @gol
+-Wxor-used-as-pow @gol
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
@@ -9685,6 +9686,20 @@ Warn if a register variable is declared volatile.  The volatile
 modifier does not inhibit all optimizations that may eliminate reads
 and/or writes to register variables.  This warning is enabled by
 @option{-Wall}.
+
+@item -Wxor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wxor-used-as-pow
+@opindex Wno-xor-used-as-pow
+Warn about uses of @code{^}, the exclusive or operator, where it appears
+the user meant exponentiation.  Specifically, the warning occurs when the
+left-hand side is the decimal constant 2 or 10 and the right-hand side
+is also a decimal constant.
+
+In C and C++, @code{^} means exclusive or, whereas in some other languages
+(e.g. TeX and some versions of BASIC) it means exponentiation.
+
+This warning is enabled by default.  It can be silenced by converting one
+of the operands to hexadecimal.
 
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization

@@ -190,7 +190,7 @@ struct GTY(()) cpp_string {
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
 				     comment.  */
-#define BOL		(1 << 6) /* Token at beginning of line.  */
+#define DECIMAL_INT     (1 << 6) /* Decimal integer, set in c-lex.cc.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
@@ -199,6 +199,7 @@ struct GTY(()) cpp_string {
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
 #define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
+#define BOL		(1 << 12) /* Token at beginning of line.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 

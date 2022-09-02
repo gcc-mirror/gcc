@@ -2069,6 +2069,8 @@ struct cp_parser_expression_stack_entry
   enum cp_parser_prec prec;
   /* Location of the binary operation we are parsing.  */
   location_t loc;
+  /* Flags from the operator token.  */
+  unsigned char flags;
 };
 
 /* The stack for storing partial expressions.  We only need NUM_PREC_VALUES
@@ -5614,7 +5616,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  if (!cast_p)
 	    cp_parser_non_integral_constant_expression (parser, NIC_FLOAT);
 	}
-      return (cp_expr (token->u.value, token->location)
+      return (cp_expr (token->u.value, token->location, token->flags & DECIMAL_INT)
 	      .maybe_add_location_wrapper ());
 
     case CPP_CHAR_USERDEF:
@@ -10160,6 +10162,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
      get_rhs:
       current.tree_type = binops_by_token[token->type].tree_type;
       current.loc = token->location;
+      current.flags = token->flags;
 
       /* We used the operator token.  */
       cp_lexer_consume_token (parser->lexer);
@@ -10243,6 +10246,18 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
 	warn_logical_not_parentheses (current.loc, current.tree_type,
 				      current.lhs, maybe_constant_value (rhs));
+
+      if (warn_xor_used_as_pow
+	  && current.tree_type == BIT_XOR_EXPR
+	  /* Don't warn for named "xor" (as opposed to '^').  */
+	  && !(current.flags & NAMED_OP)
+	  && current.lhs.decimal_p ()
+	  && rhs.decimal_p ())
+	check_for_xor_used_as_pow
+	  (current.lhs.get_location (),
+	   tree_strip_any_location_wrapper (current.lhs),
+	   current.loc,
+	   tree_strip_any_location_wrapper (rhs));
 
       overload = NULL;
 

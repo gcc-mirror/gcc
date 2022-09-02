@@ -3799,3 +3799,97 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
 		op0, op_symbol_code (code), op1);
     }
 }
+
+/* Given LHS_VAL ^ RHS_VAL, where LHS_LOC is the location of the LHS and
+   OPERATOR_LOC is the location of the ^, complain with -Wxor-used-as-pow
+   if it looks like the user meant exponentiation rather than xor.  */
+
+void
+check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
+			   location_t operator_loc,
+			   tree rhs_val)
+{
+  /* Only complain if both args are non-negative integer constants.  */
+  if (!(TREE_CODE (lhs_val) == INTEGER_CST
+	&& tree_int_cst_sgn (lhs_val) >= 0))
+    return;
+  if (!(TREE_CODE (rhs_val) == INTEGER_CST
+	&& tree_int_cst_sgn (rhs_val) >= 0))
+    return;
+
+  /* Only complain if the LHS is 2 or 10.  */
+  unsigned HOST_WIDE_INT lhs_uhwi = tree_to_uhwi (lhs_val);
+  if (lhs_uhwi != 2 && lhs_uhwi != 10)
+    return;
+
+  unsigned HOST_WIDE_INT rhs_uhwi = tree_to_uhwi (rhs_val);
+  unsigned HOST_WIDE_INT xor_result = lhs_uhwi ^ rhs_uhwi;
+  binary_op_rich_location loc (operator_loc,
+			       lhs_val, rhs_val, false);
+
+  /* If we issue fix-it hints with the warning then we will also issue a
+     note suggesting how to suppress the warning with a different change.
+     These proposed changes are incompatible.  */
+  loc.fixits_cannot_be_auto_applied ();
+
+  auto_diagnostic_group d;
+  bool warned = false;
+  if (lhs_uhwi == 2)
+    {
+      /* Would exponentiation fit in int, in long long, or not at all?  */
+      if (rhs_uhwi < (INT_TYPE_SIZE - 1))
+	{
+	  unsigned HOST_WIDE_INT suggested_result = 1 << rhs_uhwi;
+	  loc.add_fixit_replace (lhs_loc, "1");
+	  loc.add_fixit_replace (operator_loc, "<<");
+	  warned = warning_at (&loc, OPT_Wxor_used_as_pow,
+			       "result of %<%wu^%wu%> is %wu;"
+			       " did you mean %<1 << %wu%> (%wu)?",
+			       lhs_uhwi, rhs_uhwi, xor_result,
+			       rhs_uhwi, suggested_result);
+	}
+      else if (rhs_uhwi < (LONG_LONG_TYPE_SIZE - 1))
+	{
+	  loc.add_fixit_replace (lhs_loc, "1LL");
+	  loc.add_fixit_replace (operator_loc, "<<");
+	  warned = warning_at (&loc, OPT_Wxor_used_as_pow,
+			       "result of %<%wu^%wu%> is %wu;"
+			       " did you mean %<1LL << %wu%>?",
+			       lhs_uhwi, rhs_uhwi, xor_result,
+			       rhs_uhwi);
+	}
+      else if (rhs_uhwi <= LONG_LONG_TYPE_SIZE)
+	warned = warning_at (&loc, OPT_Wxor_used_as_pow,
+			     "result of %<%wu^%wu%> is %wu;"
+			     " did you mean exponentiation?",
+			     lhs_uhwi, rhs_uhwi, xor_result);
+      /* Otherwise assume it's an xor.  */
+    }
+  else
+    {
+      gcc_assert (lhs_uhwi == 10);
+      loc.add_fixit_replace (lhs_loc, "1");
+      loc.add_fixit_replace (operator_loc, "e");
+      warned = warning_at (&loc, OPT_Wxor_used_as_pow,
+			   "result of %<%wu^%wu%> is %wu;"
+			   " did you mean %<1e%wu%>?",
+			   lhs_uhwi, rhs_uhwi, xor_result,
+			   rhs_uhwi);
+    }
+  if (warned)
+    {
+      gcc_rich_location note_loc (lhs_loc);
+      if (lhs_uhwi == 2)
+	note_loc.add_fixit_replace (lhs_loc, "0x2");
+      else
+	{
+	  gcc_assert (lhs_uhwi == 10);
+	  note_loc.add_fixit_replace (lhs_loc, "0xa");
+	}
+      note_loc.fixits_cannot_be_auto_applied ();
+      inform (&note_loc,
+	      "you can silence this warning by using a hexadecimal constant"
+	      " (%wx rather than %wd)",
+	      lhs_uhwi, lhs_uhwi);
+    }
+}
