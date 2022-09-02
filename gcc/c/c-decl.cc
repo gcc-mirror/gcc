@@ -7868,7 +7868,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       error ("%<[*]%> not allowed in other than function prototype scope");
     }
 
-  if (arg_types == NULL_TREE && !funcdef_flag
+  if (arg_types == NULL_TREE && !funcdef_flag && !flag_isoc2x
       && !in_system_header_at (input_location))
     warning (OPT_Wstrict_prototypes,
 	     "function declaration isn%'t a prototype");
@@ -7896,9 +7896,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       tree parm, type, typelt;
       unsigned int parmno;
 
-      /* In C2X, convert () in a function definition to (void).  */
+      /* In C2X, convert () to (void).  */
       if (flag_isoc2x
-	  && funcdef_flag
 	  && !arg_types
 	  && !arg_info->parms)
 	arg_types = arg_info->types = void_list_node;

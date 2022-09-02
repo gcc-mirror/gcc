@@ -51,10 +51,9 @@ static void AsanDie() {
   }
   if (common_flags()->print_module_map >= 1)
     DumpProcessMap();
-  if (flags()->sleep_before_dying) {
-    Report("Sleeping for %d second(s)\n", flags()->sleep_before_dying);
-    SleepForSeconds(flags()->sleep_before_dying);
-  }
+
+  WaitForDebugger(flags()->sleep_before_dying, "before dying");
+
   if (flags()->unmap_shadow_on_exit) {
     if (kMidMemBeg) {
       UnmapOrDie((void*)kLowShadowBeg, kMidMemBeg - kLowShadowBeg);
@@ -74,6 +73,7 @@ static void CheckUnwind() {
 // -------------------------- Globals --------------------- {{{1
 int asan_inited;
 bool asan_init_is_running;
+bool replace_intrin_cached;
 
 #if !ASAN_FIXED_MAPPING
 uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;
@@ -386,6 +386,8 @@ static void AsanInitInternal() {
   // initialization steps look at flags().
   InitializeFlags();
 
+  WaitForDebugger(flags()->sleep_before_init, "before init");
+
   // Stop performing init at this point if we are being loaded via
   // dlopen() and the platform supports it.
   if (SANITIZER_SUPPORTS_INIT_FOR_DLOPEN && UNLIKELY(HandleDlopenInit())) {
@@ -420,9 +422,6 @@ static void AsanInitInternal() {
 
   __sanitizer::InitializePlatformEarly();
 
-  // Re-exec ourselves if we need to set additional env or command line args.
-  MaybeReexec();
-
   // Setup internal allocator callback.
   SetLowLevelAllocateMinAlignment(ASAN_SHADOW_GRANULARITY);
   SetLowLevelAllocateCallback(OnLowLevelAllocate);
@@ -453,6 +452,7 @@ static void AsanInitInternal() {
 
   // On Linux AsanThread::ThreadStart() calls malloc() that's why asan_inited
   // should be set to 1 prior to initializing the threads.
+  replace_intrin_cached = flags()->replace_intrin;
   asan_inited = 1;
   asan_init_is_running = false;
 
@@ -497,10 +497,7 @@ static void AsanInitInternal() {
 
   VReport(1, "AddressSanitizer Init done\n");
 
-  if (flags()->sleep_after_init) {
-    Report("Sleeping for %d second(s)\n", flags()->sleep_after_init);
-    SleepForSeconds(flags()->sleep_after_init);
-  }
+  WaitForDebugger(flags()->sleep_after_init, "after init");
 }
 
 // Initialize as requested from some part of ASan runtime library (interceptors,

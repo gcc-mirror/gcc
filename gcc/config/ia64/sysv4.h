@@ -30,9 +30,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Stabs does not work properly for 64-bit targets.  */
-#undef DBX_DEBUGGING_INFO
-
 /* Various pseudo-ops for which the Intel assembler uses non-standard
    definitions.  */
 

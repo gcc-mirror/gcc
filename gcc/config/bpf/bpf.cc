@@ -291,6 +291,7 @@ void
 bpf_target_macros (cpp_reader *pfile)
 {
   builtin_define ("__BPF__");
+  builtin_define ("__bpf__");
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__BPF_BIG_ENDIAN__");

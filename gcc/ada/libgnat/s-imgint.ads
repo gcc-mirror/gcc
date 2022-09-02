@@ -48,8 +48,6 @@ pragma Assertion_Policy (Pre                => Ignore,
 with System.Image_I;
 with System.Unsigned_Types;
 with System.Val_Int;
-with System.Val_Uns;
-with System.Val_Util;
 with System.Wid_Uns;
 
 package System.Img_Int
@@ -57,27 +55,12 @@ package System.Img_Int
 is
    subtype Unsigned is Unsigned_Types.Unsigned;
 
-   package Int_Params is new Val_Util.Int_Params
-     (Int                                => Integer,
-      Uns                                => Unsigned,
-      Uns_Option                         => Val_Uns.Impl.Uns_Option,
-      Unsigned_Width_Ghost               =>
+   package Impl is new Image_I
+     (Int                  => Integer,
+      Uns                  => Unsigned,
+      Unsigned_Width_Ghost =>
          Wid_Uns.Width_Unsigned (0, Unsigned'Last),
-      Only_Decimal_Ghost                 => Val_Uns.Impl.Only_Decimal_Ghost,
-      Hexa_To_Unsigned_Ghost             =>
-         Val_Uns.Impl.Hexa_To_Unsigned_Ghost,
-      Wrap_Option                        => Val_Uns.Impl.Wrap_Option,
-      Scan_Based_Number_Ghost            =>
-         Val_Uns.Impl.Scan_Based_Number_Ghost,
-      Prove_Iter_Scan_Based_Number_Ghost =>
-         Val_Uns.Impl.Prove_Iter_Scan_Based_Number_Ghost,
-      Is_Integer_Ghost                   => Val_Int.Impl.Is_Integer_Ghost,
-      Prove_Scan_Only_Decimal_Ghost      =>
-         Val_Int.Impl.Prove_Scan_Only_Decimal_Ghost,
-      Abs_Uns_Of_Int                     => Val_Int.Impl.Abs_Uns_Of_Int,
-      Value_Integer                      => Val_Int.Impl.Value_Integer);
-
-   package Impl is new Image_I (Int_Params);
+      Int_Params           => System.Val_Int.Impl.Spec.Int_Params);
 
    procedure Image_Integer
      (V : Integer;

@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_ALGORITHM
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -49,7 +50,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "tree-cfg.h"
 #include "alloc-pool.h"
+#include "sreal.h"
+#include "predict.h"
 
+static bool vect_transform_slp_perm_load_1 (vec_info *, slp_tree,
+					    load_permutation_t &,
+					    const vec<tree> &,
+					    gimple_stmt_iterator *,
+					    poly_uint64, bool, bool,
+					    unsigned *,
+					    unsigned * = nullptr,
+					    bool = false);
+static int vectorizable_slp_permutation_1 (vec_info *, gimple_stmt_iterator *,
+					   slp_tree, lane_permutation_t &,
+					   vec<slp_tree> &, bool);
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
 static void vect_print_slp_tree (dump_flags_t, dump_location_t, slp_tree);
@@ -304,6 +318,16 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
   oprnds_info.release ();
 }
 
+/* Return the execution frequency of NODE (so that a higher value indicates
+   a "more important" node when optimizing for speed).  */
+
+static sreal
+vect_slp_node_weight (slp_tree node)
+{
+  stmt_vec_info stmt_info = vect_orig_stmt (SLP_TREE_REPRESENTATIVE (node));
+  basic_block bb = gimple_bb (stmt_info->stmt);
+  return bb->count.to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+}
 
 /* Return true if STMTS contains a pattern statement.  */
 
@@ -1022,7 +1046,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: unsupported call type %G",
-				 call_stmt);
+				 (gimple *) call_stmt);
 	      if (is_a <bb_vec_info> (vinfo) && i != 0)
 		continue;
 	      /* Fatal mismatch.  */
@@ -1529,7 +1553,8 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "re-using %sSLP tree %p\n",
-			 !(*leader)->failed ? "" : "failed ", *leader);
+			 !(*leader)->failed ? "" : "failed ",
+			 (void *) *leader);
       if (!(*leader)->failed)
 	{
 	  SLP_TREE_REF_COUNT (*leader)++;
@@ -1566,7 +1591,7 @@ vect_build_slp_tree (vec_info *vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "starting SLP discovery for node %p\n", res);
+		     "starting SLP discovery for node %p\n", (void *) res);
 
   poly_uint64 this_max_nunits = 1;
   slp_tree res_ = vect_build_slp_tree_2 (vinfo, res, stmts, group_size,
@@ -1576,7 +1601,7 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "SLP discovery for node %p failed\n", res);
+			 "SLP discovery for node %p failed\n", (void *) res);
       /* Mark the node invalid so we can detect those when still in use
 	 as backedge destinations.  */
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
@@ -1596,7 +1621,8 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "SLP discovery for node %p succeeded\n", res);
+			 "SLP discovery for node %p succeeded\n",
+			 (void *) res);
       gcc_assert (res_ == res);
       res->max_nunits = this_max_nunits;
       vect_update_max_nunits (max_nunits, this_max_nunits);
@@ -1816,6 +1842,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 					     TREE_TYPE (TREE_TYPE (vec))));
 	  SLP_TREE_VECTYPE (vnode) = TREE_TYPE (vec);
 	}
+      auto nunits = TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (vnode));
+      unsigned HOST_WIDE_INT const_nunits;
+      if (nunits.is_constant (&const_nunits))
+	SLP_TREE_LANES (vnode) = const_nunits;
       SLP_TREE_VEC_DEFS (vnode).safe_push (vec);
       /* We are always building a permutation node even if it is an identity
 	 permute to shield the rest of the vectorizer from the odd node
@@ -2501,12 +2531,14 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u, refcnt=%u)",
+  dump_printf_loc (metadata, user_loc,
+		   "node%s %p (max_nunits=" HOST_WIDE_INT_PRINT_UNSIGNED
+		   ", refcnt=%u)",
 		   SLP_TREE_DEF_TYPE (node) == vect_external_def
 		   ? " (external)"
 		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
 		      ? " (constant)"
-		      : ""), node,
+		      : ""), (void *) node,
 		   estimated_poly_value (node->max_nunits),
 					 SLP_TREE_REF_COUNT (node));
   if (SLP_TREE_VECTYPE (node))
@@ -2869,7 +2901,8 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "converting stmts on permute node %p\n", root);
+			 "converting stmts on permute node %p\n",
+			 (void *) root);
 
       bool *matches = XALLOCAVEC (bool, group_size);
       poly_uint64 max_nunits = 1;
@@ -3001,7 +3034,7 @@ vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Analyzing SLP tree %p for patterns\n",
-		     SLP_INSTANCE_TREE (instance));
+		     (void *) SLP_INSTANCE_TREE (instance));
 
   return vect_match_slp_patterns_2 (ref_node, vinfo, perm_cache, compat_cache,
 				    visited);
@@ -3193,7 +3226,8 @@ vect_build_slp_instance (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Final SLP tree for instance %p:\n", new_instance);
+			       "Final SLP tree for instance %p:\n",
+			       (void *) new_instance);
 	      vect_print_slp_graph (MSG_NOTE, vect_location,
 				    SLP_INSTANCE_TREE (new_instance));
 	    }
@@ -3531,29 +3565,465 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
   return opt_result::success ();
 }
 
-struct slpg_vertex
+/* Estimates the cost of inserting layout changes into the SLP graph.
+   It can also say that the insertion is impossible.  */
+
+struct slpg_layout_cost
 {
-  slpg_vertex (slp_tree node_)
-    : node (node_), perm_in (-1), perm_out (-1) {}
+  slpg_layout_cost () = default;
+  slpg_layout_cost (sreal, bool);
 
-  int get_perm_materialized () const
-    { return perm_in != perm_out ? perm_in : 0; }
+  static slpg_layout_cost impossible () { return { sreal::max (), 0 }; }
+  bool is_possible () const { return depth != sreal::max (); }
 
-  slp_tree node;
-  /* The common permutation on the incoming lanes (towards SLP children).  */
-  int perm_in;
-  /* The permutation on the outgoing lanes (towards SLP parents).  When
-     the node is a materialization point for a permute this differs
-     from perm_in (and is then usually zero).  Materialization happens
-     on the input side.  */
-  int perm_out;
+  bool operator== (const slpg_layout_cost &) const;
+  bool operator!= (const slpg_layout_cost &) const;
+
+  bool is_better_than (const slpg_layout_cost &, bool) const;
+
+  void add_parallel_cost (const slpg_layout_cost &);
+  void add_serial_cost (const slpg_layout_cost &);
+  void split (unsigned int);
+
+  /* The longest sequence of layout changes needed during any traversal
+     of the partition dag, weighted by execution frequency.
+
+     This is the most important metric when optimizing for speed, since
+     it helps to ensure that we keep the number of operations on
+     critical paths to a minimum.  */
+  sreal depth = 0;
+
+  /* An estimate of the total number of operations needed.  It is weighted by
+     execution frequency when optimizing for speed but not when optimizing for
+     size.  In order to avoid double-counting, a node with a fanout of N will
+     distribute 1/N of its total cost to each successor.
+
+     This is the most important metric when optimizing for size, since
+     it helps to keep the total number of operations to a minimum,  */
+  sreal total = 0;
 };
 
-/* Fill the vertices and leafs vector with all nodes in the SLP graph.  */
+/* Construct costs for a node with weight WEIGHT.  A higher weight
+   indicates more frequent execution.  IS_FOR_SIZE is true if we are
+   optimizing for size rather than speed.  */
 
-static void
-vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
-			 vec<slpg_vertex> &vertices, vec<int> &leafs)
+slpg_layout_cost::slpg_layout_cost (sreal weight, bool is_for_size)
+  : depth (weight), total (is_for_size && weight > 0 ? 1 : weight)
+{
+}
+
+bool
+slpg_layout_cost::operator== (const slpg_layout_cost &other) const
+{
+  return depth == other.depth && total == other.total;
+}
+
+bool
+slpg_layout_cost::operator!= (const slpg_layout_cost &other) const
+{
+  return !operator== (other);
+}
+
+/* Return true if these costs are better than OTHER.  IS_FOR_SIZE is
+   true if we are optimizing for size rather than speed.  */
+
+bool
+slpg_layout_cost::is_better_than (const slpg_layout_cost &other,
+				  bool is_for_size) const
+{
+  if (is_for_size)
+    {
+      if (total != other.total)
+	return total < other.total;
+      return depth < other.depth;
+    }
+  else
+    {
+      if (depth != other.depth)
+	return depth < other.depth;
+      return total < other.total;
+    }
+}
+
+/* Increase the costs to account for something with cost INPUT_COST
+   happening in parallel with the current costs.  */
+
+void
+slpg_layout_cost::add_parallel_cost (const slpg_layout_cost &input_cost)
+{
+  depth = std::max (depth, input_cost.depth);
+  total += input_cost.total;
+}
+
+/* Increase the costs to account for something with cost INPUT_COST
+   happening in series with the current costs.  */
+
+void
+slpg_layout_cost::add_serial_cost (const slpg_layout_cost &other)
+{
+  depth += other.depth;
+  total += other.total;
+}
+
+/* Split the total cost among TIMES successors or predecessors.  */
+
+void
+slpg_layout_cost::split (unsigned int times)
+{
+  if (times > 1)
+    total /= times;
+}
+
+/* Information about one node in the SLP graph, for use during
+   vect_optimize_slp_pass.  */
+
+struct slpg_vertex
+{
+  slpg_vertex (slp_tree node_) : node (node_) {}
+
+  /* The node itself.  */
+  slp_tree node;
+
+  /* Which partition the node belongs to, or -1 if none.  Nodes outside of
+     partitions are flexible; they can have whichever layout consumers
+     want them to have.  */
+  int partition = -1;
+
+  /* The number of nodes that directly use the result of this one
+     (i.e. the number of nodes that count this one as a child).  */
+  unsigned int out_degree = 0;
+
+  /* The execution frequency of the node.  */
+  sreal weight = 0;
+
+  /* The total execution frequency of all nodes that directly use the
+     result of this one.  */
+  sreal out_weight = 0;
+};
+
+/* Information about one partition of the SLP graph, for use during
+   vect_optimize_slp_pass.  */
+
+struct slpg_partition_info
+{
+  /* The nodes in the partition occupy indices [NODE_BEGIN, NODE_END)
+     of m_partitioned_nodes.  */
+  unsigned int node_begin = 0;
+  unsigned int node_end = 0;
+
+  /* Which layout we've chosen to use for this partition, or -1 if
+     we haven't picked one yet.  */
+  int layout = -1;
+
+  /* The number of predecessors and successors in the partition dag.
+     The predecessors always have lower partition numbers and the
+     successors always have higher partition numbers.
+
+     Note that the directions of these edges are not necessarily the
+     same as in the data flow graph.  For example, if an SCC has separate
+     partitions for an inner loop and an outer loop, the inner loop's
+     partition will have at least two incoming edges from the outer loop's
+     partition: one for a live-in value and one for a live-out value.
+     In data flow terms, one of these edges would also be from the outer loop
+     to the inner loop, but the other would be in the opposite direction.  */
+  unsigned int in_degree = 0;
+  unsigned int out_degree = 0;
+};
+
+/* Information about the costs of using a particular layout for a
+   particular partition.  It can also say that the combination is
+   impossible.  */
+
+struct slpg_partition_layout_costs
+{
+  bool is_possible () const { return internal_cost.is_possible (); }
+  void mark_impossible () { internal_cost = slpg_layout_cost::impossible (); }
+
+  /* The costs inherited from predecessor partitions.  */
+  slpg_layout_cost in_cost;
+
+  /* The inherent cost of the layout within the node itself.  For example,
+     this is nonzero for a load if choosing a particular layout would require
+     the load to permute the loaded elements.  It is nonzero for a
+     VEC_PERM_EXPR if the permutation cannot be eliminated or converted
+     to full-vector moves.  */
+  slpg_layout_cost internal_cost;
+
+  /* The costs inherited from successor partitions.  */
+  slpg_layout_cost out_cost;
+};
+
+/* This class tries to optimize the layout of vectors in order to avoid
+   unnecessary shuffling.  At the moment, the set of possible layouts are
+   restricted to bijective permutations.
+
+   The goal of the pass depends on whether we're optimizing for size or
+   for speed.  When optimizing for size, the goal is to reduce the overall
+   number of layout changes (including layout changes implied by things
+   like load permutations).  When optimizing for speed, the goal is to
+   reduce the maximum latency attributable to layout changes on any
+   non-cyclical path through the data flow graph.
+
+   For example, when optimizing a loop nest for speed, we will prefer
+   to make layout changes outside of a loop rather than inside of a loop,
+   and will prefer to make layout changes in parallel rather than serially,
+   even if that increases the overall number of layout changes.
+
+   The high-level procedure is:
+
+   (1) Build a graph in which edges go from uses (parents) to definitions
+       (children).
+
+   (2) Divide the graph into a dag of strongly-connected components (SCCs).
+
+   (3) When optimizing for speed, partition the nodes in each SCC based
+       on their containing cfg loop.  When optimizing for size, treat
+       each SCC as a single partition.
+
+       This gives us a dag of partitions.  The goal is now to assign a
+       layout to each partition.
+
+   (4) Construct a set of vector layouts that are worth considering.
+       Record which nodes must keep their current layout.
+
+   (5) Perform a forward walk over the partition dag (from loads to stores)
+       accumulating the "forward" cost of using each layout.  When visiting
+       each partition, assign a tentative choice of layout to the partition
+       and use that choice when calculating the cost of using a different
+       layout in successor partitions.
+
+   (6) Perform a backward walk over the partition dag (from stores to loads),
+       accumulating the "backward" cost of using each layout.  When visiting
+       each partition, make a final choice of layout for that partition based
+       on the accumulated forward costs (from (5)) and backward costs
+       (from (6)).
+
+   (7) Apply the chosen layouts to the SLP graph.
+
+   For example, consider the SLP statements:
+
+   S1:      a_1 = load
+       loop:
+   S2:      a_2 = PHI<a_1, a_3>
+   S3:      b_1 = load
+   S4:      a_3 = a_2 + b_1
+       exit:
+   S5:      a_4 = PHI<a_3>
+   S6:      store a_4
+
+   S2 and S4 form an SCC and are part of the same loop.  Every other
+   statement is in a singleton SCC.  In this example there is a one-to-one
+   mapping between SCCs and partitions and the partition dag looks like this;
+
+	S1     S3
+	 \     /
+	  S2+S4
+	    |
+	   S5
+	    |
+	   S6
+
+   S2, S3 and S4 will have a higher execution frequency than the other
+   statements, so when optimizing for speed, the goal is to avoid any
+   layout changes:
+
+   - within S3
+   - within S2+S4
+   - on the S3->S2+S4 edge
+
+   For example, if S3 was originally a reversing load, the goal of the
+   pass is to make it an unreversed load and change the layout on the
+   S1->S2+S4 and S2+S4->S5 edges to compensate.  (Changing the layout
+   on S1->S2+S4 and S5->S6 would also be acceptable.)
+
+   The difference between SCCs and partitions becomes important if we
+   add an outer loop:
+
+   S1:      a_1 = ...
+       loop1:
+   S2:      a_2 = PHI<a_1, a_6>
+   S3:      b_1 = load
+   S4:      a_3 = a_2 + b_1
+       loop2:
+   S5:      a_4 = PHI<a_3, a_5>
+   S6:      c_1 = load
+   S7:      a_5 = a_4 + c_1
+       exit2:
+   S8:      a_6 = PHI<a_5>
+   S9:      store a_6
+       exit1:
+
+   Here, S2, S4, S5, S7 and S8 form a single SCC.  However, when optimizing
+   for speed, we usually do not want restrictions in the outer loop to "infect"
+   the decision for the inner loop.  For example, if an outer-loop node
+   in the SCC contains a statement with a fixed layout, that should not
+   prevent the inner loop from using a different layout.  Conversely,
+   the inner loop should not dictate a layout to the outer loop: if the
+   outer loop does a lot of computation, then it may not be efficient to
+   do all of that computation in the inner loop's preferred layout.
+
+   So when optimizing for speed, we partition the SCC into S2+S4+S8 (outer)
+   and S5+S7 (inner).  We also try to arrange partitions so that:
+
+   - the partition for an outer loop comes before the partition for
+     an inner loop
+
+   - if a sibling loop A dominates a sibling loop B, A's partition
+     comes before B's
+
+   This gives the following partition dag for the example above:
+
+	S1        S3
+	 \        /
+	  S2+S4+S8   S6
+	   |   \\    /
+	   |    S5+S7
+	   |
+	  S9
+
+   There are two edges from S2+S4+S8 to S5+S7: one for the edge S4->S5 and
+   one for a reversal of the edge S7->S8.
+
+   The backward walk picks a layout for S5+S7 before S2+S4+S8.  The choice
+   for S2+S4+S8 therefore has to balance the cost of using the outer loop's
+   preferred layout against the cost of changing the layout on entry to the
+   inner loop (S4->S5) and on exit from the inner loop (S7->S8 reversed).
+
+   Although this works well when optimizing for speed, it has the downside
+   when optimizing for size that the choice of layout for S5+S7 is completely
+   independent of S9, which lessens the chance of reducing the overall number
+   of permutations.  We therefore do not partition SCCs when optimizing
+   for size.
+
+   To give a concrete example of the difference between optimizing
+   for size and speed, consider:
+
+   a[0] = (b[1] << c[3]) - d[1];
+   a[1] = (b[0] << c[2]) - d[0];
+   a[2] = (b[3] << c[1]) - d[3];
+   a[3] = (b[2] << c[0]) - d[2];
+
+   There are three different layouts here: one for a, one for b and d,
+   and one for c.  When optimizing for speed it is better to permute each
+   of b, c and d into the order required by a, since those permutations
+   happen in parallel.  But when optimizing for size, it is better to:
+
+   - permute c into the same order as b
+   - do the arithmetic
+   - permute the result into the order required by a
+
+   This gives 2 permutations rather than 3.  */
+
+class vect_optimize_slp_pass
+{
+public:
+  vect_optimize_slp_pass (vec_info *vinfo) : m_vinfo (vinfo) {}
+  void run ();
+
+private:
+  /* Graph building.  */
+  struct loop *containing_loop (slp_tree);
+  bool is_cfg_latch_edge (graph_edge *);
+  void build_vertices (hash_set<slp_tree> &, slp_tree);
+  void build_vertices ();
+  void build_graph ();
+
+  /* Partitioning.  */
+  void create_partitions ();
+  template<typename T> void for_each_partition_edge (unsigned int, T);
+
+  /* Layout selection.  */
+  bool is_compatible_layout (slp_tree, unsigned int);
+  int change_layout_cost (slp_tree, unsigned int, unsigned int);
+  slpg_partition_layout_costs &partition_layout_costs (unsigned int,
+						       unsigned int);
+  void change_vec_perm_layout (slp_tree, lane_permutation_t &,
+			       int, unsigned int);
+  int internal_node_cost (slp_tree, int, unsigned int);
+  void start_choosing_layouts ();
+
+  /* Cost propagation.  */
+  slpg_layout_cost edge_layout_cost (graph_edge *, unsigned int,
+				     unsigned int, unsigned int);
+  slpg_layout_cost total_in_cost (unsigned int);
+  slpg_layout_cost forward_cost (graph_edge *, unsigned int, unsigned int);
+  slpg_layout_cost backward_cost (graph_edge *, unsigned int, unsigned int);
+  void forward_pass ();
+  void backward_pass ();
+
+  /* Rematerialization.  */
+  slp_tree get_result_with_layout (slp_tree, unsigned int);
+  void materialize ();
+
+  /* Clean-up.  */
+  void remove_redundant_permutations ();
+
+  void dump ();
+
+  vec_info *m_vinfo;
+
+  /* True if we should optimize the graph for size, false if we should
+     optimize it for speed.  (It wouldn't be easy to make this decision
+     more locally.)  */
+  bool m_optimize_size;
+
+  /* A graph of all SLP nodes, with edges leading from uses to definitions.
+     In other words, a node's predecessors are its slp_tree parents and
+     a node's successors are its slp_tree children.  */
+  graph *m_slpg = nullptr;
+
+  /* The vertices of M_SLPG, indexed by slp_tree::vertex.  */
+  auto_vec<slpg_vertex> m_vertices;
+
+  /* The list of all leaves of M_SLPG. such as external definitions, constants,
+     and loads.  */
+  auto_vec<int> m_leafs;
+
+  /* This array has one entry for every vector layout that we're considering.
+     Element 0 is null and indicates "no change".  Other entries describe
+     permutations that are inherent in the current graph and that we would
+     like to reverse if possible.
+
+     For example, a permutation { 1, 2, 3, 0 } means that something has
+     effectively been permuted in that way, such as a load group
+     { a[1], a[2], a[3], a[0] } (viewed as a permutation of a[0:3]).
+     We'd then like to apply the reverse permutation { 3, 0, 1, 2 }
+     in order to put things "back" in order.  */
+  auto_vec<vec<unsigned> > m_perms;
+
+  /* A partitioning of the nodes for which a layout must be chosen.
+     Each partition represents an <SCC, cfg loop> pair; that is,
+     nodes in different SCCs belong to different partitions, and nodes
+     within an SCC can be further partitioned according to a containing
+     cfg loop.  Partition <SCC1, L1> comes before <SCC2, L2> if:
+
+     - SCC1 != SCC2 and SCC1 is a predecessor of SCC2 in a forward walk
+       from leaves (such as loads) to roots (such as stores).
+
+     - SCC1 == SCC2 and L1's header strictly dominates L2's header.  */
+  auto_vec<slpg_partition_info> m_partitions;
+
+  /* The list of all nodes for which a layout must be chosen.  Nodes for
+     partition P come before the nodes for partition P+1.  Nodes within a
+     partition are in reverse postorder.  */
+  auto_vec<unsigned int> m_partitioned_nodes;
+
+  /* Index P * num-layouts + L contains the cost of using layout L
+     for partition P.  */
+  auto_vec<slpg_partition_layout_costs> m_partition_layout_costs;
+
+  /* Index N * num-layouts + L, if nonnull, is a node that provides the
+     original output of node N adjusted to have layout L.  */
+  auto_vec<slp_tree> m_node_layouts;
+};
+
+/* Fill the vertices and leafs vector with all nodes in the SLP graph.
+   Also record whether we should optimize anything for speed rather
+   than size.  */
+
+void
+vect_optimize_slp_pass::build_vertices (hash_set<slp_tree> &visited,
+					slp_tree node)
 {
   unsigned i;
   slp_tree child;
@@ -3561,8 +4031,15 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
   if (visited.add (node))
     return;
 
-  node->vertex = vertices.length ();
-  vertices.safe_push (slpg_vertex (node));
+  if (stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node))
+    {
+      basic_block bb = gimple_bb (vect_orig_stmt (rep)->stmt);
+      if (optimize_bb_for_speed_p (bb))
+	m_optimize_size = false;
+    }
+
+  node->vertex = m_vertices.length ();
+  m_vertices.safe_push (slpg_vertex (node));
 
   bool leaf = true;
   bool force_leaf = false;
@@ -3570,7 +4047,7 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
     if (child)
       {
 	leaf = false;
-	vect_slp_build_vertices (visited, child, vertices, leafs);
+	build_vertices (visited, child);
       }
     else
       force_leaf = true;
@@ -3580,21 +4057,19 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
      and inductions.  Force those SLP PHIs to act as leafs to make them
      backwards reachable.  */
   if (leaf || force_leaf)
-    leafs.safe_push (node->vertex);
+    m_leafs.safe_push (node->vertex);
 }
 
 /* Fill the vertices and leafs vector with all nodes in the SLP graph.  */
 
-static void
-vect_slp_build_vertices (vec_info *info, vec<slpg_vertex> &vertices,
-			 vec<int> &leafs)
+void
+vect_optimize_slp_pass::build_vertices ()
 {
   hash_set<slp_tree> visited;
   unsigned i;
   slp_instance instance;
-  FOR_EACH_VEC_ELT (info->slp_instances, i, instance)
-    vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
-			     leafs);
+  FOR_EACH_VEC_ELT (m_vinfo->slp_instances, i, instance)
+    build_vertices (visited, SLP_INSTANCE_TREE (instance));
 }
 
 /* Apply (reverse) bijectite PERM to VEC.  */
@@ -3625,96 +4100,520 @@ vect_slp_permute (vec<unsigned> perm,
     }
 }
 
-/* Return whether permutations PERM_A and PERM_B as recorded in the
-   PERMS vector are equal.  */
+/* Return the cfg loop that contains NODE.  */
 
-static bool
-vect_slp_perms_eq (const vec<vec<unsigned> > &perms,
-		   int perm_a, int perm_b)
+struct loop *
+vect_optimize_slp_pass::containing_loop (slp_tree node)
 {
-  return (perm_a == perm_b
-	  || (perm_a != -1 && perm_b != -1
-	      && perms[perm_a].length () == perms[perm_b].length ()
-	      && memcmp (&perms[perm_a][0], &perms[perm_b][0],
-			 sizeof (unsigned) * perms[perm_a].length ()) == 0));
+  stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
+  if (!rep)
+    return ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father;
+  return gimple_bb (vect_orig_stmt (rep)->stmt)->loop_father;
 }
 
-/* Optimize the SLP graph of VINFO.  */
+/* Return true if UD (an edge from a use to a definition) is associated
+   with a loop latch edge in the cfg.  */
+
+bool
+vect_optimize_slp_pass::is_cfg_latch_edge (graph_edge *ud)
+{
+  slp_tree use = m_vertices[ud->src].node;
+  slp_tree def = m_vertices[ud->dest].node;
+  if (SLP_TREE_DEF_TYPE (use) != vect_internal_def
+      || SLP_TREE_DEF_TYPE (def) != vect_internal_def)
+    return false;
+
+  stmt_vec_info use_rep = vect_orig_stmt (SLP_TREE_REPRESENTATIVE (use));
+  return (is_a<gphi *> (use_rep->stmt)
+	  && bb_loop_header_p (gimple_bb (use_rep->stmt))
+	  && containing_loop (def) == containing_loop (use));
+}
+
+/* Build the graph.  Mark edges that correspond to cfg loop latch edges with
+   a nonnull data field.  */
 
 void
-vect_optimize_slp (vec_info *vinfo)
+vect_optimize_slp_pass::build_graph ()
 {
-  if (vinfo->slp_instances.is_empty ())
-    return;
+  m_optimize_size = true;
+  build_vertices ();
 
-  slp_tree node;
-  unsigned i;
-  auto_vec<slpg_vertex> vertices;
-  auto_vec<int> leafs;
-  vect_slp_build_vertices (vinfo, vertices, leafs);
-
-  struct graph *slpg = new_graph (vertices.length ());
-  for (slpg_vertex &v : vertices)
+  m_slpg = new_graph (m_vertices.length ());
+  for (slpg_vertex &v : m_vertices)
     for (slp_tree child : SLP_TREE_CHILDREN (v.node))
       if (child)
-	add_edge (slpg, v.node->vertex, child->vertex);
-
-  /* Compute (reverse) postorder on the inverted graph.  */
-  auto_vec<int> ipo;
-  graphds_dfs (slpg, &leafs[0], leafs.length (), &ipo, false, NULL, NULL);
-
-  auto_vec<vec<unsigned> > perms;
-  perms.safe_push (vNULL); /* zero is no permute */
-
-  /* Produce initial permutations.  */
-  for (i = 0; i < leafs.length (); ++i)
-    {
-      int idx = leafs[i];
-      slp_tree node = vertices[idx].node;
-
-      /* Handle externals and constants optimistically throughout the
-	 iteration.  But treat existing vectors as fixed since we
-	 do not handle permuting them below.  */
-      if ((SLP_TREE_DEF_TYPE (node) == vect_external_def
-	   && !SLP_TREE_VEC_DEFS (node).exists ())
-	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
-	continue;
-
-      /* Leafs do not change across iterations.  Note leafs also double
-	 as entries to the reverse graph.  */
-      if (!slpg->vertices[idx].succ)
 	{
-	  vertices[idx].perm_in = 0;
-	  vertices[idx].perm_out = 0;
+	  graph_edge *ud = add_edge (m_slpg, v.node->vertex, child->vertex);
+	  if (is_cfg_latch_edge (ud))
+	    ud->data = this;
+	}
+}
+
+/* Return true if E corresponds to a loop latch edge in the cfg.  */
+
+static bool
+skip_cfg_latch_edges (graph_edge *e)
+{
+  return e->data;
+}
+
+/* Create the node partitions.  */
+
+void
+vect_optimize_slp_pass::create_partitions ()
+{
+  /* Calculate a postorder of the graph, ignoring edges that correspond
+     to natural latch edges in the cfg.  Reading the vector from the end
+     to the beginning gives the reverse postorder.  */
+  auto_vec<int> initial_rpo;
+  graphds_dfs (m_slpg, &m_leafs[0], m_leafs.length (), &initial_rpo,
+	       false, NULL, skip_cfg_latch_edges);
+  gcc_assert (initial_rpo.length () == m_vertices.length ());
+
+  /* Calculate the strongly connected components of the graph.  */
+  auto_vec<int> scc_grouping;
+  unsigned int num_sccs = graphds_scc (m_slpg, NULL, NULL, &scc_grouping);
+
+  /* Create a new index order in which all nodes from the same SCC are
+     consecutive.  Use scc_pos to record the index of the first node in
+     each SCC.  */
+  auto_vec<unsigned int> scc_pos (num_sccs);
+  int last_component = -1;
+  unsigned int node_count = 0;
+  for (unsigned int node_i : scc_grouping)
+    {
+      if (last_component != m_slpg->vertices[node_i].component)
+	{
+	  last_component = m_slpg->vertices[node_i].component;
+	  gcc_assert (last_component == int (scc_pos.length ()));
+	  scc_pos.quick_push (node_count);
+	}
+      node_count += 1;
+    }
+  gcc_assert (node_count == initial_rpo.length ()
+	      && last_component + 1 == int (num_sccs));
+
+  /* Use m_partitioned_nodes to group nodes into SCC order, with the nodes
+     inside each SCC following the RPO we calculated above.  The fact that
+     we ignored natural latch edges when calculating the RPO should ensure
+     that, for natural loop nests:
+
+     - the first node that we encounter in a cfg loop is the loop header phi
+     - the loop header phis are in dominance order
+
+     Arranging for this is an optimization (see below) rather than a
+     correctness issue.  Unnatural loops with a tangled mess of backedges
+     will still work correctly, but might give poorer results.
+
+     Also update scc_pos so that it gives 1 + the index of the last node
+     in the SCC.  */
+  m_partitioned_nodes.safe_grow (node_count);
+  for (unsigned int old_i = initial_rpo.length (); old_i-- > 0;)
+    {
+      unsigned int node_i = initial_rpo[old_i];
+      unsigned int new_i = scc_pos[m_slpg->vertices[node_i].component]++;
+      m_partitioned_nodes[new_i] = node_i;
+    }
+
+  /* When optimizing for speed, partition each SCC based on the containing
+     cfg loop. The order we constructed above should ensure that, for natural
+     cfg loops, we'll create sub-SCC partitions for outer loops before
+     the corresponding sub-SCC partitions for inner loops.  Similarly,
+     when one sibling loop A dominates another sibling loop B, we should
+     create a sub-SCC partition for A before a sub-SCC partition for B.
+
+     As above, nothing depends for correctness on whether this achieves
+     a natural nesting, but we should get better results when it does.  */
+  m_partitions.reserve (m_vertices.length ());
+  unsigned int next_partition_i = 0;
+  hash_map<struct loop *, int> loop_partitions;
+  unsigned int rpo_begin = 0;
+  unsigned int num_partitioned_nodes = 0;
+  for (unsigned int rpo_end : scc_pos)
+    {
+      loop_partitions.empty ();
+      unsigned int partition_i = next_partition_i;
+      for (unsigned int rpo_i = rpo_begin; rpo_i < rpo_end; ++rpo_i)
+	{
+	  /* Handle externals and constants optimistically throughout.
+	     But treat existing vectors as fixed since we do not handle
+	     permuting them.  */
+	  unsigned int node_i = m_partitioned_nodes[rpo_i];
+	  auto &vertex = m_vertices[node_i];
+	  if ((SLP_TREE_DEF_TYPE (vertex.node) == vect_external_def
+	       && !SLP_TREE_VEC_DEFS (vertex.node).exists ())
+	      || SLP_TREE_DEF_TYPE (vertex.node) == vect_constant_def)
+	    vertex.partition = -1;
+	  else
+	    {
+	      bool existed;
+	      if (m_optimize_size)
+		existed = next_partition_i > partition_i;
+	      else
+		{
+		  struct loop *loop = containing_loop (vertex.node);
+		  auto &entry = loop_partitions.get_or_insert (loop, &existed);
+		  if (!existed)
+		    entry = next_partition_i;
+		  partition_i = entry;
+		}
+	      if (!existed)
+		{
+		  m_partitions.quick_push (slpg_partition_info ());
+		  next_partition_i += 1;
+		}
+	      vertex.partition = partition_i;
+	      num_partitioned_nodes += 1;
+	      m_partitions[partition_i].node_end += 1;
+	    }
+	}
+      rpo_begin = rpo_end;
+    }
+
+  /* Assign ranges of consecutive node indices to each partition,
+     in partition order.  Start with node_end being the same as
+     node_begin so that the next loop can use it as a counter.  */
+  unsigned int node_begin = 0;
+  for (auto &partition : m_partitions)
+    {
+      partition.node_begin = node_begin;
+      node_begin += partition.node_end;
+      partition.node_end = partition.node_begin;
+    }
+  gcc_assert (node_begin == num_partitioned_nodes);
+
+  /* Finally build the list of nodes in partition order.  */
+  m_partitioned_nodes.truncate (num_partitioned_nodes);
+  for (unsigned int node_i = 0; node_i < m_vertices.length (); ++node_i)
+    {
+      int partition_i = m_vertices[node_i].partition;
+      if (partition_i >= 0)
+	{
+	  unsigned int order_i = m_partitions[partition_i].node_end++;
+	  m_partitioned_nodes[order_i] = node_i;
+	}
+    }
+}
+
+/* Look for edges from earlier partitions into node NODE_I and edges from
+   node NODE_I into later partitions.  Call:
+
+      FN (ud, other_node_i)
+
+   for each such use-to-def edge ud, where other_node_i is the node at the
+   other end of the edge.  */
+
+template<typename T>
+void
+vect_optimize_slp_pass::for_each_partition_edge (unsigned int node_i, T fn)
+{
+  int partition_i = m_vertices[node_i].partition;
+  for (graph_edge *pred = m_slpg->vertices[node_i].pred;
+       pred; pred = pred->pred_next)
+    {
+      int src_partition_i = m_vertices[pred->src].partition;
+      if (src_partition_i >= 0 && src_partition_i != partition_i)
+	fn (pred, pred->src);
+    }
+  for (graph_edge *succ = m_slpg->vertices[node_i].succ;
+       succ; succ = succ->succ_next)
+    {
+      int dest_partition_i = m_vertices[succ->dest].partition;
+      if (dest_partition_i >= 0 && dest_partition_i != partition_i)
+	fn (succ, succ->dest);
+    }
+}
+
+/* Return true if layout LAYOUT_I is compatible with the number of SLP lanes
+   that NODE would operate on.  This test is independent of NODE's actual
+   operation.  */
+
+bool
+vect_optimize_slp_pass::is_compatible_layout (slp_tree node,
+					      unsigned int layout_i)
+{
+  if (layout_i == 0)
+    return true;
+
+  if (SLP_TREE_LANES (node) != m_perms[layout_i].length ())
+    return false;
+
+  return true;
+}
+
+/* Return the cost (in arbtirary units) of going from layout FROM_LAYOUT_I
+   to layout TO_LAYOUT_I for a node like NODE.  Return -1 if either of the
+   layouts is incompatible with NODE or if the change is not possible for
+   some other reason.
+
+   The properties taken from NODE include the number of lanes and the
+   vector type.  The actual operation doesn't matter.  */
+
+int
+vect_optimize_slp_pass::change_layout_cost (slp_tree node,
+					    unsigned int from_layout_i,
+					    unsigned int to_layout_i)
+{
+  if (!is_compatible_layout (node, from_layout_i)
+      || !is_compatible_layout (node, to_layout_i))
+    return -1;
+
+  if (from_layout_i == to_layout_i)
+    return 0;
+
+  auto_vec<slp_tree, 1> children (1);
+  children.quick_push (node);
+  auto_lane_permutation_t perm (SLP_TREE_LANES (node));
+  if (from_layout_i > 0)
+    for (unsigned int i : m_perms[from_layout_i])
+      perm.quick_push ({ 0, i });
+  else
+    for (unsigned int i = 0; i < SLP_TREE_LANES (node); ++i)
+      perm.quick_push ({ 0, i });
+  if (to_layout_i > 0)
+    vect_slp_permute (m_perms[to_layout_i], perm, true);
+  auto count = vectorizable_slp_permutation_1 (m_vinfo, nullptr, node, perm,
+					       children, false);
+  if (count >= 0)
+    return MAX (count, 1);
+
+  /* ??? In principle we could try changing via layout 0, giving two
+     layout changes rather than 1.  Doing that would require
+     corresponding support in get_result_with_layout.  */
+  return -1;
+}
+
+/* Return the costs of assigning layout LAYOUT_I to partition PARTITION_I.  */
+
+inline slpg_partition_layout_costs &
+vect_optimize_slp_pass::partition_layout_costs (unsigned int partition_i,
+						unsigned int layout_i)
+{
+  return m_partition_layout_costs[partition_i * m_perms.length () + layout_i];
+}
+
+/* Change PERM in one of two ways:
+
+   - if IN_LAYOUT_I < 0, accept input operand I in the layout that has been
+     chosen for child I of NODE.
+
+   - if IN_LAYOUT >= 0, accept all inputs operands with that layout.
+
+   In both cases, arrange for the output to have layout OUT_LAYOUT_I  */
+
+void
+vect_optimize_slp_pass::
+change_vec_perm_layout (slp_tree node, lane_permutation_t &perm,
+			int in_layout_i, unsigned int out_layout_i)
+{
+  for (auto &entry : perm)
+    {
+      int this_in_layout_i = in_layout_i;
+      if (this_in_layout_i < 0)
+	{
+	  slp_tree in_node = SLP_TREE_CHILDREN (node)[entry.first];
+	  unsigned int in_partition_i = m_vertices[in_node->vertex].partition;
+	  this_in_layout_i = m_partitions[in_partition_i].layout;
+	}
+      if (this_in_layout_i > 0)
+	entry.second = m_perms[this_in_layout_i][entry.second];
+    }
+  if (out_layout_i > 0)
+    vect_slp_permute (m_perms[out_layout_i], perm, true);
+}
+
+/* Check whether the target allows NODE to be rearranged so that the node's
+   output has layout OUT_LAYOUT_I.  Return the cost of the change if so,
+   in the same arbitrary units as for change_layout_cost.  Return -1 otherwise.
+
+   If NODE is a VEC_PERM_EXPR and IN_LAYOUT_I < 0, also check whether
+   NODE can adapt to the layout changes that have (perhaps provisionally)
+   been chosen for NODE's children, so that no extra permutations are
+   needed on either the input or the output of NODE.
+
+   If NODE is a VEC_PERM_EXPR and IN_LAYOUT_I >= 0, instead assume
+   that all inputs will be forced into layout IN_LAYOUT_I beforehand.
+
+   IN_LAYOUT_I has no meaning for other types of node.
+
+   Keeping the node as-is is always valid.  If the target doesn't appear
+   to support the node as-is, but might realistically support other layouts,
+   then layout 0 instead has the cost of a worst-case permutation.  On the
+   one hand, this ensures that every node has at least one valid layout,
+   avoiding what would otherwise be an awkward special case.  On the other,
+   it still encourages the pass to change an invalid pre-existing layout
+   choice into a valid one.  */
+
+int
+vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
+					    unsigned int out_layout_i)
+{
+  const int fallback_cost = 1;
+
+  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+    {
+      auto_lane_permutation_t tmp_perm;
+      tmp_perm.safe_splice (SLP_TREE_LANE_PERMUTATION (node));
+
+      /* Check that the child nodes support the chosen layout.  Checking
+	 the first child is enough, since any second child would have the
+	 same shape.  */
+      auto first_child = SLP_TREE_CHILDREN (node)[0];
+      if (in_layout_i > 0
+	  && !is_compatible_layout (first_child, in_layout_i))
+	return -1;
+
+      change_vec_perm_layout (node, tmp_perm, in_layout_i, out_layout_i);
+      int count = vectorizable_slp_permutation_1 (m_vinfo, nullptr,
+						  node, tmp_perm,
+						  SLP_TREE_CHILDREN (node),
+						  false);
+      if (count < 0)
+	{
+	  if (in_layout_i == 0 && out_layout_i == 0)
+	    {
+	      /* Use the fallback cost if the node could in principle support
+		 some nonzero layout for both the inputs and the outputs.
+		 Otherwise assume that the node will be rejected later
+		 and rebuilt from scalars.  */
+	      if (SLP_TREE_LANES (node) == SLP_TREE_LANES (first_child))
+		return fallback_cost;
+	      return 0;
+	    }
+	  return -1;
 	}
 
-      /* Loads are the only thing generating permutes.  */
-      if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
+      /* We currently have no way of telling whether the new layout is cheaper
+	 or more expensive than the old one.  But at least in principle,
+	 it should be worth making zero permutations (whole-vector shuffles)
+	 cheaper than real permutations, in case the pass is able to remove
+	 the latter.  */
+      return count == 0 ? 0 : 1;
+    }
+
+  stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
+  if (rep
+      && STMT_VINFO_DATA_REF (rep)
+      && DR_IS_READ (STMT_VINFO_DATA_REF (rep)))
+    {
+      auto_load_permutation_t tmp_perm;
+      tmp_perm.safe_splice (SLP_TREE_LOAD_PERMUTATION (node));
+      if (out_layout_i > 0)
+	vect_slp_permute (m_perms[out_layout_i], tmp_perm, true);
+
+      poly_uint64 vf = 1;
+      if (auto loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo))
+	vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      unsigned int n_perms;
+      if (!vect_transform_slp_perm_load_1 (m_vinfo, node, tmp_perm, vNULL,
+					   nullptr, vf, true, false, &n_perms))
+	{
+	  auto rep = SLP_TREE_REPRESENTATIVE (node);
+	  if (out_layout_i == 0)
+	    {
+	      /* Use the fallback cost if the load is an N-to-N permutation.
+		 Otherwise assume that the node will be rejected later
+		 and rebuilt from scalars.  */
+	      if (STMT_VINFO_GROUPED_ACCESS (rep)
+		  && (DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (rep))
+		      == SLP_TREE_LANES (node)))
+		return fallback_cost;
+	      return 0;
+	    }
+	  return -1;
+	}
+
+      /* See the comment above the corresponding VEC_PERM_EXPR handling.  */
+      return n_perms == 0 ? 0 : 1;
+    }
+
+  return 0;
+}
+
+/* Decide which element layouts we should consider using.  Calculate the
+   weights associated with inserting layout changes on partition edges.
+   Also mark partitions that cannot change layout, by setting their
+   layout to zero.  */
+
+void
+vect_optimize_slp_pass::start_choosing_layouts ()
+{
+  /* Used to assign unique permutation indices.  */
+  using perm_hash = unbounded_hashmap_traits<
+    vec_free_hash_base<int_hash_base<unsigned>>,
+    int_hash<int, -1, -2>
+  >;
+  hash_map<vec<unsigned>, int, perm_hash> layout_ids;
+
+  /* Layout 0 is "no change".  */
+  m_perms.safe_push (vNULL);
+
+  /* Create layouts from existing permutations.  */
+  auto_load_permutation_t tmp_perm;
+  for (unsigned int node_i : m_partitioned_nodes)
+    {
+      /* Leafs also double as entries to the reverse graph.  Allow the
+	 layout of those to be changed.  */
+      auto &vertex = m_vertices[node_i];
+      auto &partition = m_partitions[vertex.partition];
+      if (!m_slpg->vertices[node_i].succ)
+	partition.layout = 0;
+
+      /* Loads and VEC_PERM_EXPRs are the only things generating permutes.  */
+      slp_tree node = vertex.node;
+      stmt_vec_info dr_stmt = SLP_TREE_REPRESENTATIVE (node);
+      slp_tree child;
+      unsigned HOST_WIDE_INT imin, imax = 0;
+      bool any_permute = false;
+      tmp_perm.truncate (0);
+      if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
+	{
+	  /* If splitting out a SLP_TREE_LANE_PERMUTATION can make the node
+	     unpermuted, record a layout that reverses this permutation.  */
+	  gcc_assert (partition.layout == 0);
+	  if (!STMT_VINFO_GROUPED_ACCESS (dr_stmt))
+	    continue;
+	  dr_stmt = DR_GROUP_FIRST_ELEMENT (dr_stmt);
+	  imin = DR_GROUP_SIZE (dr_stmt) + 1;
+	  tmp_perm.safe_splice (SLP_TREE_LOAD_PERMUTATION (node));
+	}
+      else if (SLP_TREE_CODE (node) == VEC_PERM_EXPR
+	       && SLP_TREE_CHILDREN (node).length () == 1
+	       && (child = SLP_TREE_CHILDREN (node)[0])
+	       && (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (child))
+		   .is_constant (&imin)))
+	{
+	  /* If the child has the same vector size as this node,
+	     reversing the permutation can make the permutation a no-op.
+	     In other cases it can change a true permutation into a
+	     full-vector extract.  */
+	  tmp_perm.reserve (SLP_TREE_LANES (node));
+	  for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
+	    tmp_perm.quick_push (SLP_TREE_LANE_PERMUTATION (node)[j].second);
+	}
+      else
 	continue;
 
-      /* If splitting out a SLP_TREE_LANE_PERMUTATION can make the
-	 node unpermuted, record this permute.  */
-      stmt_vec_info dr_stmt = SLP_TREE_REPRESENTATIVE (node);
-      if (!STMT_VINFO_GROUPED_ACCESS (dr_stmt))
-	continue;
-      dr_stmt = DR_GROUP_FIRST_ELEMENT (dr_stmt);
-      unsigned imin = DR_GROUP_SIZE (dr_stmt) + 1, imax = 0;
-      bool any_permute = false;
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
 	{
-	  unsigned idx = SLP_TREE_LOAD_PERMUTATION (node)[j];
+	  unsigned idx = tmp_perm[j];
 	  imin = MIN (imin, idx);
 	  imax = MAX (imax, idx);
-	  if (idx - SLP_TREE_LOAD_PERMUTATION (node)[0] != j)
+	  if (idx - tmp_perm[0] != j)
 	    any_permute = true;
 	}
-      /* If there's no permute no need to split one out.  */
-      if (!any_permute)
-	continue;
       /* If the span doesn't match we'd disrupt VF computation, avoid
 	 that for now.  */
       if (imax - imin + 1 != SLP_TREE_LANES (node))
 	continue;
+      /* If there's no permute no need to split one out.  In this case
+	 we can consider turning a load into a permuted load, if that
+	 turns out to be cheaper than alternatives.  */
+      if (!any_permute)
+	{
+	  partition.layout = -1;
+	  continue;
+	}
 
       /* For now only handle true permutes, like
 	 vect_attempt_slp_rearrange_stmts did.  This allows us to be lazy
@@ -3723,7 +4622,7 @@ vect_optimize_slp (vec_info *vinfo)
       auto_sbitmap load_index (SLP_TREE_LANES (node));
       bitmap_clear (load_index);
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
-	bitmap_set_bit (load_index, SLP_TREE_LOAD_PERMUTATION (node)[j] - imin);
+	bitmap_set_bit (load_index, tmp_perm[j] - imin);
       unsigned j;
       for (j = 0; j < SLP_TREE_LANES (node); ++j)
 	if (!bitmap_bit_p (load_index, j))
@@ -3734,408 +4633,744 @@ vect_optimize_slp (vec_info *vinfo)
       vec<unsigned> perm = vNULL;
       perm.safe_grow (SLP_TREE_LANES (node), true);
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
-	perm[j] = SLP_TREE_LOAD_PERMUTATION (node)[j] - imin;
-      perms.safe_push (perm);
-      vertices[idx].perm_in = perms.length () - 1;
-      vertices[idx].perm_out = perms.length () - 1;
+	perm[j] = tmp_perm[j] - imin;
+
+      if (int (m_perms.length ()) >= param_vect_max_layout_candidates)
+	{
+	  /* Continue to use existing layouts, but don't add any more.  */
+	  int *entry = layout_ids.get (perm);
+	  partition.layout = entry ? *entry : 0;
+	  perm.release ();
+	}
+      else
+	{
+	  bool existed;
+	  int &layout_i = layout_ids.get_or_insert (perm, &existed);
+	  if (existed)
+	    perm.release ();
+	  else
+	    {
+	      layout_i = m_perms.length ();
+	      m_perms.safe_push (perm);
+	    }
+	  partition.layout = layout_i;
+	}
     }
 
-  /* In addition to the above we have to mark outgoing permutes facing
-     non-reduction graph entries that are not represented as to be
-     materialized.  */
-  for (slp_instance instance : vinfo->slp_instances)
+  /* Initially assume that every layout is possible and has zero cost
+     in every partition.  */
+  m_partition_layout_costs.safe_grow_cleared (m_partitions.length ()
+					      * m_perms.length ());
+
+  /* We have to mark outgoing permutations facing non-reduction graph
+     entries that are not represented as to be materialized.  */
+  for (slp_instance instance : m_vinfo->slp_instances)
     if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor)
       {
-	/* Just setting perm_out isn't enough for the propagation to
-	   pick this up.  */
-	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_in = 0;
-	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_out = 0;
+	unsigned int node_i = SLP_INSTANCE_TREE (instance)->vertex;
+	m_partitions[m_vertices[node_i].partition].layout = 0;
       }
 
-  /* Propagate permutes along the graph and compute materialization points.  */
-  bool changed;
-  bool do_materialization = false;
-  unsigned iteration = 0;
-  do
+  /* Check which layouts each node and partition can handle.  Calculate the
+     weights associated with inserting layout changes on edges.  */
+  for (unsigned int node_i : m_partitioned_nodes)
     {
-      changed = false;
-      ++iteration;
+      auto &vertex = m_vertices[node_i];
+      auto &partition = m_partitions[vertex.partition];
+      slp_tree node = vertex.node;
 
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "SLP optimize iteration %d\n", iteration);
-
-      for (i = vertices.length (); i > 0 ; --i)
+      if (stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node))
 	{
-	  int idx = ipo[i-1];
-	  slp_tree node = vertices[idx].node;
+	  vertex.weight = vect_slp_node_weight (node);
 
-	  /* Handle externals and constants optimistically throughout the
-	     iteration.  */
-	  if (SLP_TREE_DEF_TYPE (node) == vect_external_def
-	      || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
-	    continue;
+	  /* We do not handle stores with a permutation, so all
+	     incoming permutations must have been materialized.  */
+	  if (STMT_VINFO_DATA_REF (rep)
+	      && DR_IS_WRITE (STMT_VINFO_DATA_REF (rep)))
+	    /* ???  We're forcing materialization in place
+	       of the child here, we'd need special handling
+	       in materialization to leave layout -1 here.  */
+	    partition.layout = 0;
 
-	  /* We still eventually have failed backedge SLP nodes in the
-	     graph, those are only cancelled when analyzing operations.
-	     Simply treat them as transparent ops, propagating permutes
-	     through them.  */
-	  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
-	    {
-	      /* We do not handle stores with a permutation, so all
-		 incoming permutes must have been materialized.  */
-	      stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
-	      if (STMT_VINFO_DATA_REF (rep)
-		  && DR_IS_WRITE (STMT_VINFO_DATA_REF (rep)))
-		{
-		  /* ???  We're forcing materialization in place
-		     of the child here, we'd need special handling
-		     in materialization to leave perm_in -1 here.  */
-		  vertices[idx].perm_in = 0;
-		  vertices[idx].perm_out = 0;
-		}
-	      /* We cannot move a permute across an operation that is
-		 not independent on lanes.  Note this is an explicit
-		 negative list since that's much shorter than the respective
-		 positive one but it's critical to keep maintaining it.  */
-	      if (is_gimple_call (STMT_VINFO_STMT (rep)))
-		switch (gimple_call_combined_fn (STMT_VINFO_STMT (rep)))
-		  {
-		  case CFN_COMPLEX_ADD_ROT90:
-		  case CFN_COMPLEX_ADD_ROT270:
-		  case CFN_COMPLEX_MUL:
-		  case CFN_COMPLEX_MUL_CONJ:
-		  case CFN_VEC_ADDSUB:
-		  case CFN_VEC_FMADDSUB:
-		  case CFN_VEC_FMSUBADD:
-		    vertices[idx].perm_in = 0;
-		    vertices[idx].perm_out = 0;
-		  default:;
-		  }
-	    }
-
-	  if (!slpg->vertices[idx].succ)
-	    /* Pick up pre-computed leaf values.  */
-	    ;
-	  else
-	    {
-	      bool any_succ_perm_out_m1 = false;
-	      int perm_in = vertices[idx].perm_in;
-	      for (graph_edge *succ = slpg->vertices[idx].succ;
-		   succ; succ = succ->succ_next)
-		{
-		  int succ_idx = succ->dest;
-		  int succ_perm = vertices[succ_idx].perm_out;
-		  /* Handle unvisited (and constant) nodes optimistically.  */
-		  /* ???  But for constants once we want to handle
-		     non-bijective permutes we have to verify the permute,
-		     when unifying lanes, will not unify different constants.
-		     For example see gcc.dg/vect/bb-slp-14.c for a case
-		     that would break.  */
-		  if (succ_perm == -1)
-		    {
-		      /* When we handled a non-leaf optimistically, note
-			 that so we can adjust its outgoing permute below.  */
-		      slp_tree succ_node = vertices[succ_idx].node;
-		      if (SLP_TREE_DEF_TYPE (succ_node) != vect_external_def
-			  && SLP_TREE_DEF_TYPE (succ_node) != vect_constant_def)
-			any_succ_perm_out_m1 = true;
-		      continue;
-		    }
-		  if (perm_in == -1)
-		    perm_in = succ_perm;
-		  else if (succ_perm == 0
-			   || !vect_slp_perms_eq (perms, perm_in, succ_perm))
-		    {
-		      perm_in = 0;
-		      break;
-		    }
-		}
-
-	      /* Adjust any incoming permutes we treated optimistically.  */
-	      if (perm_in != -1 && any_succ_perm_out_m1)
-		{
-		  for (graph_edge *succ = slpg->vertices[idx].succ;
-		       succ; succ = succ->succ_next)
-		    {
-		      slp_tree succ_node = vertices[succ->dest].node;
-		      if (vertices[succ->dest].perm_out == -1
-			  && SLP_TREE_DEF_TYPE (succ_node) != vect_external_def
-			  && SLP_TREE_DEF_TYPE (succ_node) != vect_constant_def)
-			{
-			  vertices[succ->dest].perm_out = perm_in;
-			  /* And ensure this propagates.  */
-			  if (vertices[succ->dest].perm_in == -1)
-			    vertices[succ->dest].perm_in = perm_in;
-			}
-		    }
-		  changed = true;
-		}
-
-	      if (!vect_slp_perms_eq (perms, perm_in,
-				      vertices[idx].perm_in))
-		{
-		  /* Make sure we eventually converge.  */
-		  gcc_checking_assert (vertices[idx].perm_in == -1
-				       || perm_in == 0);
-		  vertices[idx].perm_in = perm_in;
-
-		  /* While we can handle VEC_PERM nodes as transparent
-		     pass-through they can be a cheap materialization
-		     point as well.  In addition they can act as source
-		     of a random permutation as well.
-		     The following ensures that former materialization
-		     points that now have zero incoming permutes no
-		     longer appear as such and that former "any" permutes
-		     get pass-through.  We keep VEC_PERM nodes optimistic
-		     as "any" outgoing permute though.  */
-		  if (vertices[idx].perm_out != 0
-		      && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
-		    vertices[idx].perm_out = perm_in;
-		  changed = true;
-		}
-	    }
-
-	  /* Elide pruning at materialization points in the first
-	     iteration phase.  */
-	  if (!do_materialization)
-	    continue;
-
-	  int perm = vertices[idx].perm_out;
-	  if (perm == 0 || perm == -1)
-	    continue;
-
-	  /* Decide on permute materialization.  Look whether there's
-	     a use (pred) edge that is permuted differently than us.
-	     In that case mark ourselves so the permutation is applied.  */
-	  bool all_preds_permuted = slpg->vertices[idx].pred != NULL;
-	  if (all_preds_permuted)
-	    for (graph_edge *pred = slpg->vertices[idx].pred;
-		 pred; pred = pred->pred_next)
+	  /* We cannot change the layout of an operation that is
+	     not independent on lanes.  Note this is an explicit
+	     negative list since that's much shorter than the respective
+	     positive one but it's critical to keep maintaining it.  */
+	  if (is_gimple_call (STMT_VINFO_STMT (rep)))
+	    switch (gimple_call_combined_fn (STMT_VINFO_STMT (rep)))
 	      {
-		int pred_perm = vertices[pred->src].perm_in;
-		gcc_checking_assert (pred_perm != -1);
-		if (!vect_slp_perms_eq (perms, perm, pred_perm))
-		  {
-		    all_preds_permuted = false;
-		    break;
-		  }
+	      case CFN_COMPLEX_ADD_ROT90:
+	      case CFN_COMPLEX_ADD_ROT270:
+	      case CFN_COMPLEX_MUL:
+	      case CFN_COMPLEX_MUL_CONJ:
+	      case CFN_VEC_ADDSUB:
+	      case CFN_VEC_FMADDSUB:
+	      case CFN_VEC_FMSUBADD:
+		partition.layout = 0;
+	      default:;
 	      }
-	  if (!all_preds_permuted)
-	    {
-	      vertices[idx].perm_out = 0;
-	      changed = true;
-	    }
 	}
 
-      /* If the initial propagation converged, switch on materialization
-	 and re-propagate.  */
-      if (!changed && !do_materialization)
+      auto process_edge = [&](graph_edge *ud, unsigned int other_node_i)
 	{
-	  do_materialization = true;
-	  changed = true;
+	  auto &other_vertex = m_vertices[other_node_i];
+
+	  /* Count the number of edges from earlier partitions and the number
+	     of edges to later partitions.  */
+	  if (other_vertex.partition < vertex.partition)
+	    partition.in_degree += 1;
+	  else
+	    partition.out_degree += 1;
+
+	  /* If the current node uses the result of OTHER_NODE_I, accumulate
+	     the effects of that.  */
+	  if (ud->src == int (node_i))
+	    {
+	      other_vertex.out_weight += vertex.weight;
+	      other_vertex.out_degree += 1;
+	    }
+	};
+      for_each_partition_edge (node_i, process_edge);
+    }
+}
+
+/* Return the incoming costs for node NODE_I, assuming that each input keeps
+   its current (provisional) choice of layout.  The inputs do not necessarily
+   have the same layout as each other.  */
+
+slpg_layout_cost
+vect_optimize_slp_pass::total_in_cost (unsigned int node_i)
+{
+  auto &vertex = m_vertices[node_i];
+  slpg_layout_cost cost;
+  auto add_cost = [&](graph_edge *, unsigned int other_node_i)
+    {
+      auto &other_vertex = m_vertices[other_node_i];
+      if (other_vertex.partition < vertex.partition)
+	{
+	  auto &other_partition = m_partitions[other_vertex.partition];
+	  auto &other_costs = partition_layout_costs (other_vertex.partition,
+						      other_partition.layout);
+	  slpg_layout_cost this_cost = other_costs.in_cost;
+	  this_cost.add_serial_cost (other_costs.internal_cost);
+	  this_cost.split (other_partition.out_degree);
+	  cost.add_parallel_cost (this_cost);
+	}
+    };
+  for_each_partition_edge (node_i, add_cost);
+  return cost;
+}
+
+/* Return the cost of switching between layout LAYOUT1_I (at node NODE1_I)
+   and layout LAYOUT2_I on cross-partition use-to-def edge UD.  Return
+   slpg_layout_cost::impossible () if the change isn't possible.  */
+
+slpg_layout_cost
+vect_optimize_slp_pass::
+edge_layout_cost (graph_edge *ud, unsigned int node1_i, unsigned int layout1_i,
+		  unsigned int layout2_i)
+{
+  auto &def_vertex = m_vertices[ud->dest];
+  auto &use_vertex = m_vertices[ud->src];
+  auto def_layout_i = ud->dest == int (node1_i) ? layout1_i : layout2_i;
+  auto use_layout_i = ud->dest == int (node1_i) ? layout2_i : layout1_i;
+  auto factor = change_layout_cost (def_vertex.node, def_layout_i,
+				    use_layout_i);
+  if (factor < 0)
+    return slpg_layout_cost::impossible ();
+
+  /* We have a choice of putting the layout change at the site of the
+     definition or at the site of the use.  Prefer the former when
+     optimizing for size or when the execution frequency of the
+     definition is no greater than the combined execution frequencies of
+     the uses.  When putting the layout change at the site of the definition,
+     divvy up the cost among all consumers.  */
+  if (m_optimize_size || def_vertex.weight <= def_vertex.out_weight)
+    {
+      slpg_layout_cost cost = { def_vertex.weight * factor, m_optimize_size };
+      cost.split (def_vertex.out_degree);
+      return cost;
+    }
+  return { use_vertex.weight * factor, m_optimize_size };
+}
+
+/* UD represents a use-def link between FROM_NODE_I and a node in a later
+   partition; FROM_NODE_I could be the definition node or the use node.
+   The node at the other end of the link wants to use layout TO_LAYOUT_I.
+   Return the cost of any necessary fix-ups on edge UD, or return
+   slpg_layout_cost::impossible () if the change isn't possible.
+
+   At this point, FROM_NODE_I's partition has chosen the cheapest
+   layout based on the information available so far, but this choice
+   is only provisional.  */
+
+slpg_layout_cost
+vect_optimize_slp_pass::forward_cost (graph_edge *ud, unsigned int from_node_i,
+				      unsigned int to_layout_i)
+{
+  auto &from_vertex = m_vertices[from_node_i];
+  unsigned int from_partition_i = from_vertex.partition;
+  slpg_partition_info &from_partition = m_partitions[from_partition_i];
+  gcc_assert (from_partition.layout >= 0);
+
+  /* First calculate the cost on the assumption that FROM_PARTITION sticks
+     with its current layout preference.  */
+  slpg_layout_cost cost = slpg_layout_cost::impossible ();
+  auto edge_cost = edge_layout_cost (ud, from_node_i,
+				     from_partition.layout, to_layout_i);
+  if (edge_cost.is_possible ())
+    {
+      auto &from_costs = partition_layout_costs (from_partition_i,
+						 from_partition.layout);
+      cost = from_costs.in_cost;
+      cost.add_serial_cost (from_costs.internal_cost);
+      cost.split (from_partition.out_degree);
+      cost.add_serial_cost (edge_cost);
+    }
+
+  /* Take the minimum of that cost and the cost that applies if
+     FROM_PARTITION instead switches to TO_LAYOUT_I.  */
+  auto &direct_layout_costs = partition_layout_costs (from_partition_i,
+						      to_layout_i);
+  if (direct_layout_costs.is_possible ())
+    {
+      slpg_layout_cost direct_cost = direct_layout_costs.in_cost;
+      direct_cost.add_serial_cost (direct_layout_costs.internal_cost);
+      direct_cost.split (from_partition.out_degree);
+      if (!cost.is_possible ()
+	  || direct_cost.is_better_than (cost, m_optimize_size))
+	cost = direct_cost;
+    }
+
+  return cost;
+}
+
+/* UD represents a use-def link between TO_NODE_I and a node in an earlier
+   partition; TO_NODE_I could be the definition node or the use node.
+   The node at the other end of the link wants to use layout FROM_LAYOUT_I;
+   return the cost of any necessary fix-ups on edge UD, or
+   slpg_layout_cost::impossible () if the choice cannot be made.
+
+   At this point, TO_NODE_I's partition has a fixed choice of layout.  */
+
+slpg_layout_cost
+vect_optimize_slp_pass::backward_cost (graph_edge *ud, unsigned int to_node_i,
+				       unsigned int from_layout_i)
+{
+  auto &to_vertex = m_vertices[to_node_i];
+  unsigned int to_partition_i = to_vertex.partition;
+  slpg_partition_info &to_partition = m_partitions[to_partition_i];
+  gcc_assert (to_partition.layout >= 0);
+
+  /* If TO_NODE_I is a VEC_PERM_EXPR consumer, see whether it can be
+     adjusted for this input having layout FROM_LAYOUT_I.  Assume that
+     any other inputs keep their current choice of layout.  */
+  auto &to_costs = partition_layout_costs (to_partition_i,
+					   to_partition.layout);
+  if (ud->src == int (to_node_i)
+      && SLP_TREE_CODE (to_vertex.node) == VEC_PERM_EXPR)
+    {
+      auto &from_partition = m_partitions[m_vertices[ud->dest].partition];
+      auto old_layout = from_partition.layout;
+      from_partition.layout = from_layout_i;
+      int factor = internal_node_cost (to_vertex.node, -1,
+				       to_partition.layout);
+      from_partition.layout = old_layout;
+      if (factor >= 0)
+	{
+	  slpg_layout_cost cost = to_costs.out_cost;
+	  cost.add_serial_cost ({ to_vertex.weight * factor,
+				  m_optimize_size });
+	  cost.split (to_partition.in_degree);
+	  return cost;
 	}
     }
-  while (changed);
-  statistics_histogram_event (cfun, "SLP optimize perm iterations", iteration);
 
-  /* Materialize.  */
-  for (i = 0; i < vertices.length (); ++i)
+  /* Compute the cost if we insert any necessary layout change on edge UD.  */
+  auto edge_cost = edge_layout_cost (ud, to_node_i,
+				     to_partition.layout, from_layout_i);
+  if (edge_cost.is_possible ())
     {
-      int perm_in = vertices[i].perm_in;
-      slp_tree node = vertices[i].node;
+      slpg_layout_cost cost = to_costs.out_cost;
+      cost.add_serial_cost (to_costs.internal_cost);
+      cost.split (to_partition.in_degree);
+      cost.add_serial_cost (edge_cost);
+      return cost;
+    }
 
-      /* First permute invariant/external original successors, we handle
-	 those optimistically during propagation and duplicate them if
-	 they are used with different permutations.  */
-      unsigned j;
-      slp_tree child;
-      if (perm_in > 0)
-	FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-	  {
-	    if (!child
-		|| (SLP_TREE_DEF_TYPE (child) != vect_constant_def
-		    && SLP_TREE_DEF_TYPE (child) != vect_external_def))
+  return slpg_layout_cost::impossible ();
+}
+
+/* Make a forward pass through the partitions, accumulating input costs.
+   Make a tentative (provisional) choice of layout for each partition,
+   ensuring that this choice still allows later partitions to keep
+   their original layout.  */
+
+void
+vect_optimize_slp_pass::forward_pass ()
+{
+  for (unsigned int partition_i = 0; partition_i < m_partitions.length ();
+       ++partition_i)
+    {
+      auto &partition = m_partitions[partition_i];
+
+      /* If the partition consists of a single VEC_PERM_EXPR, precompute
+	 the incoming cost that would apply if every predecessor partition
+	 keeps its current layout.  This is used within the loop below.  */
+      slpg_layout_cost in_cost;
+      slp_tree single_node = nullptr;
+      if (partition.node_end == partition.node_begin + 1)
+	{
+	  unsigned int node_i = m_partitioned_nodes[partition.node_begin];
+	  single_node = m_vertices[node_i].node;
+	  if (SLP_TREE_CODE (single_node) == VEC_PERM_EXPR)
+	    in_cost = total_in_cost (node_i);
+	}
+
+      /* Go through the possible layouts.  Decide which ones are valid
+	 for this partition and record which of the valid layouts has
+	 the lowest cost.  */
+      unsigned int min_layout_i = 0;
+      slpg_layout_cost min_layout_cost = slpg_layout_cost::impossible ();
+      for (unsigned int layout_i = 0; layout_i < m_perms.length (); ++layout_i)
+	{
+	  auto &layout_costs = partition_layout_costs (partition_i, layout_i);
+	  if (!layout_costs.is_possible ())
+	    continue;
+
+	  /* If the recorded layout is already 0 then the layout cannot
+	     change.  */
+	  if (partition.layout == 0 && layout_i != 0)
+	    {
+	      layout_costs.mark_impossible ();
 	      continue;
+	    }
 
-	    /* If the vector is uniform there's nothing to do.  */
-	    if (vect_slp_tree_uniform_p (child))
+	  bool is_possible = true;
+	  for (unsigned int order_i = partition.node_begin;
+	       order_i < partition.node_end; ++order_i)
+	    {
+	      unsigned int node_i = m_partitioned_nodes[order_i];
+	      auto &vertex = m_vertices[node_i];
+
+	      /* Reject the layout if it is individually incompatible
+		 with any node in the partition.  */
+	      if (!is_compatible_layout (vertex.node, layout_i))
+		{
+		  is_possible = false;
+		  break;
+		}
+
+	      auto add_cost = [&](graph_edge *ud, unsigned int other_node_i)
+		{
+		  auto &other_vertex = m_vertices[other_node_i];
+		  if (other_vertex.partition < vertex.partition)
+		    {
+		      /* Accumulate the incoming costs from earlier
+			 partitions, plus the cost of any layout changes
+			 on UD itself.  */
+		      auto cost = forward_cost (ud, other_node_i, layout_i);
+		      if (!cost.is_possible ())
+			is_possible = false;
+		      else
+			layout_costs.in_cost.add_parallel_cost (cost);
+		    }
+		  else
+		    /* Reject the layout if it would make layout 0 impossible
+		       for later partitions.  This amounts to testing that the
+		       target supports reversing the layout change on edges
+		       to later partitions.
+
+		       In principle, it might be possible to push a layout
+		       change all the way down a graph, so that it never
+		       needs to be reversed and so that the target doesn't
+		       need to support the reverse operation.  But it would
+		       be awkward to bail out if we hit a partition that
+		       does not support the new layout, especially since
+		       we are not dealing with a lattice.  */
+		    is_possible &= edge_layout_cost (ud, other_node_i, 0,
+						     layout_i).is_possible ();
+		};
+	      for_each_partition_edge (node_i, add_cost);
+
+	      /* Accumulate the cost of using LAYOUT_I within NODE,
+		 both for the inputs and the outputs.  */
+	      int factor = internal_node_cost (vertex.node, layout_i,
+					       layout_i);
+	      if (factor < 0)
+		{
+		  is_possible = false;
+		  break;
+		}
+	      else if (factor)
+		layout_costs.internal_cost.add_serial_cost
+		  ({ vertex.weight * factor, m_optimize_size });
+	    }
+	  if (!is_possible)
+	    {
+	      layout_costs.mark_impossible ();
 	      continue;
+	    }
 
-	    /* We can end up sharing some externals via two_operator
-	       handling.  Be prepared to unshare those.  */
-	    if (child->refcnt != 1)
-	      {
-		gcc_assert (slpg->vertices[child->vertex].pred->pred_next);
-		SLP_TREE_CHILDREN (node)[j] = child
-		  = vect_create_new_slp_node
-		      (SLP_TREE_SCALAR_OPS (child).copy ());
-	      }
-	    vect_slp_permute (perms[perm_in],
-			      SLP_TREE_SCALAR_OPS (child), true);
-	  }
+	  /* Combine the incoming and partition-internal costs.  */
+	  slpg_layout_cost combined_cost = layout_costs.in_cost;
+	  combined_cost.add_serial_cost (layout_costs.internal_cost);
 
+	  /* If this partition consists of a single VEC_PERM_EXPR, see
+	     if the VEC_PERM_EXPR can be changed to support output layout
+	     LAYOUT_I while keeping all the provisional choices of input
+	     layout.  */
+	  if (single_node
+	      && SLP_TREE_CODE (single_node) == VEC_PERM_EXPR)
+	    {
+	      int factor = internal_node_cost (single_node, -1, layout_i);
+	      if (factor >= 0)
+		{
+		  auto weight = m_vertices[single_node->vertex].weight;
+		  slpg_layout_cost internal_cost
+		    = { weight * factor, m_optimize_size };
+
+		  slpg_layout_cost alt_cost = in_cost;
+		  alt_cost.add_serial_cost (internal_cost);
+		  if (alt_cost.is_better_than (combined_cost, m_optimize_size))
+		    {
+		      combined_cost = alt_cost;
+		      layout_costs.in_cost = in_cost;
+		      layout_costs.internal_cost = internal_cost;
+		    }
+		}
+	    }
+
+	  /* Record the layout with the lowest cost.  Prefer layout 0 in
+	     the event of a tie between it and another layout.  */
+	  if (!min_layout_cost.is_possible ()
+	      || combined_cost.is_better_than (min_layout_cost,
+					       m_optimize_size))
+	    {
+	      min_layout_i = layout_i;
+	      min_layout_cost = combined_cost;
+	    }
+	}
+
+      /* This loop's handling of earlier partitions should ensure that
+	 choosing the original layout for the current partition is no
+	 less valid than it was in the original graph, even with the
+	 provisional layout choices for those earlier partitions.  */
+      gcc_assert (min_layout_cost.is_possible ());
+      partition.layout = min_layout_i;
+    }
+}
+
+/* Make a backward pass through the partitions, accumulating output costs.
+   Make a final choice of layout for each partition.  */
+
+void
+vect_optimize_slp_pass::backward_pass ()
+{
+  for (unsigned int partition_i = m_partitions.length (); partition_i-- > 0;)
+    {
+      auto &partition = m_partitions[partition_i];
+
+      unsigned int min_layout_i = 0;
+      slpg_layout_cost min_layout_cost = slpg_layout_cost::impossible ();
+      for (unsigned int layout_i = 0; layout_i < m_perms.length (); ++layout_i)
+	{
+	  auto &layout_costs = partition_layout_costs (partition_i, layout_i);
+	  if (!layout_costs.is_possible ())
+	    continue;
+
+	  /* Accumulate the costs from successor partitions.  */
+	  bool is_possible = true;
+	  for (unsigned int order_i = partition.node_begin;
+	       order_i < partition.node_end; ++order_i)
+	    {
+	      unsigned int node_i = m_partitioned_nodes[order_i];
+	      auto &vertex = m_vertices[node_i];
+	      auto add_cost = [&](graph_edge *ud, unsigned int other_node_i)
+		{
+		  auto &other_vertex = m_vertices[other_node_i];
+		  auto &other_partition = m_partitions[other_vertex.partition];
+		  if (other_vertex.partition > vertex.partition)
+		    {
+		      /* Accumulate the incoming costs from later
+			 partitions, plus the cost of any layout changes
+			 on UD itself.  */
+		      auto cost = backward_cost (ud, other_node_i, layout_i);
+		      if (!cost.is_possible ())
+			is_possible = false;
+		      else
+			layout_costs.out_cost.add_parallel_cost (cost);
+		    }
+		  else
+		    /* Make sure that earlier partitions can (if necessary
+		       or beneficial) keep the layout that they chose in
+		       the forward pass.  This ensures that there is at
+		       least one valid choice of layout.  */
+		    is_possible &= edge_layout_cost (ud, other_node_i,
+						     other_partition.layout,
+						     layout_i).is_possible ();
+		};
+	      for_each_partition_edge (node_i, add_cost);
+	    }
+	  if (!is_possible)
+	    {
+	      layout_costs.mark_impossible ();
+	      continue;
+	    }
+
+	  /* Locally combine the costs from the forward and backward passes.
+	     (This combined cost is not passed on, since that would lead
+	     to double counting.)  */
+	  slpg_layout_cost combined_cost = layout_costs.in_cost;
+	  combined_cost.add_serial_cost (layout_costs.internal_cost);
+	  combined_cost.add_serial_cost (layout_costs.out_cost);
+
+	  /* Record the layout with the lowest cost.  Prefer layout 0 in
+	     the event of a tie between it and another layout.  */
+	  if (!min_layout_cost.is_possible ()
+	      || combined_cost.is_better_than (min_layout_cost,
+					       m_optimize_size))
+	    {
+	      min_layout_i = layout_i;
+	      min_layout_cost = combined_cost;
+	    }
+	}
+
+      gcc_assert (min_layout_cost.is_possible ());
+      partition.layout = min_layout_i;
+    }
+}
+
+/* Return a node that applies layout TO_LAYOUT_I to the original form of NODE.
+   NODE already has the layout that was selected for its partition.  */
+
+slp_tree
+vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
+						unsigned int to_layout_i)
+{
+  unsigned int result_i = node->vertex * m_perms.length () + to_layout_i;
+  slp_tree result = m_node_layouts[result_i];
+  if (result)
+    return result;
+
+  if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
+      || SLP_TREE_DEF_TYPE (node) == vect_external_def)
+    {
+      /* If the vector is uniform or unchanged, there's nothing to do.  */
+      if (to_layout_i == 0 || vect_slp_tree_uniform_p (node))
+	result = node;
+      else
+	{
+	  auto scalar_ops = SLP_TREE_SCALAR_OPS (node).copy ();
+	  result = vect_create_new_slp_node (scalar_ops);
+	  vect_slp_permute (m_perms[to_layout_i], scalar_ops, true);
+	}
+    }
+  else
+    {
+      unsigned int partition_i = m_vertices[node->vertex].partition;
+      unsigned int from_layout_i = m_partitions[partition_i].layout;
+      if (from_layout_i == to_layout_i)
+	return node;
+
+      /* If NODE is itself a VEC_PERM_EXPR, try to create a parallel
+	 permutation instead of a serial one.  Leave the new permutation
+	 in TMP_PERM on success.  */
+      auto_lane_permutation_t tmp_perm;
+      unsigned int num_inputs = 1;
       if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
 	{
-	  /* Apply the common permutes to the input vectors.  */
-	  if (perm_in > 0)
-	    {
-	      /* If the node is already a permute node we can apply
-		 the permutation to the lane selection, effectively
-		 materializing it on the incoming vectors.  */
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "simplifying permute node %p\n",
-				 node);
-	      for (unsigned k = 0;
-		   k < SLP_TREE_LANE_PERMUTATION (node).length (); ++k)
-		SLP_TREE_LANE_PERMUTATION (node)[k].second
-		  = perms[perm_in][SLP_TREE_LANE_PERMUTATION (node)[k].second];
-	    }
-	  /* Apply the anticipated output permute to the permute and
-	     stmt vectors.  */
-	  int perm_out = vertices[i].perm_out;
-	  if (perm_out > 0)
-	    {
-	      vect_slp_permute (perms[perm_out],
-				SLP_TREE_SCALAR_STMTS (node), true);
-	      vect_slp_permute (perms[perm_out],
-				SLP_TREE_LANE_PERMUTATION (node), true);
-	    }
+	  tmp_perm.safe_splice (SLP_TREE_LANE_PERMUTATION (node));
+	  if (from_layout_i != 0)
+	    vect_slp_permute (m_perms[from_layout_i], tmp_perm, false);
+	  if (to_layout_i != 0)
+	    vect_slp_permute (m_perms[to_layout_i], tmp_perm, true);
+	  if (vectorizable_slp_permutation_1 (m_vinfo, nullptr, node,
+					      tmp_perm,
+					      SLP_TREE_CHILDREN (node),
+					      false) >= 0)
+	    num_inputs = SLP_TREE_CHILDREN (node).length ();
+	  else
+	    tmp_perm.truncate (0);
 	}
-      else if (vertices[i].get_perm_materialized () != 0)
+
+      if (dump_enabled_p ())
 	{
-	  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
-	    /* For loads simply drop the permutation, the load permutation
-	       already performs the desired permutation.  */
-	    ;
-	  else if (SLP_TREE_LANE_PERMUTATION (node).exists ())
-	    gcc_unreachable ();
+	  if (tmp_perm.length () > 0)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "duplicating permutation node %p with"
+			     " layout %d\n",
+			     (void *) node, to_layout_i);
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "inserting permutation node in place of %p\n",
+			     (void *) node);
+	}
+
+      unsigned int num_lanes = SLP_TREE_LANES (node);
+      result = vect_create_new_slp_node (num_inputs, VEC_PERM_EXPR);
+      if (SLP_TREE_SCALAR_STMTS (node).length ())
+	{
+	  auto &stmts = SLP_TREE_SCALAR_STMTS (result);
+	  stmts.safe_splice (SLP_TREE_SCALAR_STMTS (result));
+	  if (from_layout_i != 0)
+	    vect_slp_permute (m_perms[from_layout_i], stmts, false);
+	  if (to_layout_i != 0)
+	    vect_slp_permute (m_perms[to_layout_i], stmts, true);
+	}
+      SLP_TREE_REPRESENTATIVE (result) = SLP_TREE_REPRESENTATIVE (node);
+      SLP_TREE_LANES (result) = num_lanes;
+      SLP_TREE_VECTYPE (result) = SLP_TREE_VECTYPE (node);
+      result->vertex = -1;
+
+      auto &lane_perm = SLP_TREE_LANE_PERMUTATION (result);
+      if (tmp_perm.length ())
+	{
+	  lane_perm.safe_splice (tmp_perm);
+	  SLP_TREE_CHILDREN (result).safe_splice (SLP_TREE_CHILDREN (node));
+	}
+      else
+	{
+	  lane_perm.create (num_lanes);
+	  for (unsigned j = 0; j < num_lanes; ++j)
+	    lane_perm.quick_push ({ 0, j });
+	  if (from_layout_i != 0)
+	    vect_slp_permute (m_perms[from_layout_i], lane_perm, false);
+	  if (to_layout_i != 0)
+	    vect_slp_permute (m_perms[to_layout_i], lane_perm, true);
+	  SLP_TREE_CHILDREN (result).safe_push (node);
+	}
+      for (slp_tree child : SLP_TREE_CHILDREN (result))
+	child->refcnt++;
+    }
+  m_node_layouts[result_i] = result;
+  return result;
+}
+
+/* Apply the chosen vector layouts to the SLP graph.  */
+
+void
+vect_optimize_slp_pass::materialize ()
+{
+  /* We no longer need the costs, so avoid having two O(N * P) arrays
+     live at the same time.  */
+  m_partition_layout_costs.release ();
+  m_node_layouts.safe_grow_cleared (m_vertices.length () * m_perms.length ());
+
+  auto_sbitmap fully_folded (m_vertices.length ());
+  bitmap_clear (fully_folded);
+  for (unsigned int node_i : m_partitioned_nodes)
+    {
+      auto &vertex = m_vertices[node_i];
+      slp_tree node = vertex.node;
+      int layout_i = m_partitions[vertex.partition].layout;
+      gcc_assert (layout_i >= 0);
+
+      /* Rearrange the scalar statements to match the chosen layout.  */
+      if (layout_i > 0)
+	vect_slp_permute (m_perms[layout_i],
+			  SLP_TREE_SCALAR_STMTS (node), true);
+
+      /* Update load and lane permutations.  */
+      if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	{
+	  /* First try to absorb the input vector layouts.  If that fails,
+	     force the inputs to have layout LAYOUT_I too.  We checked that
+	     that was possible before deciding to use nonzero output layouts.
+	     (Note that at this stage we don't really have any guarantee that
+	     the target supports the original VEC_PERM_EXPR.)  */
+	  auto &perm = SLP_TREE_LANE_PERMUTATION (node);
+	  auto_lane_permutation_t tmp_perm;
+	  tmp_perm.safe_splice (perm);
+	  change_vec_perm_layout (node, tmp_perm, -1, layout_i);
+	  if (vectorizable_slp_permutation_1 (m_vinfo, nullptr, node,
+					      tmp_perm,
+					      SLP_TREE_CHILDREN (node),
+					      false) >= 0)
+	    {
+	      if (dump_enabled_p ()
+		  && !std::equal (tmp_perm.begin (), tmp_perm.end (),
+				  perm.begin ()))
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "absorbing input layouts into %p\n",
+				 (void *) node);
+	      std::copy (tmp_perm.begin (), tmp_perm.end (), perm.begin ());
+	      bitmap_set_bit (fully_folded, node_i);
+	    }
 	  else
 	    {
+	      /* Not MSG_MISSED because it would make no sense to users.  */
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
-				 "inserting permute node in place of %p\n",
-				 node);
-
-	      /* Make a copy of NODE and in-place change it to a
-		 VEC_PERM node to permute the lanes of the copy.  */
-	      slp_tree copy = new _slp_tree;
-	      SLP_TREE_CHILDREN (copy) = SLP_TREE_CHILDREN (node);
-	      SLP_TREE_CHILDREN (node) = vNULL;
-	      SLP_TREE_SCALAR_STMTS (copy)
-		= SLP_TREE_SCALAR_STMTS (node).copy ();
-	      vect_slp_permute (perms[perm_in],
-				SLP_TREE_SCALAR_STMTS (copy), true);
-	      gcc_assert (!SLP_TREE_SCALAR_OPS (node).exists ());
-	      SLP_TREE_REPRESENTATIVE (copy) = SLP_TREE_REPRESENTATIVE (node);
-	      gcc_assert (!SLP_TREE_LOAD_PERMUTATION (node).exists ());
-	      SLP_TREE_LANE_PERMUTATION (copy)
-		= SLP_TREE_LANE_PERMUTATION (node);
-	      SLP_TREE_LANE_PERMUTATION (node) = vNULL;
-	      SLP_TREE_VECTYPE (copy) = SLP_TREE_VECTYPE (node);
-	      copy->refcnt = 1;
-	      copy->max_nunits = node->max_nunits;
-	      SLP_TREE_DEF_TYPE (copy) = SLP_TREE_DEF_TYPE (node);
-	      SLP_TREE_LANES (copy) = SLP_TREE_LANES (node);
-	      SLP_TREE_CODE (copy) = SLP_TREE_CODE (node);
-
-	      /* Now turn NODE into a VEC_PERM.  */
-	      SLP_TREE_CHILDREN (node).safe_push (copy);
-	      SLP_TREE_LANE_PERMUTATION (node).create (SLP_TREE_LANES (node));
-	      for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
-		SLP_TREE_LANE_PERMUTATION (node)
-		  .quick_push (std::make_pair (0, perms[perm_in][j]));
-	      SLP_TREE_CODE (node) = VEC_PERM_EXPR;
+				 "failed to absorb input layouts into %p\n",
+				 (void *) node);
+	      change_vec_perm_layout (nullptr, perm, layout_i, layout_i);
 	    }
 	}
-      else if (perm_in > 0) /* perm_in == perm_out */
+      else
 	{
-	  /* Apply the reverse permutation to our stmts.  */
-	  vect_slp_permute (perms[perm_in],
-			    SLP_TREE_SCALAR_STMTS (node), true);
-	  /* And to the lane/load permutation, which we can simply
-	     make regular by design.  */
-	  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
-	    {
-	      gcc_assert (!SLP_TREE_LANE_PERMUTATION (node).exists ());
-	      /* ???  When we handle non-bijective permutes the idea
-		 is that we can force the load-permutation to be
-		 { min, min + 1, min + 2, ... max }.  But then the
-		 scalar defs might no longer match the lane content
-		 which means wrong-code with live lane vectorization.
-		 So we possibly have to have NULL entries for those.  */
-	      vect_slp_permute (perms[perm_in],
-				SLP_TREE_LOAD_PERMUTATION (node), true);
-	    }
-	  else if (SLP_TREE_LANE_PERMUTATION (node).exists ())
-	    gcc_unreachable ();
+	  gcc_assert (!SLP_TREE_LANE_PERMUTATION (node).exists ());
+	  auto &load_perm = SLP_TREE_LOAD_PERMUTATION (node);
+	  if (layout_i > 0)
+	    /* ???  When we handle non-bijective permutes the idea
+	       is that we can force the load-permutation to be
+	       { min, min + 1, min + 2, ... max }.  But then the
+	       scalar defs might no longer match the lane content
+	       which means wrong-code with live lane vectorization.
+	       So we possibly have to have NULL entries for those.  */
+	    vect_slp_permute (m_perms[layout_i], load_perm, true);
 	}
     }
 
-  /* Elide any permutations at BB reduction roots.  */
-  if (is_a <bb_vec_info> (vinfo))
+  /* Do this before any nodes disappear, since it involves a walk
+     over the leaves.  */
+  remove_redundant_permutations ();
+
+  /* Replace each child with a correctly laid-out version.  */
+  for (unsigned int node_i : m_partitioned_nodes)
     {
-      for (slp_instance instance : vinfo->slp_instances)
+      /* Skip nodes that have already been handled above.  */
+      if (bitmap_bit_p (fully_folded, node_i))
+	continue;
+
+      auto &vertex = m_vertices[node_i];
+      int in_layout_i = m_partitions[vertex.partition].layout;
+      gcc_assert (in_layout_i >= 0);
+
+      unsigned j;
+      slp_tree child;
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (vertex.node), j, child)
 	{
-	  if (SLP_INSTANCE_KIND (instance) != slp_inst_kind_bb_reduc)
+	  if (!child)
 	    continue;
-	  slp_tree old = SLP_INSTANCE_TREE (instance);
-	  if (SLP_TREE_CODE (old) == VEC_PERM_EXPR
-	      && SLP_TREE_CHILDREN (old).length () == 1)
+
+	  slp_tree new_child = get_result_with_layout (child, in_layout_i);
+	  if (new_child != child)
 	    {
-	      slp_tree child = SLP_TREE_CHILDREN (old)[0];
-	      if (SLP_TREE_DEF_TYPE (child) == vect_external_def)
-		{
-		  /* Preserve the special VEC_PERM we use to shield existing
-		     vector defs from the rest.  But make it a no-op.  */
-		  unsigned i = 0;
-		  for (std::pair<unsigned, unsigned> &p
-		       : SLP_TREE_LANE_PERMUTATION (old))
-		    p.second = i++;
-		}
-	      else
-		{
-		  SLP_INSTANCE_TREE (instance) = child;
-		  SLP_TREE_REF_COUNT (child)++;
-		  vect_free_slp_tree (old);
-		}
-	    }
-	  else if (SLP_TREE_LOAD_PERMUTATION (old).exists ()
-		   && SLP_TREE_REF_COUNT (old) == 1
-		   && vertices[old->vertex].get_perm_materialized () != 0)
-	    {
-	      /* ???  For loads the situation is more complex since
-		 we can't modify the permute in place in case the
-		 node is used multiple times.  In fact for loads this
-		 should be somehow handled in the propagation engine.  */
-	      /* Apply the reverse permutation to our stmts.  */
-	      int perm = vertices[old->vertex].get_perm_materialized ();
-	      vect_slp_permute (perms[perm],
-				SLP_TREE_SCALAR_STMTS (old), true);
-	      vect_slp_permute (perms[perm],
-				SLP_TREE_LOAD_PERMUTATION (old), true);
+	      vect_free_slp_tree (child);
+	      SLP_TREE_CHILDREN (vertex.node)[j] = new_child;
+	      new_child->refcnt += 1;
 	    }
 	}
     }
+}
 
-  /* Free the perms vector used for propagation.  */
-  while (!perms.is_empty ())
-    perms.pop ().release ();
-  free_graph (slpg);
+/* Elide load permutations that are not necessary.  Such permutations might
+   be pre-existing, rather than created by the layout optimizations.  */
 
-
-  /* Now elide load permutations that are not necessary.  */
-  for (i = 0; i < leafs.length (); ++i)
+void
+vect_optimize_slp_pass::remove_redundant_permutations ()
+{
+  for (unsigned int node_i : m_leafs)
     {
-      node = vertices[leafs[i]].node;
+      slp_tree node = m_vertices[node_i].node;
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
       /* In basic block vectorization we allow any subchain of an interleaving
 	 chain.
 	 FORNOW: not in loop SLP because of realignment complications.  */
-      if (is_a <bb_vec_info> (vinfo))
+      if (is_a <bb_vec_info> (m_vinfo))
 	{
 	  bool subchain_p = true;
 	  stmt_vec_info next_load_info = NULL;
@@ -4160,6 +5395,7 @@ vect_optimize_slp (vec_info *vinfo)
 	}
       else
 	{
+	  loop_vec_info loop_vinfo = as_a<loop_vec_info> (m_vinfo);
 	  stmt_vec_info load_info;
 	  bool this_load_permuted = false;
 	  unsigned j;
@@ -4175,8 +5411,7 @@ vect_optimize_slp (vec_info *vinfo)
 	      /* The load requires permutation when unrolling exposes
 		 a gap either because the group is larger than the SLP
 		 group-size or because there is a gap between the groups.  */
-	      && (known_eq (LOOP_VINFO_VECT_FACTOR
-			      (as_a <loop_vec_info> (vinfo)), 1U)
+	      && (known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1U)
 		  || ((SLP_TREE_LANES (node) == DR_GROUP_SIZE (first_stmt_info))
 		      && DR_GROUP_GAP (first_stmt_info) == 0)))
 	    {
@@ -4185,6 +5420,152 @@ vect_optimize_slp (vec_info *vinfo)
 	    }
 	}
     }
+}
+
+/* Print the partition graph and layout information to the dump file.  */
+
+void
+vect_optimize_slp_pass::dump ()
+{
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "SLP optimize permutations:\n");
+  for (unsigned int layout_i = 1; layout_i < m_perms.length (); ++layout_i)
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "  %d: { ", layout_i);
+      const char *sep = "";
+      for (unsigned int idx : m_perms[layout_i])
+	{
+	  dump_printf (MSG_NOTE, "%s%d", sep, idx);
+	  sep = ", ";
+	}
+      dump_printf (MSG_NOTE, " }\n");
+    }
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "SLP optimize partitions:\n");
+  for (unsigned int partition_i = 0; partition_i < m_partitions.length ();
+       ++partition_i)
+    {
+      auto &partition = m_partitions[partition_i];
+      dump_printf_loc (MSG_NOTE, vect_location,  "  -------------\n");
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "  partition %d (layout %d):\n",
+		       partition_i, partition.layout);
+      dump_printf_loc (MSG_NOTE, vect_location, "    nodes:\n");
+      for (unsigned int order_i = partition.node_begin;
+	   order_i < partition.node_end; ++order_i)
+	{
+	  auto &vertex = m_vertices[m_partitioned_nodes[order_i]];
+	  dump_printf_loc (MSG_NOTE, vect_location, "      - %p:\n",
+			   (void *) vertex.node);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "          weight: %f\n",
+			   vertex.weight.to_double ());
+	  if (vertex.out_degree)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "          out weight: %f (degree %d)\n",
+			     vertex.out_weight.to_double (),
+			     vertex.out_degree);
+	  if (SLP_TREE_CODE (vertex.node) == VEC_PERM_EXPR)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "          op: VEC_PERM_EXPR\n");
+	  else if (auto rep = SLP_TREE_REPRESENTATIVE (vertex.node))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "          op template: %G", rep->stmt);
+	}
+      dump_printf_loc (MSG_NOTE, vect_location, "    edges:\n");
+      for (unsigned int order_i = partition.node_begin;
+	   order_i < partition.node_end; ++order_i)
+	{
+	  unsigned int node_i = m_partitioned_nodes[order_i];
+	  auto &vertex = m_vertices[node_i];
+	  auto print_edge = [&](graph_edge *, unsigned int other_node_i)
+	    {
+	      auto &other_vertex = m_vertices[other_node_i];
+	      if (other_vertex.partition < vertex.partition)
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "      - %p [%d] --> %p\n",
+				 (void *) other_vertex.node,
+				 other_vertex.partition,
+				 (void *) vertex.node);
+	      else
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "      - %p --> [%d] %p\n",
+				 (void *) vertex.node,
+				 other_vertex.partition,
+				 (void *) other_vertex.node);
+	    };
+	  for_each_partition_edge (node_i, print_edge);
+	}
+
+      for (unsigned int layout_i = 0; layout_i < m_perms.length (); ++layout_i)
+	{
+	  auto &layout_costs = partition_layout_costs (partition_i, layout_i);
+	  if (layout_costs.is_possible ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "    layout %d:%s\n", layout_i,
+			       partition.layout == int (layout_i)
+			       ? " (*)" : "");
+	      slpg_layout_cost combined_cost = layout_costs.in_cost;
+	      combined_cost.add_serial_cost (layout_costs.internal_cost);
+	      combined_cost.add_serial_cost (layout_costs.out_cost);
+#define TEMPLATE "{depth: %f, total: %f}"
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "        " TEMPLATE "\n",
+			       layout_costs.in_cost.depth.to_double (),
+			       layout_costs.in_cost.total.to_double ());
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "      + " TEMPLATE "\n",
+			       layout_costs.internal_cost.depth.to_double (),
+			       layout_costs.internal_cost.total.to_double ());
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "      + " TEMPLATE "\n",
+			       layout_costs.out_cost.depth.to_double (),
+			       layout_costs.out_cost.total.to_double ());
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "      = " TEMPLATE "\n",
+			       combined_cost.depth.to_double (),
+			       combined_cost.total.to_double ());
+#undef TEMPLATE
+	    }
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "    layout %d: rejected\n", layout_i);
+	}
+    }
+}
+
+/* Main entry point for the SLP graph optimization pass.  */
+
+void
+vect_optimize_slp_pass::run ()
+{
+  build_graph ();
+  create_partitions ();
+  start_choosing_layouts ();
+  if (m_perms.length () > 1)
+    {
+      forward_pass ();
+      backward_pass ();
+      if (dump_enabled_p ())
+	dump ();
+      materialize ();
+      while (!m_perms.is_empty ())
+	m_perms.pop ().release ();
+    }
+  else
+    remove_redundant_permutations ();
+  free_graph (m_slpg);
+}
+
+/* Optimize the SLP graph of VINFO.  */
+
+void
+vect_optimize_slp (vec_info *vinfo)
+{
+  if (vinfo->slp_instances.is_empty ())
+    return;
+  vect_optimize_slp_pass (vinfo).run ();
 }
 
 /* Gather loads reachable from the individual SLP graph entries.  */
@@ -4555,7 +5936,8 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "Building vector operands of %p from scalars instead\n", node);
+		     "Building vector operands of %p from scalars instead\n",
+		     (void *) node);
 
   /* Don't remove and free the child nodes here, since they could be
      referenced by other structures.  The analysis and scheduling phases
@@ -4682,7 +6064,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Failed cyclic SLP reference in %p\n", node);
+			 "Failed cyclic SLP reference in %p\n", (void *) node);
       return false;
     }
   gcc_assert (SLP_TREE_DEF_TYPE (node) == vect_internal_def);
@@ -4714,7 +6096,8 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Cannot vectorize all-constant op node %p\n", node);
+			 "Cannot vectorize all-constant op node %p\n",
+			 (void *) node);
       res = false;
     }
 
@@ -5072,47 +6455,64 @@ get_ultimate_leader (slp_instance instance,
   return instance;
 }
 
+namespace {
+/* Subroutine of vect_bb_partition_graph_r.  Map KEY to INSTANCE in
+   KEY_TO_INSTANCE, making INSTANCE the leader of any previous mapping
+   for KEY.  Return true if KEY was already in KEY_TO_INSTANCE.
+
+   INSTANCE_LEADER is as for get_ultimate_leader.  */
+
+template<typename T>
+bool
+vect_map_to_instance (slp_instance instance, T key,
+		      hash_map<T, slp_instance> &key_to_instance,
+		      hash_map<slp_instance, slp_instance> &instance_leader)
+{
+  bool existed_p;
+  slp_instance &key_instance = key_to_instance.get_or_insert (key, &existed_p);
+  if (!existed_p)
+    ;
+  else if (key_instance != instance)
+    {
+      /* If we're running into a previously marked key make us the
+	 leader of the current ultimate leader.  This keeps the
+	 leader chain acyclic and works even when the current instance
+	 connects two previously independent graph parts.  */
+      slp_instance key_leader
+	= get_ultimate_leader (key_instance, instance_leader);
+      if (key_leader != instance)
+	instance_leader.put (key_leader, instance);
+    }
+  key_instance = instance;
+  return existed_p;
+}
+}
+
 /* Worker of vect_bb_partition_graph, recurse on NODE.  */
 
 static void
 vect_bb_partition_graph_r (bb_vec_info bb_vinfo,
 			   slp_instance instance, slp_tree node,
 			   hash_map<stmt_vec_info, slp_instance> &stmt_to_instance,
-			   hash_map<slp_instance, slp_instance> &instance_leader,
-			   hash_set<slp_tree> &visited)
+			   hash_map<slp_tree, slp_instance> &node_to_instance,
+			   hash_map<slp_instance, slp_instance> &instance_leader)
 {
   stmt_vec_info stmt_info;
   unsigned i;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    {
-      bool existed_p;
-      slp_instance &stmt_instance
-	= stmt_to_instance.get_or_insert (stmt_info, &existed_p);
-      if (!existed_p)
-	;
-      else if (stmt_instance != instance)
-	{
-	  /* If we're running into a previously marked stmt make us the
-	     leader of the current ultimate leader.  This keeps the
-	     leader chain acyclic and works even when the current instance
-	     connects two previously independent graph parts.  */
-	  slp_instance stmt_leader
-	    = get_ultimate_leader (stmt_instance, instance_leader);
-	  if (stmt_leader != instance)
-	    instance_leader.put (stmt_leader, instance);
-	}
-      stmt_instance = instance;
-    }
+    vect_map_to_instance (instance, stmt_info, stmt_to_instance,
+			  instance_leader);
 
-  if (!SLP_TREE_SCALAR_STMTS (node).is_empty () && visited.add (node))
+  if (vect_map_to_instance (instance, node, node_to_instance,
+			    instance_leader))
     return;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (child && SLP_TREE_DEF_TYPE (child) == vect_internal_def)
       vect_bb_partition_graph_r (bb_vinfo, instance, child, stmt_to_instance,
-				 instance_leader, visited);
+				 node_to_instance, instance_leader);
 }
 
 /* Partition the SLP graph into pieces that can be costed independently.  */
@@ -5126,16 +6526,16 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
      corresponding SLP graph entry and upon visiting a previously
      marked stmt, make the stmts leader the current SLP graph entry.  */
   hash_map<stmt_vec_info, slp_instance> stmt_to_instance;
+  hash_map<slp_tree, slp_instance> node_to_instance;
   hash_map<slp_instance, slp_instance> instance_leader;
-  hash_set<slp_tree> visited;
   slp_instance instance;
   for (unsigned i = 0; bb_vinfo->slp_instances.iterate (i, &instance); ++i)
     {
       instance_leader.put (instance, instance);
       vect_bb_partition_graph_r (bb_vinfo,
 				 instance, SLP_INSTANCE_TREE (instance),
-				 stmt_to_instance, instance_leader,
-				 visited);
+				 stmt_to_instance, node_to_instance,
+				 instance_leader);
     }
 
   /* Then collect entries to each independent subgraph.  */
@@ -5147,7 +6547,7 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
 	  && leader != instance)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "instance %p is leader of %p\n",
-			 leader, instance);
+			 (void *) leader, (void *) instance);
     }
 }
 
@@ -6631,23 +8031,23 @@ vect_get_slp_defs (vec_info *,
     }
 }
 
-/* Generate vector permute statements from a list of loads in DR_CHAIN.
-   If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
-   permute statements for the SLP node NODE.  Store the number of vector
-   permute instructions in *N_PERMS and the number of vector load
-   instructions in *N_LOADS.  If DCE_CHAIN is true, remove all definitions
-   that were not needed.  */
+/* A subroutine of vect_transform_slp_perm_load with two extra arguments:
+   - PERM gives the permutation that the caller wants to use for NODE,
+     which might be different from SLP_LOAD_PERMUTATION.
+   - DUMP_P controls whether the function dumps information.  */
 
-bool
-vect_transform_slp_perm_load (vec_info *vinfo,
-			      slp_tree node, const vec<tree> &dr_chain,
-			      gimple_stmt_iterator *gsi, poly_uint64 vf,
-			      bool analyze_only, unsigned *n_perms,
-			      unsigned int *n_loads, bool dce_chain)
+static bool
+vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
+				load_permutation_t &perm,
+				const vec<tree> &dr_chain,
+				gimple_stmt_iterator *gsi, poly_uint64 vf,
+				bool analyze_only, bool dump_p,
+				unsigned *n_perms, unsigned int *n_loads,
+				bool dce_chain)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   int vec_index = 0;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype = SLP_TREE_VECTYPE (node);
   unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
   unsigned int mask_element;
   machine_mode mode;
@@ -6732,8 +8132,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
     {
       unsigned int iter_num = j / group_size;
       unsigned int stmt_num = j % group_size;
-      unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info)
-			+ SLP_TREE_LOAD_PERMUTATION (node)[stmt_num]);
+      unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info) + perm[stmt_num]);
       bitmap_set_bit (used_in_lanes, i);
       if (repeating_p)
 	{
@@ -6759,7 +8158,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	    }
 	  else
 	    {
-	      if (dump_enabled_p ())
+	      if (dump_p)
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "permutation requires at "
 				 "least three vectors %G",
@@ -6780,7 +8179,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	  indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
 	  if (!can_vec_perm_const_p (mode, mode, indices))
 	    {
-	      if (dump_enabled_p ())
+	      if (dump_p)
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
 				   vect_location,
@@ -6896,6 +8295,27 @@ vect_transform_slp_perm_load (vec_info *vinfo,
   return true;
 }
 
+/* Generate vector permute statements from a list of loads in DR_CHAIN.
+   If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
+   permute statements for the SLP node NODE.  Store the number of vector
+   permute instructions in *N_PERMS and the number of vector load
+   instructions in *N_LOADS.  If DCE_CHAIN is true, remove all definitions
+   that were not needed.  */
+
+bool
+vect_transform_slp_perm_load (vec_info *vinfo,
+			      slp_tree node, const vec<tree> &dr_chain,
+			      gimple_stmt_iterator *gsi, poly_uint64 vf,
+			      bool analyze_only, unsigned *n_perms,
+			      unsigned int *n_loads, bool dce_chain)
+{
+  return vect_transform_slp_perm_load_1 (vinfo, node,
+					 SLP_TREE_LOAD_PERMUTATION (node),
+					 dr_chain, gsi, vf, analyze_only,
+					 dump_enabled_p (), n_perms, n_loads,
+					 dce_chain);
+}
+
 /* Produce the next vector result for SLP permutation NODE by adding a vector
    statement at GSI.  If MASK_VEC is nonnull, add:
 
@@ -6976,20 +8396,22 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   SLP_TREE_VEC_STMTS (node).quick_push (perm_stmt);
 }
 
-/* Vectorize the SLP permutations in NODE as specified
-   in SLP_TREE_LANE_PERMUTATION which is a vector of pairs of SLP
-   child number and lane number.
-   Interleaving of two two-lane two-child SLP subtrees (not supported):
-     [ { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } ]
-   A blend of two four-lane two-child SLP subtrees:
-     [ { 0, 0 }, { 1, 1 }, { 0, 2 }, { 1, 3 } ]
-   Highpart of a four-lane one-child SLP subtree (not supported):
-     [ { 0, 2 }, { 0, 3 } ]
-   Where currently only a subset is supported by code generating below.  */
+/* Subroutine of vectorizable_slp_permutation.  Check whether the target
+   can perform permutation PERM on the (1 or 2) input nodes in CHILDREN.
+   If GSI is nonnull, emit the permutation there.
 
-static bool
-vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
-			      slp_tree node, stmt_vector_for_cost *cost_vec)
+   When GSI is null, the only purpose of NODE is to give properties
+   of the result, such as the vector type and number of SLP lanes.
+   The node does not need to be a VEC_PERM_EXPR.
+
+   If the target supports the operation, return the number of individual
+   VEC_PERM_EXPRs needed, otherwise return -1.  Print information to the
+   dump file if DUMP_P is true.  */
+
+static int
+vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
+				slp_tree node, lane_permutation_t &perm,
+				vec<slp_tree> &children, bool dump_p)
 {
   tree vectype = SLP_TREE_VECTYPE (node);
 
@@ -7001,7 +8423,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   bool repeating_p = multiple_p (nunits, SLP_TREE_LANES (node));
   tree op_vectype = NULL_TREE;
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+  FOR_EACH_VEC_ELT (children, i, child)
     if (SLP_TREE_VECTYPE (child))
       {
 	op_vectype = SLP_TREE_VECTYPE (child);
@@ -7009,25 +8431,24 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
       }
   if (!op_vectype)
     op_vectype = vectype;
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+  FOR_EACH_VEC_ELT (children, i, child)
     {
       if ((SLP_TREE_DEF_TYPE (child) != vect_internal_def
 	   && !vect_maybe_update_slp_op_vectype (child, op_vectype))
 	  || !types_compatible_p (SLP_TREE_VECTYPE (child), op_vectype)
 	  || !types_compatible_p (TREE_TYPE (vectype), TREE_TYPE (op_vectype)))
 	{
-	  if (dump_enabled_p ())
+	  if (dump_p)
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Unsupported vector types in lane permutation\n");
-	  return false;
+	  return -1;
 	}
       if (SLP_TREE_LANES (child) != SLP_TREE_LANES (node))
 	repeating_p = false;
     }
 
-  vec<std::pair<unsigned, unsigned> > &perm = SLP_TREE_LANE_PERMUTATION (node);
   gcc_assert (perm.length () == SLP_TREE_LANES (node));
-  if (dump_enabled_p ())
+  if (dump_p)
     {
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "vectorizing permutation");
@@ -7076,11 +8497,11 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
       /* Calculate every element of every permute mask vector explicitly,
 	 instead of relying on the pattern described above.  */
       if (!nunits.is_constant (&npatterns))
-	return false;
+	return -1;
       nelts_per_pattern = ncopies = 1;
       if (loop_vec_info linfo = dyn_cast <loop_vec_info> (vinfo))
 	if (!LOOP_VINFO_VECT_FACTOR (linfo).is_constant (&ncopies))
-	  return false;
+	  return -1;
       noutputs_per_mask = 1;
     }
   unsigned olanes = ncopies * SLP_TREE_LANES (node);
@@ -7093,13 +8514,13 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   auto_vec<std::pair<std::pair<unsigned, unsigned>, unsigned> > vperm;
   auto_vec<unsigned> active_lane;
   vperm.create (olanes);
-  active_lane.safe_grow_cleared (SLP_TREE_CHILDREN (node).length (), true);
+  active_lane.safe_grow_cleared (children.length (), true);
   for (unsigned i = 0; i < ncopies; ++i)
     {
       for (unsigned pi = 0; pi < perm.length (); ++pi)
 	{
 	  std::pair<unsigned, unsigned> p = perm[pi];
-	  tree vtype = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (node)[p.first]);
+	  tree vtype = SLP_TREE_VECTYPE (children[p.first]);
 	  if (repeating_p)
 	    vperm.quick_push ({{p.first, 0}, p.second + active_lane[p.first]});
 	  else
@@ -7112,12 +8533,19 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	    }
 	}
       /* Advance to the next group.  */
-      for (unsigned j = 0; j < SLP_TREE_CHILDREN (node).length (); ++j)
-	active_lane[j] += SLP_TREE_LANES (SLP_TREE_CHILDREN (node)[j]);
+      for (unsigned j = 0; j < children.length (); ++j)
+	active_lane[j] += SLP_TREE_LANES (children[j]);
     }
 
-  if (dump_enabled_p ())
+  if (dump_p)
     {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "vectorizing permutation");
+      for (unsigned i = 0; i < perm.length (); ++i)
+	dump_printf (MSG_NOTE, " op%u[%u]", perm[i].first, perm[i].second);
+      if (repeating_p)
+	dump_printf (MSG_NOTE, " (repeat %d)\n", SLP_TREE_LANES (node));
+      dump_printf (MSG_NOTE, "\n");
       dump_printf_loc (MSG_NOTE, vect_location, "as");
       for (unsigned i = 0; i < vperm.length (); ++i)
 	{
@@ -7163,12 +8591,12 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  if (dump_enabled_p ())
+	  if (dump_p)
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "permutation requires at "
 			     "least three vectors\n");
 	  gcc_assert (!gsi);
-	  return false;
+	  return -1;
 	}
 
       mask[index++] = mask_element;
@@ -7190,7 +8618,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 					    TYPE_VECTOR_SUBPARTS (op_vectype),
 					    &c) || c != 2)))
 	    {
-	      if (dump_enabled_p ())
+	      if (dump_p)
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
 				   vect_location,
@@ -7203,7 +8631,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 		  dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
 		}
 	      gcc_assert (!gsi);
-	      return false;
+	      return -1;
 	    }
 
 	  if (!identity_p)
@@ -7214,8 +8642,8 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 		second_vec = first_vec;
 
 	      slp_tree
-		first_node = SLP_TREE_CHILDREN (node)[first_vec.first],
-		second_node = SLP_TREE_CHILDREN (node)[second_vec.first];
+		first_node = children[first_vec.first],
+		second_node = children[second_vec.first];
 
 	      tree mask_vec = NULL_TREE;
 	      if (!identity_p)
@@ -7239,6 +8667,32 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  second_vec = std::make_pair (-1U, -1U);
 	}
     }
+
+  return nperms;
+}
+
+/* Vectorize the SLP permutations in NODE as specified
+   in SLP_TREE_LANE_PERMUTATION which is a vector of pairs of SLP
+   child number and lane number.
+   Interleaving of two two-lane two-child SLP subtrees (not supported):
+     [ { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } ]
+   A blend of two four-lane two-child SLP subtrees:
+     [ { 0, 0 }, { 1, 1 }, { 0, 2 }, { 1, 3 } ]
+   Highpart of a four-lane one-child SLP subtree (not supported):
+     [ { 0, 2 }, { 0, 3 } ]
+   Where currently only a subset is supported by code generating below.  */
+
+static bool
+vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
+			      slp_tree node, stmt_vector_for_cost *cost_vec)
+{
+  tree vectype = SLP_TREE_VECTYPE (node);
+  lane_permutation_t &perm = SLP_TREE_LANE_PERMUTATION (node);
+  int nperms = vectorizable_slp_permutation_1 (vinfo, gsi, node, perm,
+					       SLP_TREE_CHILDREN (node),
+					       dump_enabled_p ());
+  if (nperms < 0)
+    return false;
 
   if (!gsi)
     record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);

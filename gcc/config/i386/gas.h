@@ -36,10 +36,6 @@ along with GCC; see the file COPYING3.  If not see
  * people who want both form will have to compile twice.
  */
 
-/* these come from i386/bsd.h, but are specific to sequent */
-#undef DBX_NO_XREFS
-#undef DBX_CONTIN_LENGTH
-
 /* Output #ident as a .ident.  */
 
 #undef TARGET_ASM_OUTPUT_IDENT

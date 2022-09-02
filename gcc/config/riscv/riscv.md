@@ -118,6 +118,8 @@
    (NORMAL_RETURN		0)
    (SIBCALL_RETURN		1)
    (EXCEPTION_RETURN		2)
+   (VL_REGNUM			66)
+   (VTYPE_REGNUM		67)
 ])
 
 (include "predicates.md")
@@ -146,7 +148,7 @@
 ;; scheduling type to be "multi" instead.
 (define_attr "move_type"
   "unknown,load,fpload,store,fpstore,mtc,mfc,move,fmove,
-   const,logical,arith,andi,shift_shift"
+   const,logical,arith,andi,shift_shift,rdvlenb"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -163,6 +165,35 @@
 	      (ne (symbol_ref "TARGET_64BIT") (const_int 0)))
 	 (const_string "yes")]
 	(const_string "no")))
+
+;; ISA attributes.
+(define_attr "ext" "base,f,d,vector"
+  (const_string "base"))
+
+;; True if the extension is enabled.
+(define_attr "ext_enabled" "no,yes"
+  (cond [(eq_attr "ext" "base")
+	 (const_string "yes")
+	
+	 (and (eq_attr "ext" "f")
+	      (match_test "TARGET_HARD_FLOAT"))
+	 (const_string "yes")
+
+	 (and (eq_attr "ext" "d")
+	      (match_test "TARGET_DOUBLE_FLOAT"))
+	 (const_string "yes")
+
+	 (and (eq_attr "ext" "vector")
+	      (match_test "TARGET_VECTOR"))
+	 (const_string "yes")
+	]
+	(const_string "no")))
+
+;; Attribute to control enable or disable instructions.
+(define_attr "enabled" "no,yes"
+  (cond [(eq_attr "ext_enabled" "no")
+	 (const_string "no")]
+	(const_string "yes")))
 
 ;; Classification of each insn.
 ;; branch	conditional branch
@@ -195,10 +226,108 @@
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
+;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
+;; rdvlenb     vector byte length vlenb csrr read
+;; rdvl        vector length vl csrr read
+;; 7. Vector Loads and Stores
+;; vlde        vector unit-stride load instructions
+;; vste        vector unit-stride store instructions
+;; vldm        vector unit-stride mask load instructions
+;; vstm        vector unit-stride mask store instructions
+;; vlds        vector strided load instructions
+;; vsts        vector strided store instructions
+;; vldux       vector unordered indexed load instructions
+;; vldox       vector ordered indexed load instructions
+;; vstux       vector unordered indexed store instructions
+;; vstox       vector ordered indexed store instructions
+;; vldff       vector unit-stride fault-only-first load instructions
+;; vldr        vector whole register load instructions
+;; vstr        vector whole register store instructions
+;; 11. Vector integer arithmetic instructions
+;; vialu       vector single-width integer add and subtract and logical nstructions
+;; viwalu      vector widening integer add/subtract
+;; vext        vector integer extension
+;; vicalu      vector arithmetic with carry or borrow instructions
+;; vshift      vector single-width bit shift instructions
+;; vnshift     vector narrowing integer shift instructions
+;; vicmp       vector integer comparison/min/max instructions
+;; vimul       vector single-width integer multiply instructions
+;; vidiv       vector single-width integer divide instructions
+;; viwmul      vector widening integer multiply instructions
+;; vimuladd    vector single-width integer multiply-add instructions
+;; viwmuladd   vector widening integer multiply-add instructions
+;; vimerge     vector integer merge instructions
+;; vimov       vector integer move vector instructions
+;; 12. Vector fixed-point arithmetic instructions
+;; vsalu       vector single-width saturating add and subtract and logical instructions
+;; vaalu       vector single-width averaging add and subtract and logical instructions
+;; vsmul       vector single-width fractional multiply with rounding and saturation instructions
+;; vsshift     vector single-width scaling shift instructions
+;; vnclip      vector narrowing fixed-point clip instructions
+;; 13. Vector floating-point instructions
+;; vfalu       vector single-width floating-point add/subtract instructions
+;; vfwalu      vector widening floating-point add/subtract instructions
+;; vfmul       vector single-width floating-point multiply instructions
+;; vfdiv       vector single-width floating-point divide instructions
+;; vfwmul      vector widening floating-point multiply instructions
+;; vfmuladd    vector single-width floating-point multiply-add instructions
+;; vfwmuladd   vector widening floating-point multiply-add instructions
+;; vfsqrt      vector floating-point square-root instructions
+;; vfrecp      vector floating-point reciprocal square-root instructions
+;; vfcmp       vector floating-point comparison/min/max instructions
+;; vfsgnj      vector floating-point sign-injection instructions
+;; vfclass     vector floating-point classify instruction
+;; vfmerge     vector floating-point merge instruction
+;; vfmov       vector floating-point move instruction
+;; vfcvtitof   vector single-width integer to floating-point instruction
+;; vfcvtftoi   vector single-width floating-point to integer instruction
+;; vfwcvtitof  vector widening integer to floating-point instruction
+;; vfwcvtftoi  vector widening floating-point to integer instruction
+;; vfwcvtftof  vector widening floating-point to floating-point instruction
+;; vfncvtitof  vector narrowing integer to floating-point instruction
+;; vfncvtftoi  vector narrowing floating-point to integer instruction
+;; vfncvtftof  vector narrowing floating-point to floating-point instruction
+;; 14. Vector reduction operations
+;; vired       vector single-width integer reduction instructions
+;; viwred      vector widening integer reduction instructions
+;; vfred       vector single-width floating-point un-ordered reduction instruction
+;; vfredo      vector single-width floating-point ordered reduction instruction
+;; vfwred      vector widening floating-point un-ordered reduction instruction
+;; vfwredo     vector widening floating-point ordered reduction instruction
+;; 15. Vector mask instructions
+;; vmalu       vector mask-register logical instructions
+;; vmpop       vector mask population count
+;; vmffs       vector find-first-set mask bit
+;; vmsfs       vector set mask bit
+;; vmiota      vector iota
+;; vmidx       vector element index instruction
+;; 16. Vector permutation instructions
+;; vimovvx     integer scalar move instructions
+;; vimovxv     integer scalar move instructions
+;; vfmovvf     floating-point scalar move instructions
+;; vfmovfv     floating-point scalar move instructions
+;; vislide     vector slide instructions
+;; vislide1    vector slide instructions
+;; vfslide1    vector slide instructions
+;; vgather     vector register gather instructions
+;; vcompress   vector compress instruction
+;; vmov        whole vector register move
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate"
+   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
+   rdvlenb,rdvl,vlde,vste,vldm,vstm,vlds,vsts,
+   vldux,vldox,vstux,vstox,vldff,vldr,vstr,
+   vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,
+   vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
+   vsalu,vaalu,vsmul,vsshift,vnclip,
+   vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,
+   vfcmp,vfsgnj,vfclass,vfmerge,vfmov,
+   vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
+   vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
+   vired,viwred,vfred,vfredo,vfwred,vfwredo,
+   vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
+   vislide,vislide1,vfslide1,vgather,vcompress,vmov"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -226,7 +355,8 @@
 	      (eq_attr "dword_mode" "yes"))
 	   (const_string "multi")
 	 (eq_attr "move_type" "move") (const_string "move")
-	 (eq_attr "move_type" "const") (const_string "const")]
+	 (eq_attr "move_type" "const") (const_string "const")
+	 (eq_attr "move_type" "rdvlenb") (const_string "rdvlenb")]
 	(const_string "unknown")))
 
 ;; Length of instruction in bytes.
@@ -1533,24 +1663,26 @@
 })
 
 (define_insn "*movdi_32bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,  *f,*f,*r,*f,*m")
-	(match_operand:DI 1 "move_operand"         " r,i,m,r,*J*r,*m,*f,*f,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,  *f,*f,*r,*f,*m,r")
+	(match_operand:DI 1 "move_operand"         " r,i,m,r,*J*r,*m,*f,*f,*f,vp"))]
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore")
-   (set_attr "mode" "DI")])
+  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
+   (set_attr "mode" "DI")
+   (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 (define_insn "*movdi_64bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*m")
-	(match_operand:DI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*m,r")
+	(match_operand:DI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,*f,vp"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore")
-   (set_attr "mode" "DI")])
+  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
+   (set_attr "mode" "DI")
+   (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 ;; 32-bit Integer moves
 
@@ -1564,13 +1696,14 @@
 })
 
 (define_insn "*movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*m")
-	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*m,r")
+	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,vp"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore")
-   (set_attr "mode" "SI")])
+  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
+   (set_attr "mode" "SI")
+   (set_attr "ext" "base,base,base,base,f,f,f,f,vector")])
 
 ;; 16-bit Integer moves
 
@@ -1589,13 +1722,14 @@
 })
 
 (define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*r")
-	(match_operand:HI 1 "move_operand"	   " r,T,m,rJ,*r*J,*f"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*r,r")
+	(match_operand:HI 1 "move_operand"	   " r,T,m,rJ,*r*J,*f,vp"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,mfc")
-   (set_attr "mode" "HI")])
+  [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
+   (set_attr "mode" "HI")
+   (set_attr "ext" "base,base,base,base,f,f,vector")])
 
 ;; HImode constant generation; see riscv_move_integer for details.
 ;; si+si->hi without truncation is legal because of
@@ -1631,13 +1765,14 @@
 })
 
 (define_insn "*movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*r")
-	(match_operand:QI 1 "move_operand"         " r,I,m,rJ,*r*J,*f"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*r,r")
+	(match_operand:QI 1 "move_operand"         " r,I,m,rJ,*r*J,*f,vp"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,mfc")
-   (set_attr "mode" "QI")])
+  [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
+   (set_attr "mode" "QI")
+   (set_attr "ext" "base,base,base,base,f,f,vector")])
 
 ;; 32-bit floating point moves
 

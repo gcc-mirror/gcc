@@ -89,6 +89,8 @@ public:
 
   const riscv_subset_t *begin () const {return m_head;};
   const riscv_subset_t *end () const {return NULL;};
+
+  int match_score (riscv_subset_list *) const;
 };
 
 extern const riscv_subset_list *riscv_current_subset_list (void);

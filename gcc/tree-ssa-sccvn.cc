@@ -4877,41 +4877,44 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
     }
 
   /* Iterate to the single executable bb2 successor.  */
-  edge succe = NULL;
-  FOR_EACH_EDGE (e, ei, bb2->succs)
-    if ((e->flags & EDGE_EXECUTABLE)
-	|| (!allow_back && (e->flags & EDGE_DFS_BACK)))
-      {
-	if (succe)
-	  {
-	    succe = NULL;
-	    break;
-	  }
-	succe = e;
-      }
-  if (succe)
+  if (EDGE_COUNT (bb2->succs) > 1)
     {
-      /* Verify the reached block is only reached through succe.
-	 If there is only one edge we can spare us the dominator
-	 check and iterate directly.  */
-      if (EDGE_COUNT (succe->dest->preds) > 1)
-	{
-	  FOR_EACH_EDGE (e, ei, succe->dest->preds)
-	    if (e != succe
-		&& ((e->flags & EDGE_EXECUTABLE)
-		    || (!allow_back && (e->flags & EDGE_DFS_BACK))))
+      edge succe = NULL;
+      FOR_EACH_EDGE (e, ei, bb2->succs)
+	if ((e->flags & EDGE_EXECUTABLE)
+	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
+	  {
+	    if (succe)
 	      {
 		succe = NULL;
 		break;
 	      }
-	}
+	    succe = e;
+	  }
       if (succe)
 	{
-	  bb2 = succe->dest;
+	  /* Verify the reached block is only reached through succe.
+	     If there is only one edge we can spare us the dominator
+	     check and iterate directly.  */
+	  if (EDGE_COUNT (succe->dest->preds) > 1)
+	    {
+	      FOR_EACH_EDGE (e, ei, succe->dest->preds)
+		if (e != succe
+		    && ((e->flags & EDGE_EXECUTABLE)
+			|| (!allow_back && (e->flags & EDGE_DFS_BACK))))
+		  {
+		    succe = NULL;
+		    break;
+		  }
+	    }
+	  if (succe)
+	    {
+	      bb2 = succe->dest;
 
-	  /* Re-do the dominance check with changed bb2.  */
-	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
-	    return true;
+	      /* Re-do the dominance check with changed bb2.  */
+	      if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+		return true;
+	    }
 	}
     }
 
@@ -7287,14 +7290,14 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
   return walker.eliminate_cleanup ();
 }
 
-unsigned
-do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate, vn_lookup_kind kind);
+static unsigned
+do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
+	     bool iterate, bool eliminate, vn_lookup_kind kind);
 
 void
 run_rpo_vn (vn_lookup_kind kind)
 {
-  do_rpo_vn (cfun, NULL, NULL, true, false, kind);
+  do_rpo_vn_1 (cfun, NULL, NULL, true, false, kind);
 
   /* ???  Prune requirement of these.  */
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
@@ -7992,9 +7995,9 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  */
 
-unsigned
-do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate, vn_lookup_kind kind)
+static unsigned
+do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
+	     bool iterate, bool eliminate, vn_lookup_kind kind)
 {
   unsigned todo = 0;
   default_vn_walk_kind = kind;
@@ -8412,12 +8415,18 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 /* Region-based entry for RPO VN.  Performs value-numbering and elimination
    on the SEME region specified by ENTRY and EXIT_BBS.  If ENTRY is not
    the only edge into the region at ENTRY->dest PHI nodes in ENTRY->dest
-   are not considered.  */
+   are not considered.
+   If ITERATE is true then treat backedges optimistically as not
+   executed and iterate.  If ELIMINATE is true then perform
+   elimination, otherwise leave that to the caller.
+   KIND specifies the amount of work done for handling memory operations.  */
 
 unsigned
-do_rpo_vn (function *fn, edge entry, bitmap exit_bbs)
+do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
+	   bool iterate, bool eliminate, vn_lookup_kind kind)
 {
-  unsigned todo = do_rpo_vn (fn, entry, exit_bbs, false, true, VN_WALKREWRITE);
+  auto_timevar tv (TV_TREE_RPO_VN);
+  unsigned todo = do_rpo_vn_1 (fn, entry, exit_bbs, iterate, eliminate, kind);
   free_rpo_vn ();
   return todo;
 }
@@ -8473,7 +8482,7 @@ pass_fre::execute (function *fun)
   if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true, VN_WALKREWRITE);
+  todo = do_rpo_vn_1 (fun, NULL, NULL, iterate_p, true, VN_WALKREWRITE);
   free_rpo_vn ();
 
   if (iterate_p)

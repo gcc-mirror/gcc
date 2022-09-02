@@ -51,9 +51,6 @@
 #include "tree-ssa-propagate.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
-#if TARGET_XCOFF
-#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
 
@@ -1085,7 +1082,12 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
       unsigned nvec = (fncode == RS6000_BIF_DISASSEMBLE_ACC) ? 4 : 2;
       tree dst_ptr = gimple_call_arg (stmt, 0);
       tree src_ptr = gimple_call_arg (stmt, 1);
-      tree src_type = TREE_TYPE (src_ptr);
+      tree src_type = (fncode == RS6000_BIF_DISASSEMBLE_ACC)
+		      ? build_pointer_type (vector_quad_type_node)
+		      : build_pointer_type (vector_pair_type_node);
+      if (TREE_TYPE (src_ptr) != src_type)
+	src_ptr = build1 (NOP_EXPR, src_type, src_ptr);
+
       tree src = create_tmp_reg_or_ssa_name (TREE_TYPE (src_type));
       gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
 

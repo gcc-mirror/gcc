@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=z14 -mzvector -mzarch" } */
+/* { dg-options "-O3 -march=z14 -mzvector -mzarch -fno-unroll-loops" } */
 
 #include "autovec.h"
 

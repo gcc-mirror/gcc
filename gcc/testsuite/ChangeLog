@@ -1,3 +1,247 @@
+2022-09-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106707
+	* gcc.target/i386/pr106707.c (foo): Replace long with long long.
+
+2022-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unproto-3.c, gcc.dg/c2x-unproto-3.c,
+	gcc.dg/c2x-unproto-4.c: New tests.
+	* gcc.dg/c2x-old-style-definition-6.c, gcc.dg/c2x-unproto-1.c,
+	gcc.dg/c2x-unproto-2.c: Update for removal of unprototyped
+	functions.
+
+2022-09-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-pr54400.c: Extend to aarch64.
+	* gcc.dg/vect/bb-slp-layout-18.c: New test.
+
+2022-09-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106707
+	* gcc.target/i386/pr106707.c: New test.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-signbit-1.c: New test.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* c-c++-common/cpp/Winvalid-utf8-1.c: New test.
+	* c-c++-common/cpp/Winvalid-utf8-2.c: New test.
+	* c-c++-common/cpp/Winvalid-utf8-3.c: New test.
+	* g++.dg/cpp23/Winvalid-utf8-1.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-2.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-3.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-4.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-5.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-6.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-7.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-8.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-9.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-10.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-11.C: New test.
+	* g++.dg/cpp23/Winvalid-utf8-12.C: New test.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106785
+	* gcc.dg/tree-ssa/vrp-float-nan-1.c: New test.
+
+2022-09-01  konglin1  <lingling.kong@intel.com>
+
+	* gcc.dg/tree-ssa/gen-vect-34.c: New test.
+	* gcc.dg/vect/vect-ifcvt-18.c: New test.
+
+2022-09-01  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106682
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: Fix typo.
+
+2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* g++.target/powerpc/pr101322.C: New test.
+
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-2.c, gcc.dg/c2x-attr-fallthrough-2.c,
+	gcc.dg/c2x-attr-maybe_unused-1.c, gcc.dg/c2x-attr-nodiscard-2.c:
+	Add tests of attributes on labels.
+	* gcc.dg/c2x-has-c-attribute-2.c: Update expected results for
+	maybe_unused and fallthrough.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp0x/lambda/lambda-conv.C: Remove useless test.
+	* gcc.c-torture/execute/ieee/hugeval.x: Likewise.
+	* gcc.dg/torture/pr47917.c: Likewise.
+	* lib/target-supports.exp: Likewise.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/106795
+	* g++.dg/tree-ssa/empty-loop.C: Use -Wno-unused-result.
+
+2022-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: Update
+	tests for empty initializers.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90994
+	* g++.dg/torture/pr90994.C: New testcase.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65244
+	* gcc.dg/uninit-pr65244-2.c: New testcase.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65244
+	* gcc.dg/uninit-pr65244-1.c: New testcase.
+
+2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-2.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-3.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-4.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-5.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-8.c: Add dg-warning.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_var_shift):
+	Return true for aarch64.
+	* gcc.dg/vect/bb-slp-layout-1.c: New test.
+	* gcc.dg/vect/bb-slp-layout-2.c: New test.
+	* gcc.dg/vect/bb-slp-layout-3.c: New test.
+	* gcc.dg/vect/bb-slp-layout-4.c: New test.
+	* gcc.dg/vect/bb-slp-layout-5.c: New test.
+	* gcc.dg/vect/bb-slp-layout-6.c: New test.
+	* gcc.dg/vect/bb-slp-layout-7.c: New test.
+	* gcc.dg/vect/bb-slp-layout-8.c: New test.
+	* gcc.dg/vect/bb-slp-layout-9.c: New test.
+	* gcc.dg/vect/bb-slp-layout-10.c: New test.
+	* gcc.dg/vect/bb-slp-layout-11.c: New test.
+	* gcc.dg/vect/bb-slp-layout-13.c: New test.
+	* gcc.dg/vect/bb-slp-layout-14.c: New test.
+	* gcc.dg/vect/bb-slp-layout-15.c: New test.
+	* gcc.dg/vect/bb-slp-layout-16.c: New test.
+	* gcc.dg/vect/bb-slp-layout-17.c: New test.
+	* gcc.dg/vect/slp-11b.c: XFAIL SLP test for load-lanes targets.
+	* gcc.dg/vect/bb-slp-layout-12.c: New file.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/slp_15.c: New test.
+	* g++.target/aarch64/sve/pr96974.C: Remove scan test.
+
+2022-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106759
+	* g++.dg/ext/has-builtin-1.C: New test.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67196
+	* gcc.dg/uninit-pred-7_a.c: Un-XFAIL.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/recip-3.c: Avoid premature optimization so test
+	has a chance to succeed.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63660
+	* gcc.dg/uninit-pr63660.c: New testcase.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/uninit-pred-5.C: New testcase.
+
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106744
+	* gcc.dg/tree-ssa/minmax-10.c: Make runtime test.
+	* gcc.dg/tree-ssa/minmax-11.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-12.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-13.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-14.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-15.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-16.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-3.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-4.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-5.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-6.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-7.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-8.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-9.c: Likewise.
+
+2022-08-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106712
+	* g++.dg/cpp0x/gen-attrs-77.C: New test.
+
+2022-08-29  David Faust  <david.faust@oracle.com>
+
+	PR target/106745
+	* gcc.target/bpf/core-pr106745.c: New test.
+
+2022-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106748
+	* gcc.target/i386/pr106748.c: New test.
+
+2022-08-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/func-call-medium-1.c: Refine test
+	depending on __tls_get_addr with { target tls_native }.
+	* gcc.target/loongarch/func-call-medium-2.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-3.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-4.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-5.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-6.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-7.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-8.c: Likewise.
+	* gcc.target/loongarch/tls-gd-noplt.c: Likewise.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-sum-across-no-lower-subreg-1.c: New test.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vperm-rev-z14.c: New test.
+	* gcc.target/s390/vector/vperm-rev-z15.c: New test.
+	* gcc.target/s390/zvector/vec-reve-store-byte.c: Adjust test
+	expectation.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-reve-int-long.c: New test.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-copysign.c: Do not unroll.
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: Dito.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt.c: Dito.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: Dito.
+	* gcc.target/s390/zvector/autovec-float-signaling-ltgt.c: Dito.
+
+2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* gcc.target/powerpc/pr106017.c: New test.
+
 2022-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/106737

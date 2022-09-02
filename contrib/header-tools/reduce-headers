@@ -25,7 +25,6 @@ target_priority = [
     "arm-netbsdelf",
     "c6x-elf",
     "epiphany-elf",
-    "hppa2.0-hpux10.1",
     "i686-mingw32crt",
     "i686-pc-msdosdjgpp",
     "mipsel-elf",

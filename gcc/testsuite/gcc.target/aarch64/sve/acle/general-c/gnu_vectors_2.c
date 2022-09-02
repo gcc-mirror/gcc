@@ -12,7 +12,7 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   /* Initialization.  */
 
   svuint8_t init_sve_u1 = 0; /* { dg-error {incompatible types when initializing type 'svuint8_t' using type 'int'} } */
-  svuint8_t init_sve_u2 = {}; /* { dg-error {empty scalar initializer} } */
+  svuint8_t init_sve_u2 = {};
   svuint8_t init_sve_u3 = { sve_u1 };
   svuint8_t init_sve_u4 = { gnu_u1 };
   svuint8_t init_sve_u5 = { sve_s1 };
@@ -31,7 +31,7 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   /* Compound literals.  */
 
-  (svuint8_t) {}; /* { dg-error {empty scalar initializer} } */
+  (svuint8_t) {};
   (svuint8_t) { 0 }; /* { dg-error {incompatible types when initializing type 'svuint8_t' using type 'int'} } */
   (svuint8_t) { sve_u1 };
   (svuint8_t) { gnu_u1 };

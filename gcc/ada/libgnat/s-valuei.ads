@@ -39,6 +39,7 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Subprogram_Variant => Ignore);
 
 with System.Val_Util; use System.Val_Util;
+with System.Value_I_Spec;
 
 generic
 
@@ -54,71 +55,15 @@ generic
 
    --  Additional parameters for ghost subprograms used inside contracts
 
-   type Uns_Option is private;
-   with function Wrap_Option (Value : Uns) return Uns_Option
-      with Ghost;
-   with function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean
-      with Ghost;
-   with function Raw_Unsigned_Overflows_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-      with Ghost;
-   with function Scan_Raw_Unsigned_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Uns
-      with Ghost;
-   with function Raw_Unsigned_Last_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Positive
-      with Ghost;
-   with function Only_Decimal_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-      with Ghost;
-   with function Scan_Based_Number_Ghost
-     (Str      : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-      return Uns_Option
-      with Ghost;
+   with package Uns_Params is new System.Val_Util.Uns_Params
+     (Uns => Uns, others => <>)
+   with Ghost;
 
 package System.Value_I is
    pragma Preelaborate;
+   use all type Uns_Params.Uns_Option;
 
-   function Uns_Is_Valid_Int (Minus : Boolean; Uval : Uns) return Boolean is
-     (if Minus then Uval <= Uns (Int'Last) + 1
-      else Uval <= Uns (Int'Last))
-   with Ghost,
-     Post => True;
-   --  Return True if Uval (or -Uval when Minus is True) is a valid number of
-   --  type Int.
-
-   function Is_Int_Of_Uns
-     (Minus : Boolean;
-      Uval  : Uns;
-      Val   : Int)
-      return Boolean
-   is
-     (if Minus and then Uval = Uns (Int'Last) + 1 then Val = Int'First
-      elsif Minus then Val = -(Int (Uval))
-      else Val = Int (Uval))
-   with
-     Ghost,
-     Pre  => Uns_Is_Valid_Int (Minus, Uval),
-     Post => True;
-   --  Return True if Uval (or -Uval when Minus is True) is equal to Val
-
-   function Abs_Uns_Of_Int (Val : Int) return Uns is
-     (if Val = Int'First then Uns (Int'Last) + 1
-      elsif Val < 0 then Uns (-Val)
-      else Uns (Val))
-   with Ghost;
-   --  Return the unsigned absolute value of Val
+   package Spec is new System.Value_I_Spec (Int, Uns, Uns_Params);
 
    procedure Scan_Integer
      (Str : String;
@@ -139,11 +84,13 @@ package System.Value_I is
               (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
                else Non_Blank);
           begin
-            Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))
-              and then not Raw_Unsigned_Overflows_Ghost (Str, Fst_Num, Max)
-              and then Uns_Is_Valid_Int
+            Uns_Params.Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))
+              and then Uns_Params.Raw_Unsigned_No_Overflow_Ghost
+                (Str, Fst_Num, Max)
+              and then Spec.Uns_Is_Valid_Int
                 (Minus => Str (Non_Blank) = '-',
-                 Uval  => Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max))),
+                 Uval  => Uns_Params.Scan_Raw_Unsigned_Ghost
+                   (Str, Fst_Num, Max))),
     Post =>
       (declare
          Non_Blank : constant Positive := First_Non_Space_Ghost
@@ -152,12 +99,13 @@ package System.Value_I is
            (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
             else Non_Blank);
          Uval      : constant Uns :=
-            Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max);
+            Uns_Params.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max);
        begin
-         Is_Int_Of_Uns (Minus => Str (Non_Blank) = '-',
-                        Uval  => Uval,
-                        Val   => Res)
-           and then Ptr.all = Raw_Unsigned_Last_Ghost (Str, Fst_Num, Max));
+           Spec.Is_Int_Of_Uns (Minus => Str (Non_Blank) = '-',
+                               Uval  => Uval,
+                               Val   => Res)
+           and then Ptr.all = Uns_Params.Raw_Unsigned_Last_Ghost
+             (Str, Fst_Num, Max));
    --  This procedure scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
    --  scanned extends no further than Str (Max). There are three cases for the
@@ -183,111 +131,17 @@ package System.Value_I is
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case.
 
-   function Slide_To_1 (Str : String) return String
-   with
-     Ghost,
-     Post =>
-       Only_Space_Ghost (Str, Str'First, Str'Last) =
-         (for all J in Str'First .. Str'Last =>
-            Slide_To_1'Result (J - Str'First + 1) = ' ');
-   --  Slides Str so that it starts at 1
-
-   function Slide_If_Necessary (Str : String) return String is
-     (if Str'Last = Positive'Last then Slide_To_1 (Str) else Str)
-   with
-     Ghost,
-     Post =>
-       Only_Space_Ghost (Str, Str'First, Str'Last) =
-       Only_Space_Ghost (Slide_If_Necessary'Result,
-                         Slide_If_Necessary'Result'First,
-                         Slide_If_Necessary'Result'Last);
-   --  If Str'Last = Positive'Last then slides Str so that it starts at 1
-
-   function Is_Integer_Ghost (Str : String) return Boolean is
-     (declare
-        Non_Blank : constant Positive := First_Non_Space_Ghost
-          (Str, Str'First, Str'Last);
-        Fst_Num   : constant Positive :=
-          (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1 else Non_Blank);
-      begin
-        Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last))
-          and then not Raw_Unsigned_Overflows_Ghost (Str, Fst_Num, Str'Last)
-          and then
-            Uns_Is_Valid_Int
-              (Minus => Str (Non_Blank) = '-',
-               Uval  => Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Str'Last))
-          and then Only_Space_Ghost
-            (Str, Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last), Str'Last))
-   with
-     Ghost,
-     Pre => not Only_Space_Ghost (Str, Str'First, Str'Last)
-       and then Str'Last /= Positive'Last,
-     Post => True;
-   --  Ghost function that determines if Str has the correct format for a
-   --  signed number, consisting in some blank characters, an optional
-   --  sign, a raw unsigned number which does not overflow and then some
-   --  more blank characters.
-
-   function Is_Value_Integer_Ghost (Str : String; Val : Int) return Boolean is
-     (declare
-        Non_Blank : constant Positive := First_Non_Space_Ghost
-          (Str, Str'First, Str'Last);
-        Fst_Num   : constant Positive :=
-          (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1 else Non_Blank);
-        Uval      : constant Uns :=
-          Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Str'Last);
-      begin
-        Is_Int_Of_Uns (Minus => Str (Non_Blank) = '-',
-                       Uval  => Uval,
-                       Val   => Val))
-   with
-     Ghost,
-     Pre => not Only_Space_Ghost (Str, Str'First, Str'Last)
-       and then Str'Last /= Positive'Last
-       and then Is_Integer_Ghost (Str),
-     Post => True;
-   --  Ghost function that returns True if Val is the value corresponding to
-   --  the signed number represented by Str.
-
    function Value_Integer (Str : String) return Int
    with
      Pre => not Only_Space_Ghost (Str, Str'First, Str'Last)
        and then Str'Length /= Positive'Last
-       and then Is_Integer_Ghost (Slide_If_Necessary (Str)),
-     Post => Is_Value_Integer_Ghost
-       (Slide_If_Necessary (Str), Value_Integer'Result),
+       and then Spec.Is_Integer_Ghost (Spec.Slide_If_Necessary (Str)),
+     Post => Spec.Is_Value_Integer_Ghost
+       (Spec.Slide_If_Necessary (Str), Value_Integer'Result),
      Subprogram_Variant => (Decreases => Str'First);
    --  Used in computing X'Value (Str) where X is a signed integer type whose
    --  base range does not exceed the base range of Integer. Str is the string
    --  argument of the attribute. Constraint_Error is raised if the string is
    --  malformed, or if the value is out of range.
-
-   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
-   with
-     Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then Str'Length >= 2
-       and then Str (Str'First) in ' ' | '-'
-       and then (Str (Str'First) = '-') = (Val < 0)
-       and then Only_Decimal_Ghost (Str, Str'First + 1, Str'Last)
-       and then Scan_Based_Number_Ghost (Str, Str'First + 1, Str'Last)
-         = Wrap_Option (Abs_Uns_Of_Int (Val)),
-     Post => Is_Integer_Ghost (Slide_If_Necessary (Str))
-       and then Value_Integer (Str) = Val;
-   --  Ghost lemma used in the proof of 'Image implementation, to prove that
-   --  the result of Value_Integer on a decimal string is the same as the
-   --  signing the result of Scan_Based_Number_Ghost.
-
-private
-
-   ----------------
-   -- Slide_To_1 --
-   ----------------
-
-   function Slide_To_1 (Str : String) return String is
-     (declare
-        Res : constant String (1 .. Str'Length) := Str;
-      begin
-        Res);
 
 end System.Value_I;

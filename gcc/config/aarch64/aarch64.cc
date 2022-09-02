@@ -16671,7 +16671,8 @@ aarch64_vector_costs::prefer_unrolled_loop () const
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "Number of insns in"
-		     " unrolled Advanced SIMD loop = %d\n",
+		     " unrolled Advanced SIMD loop = "
+		     HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 		     m_unrolled_advsimd_stmts);
 
   /* The balance here is tricky.  On the one hand, we can't be sure whether

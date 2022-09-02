@@ -1,8 +1,9 @@
-/* { dg-do compile } */
+/* { dg-do run } */
 /* { dg-options "-O -fdump-tree-optimized" } */
 
 #include <stdint.h>
 
+__attribute__ ((noipa, noinline))
 uint8_t three_max (uint8_t xc, uint8_t xm, uint8_t xy) {
     uint8_t	 xk;
     xc=~xc;
@@ -14,6 +15,17 @@ uint8_t three_max (uint8_t xc, uint8_t xm, uint8_t xy) {
         xk = (uint8_t) (xm > xy ? xm : xy);
     }
     return xk;
+}
+
+int
+main (void)
+{
+  volatile uint8_t xy = 255;
+  volatile uint8_t xm = 0;
+  volatile uint8_t xc = 127;
+  if (three_max (xc, xm, xy) != 255)
+    __builtin_abort ();
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "optimized" } } */

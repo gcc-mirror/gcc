@@ -60,18 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 #define STRUCTURE_SIZE_BOUNDARY 16
 
-/* Specific options for DBX Output.  */
-
-/* This is BSD, so it wants DBX format.  */
-#define DBX_DEBUGGING_INFO 1
-
-/* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 0
-
-/* This is the char to use for continuation (in case we need to turn
-   continuation back on).  */
-#define DBX_CONTIN_CHAR '?'
-
 /* Stack & calling: aggregate returns.  */
 
 /* ??? This is traditional, but quite possibly wrong.  It appears to

@@ -504,7 +504,10 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
     veclen = node->simdclone->vecsize_int;
   else
     veclen = node->simdclone->vecsize_float;
-  veclen = exact_div (veclen, GET_MODE_BITSIZE (SCALAR_TYPE_MODE (t)));
+  if (known_eq (veclen, 0U))
+    veclen = node->simdclone->simdlen;
+  else
+    veclen = exact_div (veclen, GET_MODE_BITSIZE (SCALAR_TYPE_MODE (t)));
   if (multiple_p (veclen, node->simdclone->simdlen))
     veclen = node->simdclone->simdlen;
   if (POINTER_TYPE_P (t))
@@ -618,8 +621,12 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	    veclen = sc->vecsize_int;
 	  else
 	    veclen = sc->vecsize_float;
-	  veclen = exact_div (veclen,
-			      GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type)));
+	  if (known_eq (veclen, 0U))
+	    veclen = sc->simdlen;
+	  else
+	    veclen
+	      = exact_div (veclen,
+			   GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type)));
 	  if (multiple_p (veclen, sc->simdlen))
 	    veclen = sc->simdlen;
 	  adj.op = IPA_PARAM_OP_NEW;
@@ -669,8 +676,11 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	veclen = sc->vecsize_int;
       else
 	veclen = sc->vecsize_float;
-      veclen = exact_div (veclen,
-			  GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type)));
+      if (known_eq (veclen, 0U))
+	veclen = sc->simdlen;
+      else
+	veclen = exact_div (veclen,
+			    GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type)));
       if (multiple_p (veclen, sc->simdlen))
 	veclen = sc->simdlen;
       if (sc->mask_mode != VOIDmode)

@@ -32,7 +32,7 @@ test(const char* s)
   String s3 __attribute__((unused)) = s1;
   s1 = std::move(s1);
 
-  s1.begin(); // causes COW string to "leak"
+  (void) s1.begin(); // causes COW string to "leak"
   s1 = std::move(s1);
 
   String s4 __attribute__((unused)) = s1;

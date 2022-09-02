@@ -560,6 +560,13 @@ struct cpp_options
      cpp_bidirectional_level.  */
   unsigned char cpp_warn_bidirectional;
 
+  /* True if libcpp should warn about invalid UTF-8 characters in comments.
+     2 if it should be a pedwarn.  */
+  unsigned char cpp_warn_invalid_utf8;
+
+  /* True if -finput-charset= option has been used explicitly.  */
+  bool cpp_input_charset_explicit;
+
   /* Dependency generation.  */
   struct
   {
@@ -666,7 +673,8 @@ enum cpp_warning_reason {
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
-  CPP_W_BIDIRECTIONAL
+  CPP_W_BIDIRECTIONAL,
+  CPP_W_INVALID_UTF8
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

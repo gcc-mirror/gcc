@@ -85,9 +85,6 @@
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 
-/* We don't have any limit on the length as out debugger is GDB.  */
-#undef DBX_CONTIN_LENGTH
-
 /* NetBSD does its profiling differently to the Acorn compiler. We
    don't need a word following the mcount call; and to skip it
    requires either an assembly stub or use of fomit-frame-pointer when

@@ -94,8 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* None of these other formats is supported.  */
-#undef DBX_DEBUGGING_INFO
-#undef XCOFF_DEBUGGING_INFO
 #undef VMS_DEBUGGING_INFO
 
 /* ------------------------ Misc configuration bits ----------------------  */

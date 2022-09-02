@@ -123,6 +123,9 @@ struct GTY(())  riscv_frame_info {
 
   /* The offset of arg_pointer_rtx from the bottom of the frame.  */
   poly_int64 arg_pointer_offset;
+
+  /* Reset this struct, clean all field to zero.  */
+  void reset(void);
 };
 
 enum riscv_privilege_levels {
@@ -279,7 +282,22 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FRAME_REGS,	FRAME_REGS,
+  FRAME_REGS,	FRAME_REGS,	VL_REGS,	VTYPE_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  VM_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
+  VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
 };
 
 /* Costs to use when optimizing for rocket.  */
@@ -376,6 +394,23 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "thead-c906", generic, &thead_c906_tune_info },
   { "size", generic, &optimize_size_tune_info },
 };
+
+void riscv_frame_info::reset(void)
+{
+  total_size = 0;
+  mask = 0;
+  fmask = 0;
+  save_libcall_adjustment = 0;
+
+  gp_sp_offset = 0;
+  fp_sp_offset = 0;
+
+  frame_pointer_offset = 0;
+
+  hard_frame_pointer_offset = 0;
+
+  arg_pointer_offset = 0;
+}
 
 /* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
 
@@ -894,6 +929,14 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
   return true;
 }
 
+/* Return true if mode is the RVV mode.  */
+
+static bool
+riscv_v_ext_vector_mode_p (machine_mode mode)
+{
+  return VECTOR_MODE_P (mode);
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  */
@@ -912,6 +955,10 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       return riscv_valid_base_register_p (info->reg, mode, strict_p);
 
     case PLUS:
+      /* RVV load/store disallow any offset.  */
+      if (riscv_v_ext_vector_mode_p (mode))
+	return false;
+
       info->type = ADDRESS_REG;
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
@@ -919,6 +966,10 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
 	      && riscv_valid_offset_p (info->offset, mode));
 
     case LO_SUM:
+      /* RVV load/store disallow LO_SUM.  */
+      if (riscv_v_ext_vector_mode_p (mode))
+	return false;
+
       info->type = ADDRESS_LO_SUM;
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
@@ -937,6 +988,10 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
 	      && riscv_valid_lo_sum_p (info->symbol_type, mode, info->offset));
 
     case CONST_INT:
+      /* RVV load/store disallow CONST_INT.  */
+      if (riscv_v_ext_vector_mode_p (mode))
+	return false;
+
       /* Small-integer addresses don't occur very often, but they
 	 are legitimate if x0 is a valid base register.  */
       info->type = ADDRESS_CONST_INT;
@@ -1022,7 +1077,7 @@ riscv_address_insns (rtx x, machine_mode mode, bool might_split_p)
 
   /* BLKmode is used for single unaligned loads and stores and should
      not count as a multiword mode. */
-  if (mode != BLKmode && might_split_p)
+  if (!riscv_v_ext_vector_mode_p (mode) && mode != BLKmode && might_split_p)
     n += (GET_MODE_SIZE (mode).to_constant () + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (addr.type == ADDRESS_LO_SUM)
@@ -1080,6 +1135,12 @@ riscv_const_insns (rtx x)
     case SYMBOL_REF:
     case LABEL_REF:
       return riscv_symbol_insns (riscv_classify_symbol (x));
+
+    /* TODO: In RVV, we get CONST_POLY_INT by using csrr VLENB
+       instruction and several scalar shift or mult instructions,
+       it is so far unknown. We set it to 4 temporarily.  */
+    case CONST_POLY_INT:
+      return 4;
 
     default:
       return 0;
@@ -1759,7 +1820,8 @@ riscv_immediate_operand_p (int code, HOST_WIDE_INT x)
 static int
 riscv_binary_cost (rtx x, int single_insns, int double_insns)
 {
-  if (GET_MODE_SIZE (GET_MODE (x)).to_constant () == UNITS_PER_WORD * 2)
+  if (!riscv_v_ext_vector_mode_p (GET_MODE (x))
+      && GET_MODE_SIZE (GET_MODE (x)).to_constant () == UNITS_PER_WORD * 2)
     return COSTS_N_INSNS (double_insns);
   return COSTS_N_INSNS (single_insns);
 }
@@ -1806,6 +1868,14 @@ static bool
 riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UNUSED,
 		 int *total, bool speed)
 {
+  /* TODO: We set RVV instruction cost as 1 by default.
+     Cost Model need to be well analyzed and supported in the future. */
+  if (riscv_v_ext_vector_mode_p (mode))
+    {
+      *total = COSTS_N_INSNS (1);
+      return true;
+    }
+
   bool float_mode_p = FLOAT_MODE_P (mode);
   int cost;
 
@@ -2442,6 +2512,12 @@ riscv_output_move (rtx dest, rtx src)
 	  case 8:
 	    return "fld\t%0,%1";
 	  }
+    }
+  if (dest_code == REG && GP_REG_P (REGNO (dest)) && src_code == CONST_POLY_INT)
+    {
+      /* We only want a single full vector register VLEN read after reload. */
+      gcc_assert (known_eq (rtx_to_poly_int64 (src), BYTES_PER_RISCV_VECTOR));
+      return "csrr\t%0,vlenb";
     }
   gcc_unreachable ();
 }
@@ -4135,7 +4211,7 @@ riscv_compute_frame_info (void)
 	interrupt_save_prologue_temp = true;
     }
 
-  memset (frame, 0, sizeof (*frame));
+  frame->reset();
 
   if (!cfun->machine->naked_p)
     {
@@ -4869,7 +4945,8 @@ static bool
 riscv_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 			       reg_class_t class2)
 {
-  return (GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD
+  return (!riscv_v_ext_vector_mode_p (mode)
+	  && GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD
 	  && (class1 == FP_REGS) != (class2 == FP_REGS));
 }
 
@@ -4891,6 +4968,25 @@ riscv_register_move_cost (machine_mode mode,
 static unsigned int
 riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
+  if (riscv_v_ext_vector_mode_p (mode))
+    {
+      /* Handle fractional LMUL, it only occupy part of vector register but
+	 still need one vector register to hold.  */
+      if (maybe_lt (GET_MODE_SIZE (mode), UNITS_PER_V_REG))
+	return 1;
+
+      return exact_div (GET_MODE_SIZE (mode), UNITS_PER_V_REG).to_constant ();
+    }
+
+  /* mode for VL or VTYPE are just a marker, not holding value,
+     so it always consume one register.  */
+  if (regno == VTYPE_REGNUM || regno == VL_REGNUM)
+    return 1;
+
+  /* Assume every valid non-vector mode fits in one vector register.  */
+  if (V_REG_P (regno))
+    return 1;
+
   if (FP_REG_P (regno))
     return (GET_MODE_SIZE (mode).to_constant () + UNITS_PER_FP_REG - 1) / UNITS_PER_FP_REG;
 
@@ -4907,11 +5003,17 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   if (GP_REG_P (regno))
     {
+      if (riscv_v_ext_vector_mode_p (mode))
+	return false;
+
       if (!GP_REG_P (regno + nregs - 1))
 	return false;
     }
   else if (FP_REG_P (regno))
     {
+      if (riscv_v_ext_vector_mode_p (mode))
+	return false;
+
       if (!FP_REG_P (regno + nregs - 1))
 	return false;
 
@@ -4925,6 +5027,19 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	  || (!call_used_or_fixed_reg_p (regno)
 	      && GET_MODE_UNIT_SIZE (mode) > UNITS_PER_FP_ARG))
 	return false;
+    }
+  else if (V_REG_P (regno))
+    {
+      if (!riscv_v_ext_vector_mode_p (mode))
+	return false;
+
+      /* 3.3.2. LMUL = 2,4,8, register numbers should be multiple of 2,4,8.
+	 but for mask vector register, register numbers can be any number. */
+      int lmul = 1;
+      if (known_gt (GET_MODE_SIZE (mode), UNITS_PER_V_REG))
+	lmul = exact_div (GET_MODE_SIZE (mode), UNITS_PER_V_REG).to_constant ();
+      if (lmul != 1)
+	return ((regno % lmul) == 0);
     }
   else
     return false;
@@ -4961,6 +5076,15 @@ riscv_class_max_nregs (reg_class_t rclass, machine_mode mode)
 
   if (reg_class_subset_p (rclass, GR_REGS))
     return riscv_hard_regno_nregs (GP_REG_FIRST, mode);
+
+  if (reg_class_subset_p (rclass, V_REGS))
+    return riscv_hard_regno_nregs (V_REG_FIRST, mode);
+
+  if (reg_class_subset_p (rclass, VL_REGS))
+    return 1;
+
+  if (reg_class_subset_p (rclass, VTYPE_REGS))
+    return 1;
 
   return 0;
 }
@@ -5107,22 +5231,23 @@ riscv_init_machine_status (void)
 static poly_uint16
 riscv_convert_vector_bits (void)
 {
-  /* The runtime invariant is only meaningful when vector is enabled. */
+  /* The runtime invariant is only meaningful when TARGET_VECTOR is enabled. */
   if (!TARGET_VECTOR)
     return 0;
 
-  if (TARGET_VECTOR_ELEN_64 || TARGET_VECTOR_ELEN_FP_64)
+  if (TARGET_MIN_VLEN > 32)
     {
-      /* When targetting Zve64* (ELEN = 64) extensions, we should use 64-bit
-	 chunk size. Runtime invariant: The single indeterminate represent the
+      /* When targetting minimum VLEN > 32, we should use 64-bit chunk size.
+	 Otherwise we can not include SEW = 64bits.
+	 Runtime invariant: The single indeterminate represent the
 	 number of 64-bit chunks in a vector beyond minimum length of 64 bits.
 	 Thus the number of bytes in a vector is 8 + 8 * x1 which is
-	 riscv_vector_chunks * 8 = poly_int (8, 8). */
+	 riscv_vector_chunks * 8 = poly_int (8, 8).  */
       riscv_bytes_per_vector_chunk = 8;
     }
   else
     {
-      /* When targetting Zve32* (ELEN = 32) extensions, we should use 32-bit
+      /* When targetting minimum VLEN = 32, we should use 32-bit
 	 chunk size. Runtime invariant: The single indeterminate represent the
 	 number of 32-bit chunks in a vector beyond minimum length of 32 bits.
 	 Thus the number of bytes in a vector is 4 + 4 * x1 which is
@@ -5312,6 +5437,15 @@ riscv_conditional_register_usage (void)
     {
       for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
 	call_used_regs[regno] = 1;
+    }
+
+  if (!TARGET_VECTOR)
+    {
+      for (int regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
+	fixed_regs[regno] = call_used_regs[regno] = 1;
+
+      fixed_regs[VTYPE_REGNUM] = call_used_regs[VTYPE_REGNUM] = 1;
+      fixed_regs[VL_REGNUM] = call_used_regs[VL_REGNUM] = 1;
     }
 }
 

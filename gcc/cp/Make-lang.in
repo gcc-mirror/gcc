@@ -153,6 +153,15 @@ endif
 	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L C++ \
 		$(srcdir)/cp/cfns.gperf --output-file $(srcdir)/cp/cfns.h
 
+# The same procedure for the std-name-hint.gperf file.
+ifeq ($(ENABLE_MAINTAINER_RULES), true)
+$(srcdir)/cp/std-name-hint.h: $(srcdir)/cp/std-name-hint.gperf
+else
+$(srcdir)/cp/std-name-hint.h:
+endif
+	gperf -o -C -E -k '1,2,7,11,$$' -D -N find -L C++ \
+		$(srcdir)/cp/std-name-hint.gperf --output-file $(srcdir)/cp/std-name-hint.h
+
 cc1plus.fda: ../stage1-gcc/cc1plus$(exeext) ../prev-gcc/$(PERF_DATA)
 	$(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov cc1plus.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1
 

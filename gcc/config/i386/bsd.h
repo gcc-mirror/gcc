@@ -91,9 +91,3 @@ along with GCC; see the file COPYING3.  If not see
 /* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
-
-/* Sequent has some changes in the format of DBX symbols.  */
-#define DBX_NO_XREFS 1
-
-/* Don't split DBX symbols into continuations.  */
-#define DBX_CONTIN_LENGTH 0

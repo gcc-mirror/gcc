@@ -507,8 +507,7 @@ go_langhook_pushdecl (tree decl ATTRIBUTE_UNUSED)
 }
 
 /* This hook is used to get the current list of declarations as trees.
-   We don't support that; instead we use the write_globals hook.  This
-   can't simply crash because it is called by -gstabs.  */
+   We don't support that; instead we use the write_globals hook.  */
 
 static tree
 go_langhook_getdecls (void)

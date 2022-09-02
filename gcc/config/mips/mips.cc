@@ -445,7 +445,6 @@ int num_source_filenames;
 const char *current_function_file = "";
 
 /* Arrays that map GCC register numbers to debugger register numbers.  */
-int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
 int mips_dwarf_regno[FIRST_PSEUDO_REGISTER];
 
 /* Information about the current function's epilogue, used only while
@@ -9595,10 +9594,6 @@ mips_output_filename (FILE *stream, const char *name)
       output_quoted_string (stream, name);
       putc ('\n', stream);
     }
-  /* If we are emitting stabs, let dbxout.cc handle this (except for
-     the mips_output_filename_first_time case).  */
-  else if (write_symbols == DBX_DEBUG)
-    return;
   else if (name != current_function_file
 	   && strcmp (name, current_function_file) != 0)
     {
@@ -20505,24 +20500,13 @@ mips_option_override (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      mips_dbx_regno[i] = IGNORED_DWARF_REGNUM;
       if (GP_REG_P (i) || FP_REG_P (i) || ALL_COP_REG_P (i))
 	mips_dwarf_regno[i] = i;
       else
 	mips_dwarf_regno[i] = INVALID_REGNUM;
     }
 
-  start = GP_DBX_FIRST - GP_REG_FIRST;
-  for (i = GP_REG_FIRST; i <= GP_REG_LAST; i++)
-    mips_dbx_regno[i] = i + start;
-
-  start = FP_DBX_FIRST - FP_REG_FIRST;
-  for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
-    mips_dbx_regno[i] = i + start;
-
   /* Accumulator debug registers use big-endian ordering.  */
-  mips_dbx_regno[HI_REGNUM] = MD_DBX_FIRST + 0;
-  mips_dbx_regno[LO_REGNUM] = MD_DBX_FIRST + 1;
   mips_dwarf_regno[HI_REGNUM] = MD_REG_FIRST + 0;
   mips_dwarf_regno[LO_REGNUM] = MD_REG_FIRST + 1;
   for (i = DSP_ACC_REG_FIRST; i <= DSP_ACC_REG_LAST; i += 2)

@@ -41,59 +41,6 @@ package body System.Value_I is
                             Assert_And_Cut     => Ignore,
                             Subprogram_Variant => Ignore);
 
-   -----------------------------------
-   -- Prove_Scan_Only_Decimal_Ghost --
-   -----------------------------------
-
-   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int) is
-      Non_Blank : constant Positive := First_Non_Space_Ghost
-        (Str, Str'First, Str'Last);
-      pragma Assert
-        (if Val < 0 then Non_Blank = Str'First
-         else
-            Only_Space_Ghost (Str, Str'First, Str'First)
-            and then Non_Blank = Str'First + 1);
-      Minus : constant Boolean := Str (Non_Blank) = '-';
-      Fst_Num   : constant Positive :=
-        (if Minus then Non_Blank + 1 else Non_Blank);
-      pragma Assert (Fst_Num = Str'First + 1);
-      Uval      : constant Uns :=
-        Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Str'Last);
-
-      procedure Unique_Int_Of_Uns (Val1, Val2 : Int)
-      with
-        Pre  => Uns_Is_Valid_Int (Minus, Uval)
-          and then Is_Int_Of_Uns (Minus, Uval, Val1)
-          and then Is_Int_Of_Uns (Minus, Uval, Val2),
-        Post => Val1 = Val2;
-      --  Local proof of the unicity of the signed representation
-
-      procedure Unique_Int_Of_Uns (Val1, Val2 : Int) is null;
-
-   --  Start of processing for Prove_Scan_Only_Decimal_Ghost
-
-   begin
-      pragma Assert (Minus = (Val < 0));
-      pragma Assert (Uval = Abs_Uns_Of_Int (Val));
-      pragma Assert (if Minus then Uval <= Uns (Int'Last) + 1
-                     else Uval <= Uns (Int'Last));
-      pragma Assert (Uns_Is_Valid_Int (Minus, Uval));
-      pragma Assert
-        (if Minus and then Uval = Uns (Int'Last) + 1 then Val = Int'First
-         elsif Minus then Val = -(Int (Uval))
-         else Val = Int (Uval));
-      pragma Assert (Is_Int_Of_Uns (Minus, Uval, Val));
-      pragma Assert
-        (Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last)));
-      pragma Assert
-        (not Raw_Unsigned_Overflows_Ghost (Str, Fst_Num, Str'Last));
-      pragma Assert (Only_Space_Ghost
-        (Str, Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last), Str'Last));
-      pragma Assert (Is_Integer_Ghost (Str));
-      pragma Assert (Is_Value_Integer_Ghost (Str, Val));
-      Unique_Int_Of_Uns (Val, Value_Integer (Str));
-   end Prove_Scan_Only_Decimal_Ghost;
-
    ------------------
    -- Scan_Integer --
    ------------------
@@ -104,6 +51,25 @@ package body System.Value_I is
       Max : Integer;
       Res : out Int)
    is
+      procedure Prove_Is_Int_Of_Uns
+        (Minus : Boolean;
+         Uval  : Uns;
+         Val   : Int)
+      with Ghost,
+        Pre => Spec.Uns_Is_Valid_Int (Minus, Uval)
+          and then
+            (if Minus and then Uval = Uns (Int'Last) + 1 then Val = Int'First
+             elsif Minus then Val = -(Int (Uval))
+             else Val = Int (Uval)),
+        Post => Spec.Is_Int_Of_Uns (Minus, Uval, Val);
+      --  Unfold the definition of Is_Int_Of_Uns
+
+      procedure Prove_Is_Int_Of_Uns
+        (Minus : Boolean;
+         Uval  : Uns;
+         Val   : Int)
+      is null;
+
       Uval : Uns;
       --  Unsigned result
 
@@ -131,7 +97,8 @@ package body System.Value_I is
       end if;
 
       Scan_Raw_Unsigned (Str, Ptr, Max, Uval);
-      pragma Assert (Uval = Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max));
+      pragma Assert
+        (Uval = Uns_Params.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max));
 
       --  Deal with overflow cases, and also with largest negative number
 
@@ -152,6 +119,11 @@ package body System.Value_I is
       else
          Res := Int (Uval);
       end if;
+
+      Prove_Is_Int_Of_Uns
+        (Minus => Str (Non_Blank) = '-',
+         Uval  => Uval,
+         Val   => Res);
    end Scan_Integer;
 
    -------------------
@@ -167,7 +139,15 @@ package body System.Value_I is
       if Str'Last = Positive'Last then
          declare
             subtype NT is String (1 .. Str'Length);
+            procedure Prove_Is_Integer_Ghost with
+              Ghost,
+              Pre  => Str'Length < Natural'Last
+              and then not Only_Space_Ghost (Str, Str'First, Str'Last)
+              and then Spec.Is_Integer_Ghost (Spec.Slide_To_1 (Str)),
+              Post => Spec.Is_Integer_Ghost (NT (Str));
+            procedure Prove_Is_Integer_Ghost is null;
          begin
+            Prove_Is_Integer_Ghost;
             return Value_Integer (NT (Str));
          end;
 
@@ -187,8 +167,6 @@ package body System.Value_I is
                else Non_Blank)
             with Ghost;
          begin
-            pragma Assert
-              (Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last)));
 
             declare
                P_Acc : constant not null access Integer := P'Access;
@@ -197,12 +175,13 @@ package body System.Value_I is
             end;
 
             pragma Assert
-              (P = Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last));
+              (P = Uns_Params.Raw_Unsigned_Last_Ghost
+                 (Str, Fst_Num, Str'Last));
 
             Scan_Trailing_Blanks (Str, P);
 
             pragma Assert
-              (Is_Value_Integer_Ghost (Slide_If_Necessary (Str), V));
+              (Spec.Is_Value_Integer_Ghost (Spec.Slide_If_Necessary (Str), V));
             return V;
          end;
       end if;

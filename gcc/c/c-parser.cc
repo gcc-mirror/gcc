@@ -5912,14 +5912,14 @@ c_parser_label (c_parser *parser, tree std_attrs)
       if (c_parser_next_token_is (parser, CPP_COLON))
 	{
 	  c_parser_consume_token (parser);
-	  label = do_case (loc1, exp1, NULL_TREE);
+	  label = do_case (loc1, exp1, NULL_TREE, std_attrs);
 	}
       else if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
 	{
 	  c_parser_consume_token (parser);
 	  exp2 = c_parser_expr_no_commas (parser, NULL).value;
 	  if (c_parser_require (parser, CPP_COLON, "expected %<:%>"))
-	    label = do_case (loc1, exp1, exp2);
+	    label = do_case (loc1, exp1, exp2, std_attrs);
 	}
       else
 	c_parser_error (parser, "expected %<:%> or %<...%>");
@@ -5928,7 +5928,7 @@ c_parser_label (c_parser *parser, tree std_attrs)
     {
       c_parser_consume_token (parser);
       if (c_parser_require (parser, CPP_COLON, "expected %<:%>"))
-	label = do_case (loc1, NULL_TREE, NULL_TREE);
+	label = do_case (loc1, NULL_TREE, NULL_TREE, std_attrs);
     }
   else
     {

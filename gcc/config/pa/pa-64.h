@@ -65,10 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
 
-/* Temporary until we figure out what to do with those *(&@$ 32bit
-   relocs which appear in stabs.  */
-#undef DBX_DEBUGGING_INFO
-
 /* ?!? This needs to be made compile-time selectable.
 
    The PA64 runtime model has arguments that grow to higher addresses

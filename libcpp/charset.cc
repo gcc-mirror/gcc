@@ -1742,9 +1742,9 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
     case, no diagnostic is emitted, and the return value of FALSE should cause
     a new token to be formed.
 
-    Unlike _cpp_valid_ucn, this will never be called when lexing a string; only
-    a potential identifier, or a CPP_OTHER token.  NST is unused in the latter
-    case.
+    _cpp_valid_utf8 can be called when lexing a potential identifier, or a
+    CPP_OTHER token or for the purposes of -Winvalid-utf8 warning in string or
+    character literals.  NST is unused when not in a potential identifier.
 
     As in _cpp_valid_ucn, IDENTIFIER_POS is 0 when not in an identifier, 1 for
     the start of an identifier, or 2 otherwise.  */

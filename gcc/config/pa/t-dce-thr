@@ -1,2 +1,0 @@
-MULTILIB_OPTIONS = threads
-MULTILIB_DIRNAMES = threads

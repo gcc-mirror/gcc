@@ -8458,10 +8458,6 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 }
 #endif /* TARGET_ABI_OSF */
 
-/* Debugging support.  */
-
-#include "gstab.h"
-
 /* Name of the file containing the current function.  */
 
 static const char *current_function_file = "";

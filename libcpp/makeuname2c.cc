@@ -451,7 +451,7 @@ write_nodes (struct node *n, size_t off)
 {
   for (; n; n = n->sibling)
     {
-      assert (tree[off] == 0 && off < tree_size);
+      assert (off < tree_size && tree[off] == 0);
       if (n->key_len > 1)
 	{
 	  assert (n->key_len < 64);

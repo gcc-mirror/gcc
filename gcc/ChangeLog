@@ -1,3 +1,635 @@
+2022-09-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR other/106782
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::prefer_unrolled_loop): Replace %u with
+	HOST_WIDE_INT_PRINT_UNSIGNED.
+
+2022-09-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): When building a
+	VEC_PERM_EXPR of an existing vector, set the SLP_TREE_LANES
+	to the number of vector elements, if that's a known constant.
+	(vect_optimize_slp_pass::is_compatible_layout): Remove associated
+	comment about zero SLP_TREE_LANES.
+	(vect_optimize_slp_pass::start_choosing_layouts): Iterate over
+	all partition members when looking for potential layouts.
+	Handle existing permutes of fixed-length vectors.
+
+2022-09-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106707
+	* config/i386/i386.md (moves to/from AX_REG into xchg peephole2):
+	Do not convert a move pattern where both operands are AX_REG.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_le): Convert to dconst*inf.
+	(build_ge): Same.
+	* value-range.cc (frange::set_signbit): Same.
+	(frange::normalize_kind): Same.
+	(range_tests_floats): Same.
+	* value-range.h (vrp_val_max): Same.
+	(vrp_val_min): Same.
+	(frange::set_varying): Same.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* emit-rtl.cc (init_emit_once): Initialize dconstinf and
+	dconstninf.
+	* real.h: Add dconstinf and dconstninf.
+
+2022-09-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Remove cycle detection, instead avoid walking backedges.
+
+2022-09-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	New wrapping overload.
+	(uninit_analysis::init_use_preds): Simplify.
+	(uninit_analysis::init_from_phi_def): Likewise.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Add case for
+	CFN_BUILT_IN_SIGNBIT.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_equal::op1_range): Do not copy sign
+	bit.
+	(foperator_not_equal::op1_range): Same.
+	* value-query.cc (range_query::get_tree_range): Set sign bit.
+	* value-range-pretty-print.cc (vrange_printer::visit): Dump sign bit.
+	* value-range.cc (frange::set_signbit): New.
+	(frange::set): Adjust for sign bit.
+	(frange::normalize_kind): Same.
+	(frange::union_): Remove useless comment.
+	(frange::intersect): Same.
+	(frange::contains_p): Adjust for sign bit.
+	(frange::singleton_p): Same.
+	(frange::verify_range): Same.
+	(range_tests_signbit): New tests.
+	(range_tests_floats): Call range_tests_signbit.
+	* value-range.h (class frange_props): Add signbit
+	(class frange): Same.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/106782
+	* dumpfile.h (dump_printf_loc): Use ATTRIBUTE_GCC_DUMP_PRINTF (3, 4)
+	instead of ATTRIBUTE_GCC_DUMP_PRINTF (3, 0).
+	* tree-parloops.cc (parloops_is_slp_reduction): Cast pointers to
+	derived types of gimple to gimple * to avoid -Wformat warnings.
+	* tree-vect-loop-manip.cc (vect_set_loop_condition,
+	vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-stmts.cc (vectorizable_load): Likewise.
+	* tree-vect-patterns.cc (vect_split_statement,
+	vect_recog_mulhs_pattern, vect_recog_average_pattern,
+	vect_determine_precisions_from_range,
+	vect_determine_precisions_from_users): Likewise.
+	* gimple-loop-versioning.cc
+	(loop_versioning::analyze_term_using_scevs): Likewise.
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Likewise.
+	(vect_build_slp_tree): Cast slp_tree to void * to avoid
+	-Wformat warnings.
+	(optimize_load_redistribution_1, vect_match_slp_patterns,
+	vect_build_slp_instance, vect_optimize_slp_pass::materialize,
+	vect_optimize_slp_pass::dump, vect_slp_convert_to_external,
+	vect_slp_analyze_node_operations, vect_bb_partition_graph): Likewise.
+	(vect_print_slp_tree): Likewise.  Also use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of %u.
+	* tree-vect-loop.cc (vect_determine_vectorization_factor,
+	vect_analyze_scalar_cycles_1, vect_analyze_loop_operations,
+	vectorizable_induction, vect_transform_loop): Cast pointers to derived
+	types of gimple to gimple * to avoid -Wformat warnings.
+	(vect_analyze_loop_2): Cast slp_tree to void * to avoid
+	-Wformat warnings.
+	(vect_estimate_min_profitable_iters): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of %d.
+	* tree-vect-slp-patterns.cc (vect_pattern_validate_optab): Use %G
+	instead of %T and STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (node))
+	instead of SLP_TREE_DEF_TYPE (node).
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* doc/invoke.texi (-Winvalid-utf8): Document it.
+
+2022-09-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106785
+	* value-range.cc (range_tests_nan): Adjust tests for !HONOR_NANS.
+	(range_tests_floats): Same.
+
+2022-09-01  konglin1  <lingling.kong@intel.com>
+
+	* tree-if-conv.cc (is_cond_scalar_reduction): Add MULT_EXPR
+	recognition.
+
+2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin):
+	Enforce the use of a valid MMA pointer type.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Add vector
+	registers.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Add cost of poly_int.
+	(riscv_output_move): Add csrr vlenb assembly.
+	* config/riscv/riscv.md (move_type): Add csrr vlenb type.
+	(ext): New attribute.
+	(ext_enabled): Ditto.
+	(enabled): Ditto.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (TARGET_VECTOR ? V_REGS : NO_REGS): Add
+	"vr" constraint.
+	(TARGET_VECTOR ? VD_REGS : NO_REGS): Add "vd" constraint.
+	(TARGET_VECTOR ? VM_REGS : NO_REGS): Add "vm" constraint.
+	(vp): Add poly constraint.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.h (enum reg_class): Change vype to vtype.
+
+2022-09-01  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_convert_vector_bits): Change
+	configuration according to TARGET_MIN_VLEN.
+	* config/riscv/riscv.h (UNITS_PER_FP_REG): Fix comment.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config.build: Remove deprecated ports.
+	* config.gcc: Likewise.
+	* config.host: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* config/pa/pa-hpux10.h: Removed.
+	* config/pa/pa-hpux10.opt: Removed.
+	* config/pa/t-dce-thr: Removed.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Always install limits.h and syslimits.h to
+	include folder.
+	* configure.ac: Assign STMP_FIXINC blank if
+	--disable-fixincludes is used.
+	* configure: Regenerate.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Assert the guard_bb isn't empty and has more than one successor.
+	Drop appropriate parts of the predicate when an edge fails to
+	register a predicate.
+	(predicate::dump): Dump empty predicate as TRUE.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90994
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Ignore exceptional control flow and skip the edge for the purpose of
+	predicate generation also for non-calls.
+
+2022-08-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (frange_storage_slot::set_frange): Save
+	endpoints.
+	(frange_storage_slot::get_frange): Restore endpoints.
+	* value-range-storage.h (class frange_storage_slot): Add endpoint
+	fields.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/106789
+	* range-op-float.cc (default_frelop_fold_range): Remove the
+	  function.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* value-range.h: Add more override keywords.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* value-range.h: Add override.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65244
+	* gimple-predicate-analysis.h (predicate::init_from_control_deps):
+	Add argument to specify whether the predicate is for the USE.
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Also include predicates effective fallthru control edges when
+	the predicate is for the USE.
+
+2022-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/73550
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Sanitize debug dumping.  Handle case labels with a CASE_HIGH.
+	(predicate::dump): Adjust for better readability.
+
+2022-08-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-simd-clone.cc (simd_clone_adjust_return_type,
+	simd_clone_adjust_argument_types): Use known_eq (veclen, 0U)
+	instead of known_eq (veclen, 0) to avoid -Wsign-compare warnings.
+
+2022-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_optimize_slp_pass::dump): Remove bogus
+	argument.
+
+2022-08-31  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Simply
+	initialize const_vf to 0.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config.gcc: Remove cr16.
+
+2022-08-30  Martin Jambor  <mjambor@suse.cz>
+
+	* vec.h (array_slice): Add constructors for non-const reference to
+	heap vector and pointers to heap vectors.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (early_nan_resolve): Change comment.
+	(frange::union_): Handle union when one side is a NAN.
+	(range_tests_nan): Add tests for NAN union.
+
+2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_simd_clone_compute_vecsize_and_simdlen): New.
+	(gcn_simd_clone_adjust): New.
+	(gcn_simd_clone_usable): New.
+	(TARGET_SIMD_CLONE_ADJUST): New.
+	(TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN): New.
+	(TARGET_SIMD_CLONE_USABLE): New.
+
+2022-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* doc/tm.texi: Regenerate.
+	* omp-simd-clone.cc (simd_clone_adjust_return_type): Allow zero
+	vecsize.
+	(simd_clone_adjust_argument_types): Likewise.
+	* target.def (compute_vecsize_and_simdlen): Document the new
+	vecsize_int and vecsize_float semantics.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.cc (store_bit_field_1): Fix byte offset calculation
+	for undefined structures.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* params.opt (-param=vect-max-layout-candidates=): New parameter.
+	* doc/invoke.texi (vect-max-layout-candidates): Document it.
+	* tree-vectorizer.h (auto_lane_permutation_t): New typedef.
+	(auto_load_permutation_t): Likewise.
+	* tree-vect-slp.cc (vect_slp_node_weight): New function.
+	(slpg_layout_cost): New class.
+	(slpg_vertex): Replace perm_in and perm_out with partition,
+	out_degree, weight and out_weight.
+	(slpg_partition_info, slpg_partition_layout_costs): New classes.
+	(vect_optimize_slp_pass): Likewise, cannibalizing some part of
+	the previous vect_optimize_slp.
+	(vect_optimize_slp): Use it.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-traits.h (vec_hash_base): New class.
+	(vec_free_hash_base): Likewise.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-traits.h (int_hash_base): New struct, split out from...
+	(int_hash): ...this class, which now inherits from int_hash_base.
+	* hash-map-traits.h (unbounded_hashmap_traits): Take a template
+	parameter for the key that provides hash and equality functions.
+	(unbounded_int_hashmap_traits): Turn into a type alias of
+	unbounded_hashmap_traits.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* graphds.cc (graphds_scc): Add a pass-back parameter for the
+	final node order.
+	* graphds.h (graphds_scc): Update prototype accordingly.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_transform_slp_perm_load_1): Split out from...
+	(vect_transform_slp_perm_load): ...here.  Use SLP_TREE_VECTYPE instead
+	of STMT_VINFO_VECTYPE.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Split out from...
+	(vectorizable_slp_permutation): ...here.
+
+2022-08-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.cc (get_related_vectype_for_scalar_type): Check
+	that the requested number of units is interoperable with the requested
+	prevailing mode.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config.gcc: Remove the port.
+	* config/m32c/rtems.h: Removed.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/73550
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Do not apply MAX_NUM_CHAINS again.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (format_edge_vec): Dump
+	both source and destination.
+	(dump_dep_chains): Remove.
+	(uninit_analysis::init_use_preds): Remove redundant
+	dumping of chains.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (frange_storage_slot::get_frange): Use
+	frange_nan.
+	* value-range.cc (frange::set_nan): New.
+	(frange_nan): Move to header file.
+	(range_tests_nan): Adjust frange_nan callers to pass type.
+	New test.
+	* value-range.h (FRANGE_PROP_ACCESSOR): Remove.
+	(frange_nan): New.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/67196
+	* gimple-predicate-analysis.cc (uninit_analysis::is_use_guarded):
+	Simplify and normalize use prediates before first use.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (dump_pred_chain): Fix
+	parentizing and AND prepending.
+	(predicate::dump): Do not dump the GENERIC expanded
+	predicate, properly parentize and prepend ORs to the
+	piecewise predicate dump.
+	(build_pred_expr): Remove.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (finite_operand_p): New.
+	(build_le): New.
+	(build_lt): New.
+	(build_ge): New.
+	(build_gt): New.
+	(foperator_equal::fold_range): New implementation with endpoints.
+	(foperator_equal::op1_range): Same.
+	(foperator_not_equal::fold_range): Same.
+	(foperator_not_equal::op1_range): Same.
+	(foperator_lt::fold_range): Same.
+	(foperator_lt::op1_range): Same.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::fold_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_ge::fold_range): Same.
+	(foperator_ge::op1_range): Same.
+	(foperator_ge::op2_range): Same.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frange_set_nan): New.
+	(frange_drop_inf): New.
+	(frange_drop_ninf): New.
+	(foperator_equal::op1_range): Adjust for endpoints.
+	(foperator_lt::op1_range): Same.
+	(foperator_lt::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_unordered::op1_range): Same.
+	* value-query.cc (range_query::get_tree_range): Same.
+	* value-range-pretty-print.cc (vrange_printer::visit): Same.
+	* value-range-storage.cc (frange_storage_slot::get_frange): Same.
+	* value-range.cc (frange::set): Same.
+	(frange::normalize_kind): Same.
+	(frange::union_): Same.
+	(frange::intersect): Same.
+	(frange::operator=): Same.
+	(early_nan_resolve): New.
+	(frange::contains_p): New.
+	(frange::singleton_p): New.
+	(frange::set_nonzero): New.
+	(frange::nonzero_p): New.
+	(frange::set_zero): New.
+	(frange::zero_p): New.
+	(frange::set_nonnegative): New.
+	(frange_float): New.
+	(frange_nan): New.
+	(range_tests_nan): New.
+	(range_tests_signed_zeros): New.
+	(range_tests_floats): New.
+	(range_tests): New.
+	* value-range.h (frange::lower_bound): New.
+	(frange::upper_bound): New.
+	(vrp_val_min): Use real_inf with a sign instead of negating inf.
+	(frange::frange): New.
+	(frange::set_varying): Adjust for endpoints.
+	(real_max_representable): New.
+	(real_min_representable): New.
+
+2022-08-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* match.pd ((cmp @0 zerop) real_zerop (negate@1 @0)): Add variant
+	for real zero.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc (s390_rtx_costs): Use proper type as
+	  argument.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Pre-compute
+	the set of fallthru reachable blocks from function entry
+	and use that to determine wlims.always_executed.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56654
+	* tree-ssa-uninit.cc (cand_cmp): New.
+	(find_uninit_use): First process all PHIs and collect candidate
+	stmts, then sort those after RPO.
+	(warn_uninitialized_phi): Pass on bb_to_rpo.
+	(execute_late_warn_uninitialized): Compute and pass on
+	reverse lookup of RPO number from basic block index.
+
+2022-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h (uninit_analysis::operator()):
+	Remove.
+	* gimple-predicate-analysis.cc
+	(uninit_analysis::collect_phi_def_edges): Use phi_arg_set,
+	simplify a bit.
+	* tree-ssa-uninit.cc (defined_args): New global.
+	(compute_uninit_opnds_pos): Mask with the recorded set
+	of guarded maybe-uninitialized uses.
+	(uninit_undef_val_t::operator()): Remove.
+	(find_uninit_use): Process all PHI uses, recording the
+	guarded ones and marking the PHI result as uninitialized
+	consistently.
+	(warn_uninitialized_phi): Adjust.
+	(execute_late_warn_uninitialized): Get rid of the PHI worklist
+	and instead walk the function in RPO order.
+	* spellcheck.h (best_match::m_best_candidate_len): Initialize.
+
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106744
+	* tree-ssa-phiopt.cc (minmax_replacement): Correct arguments.
+
+2022-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	* expmed.cc (store_bit_field_1): Initialize regnum to 0.
+
+2022-08-29  David Faust  <david.faust@oracle.com>
+
+	PR target/106745
+	* config/bpf/coreout.cc (bpf_core_get_sou_member_index): Fix
+	computation of index for anonymous members.
+
+2022-08-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_target_macros): Define __bpf__ as a
+	target macro.
+
+2022-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106748
+	* config/i386/i386-expand.cc
+	(ix86_avx256_split_vector_move_misalign): Handle E_V16BFmode.
+	* config/i386/sse.md (V_256H): Add V16BF.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_address_cost): Declare.
+	(s390_hard_regno_nregs): Declare.
+	(s390_rtx_costs): Add handling for REG and MEM in SET.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_with_vpdi): Recognize swap pattern.
+	(is_reverse_perm_mask): New function.
+	(expand_perm_with_rot): Recognize reverse pattern.
+	(expand_perm_with_vstbrq): New function.
+	(expand_perm_with_vster): Use vler/vster for element reversal on z15.
+	(vectorize_vec_perm_const_1): Use.
+	(s390_vectorize_vec_perm_const): Add expand functions.
+	* config/s390/vx-builtins.md: Prefer vster over vler.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.md: Remove UNSPEC_VEC_EXTRACT.
+	* config/s390/vector.md: Rewrite patterns to use vec_select.
+	* config/s390/vx-builtins.md (vec_scatter_element<V_HW_2:mode>_SI):
+	Likewise.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/100869
+	* config/s390/vector.md (@vpdi4_2<mode>): New pattern.
+	(rotl<mode>3_di): New pattern.
+	* config/s390/vx-builtins.md: Use vpdi and verll for reversing
+	elements.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_issue_rate): Add z15.
+
+2022-08-29  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* common/config/s390/s390-common.cc: Enable -funroll-loops and
+	-munroll-only-small-loops for OPT_LEVELS_2_PLUS_SPEED_ONLY.
+	* config/s390/s390.cc (s390_loop_unroll_adjust): Do not unroll
+	loops larger than 12 instructions.
+	(s390_override_options_after_change): Set unroll options.
+	(s390_option_override_internal): Likewise.
+	* config/s390/s390.opt: Document munroll-only-small-loops.
+
+2022-08-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (is_loop_exit,
+	find_control_equiv_block): Inline into single caller ...
+	(uninit_analysis::init_use_preds): ... here and refactor.
+
+2022-08-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Inline is_loop_exit and refactor, add comment about
+	loop exits.
+
+2022-08-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_frame_info): Introduce `reset(void)`;
+	(riscv_frame_info::reset(void)): New.
+	(riscv_compute_frame_info): Use riscv_frame_info::reset instead
+	of memset when clean frame.
+
+2022-08-29  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_v_ext_vector_mode_p): New function.
+	(riscv_classify_address): Disallow PLUS/LO_SUM/CONST_INT address types for RVV.
+	(riscv_address_insns): Add RVV modes condition.
+	(riscv_binary_cost): Ditto.
+	(riscv_rtx_costs): Adjust cost for RVV.
+	(riscv_secondary_memory_needed): Add RVV modes condition.
+	(riscv_hard_regno_nregs): Add RVV register allocation.
+	(riscv_hard_regno_mode_ok): Add RVV register allocation.
+	(riscv_class_max_nregs): Add RVV register allocation.
+	* config/riscv/riscv.h (DWARF_FRAME_REGNUM): Add VL/VTYPE and vector registers in Dwarf.
+	(UNITS_PER_V_REG): New macro.
+	(FIRST_PSEUDO_REGISTER): Adjust first pseudo num for RVV.
+	(V_REG_FIRST): New macro.
+	(V_REG_LAST): Ditto.
+	(V_REG_NUM): Ditto.
+	(V_REG_P): Ditto.
+	(VL_REG_P): Ditto.
+	(VTYPE_REG_P): Ditto.
+	(RISCV_DWARF_VL): Ditto.
+	(RISCV_DWARF_VTYPE): Ditto.
+	(enum reg_class): Add RVV register types.
+	(REG_CLASS_CONTENTS): Add RVV register types.
+	* config/riscv/riscv.md: Add VL/VTYPE register number constants.
+
+2022-08-29  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.md: Add new type for vector instructions.
+
+2022-08-28  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/106017
+	* config/rs6000/rs6000.cc (rs6000_invalid_conversion): Remove handling
+	of MMA pointer conversions.
+
 2022-08-27  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/i386/gcc-auto-profile: Regenerate.

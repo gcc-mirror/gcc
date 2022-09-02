@@ -4770,20 +4770,13 @@ package body Sem_Ch3 is
          if not Is_Entity_Name (Object_Definition (N)) then
             Act_T := Etype (E);
             Check_Compile_Time_Size (Act_T);
-
-            if Aliased_Present (N) then
-               Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
-            end if;
          end if;
 
          --  When the given object definition and the aggregate are specified
          --  independently, and their lengths might differ do a length check.
          --  This cannot happen if the aggregate is of the form (others =>...)
 
-         if not Is_Constrained (T) then
-            null;
-
-         elsif Nkind (E) = N_Raise_Constraint_Error then
+         if Nkind (E) = N_Raise_Constraint_Error then
 
             --  Aggregate is statically illegal. Place back in declaration
 
