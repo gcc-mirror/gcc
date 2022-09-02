@@ -17,12 +17,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-macro-builtins.h"
+#include "rust-ast.h"
 #include "rust-diagnostics.h"
 #include "rust-expr.h"
 #include "rust-session-manager.h"
 #include "rust-macro-invoc-lexer.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
+#include "rust-attribute-visitor.h"
 
 namespace Rust {
 namespace {
@@ -61,13 +63,119 @@ macro_end_token (AST::DelimTokenTree &invoc_token_tree,
   return last_token_id;
 }
 
+/* Expand and extract an expression from the macro */
+
+static inline AST::ASTFragment
+try_expand_macro_expression (AST::Expr *expr, MacroExpander *expander)
+{
+  rust_assert (expander);
+
+  auto vis = Rust::AttrVisitor (*expander);
+  expr->accept_vis (vis);
+  return expander->take_expanded_fragment (vis);
+}
+
+/* Expand and then extract a string literal from the macro */
+
+static std::unique_ptr<AST::LiteralExpr>
+try_extract_string_literal_from_fragment (const Location &parent_locus,
+					  std::unique_ptr<AST::Expr> &node)
+{
+  auto maybe_lit = static_cast<AST::LiteralExpr *> (node.get ());
+  if (!node || !node->is_literal ()
+      || maybe_lit->get_lit_type () != AST::Literal::STRING)
+    {
+      rust_error_at (parent_locus, "argument must be a string literal");
+      if (node)
+	rust_inform (node->get_locus (), "expanded from here");
+      return nullptr;
+    }
+  return std::unique_ptr<AST::LiteralExpr> (
+    static_cast<AST::LiteralExpr *> (node->clone_expr ().release ()));
+}
+
+static std::unique_ptr<AST::LiteralExpr>
+try_expand_single_string_literal (AST::Expr *input_expr,
+				  const Location &invoc_locus,
+				  MacroExpander *expander)
+{
+  auto nodes = try_expand_macro_expression (input_expr, expander);
+  if (nodes.is_error () || nodes.is_expression_fragment ())
+    {
+      rust_error_at (input_expr->get_locus (),
+		     "argument must be a string literal");
+      return nullptr;
+    }
+  auto expr = nodes.take_expression_fragment ();
+  return try_extract_string_literal_from_fragment (input_expr->get_locus (),
+						   expr);
+}
+
+static std::vector<std::unique_ptr<AST::Expr>>
+try_expand_many_expr (Parser<MacroInvocLexer> &parser,
+		      const Location &invoc_locus, const TokenId last_token_id,
+		      MacroExpander *expander, bool &has_error)
+{
+  auto restrictions = Rust::ParseRestrictions ();
+  // stop parsing when encountered a braces/brackets
+  restrictions.expr_can_be_null = true;
+  // we can't use std::optional, so...
+  auto result = std::vector<std::unique_ptr<AST::Expr>> ();
+  auto empty_expr = std::vector<std::unique_ptr<AST::Expr>> ();
+
+  auto first_token = parser.peek_current_token ()->get_id ();
+  if (first_token == COMMA)
+    {
+      rust_error_at (parser.peek_current_token ()->get_locus (),
+		     "expected expression, found %<,%>");
+      has_error = true;
+      return empty_expr;
+    }
+
+  while (parser.peek_current_token ()->get_id () != last_token_id
+	 && parser.peek_current_token ()->get_id () != END_OF_FILE)
+    {
+      auto expr = parser.parse_expr (AST::AttrVec (), restrictions);
+      // something must be so wrong that the expression could not be parsed
+      rust_assert (expr);
+      auto nodes = try_expand_macro_expression (expr.get (), expander);
+      if (nodes.is_error ())
+	{
+	  // not macro
+	  result.push_back (std::move (expr));
+	}
+      else if (!nodes.is_expression_fragment ())
+	{
+	  rust_error_at (expr->get_locus (), "expected expression");
+	  has_error = true;
+	  return empty_expr;
+	}
+      else
+	{
+	  result.push_back (nodes.take_expression_fragment ());
+	}
+
+      auto next_token = parser.peek_current_token ();
+      if (!parser.skip_token (COMMA) && next_token->get_id () != last_token_id)
+	{
+	  rust_error_at (next_token->get_locus (), "expected token: %<,%>");
+	  // TODO: is this recoverable? to avoid crashing the parser in the next
+	  // fragment we have to exit early here
+	  has_error = true;
+	  return empty_expr;
+	}
+    }
+
+  return result;
+}
+
 /* Parse a single string literal from the given delimited token tree,
    and return the LiteralExpr for it. Allow for an optional trailing comma,
    but otherwise enforce that these are the only tokens.  */
 
 std::unique_ptr<AST::LiteralExpr>
 parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
-			     Location invoc_locus)
+			     Location invoc_locus, MacroExpander *expander)
 {
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
   Parser<MacroInvocLexer> parser (lex);
@@ -89,7 +197,13 @@ parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
   else if (parser.peek_current_token ()->get_id () == last_token_id)
     rust_error_at (invoc_locus, "macro takes 1 argument");
   else
-    rust_error_at (invoc_locus, "argument must be a string literal");
+    {
+      // when the expression does not seem to be a string literal, we then try
+      // to parse/expand it as macro to see if it expands to a string literal
+      auto expr = parser.parse_expr ();
+      lit_expr
+	= try_expand_single_string_literal (expr.get (), invoc_locus, expander);
+    }
 
   parser.skip_token (last_token_id);
 
@@ -188,7 +302,8 @@ MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
   auto lit_expr
-    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus);
+    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
+				   invoc.get_expander ());
   if (lit_expr == nullptr)
     return AST::ASTFragment::create_error ();
 
@@ -230,7 +345,8 @@ MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
   auto lit_expr
-    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus);
+    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
+				   invoc.get_expander ());
   if (lit_expr == nullptr)
     return AST::ASTFragment::create_error ();
 
@@ -252,7 +368,8 @@ AST::ASTFragment
 MacroBuiltin::compile_error (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto lit_expr
-    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus);
+    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
+				   invoc.get_expander ());
   if (lit_expr == nullptr)
     return AST::ASTFragment::create_error ();
 
@@ -278,23 +395,30 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
   auto last_token_id = macro_end_token (invoc_token_tree, parser);
 
   /* NOTE: concat! could accept no argument, so we don't have any checks here */
-  while (parser.peek_current_token ()->get_id () != last_token_id)
+  auto expanded_expr = try_expand_many_expr (parser, invoc_locus, last_token_id,
+					     invoc.get_expander (), has_error);
+  for (auto &expr : expanded_expr)
     {
-      auto lit_expr = parser.parse_literal_expr ();
-      if (lit_expr)
+      if (!expr->is_literal ())
 	{
-	  str += lit_expr->as_string ();
-	}
-      else
-	{
-	  auto current_token = parser.peek_current_token ();
-	  rust_error_at (current_token->get_locus (),
-			 "argument must be a constant literal");
 	  has_error = true;
-	  // Just crash if the current token can't be skipped
-	  rust_assert (parser.skip_token (current_token->get_id ()));
+	  rust_error_at (expr->get_locus (), "expected a literal");
+	  // diagnostics copied from rustc
+	  rust_inform (expr->get_locus (),
+		       "only literals (like %<\"foo\"%>, %<42%> and "
+		       "%<3.14%>) can be passed to %<concat!()%>");
+	  continue;
 	}
-      parser.maybe_skip_token (COMMA);
+      auto *literal = static_cast<AST::LiteralExpr *> (expr.get ());
+      if (literal->get_lit_type () == AST::Literal::BYTE
+	  || literal->get_lit_type () == AST::Literal::BYTE_STRING)
+	{
+	  has_error = true;
+	  rust_error_at (expr->get_locus (),
+			 "cannot concatenate a byte string literal");
+	  continue;
+	}
+      str += literal->as_string ();
     }
 
   parser.skip_token (last_token_id);
@@ -317,45 +441,36 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
   Parser<MacroInvocLexer> parser (lex);
 
   auto last_token_id = macro_end_token (invoc_token_tree, parser);
-
-  if (parser.peek_current_token ()->get_id () != STRING_LITERAL)
-    {
-      if (parser.peek_current_token ()->get_id () == last_token_id)
-	rust_error_at (invoc_locus, "env! takes 1 or 2 arguments");
-      else
-	rust_error_at (parser.peek_current_token ()->get_locus (),
-		       "argument must be a string literal");
-      return AST::ASTFragment::create_error ();
-    }
-
-  auto lit_expr = parser.parse_literal_expr ();
-  auto comma_skipped = parser.maybe_skip_token (COMMA);
-
   std::unique_ptr<AST::LiteralExpr> error_expr = nullptr;
+  std::unique_ptr<AST::LiteralExpr> lit_expr = nullptr;
+  bool has_error = false;
 
-  if (parser.peek_current_token ()->get_id () != last_token_id)
-    {
-      if (!comma_skipped)
-	{
-	  rust_error_at (parser.peek_current_token ()->get_locus (),
-			 "expected token: %<,%>");
-	  return AST::ASTFragment::create_error ();
-	}
-      if (parser.peek_current_token ()->get_id () != STRING_LITERAL)
-	{
-	  rust_error_at (parser.peek_current_token ()->get_locus (),
-			 "argument must be a string literal");
-	  return AST::ASTFragment::create_error ();
-	}
-
-      error_expr = parser.parse_literal_expr ();
-      parser.maybe_skip_token (COMMA);
-    }
-
-  if (parser.peek_current_token ()->get_id () != last_token_id)
+  auto expanded_expr = try_expand_many_expr (parser, invoc_locus, last_token_id,
+					     invoc.get_expander (), has_error);
+  if (has_error)
+    return AST::ASTFragment::create_error ();
+  if (expanded_expr.size () < 1 || expanded_expr.size () > 2)
     {
       rust_error_at (invoc_locus, "env! takes 1 or 2 arguments");
       return AST::ASTFragment::create_error ();
+    }
+  if (expanded_expr.size () > 0)
+    {
+      if (!(lit_expr
+	    = try_extract_string_literal_from_fragment (invoc_locus,
+							expanded_expr[0])))
+	{
+	  return AST::ASTFragment::create_error ();
+	}
+    }
+  if (expanded_expr.size () > 1)
+    {
+      if (!(error_expr
+	    = try_extract_string_literal_from_fragment (invoc_locus,
+							expanded_expr[1])))
+	{
+	  return AST::ASTFragment::create_error ();
+	}
     }
 
   parser.skip_token (last_token_id);
@@ -421,7 +536,8 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
   auto lit_expr
-    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus);
+    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
+				   invoc.get_expander ());
   if (lit_expr == nullptr)
     return AST::ASTFragment::create_error ();
 

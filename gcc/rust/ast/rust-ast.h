@@ -31,6 +31,7 @@ namespace Rust {
 typedef std::string Identifier;
 typedef int TupleIndex;
 struct Session;
+struct MacroExpander;
 
 namespace AST {
 // foward decl: ast visitor
@@ -951,6 +952,8 @@ public:
 
   virtual Location get_locus () const = 0;
 
+  virtual bool is_literal () const { return false; }
+
   // HACK: strictly not needed, but faster than full downcast clone
   virtual bool is_expr_without_block () const = 0;
 
@@ -1471,6 +1474,7 @@ private:
   // One way of parsing the macro. Probably not applicable for all macros.
   std::vector<std::unique_ptr<MetaItemInner> > parsed_items;
   bool parsed_to_meta_item = false;
+  MacroExpander *expander = nullptr;
 
 public:
   std::string as_string () const;
@@ -1495,6 +1499,7 @@ public:
     path = other.path;
     token_tree = other.token_tree;
     parsed_to_meta_item = other.parsed_to_meta_item;
+    expander = other.expander;
 
     parsed_items.reserve (other.parsed_items.size ());
     for (const auto &e : other.parsed_items)
@@ -1522,6 +1527,13 @@ public:
   // TODO: this mutable getter seems kinda dodgy
   SimplePath &get_path () { return path; }
   const SimplePath &get_path () const { return path; }
+
+  void set_expander (MacroExpander *new_expander) { expander = new_expander; }
+  MacroExpander *get_expander ()
+  {
+    rust_assert (expander);
+    return expander;
+  }
 
   void
   set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner> > new_items)

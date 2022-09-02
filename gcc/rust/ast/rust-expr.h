@@ -67,6 +67,8 @@ public:
 
   Location get_locus () const override final { return locus; }
 
+  bool is_literal () const override final { return true; }
+
   Literal get_literal () const { return literal; }
 
   void accept_vis (ASTVisitor &vis) override;

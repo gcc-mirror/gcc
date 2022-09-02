@@ -163,6 +163,7 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   rust_assert (ok);
 
   auto fragment = AST::ASTFragment::create_error ();
+  invoc_data.set_expander (this);
 
   if (rules_def->is_builtin ())
     fragment
