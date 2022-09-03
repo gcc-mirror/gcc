@@ -6018,7 +6018,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_charlen cl;
   gfc_expr *e;
   gfc_symbol *fsym;
-  stmtblock_t post;
   enum {MISSING = 0, ELEMENTAL, SCALAR, SCALAR_POINTER, ARRAY};
   gfc_component *comp = NULL;
   int arglen;
@@ -6062,7 +6061,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   else
     info = NULL;
 
+  stmtblock_t post, clobbers;
   gfc_init_block (&post);
+  gfc_init_block (&clobbers);
   gfc_init_interface_mapping (&mapping);
   if (!comp)
     {
@@ -6531,7 +6532,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  var = build_fold_indirect_ref_loc (input_location,
 							     parmse.expr);
 			  tree clobber = build_clobber (TREE_TYPE (var));
-			  gfc_add_modify (&se->pre, var, clobber);
+			  gfc_add_modify (&clobbers, var, clobber);
 			}
 		    }
 		  /* Catch base objects that are not variables.  */
@@ -7399,6 +7400,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       vec_safe_push (arglist, parmse.expr);
     }
+  gfc_add_block_to_block (&se->pre, &clobbers);
   gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
 
   if (comp)
