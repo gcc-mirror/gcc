@@ -1,3 +1,11 @@
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* include/cpplib.h (BOL): Move macro to 1 << 12 since it is
+	not used by C/C++'s unsigned char token flags.
+	(DECIMAL_INT): New, using 1 << 6, so that it is visible as
+	part of C/C++'s 8 bits of token flags.
+
 2022-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106655

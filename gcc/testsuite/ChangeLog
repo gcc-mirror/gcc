@@ -1,3 +1,62 @@
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-c++-common/Wxor-used-as-pow-1.c: New test.
+	* c-c++-common/Wxor-used-as-pow-fixits.c: New test.
+	* g++.dg/parse/expr3.C: Convert 2 to 0x2 to suppress
+	-Wxor-used-as-pow.
+	* g++.dg/warn/Wparentheses-10.C: Likewise.
+	* g++.dg/warn/Wparentheses-18.C: Likewise.
+	* g++.dg/warn/Wparentheses-19.C: Likewise.
+	* g++.dg/warn/Wparentheses-9.C: Likewise.
+	* g++.dg/warn/Wxor-used-as-pow-named-op.C: New test.
+	* gcc.dg/Wparentheses-6.c: Convert 2 to 0x2 to suppress
+	-Wxor-used-as-pow.
+	* gcc.dg/Wparentheses-7.c: Likewise.
+	* gcc.dg/precedence-1.c: Likewise.
+
+2022-09-02  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99349
+	* gfortran.dg/pr99349.f90: New test.
+
+2022-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-layout-20.c: New test.
+
+2022-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-layout-19.c: New test.
+
+2022-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* gcc.dg/torture/pr106809.c: New testcase.
+
+2022-09-02  Martin Liska  <mliska@suse.cz>
+
+	* lib/gcc-dg.exp: Remove -gstabs option support, DBX-related
+	  macros and DBX debugging info support.
+	* lib/gfortran-dg.exp: Likewise.
+	* lib/target-supports.exp: Likewise.
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Removed.
+	* g++.dg/other/PR23205.C: Removed.
+	* g++.dg/other/pr23205-2.C: Removed.
+	* gcc.dg/20040813-1.c: Removed.
+	* gcc.dg/darwin-20040809-2.c: Removed.
+	* gcc.dg/debug/pr35154.c: Removed.
+	* gcc.dg/pr69471-2.c: Removed.
+	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Removed.
+	* gcc.target/s390/20041216-1.c: Removed.
+	* gfortran.dg/debug/pr35154-stabs.f: Removed.
+	* objc.dg/stabs-1.m: Removed.
+
+2022-09-02  Simon Rainer  <gcc.gnu@vvalter.com>
+
+	PR ipa/106627
+	* g++.target/i386/pr106627.C: New test.
+
 2022-09-01  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/106707

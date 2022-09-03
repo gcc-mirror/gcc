@@ -1,3 +1,21 @@
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-parser.cc (c_parser_string_literal): Clear ret.m_decimal.
+	(c_parser_expr_no_commas): Likewise.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_binary_expression): Clear m_decimal when popping the
+	stack.
+	(c_parser_unary_expression): Clear ret.m_decimal.
+	(c_parser_has_attribute_expression): Likewise for result.
+	(c_parser_predefined_identifier): Likewise for expr.
+	(c_parser_postfix_expression): Likewise for expr.
+	Set expr.m_decimal when handling a CPP_NUMBER that was a decimal
+	token.
+	* c-tree.h (c_expr::m_decimal): New bitfield.
+	* c-typeck.cc (parser_build_binary_op): Clear result.m_decimal.
+	(parser_build_binary_op): Call check_for_xor_used_as_pow.
+
 2022-09-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (grokparms): Handle () in a function declaration the

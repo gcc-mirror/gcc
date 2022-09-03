@@ -1,3 +1,9 @@
+2022-09-02  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99349
+	* decl.cc (match_data_constant): Avoid NULL pointer dereference.
+
 2022-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/106579

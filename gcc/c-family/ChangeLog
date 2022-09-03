@@ -1,3 +1,11 @@
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-common.h (check_for_xor_used_as_pow): New decl.
+	* c-lex.cc (c_lex_with_flags): Add DECIMAL_INT to flags as appropriate.
+	* c-warn.cc (check_for_xor_used_as_pow): New.
+	* c.opt (Wxor-used-as-pow): New.
+
 2022-09-01  Jason Merrill  <jason@redhat.com>
 
 	* c-common.cc (c_common_nodes_and_builtins): Set TREE_STRING_FLAG on

@@ -1,3 +1,322 @@
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* doc/invoke.texi (Warning Options): Add -Wxor-used-as-pow.
+
+2022-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105659
+	* config.gcc: Set tm_d_file to ${cpu_type}/${cpu_type}-d.h.
+	* config/aarch64/aarch64-d.cc: Include tm_d.h.
+	* config/aarch64/aarch64-protos.h (aarch64_d_target_versions): Move to
+	config/aarch64/aarch64-d.h.
+	(aarch64_d_register_target_info): Likewise.
+	* config/aarch64/aarch64.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* config/arm/arm-d.cc: Include tm_d.h and arm-protos.h instead of
+	tm_p.h.
+	* config/arm/arm-protos.h (arm_d_target_versions): Move to
+	config/arm/arm-d.h.
+	(arm_d_register_target_info): Likewise.
+	* config/arm/arm.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* config/default-d.cc: Remove memmodel.h include.
+	* config/freebsd-d.cc: Include tm_d.h instead of tm_p.h.
+	* config/glibc-d.cc: Likewise.
+	* config/i386/i386-d.cc: Include tm_d.h.
+	* config/i386/i386-protos.h (ix86_d_target_versions): Move to
+	config/i386/i386-d.h.
+	(ix86_d_register_target_info): Likewise.
+	(ix86_d_has_stdcall_convention): Likewise.
+	* config/i386/i386.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	(TARGET_D_HAS_STDCALL_CONVENTION): Likewise.
+	* config/i386/winnt-d.cc: Include tm_d.h instead of tm_p.h.
+	* config/mips/mips-d.cc: Include tm_d.h.
+	* config/mips/mips-protos.h (mips_d_target_versions): Move to
+	config/mips/mips-d.h.
+	(mips_d_register_target_info): Likewise.
+	* config/mips/mips.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* config/netbsd-d.cc: Include tm_d.h instead of tm.h and memmodel.h.
+	* config/openbsd-d.cc: Likewise.
+	* config/pa/pa-d.cc: Include tm_d.h.
+	* config/pa/pa-protos.h (pa_d_target_versions): Move to
+	config/pa/pa-d.h.
+	(pa_d_register_target_info): Likewise.
+	* config/pa/pa.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* config/riscv/riscv-d.cc: Include tm_d.h.
+	* config/riscv/riscv-protos.h (riscv_d_target_versions): Move to
+	config/riscv/riscv-d.h.
+	(riscv_d_register_target_info): Likewise.
+	* config/riscv/riscv.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* config/rs6000/rs6000-d.cc: Include tm_d.h.
+	* config/rs6000/rs6000-protos.h (rs6000_d_target_versions): Move to
+	config/rs6000/rs6000-d.h.
+	(rs6000_d_register_target_info): Likewise.
+	* config/rs6000/rs6000.h (TARGET_D_CPU_VERSIONS) Likewise.:
+	(TARGET_D_REGISTER_CPU_TARGET_INFO) Likewise.:
+	* config/s390/s390-d.cc: Include tm_d.h.
+	* config/s390/s390-protos.h (s390_d_target_versions): Move to
+	config/s390/s390-d.h.
+	(s390_d_register_target_info): Likewise.
+	* config/s390/s390.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* config/sol2-d.cc: Include tm_d.h instead of tm.h and memmodel.h.
+	* config/sparc/sparc-d.cc: Include tm_d.h.
+	* config/sparc/sparc-protos.h (sparc_d_target_versions): Move to
+	config/sparc/sparc-d.h.
+	(sparc_d_register_target_info): Likewise.
+	* config/sparc/sparc.h (TARGET_D_CPU_VERSIONS): Likewise.
+	(TARGET_D_REGISTER_CPU_TARGET_INFO): Likewise.
+	* configure: Regenerate.
+	* configure.ac (tm_d_file): Remove defaults.h.
+	(tm_d_include_list): Remove options.h and insn-constants.h.
+	* config/aarch64/aarch64-d.h: New file.
+	* config/arm/arm-d.h: New file.
+	* config/i386/i386-d.h: New file.
+	* config/mips/mips-d.h: New file.
+	* config/pa/pa-d.h: New file.
+	* config/riscv/riscv-d.h: New file.
+	* config/rs6000/rs6000-d.h: New file.
+	* config/s390/s390-d.h: New file.
+	* config/sparc/sparc-d.h: New file.
+
+2022-09-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.cc (fold_builtin_inf): Convert use of real_info to dconstinf.
+	(fold_builtin_fpclassify): Same.
+	* fold-const-call.cc (fold_const_call_cc): Same.
+	* match.pd: Same.
+	* omp-low.cc (omp_reduction_init_op): Same.
+	* realmpfr.cc (real_from_mpfr): Same.
+	* tree.cc (build_complex_inf): Same.
+
+2022-09-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin): Use
+	NOP_EXPR for MMA pointer casting.
+
+2022-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_optimize_slp_pass::internal_node_cost):
+	Reduce the fallback cost to 1.  Only use it if the number of
+	input lanes is equal to the number of output lanes.
+
+2022-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106787
+	* tree-vect-slp.cc (vect_map_to_instance): New function, split out
+	from...
+	(vect_bb_partition_graph_r): ...here.  Replace the visited set
+	with a map from nodes to instances.  Ensure that a node only
+	appears in one partition.
+	(vect_bb_partition_graph): Update accordingly.
+
+2022-09-02  Richard Biener  <rguenther@suse.de>
+
+	* timevar.def (TV_TREE_RPO_VN): New.
+	* tree-ssa-sccvn.h (do_rpo_vn): Remove one overload.
+	* tree-ssa-sccvn.cc (do_rpo_vn_1): Rename the worker.
+	(do_rpo_vn): Unify the public API, track with TV_TREE_RPO_VN.
+	(pass_fre::execute): Adjust.
+	* tree-ssa-uninit.cc (execute_early_warn_uninitialized): Adjust.
+
+2022-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* tree-ssa-sccvn.cc (dominaged_by_p_w_unex): Check we have
+	more than one successor before doing extra work.
+
+2022-09-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Include <vector>.
+	(struct riscv_multi_lib_info_t): New.
+	(riscv_subset_list::match_score): Ditto.
+	(find_last_appear_switch): Ditto.
+	(prefixed_with): Ditto.
+	(struct multi_lib_info_t): Ditto.
+	(riscv_current_arch_str): Ditto.
+	(riscv_current_abi_str): Ditto.
+	(riscv_multi_lib_info_t::parse): Ditto.
+	(riscv_check_cond): Ditto.
+	(riscv_check_conds): Ditto.
+	(riscv_compute_multilib): Ditto.
+	(TARGET_COMPUTE_MULTILIB): Defined.
+	* config/riscv/elf.h (LIB_SPEC): Call riscv_multi_lib_check if
+	doing link.
+	(RISCV_USE_CUSTOMISED_MULTI_LIB): New.
+	* config/riscv/riscv.h (riscv_multi_lib_check): New.
+	(EXTRA_SPEC_FUNCTIONS): Add riscv_multi_lib_check.
+	* config/riscv/riscv-subset.h (riscv_subset_list::match_score): New.
+
+2022-09-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/common-target.def (compute_multilib): New.
+	* common/common-targhooks.h (default_compute_multilib): New.
+	* common/common-targhooks.cc (default_compute_multilib): New.
+	* doc/tm.texi.in (TARGET_COMPUTE_MULTILIB): New.
+	* doc/tm.texi: Regen.
+	* gcc.cc: Include common/common-target.h.
+	(set_multilib_dir) Call targetm_common.compute_multilib.
+	(SWITCH_LIVE): Move to opts.h.
+	(SWITCH_FALSE): Ditto.
+	(SWITCH_IGNORE): Ditto.
+	(SWITCH_IGNORE_PERMANENTLY): Ditto.
+	(SWITCH_KEEP_FOR_GCC): Ditto.
+	(struct switchstr): Ditto.
+	* opts.h (SWITCH_LIVE): Move from gcc.c.
+	(SWITCH_FALSE): Ditto.
+	(SWITCH_IGNORE): Ditto.
+	(SWITCH_IGNORE_PERMANENTLY): Ditto.
+	(SWITCH_KEEP_FOR_GCC): Ditto.
+	(struct switchstr): Ditto.
+
+2022-09-02  Martin Liska  <mliska@suse.cz>
+
+	* config/pdp11/pdp11.h (PREFERRED_DEBUGGING_TYPE): Disable
+	debugging format.
+
+2022-09-02  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Remove -gstabs option support, DBX-related
+	  macros and DBX debugging info support.
+	* collect2.cc (scan_prog_file): Likewise.
+	* common.opt: Likewise.
+	* config.gcc: Likewise.
+	* config.in: Likewise.
+	* config/aarch64/aarch64-elf.h (DBX_DEBUGGING_INFO): Likewise.
+	* config/alpha/alpha.cc: Likewise.
+	* config/alpha/elf.h (ASM_SPEC): Likewise.
+	* config/arc/arc.h (DBX_DEBUGGING_INFO): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/arm/aout.h (DBX_DEBUGGING_INFO): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/arm/netbsd-elf.h (DBX_CONTIN_LENGTH): Likewise.
+	* config/darwin.h (DSYMUTIL_SPEC): Likewise.
+	(ASM_DEBUG_SPEC): Likewise.
+	(DBX_DEBUGGING_INFO): Likewise.
+	(DBX_USE_BINCL): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	(DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END): Likewise.
+	* config/epiphany/epiphany.h (DBX_DEBUGGING_INFO): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/i386/bsd.h (DBX_NO_XREFS): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/i386/gas.h (DBX_NO_XREFS): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ia64/sysv4.h (DBX_DEBUGGING_INFO): Likewise.
+	* config/m68k/linux.h (DBX_CONTIN_LENGTH): Likewise.
+	* config/m68k/openbsd.h (DBX_DEBUGGING_INFO): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	(DBX_CONTIN_CHAR): Likewise.
+	* config/mips/mips.cc (mips_output_filename): Likewise.
+	(mips_option_override): Likewise.
+	* config/mips/mips.h (SUBTARGET_ASM_DEBUGGING_SPEC): Likewise.
+	(DBX_DEBUGGING_INFO): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	(DBX_REGISTER_NUMBER): Likewise.
+	(GP_DBX_FIRST): Likewise.
+	(FP_DBX_FIRST): Likewise.
+	(MD_DBX_FIRST): Likewise.
+	* config/nvptx/nvptx.cc: Likewise.
+	* config/openbsd.h (DBX_NO_XREFS): Likewise.
+	* config/pa/pa-64.h (DBX_DEBUGGING_INFO): Likewise.
+	* config/pa/pa.h (ASSEMBLER_DIALECT): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/pa/som.h (PREFERRED_DEBUGGING_TYPE): Likewise.
+	(DBX_USE_BINCL): Likewise.
+	(DBX_LINES_FUNCTION_RELATIVE): Likewise.
+	(DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END): Likewise.
+	* config/pdp11/pdp11.cc: Likewise.
+	* config/pdp11/pdp11.h (DBX_DEBUGGING_INFO): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	* config/rs6000/rs6000-builtin.cc: Likewise.
+	* config/rs6000/rs6000-call.cc: Likewise.
+	* config/rs6000/rs6000-logue.cc (defined): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Likewise.
+	(HAVE_XCOFF_DWARF_EXTRAS): Likewise.
+	(rs6000_xcoff_declare_function_name): Likewise.
+	* config/rs6000/sysv4.h (DBX_DEBUGGING_INFO): Likewise.
+	(DBX_FUNCTION_FIRST): Likewise.
+	* config/rs6000/xcoff.h (XCOFF_DEBUGGING_INFO): Likewise.
+	* config/rx/rx.h (DBX_DEBUGGING_INFO): Likewise.
+	* config/sh/elf.h (DBX_LINES_FUNCTION_RELATIVE): Likewise.
+	(DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END): Likewise.
+	* config/sol2.h (NO_DBX_BNSYM_ENSYM): Likewise.
+	* config/sparc/freebsd.h (DBX_CONTIN_CHAR): Likewise.
+	* config/sparc/netbsd-elf.h (DBX_CONTIN_CHAR): Likewise.
+	* config/sparc/sparc.h (DBX_CONTIN_LENGTH): Likewise.
+	* config/vax/vax.cc (vax_file_start): Likewise.
+	* config/vax/vax.h (DBX_DEBUGGING_INFO): Likewise.
+	(DBX_CONTIN_LENGTH): Likewise.
+	(DBX_CONTIN_CHAR): Likewise.
+	(DBX_NO_XREFS): Likewise.
+	(DBX_STATIC_STAB_DATA_SECTION): Likewise.
+	* config/vx-common.h (DBX_DEBUGGING_INFO): Likewise.
+	(XCOFF_DEBUGGING_INFO): Likewise.
+	* configure: Regenerate. Likewise.
+	* configure.ac: Likewise.
+	* debug.h: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* dwarf2asm.cc (XCOFF_DEBUGGING_INFO): Likewise.
+	(dw2_asm_output_nstring): Likewise.
+	(USE_LINKONCE_INDIRECT): Likewise.
+	* dwarf2out.cc (XCOFF_DEBUGGING_INFO): Likewise.
+	(HAVE_XCOFF_DWARF_EXTRAS): Likewise.
+	(output_fde): Likewise.
+	(output_call_frame_info): Likewise.
+	(have_macinfo): Likewise.
+	(add_AT_loc_list): Likewise.
+	(add_AT_view_list): Likewise.
+	(output_compilation_unit_header): Likewise.
+	(output_pubnames): Likewise.
+	(output_aranges): Likewise.
+	(output_line_info): Likewise.
+	(output_macinfo): Likewise.
+	(dwarf2out_finish): Likewise.
+	(dwarf2out_early_finish): Likewise.
+	* final.cc (final_scan_insn_1): Likewise.
+	(rest_of_handle_final): Likewise.
+	* flag-types.h (enum debug_info_type): Likewise.
+	(DBX_DEBUG): Likewise.
+	(XCOFF_DEBUG): Likewise.
+	* function.cc (defined): Likewise.
+	* gcc.cc (defined): Likewise.
+	(ASM_DEBUG_SPEC): Likewise.
+	(ASM_DEBUG_OPTION_SPEC): Likewise.
+	* opts.cc (common_handle_option): Likewise.
+	(set_debug_level): Likewise.
+	* system.h (fancy_abort): Likewise.
+	* target-def.h (TARGET_ASM_CONSTRUCTOR): Likewise.
+	(TARGET_ASM_DESTRUCTOR): Likewise.
+	* toplev.cc (defined): Likewise.
+	* varasm.cc: Likewise.
+	* config/dbxcoff.h: Removed.
+	* config/dbxelf.h: Removed.
+	* dbxout.cc: Removed.
+	* dbxout.h: Removed.
+	* gstab.h: Removed.
+	* stab.def: Removed.
+	* xcoffout.cc: Removed.
+	* xcoffout.h: Removed.
+
+2022-09-02  Simon Rainer  <gcc.gnu@vvalter.com>
+
+	PR ipa/106627
+	* config/i386/i386-features.cc (ix86_get_function_versions_dispatcher):
+	Set TREE_NOTHROW correctly for dispatcher declaration.
+	* config/rs6000/rs6000.cc (rs6000_get_function_versions_dispatcher):
+	Likewise.
+
 2022-09-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR other/106782

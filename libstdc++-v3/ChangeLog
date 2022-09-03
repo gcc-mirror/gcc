@@ -1,3 +1,45 @@
+2022-09-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/tuple (tuple::_UseOtherCtor): Use ::type when
+	deriving from __and_, __or_ or __not_.
+	* include/std/type_traits (negation): Likewise.
+	(is_unsigned): Likewise.
+	(__is_implicitly_default_constructible): Likewise.
+	(is_trivially_destructible): Likewise.
+	(__is_nt_invocable_impl): Likewise.
+
+2022-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_constructible_v)
+	(is_default_constructible_v, is_copy_constructible_v)
+	(is_move_constructible_v): Define using __is_constructible.
+	(is_assignable_v, is_copy_assignable_v, is_move_assignable_v):
+	Define using __is_assignable.
+	(is_trivially_constructible_v)
+	(is_trivially_default_constructible_v)
+	(is_trivially_copy_constructible_v)
+	(is_trivially_move_constructible_v): Define using
+	__is_trivially_constructible.
+	(is_trivially_assignable_v, is_trivially_copy_assignable_v)
+	(is_trivially_move_assignable_v): Define using
+	__is_trivially_assignable.
+	(is_nothrow_constructible_v)
+	(is_nothrow_default_constructible_v)
+	(is_nothrow_copy_constructible_v)
+	(is_nothrow_move_constructible_v): Define using
+	__is_nothrow_constructible.
+	(is_nothrow_assignable_v, is_nothrow_copy_assignable_v)
+	(is_nothrow_move_assignable_v): Define using
+	__is_nothrow_assignable.
+
+2022-09-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (__or_, __and_, __not_): Redefine as a
+	class template instead of as an alias template.
+	* testsuite/20_util/logical_traits/requirements/short_circuit.cc:
+	Add more tests for conjunction and disjunction.  Add corresponding
+	tests for __and_ and __or_.
+
 2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (adjacent_transform_view::_Iterator): Add

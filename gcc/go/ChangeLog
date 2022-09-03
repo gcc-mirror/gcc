@@ -1,3 +1,9 @@
+2022-09-02  Martin Liska  <mliska@suse.cz>
+
+	* go-lang.cc (go_langhook_pushdecl): Remove -gstabs option support, DBX-related
+	  macros and DBX debugging info support.
+	* gospec.cc (lang_specific_driver): Likewise.
+
 2022-07-16  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::struct_field_expression): Handle a void
