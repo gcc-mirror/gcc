@@ -632,6 +632,10 @@ frange::singleton_p (tree *result) const
 {
   if (m_kind == VR_RANGE && real_identical (&m_min, &m_max))
     {
+      // Return false for any singleton that may be a NAN.
+      if (HONOR_NANS (m_type) && !get_nan ().no_p ())
+	return false;
+
       // Return the appropriate zero if known.
       if (HONOR_SIGNED_ZEROS (m_type) && zero_p ())
 	{
@@ -649,11 +653,6 @@ frange::singleton_p (tree *result) const
 	    }
 	  return false;
 	}
-
-      // Return false for any singleton that may be a NAN.
-      if (HONOR_NANS (m_type) && !get_nan ().no_p ())
-	return false;
-
       if (result)
 	*result = build_real (m_type, m_min);
       return true;
