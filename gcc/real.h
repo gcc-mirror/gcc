@@ -286,6 +286,13 @@ extern bool real_isnan (const REAL_VALUE_TYPE *);
 /* Determine whether a floating-point value X is a signaling NaN.  */
 extern bool real_issignaling_nan (const REAL_VALUE_TYPE *);
 
+/* Determine whether a floating-point value X is a denormal.  */
+inline bool
+real_isdenormal (const REAL_VALUE_TYPE *r)
+{
+  return (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+}
+
 /* Determine whether a floating-point value X is finite.  */
 extern bool real_isfinite (const REAL_VALUE_TYPE *);
 

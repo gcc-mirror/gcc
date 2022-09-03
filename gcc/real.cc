@@ -2954,7 +2954,7 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image = sign << 31;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 24)) & 0x7fffff;
@@ -3175,7 +3175,7 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
 {
   unsigned long image_lo, image_hi, sig_lo, sig_hi, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image_hi = sign << 31;
   image_lo = 0;
@@ -3433,7 +3433,7 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
 		      const REAL_VALUE_TYPE *r)
 {
   unsigned long image_hi, sig_hi, sig_lo;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image_hi = r->sign << 15;
   sig_hi = sig_lo = 0;
@@ -3964,7 +3964,7 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
 {
   unsigned long image3, image2, image1, image0, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
   REAL_VALUE_TYPE u;
 
   image3 = sign << 31;
@@ -4721,7 +4721,7 @@ encode_ieee_half (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image = sign << 15;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 11)) & 0x3ff;
@@ -4835,7 +4835,7 @@ encode_arm_bfloat_half (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image = sign << 15;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 8)) & 0x7f;
