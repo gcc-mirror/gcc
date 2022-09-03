@@ -1553,6 +1553,9 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	case OMP_CLAUSE_DEPEND:
 	  val = OMP_CLAUSE_DEPEND_KIND (t);
 	  break;
+	case OMP_CLAUSE_DOACROSS:
+	  val = OMP_CLAUSE_DOACROSS_KIND (t);
+	  break;
 	case OMP_CLAUSE_MAP:
 	  val = OMP_CLAUSE_MAP_KIND (t);
 	  break;

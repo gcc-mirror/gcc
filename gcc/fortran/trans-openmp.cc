@@ -2897,7 +2897,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    }
 			  vec = tree_cons (addend, t, vec);
 			  if (neg)
-			    OMP_CLAUSE_DEPEND_SINK_NEGATIVE (vec) = 1;
+			    OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (vec) = 1;
 			}
 		      if (n->next == NULL
 			  || n->next->u.depend_op != OMP_DEPEND_SINK)
@@ -2908,8 +2908,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    continue;
 
 		  tree node = build_omp_clause (input_location,
-						OMP_CLAUSE_DEPEND);
-		  OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_SINK;
+						OMP_CLAUSE_DOACROSS);
+		  OMP_CLAUSE_DOACROSS_KIND (node) = OMP_CLAUSE_DOACROSS_SINK;
+		  OMP_CLAUSE_DOACROSS_DEPEND (node) = 1;
 		  OMP_CLAUSE_DECL (node) = nreverse (vec);
 		  omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 		  continue;
@@ -4254,8 +4255,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->depend_source)
     {
-      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEPEND);
-      OMP_CLAUSE_DEPEND_KIND (c) = OMP_CLAUSE_DEPEND_SOURCE;
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DOACROSS);
+      OMP_CLAUSE_DOACROSS_KIND (c) = OMP_CLAUSE_DOACROSS_SOURCE;
+      OMP_CLAUSE_DOACROSS_DEPEND (c) = 1;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 

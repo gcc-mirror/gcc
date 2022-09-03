@@ -3636,14 +3636,13 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       break;
     case GIMPLE_OMP_TASK:
       for (c = gimple_omp_task_clauses (stmt); c; c = OMP_CLAUSE_CHAIN (c))
-	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	    && (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE
-		|| OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS)
 	  {
-	    enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_KIND (c);
+	    enum omp_clause_doacross_kind kind = OMP_CLAUSE_DOACROSS_KIND (c);
 	    error_at (OMP_CLAUSE_LOCATION (c),
-		      "%<depend(%s)%> is only allowed in %<omp ordered%>",
-		      kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
+		      "%<%s(%s)%> is only allowed in %<omp ordered%>",
+		      OMP_CLAUSE_DOACROSS_DEPEND (c) ? "depend" : "doacross",
+		      kind == OMP_CLAUSE_DOACROSS_SOURCE ? "source" : "sink");
 	    return false;
 	  }
       break;
@@ -3651,43 +3650,30 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       for (c = gimple_omp_ordered_clauses (as_a <gomp_ordered *> (stmt));
 	   c; c = OMP_CLAUSE_CHAIN (c))
 	{
-	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DOACROSS)
 	    {
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "invalid depend kind in omp %<ordered%> %<depend%>");
+		  return false;
+		}
 	      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREADS
 			  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SIMD);
 	      continue;
 	    }
-	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_KIND (c);
-	  if (kind == OMP_CLAUSE_DEPEND_SOURCE
-	      || kind == OMP_CLAUSE_DEPEND_SINK)
-	    {
-	      tree oclause;
-	      /* Look for containing ordered(N) loop.  */
-	      if (ctx == NULL
-		  || gimple_code (ctx->stmt) != GIMPLE_OMP_FOR
-		  || (oclause
-			= omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
-					   OMP_CLAUSE_ORDERED)) == NULL_TREE)
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<ordered%> construct with %<depend%> clause "
-			    "must be closely nested inside an %<ordered%> "
-			    "loop");
-		  return false;
-		}
-	      else if (OMP_CLAUSE_ORDERED_EXPR (oclause) == NULL_TREE)
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<ordered%> construct with %<depend%> clause "
-			    "must be closely nested inside a loop with "
-			    "%<ordered%> clause with a parameter");
-		  return false;
-		}
-	    }
-	  else
+
+	  tree oclause;
+	  /* Look for containing ordered(N) loop.  */
+	  if (ctx == NULL
+	      || gimple_code (ctx->stmt) != GIMPLE_OMP_FOR
+	      || (oclause
+		  = omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
+				     OMP_CLAUSE_ORDERED)) == NULL_TREE)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"invalid depend kind in omp %<ordered%> %<depend%>");
+			"%<ordered%> construct with %<depend%> clause "
+			"must be closely nested inside an %<ordered%> loop");
 	      return false;
 	    }
 	}
@@ -3732,14 +3718,37 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 			  "a loop region with an %<ordered%> clause");
 		return false;
 	      }
-	    if (OMP_CLAUSE_ORDERED_EXPR (o) != NULL_TREE
-		&& omp_find_clause (c, OMP_CLAUSE_DEPEND) == NULL_TREE)
+	    if (omp_find_clause (c, OMP_CLAUSE_DOACROSS) == NULL_TREE)
 	      {
-		error_at (gimple_location (stmt),
-			  "%<ordered%> region without %<depend%> clause may "
-			  "not be closely nested inside a loop region with "
-			  "an %<ordered%> clause with a parameter");
-		return false;
+		if (OMP_CLAUSE_ORDERED_DOACROSS (o))
+		  {
+		    error_at (gimple_location (stmt),
+			      "%<ordered%> construct without %<doacross%> or "
+			      "%<depend%> clauses must not have the same "
+			      "binding region as %<ordered%> construct with "
+			      "those clauses");
+		    return false;
+		  }
+		else if (OMP_CLAUSE_ORDERED_EXPR (o))
+		  {
+		    tree co
+		      = omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
+					 OMP_CLAUSE_COLLAPSE);
+		    HOST_WIDE_INT
+		      o_n = tree_to_shwi (OMP_CLAUSE_ORDERED_EXPR (o));
+		    HOST_WIDE_INT c_n = 1;
+		    if (co)
+		      c_n = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (co));
+		    if (o_n != c_n)
+		      {
+			error_at (gimple_location (stmt),
+				  "%<ordered%> construct without %<doacross%> "
+				  "or %<depend%> clauses binds to loop where "
+				  "%<collapse%> argument %wd is different from "
+				  "%<ordered%> argument %wd", c_n, o_n);
+			return false;
+		      }
+		  }
 	      }
 	    return true;
 	  case GIMPLE_OMP_TARGET:
@@ -3793,14 +3802,12 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       break;
     case GIMPLE_OMP_TARGET:
       for (c = gimple_omp_target_clauses (stmt); c; c = OMP_CLAUSE_CHAIN (c))
-	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	    && (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE
-		|| OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS)
 	  {
-	    enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_KIND (c);
+	    enum omp_clause_doacross_kind kind = OMP_CLAUSE_DOACROSS_KIND (c);
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "%<depend(%s)%> is only allowed in %<omp ordered%>",
-		      kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
+		      kind == OMP_CLAUSE_DOACROSS_SOURCE ? "source" : "sink");
 	    return false;
 	  }
       if (is_gimple_omp_offloaded (stmt)
@@ -9740,8 +9747,8 @@ lower_omp_ordered_clauses (gimple_stmt_iterator *gsi_p, gomp_ordered *ord_stmt,
 
   tree *list_p = gimple_omp_ordered_clauses_ptr (ord_stmt);
   tree c = gimple_omp_ordered_clauses (ord_stmt);
-  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-      && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS
+      && OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
     {
       /* Merge depend clauses from multiple adjacent
 	 #pragma omp ordered depend(sink:...) constructs
@@ -9763,8 +9770,8 @@ lower_omp_ordered_clauses (gimple_stmt_iterator *gsi_p, gomp_ordered *ord_stmt,
 	  gomp_ordered *ord_stmt2 = as_a <gomp_ordered *> (stmt);
 	  c = gimple_omp_ordered_clauses (ord_stmt2);
 	  if (c == NULL_TREE
-	      || OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	      || OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_SINK)
+	      || OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DOACROSS
+	      || OMP_CLAUSE_DOACROSS_KIND (c) != OMP_CLAUSE_DOACROSS_SINK)
 	    break;
 	  while (*list_p)
 	    list_p = &OMP_CLAUSE_CHAIN (*list_p);
@@ -9831,8 +9838,8 @@ lower_omp_ordered_clauses (gimple_stmt_iterator *gsi_p, gomp_ordered *ord_stmt,
     {
       bool remove = false;
 
-      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND);
-      if (OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_SINK)
+      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS);
+      if (OMP_CLAUSE_DOACROSS_KIND (c) != OMP_CLAUSE_DOACROSS_SINK)
 	goto next_ordered_clause;
 
       tree vec;
@@ -9983,7 +9990,7 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				  OMP_CLAUSE_THREADS);
 
   if (omp_find_clause (gimple_omp_ordered_clauses (ord_stmt),
-		       OMP_CLAUSE_DEPEND))
+		       OMP_CLAUSE_DOACROSS))
     {
       /* FIXME: This is needs to be moved to the expansion to verify various
 	 conditions only testable on cfg with dominators computed, and also
@@ -12359,9 +12366,6 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	case OMP_CLAUSE_DEPEND_INOUTSET:
 	  cnt[4]++;
 	  break;
-	case OMP_CLAUSE_DEPEND_SOURCE:
-	case OMP_CLAUSE_DEPEND_SINK:
-	  /* FALLTHRU */
 	default:
 	  gcc_unreachable ();
 	}

@@ -3298,6 +3298,11 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
   gimple_stmt_iterator gsi2 = *gsi;
   bool warned_step = false;
 
+  if (deps == NULL)
+    {
+      sorry_at (loc, "%<doacross(sink:omp_cur_iteration-1)%> not supported yet");
+      return;
+    }
   for (i = 0; i < fd->ordered; i++)
     {
       tree step = NULL_TREE;
@@ -3321,9 +3326,11 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 		break;
 	      forward = tree_int_cst_sgn (step) != -1;
 	    }
-	  if (forward ^ OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
-	    warning_at (loc, 0, "%<depend%> clause with %<sink%> modifier "
-				"waiting for lexically later iteration");
+	  if (forward ^ OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
+	    warning_at (loc, 0, "%qs clause with %<sink%> modifier "
+				"waiting for lexically later iteration",
+			OMP_CLAUSE_DOACROSS_DEPEND (c)
+			? "depend" : "doacross");
 	  break;
 	}
       deps = TREE_CHAIN (deps);
@@ -3377,13 +3384,13 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	  tree co = fold_convert_loc (loc, itype, off);
 	  if (POINTER_TYPE_P (TREE_TYPE (fd->loops[i].v)))
 	    {
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		co = fold_build1_loc (loc, NEGATE_EXPR, itype, co);
 	      a = fold_build2_loc (loc, POINTER_PLUS_EXPR,
 				   TREE_TYPE (fd->loops[i].v), fd->loops[i].v,
 				   co);
 	    }
-	  else if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	  else if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 	    a = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (fd->loops[i].v),
 				 fd->loops[i].v, co);
 	  else
@@ -3392,13 +3399,13 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	  if (step)
 	    {
 	      tree t1, t2;
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		t1 = fold_build2_loc (loc, GE_EXPR, boolean_type_node, a,
 				      fd->loops[i].n1);
 	      else
 		t1 = fold_build2_loc (loc, LT_EXPR, boolean_type_node, a,
 				      fd->loops[i].n2);
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		t2 = fold_build2_loc (loc, LT_EXPR, boolean_type_node, a,
 				      fd->loops[i].n2);
 	      else
@@ -3420,14 +3427,14 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	    }
 	  else if (fd->loops[i].cond_code == LT_EXPR)
 	    {
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		t = fold_build2_loc (loc, GE_EXPR, boolean_type_node, a,
 				     fd->loops[i].n1);
 	      else
 		t = fold_build2_loc (loc, LT_EXPR, boolean_type_node, a,
 				     fd->loops[i].n2);
 	    }
-	  else if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	  else if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 	    t = fold_build2_loc (loc, GT_EXPR, boolean_type_node, a,
 				 fd->loops[i].n2);
 	  else
@@ -3459,9 +3466,11 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 			       build_int_cst (itype, 0));
 	  if (integer_zerop (t) && !warned_step)
 	    {
-	      warning_at (loc, 0, "%<depend%> clause with %<sink%> modifier "
+	      warning_at (loc, 0, "%qs clause with %<sink%> modifier "
 				  "refers to iteration never in the iteration "
-				  "space");
+				  "space",
+			  OMP_CLAUSE_DOACROSS_DEPEND (c)
+			  ? "depend" : "doacross");
 	      warned_step = true;
 	    }
 	  cond = fold_build2_loc (loc, BIT_AND_EXPR, boolean_type_node,
@@ -3486,7 +3495,7 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 						s));
       else
 	off = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype, off, s);
-      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 	off = fold_build1_loc (loc, NEGATE_EXPR, itype, off);
       off = fold_convert_loc (loc, fd->iter_type, off);
       if (i <= fd->collapse - 1 && fd->collapse > 1)
@@ -3559,13 +3568,13 @@ expand_omp_ordered_source_sink (struct omp_region *region,
 	tree c;
 	for (c = gimple_omp_ordered_clauses (ord_stmt);
 	     c; c = OMP_CLAUSE_CHAIN (c))
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE)
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SOURCE)
 	    break;
 	if (c)
 	  expand_omp_ordered_source (&gsi, fd, counts, loc);
 	for (c = gimple_omp_ordered_clauses (ord_stmt);
 	     c; c = OMP_CLAUSE_CHAIN (c))
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	    expand_omp_ordered_sink (&gsi, fd, counts, c, loc);
 	gsi_remove (&gsi, true);
       }
@@ -10479,7 +10488,7 @@ expand_omp (struct omp_region *region)
 	    gomp_ordered *ord_stmt
 	      = as_a <gomp_ordered *> (last_stmt (region->entry));
 	    if (omp_find_clause (gimple_omp_ordered_clauses (ord_stmt),
-				 OMP_CLAUSE_DEPEND))
+				 OMP_CLAUSE_DOACROSS))
 	      {
 		/* We'll expand these when expanding corresponding
 		   worksharing region with ordered(n) clause.  */
@@ -10609,7 +10618,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  else if (code == GIMPLE_OMP_ORDERED
 		   && omp_find_clause (gimple_omp_ordered_clauses
 					 (as_a <gomp_ordered *> (stmt)),
-				       OMP_CLAUSE_DEPEND))
+				       OMP_CLAUSE_DOACROSS))
 	    /* #pragma omp ordered depend is also just a stand-alone
 	       directive.  */
 	    region = NULL;
@@ -10835,7 +10844,7 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
       fallthru = true;
       if (omp_find_clause (gimple_omp_ordered_clauses
 			     (as_a <gomp_ordered *> (last)),
-			   OMP_CLAUSE_DEPEND))
+			   OMP_CLAUSE_DOACROSS))
 	cur_region = cur_region->outer;
       break;
 
