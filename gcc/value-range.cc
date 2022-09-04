@@ -475,19 +475,25 @@ frange::union_ (const vrange &v)
       return true;
     }
 
-  // If one side has a NAN, the union is just the other side plus the
-  // NAN bit.
+  // If one side has a NAN, the union is the other side, plus the union
+  // of the properties and the possibility of a NAN.
   if (get_nan ().yes_p ())
     {
+      frange_props save = m_props;
       *this = r;
-      // NOP if NAN already set.
+      m_props = save;
+      m_props.union_ (r.m_props);
       set_nan (fp_prop::VARYING);
+      if (flag_checking)
+	verify_range ();
       return true;
     }
   if (r.get_nan ().yes_p ())
     {
-      // NOP if NAN already set.
+      m_props.union_ (r.m_props);
       set_nan (fp_prop::VARYING);
+      if (flag_checking)
+	verify_range ();
       return true;
     }
 
@@ -3676,6 +3682,7 @@ range_tests_signed_zeros ()
 {
   tree zero = build_zero_cst (float_type_node);
   tree neg_zero = fold_build1 (NEGATE_EXPR, float_type_node, zero);
+  REAL_VALUE_TYPE q, r;
   frange r0, r1;
 
   // Since -0.0 == +0.0, a range of [-0.0, -0.0] should contain +0.0
@@ -3711,6 +3718,16 @@ range_tests_signed_zeros ()
   r1.set_signbit (fp_prop::YES);
   r0.union_ (r1);
   ASSERT_TRUE (r0.zero_p () && r0.get_signbit ().varying_p ());
+
+  // NAN U [5,6] should be [5,6] with no sign info.
+  r0 = frange_nan (float_type_node);
+  r1 = frange_float ("5", "6");
+  r0.union_ (r1);
+  real_from_string (&q, "5");
+  real_from_string (&r, "6");
+  ASSERT_TRUE (real_identical (&q, &r0.lower_bound ()));
+  ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
+  ASSERT_TRUE (r0.get_signbit ().varying_p ());
 }
 
 static void
