@@ -444,24 +444,6 @@ frange::normalize_kind ()
   return false;
 }
 
-// If both operands are definitely NAN, do nothing as they combine
-// perfectly.  If OTOH, only one is a NAN, set R to VARYING as they
-// can't be neither unioned nor intersected.  Return TRUE if we
-// changed anything.
-
-static inline bool
-early_nan_resolve (frange &r, const frange &other)
-{
-  gcc_checking_assert (r.get_nan ().yes_p () || other.get_nan ().yes_p ());
-
-  // There's nothing to do for both NANs.
-  if (r.get_nan ().yes_p () == other.get_nan ().yes_p ())
-    return false;
-  // ?? Perhaps the intersection of a NAN and anything is a NAN ??.
-  r.set_varying (r.type ());
-  return true;
-}
-
 bool
 frange::union_ (const vrange &v)
 {
@@ -532,8 +514,23 @@ frange::intersect (const vrange &v)
       *this = r;
       return true;
     }
+
+  // If two NANs are not exactly the same, drop to an unknown NAN,
+  // otherwise there's nothing to do.
+  if (get_nan ().yes_p () && r.get_nan ().yes_p ())
+    {
+      if (m_props == r.m_props)
+	return false;
+
+      *this = frange_nan (m_type);
+      return true;
+    }
+  // ?? Perhaps the intersection of a NAN and anything is a NAN ??.
   if (get_nan ().yes_p () || r.get_nan ().yes_p ())
-    return early_nan_resolve (*this, r);
+    {
+      set_varying (m_type);
+      return true;
+    }
 
   bool changed = m_props.intersect (r.m_props);
 
