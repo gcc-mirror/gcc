@@ -1,3 +1,30 @@
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Handle doacross.
+	(c_parser_omp_clause_depend_sink): Renamed to ...
+	(c_parser_omp_clause_doacross_sink): ... this.  Add depend_p argument.
+	Handle parsing of doacross(sink:omp_cur_iteration-1).  Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS instead
+	of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND flag on it.
+	(c_parser_omp_clause_depend): Use OMP_CLAUSE_DOACROSS_SINK and
+	OMP_CLAUSE_DOACROSS_SOURCE instead of OMP_CLAUSE_DEPEND_SINK and
+	OMP_CLAUSE_DEPEND_SOURCE, build OMP_CLAUSE_DOACROSS for depend(source)
+	and set OMP_CLAUSE_DOACROSS_DEPEND on it.
+	(c_parser_omp_clause_doacross): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	(c_parser_omp_for_loop): Don't diagnose here linear clause together
+	with ordered with argument.
+	(c_parser_omp_simd): Don't diagnose ordered clause with argument on
+	for simd.
+	(OMP_ORDERED_DEPEND_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_ordered): Handle also doacross and adjust for it
+	diagnostic wording.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	Don't handle OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+
 2022-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/90885

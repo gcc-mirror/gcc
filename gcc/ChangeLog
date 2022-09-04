@@ -1,3 +1,73 @@
+2022-09-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::singleton_p): Move NAN check to the top.
+
+2022-09-03  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/nvptx/nvptx.h (ASM_OUTPUT_DEF): Reference macro arguments.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DOACROSS.
+	(enum omp_clause_depend_kind): Remove OMP_CLAUSE_DEPEND_SOURCE
+	and OMP_CLAUSE_DEPEND_SINK, add OMP_CLAUSE_DEPEND_INVALID.
+	(enum omp_clause_doacross_kind): New type.
+	(struct tree_omp_clause): Add subcode.doacross_kind member.
+	* tree.h (OMP_CLAUSE_DEPEND_SINK_NEGATIVE): Remove.
+	(OMP_CLAUSE_DOACROSS_KIND): Define.
+	(OMP_CLAUSE_DOACROSS_SINK_NEGATIVE): Define.
+	(OMP_CLAUSE_DOACROSS_DEPEND): Define.
+	(OMP_CLAUSE_ORDERED_DOACROSS): Define.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add
+	OMP_CLAUSE_DOACROSS entries.
+	* tree-nested.cc (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	* tree-pretty-print.cc (dump_omp_clause): Don't handle
+	OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.  Handle
+	OMP_CLAUSE_DOACROSS.
+	* gimplify.cc (gimplify_omp_depend): Don't handle
+	OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+	(gimplify_scan_omp_clauses): Likewise.  Handle OMP_CLAUSE_DOACROSS.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	(find_standalone_omp_ordered): New function.
+	(gimplify_omp_for): When OMP_CLAUSE_ORDERED is present, search
+	body for OMP_ORDERED with OMP_CLAUSE_DOACROSS and if found,
+	set OMP_CLAUSE_ORDERED_DOACROSS.
+	(gimplify_omp_ordered): Don't handle OMP_CLAUSE_DEPEND_SINK or
+	OMP_CLAUSE_DEPEND_SOURCE, instead check OMP_CLAUSE_DOACROSS, adjust
+	diagnostics that presence or absence of ordered clause parameter
+	is irrelevant.  Handle doacross(sink:omp_cur_iteration-1).  Use
+	actual user name of the clause - doacross or depend - in diagnostics.
+	* omp-general.cc (omp_extract_for_data): Don't set fd->ordered
+	if !OMP_CLAUSE_ORDERED_DOACROSS (t).  If
+	OMP_CLAUSE_ORDERED_DOACROSS (t) but !OMP_CLAUSE_ORDERED_EXPR (t),
+	set fd->ordered to -1 and set it after the loop in that case to
+	fd->collapse.
+	* omp-low.cc (check_omp_nesting_restrictions): Don't handle
+	OMP_CLAUSE_DEPEND_SOURCE nor OMP_CLAUSE_DEPEND_SINK, instead check
+	OMP_CLAUSE_DOACROSS.  Use actual user name of the clause - doacross
+	or depend - in diagnostics.  Diagnose mixing of stand-alone and
+	block associated ordered constructs binding to the same loop.
+	(lower_omp_ordered_clauses): Don't handle OMP_CLAUSE_DEPEND_SINK,
+	instead handle OMP_CLAUSE_DOACROSS.
+	(lower_omp_ordered): Look for OMP_CLAUSE_DOACROSS instead of
+	OMP_CLAUSE_DEPEND.
+	(lower_depend_clauses): Don't handle OMP_CLAUSE_DEPEND_SOURCE and
+	OMP_CLAUSE_DEPEND_SINK.
+	* omp-expand.cc (expand_omp_ordered_sink): Emit a sorry for
+	doacross(sink:omp_cur_iteration-1).
+	(expand_omp_ordered_source_sink): Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE.  Use actual user name of the clause
+	- doacross or depend - in diagnostics.
+	(expand_omp): Look for OMP_CLAUSE_DOACROSS clause instead of
+	OMP_CLAUSE_DEPEND.
+	(build_omp_regions_1): Likewise.
+	(omp_make_gimple_edges): Likewise.
+	* lto-streamer-out.cc (hash_tree): Handle OMP_CLAUSE_DOACROSS.
+	* tree-streamer-in.cc (unpack_ts_omp_clause_value_fields): Likewise.
+	* tree-streamer-out.cc (pack_ts_omp_clause_value_fields): Likewise.
+
 2022-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/90885

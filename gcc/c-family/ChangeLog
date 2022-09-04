@@ -1,3 +1,10 @@
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	* c-omp.cc (c_finish_omp_depobj): Check also for OMP_CLAUSE_DOACROSS
+	clause and diagnose it.  Don't handle OMP_CLAUSE_DEPEND_SOURCE and
+	OMP_CLAUSE_DEPEND_SINK.  Assert kind is not OMP_CLAUSE_DEPEND_INVALID.
+
 2022-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/90885

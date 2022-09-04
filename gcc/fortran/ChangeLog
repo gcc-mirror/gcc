@@ -1,3 +1,17 @@
+2022-09-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100245
+	* trans-expr.cc (trans_class_assignment): Add if clause to handle
+	derived type in the LHS.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS
+	clause instead of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND
+	on it.
+
 2022-09-02  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
