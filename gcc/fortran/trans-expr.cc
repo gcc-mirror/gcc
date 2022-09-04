@@ -7220,16 +7220,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		goto end_pointer_check;
 
+	      tmp = parmse.expr;
 	      if (fsym && fsym->ts.type == BT_CLASS)
 		{
-		  tmp = build_fold_indirect_ref_loc (input_location,
-						      parmse.expr);
+		  if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+		    tmp = build_fold_indirect_ref_loc (input_location, tmp);
 		  tmp = gfc_class_data_get (tmp);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 		    tmp = gfc_conv_descriptor_data_get (tmp);
 		}
-	      else
-		tmp = parmse.expr;
 
 	      /* If the argument is passed by value, we need to strip the
 		 INDIRECT_REF.  */
