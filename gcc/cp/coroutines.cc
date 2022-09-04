@@ -4095,6 +4095,15 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       BLOCK_SUPERCONTEXT (replace_blk) = top_block;
       BLOCK_SUBBLOCKS (top_block) = replace_blk;
     }
+  else
+    {
+      /* We are missing a top level BIND_EXPR. We need one to ensure that we
+	 don't shuffle around the coroutine frame and corrupt it.  */
+      tree bind_wrap = build3_loc (fn_start, BIND_EXPR, void_type_node,
+				   NULL, NULL, NULL);
+      BIND_EXPR_BODY (bind_wrap) = fnbody;
+      fnbody = bind_wrap;
+    }
 
   /* Wrap the function body in a try {} catch (...) {} block, if exceptions
      are enabled.  */
