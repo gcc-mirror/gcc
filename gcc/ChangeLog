@@ -1,3 +1,12 @@
+2022-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin):
+	Enforce the use of a valid MMA pointer type.
+
 2022-09-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
