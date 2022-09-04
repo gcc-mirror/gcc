@@ -68,7 +68,7 @@ TypeCheckStmt::visit (HIR::ConstantItem &constant)
   TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
   TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
-  infered = unify_site (
+  infered = coercion_site (
     constant.get_mappings ().get_hirid (),
     TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
     TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
