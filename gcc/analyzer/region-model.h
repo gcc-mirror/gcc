@@ -793,6 +793,9 @@ class region_model
 
   const svalue *get_capacity (const region *reg) const;
 
+  const svalue *get_string_size (const svalue *sval) const;
+  const svalue *get_string_size (const region *reg) const;
+
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
 			     const svalue *old_ptr_sval,

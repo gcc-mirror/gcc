@@ -3218,6 +3218,35 @@ region_model::get_capacity (const region *reg) const
   return m_mgr->get_or_create_unknown_svalue (sizetype);
 }
 
+/* Return the string size, including the 0-terminator, if SVAL is a
+   constant_svalue holding a string.  Otherwise, return an unknown_svalue.  */
+
+const svalue *
+region_model::get_string_size (const svalue *sval) const
+{
+  tree cst = sval->maybe_get_constant ();
+  if (!cst || TREE_CODE (cst) != STRING_CST)
+    return m_mgr->get_or_create_unknown_svalue (size_type_node);
+
+  tree out = build_int_cst (size_type_node, TREE_STRING_LENGTH (cst));
+  return m_mgr->get_or_create_constant_svalue (out);
+}
+
+/* Return the string size, including the 0-terminator, if REG is a
+   string_region.  Otherwise, return an unknown_svalue.  */
+
+const svalue *
+region_model::get_string_size (const region *reg) const
+{
+  const string_region *str_reg = dyn_cast <const string_region *> (reg);
+  if (!str_reg)
+    return m_mgr->get_or_create_unknown_svalue (size_type_node);
+
+  tree cst = str_reg->get_string_cst ();
+  tree out = build_int_cst (size_type_node, TREE_STRING_LENGTH (cst));
+  return m_mgr->get_or_create_constant_svalue (out);
+}
+
 /* If CTXT is non-NULL, use it to warn about any problems accessing REG,
    using DIR to determine if this access is a read or write.  */
 

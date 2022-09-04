@@ -1019,13 +1019,23 @@ region_model::impl_call_strcpy (const call_details &cd)
   const svalue *dest_sval = cd.get_arg_svalue (0);
   const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
 					 cd.get_ctxt ());
+  const svalue *src_sval = cd.get_arg_svalue (1);
+  const region *src_reg = deref_rvalue (src_sval, cd.get_arg_tree (1),
+					cd.get_ctxt ());
+  const svalue *src_contents_sval = get_store_value (src_reg,
+						     cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
 
-  check_region_for_write (dest_reg, cd.get_ctxt ());
+  /* Try to get the string size if SRC_REG is a string_region.  */
+  const svalue *copied_bytes_sval = get_string_size (src_reg);
+  /* Otherwise, check if the contents of SRC_REG is a string.  */
+  if (copied_bytes_sval->get_kind () == SK_UNKNOWN)
+    copied_bytes_sval = get_string_size (src_contents_sval);
 
-  /* For now, just mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
+  const region *sized_dest_reg
+    = m_mgr->get_sized_region (dest_reg, NULL_TREE, copied_bytes_sval);
+  set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
 /* Handle the on_call_pre part of "strlen".  */
