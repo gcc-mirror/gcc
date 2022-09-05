@@ -984,6 +984,7 @@
    (V16SI "QI") (V8SI  "QI") (V4SI  "QI")
    (V8DI  "QI") (V4DI  "QI") (V2DI  "QI")
    (V32HF "HI") (V16HF "QI") (V8HF  "QI")
+   (V32BF "HI") (V16BF "QI") (V8BF  "QI")
    (V16SF "QI") (V8SF  "QI") (V4SF  "QI")
    (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
 
@@ -10712,7 +10713,7 @@
 	   ]
 	   (symbol_ref "true")))])
 
-(define_insn "vec_set<mode>_0"
+(define_insn "@vec_set<mode>_0"
   [(set (match_operand:V8_128 0 "register_operand"
 	  "=v,v,v,x,x,Yr,*x,x,x,x,v,v")
 	(vec_merge:V8_128
@@ -17895,7 +17896,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_high<mode><mask_name>"
+(define_insn "@vec_interleave_high<mode><mask_name>"
   [(set (match_operand:V8_128 0 "register_operand" "=x,Yw")
 	(vec_select:V8_128
 	  (vec_concat:<ssedoublevecmode>
@@ -17963,7 +17964,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_low<mode><mask_name>"
+(define_insn "@vec_interleave_low<mode><mask_name>"
   [(set (match_operand:V8_128 0 "register_operand" "=x,Yw")
 	(vec_select:V8_128
 	  (vec_concat:<ssedoublevecmode>
