@@ -3785,7 +3785,7 @@ Define this macro if the target's representation for dwarf registers
 used in .eh_frame or .debug_frame is different from that used in other
 debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
-@code{DEBUGGER_REGISTER_NUMBER (@var{regno})}.
+@code{DEBUGGER_REGNO (@var{regno})}.
 
 @end defmac
 
@@ -9948,7 +9948,7 @@ This describes how to specify debugging information.
 @c prevent bad page break with this line
 These macros affect all debugging formats.
 
-@defmac DEBUGGER_REGISTER_NUMBER (@var{regno})
+@defmac DEBUGGER_REGNO (@var{regno})
 A C expression that returns the debugger register number for the compiler
 register number @var{regno}.  In the default macro provided, the value
 of this expression will be @var{regno} itself.  But sometimes there are
@@ -9958,11 +9958,11 @@ compiler and another for debugger@.
 
 If two registers have consecutive numbers inside GCC, and they can be
 used as a pair to hold a multiword value, then they @emph{must} have
-consecutive numbers after renumbering with @code{DEBUGGER_REGISTER_NUMBER}.
+consecutive numbers after renumbering with @code{DEBUGGER_REGNO}.
 Otherwise, debuggers will be unable to access such a pair, because they
 expect register pairs to be consecutive in their own numbering scheme.
 
-If you find yourself defining @code{DEBUGGER_REGISTER_NUMBER} in way that
+If you find yourself defining @code{DEBUGGER_REGNO} in way that
 does not preserve register pairs, then what you must do instead is
 redefine the actual register numbering scheme.
 @end defmac
