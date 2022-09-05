@@ -274,13 +274,21 @@ frange::set_nan (fp_prop::kind k)
 {
   if (k == fp_prop::YES)
     {
+      if (get_nan ().no_p ())
+	{
+	  set_undefined ();
+	  return;
+	}
       gcc_checking_assert (!undefined_p ());
       *this = frange_nan (m_type);
       return;
     }
 
-  // Setting NO on an obviously NAN range is nonsensical.
-  gcc_checking_assert (k != fp_prop::NO || !real_isnan (&m_min));
+  if (k == fp_prop::NO && get_nan ().yes_p ())
+    {
+      set_undefined ();
+      return;
+    }
 
   // Setting VARYING on an obviously NAN range is a no-op.
   if (k == fp_prop::VARYING && real_isnan (&m_min))
