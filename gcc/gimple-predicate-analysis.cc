@@ -52,10 +52,6 @@
 #define MAX_NUM_CHAINS 8
 #define MAX_CHAIN_LEN 5
 
-/* When enumerating paths between two blocks this limits the number of
-   post-dominator skips between two edges possibly defining a predicate.  */
-#define MAX_POSTDOM_CHECK 8
-
 /* The limit for the number of switch cases when we do the linear search
    for the case corresponding to an edge.  */
 #define MAX_SWITCH_CASES 40
@@ -1010,15 +1006,6 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   if (single_succ_p (dom_bb))
     return false;
 
-  if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
-    {
-      if (dump_file)
-	fprintf (dump_file, "param_uninit_control_dep_attempts exceeded: %u\n",
-		 *num_calls);
-      return false;
-    }
-  ++*num_calls;
-
   /* FIXME: Use a set instead.  */
   unsigned cur_chain_len = cur_cd_chain.length ();
   if (cur_chain_len > MAX_CHAIN_LEN)
@@ -1048,7 +1035,6 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, dom_bb->succs)
     {
-      int post_dom_check = 0;
       if (e->flags & (EDGE_FAKE | EDGE_ABNORMAL | EDGE_DFS_BACK))
 	continue;
 
@@ -1088,6 +1074,17 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	  if (in_region != 0 && !(cd_bb->flags & in_region))
 	    break;
 
+	  /* Count the number of steps we perform to limit compile-time.
+	     This should cover both recursion and the post-dominator walk.  */
+	  if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "param_uninit_control_dep_attempts "
+			 "exceeded: %u\n", *num_calls);
+	      return false;
+	    }
+	  ++*num_calls;
+
 	  /* Check if DEP_BB is indirectly control-dependent on DOM_BB.  */
 	  if (!single_succ_p (cd_bb)
 	      && compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
@@ -1105,9 +1102,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      && single_succ_edge (cd_bb)->flags & EDGE_DFS_BACK)
 	    break;
 	  cd_bb = get_immediate_dominator (CDI_POST_DOMINATORS, cd_bb);
-	  post_dom_check++;
-	  if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-	      || post_dom_check > MAX_POSTDOM_CHECK)
+	  if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    break;
 	}
       cur_cd_chain.pop ();
