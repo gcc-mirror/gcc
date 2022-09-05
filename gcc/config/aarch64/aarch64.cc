@@ -18019,6 +18019,11 @@ aarch64_validate_march (const char *str, const struct processor **res,
       case AARCH64_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-march%>", str);
 	aarch64_print_hint_for_arch (str);
+	/* A common user error is confusing -march and -mcpu.
+	   If the -march string matches a known CPU suggest -mcpu.  */
+	parse_res = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
+	if (parse_res == AARCH64_PARSE_OK)
+	  inform (input_location, "did you mean %<-mcpu=%s%>?", str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-march=%s%>",
