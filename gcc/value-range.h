@@ -338,7 +338,10 @@ public:
 	  value_range_kind = VR_RANGE);
   static bool supports_p (const_tree type)
   {
-    return SCALAR_FLOAT_TYPE_P (type);
+    // ?? Decimal floats can have multiple representations for the
+    // same number.  Supporting them may be as simple as just
+    // disabling them in singleton_p.  No clue.
+    return SCALAR_FLOAT_TYPE_P (type) && !DECIMAL_FLOAT_TYPE_P (type);
   }
   virtual tree type () const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
