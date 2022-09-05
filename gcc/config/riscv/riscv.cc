@@ -5277,14 +5277,10 @@ riscv_option_override (void)
   /* The presence of the M extension implies that division instructions
      are present, so include them unless explicitly disabled.  */
   if (TARGET_MUL && (target_flags_explicit & MASK_DIV) == 0)
-    if(!TARGET_ZMMUL)
-      target_flags |= MASK_DIV;
+    target_flags |= MASK_DIV;
   else if (!TARGET_MUL && TARGET_DIV)
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
-  
-  if(TARGET_ZMMUL && !TARGET_MUL && TARGET_DIV)
-    warning (0, "%<-mdiv%> cannot be used when %<ZMMUL%> extension is present");
-  
+
   /* Likewise floating-point division and square root.  */
   if (TARGET_HARD_FLOAT && (target_flags_explicit & MASK_FDIV) == 0)
     target_flags |= MASK_FDIV;

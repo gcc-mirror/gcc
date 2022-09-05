@@ -752,7 +752,7 @@
   [(set (match_operand:DI          0 "register_operand" "=r")
 	(mult:DI (match_operand:DI 1 "register_operand" " r")
 		 (match_operand:DI 2 "register_operand" " r")))]
-  "TARGET_ZMMUL || TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
   "mul\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
