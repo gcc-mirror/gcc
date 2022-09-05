@@ -1,3 +1,16 @@
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/doacross-2.c: Adjust expected diagnostics.
+	* c-c++-common/gomp/doacross-5.c: New test.
+	* c-c++-common/gomp/doacross-6.c: New test.
+	* c-c++-common/gomp/nesting-2.c: Adjust expected diagnostics.
+	* c-c++-common/gomp/ordered-3.c: Likewise.
+	* c-c++-common/gomp/sink-3.c: Likewise.
+	* gfortran.dg/gomp/nesting-2.f90: Likewise.
+
 2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-warning.
