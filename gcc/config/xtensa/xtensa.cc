@@ -2430,7 +2430,7 @@ xtensa_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 /* Return the debugger register number to use for 'regno'.  */
 
 int
-xtensa_dbx_register_number (int regno)
+xtensa_debugger_regno (int regno)
 {
   int first = -1;
 

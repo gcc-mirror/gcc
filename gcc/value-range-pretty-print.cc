@@ -122,22 +122,31 @@ vrange_printer::print_irange_bitmasks (const irange &r) const
 void
 vrange_printer::visit (const frange &r) const
 {
+  tree type = r.type ();
+
   pp_string (pp, "[frange] ");
   if (r.undefined_p ())
     {
       pp_string (pp, "UNDEFINED");
       return;
     }
-  dump_generic_node (pp, r.type (), 0, TDF_NONE, false);
+  dump_generic_node (pp, type, 0, TDF_NONE, false);
   pp_string (pp, " ");
   if (r.varying_p ())
     {
       pp_string (pp, "VARYING");
       return;
     }
+  pp_character (pp, '[');
+  dump_generic_node (pp,
+		     build_real (type, r.lower_bound ()), 0, TDF_NONE, false);
+  pp_string (pp, ", ");
+  dump_generic_node (pp,
+		     build_real (type, r.upper_bound ()), 0, TDF_NONE, false);
+  pp_string (pp, "] ");
+
   print_frange_prop ("NAN", r.get_nan ());
-  print_frange_prop ("INF", r.get_inf ());
-  print_frange_prop ("NINF", r.get_ninf ());
+  print_frange_prop ("SIGN", r.get_signbit ());
 }
 
 // Print the FP properties in an frange.

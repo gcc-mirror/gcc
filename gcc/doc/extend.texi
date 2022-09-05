@@ -2529,7 +2529,6 @@ GCC plugins may provide their own attributes.
 * AVR Function Attributes::
 * Blackfin Function Attributes::
 * BPF Function Attributes::
-* CR16 Function Attributes::
 * C-SKY Function Attributes::
 * Epiphany Function Attributes::
 * H8/300 Function Attributes::
@@ -5083,20 +5082,6 @@ int bpf_probe_read (void *dst, int size, const void *unsafe_ptr)
 @end smallexample
 @end table
 
-@node CR16 Function Attributes
-@subsection CR16 Function Attributes
-
-These function attributes are supported by the CR16 back end:
-
-@table @code
-@item interrupt
-@cindex @code{interrupt} function attribute, CR16
-Use this attribute to indicate
-that the specified function is an interrupt handler.  The compiler generates
-function entry and exit sequences suitable for use in an interrupt handler
-when this attribute is present.
-@end table
-
 @node C-SKY Function Attributes
 @subsection C-SKY Function Attributes
 
@@ -7309,6 +7294,7 @@ attributes.
 * Blackfin Variable Attributes::
 * H8/300 Variable Attributes::
 * IA-64 Variable Attributes::
+* LoongArch Variable Attributes::
 * M32R/D Variable Attributes::
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
@@ -8091,6 +8077,22 @@ instruction).  Caveat: such addressing is by definition not position
 independent and hence this attribute must not be used for objects
 defined by shared libraries.
 
+@end table
+
+@node LoongArch Variable Attributes
+@subsection LoongArch Variable Attributes
+
+One attribute is currently defined for the LoongArch.
+
+@table @code
+@item model("@var{name}")
+@cindex @code{model} variable attribute, LoongArch
+Use this attribute on the LoongArch to use a different code model for
+addressing this variable, than the code model specified by the global
+@option{-mcmodel} option.  This attribute is mostly useful if a
+@code{section} attribute and/or a linker script will locate this object
+specially.  Currently the only supported values of @var{name} are
+@code{normal} and @code{extreme}.
 @end table
 
 @node M32R/D Variable Attributes
@@ -12996,6 +12998,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_isless
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
+@findex __builtin_issignaling
 @findex __builtin_isunordered
 @findex __builtin_object_size
 @findex __builtin_powi
@@ -13551,6 +13554,8 @@ In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
 @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
+With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
+built-in functions will always return 0.
 
 GCC provides built-in versions of the ISO C99 floating-point rounding and
 exceptions handling functions @code{fegetround}, @code{feclearexcept} and
@@ -14482,6 +14487,20 @@ Similar to @code{__builtin_nans}, except the return type is
 @deftypefn {Built-in Function} _Float@var{n}x __builtin_nansf@var{n}x (const char *str)
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}x}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_issignaling (...)
+Return non-zero if the argument is a signaling NaN and zero otherwise.
+Note while the parameter list is an
+ellipsis, this function only accepts exactly one floating-point
+argument.  GCC treats this parameter as type-generic, which means it
+does not do default promotion from float to double.
+This built-in function can work even without the non-default
+@code{-fsignaling-nans} option, although if a signaling NaN is computed,
+stored or passed as argument to some function other than this built-in
+in the current translation unit, it is safer to use @code{-fsignaling-nans}.
+With @code{-ffinite-math-only} option this built-in function will always
+return 0.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_ffs (int x)

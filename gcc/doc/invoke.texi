@@ -16,7 +16,6 @@ gcc [@option{-c}|@option{-S}|@option{-E}] [@option{-std=}@var{standard}]
 
 Only the most useful options are listed here; see below for the
 remainder.  @command{g++} accepts mostly the same options as @command{gcc}.
-
 For instructions on reporting bugs, see
 $$BUGURL$$.
 
@@ -227,7 +226,7 @@ in the following sections.
 -Wreorder  -Wregister @gol
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
--Woverloaded-virtual  -Wno-pmf-conversions -Wsign-promo @gol
+-Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo @gol
 -Wsized-deallocation  -Wsuggest-final-methods @gol
 -Wsuggest-final-types  -Wsuggest-override  @gol
 -Wno-terminate  -Wuseless-cast  -Wno-vexing-parse  @gol
@@ -328,9 +327,9 @@ Objective-C and Objective-C++ Dialects}.
 -Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
--Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
--Wlogical-not-parentheses  -Wlogical-op  -Wlong-long @gol
--Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
+-Winvalid-pch  -Winvalid-utf8 -Wjump-misses-init  @gol
+-Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op  @gol
+-Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
 -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-format-attribute @gol
@@ -377,6 +376,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wvector-operation-performance @gol
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than @gol
 -Wvolatile-register-var  -Wwrite-strings @gol
+-Wxor-used-as-pow @gol
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
@@ -459,7 +459,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
 -gbtf -gctf  -gctf@var{level} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
--gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-gstrict-dwarf  -gno-strict-dwarf @gol
 -gas-loc-support  -gno-as-loc-support @gol
 -gas-locview-support  -gno-as-locview-support @gol
 -gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64 @gol
@@ -467,7 +467,7 @@ Objective-C and Objective-C++ Dialects}.
 -gvariable-location-views  -gno-variable-location-views @gol
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
 -ginline-points  -gno-inline-points @gol
--gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
+-gvms -gz@r{[}=@var{type}@r{]} @gol
 -gsplit-dwarf  -gdescribe-dies  -gno-describe-dies @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
@@ -841,12 +841,6 @@ Objective-C and Objective-C++ Dialects}.
 -m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue @gol
 -melf  -maout  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
-
-@emph{CR16 Options}
-@gccoptlist{-mmac @gol
--mcr16cplus  -mcr16c @gol
--msim  -mint32  -mbit-ops
--mdata-model=@var{model}}
 
 @emph{C-SKY Options}
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
@@ -5807,6 +5801,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreorder   @gol
 -Wrestrict   @gol
 -Wreturn-type  @gol
+-Wself-move @r{(only for C++)}  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
 -Wsizeof-array-div @gol
@@ -6787,6 +6782,26 @@ of a declaration:
   // Declares a local variable called mymutex.
   std::unique_lock<std::mutex> (mymutex);
   // User meant std::unique_lock<std::mutex> lock (mymutex);
+@}
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
+
+@item -Wno-self-move @r{(C++ and Objective-C++ only)}
+@opindex Wself-move
+@opindex Wno-self-move
+This warning warns when a value is moved to itself with @code{std::move}.
+Such a @code{std::move} typically has no effect.
+
+@smallexample
+struct T @{
+@dots{}
+@};
+void fn()
+@{
+  T t;
+  @dots{}
+  t = std::move (t);
 @}
 @end smallexample
 
@@ -9517,6 +9532,13 @@ different size.
 Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
 the search path but cannot be used.
 
+@item -Winvalid-utf8
+@opindex Winvalid-utf8
+@opindex Wno-invalid-utf8
+Warn if an invalid UTF-8 character is found.
+This warning is on by default for C++23 if @option{-finput-charset=UTF-8}
+is used and turned into error with @option{-pedantic-errors}.
+
 @item -Wlong-long
 @opindex Wlong-long
 @opindex Wno-long-long
@@ -9626,6 +9648,20 @@ Warn if a register variable is declared volatile.  The volatile
 modifier does not inhibit all optimizations that may eliminate reads
 and/or writes to register variables.  This warning is enabled by
 @option{-Wall}.
+
+@item -Wxor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wxor-used-as-pow
+@opindex Wno-xor-used-as-pow
+Warn about uses of @code{^}, the exclusive or operator, where it appears
+the user meant exponentiation.  Specifically, the warning occurs when the
+left-hand side is the decimal constant 2 or 10 and the right-hand side
+is also a decimal constant.
+
+In C and C++, @code{^} means exclusive or, whereas in some other languages
+(e.g. TeX and some versions of BASIC) it means exponentiation.
+
+This warning is enabled by default.  It can be silenced by converting one
+of the operands to hexadecimal.
 
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization
@@ -10648,10 +10684,8 @@ information.
 On most systems that use stabs format, @option{-g} enables use of extra
 debugging information that only GDB can use; this extra information
 makes debugging work better in GDB but probably makes other debuggers
-crash or
-refuse to read the program.  If you want to control for certain whether
-to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
-@option{-gxcoff+}, @option{-gxcoff}, or @option{-gvms} (see below).
+crash or refuse to read the program.  If you want to control for certain whether
+to generate the extra information, use @option{-gvms} (see below).
 
 @item -ggdb
 @opindex ggdb
@@ -10708,34 +10742,6 @@ information, but does not include type information.
 Level 2 produces type information for entities (functions, data objects etc.)
 at file-scope or global-scope only.
 
-@item -gstabs
-@opindex gstabs
-Produce debugging information in stabs format (if that is supported),
-without GDB extensions.  This is the format used by DBX on most BSD
-systems.  On MIPS, Alpha and System V Release 4 systems this option
-produces stabs debugging output that is not understood by DBX@.
-On System V Release 4 systems this option requires the GNU assembler.
-
-@item -gstabs+
-@opindex gstabs+
-Produce debugging information in stabs format (if that is supported),
-using GNU extensions understood only by the GNU debugger (GDB)@.  The
-use of these extensions is likely to make other debuggers crash or
-refuse to read the program.
-
-@item -gxcoff
-@opindex gxcoff
-Produce debugging information in XCOFF format (if that is supported).
-This is the format used by the DBX debugger on IBM RS/6000 systems.
-
-@item -gxcoff+
-@opindex gxcoff+
-Produce debugging information in XCOFF format (if that is supported),
-using GNU extensions understood only by the GNU debugger (GDB)@.  The
-use of these extensions is likely to make other debuggers crash or
-refuse to read the program, and may cause assemblers other than the GNU
-assembler (GAS) to fail with an error.
-
 @item -gvms
 @opindex gvms
 Produce debugging information in Alpha/VMS debug format (if that is
@@ -10743,8 +10749,6 @@ supported).  This is the format used by DEBUG on Alpha/VMS systems.
 
 @item -g@var{level}
 @itemx -ggdb@var{level}
-@itemx -gstabs@var{level}
-@itemx -gxcoff@var{level}
 @itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
 much information.  The default level is 2.
@@ -11819,7 +11823,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
+defaults to off.  On AVR and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.
@@ -14566,6 +14570,10 @@ Complex expressions slow the analyzer.
 @item max-tree-if-conversion-phi-args
 Maximum number of arguments in a PHI supported by TREE if conversion
 unless the loop is marked with simd pragma.
+
+@item vect-max-layout-candidates
+The maximum number of possible vector layouts (such as permutations)
+to consider when optimizing to-be-vectorized code.
 
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
@@ -19366,7 +19374,6 @@ platform.
 * Blackfin Options::
 * C6X Options::
 * CRIS Options::
-* CR16 Options::
 * C-SKY Options::
 * Darwin Options::
 * DEC Alpha Options::
@@ -22941,46 +22948,6 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
-@end table
-
-@node CR16 Options
-@subsection CR16 Options
-@cindex CR16 Options
-
-These options are defined specifically for the CR16 ports.
-
-@table @gcctabopt
-
-@item -mmac
-@opindex mmac
-Enable the use of multiply-accumulate instructions. Disabled by default.
-
-@item -mcr16cplus
-@itemx -mcr16c
-@opindex mcr16cplus
-@opindex mcr16c
-Generate code for CR16C or CR16C+ architecture. CR16C+ architecture 
-is default.
-
-@item -msim
-@opindex msim
-Links the library libsim.a which is in compatible with simulator. Applicable
-to ELF compiler only.
-
-@item -mint32
-@opindex mint32
-Choose integer type as 32-bit wide.
-
-@item -mbit-ops
-@opindex mbit-ops
-Generates @code{sbit}/@code{cbit} instructions for bit manipulations.
-
-@item -mdata-model=@var{model}
-@opindex mdata-model
-Choose a data model. The choices for @var{model} are @samp{near},
-@samp{far} or @samp{medium}. @samp{medium} is default.
-However, @samp{far} is not valid with @option{-mcr16c}, as the
-CR16C architecture does not support the far data model.
 @end table
 
 @node C-SKY Options

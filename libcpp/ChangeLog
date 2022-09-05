@@ -1,3 +1,72 @@
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* include/cpplib.h (BOL): Move macro to 1 << 12 since it is
+	not used by C/C++'s unsigned char token flags.
+	(DECIMAL_INT): New, using 1 << 6, so that it is visible as
+	part of C/C++'s 8 bits of token flags.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* include/cpplib.h (struct cpp_options): Implement C++23
+	P2295R6 - Support for UTF-8 as a portable source file encoding.
+	Add cpp_warn_invalid_utf8 and cpp_input_charset_explicit fields.
+	(enum cpp_warning_reason): Add CPP_W_INVALID_UTF8 enumerator.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_invalid_utf8
+	and cpp_input_charset_explicit.
+	* charset.cc (_cpp_valid_utf8): Adjust function comment.
+	* lex.cc (UCS_LIMIT): Define.
+	(utf8_continuation): New const variable.
+	(utf8_signifier): Move earlier in the file.
+	(_cpp_warn_invalid_utf8, _cpp_handle_multibyte_utf8): New functions.
+	(_cpp_skip_block_comment): Handle -Winvalid-utf8 warning.
+	(skip_line_comment): Likewise.
+	(lex_raw_string, lex_string): Likewise.
+	(_cpp_lex_direct): Likewise.
+
+2022-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/106778
+	* makeuname2c.cc (write_nodes): Reverse order of && operands in
+	assert.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106647
+	* charset.cc (wide_str_to_charconst): Implement P2362R3 - Remove
+	non-encodable wide character literals and multicharacter.  For
+	C++23 use CPP_DL_ERROR instead of CPP_DL_WARNING for
+	"character constant too long for its type" diagnostics on CPP_WCHAR
+	literals.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* charset.cc: Implement C++23 P2071R2 - Named universal character
+	escapes.  Include uname2c.h.
+	(hangul_syllables, hangul_count): New variables.
+	(struct uname2c_data): New type.
+	(_cpp_uname2c, _cpp_uname2c_uax44_lm2): New functions.
+	(_cpp_valid_ucn): Use them.  Handle named universal character escapes.
+	(convert_ucn): Adjust comment.
+	(convert_escape): Call convert_ucn even for \N.
+	(_cpp_interpret_identifier): Handle named universal character escapes.
+	* lex.cc (get_bidi_ucn): Fix up function comment formatting.
+	(get_bidi_named): New function.
+	(forms_identifier_p, lex_string): Handle named universal character
+	escapes.
+	* makeuname2c.cc: New file.  Small parts copied from makeucnid.cc.
+	* uname2c.h: New generated file.
+
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106646
+	* init.cc: Implement C++23 P2437R1 - Support for #warning.
+	(lang_defaults): Set warning_directive for GNUCXX23 and CXX23.
+	* directives.cc (directive_diagnostics): Use different wording of
+	#warning pedwarn for C++.
+
 2022-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106645

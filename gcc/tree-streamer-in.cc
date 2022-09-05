@@ -453,6 +453,11 @@ unpack_ts_omp_clause_value_fields (class data_in *data_in,
       OMP_CLAUSE_DEPEND_KIND (expr)
 	= bp_unpack_enum (bp, omp_clause_depend_kind, OMP_CLAUSE_DEPEND_LAST);
       break;
+    case OMP_CLAUSE_DOACROSS:
+      OMP_CLAUSE_DOACROSS_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_doacross_kind,
+			  OMP_CLAUSE_DOACROSS_LAST);
+      break;
     case OMP_CLAUSE_MAP:
       OMP_CLAUSE_SET_MAP_KIND (expr, bp_unpack_enum (bp, gomp_map_kind,
 						     GOMP_MAP_LAST));

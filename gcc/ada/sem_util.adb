@@ -22167,19 +22167,6 @@ package body Sem_Util is
       pragma Assert (No (Actual));
    end Iterate_Call_Parameters;
 
-   ---------------------------
-   -- Itype_Has_Declaration --
-   ---------------------------
-
-   function Itype_Has_Declaration (Id : Entity_Id) return Boolean is
-   begin
-      pragma Assert (Is_Itype (Id));
-      return Present (Parent (Id))
-        and then Nkind (Parent (Id)) in
-                   N_Full_Type_Declaration | N_Subtype_Declaration
-        and then Defining_Entity (Parent (Id)) = Id;
-   end Itype_Has_Declaration;
-
    -------------------------
    -- Kill_Current_Values --
    -------------------------
@@ -29498,6 +29485,9 @@ package body Sem_Util is
                Traverse_More (Actions (Node),           Result);
 
             when N_Iterated_Component_Association =>
+               Traverse_More (Loop_Actions (Node),      Result);
+
+            when N_Iterated_Element_Association =>
                Traverse_More (Loop_Actions (Node),      Result);
 
             when N_Iteration_Scheme =>

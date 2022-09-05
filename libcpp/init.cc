@@ -123,8 +123,8 @@ static const struct lang_flags lang_defaults[] =
   /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0,   0,   0,      0,      0 },
   /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0,      0,      0 },
   /* CXX20    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0,      0,      0 },
-  /* GNUCXX23 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      0,      1 },
-  /* CXX23    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      0,      1 },
+  /* GNUCXX23 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1 },
+  /* CXX23    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1 },
   /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0,   0,   0,      0,      0 }
 };
 
@@ -227,6 +227,8 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, ext_numeric_literals) = 1;
   CPP_OPTION (pfile, warn_date_time) = 0;
   CPP_OPTION (pfile, cpp_warn_bidirectional) = bidirectional_unpaired;
+  CPP_OPTION (pfile, cpp_warn_invalid_utf8) = 0;
+  CPP_OPTION (pfile, cpp_input_charset_explicit) = 0;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */

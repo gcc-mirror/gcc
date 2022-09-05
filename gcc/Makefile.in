@@ -1353,7 +1353,6 @@ OBJS = \
 	data-streamer.o \
 	data-streamer-in.o \
 	data-streamer-out.o \
-	dbxout.o \
 	dbgcnt.o \
 	dce.o \
 	ddg.o \
@@ -1727,7 +1726,6 @@ OBJS = \
 	web.o \
 	wide-int.o \
 	wide-int-print.o \
-	xcoffout.o \
 	$(out_object_file) \
 	$(ANALYZER_OBJS) \
 	$(EXTRA_OBJS) \
@@ -2676,7 +2674,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.cc $(srcdir)/symtab.cc \
   $(srcdir)/alias.cc $(srcdir)/bitmap.cc $(srcdir)/cselib.cc $(srcdir)/cgraph.cc \
   $(srcdir)/ipa-prop.cc $(srcdir)/ipa-cp.cc $(srcdir)/ipa-utils.h \
-  $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.cc $(srcdir)/dbxout.cc \
+  $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.cc \
   $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.cc \
   $(srcdir)/ipa-modref-tree.h \
   $(srcdir)/signop.h \
@@ -3166,24 +3164,27 @@ stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(T_STDINT_GCC_H) $(USER_H) fixinc_
 	set -e; for ml in `cat fixinc_list`; do \
 	  sysroot_headers_suffix=`echo $${ml} | sed -e 's/;.*$$//'`; \
 	  multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
-	  fix_dir=include-fixed$${multi_dir}; \
+	  include_dir=include$${multi_dir}; \
 	  if $(LIMITS_H_TEST) ; then \
 	    cat $(srcdir)/limitx.h $(T_GLIMITS_H) $(srcdir)/limity.h > tmp-xlimits.h; \
 	  else \
 	    cat $(T_GLIMITS_H) > tmp-xlimits.h; \
 	  fi; \
-	  $(mkinstalldirs) $${fix_dir}; \
-	  chmod a+rx $${fix_dir} || true; \
+	  $(mkinstalldirs) $${include_dir}; \
+	  chmod a+rx $${include_dir} || true; \
 	  $(SHELL) $(srcdir)/../move-if-change \
 	    tmp-xlimits.h  tmp-limits.h; \
-	  rm -f $${fix_dir}/limits.h; \
-	  cp -p tmp-limits.h $${fix_dir}/limits.h; \
-	  chmod a+r $${fix_dir}/limits.h; \
+	  rm -f $${include_dir}/limits.h; \
+	  cp -p tmp-limits.h $${include_dir}/limits.h; \
+	  chmod a+r $${include_dir}/limits.h; \
+	  cp $(srcdir)/gsyslimits.h $${include_dir}/syslimits.h; \
 	done
 # Install the README
-	rm -f include-fixed/README
-	cp $(srcdir)/../fixincludes/README-fixinc include-fixed/README
-	chmod a+r include-fixed/README
+	if [ x$(STMP_FIXINC) != x ]; then \
+	  rm -f include-fixed/README; \
+	  cp $(srcdir)/../fixincludes/README-fixinc include-fixed/README; \
+	  chmod a+r include-fixed/README; \
+	fi;
 	$(STAMP) $@
 
 .PHONY: install-gcc-tooldir
@@ -3268,13 +3269,6 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	      cd $(build_objdir)/fixincludes && \
 	      $(SHELL) ./fixinc.sh "$${gcc_dir}/$${fix_dir}" \
 	        $(BUILD_SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) ); \
-	    rm -f $${fix_dir}/syslimits.h; \
-	    if [ -f $${fix_dir}/limits.h ]; then \
-	      mv $${fix_dir}/limits.h $${fix_dir}/syslimits.h; \
-	    else \
-	      cp $(srcdir)/gsyslimits.h $${fix_dir}/syslimits.h; \
-	    fi; \
-	    chmod a+r $${fix_dir}/syslimits.h; \
 	  done; \
 	fi
 	$(STAMP) stmp-fixinc
@@ -3992,7 +3986,7 @@ install-mkheaders: stmp-int-hdrs install-itoolsdirs \
 	set -e; for ml in `cat fixinc_list`; do \
 	  multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
 	  $(mkinstalldirs) $(DESTDIR)$(itoolsdatadir)/include$${multi_dir}; \
-	  $(INSTALL_DATA) include-fixed$${multi_dir}/limits.h $(DESTDIR)$(itoolsdatadir)/include$${multi_dir}/limits.h; \
+	  $(INSTALL_DATA) include$${multi_dir}/limits.h $(DESTDIR)$(itoolsdatadir)/include$${multi_dir}/limits.h; \
 	done
 	$(INSTALL_SCRIPT) $(srcdir)/../mkinstalldirs \
 		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \

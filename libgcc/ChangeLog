@@ -1,3 +1,24 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config.host: Remove hppa.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config.host: Remove the port.
+
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* config.host: Remove cr16 related stuff.
+	* config/cr16/crti.S: Removed.
+	* config/cr16/crtlibid.S: Removed.
+	* config/cr16/crtn.S: Removed.
+	* config/cr16/divmodhi3.c: Removed.
+	* config/cr16/lib1funcs.S: Removed.
+	* config/cr16/t-cr16: Removed.
+	* config/cr16/t-crtlibid: Removed.
+	* config/cr16/unwind-cr16.c: Removed.
+	* config/cr16/unwind-dw2.h: Removed.
+
 2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/sfp-machine.h (_FP_NANFRAC_H): New.

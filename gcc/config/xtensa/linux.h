@@ -67,5 +67,5 @@ along with GCC; see the file COPYING3.  If not see
 /* Always enable "-fpic" for Xtensa Linux.  */
 #define XTENSA_ALWAYS_PIC 1
 
-#undef DBX_REGISTER_NUMBER
+#undef DEBUGGER_REGNO
 

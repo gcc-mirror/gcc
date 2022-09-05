@@ -1,3 +1,98 @@
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Handle doacross.
+	(c_parser_omp_clause_depend_sink): Renamed to ...
+	(c_parser_omp_clause_doacross_sink): ... this.  Add depend_p argument.
+	Handle parsing of doacross(sink:omp_cur_iteration-1).  Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS instead
+	of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND flag on it.
+	(c_parser_omp_clause_depend): Use OMP_CLAUSE_DOACROSS_SINK and
+	OMP_CLAUSE_DOACROSS_SOURCE instead of OMP_CLAUSE_DEPEND_SINK and
+	OMP_CLAUSE_DEPEND_SOURCE, build OMP_CLAUSE_DOACROSS for depend(source)
+	and set OMP_CLAUSE_DOACROSS_DEPEND on it.
+	(c_parser_omp_clause_doacross): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	(c_parser_omp_for_loop): Don't diagnose here linear clause together
+	with ordered with argument.
+	(c_parser_omp_simd): Don't diagnose ordered clause with argument on
+	for simd.
+	(OMP_ORDERED_DEPEND_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_ordered): Handle also doacross and adjust for it
+	diagnostic wording.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	Don't handle OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-parser.cc (c_parser_string_literal): Clear ret.m_decimal.
+	(c_parser_expr_no_commas): Likewise.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_binary_expression): Clear m_decimal when popping the
+	stack.
+	(c_parser_unary_expression): Clear ret.m_decimal.
+	(c_parser_has_attribute_expression): Likewise for result.
+	(c_parser_predefined_identifier): Likewise for expr.
+	(c_parser_postfix_expression): Likewise for expr.
+	Set expr.m_decimal when handling a CPP_NUMBER that was a decimal
+	token.
+	* c-tree.h (c_expr::m_decimal): New bitfield.
+	* c-typeck.cc (parser_build_binary_op): Clear result.m_decimal.
+	(parser_build_binary_op): Call check_for_xor_used_as_pow.
+
+2022-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (grokparms): Handle () in a function declaration the
+	same as (void) for C2X.
+
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_label): Pass attributes to do_case.
+	* c-typeck.cc (do_case): Add argument ATTRS.  Pass it to
+	c_add_case_label.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Handle BUILT_IN_ISSIGNALING.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.cc (c_convert) <case POINTER_TYPE>: Handle NULLPTR_TYPE.
+	Give a better diagnostic when converting to nullptr_t.
+	* c-decl.cc (c_init_decl_processing): Perform C-specific nullptr
+	initialization.
+	* c-parser.cc (c_parse_init): Maybe OR D_C2X into mask.
+	(c_parser_postfix_expression): Handle RID_NULLPTR.
+	* c-typeck.cc (null_pointer_constant_p): Return true when expr is
+	nullptr_node.
+	(build_unary_op) <case TRUTH_NOT_EXPR>: Handle NULLPTR_TYPE.
+	(build_conditional_expr): Handle the case when the second/third operand
+	is NULLPTR_TYPE and third/second operand is POINTER_TYPE.
+	(convert_for_assignment): Handle converting an expression of type
+	nullptr_t to pointer/bool.
+	(build_binary_op) <case TRUTH_XOR_EXPR>: Handle NULLPTR_TYPE.
+	<case EQ_EXPR>: Handle comparing operands of type nullptr_t.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (start_decl): Do not diagnose initialization of
+	variable-sized objects here.
+	* c-parser.cc (c_parser_braced_init): Add argument DECL.  All
+	callers changed.
+	(c_parser_initializer): Diagnose initialization of variable-sized
+	objects other than with braced initializer.
+	(c_parser_braced_init): Use pedwarn_c11 for empty initializer
+	braces and update diagnostic text.  Diagnose initialization of
+	variable-sized objects with nonempty braces.
+	* c-typeck.cc (digest_init): Update diagnostic for initialization
+	of variable-sized objects.
+	(really_start_incremental_init, set_designator)
+	(process_init_element): Update comments.
+	(pop_init_level): Allow scalar empty initializers.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

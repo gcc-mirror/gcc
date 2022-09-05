@@ -831,34 +831,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case OMP_CLAUSE_DEPEND_INOUTSET:
 	  name = "inoutset";
 	  break;
-	case OMP_CLAUSE_DEPEND_SOURCE:
-	  pp_string (pp, "source)");
-	  return;
 	case OMP_CLAUSE_DEPEND_LAST:
 	  name = "__internal__";
 	  break;
-	case OMP_CLAUSE_DEPEND_SINK:
-	  pp_string (pp, "sink:");
-	  for (tree t = OMP_CLAUSE_DECL (clause); t; t = TREE_CHAIN (t))
-	    if (TREE_CODE (t) == TREE_LIST)
-	      {
-		dump_generic_node (pp, TREE_VALUE (t), spc, flags, false);
-		if (TREE_PURPOSE (t) != integer_zero_node)
-		  {
-		    if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (t))
-		      pp_minus (pp);
-		    else
-		      pp_plus (pp);
-		    dump_generic_node (pp, TREE_PURPOSE (t), spc, flags,
-				       false);
-		  }
-		if (TREE_CHAIN (t))
-		  pp_comma (pp);
-	      }
-	    else
-	      gcc_unreachable ();
-	  pp_right_paren (pp);
-	  return;
 	default:
 	  gcc_unreachable ();
 	}
@@ -883,6 +858,49 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	  dump_generic_node (pp, t, spc, flags, false);
 	pp_right_paren (pp);
       }
+      break;
+
+    case OMP_CLAUSE_DOACROSS:
+      pp_string (pp, OMP_CLAUSE_DOACROSS_DEPEND (clause)
+		     ? "depend(" : "doacross(");
+      switch (OMP_CLAUSE_DOACROSS_KIND (clause))
+	{
+	case OMP_CLAUSE_DOACROSS_SOURCE:
+	  if (OMP_CLAUSE_DOACROSS_DEPEND (clause))
+	    pp_string (pp, "source)");
+	  else
+	    pp_string (pp, "source:)");
+	  break;
+	case OMP_CLAUSE_DOACROSS_SINK:
+	  pp_string (pp, "sink:");
+	  if (OMP_CLAUSE_DECL (clause) == NULL_TREE)
+	    {
+	      pp_string (pp, "omp_cur_iteration-1)");
+	      break;
+	    }
+	  for (tree t = OMP_CLAUSE_DECL (clause); t; t = TREE_CHAIN (t))
+	    if (TREE_CODE (t) == TREE_LIST)
+	      {
+		dump_generic_node (pp, TREE_VALUE (t), spc, flags, false);
+		if (TREE_PURPOSE (t) != integer_zero_node)
+		  {
+		    if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (t))
+		      pp_minus (pp);
+		    else
+		      pp_plus (pp);
+		    dump_generic_node (pp, TREE_PURPOSE (t), spc, flags,
+				       false);
+		  }
+		if (TREE_CHAIN (t))
+		  pp_comma (pp);
+	      }
+	    else
+	      gcc_unreachable ();
+	  pp_right_paren (pp);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       break;
 
     case OMP_CLAUSE_MAP:

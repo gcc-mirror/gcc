@@ -107,6 +107,8 @@ REAL_VALUE_TYPE dconst1;
 REAL_VALUE_TYPE dconst2;
 REAL_VALUE_TYPE dconstm1;
 REAL_VALUE_TYPE dconsthalf;
+REAL_VALUE_TYPE dconstinf;
+REAL_VALUE_TYPE dconstninf;
 
 /* Record fixed-point constant 0 and 1.  */
 FIXED_VALUE_TYPE fconst0[MAX_FCONST0];
@@ -6209,6 +6211,9 @@ init_emit_once (void)
 
   dconsthalf = dconst1;
   SET_REAL_EXP (&dconsthalf, REAL_EXP (&dconsthalf) - 1);
+
+  real_inf (&dconstinf);
+  real_inf (&dconstninf, true);
 
   for (i = 0; i < 3; i++)
     {

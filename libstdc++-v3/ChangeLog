@@ -1,3 +1,417 @@
+2022-09-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/tuple (tuple::_UseOtherCtor): Use ::type when
+	deriving from __and_, __or_ or __not_.
+	* include/std/type_traits (negation): Likewise.
+	(is_unsigned): Likewise.
+	(__is_implicitly_default_constructible): Likewise.
+	(is_trivially_destructible): Likewise.
+	(__is_nt_invocable_impl): Likewise.
+
+2022-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_constructible_v)
+	(is_default_constructible_v, is_copy_constructible_v)
+	(is_move_constructible_v): Define using __is_constructible.
+	(is_assignable_v, is_copy_assignable_v, is_move_assignable_v):
+	Define using __is_assignable.
+	(is_trivially_constructible_v)
+	(is_trivially_default_constructible_v)
+	(is_trivially_copy_constructible_v)
+	(is_trivially_move_constructible_v): Define using
+	__is_trivially_constructible.
+	(is_trivially_assignable_v, is_trivially_copy_assignable_v)
+	(is_trivially_move_assignable_v): Define using
+	__is_trivially_assignable.
+	(is_nothrow_constructible_v)
+	(is_nothrow_default_constructible_v)
+	(is_nothrow_copy_constructible_v)
+	(is_nothrow_move_constructible_v): Define using
+	__is_nothrow_constructible.
+	(is_nothrow_assignable_v, is_nothrow_copy_assignable_v)
+	(is_nothrow_move_assignable_v): Define using
+	__is_nothrow_assignable.
+
+2022-09-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (__or_, __and_, __not_): Redefine as a
+	class template instead of as an alias template.
+	* testsuite/20_util/logical_traits/requirements/short_circuit.cc:
+	Add more tests for conjunction and disjunction.  Add corresponding
+	tests for __and_ and __or_.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (adjacent_transform_view::_Iterator): Add
+	typename keyword before dependent qualified-id.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_referenceable): Remove.
+	(__add_lvalue_reference_helper, __add_rvalue_reference_helper):
+	Use __void_t instead of __is_referenceable.
+	(__add_pointer_helper): Likewise.
+	(add_pointer): Add partial specializations for reference types.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_constructible_impl): Replace
+	class template with alias template.
+	(is_default_constructible, is_nothrow_constructible)
+	(is_nothrow_constructible): Simplify base-specifier.
+	(__is_copy_constructible_impl, __is_move_constructible_impl)
+	(__is_nothrow_copy_constructible_impl)
+	(__is_nothrow_move_constructible_impl): Remove class templates.
+	(is_copy_constructible, is_move_constructible)
+	(is_nothrow_constructible, is_nothrow_default_constructible)
+	(is_nothrow_copy_constructible, is_nothrow_move_constructible):
+	Adjust base-specifiers to use __is_constructible_impl.
+	(__is_copy_assignable_impl, __is_move_assignable_impl)
+	(__is_nt_copy_assignable_impl, __is_nt_move_assignable_impl):
+	Remove class templates.
+	(__is_assignable_impl): New alias template.
+	(is_assignable, is_copy_assignable, is_move_assignable):
+	Adjust base-specifiers to use new alias template.
+	(is_nothrow_copy_assignable, is_nothrow_move_assignable):
+	Adjust base-specifiers to use existing alias template.
+	(__is_trivially_constructible_impl): New alias template.
+	(is_trivially_constructible, is_trivially_default_constructible)
+	(is_trivially_copy_constructible)
+	(is_trivially_move_constructible): Adjust base-specifiers to use
+	new alias template.
+	(__is_trivially_assignable_impl): New alias template.
+	(is_trivially_assignable, is_trivially_copy_assignable)
+	(is_trivially_move_assignable): Adjust base-specifier to use
+	new alias template.
+	(__add_lval_ref_t, __add_rval_ref_t): New alias templates.
+	(add_lvalue_reference, add_rvalue_reference): Use new alias
+	templates.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__decay_selector): Add partial
+	specializations for array types. Only check for function types
+	when not dealing with an array.
+	(decay): Add partial specializations for reference types.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_lvalue_reference_v)
+	(is_rvalue_reference_v, is_reference_v, is_const_v)
+	(is_volatile_v): Define using partial specializations instead
+	of instantiating class templates.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_enum_v, is_class_v, is_union_v)
+	(is_empty_v, is_polymoprhic_v, is_abstract_v, is_final_v)
+	(is_base_of_v, is_aggregate_v): Use built-in directly instead of
+	instantiating class template.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_scoped_enum): Remove workaround.
+
+2022-09-01  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__unarize): Define.
+	(adjacent_view::_Iterator): Befriend adjacent_transform_view.
+	(adjacent_transform_view): Define.
+	(adjacent_transform_view::_Iterator): Define.
+	(adjacent_transform_view::_Sentinel): Define.
+	(views::__detail::__can_adjacent_transform_view): Define.
+	(views::_AdjacentTransform): Define.
+	(views::adjacent_transform): Define.
+	(views::pairwise_transform): Define.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc: New test.
+
+2022-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_array_known_bounds): Add partial
+	specialization instead of using std::extent.
+	(__is_array_unknown_bounds): Likewise.
+	(extent): Add partial specializations to stop recursion after
+	the result is found.
+	(is_array_v): Add partial specializations instead of
+	instantiating the class template.
+	(rank_v, extent_v): Likewise.
+	(is_bounded_array_v, is_unbounded_array_v): Likewise.
+	(is_bounded_array, is_unbounded_array): Define in terms of the
+	variable templates.
+
+2022-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__advance_fn::operator()): Add
+	parentheses in assert condition to avoid -Wparentheses warning.
+	* include/std/ranges: (take_view::take_view): Uglify 'base'.
+	(take_while_view::take_while_view): Likewise.
+	(elements_view::elements_view): Likewise.
+	(views::_Zip::operator()): Adjust position of [[nodiscard]] for
+	compatibility with -fconcepts-ts.
+	(zip_transform_view::_Sentinel): Uglify 'OtherConst'.
+	(views::_ZipTransform::operator()): Adjust position of
+	[[nodiscard]] for compatibilty with -fconcepts-ts.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* crossconfig.m4: Remove deprecated ports.
+
+2022-08-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h: Use nullptr rather than '0' in checks in post-C++11.
+	* include/debug/string: Likewise.
+	* testsuite/21_strings/basic_string/operations/ends_with/char.cc: Use __gnu_test::string.
+	* testsuite/21_strings/basic_string/operations/ends_with/nonnull.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/ends_with/wchar_t.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/wchar_t.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/nonnull.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/char.cc: Likewise..
+
+2022-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (adjacent_view): Define.
+	(enable_borrowed_range<adjacent_view>): Define.
+	(__detail::__repeated_tuple): Define.
+	(adjacent_view::_Iterator): Define.
+	(adjacent_view::_Sentinel): Define.
+	(views::__detail::__can_adjacent_view): Define.
+	(views::_Adjacent): Define.
+	(views::adjacent): Define.
+	(views::pairwise): Define.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc: New test.
+
+2022-08-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_state): Declare.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_create_state): Declare.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_full_callback): Define.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_error_callback): Define.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_full_func): Define.
+	[_GLIBCXX_HAVE_STACKTRACE](__glibcxx_backtrace_full): Declare.
+	[_GLIBCXX_HAVE_STACKTRACE](_Error_formatter::_M_backtrace_state): New.
+	[_GLIBCXX_HAVE_STACKTRACE](_Error_formatter::_M_backtrace_full): New.
+	* src/c++11/debug.cc [_GLIBCXX_HAVE_STACKTRACE](print_backtrace): New.
+	(_Error_formatter::_M_error()): Adapt.
+	* src/libbacktrace/Makefile.am: Add backtrace.c.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* src/libbacktrace/backtrace-rename.h (backtrace_full): New.
+	* testsuite/23_containers/vector/debug/assign4_backtrace_neg.cc: New test.
+	* doc/xml/manual/debug_mode.xml: Document _GLIBCXX_DEBUG_BACKTRACE.
+	* doc/xml/manual/using.xml: Likewise.
+
+2022-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/logical_traits/requirements/short_circuit.cc: New test.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h (reference_wrapper::operator()): Add
+	noexcept-specifier and use __invoke_result instead of result_of.
+	* testsuite/20_util/reference_wrapper/invoke-noexcept.cc: New test.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: Improve
+	comments.
+	* testsuite/20_util/reference_wrapper/invoke-3.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/invoke.cc: Likewise.
+
+2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string): Add nodiscard
+	attribute to all relevant functions.
+	* include/std/string_view (basic_string_view): Likewise.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Cast unused
+	results to void.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/self_move.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/char/21674.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/lwg2758.cc: Likewise.
+	* testsuite/21_strings/basic_string/lwg2946.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/contains/nonnull.cc:
+	Add -Wno-unused-result to options.
+	* testsuite/21_strings/basic_string/operations/ends_with/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/starts_with/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operators/char/1.cc: Cast
+	unused results to void.
+	* testsuite/21_strings/basic_string/operators/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/capacity/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/contains/nonnull.cc:
+	Likewise.
+	Add -Wno-unused-result to options.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/nonnull.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/1.cc: Cast
+	unused results to void.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc:
+	Likewise.
+
+2022-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/logical_traits/requirements/base_classes.cc: New test.
+
+2022-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (zip_view::_Iterator::operator<): Remove
+	as per LWG 3692.
+	(zip_view::_Iterator::operator>): Likewise.
+	(zip_view::_Iterator::operator<=): Likewise.
+	(zip_view::_Iterator::operator>=): Likewise.
+	(zip_view::_Iterator::operator<=>): Remove three_way_comparable
+	constraint as per LWG 3692.
+	(zip_transform_view::_Iterator): Ditto as per LWG 3702.
+
+2022-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (zip_view::_Iterator): Befriend
+	zip_transform_view.
+	(__detail::__range_iter_cat): Define.
+	(zip_transform_view): Define.
+	(zip_transform_view::_Iterator): Define.
+	(zip_transform_view::_Sentinel): Define.
+	(views::__detail::__can_zip_transform_view): Define.
+	(views::_ZipTransform): Define.
+	(views::zip_transform): Define.
+	* testsuite/std/ranges/zip_transform/1.cc: New test.
+
+2022-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (enable_if, __enable_if_t): Define them
+	earlier.
+	(__detail::__first_t): Define.
+	(__detail::__or_fn, __detail::__and_fn): Declare.
+	(__or_, __and_): Redefine as alias templates in terms of __or_fn
+	and __and_fn.
+	(__not_): Redefine as an alias template.
+	(__detail::__disjunction_impl, __detail::__conjunction_impl):
+	Define.
+	(conjuction, disjunction): Redefine in terms of __disjunction_impl
+	and __conjunction_impl.
+
+2022-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error (error_code::_Check): New alias
+	template for constructor SFINAE constraint.
+	(error_code::error_code(ErrorCodeEnum)): Use it.
+	(error_code::operator=(ErrorCodeEnum)): Remove.
+	(error_condition::_Check): New alias template for constraint.
+	(error_condition::error_condition(ErrorConditionEnum)): Use it.
+	(error_condition::operator=(ErrorConditionEnum)): Remove.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Check
+	constructor taking user-defined error enum.
+	* testsuite/19_diagnostics/error_condition/cons/1.cc: Likewise.
+
+2022-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (starts_with, ends_with, contains):
+	Add nonnull attribute.
+	* include/bits/cow_string.h (starts_with, ends_with, contains):
+	Likewise.
+	* include/std/string_view (starts_with, ends_with, contains):
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/contains/nonnull.cc
+	* testsuite/21_strings/basic_string/operations/ends_with/nonnull.cc
+	* testsuite/21_strings/basic_string/operations/starts_with/nonnull.cc
+	* testsuite/21_strings/basic_string_view/operations/contains/nonnull.cc
+	* testsuite/21_strings/basic_string_view/operations/ends_with/nonnull.cc
+	* testsuite/21_strings/basic_string_view/operations/starts_with/nonnull.cc
+
+2022-08-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (lazy_split_view::_OuterIter::_M_current):
+	Remove redundant comment.
+	(lazy_split_view::_M_current): Likewise.
+	(common_view::common_view): Remove commented out view-converting
+	constructor as per LWG3405.
+	(elements_view::_Iterator::_Iterator): Uglify 'current' and 'i'.
+
+2022-08-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__min_fn, min): Move to ...
+	* include/bits/ranges_util.h: ... here, in order to avoid
+	including all of ranges_algo.h from <ranges>.
+	* include/std/ranges (__detail::__zip_is_common): Define for
+	C++23 as per P2321R2.
+	(__detail::__tuple_or_pair): Likewise.
+	(__detail::__tuple_or_pair_t): Likewise.
+	(__detail::__tuple_transform): Likewise.
+	(__detail::__tuple_for_each): Likewise.
+	(zip_view): Likewise.
+	(enable_borrowed_range<zip_view>): Likewise.
+	(__detail::__all_random_access): Likewise.
+	(__detail::__all_bidirectional): Likewise.
+	(__detail::__all_forward): Likewise.
+	(__detail::__zip_view_iter_cat): Likewise.
+	(zip_view::_Iterator): Likewise.
+	(zip_view::_Sentinel): Likewise.
+	* testsuite/std/ranges/zip/1.cc: New test.
+
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2022-08-24  Will Hawkins  <whh8b@obs.cr>
+
+	* include/bits/basic_string.h (operator+(const string&, const char*)):
+	Remove naive implementation.
+	* include/bits/basic_string.tcc (operator+(const string&, const char*)):
+	Add single-allocation implementation.
+
+2022-08-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_pair.h (pair::swap const): Add non-standard
+	is_swappable_v constraints.
+	* include/std/tuple (tuple::swap const): Likewise.
+	* testsuite/20_util/tuple/cons/noexcept_specs.cc: Correct some
+	asserts in C++23 mode.
+
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (__stable_sort): Cast size to
+	iterator's difference type.
+	* testsuite/25_algorithms/stable_sort/4.cc: New test.
+
+2022-08-24  Will Hawkins  <whh8b@obs.cr>
+
+	* include/bits/basic_string.h (operator+(const string&, const char*)):
+	Remove naive implementation.
+	* include/bits/basic_string.tcc (operator+(const string&, const char*)):
+	Add single-allocation implementation.
+
+2022-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration_cast/rounding.cc: Check abs with
+	non-reduced duration.
+
 2022-08-23  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/stl_bvector.h (_Bit_reference::operator=): Define

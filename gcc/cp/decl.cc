@@ -4793,16 +4793,10 @@ cxx_init_decl_processing (void)
 	  }
       }
 
-    nullptr_type_node = make_node (NULLPTR_TYPE);
-    TYPE_SIZE (nullptr_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
-    TYPE_SIZE_UNIT (nullptr_type_node) = size_int (GET_MODE_SIZE (ptr_mode));
-    TYPE_UNSIGNED (nullptr_type_node) = 1;
-    TYPE_PRECISION (nullptr_type_node) = GET_MODE_BITSIZE (ptr_mode);
+    /* C++-specific nullptr initialization.  */
     if (abi_version_at_least (9))
       SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
-    SET_TYPE_MODE (nullptr_type_node, ptr_mode);
     record_builtin_type (RID_MAX, "decltype(nullptr)", nullptr_type_node);
-    nullptr_node = build_int_cst (nullptr_type_node, 0);
   }
 
   if (! supports_one_only ())
@@ -13480,7 +13474,7 @@ grokdeclarator (const cp_declarator *declarator,
       /* [dcl.meaning]/1: The optional attribute-specifier-seq following
 	 a declarator-id appertains to the entity that is declared.  */
       if (declarator->std_attributes != error_mark_node)
-	*attrlist = attr_chainon (*attrlist, declarator->std_attributes);
+	*attrlist = attr_chainon (declarator->std_attributes, *attrlist);
       else
 	/* We should have already diagnosed the issue (c++/78344).  */
 	gcc_assert (seen_error ());

@@ -375,6 +375,8 @@ enum c_tree_index
     CTI_DEFAULT_FUNCTION_TYPE,
 
     CTI_NULL,
+    CTI_NULLPTR,
+    CTI_NULLPTR_TYPE,
 
     /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
@@ -409,7 +411,7 @@ struct c_common_resword
 {
   const char *const word;
   ENUM_BITFIELD(rid) const rid : 16;
-  const unsigned int disable   : 16;
+  const unsigned int disable   : 32;
 };
 
 /* Mode used to build pointers (VOIDmode means ptr_mode).  */
@@ -447,19 +449,20 @@ extern machine_mode c_default_pointer_mode;
 #define D_CONLY		0x0001	/* C only (not in C++).  */
 #define D_CXXONLY	0x0002	/* C++ only (not in C).  */
 #define D_C99		0x0004	/* In C, C99 only.  */
-#define D_CXX11         0x0008	/* In C++, C++11 only.  */
-#define D_EXT		0x0010	/* GCC extension.  */
-#define D_EXT89		0x0020	/* GCC extension incorporated in C99.  */
-#define D_ASM		0x0040	/* Disabled by -fno-asm.  */
-#define D_OBJC		0x0080	/* In Objective C and neither C nor C++.  */
-#define D_CXX_OBJC	0x0100	/* In Objective C, and C++, but not C.  */
-#define D_CXXWARN	0x0200	/* In C warn with -Wcxx-compat.  */
-#define D_CXX_CONCEPTS  0x0400	/* In C++, only with concepts.  */
-#define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
-#define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
-#define D_CXX20		0x2000  /* In C++, C++20 only.  */
-#define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
-#define D_CXX_MODULES	0x8000  /* In C++, only with modules.  */
+#define D_C2X		0x0008	/* In C, C2X only.  */
+#define D_CXX11         0x0010	/* In C++, C++11 only.  */
+#define D_EXT		0x0020	/* GCC extension.  */
+#define D_EXT89		0x0040	/* GCC extension incorporated in C99.  */
+#define D_ASM		0x0080	/* Disabled by -fno-asm.  */
+#define D_OBJC		0x0100	/* In Objective C and neither C nor C++.  */
+#define D_CXX_OBJC	0x0200	/* In Objective C, and C++, but not C.  */
+#define D_CXXWARN	0x0400	/* In C warn with -Wcxx-compat.  */
+#define D_CXX_CONCEPTS  0x0800	/* In C++, only with concepts.  */
+#define D_TRANSMEM	0x1000	/* C++ transactional memory TS.  */
+#define D_CXX_CHAR8_T	0x2000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x4000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x8000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x10000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
@@ -534,6 +537,9 @@ extern const unsigned int num_c_common_reswords;
 
 /* The node for C++ `__null'.  */
 #define null_node                       c_global_trees[CTI_NULL]
+/* The nodes for `nullptr'.  */
+#define nullptr_node                    c_global_trees[CTI_NULLPTR]
+#define nullptr_type_node               c_global_trees[CTI_NULLPTR_TYPE]
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
@@ -1009,7 +1015,10 @@ extern void c_parse_final_cleanups (void);
 #define DECL_UNNAMED_BIT_FIELD(NODE) \
   (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
 
-extern tree do_case (location_t, tree, tree);
+/* True iff TYPE is cv decltype(nullptr).  */
+#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
+
+extern tree do_case (location_t, tree, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
 
@@ -1037,7 +1046,8 @@ extern tree boolean_increment (enum tree_code, tree);
 
 extern int case_compare (splay_tree_key, splay_tree_key);
 
-extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree);
+extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree,
+			      tree = NULL_TREE);
 extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 extern bool c_block_may_fallthru (const_tree);
 
@@ -1474,6 +1484,10 @@ extern bool diagnose_mismatched_attributes (tree, tree);
 extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
 extern void warn_for_multistatement_macros (location_t, location_t,
 					    location_t, enum rid);
+
+extern void check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
+				       location_t operator_loc,
+				       tree rhs_val);
 
 /* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);

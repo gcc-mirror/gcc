@@ -3298,6 +3298,11 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
   gimple_stmt_iterator gsi2 = *gsi;
   bool warned_step = false;
 
+  if (deps == NULL)
+    {
+      sorry_at (loc, "%<doacross(sink:omp_cur_iteration-1)%> not supported yet");
+      return;
+    }
   for (i = 0; i < fd->ordered; i++)
     {
       tree step = NULL_TREE;
@@ -3321,9 +3326,11 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 		break;
 	      forward = tree_int_cst_sgn (step) != -1;
 	    }
-	  if (forward ^ OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
-	    warning_at (loc, 0, "%<depend%> clause with %<sink%> modifier "
-				"waiting for lexically later iteration");
+	  if (forward ^ OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
+	    warning_at (loc, 0, "%qs clause with %<sink%> modifier "
+				"waiting for lexically later iteration",
+			OMP_CLAUSE_DOACROSS_DEPEND (c)
+			? "depend" : "doacross");
 	  break;
 	}
       deps = TREE_CHAIN (deps);
@@ -3377,13 +3384,13 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	  tree co = fold_convert_loc (loc, itype, off);
 	  if (POINTER_TYPE_P (TREE_TYPE (fd->loops[i].v)))
 	    {
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		co = fold_build1_loc (loc, NEGATE_EXPR, itype, co);
 	      a = fold_build2_loc (loc, POINTER_PLUS_EXPR,
 				   TREE_TYPE (fd->loops[i].v), fd->loops[i].v,
 				   co);
 	    }
-	  else if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	  else if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 	    a = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (fd->loops[i].v),
 				 fd->loops[i].v, co);
 	  else
@@ -3392,13 +3399,13 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	  if (step)
 	    {
 	      tree t1, t2;
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		t1 = fold_build2_loc (loc, GE_EXPR, boolean_type_node, a,
 				      fd->loops[i].n1);
 	      else
 		t1 = fold_build2_loc (loc, LT_EXPR, boolean_type_node, a,
 				      fd->loops[i].n2);
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		t2 = fold_build2_loc (loc, LT_EXPR, boolean_type_node, a,
 				      fd->loops[i].n2);
 	      else
@@ -3420,14 +3427,14 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	    }
 	  else if (fd->loops[i].cond_code == LT_EXPR)
 	    {
-	      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 		t = fold_build2_loc (loc, GE_EXPR, boolean_type_node, a,
 				     fd->loops[i].n1);
 	      else
 		t = fold_build2_loc (loc, LT_EXPR, boolean_type_node, a,
 				     fd->loops[i].n2);
 	    }
-	  else if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+	  else if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 	    t = fold_build2_loc (loc, GT_EXPR, boolean_type_node, a,
 				 fd->loops[i].n2);
 	  else
@@ -3459,9 +3466,11 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 			       build_int_cst (itype, 0));
 	  if (integer_zerop (t) && !warned_step)
 	    {
-	      warning_at (loc, 0, "%<depend%> clause with %<sink%> modifier "
+	      warning_at (loc, 0, "%qs clause with %<sink%> modifier "
 				  "refers to iteration never in the iteration "
-				  "space");
+				  "space",
+			  OMP_CLAUSE_DOACROSS_DEPEND (c)
+			  ? "depend" : "doacross");
 	      warned_step = true;
 	    }
 	  cond = fold_build2_loc (loc, BIT_AND_EXPR, boolean_type_node,
@@ -3486,7 +3495,7 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 						s));
       else
 	off = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype, off, s);
-      if (OMP_CLAUSE_DEPEND_SINK_NEGATIVE (deps))
+      if (OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
 	off = fold_build1_loc (loc, NEGATE_EXPR, itype, off);
       off = fold_convert_loc (loc, fd->iter_type, off);
       if (i <= fd->collapse - 1 && fd->collapse > 1)
@@ -3559,13 +3568,13 @@ expand_omp_ordered_source_sink (struct omp_region *region,
 	tree c;
 	for (c = gimple_omp_ordered_clauses (ord_stmt);
 	     c; c = OMP_CLAUSE_CHAIN (c))
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE)
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SOURCE)
 	    break;
 	if (c)
 	  expand_omp_ordered_source (&gsi, fd, counts, loc);
 	for (c = gimple_omp_ordered_clauses (ord_stmt);
 	     c; c = OMP_CLAUSE_CHAIN (c))
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	    expand_omp_ordered_sink (&gsi, fd, counts, c, loc);
 	gsi_remove (&gsi, true);
       }
@@ -9663,7 +9672,7 @@ expand_omp_target (struct omp_region *region)
 {
   basic_block entry_bb, exit_bb, new_bb;
   struct function *child_cfun;
-  tree child_fn, block, t;
+  tree child_fn, child_fn2, block, t, c;
   gimple_stmt_iterator gsi;
   gomp_target *entry_stmt;
   gimple *stmt;
@@ -9700,10 +9709,16 @@ expand_omp_target (struct omp_region *region)
       gcc_unreachable ();
     }
 
-  child_fn = NULL_TREE;
+  tree clauses = gimple_omp_target_clauses (entry_stmt);
+
+  bool is_ancestor = false;
+  child_fn = child_fn2 = NULL_TREE;
   child_cfun = NULL;
   if (offloaded)
     {
+      c = omp_find_clause (clauses, OMP_CLAUSE_DEVICE);
+      if (ENABLE_OFFLOADING && c)
+	is_ancestor = OMP_CLAUSE_DEVICE_ANCESTOR (c);
       child_fn = gimple_omp_target_child_fn (entry_stmt);
       child_cfun = DECL_STRUCT_FUNCTION (child_fn);
     }
@@ -9891,7 +9906,8 @@ expand_omp_target (struct omp_region *region)
 	{
 	  if (in_lto_p)
 	    DECL_PRESERVE_P (child_fn) = 1;
-	  vec_safe_push (offload_funcs, child_fn);
+	  if (!is_ancestor)
+	    vec_safe_push (offload_funcs, child_fn);
 	}
 
       bool need_asm = DECL_ASSEMBLER_NAME_SET_P (current_function_decl)
@@ -9930,11 +9946,88 @@ expand_omp_target (struct omp_region *region)
 	}
 
       adjust_context_and_scope (region, gimple_block (entry_stmt), child_fn);
+
+      /* Handle the case that an inner ancestor:1 target is called by an outer
+	 target region. */
+      if (!is_ancestor)
+	cgraph_node::get (child_fn)->calls_declare_variant_alt
+	  |= cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
+      else  /* Duplicate function to create empty nonhost variant. */
+	{
+	  /* Enable pass_omp_device_lower pass.  */
+	  cgraph_node::get (cfun->decl)->calls_declare_variant_alt = 1;
+	  cgraph_node *fn2_node;
+	  child_fn2 = build_decl (DECL_SOURCE_LOCATION (child_fn),
+				  FUNCTION_DECL,
+				  clone_function_name (child_fn, "nohost"),
+				  TREE_TYPE (child_fn));
+	  if (in_lto_p)
+	    DECL_PRESERVE_P (child_fn2) = 1;
+	  TREE_STATIC (child_fn2) = 1;
+	  DECL_ARTIFICIAL (child_fn2) = 1;
+	  DECL_IGNORED_P (child_fn2) = 0;
+	  TREE_PUBLIC (child_fn2) = 0;
+	  DECL_UNINLINABLE (child_fn2) = 1;
+	  DECL_EXTERNAL (child_fn2) = 0;
+	  DECL_CONTEXT (child_fn2) = NULL_TREE;
+	  DECL_INITIAL (child_fn2) = make_node (BLOCK);
+	  BLOCK_SUPERCONTEXT (DECL_INITIAL (child_fn2)) = child_fn2;
+	  DECL_ATTRIBUTES (child_fn)
+	    = remove_attribute ("omp target entrypoint",
+				DECL_ATTRIBUTES (child_fn));
+	  DECL_ATTRIBUTES (child_fn2)
+	    = tree_cons (get_identifier ("omp target device_ancestor_nohost"),
+			 NULL_TREE, copy_list (DECL_ATTRIBUTES (child_fn)));
+	  DECL_ATTRIBUTES (child_fn)
+	    = tree_cons (get_identifier ("omp target device_ancestor_host"),
+			 NULL_TREE, DECL_ATTRIBUTES (child_fn));
+	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (child_fn2)
+	    = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (current_function_decl);
+	  DECL_FUNCTION_SPECIFIC_TARGET (child_fn2)
+	    = DECL_FUNCTION_SPECIFIC_TARGET (current_function_decl);
+	  DECL_FUNCTION_VERSIONED (child_fn2)
+	    = DECL_FUNCTION_VERSIONED (current_function_decl);
+
+	  fn2_node = cgraph_node::get_create (child_fn2);
+	  fn2_node->offloadable = 1;
+	  fn2_node->force_output = 1;
+	  node->offloadable = 0;
+
+	  t = build_decl (DECL_SOURCE_LOCATION (child_fn),
+			  RESULT_DECL, NULL_TREE, void_type_node);
+	  DECL_ARTIFICIAL (t) = 1;
+	  DECL_IGNORED_P (t) = 1;
+	  DECL_CONTEXT (t) = child_fn2;
+	  DECL_RESULT (child_fn2) = t;
+	  DECL_SAVED_TREE (child_fn2) = build1 (RETURN_EXPR,
+						void_type_node, NULL);
+	  tree tmp = DECL_ARGUMENTS (child_fn);
+	  t = build_decl (DECL_SOURCE_LOCATION (child_fn), PARM_DECL,
+			  DECL_NAME (tmp), TREE_TYPE (tmp));
+	  DECL_ARTIFICIAL (t) = 1;
+	  DECL_NAMELESS (t) = 1;
+	  DECL_ARG_TYPE (t) = ptr_type_node;
+	  DECL_CONTEXT (t) = current_function_decl;
+	  TREE_USED (t) = 1;
+	  TREE_READONLY (t) = 1;
+	  DECL_ARGUMENTS (child_fn2) = t;
+	  gcc_assert (TREE_CHAIN (tmp) == NULL_TREE);
+
+	  gimplify_function_tree (child_fn2);
+	  cgraph_node::add_new_function (child_fn2, true);
+
+	  vec_safe_push (offload_funcs, child_fn2);
+	  if (dump_file && !gimple_in_ssa_p (cfun))
+	    {
+	      dump_function_header (dump_file, child_fn2, dump_flags);
+	      dump_function_to_file (child_fn2, dump_file, dump_flags);
+	    }
+	}
     }
 
   /* Emit a library call to launch the offloading region, or do data
      transfers.  */
-  tree t1, t2, t3, t4, depend, c, clauses;
+  tree t1, t2, t3, t4, depend;
   enum built_in_function start_ix;
   unsigned int flags_i = 0;
 
@@ -9984,8 +10077,6 @@ expand_omp_target (struct omp_region *region)
       gcc_unreachable ();
     }
 
-  clauses = gimple_omp_target_clauses (entry_stmt);
-
   tree device = NULL_TREE;
   location_t device_loc = UNKNOWN_LOCATION;
   tree goacc_flags = NULL_TREE;
@@ -10017,7 +10108,8 @@ expand_omp_target (struct omp_region *region)
 	    need_device_adjustment = true;
 	  device_loc = OMP_CLAUSE_LOCATION (c);
 	  if (OMP_CLAUSE_DEVICE_ANCESTOR (c))
-	    sorry_at (device_loc, "%<ancestor%> not yet supported");
+	    device = build_int_cst (integer_type_node,
+				    GOMP_DEVICE_HOST_FALLBACK);
 	}
       else
 	{
@@ -10194,7 +10286,7 @@ expand_omp_target (struct omp_region *region)
   else
     args.quick_push (device);
   if (offloaded)
-    args.quick_push (build_fold_addr_expr (child_fn));
+    args.quick_push (build_fold_addr_expr (child_fn2 ? child_fn2 : child_fn));
   args.quick_push (t1);
   args.quick_push (t2);
   args.quick_push (t3);
@@ -10316,6 +10408,14 @@ expand_omp_target (struct omp_region *region)
     /*  Push terminal marker - zero.  */
     args.safe_push (oacc_launch_pack (0, NULL_TREE, 0));
 
+  if (child_fn2)
+    {
+      g = gimple_build_call_internal (IFN_GOMP_TARGET_REV, 1,
+				      build_fold_addr_expr (child_fn));
+      gimple_set_location (g, gimple_location (entry_stmt));
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    }
+
   g = gimple_build_call_vec (builtin_decl_explicit (start_ix), args);
   gimple_set_location (g, gimple_location (entry_stmt));
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -10388,7 +10488,7 @@ expand_omp (struct omp_region *region)
 	    gomp_ordered *ord_stmt
 	      = as_a <gomp_ordered *> (last_stmt (region->entry));
 	    if (omp_find_clause (gimple_omp_ordered_clauses (ord_stmt),
-				 OMP_CLAUSE_DEPEND))
+				 OMP_CLAUSE_DOACROSS))
 	      {
 		/* We'll expand these when expanding corresponding
 		   worksharing region with ordered(n) clause.  */
@@ -10518,7 +10618,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  else if (code == GIMPLE_OMP_ORDERED
 		   && omp_find_clause (gimple_omp_ordered_clauses
 					 (as_a <gomp_ordered *> (stmt)),
-				       OMP_CLAUSE_DEPEND))
+				       OMP_CLAUSE_DOACROSS))
 	    /* #pragma omp ordered depend is also just a stand-alone
 	       directive.  */
 	    region = NULL;
@@ -10744,7 +10844,7 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
       fallthru = true;
       if (omp_find_clause (gimple_omp_ordered_clauses
 			     (as_a <gomp_ordered *> (last)),
-			   OMP_CLAUSE_DEPEND))
+			   OMP_CLAUSE_DOACROSS))
 	cur_region = cur_region->outer;
       break;
 

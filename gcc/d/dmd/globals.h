@@ -116,10 +116,6 @@ struct Param
     Diagnostic useDeprecated;
     bool useUnitTests;  // generate unittest code
     bool useInline;     // inline expand functions
-    FeatureState useDIP25;      // implement https://wiki.dlang.org/DIP25
-    FeatureState useDIP1000; // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
-    bool fixImmutableConv;
-    bool useDIP1021;    // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
     bool release;       // build release version
     bool preservePaths; // true means don't strip path from source file
     Diagnostic warnings;
@@ -131,22 +127,10 @@ struct Param
     bool useModuleInfo; // generate runtime module information
     bool useTypeInfo;   // generate runtime type information
     bool useExceptions; // support exception handling
-    bool noSharedAccess; // read/write access to shared memory objects
-    bool previewIn;     // `in` means `scope const`, perhaps `ref`, accepts rvalues
-    bool shortenedMethods; // allow => in normal function declarations
     bool betterC;       // be a "better C" compiler; no dependency on D runtime
     bool addMain;       // add a default main() function
     bool allInst;       // generate code for all template instantiations
-    bool fix16997;      // fix integral promotions for unary + - ~ operators
-                        // https://issues.dlang.org/show_bug.cgi?id=16997
-    bool fixAliasThis;  // if the current scope has an alias this, check it before searching upper scopes
-    bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
-    bool ehnogc;        // use @nogc exception handling
-    FeatureState dtorFields;  // destruct fields of partially constructed objects
-                              // https://issues.dlang.org/show_bug.cgi?id=14246
-    bool fieldwise;         // do struct equality testing field-wise rather than by memcmp()
     bool bitfields;         // support C style bit fields
-    FeatureState rvalueRefParam;    // allow rvalues to be arguments to ref parameters
     CppStdRevision cplusplus;  // version of C++ name mangling to support
     bool showGaggedErrors;  // print gagged errors anyway
     bool printErrorContext;  // print errors with the error context (the error line in the source file)
@@ -162,6 +146,27 @@ struct Param
     bool hcUsage;           // print help on -HC switch
     bool logo;              // print logo;
 
+    // Options for `-preview=/-revert=`
+    FeatureState useDIP25;       // implement https://wiki.dlang.org/DIP25
+    FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
+    bool ehnogc;                 // use @nogc exception handling
+    bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
+    bool fieldwise;              // do struct equality testing field-wise rather than by memcmp()
+    bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
+    FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
+                                 // https://dconf.org/2019/talks/alexandrescu.html
+                                 // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
+                                 // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
+                                 // Implementation: https://github.com/dlang/dmd/pull/9817
+    bool noSharedAccess;         // read/write access to shared memory objects
+    bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
+    bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
+    bool shortenedMethods;       // allow => in normal function declarations
+    bool fixImmutableConv;       // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
+    bool fix16997;               // fix integral promotions for unary + - ~ operators
+                                 // https://issues.dlang.org/show_bug.cgi?id=16997
+    FeatureState dtorFields;     // destruct fields of partially constructed objects
+                                     // https://issues.dlang.org/show_bug.cgi?id=14246
     CHECKENABLE useInvariants;     // generate class invariant checks
     CHECKENABLE useIn;             // generate precondition checks
     CHECKENABLE useOut;            // generate postcondition checks

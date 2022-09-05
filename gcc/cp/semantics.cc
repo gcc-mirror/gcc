@@ -6477,13 +6477,13 @@ finish_omp_declare_simd_methods (tree t)
     }
 }
 
-/* Adjust sink depend clause to take into account pointer offsets.
+/* Adjust sink depend/doacross clause to take into account pointer offsets.
 
    Return TRUE if there was a problem processing the offset, and the
    whole clause should be removed.  */
 
 static bool
-cp_finish_omp_clause_depend_sink (tree sink_clause)
+cp_finish_omp_clause_doacross_sink (tree sink_clause)
 {
   tree t = OMP_CLAUSE_DECL (sink_clause);
   gcc_assert (TREE_CODE (t) == TREE_LIST);
@@ -7795,21 +7795,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  goto handle_field_decl;
 
-	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DOACROSS:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
+	    break;
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	    {
-	      gcc_assert (OMP_CLAUSE_DEPEND_KIND (c)
-			  == OMP_CLAUSE_DEPEND_SOURCE);
-	      break;
-	    }
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
-	    {
-	      if (cp_finish_omp_clause_depend_sink (c))
+	      if (cp_finish_omp_clause_doacross_sink (c))
 		remove = true;
 	      break;
 	    }
-	  /* FALLTHRU */
+	  gcc_unreachable ();
+	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE_AFFINITY:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST

@@ -113,6 +113,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
             pragma Loop_Invariant (Num <= Ind - (Source'First - 1));
             pragma Loop_Invariant (Ind >= Source'First);
+            pragma Loop_Variant (Increases => Ind);
          end loop;
 
       --  Mapped case
@@ -142,6 +143,7 @@ package body Ada.Strings.Search with SPARK_Mode is
             null;
             pragma Loop_Invariant (Num <= Ind - (Source'First - 1));
             pragma Loop_Invariant (Ind >= Source'First);
+            pragma Loop_Variant (Increases => Ind);
          end loop;
       end if;
 
@@ -200,6 +202,7 @@ package body Ada.Strings.Search with SPARK_Mode is
          null;
          pragma Loop_Invariant (Num <= Ind - (Source'First - 1));
          pragma Loop_Invariant (Ind >= Source'First);
+         pragma Loop_Variant (Increases => Ind);
       end loop;
 
       return Num;

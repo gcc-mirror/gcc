@@ -304,7 +304,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	  stmt_info = loop_vinfo->lookup_stmt (phi);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "==> examining phi: %G",
-			     phi);
+			     (gimple *) phi);
 
 	  gcc_assert (stmt_info);
 
@@ -489,7 +489,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
       stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (phi);
 
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G", phi);
+	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G",
+			 (gimple *) phi);
 
       /* Skip virtual phi's.  The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
@@ -540,7 +541,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
       tree def = PHI_RESULT (phi);
 
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G", phi);
+	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G",
+			 (gimple *) phi);
 
       gcc_assert (!virtual_operand_p (def)
 		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
@@ -1679,7 +1681,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 
 	  stmt_info = loop_vinfo->lookup_stmt (phi);
           if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "examining phi: %G", phi);
+	    dump_printf_loc (MSG_NOTE, vect_location, "examining phi: %G",
+			     (gimple *) phi);
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
 
@@ -2526,7 +2529,7 @@ start_over:
 	      if (can_use_lanes && dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "SLP instance %p can use load/store-lanes\n",
-				 instance);
+				 (void *) instance);
 	    }
 	  else
 	    {
@@ -4320,7 +4323,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "can't unroll as unrolled vectorization factor larger"
-			 " than maximum vectorization factor: %d\n",
+			 " than maximum vectorization factor: "
+			 HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 			 LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo));
       *suggested_unroll_factor = 1;
     }
@@ -8862,7 +8866,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "transform induction: created def-use cycle: %G%G",
-		     induction_phi, SSA_NAME_DEF_STMT (vec_def));
+		     (gimple *) induction_phi, SSA_NAME_DEF_STMT (vec_def));
 
   return true;
 }
@@ -9941,7 +9945,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	  gphi *phi = si.phi ();
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "------>vectorizing phi: %G", phi);
+			     "------>vectorizing phi: %G", (gimple *) phi);
 	  stmt_info = loop_vinfo->lookup_stmt (phi);
 	  if (!stmt_info)
 	    continue;

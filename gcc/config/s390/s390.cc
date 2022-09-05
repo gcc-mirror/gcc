@@ -430,6 +430,14 @@ struct s390_address
    bytes on a z10 (or higher) CPU.  */
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
 
+static int
+s390_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED);
+
+static unsigned int
+s390_hard_regno_nregs (unsigned int regno, machine_mode mode);
+
 /* Masks per jump target register indicating which thunk need to be
    generated.  */
 static GTY(()) int indirect_branch_prez10thunk_mask = 0;
@@ -456,6 +464,31 @@ bool
 s390_return_addr_from_memory ()
 {
   return cfun_gpr_save_slot(RETURN_REGNUM) == SAVE_SLOT_STACK;
+}
+
+/* Generate a SUBREG for the MODE lowpart of EXPR.
+
+   In contrast to gen_lowpart it will always return a SUBREG
+   expression.  This is useful to generate STRICT_LOW_PART
+   expressions.  */
+rtx
+s390_gen_lowpart_subreg (machine_mode mode, rtx expr)
+{
+  rtx lowpart = gen_lowpart (mode, expr);
+
+  /* There might be no SUBREG in case it could be applied to the hard
+     REG rtx or it could be folded with a paradoxical subreg.  Bring
+     it back.  */
+  if (!SUBREG_P (lowpart))
+    {
+      machine_mode reg_mode = TARGET_ZARCH ? DImode : SImode;
+      gcc_assert (REG_P (lowpart));
+      lowpart = gen_lowpart_SUBREG (mode,
+				    gen_rtx_REG (reg_mode,
+						 REGNO (lowpart)));
+    }
+
+  return lowpart;
 }
 
 /* Return nonzero if it's OK to use fused multiply-add for MODE.  */
@@ -3614,49 +3647,97 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MEM:
       *total = 0;
       return true;
+      case SET: {
+	rtx dest = SET_DEST (x);
+	rtx src = SET_SRC (x);
 
-    case SET:
-      {
-	/* Without this a conditional move instruction would be
-	   accounted as 3 * COSTS_N_INSNS (set, if_then_else,
-	   comparison operator).  That's a bit pessimistic.  */
+	switch (GET_CODE (src))
+	  {
+	    case IF_THEN_ELSE: {
+	      /* Without this a conditional move instruction would be
+		 accounted as 3 * COSTS_N_INSNS (set, if_then_else,
+		 comparison operator).  That's a bit pessimistic.  */
 
-	if (!TARGET_Z196 || GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
-	  return false;
+	      if (!TARGET_Z196)
+		return false;
 
-	rtx cond = XEXP (SET_SRC (x), 0);
+	      rtx cond = XEXP (src, 0);
+	      if (!CC_REG_P (XEXP (cond, 0)) || !CONST_INT_P (XEXP (cond, 1)))
+		return false;
 
-	if (!CC_REG_P (XEXP (cond, 0)) || !CONST_INT_P (XEXP (cond, 1)))
-	  return false;
+	      /* It is going to be a load/store on condition.  Make it
+		 slightly more expensive than a normal load.  */
+	      *total = COSTS_N_INSNS (1) + 2;
 
-	/* It is going to be a load/store on condition.  Make it
-	   slightly more expensive than a normal load.  */
-	*total = COSTS_N_INSNS (1) + 2;
+	      rtx dst = SET_DEST (src);
+	      rtx then = XEXP (src, 1);
+	      rtx els = XEXP (src, 2);
 
-	rtx dst = SET_DEST (x);
-	rtx then = XEXP (SET_SRC (x), 1);
-	rtx els = XEXP (SET_SRC (x), 2);
+	      /* It is a real IF-THEN-ELSE.  An additional move will be
+		 needed to implement that.  */
+	      if (!TARGET_Z15 && reload_completed && !rtx_equal_p (dst, then)
+		  && !rtx_equal_p (dst, els))
+		*total += COSTS_N_INSNS (1) / 2;
 
-	/* It is a real IF-THEN-ELSE.  An additional move will be
-	   needed to implement that.  */
-	if (!TARGET_Z15
-	    && reload_completed
-	    && !rtx_equal_p (dst, then)
-	    && !rtx_equal_p (dst, els))
-	  *total += COSTS_N_INSNS (1) / 2;
+	      /* A minor penalty for constants we cannot directly handle.  */
+	      if ((CONST_INT_P (then) || CONST_INT_P (els))
+		  && (!TARGET_Z13 || MEM_P (dst)
+		      || (CONST_INT_P (then) && !satisfies_constraint_K (then))
+		      || (CONST_INT_P (els) && !satisfies_constraint_K (els))))
+		*total += COSTS_N_INSNS (1) / 2;
 
-	/* A minor penalty for constants we cannot directly handle.  */
-	if ((CONST_INT_P (then) || CONST_INT_P (els))
-	    && (!TARGET_Z13 || MEM_P (dst)
-		|| (CONST_INT_P (then) && !satisfies_constraint_K (then))
-		|| (CONST_INT_P (els) && !satisfies_constraint_K (els))))
-	  *total += COSTS_N_INSNS (1) / 2;
+	      /* A store on condition can only handle register src operands.  */
+	      if (MEM_P (dst) && (!REG_P (then) || !REG_P (els)))
+		*total += COSTS_N_INSNS (1) / 2;
 
-	/* A store on condition can only handle register src operands.  */
-	if (MEM_P (dst) && (!REG_P (then) || !REG_P (els)))
-	  *total += COSTS_N_INSNS (1) / 2;
+	      return true;
+	    }
+	  default:
+	    break;
+	  }
 
-	return true;
+	switch (GET_CODE (dest))
+	  {
+	  case SUBREG:
+	    if (!REG_P (SUBREG_REG (dest)))
+	      *total += rtx_cost (SUBREG_REG (src), VOIDmode, SET, 0, speed);
+	    /* fallthrough */
+	  case REG:
+	    /* If this is a VR -> VR copy, count the number of
+	       registers.  */
+	    if (VECTOR_MODE_P (GET_MODE (dest)) && REG_P (src))
+	      {
+		int nregs = s390_hard_regno_nregs (VR0_REGNUM, GET_MODE (dest));
+		*total = COSTS_N_INSNS (nregs);
+	      }
+	    /* Same for GPRs.  */
+	    else if (REG_P (src))
+	      {
+		int nregs
+		  = s390_hard_regno_nregs (GPR0_REGNUM, GET_MODE (dest));
+		*total = COSTS_N_INSNS (nregs);
+	      }
+	    else
+	      /* Otherwise just cost the src.  */
+	      *total += rtx_cost (src, mode, SET, 1, speed);
+	    return true;
+	    case MEM: {
+	      rtx address = XEXP (dest, 0);
+	      rtx tmp;
+	      HOST_WIDE_INT tmp2;
+	      if (s390_loadrelative_operand_p (address, &tmp, &tmp2))
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = s390_address_cost (address, mode, 0, speed);
+	      return true;
+	    }
+	  default:
+	    /* Not handled for now, assume default costs.  */
+	    *total = COSTS_N_INSNS (1);
+	    return false;
+	  }
+
+	return false;
       }
     case IOR:
 
@@ -6520,7 +6601,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       /* Emit a strict_low_part pattern if possible.  */
       if (smode_bsize == bitsize && bitpos == mode_bsize - smode_bsize)
 	{
-	  rtx low_dest = gen_lowpart (smode, dest);
+	  rtx low_dest = s390_gen_lowpart_subreg (smode, dest);
 	  rtx low_src = gen_lowpart (smode, src);
 
 	  switch (smode)
@@ -8520,6 +8601,7 @@ s390_issue_rate (void)
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
+    case PROCESSOR_8561_Z15:
     case PROCESSOR_3931_Z16:
     default:
       return 1;
@@ -15395,6 +15477,21 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   if (s390_tune < PROCESSOR_2097_Z10)
     return nunroll;
 
+  if (unroll_only_small_loops)
+    {
+      /* Only unroll loops smaller than or equal to 12 insns.  */
+      const unsigned int small_threshold = 12;
+
+      if (loop->ninsns > small_threshold)
+	return 0;
+
+      /* ???: Make this dependent on the type of registers in
+	 the loop.  Increase the limit for vector registers.  */
+      const unsigned int max_insns = optimize >= 3 ? 36 : 24;
+
+      nunroll = MIN (nunroll, max_insns / loop->ninsns);
+    }
+
   /* Count the number of memory references within the loop body.  */
   bbs = get_loop_body (loop);
   subrtx_iterator::array_type array;
@@ -15469,6 +15566,19 @@ static void
 s390_override_options_after_change (void)
 {
   s390_default_align (&global_options);
+
+  /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
+  if ((OPTION_SET_P (flag_unroll_loops) && flag_unroll_loops)
+       || (OPTION_SET_P (flag_unroll_all_loops)
+	   && flag_unroll_all_loops))
+    {
+      if (!OPTION_SET_P (unroll_only_small_loops))
+	unroll_only_small_loops = 0;
+      if (!OPTION_SET_P (flag_cunroll_grow_size))
+	flag_cunroll_grow_size = 1;
+    }
+  else if (!OPTION_SET_P (flag_cunroll_grow_size))
+    flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 }
 
 static void
@@ -15677,6 +15787,9 @@ s390_option_override_internal (struct gcc_options *opts,
 
   /* Set the default alignment.  */
   s390_default_align (opts);
+
+  /* Set unroll options.  */
+  s390_override_options_after_change ();
 
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
@@ -17067,6 +17180,8 @@ struct expand_vec_perm_d
   machine_mode vmode;
   unsigned char nelt;
   bool testing_p;
+  bool only_op0;
+  bool only_op1;
 };
 
 /* Try to expand the vector permute operation described by D using the
@@ -17134,7 +17249,9 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
   if (d.perm[0] == 0 && d.perm[1] == 3)
     vpdi1_p = true;
 
-  if (d.perm[0] == 1 && d.perm[1] == 2)
+  if ((d.perm[0] == 1 && d.perm[1] == 2)
+      || (d.perm[0] == 1 && d.perm[1] == 0)
+      || (d.perm[0] == 3 && d.perm[1] == 2))
     vpdi4_p = true;
 
   if (!vpdi1_p && !vpdi4_p)
@@ -17146,14 +17263,106 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
   op0_reg = force_reg (GET_MODE (d.op0), d.op0);
   op1_reg = force_reg (GET_MODE (d.op1), d.op1);
 
+  /* If we only reference either of the operands in
+     the permute mask, just use one of them.  */
+  if (d.only_op0)
+    op1_reg = op0_reg;
+  else if (d.only_op1)
+    op0_reg = op1_reg;
+
   if (vpdi1_p)
     emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
-
   if (vpdi4_p)
     emit_insn (gen_vpdi4 (d.vmode, d.target, op0_reg, op1_reg));
 
   return true;
 }
+
+/* Helper that checks if a vector permutation mask D
+   represents a reversal of the vector's elements.  */
+static inline bool
+is_reverse_perm_mask (const struct expand_vec_perm_d &d)
+{
+  for (int i = 0; i < d.nelt; i++)
+    if (d.perm[i] != d.nelt - i - 1)
+      return false;
+  return true;
+}
+
+/* The case of reversing a four-element vector [0, 1, 2, 3]
+   can be handled by first permuting the doublewords
+   [2, 3, 0, 1] and subsequently rotating them by 32 bits.  */
+static bool
+expand_perm_with_rot (const struct expand_vec_perm_d &d)
+{
+  if (d.nelt != 4)
+    return false;
+
+  if (d.op0 == d.op1 && is_reverse_perm_mask (d))
+    {
+      if (d.testing_p)
+	return true;
+
+      rtx tmp = gen_reg_rtx (d.vmode);
+      rtx op0_reg = force_reg (GET_MODE (d.op0), d.op0);
+
+      emit_insn (gen_vpdi4_2 (d.vmode, tmp, op0_reg, op0_reg));
+      if (d.vmode == V4SImode)
+	emit_insn (gen_rotlv4si3_di (d.target, tmp));
+      else if (d.vmode == V4SFmode)
+	emit_insn (gen_rotlv4sf3_di (d.target, tmp));
+
+      return true;
+    }
+
+  return false;
+}
+
+/* If we just reverse the elements, emit an eltswap if we have
+   vler/vster.  */
+static bool
+expand_perm_with_vster (const struct expand_vec_perm_d &d)
+{
+  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
+      && (d.vmode == V2DImode || d.vmode == V2DFmode
+	  || d.vmode == V4SImode || d.vmode == V4SFmode
+	  || d.vmode == V8HImode))
+    {
+      if (d.testing_p)
+	return true;
+
+      if (d.vmode == V2DImode)
+	emit_insn (gen_eltswapv2di (d.target, d.op0));
+      else if (d.vmode == V2DFmode)
+	emit_insn (gen_eltswapv2df (d.target, d.op0));
+      else if (d.vmode == V4SImode)
+	emit_insn (gen_eltswapv4si (d.target, d.op0));
+      else if (d.vmode == V4SFmode)
+	emit_insn (gen_eltswapv4sf (d.target, d.op0));
+      else if (d.vmode == V8HImode)
+	emit_insn (gen_eltswapv8hi (d.target, d.op0));
+      return true;
+    }
+  return false;
+}
+
+/* If we reverse a byte-vector this is the same as
+   byte reversing it which can be done with vstbrq.  */
+static bool
+expand_perm_with_vstbrq (const struct expand_vec_perm_d &d)
+{
+  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
+      && d.vmode == V16QImode)
+    {
+      if (d.testing_p)
+	return true;
+
+      emit_insn (gen_eltswapv16qi (d.target, d.op0));
+      return true;
+    }
+  return false;
+}
+
 
 /* Try to find the best sequence for the vector permute operation
    described by D.  Return true if the operation could be
@@ -17164,7 +17373,16 @@ vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
   if (expand_perm_with_merge (d))
     return true;
 
+  if (expand_perm_with_vster (d))
+    return true;
+
+  if (expand_perm_with_vstbrq (d))
+    return true;
+
   if (expand_perm_with_vpdi (d))
+    return true;
+
+  if (expand_perm_with_rot (d))
     return true;
 
   return false;
@@ -17196,16 +17414,26 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = target == NULL_RTX;
+  d.only_op0 = false;
+  d.only_op1 = false;
 
   gcc_assert (target == NULL_RTX || REG_P (target));
   gcc_assert (sel.length () == nelt);
 
+  unsigned int highest = 0, lowest = 2 * nelt - 1;
   for (i = 0; i < nelt; i++)
     {
       unsigned char e = sel[i];
+      lowest = MIN (lowest, e);
+      highest = MAX (highest, e);
       gcc_assert (e < 2 * nelt);
       d.perm[i] = e;
     }
+
+  if (lowest < nelt && highest < nelt)
+    d.only_op0 = true;
+  else if (lowest >= nelt && highest >= nelt)
+    d.only_op1 = true;
 
   return vectorize_vec_perm_const_1 (d);
 }

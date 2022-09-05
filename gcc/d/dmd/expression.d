@@ -5153,7 +5153,7 @@ extern (C++) final class CallExp : UnaExp
                 /* Type needs destruction, so declare a tmp
                  * which the back end will recognize and call dtor on
                  */
-                auto tmp = copyToTemp(0, "__tmpfordtor", this);
+                auto tmp = copyToTemp(0, Id.__tmpfordtor.toString(), this);
                 auto de = new DeclarationExp(loc, tmp);
                 auto ve = new VarExp(loc, tmp);
                 Expression e = new CommaExp(loc, de, ve);

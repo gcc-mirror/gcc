@@ -1146,7 +1146,7 @@ if (distinctFieldNames!(Specs))
         }
 
         ///
-        static if (Specs.length == 0) @safe unittest
+        static if (Specs.length == 0) @system unittest
         {
             //replace names by their position
 
@@ -1166,7 +1166,7 @@ if (distinctFieldNames!(Specs))
             assert(t2Named.c == 3);
         }
 
-        static if (Specs.length == 0) @safe unittest
+        static if (Specs.length == 0) @system unittest
         {
             //check that empty translations work fine
             enum string[string] a0 = null;

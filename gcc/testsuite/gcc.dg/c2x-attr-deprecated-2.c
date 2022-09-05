@@ -3,7 +3,8 @@
 /* { dg-options "-std=c2x -pedantic-errors" } */
 
 /* This attribute is not valid in most cases on types other than their
-   definitions, or on statements, or as an attribute-declaration.  */
+   definitions, or on labels, or on statements, or as an
+   attribute-declaration.  */
 
 [[deprecated]]; /* { dg-error "ignored" } */
 
@@ -21,4 +22,10 @@ f (void)
   int a;
   [[deprecated]]; /* { dg-error "ignored" } */
   [[deprecated]] a = 1; /* { dg-error "ignored" } */
+  [[deprecated]] label: ; /* { dg-error "ignored" } */
+  switch (var)
+    {
+    [[deprecated]] case 1: ; /* { dg-error "ignored" } */
+    [[deprecated]] default: ; /* { dg-error "ignored" } */
+    }
 }

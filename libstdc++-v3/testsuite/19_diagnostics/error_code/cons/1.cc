@@ -22,23 +22,46 @@
 #include <system_error>
 #include <testsuite_error.h>
 
+namespace adl
+{
+  struct Error { };
+
+  const Error err;
+
+  struct category : std::error_category
+  {
+    const char* name() const noexcept override { return "adl"; }
+    std::string message(int) const { return ""; }
+  };
+
+  const category cat;
+
+  std::error_code
+  make_error_code(Error) { return std::error_code(999, cat); }
+}
+
+template<> struct std::is_error_code_enum<adl::Error> : std::true_type { };
+
 int main()
 {
-  // 1
+  // 1 error_code()
   std::error_code e1;
   VERIFY( e1.value() == 0 );
   VERIFY( e1.category() == std::system_category() );
 
-  // 2
+  // 2 error_code(int, const error_category&)
   const __gnu_test::test_category cat;
   std::error_code e2(e1.value(), cat);
   VERIFY( e2.value() == e1.value() );
   VERIFY( e2.category() == cat );
 
-  // 3
+  // 3 error_code(const error_code&)
   std::error_code e3(std::make_error_code(std::errc::operation_not_supported));
   VERIFY( e3.value() == int(std::errc::operation_not_supported) );
   VERIFY( e3.category() == std::generic_category() );
 
-  return 0;
+  // 4 error_code(ErrorCodeEnum)
+  std::error_code e4(adl::err);
+  VERIFY( e4.value() == 999 );
+  VERIFY( e4.category() == adl::cat );
 }

@@ -41,18 +41,18 @@ void test04()
 
   // PUT
   strb_03.str(str_01); //reset
-  strb_03.str().length();
-  strb_03.str().length();
+  (void) strb_03.str().length();
+  (void) strb_03.str().length();
   
   // streamsize sputn(const char_typs* s, streamsize n)
   // write up to n chars to out_cur from s, returning number assigned
   // NB *sputn will happily put '\0' into your stream if you give it a chance*
   str_tmp = strb_03.str();
-  str_tmp.length();
+  (void) str_tmp.length();
   strb_03.sputn("racadabras", 10);//"abracadabras or what?"
-  strb_03.str().length();
+  (void) strb_03.str().length();
   strb_03.sputn(", i wanna reach out and", 10);
-  strb_03.str().length();
+  (void) strb_03.str().length();
   str_tmp = strb_02.str();
   strb_02.sputn("racadabra", 10);
 

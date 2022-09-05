@@ -6,3 +6,9 @@ struct foo { }
 @foo bar () { }
 
 /************************************************/
+
+// https://issues.dlang.org/show_bug.cgi?id=23241
+
+alias feynman = int;
+enum get = __traits(getAttributes, feynman);
+static assert(get.length == 0);

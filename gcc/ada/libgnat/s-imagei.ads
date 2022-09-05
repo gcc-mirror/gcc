@@ -48,19 +48,19 @@ pragma Assertion_Policy (Pre                => Ignore,
 with System.Val_Util;
 
 generic
+   type Int is range <>;
+   type Uns is mod <>;
 
-   with package Int_Params is new System.Val_Util.Int_Params (<>);
+   Unsigned_Width_Ghost : Natural;
+
+   with package Int_Params is new System.Val_Util.Int_Params
+     (Int => Int, Uns => Uns, others => <>)
+   with Ghost;
 
 package System.Image_I is
-
-   subtype Int is Int_Params.Int;
-   use type Int_Params.Int;
-
-   subtype Uns is Int_Params.Uns;
-   use type Int_Params.Uns;
-
-   subtype Uns_Option is Int_Params.Uns_Option;
-   use type Int_Params.Uns_Option;
+   package IP renames Int_Params;
+   package UP renames IP.Uns_Params;
+   use type UP.Uns_Option;
 
    procedure Image_Integer
      (V : Int;
@@ -69,9 +69,9 @@ package System.Image_I is
    with
      Pre  => S'First = 1
        and then S'Last < Integer'Last
-       and then S'Last >= Int_Params.Unsigned_Width_Ghost,
+       and then S'Last >= Unsigned_Width_Ghost,
      Post => P in S'Range
-       and then Int_Params.Value_Integer (S (1 .. P)) = V;
+       and then IP.Is_Value_Integer_Ghost (S (1 .. P), V);
    --  Computes Int'Image (V) and stores the result in S (1 .. P)
    --  setting the resulting value of P. The caller guarantees that S
    --  is long enough to hold the result, and that S'First is 1.
@@ -87,23 +87,23 @@ package System.Image_I is
        and then S'First <= S'Last
        and then
          (if V >= 0 then
-            P <= S'Last - Int_Params.Unsigned_Width_Ghost + 1
+            P <= S'Last - Unsigned_Width_Ghost + 1
           else
-            P <= S'Last - Int_Params.Unsigned_Width_Ghost),
+            P <= S'Last - Unsigned_Width_Ghost),
      Post => S (S'First .. P'Old) = S'Old (S'First .. P'Old)
        and then
          (declare
             Minus  : constant Boolean := S (P'Old + 1) = '-';
             Offset : constant Positive := (if V >= 0 then 1 else 2);
-            Abs_V  : constant Uns := Int_Params.Abs_Uns_Of_Int (V);
+            Abs_V  : constant Uns := IP.Abs_Uns_Of_Int (V);
           begin
             Minus = (V < 0)
               and then P in P'Old + Offset .. S'Last
-              and then Int_Params.Only_Decimal_Ghost
+              and then UP.Only_Decimal_Ghost
                 (S, From => P'Old + Offset, To => P)
-              and then Int_Params.Scan_Based_Number_Ghost
+              and then UP.Scan_Based_Number_Ghost
                 (S, From => P'Old + Offset, To => P)
-                = Int_Params.Wrap_Option (Abs_V));
+                = UP.Wrap_Option (Abs_V));
    --  Stores the image of V in S starting at S (P + 1), P is updated to point
    --  to the last character stored. The value stored is identical to the value
    --  of Int'Image (V) except that no leading space is stored when V is

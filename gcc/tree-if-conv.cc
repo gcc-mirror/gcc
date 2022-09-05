@@ -1739,6 +1739,7 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
 
   if (reduction_op != PLUS_EXPR
       && reduction_op != MINUS_EXPR
+      && reduction_op != MULT_EXPR
       && reduction_op != BIT_IOR_EXPR
       && reduction_op != BIT_XOR_EXPR
       && reduction_op != BIT_AND_EXPR)

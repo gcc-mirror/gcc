@@ -52,6 +52,7 @@
 #include "rtl-iter.h"
 #include "dwarf2.h"
 #include "gimple.h"
+#include "cgraph.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -4555,6 +4556,61 @@ gcn_vectorization_cost (enum vect_cost_for_stmt ARG_UNUSED (type_of_cost),
   return 1;
 }
 
+/* Implement TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN.  */
+
+static int
+gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node),
+					    struct cgraph_simd_clone *clonei,
+					    tree base_type,
+					    int ARG_UNUSED (num))
+{
+  unsigned int elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
+
+  if (known_eq (clonei->simdlen, 0U))
+    clonei->simdlen = 64;
+  else if (maybe_ne (clonei->simdlen, 64U))
+    {
+      /* Note that x86 has a similar message that is likely to trigger on
+	 sizes that are OK for gcn; the user can't win.  */
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %wd (amdgcn)",
+		  clonei->simdlen.to_constant ());
+      return 0;
+    }
+
+  clonei->vecsize_mangle = 'n';
+  clonei->vecsize_int = 0;
+  clonei->vecsize_float = 0;
+
+  /* DImode ought to be more natural here, but VOIDmode produces better code,
+     at present, due to the shift-and-test steps not being optimized away
+     inside the in-branch clones.  */
+  clonei->mask_mode = VOIDmode;
+
+  return 1;
+}
+
+/* Implement TARGET_SIMD_CLONE_ADJUST.  */
+
+static void
+gcn_simd_clone_adjust (struct cgraph_node *ARG_UNUSED (node))
+{
+  /* This hook has to be defined when
+     TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN is defined, but we don't
+     need it to do anything yet.  */
+}
+
+/* Implement TARGET_SIMD_CLONE_USABLE.  */
+
+static int
+gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node))
+{
+  /* We don't need to do anything here because
+     gcn_simd_clone_compute_vecsize_and_simdlen currently only returns one
+     possibility.  */
+  return 0;
+}
+
 /* }}}  */
 /* {{{ md_reorg pass.  */
 
@@ -6454,7 +6510,7 @@ print_operand (FILE *file, rtx x, int code)
   gcc_unreachable ();
 }
 
-/* Implement DBX_REGISTER_NUMBER macro.
+/* Implement DEBUGGER_REGNO macro.
  
    Return the DWARF register number that corresponds to the GCC internal
    REGNO.  */
@@ -6643,6 +6699,13 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_SECTION_TYPE_FLAGS gcn_section_type_flags
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P gcn_scalar_mode_supported_p
+#undef  TARGET_SIMD_CLONE_ADJUST
+#define TARGET_SIMD_CLONE_ADJUST gcn_simd_clone_adjust
+#undef  TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+#define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \
+  gcn_simd_clone_compute_vecsize_and_simdlen
+#undef  TARGET_SIMD_CLONE_USABLE
+#define TARGET_SIMD_CLONE_USABLE gcn_simd_clone_usable
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p

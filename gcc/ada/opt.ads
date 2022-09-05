@@ -267,6 +267,10 @@ package Opt is
    --  Set to True to detect whether subprogram parameters and function results
    --  alias the same object(s).
 
+   Check_Elaboration_Flags : Boolean := True;
+   --  GNATBIND
+   --  Set to False if switch -k is set.
+
    Check_Float_Overflow : Boolean := False;
    --  GNAT
    --  Set to True to check that operations on predefined unconstrained float

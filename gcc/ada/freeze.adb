@@ -6366,9 +6366,7 @@ package body Freeze is
          end;
       end if;
 
-      if Has_Delayed_Aspects (E)
-        or else May_Inherit_Delayed_Rep_Aspects (E)
-      then
+      if Has_Delayed_Aspects (E) then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
@@ -6799,17 +6797,24 @@ package body Freeze is
             --  A subtype inherits all the type-related representation aspects
             --  from its parents (RM 13.1(8)).
 
+            if May_Inherit_Delayed_Rep_Aspects (E) then
+               Inherit_Delayed_Rep_Aspects (E);
+            end if;
+
             Inherit_Aspects_At_Freeze_Point (E);
 
          --  For a derived type, freeze its parent type first (RM 13.14(15))
 
          elsif Is_Derived_Type (E) then
             Freeze_And_Append (Etype (E), N, Result);
-            Freeze_And_Append (First_Subtype (Etype (E)), N, Result);
 
             --  A derived type inherits each type-related representation aspect
             --  of its parent type that was directly specified before the
             --  declaration of the derived type (RM 13.1(15)).
+
+            if May_Inherit_Delayed_Rep_Aspects (E) then
+               Inherit_Delayed_Rep_Aspects (E);
+            end if;
 
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
@@ -9089,6 +9094,11 @@ package body Freeze is
          Set_Has_Delayed_Aspects (Ftyp, False);
       end if;
 
+      if May_Inherit_Delayed_Rep_Aspects (Ftyp) then
+         Inherit_Delayed_Rep_Aspects (Ftyp);
+         Set_May_Inherit_Delayed_Rep_Aspects (Ftyp, False);
+      end if;
+
       --  Inherit the Small value from the first subtype in any case
 
       if Typ /= Ftyp then
@@ -9653,9 +9663,7 @@ package body Freeze is
       Set_Has_Delayed_Freeze (T);
       L := Freeze_Entity (T, N);
 
-      if Is_Non_Empty_List (L) then
-         Insert_Actions (N, L);
-      end if;
+      Insert_Actions (N, L);
    end Freeze_Itype;
 
    --------------------------

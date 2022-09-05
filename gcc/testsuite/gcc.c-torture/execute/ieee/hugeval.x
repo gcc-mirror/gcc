@@ -2,9 +2,6 @@
 # instead of +Infinity.
 
 global target_triplet
-if { [istarget "hppa*-*-hpux9*"] || [istarget "hppa*-*-hpux10*"] } {
-      set torture_execute_xfail "$target_triplet"
-}
 
 # VxWorks kernel mode has the same problem.
 if {[istarget "*-*-vxworks*"]} {

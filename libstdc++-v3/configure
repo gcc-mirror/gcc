@@ -47955,20 +47955,6 @@ $as_echo "$gcc_cv_have_tls" >&6; }
 $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   fi
-    case "$target" in
-      *-hpux10*)
-	$as_echo "#define HAVE_ISINF 1" >>confdefs.h
-
-	$as_echo "#define HAVE_ISINFF 1" >>confdefs.h
-
-	$as_echo "#define HAVE_ISNANF 1" >>confdefs.h
-
-	$as_echo "#define HAVE_FINITE 1" >>confdefs.h
-
-	$as_echo "#define HAVE_FINITEF 1" >>confdefs.h
-
-	;;
-    esac
     ;;
   *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
 

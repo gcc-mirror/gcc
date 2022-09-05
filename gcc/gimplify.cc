@@ -6031,6 +6031,21 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       return GS_ALL_DONE;
     }
 
+  /* Convert initialization from an empty variable-size CONSTRUCTOR to
+     memset.  */
+  if (TREE_TYPE (*from_p) != error_mark_node
+      && TYPE_SIZE_UNIT (TREE_TYPE (*from_p))
+      && !poly_int_tree_p (TYPE_SIZE_UNIT (TREE_TYPE (*from_p)))
+      && TREE_CODE (*from_p) == CONSTRUCTOR
+      && CONSTRUCTOR_NELTS (*from_p) == 0)
+    {
+      maybe_with_size_expr (from_p);
+      gcc_assert (TREE_CODE (*from_p) == WITH_SIZE_EXPR);
+      return gimplify_modify_expr_to_memset (expr_p,
+					     TREE_OPERAND (*from_p, 1),
+					     want_value, pre_p);
+    }
+
   /* Insert pointer conversions required by the middle-end that are not
      required by the frontend.  This fixes middle-end type checking for
      for example gcc.dg/redecl-6.c.  */
@@ -8304,9 +8319,6 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	  case OMP_CLAUSE_DEPEND_INOUTSET:
 	    i = 4;
 	    break;
-	  case OMP_CLAUSE_DEPEND_SOURCE:
-	  case OMP_CLAUSE_DEPEND_SINK:
-	    continue;
 	  default:
 	    gcc_unreachable ();
 	  }
@@ -8545,9 +8557,6 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	  case OMP_CLAUSE_DEPEND_INOUTSET:
 	    i = 4;
 	    break;
-	  case OMP_CLAUSE_DEPEND_SOURCE:
-	  case OMP_CLAUSE_DEPEND_SINK:
-	    continue;
 	  default:
 	    gcc_unreachable ();
 	  }
@@ -10391,8 +10400,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  gimplify_omp_affinity (list_p, pre_p);
 	  remove = true;
 	  break;
-	case OMP_CLAUSE_DEPEND:
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	case OMP_CLAUSE_DOACROSS:
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	    {
 	      tree deps = OMP_CLAUSE_DECL (c);
 	      while (deps && TREE_CODE (deps) == TREE_LIST)
@@ -10403,10 +10412,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 				   pre_p, NULL, is_gimple_val, fb_rvalue);
 		  deps = TREE_CHAIN (deps);
 		}
-	      break;
 	    }
-	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE)
-	    break;
+	  else
+	    gcc_assert (OMP_CLAUSE_DOACROSS_KIND (c)
+			== OMP_CLAUSE_DOACROSS_SOURCE);
+	  break;
+	case OMP_CLAUSE_DEPEND:
 	  if (handled_depend_iterators == -1)
 	    handled_depend_iterators = gimplify_omp_depend (list_p, pre_p);
 	  if (handled_depend_iterators)
@@ -11931,6 +11942,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DOACROSS:
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
@@ -12414,6 +12426,29 @@ gimplify_omp_taskloop_expr (tree type, tree *tp, gimple_seq *pre_p,
   OMP_FOR_CLAUSES (orig_for_stmt) = c;
 }
 
+/* Helper function of gimplify_omp_for, find OMP_ORDERED with
+   OMP_CLAUSE_DOACROSS clause inside of OMP_FOR's body.  */
+
+static tree
+find_standalone_omp_ordered (tree *tp, int *walk_subtrees, void *)
+{
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_ORDERED:
+      if (omp_find_clause (OMP_ORDERED_CLAUSES (*tp), OMP_CLAUSE_DOACROSS))
+	return *tp;
+      break;
+    case OMP_SIMD:
+    case OMP_PARALLEL:
+    case OMP_TARGET:
+      *walk_subtrees = 0;
+      break;
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
@@ -12789,12 +12824,24 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   tree c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_ORDERED);
   bool is_doacross = false;
-  if (c && OMP_CLAUSE_ORDERED_EXPR (c))
+  if (c && walk_tree_without_duplicates (&OMP_FOR_BODY (for_stmt),
+					 find_standalone_omp_ordered, NULL))
     {
+      OMP_CLAUSE_ORDERED_DOACROSS (c) = 1;
       is_doacross = true;
-      gimplify_omp_ctxp->loop_iter_var.create (TREE_VEC_LENGTH
-						 (OMP_FOR_INIT (for_stmt))
-					       * 2);
+      int len = TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt));
+      gimplify_omp_ctxp->loop_iter_var.create (len * 2);
+      for (tree *pc = &OMP_FOR_CLAUSES (for_stmt); *pc; )
+	if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_LINEAR)
+	  {
+	    error_at (OMP_CLAUSE_LOCATION (*pc),
+		      "%<linear%> clause may not be specified together "
+		      "with %<ordered%> clause if stand-alone %<ordered%> "
+		      "construct is nested in it");
+	    *pc = OMP_CLAUSE_CHAIN (*pc);
+	  }
+	else
+	  pc = &OMP_CLAUSE_CHAIN (*pc);
     }
   int collapse = 1, tile = 0;
   c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_COLLAPSE);
@@ -14867,21 +14914,22 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   if (gimplify_omp_ctxp)
     {
       for (c = OMP_ORDERED_CLAUSES (expr); c; c = OMP_CLAUSE_CHAIN (c))
-	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	    && gimplify_omp_ctxp->loop_iter_var.is_empty ()
-	    && (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK
-		|| OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS
+	    && gimplify_omp_ctxp->loop_iter_var.is_empty ())
 	  {
 	    error_at (OMP_CLAUSE_LOCATION (c),
-		      "%<ordered%> construct with %<depend%> clause must be "
-		      "closely nested inside a loop with %<ordered%> clause "
-		      "with a parameter");
+		      "%<ordered%> construct with %qs clause must be "
+		      "closely nested inside a loop with %<ordered%> clause",
+		      OMP_CLAUSE_DOACROSS_DEPEND (c) ? "depend" : "doacross");
 	    failures++;
 	  }
-	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-		 && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS
+		 && OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	  {
 	    bool fail = false;
+	    sink_c = c;
+	    if (OMP_CLAUSE_DECL (c) == NULL_TREE)
+	      continue;  /* omp_cur_iteration - 1 */
 	    for (decls = OMP_CLAUSE_DECL (c), i = 0;
 		 decls && TREE_CODE (decls) == TREE_LIST;
 		 decls = TREE_CHAIN (decls), ++i)
@@ -14904,21 +14952,24 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 	    if (!fail && i != gimplify_omp_ctxp->loop_iter_var.length () / 2)
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "number of variables in %<depend%> clause with "
+			  "number of variables in %qs clause with "
 			  "%<sink%> modifier does not match number of "
-			  "iteration variables");
+			  "iteration variables",
+			  OMP_CLAUSE_DOACROSS_DEPEND (c)
+			  ? "depend" : "doacross");
 		failures++;
 	      }
-	    sink_c = c;
 	  }
-	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-		 && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SOURCE)
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DOACROSS
+		 && OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SOURCE)
 	  {
 	    if (source_c)
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "more than one %<depend%> clause with %<source%> "
-			  "modifier on an %<ordered%> construct");
+			  "more than one %qs clause with %<source%> "
+			  "modifier on an %<ordered%> construct",
+			  OMP_CLAUSE_DOACROSS_DEPEND (source_c)
+			  ? "depend" : "doacross");
 		failures++;
 	      }
 	    else
@@ -14928,9 +14979,11 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   if (source_c && sink_c)
     {
       error_at (OMP_CLAUSE_LOCATION (source_c),
-		"%<depend%> clause with %<source%> modifier specified "
-		"together with %<depend%> clauses with %<sink%> modifier "
-		"on the same construct");
+		"%qs clause with %<source%> modifier specified "
+		"together with %qs clauses with %<sink%> modifier "
+		"on the same construct",
+		OMP_CLAUSE_DOACROSS_DEPEND (source_c) ? "depend" : "doacross",
+		OMP_CLAUSE_DOACROSS_DEPEND (sink_c) ? "depend" : "doacross");
       failures++;
     }
 

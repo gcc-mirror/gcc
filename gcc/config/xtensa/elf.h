@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Do not force "-fpic" for this target.  */
 #define XTENSA_ALWAYS_PIC 0
 
-#undef DBX_REGISTER_NUMBER
+#undef DEBUGGER_REGNO
 
 /* Search for headers in $tooldir/arch/include and for libraries and
    startfiles in $tooldir/arch/lib.  */

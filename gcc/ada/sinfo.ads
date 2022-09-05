@@ -4183,11 +4183,15 @@ package Sinfo is
 
       --  ITERATED_COMPONENT_ASSOCIATION ::=
       --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
+      --    for ITERATOR_SPECIFICATION => EXPRESSION
+
+      --  At most one of (Defining_Identifier, Iterator_Specification)
+      --  is present at a time, in which case the other one is empty.
 
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
       --  Defining_Identifier
-      --  Iterator_Specification (set to Empty if no Iterator_Spec)
+      --  Iterator_Specification
       --  Expression
       --  Discrete_Choices
       --  Loop_Actions
@@ -4207,8 +4211,12 @@ package Sinfo is
       --  Etype
 
       ---------------------------------
-      --  3.4.5 Comtainer_Aggregates --
+      --  3.4.5 Container_Aggregates --
       ---------------------------------
+
+      --  ITERATED_ELEMENT_ASSOCIATION ::=
+      --    for LOOP_PARAMETER_SPECIFICATION[ use KEY_EXPRESSION] => EXPRESSION
+      --  | for ITERATOR_SPECIFICATION[ use KEY_EXPRESSION] => EXPRESSION
 
       --  N_Iterated_Element_Association
       --  Key_Expression

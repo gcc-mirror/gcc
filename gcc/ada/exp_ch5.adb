@@ -2392,11 +2392,10 @@ package body Exp_Ch5 is
 
       if Ada_Version >= Ada_2005 then
          declare
-            Call           : Node_Id;
-            Conctyp        : Entity_Id;
-            Ent            : Entity_Id;
-            Subprg         : Entity_Id;
-            RT_Subprg_Name : Node_Id;
+            Call      : Node_Id;
+            Ent       : Entity_Id;
+            Prottyp   : Entity_Id;
+            RT_Subprg : RE_Id;
 
          begin
             --  Handle chains of renamings
@@ -2416,35 +2415,27 @@ package body Exp_Ch5 is
 
             if Is_Expanded_Priority_Attribute (Ent) then
 
-               --  Look for the enclosing concurrent type
+               --  Look for the enclosing protected type
 
-               Conctyp := Current_Scope;
-               while not Is_Concurrent_Type (Conctyp) loop
-                  Conctyp := Scope (Conctyp);
+               Prottyp := Current_Scope;
+               while not Is_Protected_Type (Prottyp) loop
+                  Prottyp := Scope (Prottyp);
                end loop;
 
-               pragma Assert (Is_Protected_Type (Conctyp));
-
-               --  Generate the first actual of the call
-
-               Subprg := Current_Scope;
-               while not Present (Protected_Body_Subprogram (Subprg)) loop
-                  Subprg := Scope (Subprg);
-               end loop;
+               pragma Assert (Is_Protected_Type (Prottyp));
 
                --  Select the appropriate run-time call
 
-               if Number_Entries (Conctyp) = 0 then
-                  RT_Subprg_Name :=
-                    New_Occurrence_Of (RTE (RE_Set_Ceiling), Loc);
+               if Has_Entries (Prottyp) then
+                  RT_Subprg := RO_PE_Set_Ceiling;
                else
-                  RT_Subprg_Name :=
-                    New_Occurrence_Of (RTE (RO_PE_Set_Ceiling), Loc);
+                  RT_Subprg := RE_Set_Ceiling;
                end if;
 
                Call :=
                  Make_Procedure_Call_Statement (Loc,
-                   Name => RT_Subprg_Name,
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RT_Subprg), Loc),
                    Parameter_Associations => New_List (
                      New_Copy_Tree (First (Parameter_Associations (Ent))),
                      Relocate_Node (Expression (N))));

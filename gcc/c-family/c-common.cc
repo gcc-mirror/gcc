@@ -324,8 +324,10 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    if they match the mask.
 
    Masks for languages:
-   C --std=c89: D_C99 | D_CXXONLY | D_OBJC | D_CXX_OBJC
-   C --std=c99: D_CXXONLY | D_OBJC
+   C --std=c89: D_C99 | D_C2X | D_CXXONLY | D_OBJC | D_CXX_OBJC
+   C --std=c99: D_C2X | D_CXXONLY | D_OBJC
+   C --std=c17: D_C2X | D_CXXONLY | D_OBJC
+   C --std=c2x: D_CXXONLY | D_OBJC
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
    C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
    C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
@@ -500,7 +502,7 @@ const struct c_common_resword c_common_reswords[] =
   { "namespace",	RID_NAMESPACE,	D_CXXONLY | D_CXXWARN },
   { "new",		RID_NEW,	D_CXXONLY | D_CXXWARN },
   { "noexcept",		RID_NOEXCEPT,	D_CXXONLY | D_CXX11 | D_CXXWARN },
-  { "nullptr",		RID_NULLPTR,	D_CXXONLY | D_CXX11 | D_CXXWARN },
+  { "nullptr",		RID_NULLPTR,	D_C2X | D_CXX11 | D_CXXWARN },
   { "operator",		RID_OPERATOR,	D_CXXONLY | D_CXXWARN },
   { "private",		RID_PRIVATE,	D_CXX_OBJC | D_CXXWARN },
   { "protected",	RID_PROTECTED,	D_CXX_OBJC | D_CXXWARN },
@@ -4548,6 +4550,7 @@ c_common_nodes_and_builtins (void)
   if (c_dialect_cxx ())
     {
       char8_type_node = make_unsigned_type (char8_type_size);
+      TYPE_STRING_FLAG (char8_type_node) = true;
 
       if (flag_char8_t)
         record_builtin_type (RID_CHAR8, "char8_t", char8_type_node);
@@ -4722,6 +4725,18 @@ c_common_nodes_and_builtins (void)
      not shared.  */
   null_node = make_int_cst (1, 1);
   TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
+
+  /* Create the built-in nullptr node.  This part of its initialization is
+     common to C and C++.  The front ends can further adjust its definition
+     in {c,cxx}_init_decl_processing.  In particular, we aren't setting the
+     alignment here for C++ backward ABI bug compatibility.  */
+  nullptr_type_node = make_node (NULLPTR_TYPE);
+  TYPE_SIZE (nullptr_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
+  TYPE_SIZE_UNIT (nullptr_type_node) = size_int (GET_MODE_SIZE (ptr_mode));
+  TYPE_UNSIGNED (nullptr_type_node) = 1;
+  TYPE_PRECISION (nullptr_type_node) = GET_MODE_BITSIZE (ptr_mode);
+  SET_TYPE_MODE (nullptr_type_node, ptr_mode);
+  nullptr_node = build_int_cst (nullptr_type_node, 0);
 
   /* Since builtin_types isn't gc'ed, don't export these nodes.  */
   memset (builtin_types, 0, sizeof (builtin_types));
@@ -5054,11 +5069,12 @@ case_compare (splay_tree_key k1, splay_tree_key k2)
    CASES is a tree containing all the case ranges processed so far;
    COND is the condition for the switch-statement itself.
    Returns the CASE_LABEL_EXPR created, or ERROR_MARK_NODE if no
-   CASE_LABEL_EXPR is created.  */
+   CASE_LABEL_EXPR is created.  ATTRS are the attributes to be applied
+   to the label.  */
 
 tree
 c_add_case_label (location_t loc, splay_tree cases, tree cond,
-		  tree low_value, tree high_value)
+		  tree low_value, tree high_value, tree attrs)
 {
   tree type;
   tree label;
@@ -5067,6 +5083,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond,
 
   /* Create the LABEL_DECL itself.  */
   label = create_artificial_label (loc);
+  decl_attributes (&label, attrs, 0);
 
   /* If there was an error processing the switch condition, bail now
      before we get more confused.  */
@@ -6294,6 +6311,7 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ISINF_SIGN:
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNORMAL:
+    case BUILT_IN_ISSIGNALING:
     case BUILT_IN_SIGNBIT:
       if (builtin_function_validate_nargs (loc, fndecl, nargs, 1))
 	{
@@ -9328,11 +9346,14 @@ braced_list_to_string (tree type, tree ctor, bool member)
   if (!member && !tree_fits_uhwi_p (typesize))
     return ctor;
 
-  /* If the target char size differes from the host char size, we'd risk
+  /* If the target char size differs from the host char size, we'd risk
      loosing data and getting object sizes wrong by converting to
      host chars.  */
   if (TYPE_PRECISION (char_type_node) != CHAR_BIT)
     return ctor;
+
+  /* STRING_CST doesn't support wide characters.  */
+  gcc_checking_assert (TYPE_PRECISION (TREE_TYPE (type)) == CHAR_BIT);
 
   /* If the array has an explicit bound, use it to constrain the size
      of the string.  If it doesn't, be sure to create a string that's

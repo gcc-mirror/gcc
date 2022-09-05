@@ -291,6 +291,7 @@ void
 bpf_target_macros (cpp_reader *pfile)
 {
   builtin_define ("__BPF__");
+  builtin_define ("__bpf__");
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__BPF_BIG_ENDIAN__");
@@ -659,12 +660,15 @@ bpf_address_base_p (rtx x, bool strict)
    target machine for a memory operand of mode MODE.  */
 
 static bool
-bpf_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
+bpf_legitimate_address_p (machine_mode mode,
 			  rtx x,
 			  bool strict)
 {
   switch (GET_CODE (x))
     {
+    case CONST_INT:
+      return (mode == FUNCTION_MODE);
+
     case REG:
       return bpf_address_base_p (x, strict);
 
@@ -1311,6 +1315,22 @@ bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+/* Implement target hook small_register_classes_for_mode_p.  */
+
+static bool
+bpf_small_register_classes_for_mode_p (machine_mode mode)
+{
+  if (TARGET_XBPF)
+    return 1;
+  else
+    /* Avoid putting function addresses in registers, as calling these
+       is not supported in eBPF.  */
+    return (mode != FUNCTION_MODE);
+}
+
+#undef TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+  bpf_small_register_classes_for_mode_p
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN (see gccint manual section
    Target Macros::Misc.).

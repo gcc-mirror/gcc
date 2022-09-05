@@ -270,11 +270,13 @@
 	(match_operand:V_128 1 "register_operand" ""))]
   "TARGET_VX && GENERAL_REG_P (operands[0]) && VECTOR_REG_P (operands[1])"
   [(set (match_dup 2)
-	(unspec:DI [(subreg:V2DI (match_dup 1) 0)
-		    (const_int 0)] UNSPEC_VEC_EXTRACT))
+       (vec_select:DI
+         (subreg:V2DI (match_dup 1) 0)
+           (parallel [(const_int 0)])))
    (set (match_dup 3)
-	(unspec:DI [(subreg:V2DI (match_dup 1) 0)
-		    (const_int 1)] UNSPEC_VEC_EXTRACT))]
+       (vec_select:DI
+         (subreg:V2DI (match_dup 1) 0)
+           (parallel [(const_int 1)])))]
 {
   operands[2] = operand_subword (operands[0], 0, 0, <MODE>mode);
   operands[3] = operand_subword (operands[0], 1, 0, <MODE>mode);
@@ -511,22 +513,24 @@
   [(set_attr "op_type" "VRS")])
 
 
-; FIXME: Support also vector mode operands for 0
-; FIXME: This should be (vec_select ..) or something but it does only allow constant selectors :(
-; This is used via RTL standard name as well as for expanding the builtin
+;; FIXME: Support also vector mode operands for 0
+;; This is used via RTL standard name as well as for expanding the builtin
 (define_expand "vec_extract<mode><non_vec_l>"
-  [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "")
-	(unspec:<non_vec> [(match_operand:V  1 "register_operand" "")
-			   (match_operand:SI 2 "nonmemory_operand" "")]
-			  UNSPEC_VEC_EXTRACT))]
-  "TARGET_VX")
+  [(set (match_operand:<non_vec>    0 "nonimmediate_operand" "")
+       (vec_select:<non_vec>
+         (match_operand:V           1 "register_operand" "")
+         (parallel
+          [(match_operand:SI        2 "nonmemory_operand" "")])))]
+  "TARGET_VX"
+)
 
 ; vlgvb, vlgvh, vlgvf, vlgvg, vsteb, vsteh, vstef, vsteg
 (define_insn "*vec_extract<mode>"
-  [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,R")
-	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v,v")
-			   (match_operand:SI 2 "nonmemory_operand" "an,I")]
-			  UNSPEC_VEC_EXTRACT))]
+  [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "=d,R")
+       (vec_select:<non_vec>
+         (match_operand:V        1 "nonmemory_operand"  "v,v")
+         (parallel
+          [(match_operand:SI     2 "nonmemory_operand" "an,I")])))]
   "TARGET_VX
    && (!CONST_INT_P (operands[2])
        || UINTVAL (operands[2]) < GET_MODE_NUNITS (<V:MODE>mode))"
@@ -537,11 +541,11 @@
 
 ; vlgvb, vlgvh, vlgvf, vlgvg
 (define_insn "*vec_extract<mode>_plus"
-  [(set (match_operand:<non_vec>                      0 "nonimmediate_operand" "=d")
-	(unspec:<non_vec> [(match_operand:V           1 "register_operand"      "v")
-			   (plus:SI (match_operand:SI 2 "nonmemory_operand"     "a")
-				    (match_operand:SI 3 "const_int_operand"     "n"))]
-			   UNSPEC_VEC_EXTRACT))]
+  [(set (match_operand:<non_vec>       0 "nonimmediate_operand" "=d")
+	(vec_select:<non_vec>
+	 (match_operand:V              1 "register_operand"      "v")
+	 (plus:SI (match_operand:SI    2 "nonmemory_operand"     "a")
+	  (parallel [(match_operand:SI 3 "const_int_operand"     "n")]))))]
   "TARGET_VX"
   "vlgv<bhfgq>\t%0,%v1,%Y3(%2)"
   [(set_attr "op_type" "VRS")])
@@ -797,6 +801,17 @@
   "vpdi\t%v0,%v1,%v2,4"
   [(set_attr "op_type" "VRR")])
 
+; Second DW of op1 and first DW of op2 (when interpreted as 2-element vector).
+(define_insn "@vpdi4_2<mode>"
+  [(set (match_operand:V_HW_4   0 "register_operand" "=v")
+	(vec_select:V_HW_4
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_4 1 "register_operand"  "v")
+	  (match_operand:V_HW_4 2 "register_operand"  "v"))
+	 (parallel [(const_int 2) (const_int 3) (const_int 4) (const_int 5)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,4"
+  [(set_attr "op_type" "VRR")])
 
 (define_insn "*vmrhb"
   [(set (match_operand:V16QI                     0 "register_operand" "=v")
@@ -1255,6 +1270,23 @@
   "<vec_shifts_mnem><bhfgq>\t%v0,%v1,%Y2"
   [(set_attr "op_type" "VRS")])
 
+; verllg for V4SI/V4SF.  This swaps the first and the second two
+; elements of a vector and is only valid in that context.
+(define_expand "rotl<mode>3_di"
+ [
+ (set (match_dup 2)
+  (subreg:V2DI (match_operand:V_HW_4 1) 0))
+ (set (match_dup 3)
+  (rotate:V2DI
+   (match_dup 2)
+   (const_int 32)))
+ (set (match_operand:V_HW_4 0)
+  (subreg:V_HW_4 (match_dup 3) 0))]
+ "TARGET_VX"
+ {
+  operands[2] = gen_reg_rtx (V2DImode);
+  operands[3] = gen_reg_rtx (V2DImode);
+ })
 
 ; Shift each element by corresponding vector element
 

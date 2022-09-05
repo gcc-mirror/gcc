@@ -5667,33 +5667,35 @@ package body Exp_Attr is
       --  which is illegal, because of the lack of aliasing.
 
       when Attribute_Priority => Priority : declare
-         Call           : Node_Id;
-         Conctyp        : Entity_Id;
-         New_Itype      : Entity_Id;
-         Object_Parm    : Node_Id;
-         Subprg         : Entity_Id;
-         RT_Subprg_Name : Node_Id;
+         Call        : Node_Id;
+         New_Itype   : Entity_Id;
+         Object_Parm : Node_Id;
+         Prottyp     : Entity_Id;
+         RT_Subprg   : RE_Id;
+         Subprg      : Entity_Id;
 
       begin
-         --  Look for the enclosing concurrent type
+         --  Look for the enclosing protected type
 
-         Conctyp := Current_Scope;
-         while not Is_Concurrent_Type (Conctyp) loop
-            Conctyp := Scope (Conctyp);
+         Prottyp := Current_Scope;
+         while not Is_Protected_Type (Prottyp) loop
+            Prottyp := Scope (Prottyp);
          end loop;
 
-         pragma Assert (Is_Protected_Type (Conctyp));
+         pragma Assert (Is_Protected_Type (Prottyp));
 
          --  Generate the actual of the call
 
          Subprg := Current_Scope;
-         while not Present (Protected_Body_Subprogram (Subprg)) loop
+         while not (Is_Subprogram_Or_Entry (Subprg)
+                    and then Present (Protected_Body_Subprogram (Subprg)))
+         loop
             Subprg := Scope (Subprg);
          end loop;
 
          --  Use of 'Priority inside protected entries and barriers (in both
          --  cases the type of the first formal of their expanded subprogram
-         --  is Address)
+         --  is Address).
 
          if Etype (First_Entity (Protected_Body_Subprogram (Subprg))) =
               RTE (RE_Address)
@@ -5708,7 +5710,7 @@ package body Exp_Attr is
             New_Itype := Create_Itype (E_Access_Type, N);
             Set_Etype (New_Itype, New_Itype);
             Set_Directly_Designated_Type (New_Itype,
-              Corresponding_Record_Type (Conctyp));
+              Corresponding_Record_Type (Prottyp));
             Freeze_Itype (New_Itype, N);
 
             --  Generate:
@@ -5743,15 +5745,16 @@ package body Exp_Attr is
 
          --  Select the appropriate run-time subprogram
 
-         if Number_Entries (Conctyp) = 0 then
-            RT_Subprg_Name := New_Occurrence_Of (RTE (RE_Get_Ceiling), Loc);
+         if Has_Entries (Prottyp) then
+            RT_Subprg := RO_PE_Get_Ceiling;
          else
-            RT_Subprg_Name := New_Occurrence_Of (RTE (RO_PE_Get_Ceiling), Loc);
+            RT_Subprg := RE_Get_Ceiling;
          end if;
 
          Call :=
            Make_Function_Call (Loc,
-             Name                   => RT_Subprg_Name,
+             Name                   =>
+               New_Occurrence_Of (RTE (RT_Subprg), Loc),
              Parameter_Associations => New_List (Object_Parm));
 
          Rewrite (N, Call);

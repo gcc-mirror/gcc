@@ -216,6 +216,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    */
   class error_code
   {
+    template<typename _ErrorCodeEnum>
+      using _Check
+	= __enable_if_t<is_error_code_enum<_ErrorCodeEnum>::value>;
+
   public:
     error_code() noexcept
     : _M_value(0), _M_cat(&system_category()) { }
@@ -223,10 +227,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     error_code(int __v, const error_category& __cat) noexcept
     : _M_value(__v), _M_cat(&__cat) { }
 
-    template<typename _ErrorCodeEnum, typename = typename
-	     enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type>
+    /// Initialize with a user-defined type, by calling make_error_code.
+    template<typename _ErrorCodeEnum,
+	     typename = _Check<_ErrorCodeEnum>>
       error_code(_ErrorCodeEnum __e) noexcept
       { *this = make_error_code(__e); }
+
+    error_code(const error_code&) = default;
+    error_code& operator=(const error_code&) = default;
 
     void
     assign(int __v, const error_category& __cat) noexcept
@@ -238,13 +246,6 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     void
     clear() noexcept
     { assign(0, system_category()); }
-
-    // DR 804.
-    template<typename _ErrorCodeEnum>
-      typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value,
-			 error_code&>::type
-      operator=(_ErrorCodeEnum __e) noexcept
-      { return *this = make_error_code(__e); }
 
     /// The error value.
     [[__nodiscard__]]
@@ -345,6 +346,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    */
   class error_condition
   {
+    template<typename _ErrorConditionEnum>
+      using _Check
+	= __enable_if_t<is_error_condition_enum<_ErrorConditionEnum>::value>;
+
   public:
     /// Initialize with a zero (no error) value and the generic category.
     error_condition() noexcept
@@ -354,10 +359,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     error_condition(int __v, const error_category& __cat) noexcept
     : _M_value(__v), _M_cat(&__cat) { }
 
-    template<typename _ErrorConditionEnum, typename = typename
-	 enable_if<is_error_condition_enum<_ErrorConditionEnum>::value>::type>
+    /// Initialize with a user-defined type, by calling make_error_condition.
+    template<typename _ErrorConditionEnum,
+	     typename = _Check<_ErrorConditionEnum>>
       error_condition(_ErrorConditionEnum __e) noexcept
       { *this = make_error_condition(__e); }
+
+    error_condition(const error_condition&) = default;
+    error_condition& operator=(const error_condition&) = default;
 
     /// Set the value and category.
     void
@@ -366,13 +375,6 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       _M_value = __v;
       _M_cat = &__cat;
     }
-
-    // DR 804.
-    template<typename _ErrorConditionEnum>
-      typename enable_if<is_error_condition_enum
-			 <_ErrorConditionEnum>::value, error_condition&>::type
-      operator=(_ErrorConditionEnum __e) noexcept
-      { return *this = make_error_condition(__e); }
 
     /// Reset the value and category to the default-constructed state.
     void

@@ -100,6 +100,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Metaprogramming helper types.
 
+  // Primary template.
+  /// Define a member typedef `type` only if a boolean constant is true.
+  template<bool, typename _Tp = void>
+    struct enable_if
+    { };
+
+  // Partial specialization for true.
+  template<typename _Tp>
+    struct enable_if<true, _Tp>
+    { typedef _Tp type; };
+
+  // __enable_if_t (std::enable_if_t for C++11)
+  template<bool _Cond, typename _Tp = void>
+    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
+
   template<bool>
     struct __conditional
     {
@@ -127,55 +142,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     using __type_identity_t = typename __type_identity<_Tp>::type;
 
-  template<typename...>
-    struct __or_;
+  namespace __detail
+  {
+    // A variadic alias template that resolves to its first argument.
+    template<typename _Tp, typename...>
+      using __first_t = _Tp;
 
-  template<>
-    struct __or_<>
-    : public false_type
+    // These are deliberately not defined.
+    template<typename... _Bn>
+      auto __or_fn(int) -> __first_t<false_type,
+				     __enable_if_t<!bool(_Bn::value)>...>;
+
+    template<typename... _Bn>
+      auto __or_fn(...) -> true_type;
+
+    template<typename... _Bn>
+      auto __and_fn(int) -> __first_t<true_type,
+				      __enable_if_t<bool(_Bn::value)>...>;
+
+    template<typename... _Bn>
+      auto __and_fn(...) -> false_type;
+  } // namespace detail
+
+  // Like C++17 std::dis/conjunction, but usable in C++11 and resolves
+  // to either true_type or false_type which allows for a more efficient
+  // implementation that avoids recursive class template instantiation.
+  template<typename... _Bn>
+    struct __or_
+    : decltype(__detail::__or_fn<_Bn...>(0))
     { };
 
-  template<typename _B1>
-    struct __or_<_B1>
-    : public _B1
-    { };
-
-  template<typename _B1, typename _B2>
-    struct __or_<_B1, _B2>
-    : public __conditional_t<_B1::value, _B1, _B2>
-    { };
-
-  template<typename _B1, typename _B2, typename _B3, typename... _Bn>
-    struct __or_<_B1, _B2, _B3, _Bn...>
-    : public __conditional_t<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>
-    { };
-
-  template<typename...>
-    struct __and_;
-
-  template<>
-    struct __and_<>
-    : public true_type
-    { };
-
-  template<typename _B1>
-    struct __and_<_B1>
-    : public _B1
-    { };
-
-  template<typename _B1, typename _B2>
-    struct __and_<_B1, _B2>
-    : public __conditional_t<_B1::value, _B2, _B1>
-    { };
-
-  template<typename _B1, typename _B2, typename _B3, typename... _Bn>
-    struct __and_<_B1, _B2, _B3, _Bn...>
-    : public __conditional_t<_B1::value, __and_<_B2, _B3, _Bn...>, _B1>
+  template<typename... _Bn>
+    struct __and_
+    : decltype(__detail::__and_fn<_Bn...>(0))
     { };
 
   template<typename _Pp>
     struct __not_
-    : public __bool_constant<!bool(_Pp::value)>
+    : __bool_constant<!bool(_Pp::value)>
     { };
   /// @endcond
 
@@ -186,23 +190,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool __or_v = __or_<_Bn...>::value;
   template<typename... _Bn>
     inline constexpr bool __and_v = __and_<_Bn...>::value;
+
+  namespace __detail
+  {
+    template<typename /* = void */, typename _B1, typename... _Bn>
+      struct __disjunction_impl
+      { using type = _B1; };
+
+    template<typename _B1, typename _B2, typename... _Bn>
+      struct __disjunction_impl<__enable_if_t<!bool(_B1::value)>, _B1, _B2, _Bn...>
+      { using type = typename __disjunction_impl<void, _B2, _Bn...>::type; };
+
+    template<typename /* = void */, typename _B1, typename... _Bn>
+      struct __conjunction_impl
+      { using type = _B1; };
+
+    template<typename _B1, typename _B2, typename... _Bn>
+      struct __conjunction_impl<__enable_if_t<bool(_B1::value)>, _B1, _B2, _Bn...>
+      { using type = typename __conjunction_impl<void, _B2, _Bn...>::type; };
+  } // namespace __detail
   /// @endcond
 
 #define __cpp_lib_logical_traits 201510L
 
   template<typename... _Bn>
     struct conjunction
-    : __and_<_Bn...>
+    : __detail::__conjunction_impl<void, _Bn...>::type
+    { };
+
+  template<>
+    struct conjunction<>
+    : true_type
     { };
 
   template<typename... _Bn>
     struct disjunction
-    : __or_<_Bn...>
+    : __detail::__disjunction_impl<void, _Bn...>::type
+    { };
+
+  template<>
+    struct disjunction<>
+    : false_type
     { };
 
   template<typename _Pp>
     struct negation
-    : __not_<_Pp>
+    : __not_<_Pp>::type
     { };
 
   /** @ingroup variable_templates
@@ -685,18 +718,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;
-
-  // Utility to detect referenceable types ([defns.referenceable]).
-
-  template<typename _Tp, typename = void>
-    struct __is_referenceable
-    : public false_type
-    { };
-
-  template<typename _Tp>
-    struct __is_referenceable<_Tp, __void_t<_Tp&>>
-    : public true_type
-    { };
   /// @endcond
 
   // Type properties.
@@ -824,7 +845,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_unsigned
   template<typename _Tp>
     struct is_unsigned
-    : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>
+    : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>::type
     { };
 
   /// @cond undocumented
@@ -840,21 +861,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     auto declval() noexcept -> decltype(__declval<_Tp>(0));
 
-  template<typename, unsigned = 0>
-    struct extent;
-
   template<typename>
     struct remove_all_extents;
 
   /// @cond undocumented
   template<typename _Tp>
     struct __is_array_known_bounds
-    : public integral_constant<bool, (extent<_Tp>::value > 0)>
+    : public false_type
+    { };
+
+  template<typename _Tp, size_t _Size>
+    struct __is_array_known_bounds<_Tp[_Size]>
+    : public true_type
     { };
 
   template<typename _Tp>
     struct __is_array_unknown_bounds
-    : public __and_<is_array<_Tp>, __not_<extent<_Tp>>>
+    : public false_type
+    { };
+
+  template<typename _Tp>
+    struct __is_array_unknown_bounds<_Tp[]>
+    : public true_type
     { };
 
   // Destructible and constructible type properties.
@@ -967,9 +995,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
   template<typename _Tp, typename... _Args>
-    struct __is_constructible_impl
-    : public __bool_constant<__is_constructible(_Tp, _Args...)>
-    { };
+    using __is_constructible_impl
+      = __bool_constant<__is_constructible(_Tp, _Args...)>;
   /// @endcond
 
   /// is_constructible
@@ -984,53 +1011,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_default_constructible
   template<typename _Tp>
     struct is_default_constructible
-    : public __is_constructible_impl<_Tp>::type
+    : public __is_constructible_impl<_Tp>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
 
   /// @cond undocumented
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_copy_constructible_impl;
+  template<typename _Tp, typename = void>
+    struct __add_lvalue_reference_helper
+    { using type = _Tp; };
 
   template<typename _Tp>
-    struct __is_copy_constructible_impl<_Tp, false>
-    : public false_type { };
+    struct __add_lvalue_reference_helper<_Tp, __void_t<_Tp&>>
+    { using type = _Tp&; };
 
   template<typename _Tp>
-    struct __is_copy_constructible_impl<_Tp, true>
-    : public __is_constructible_impl<_Tp, const _Tp&>
-    { };
+    using __add_lval_ref_t = typename __add_lvalue_reference_helper<_Tp>::type;
   /// @endcond
 
   /// is_copy_constructible
   template<typename _Tp>
     struct is_copy_constructible
-    : public __is_copy_constructible_impl<_Tp>
+    : public __is_constructible_impl<_Tp, __add_lval_ref_t<const _Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
 
   /// @cond undocumented
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_move_constructible_impl;
+  template<typename _Tp, typename = void>
+    struct __add_rvalue_reference_helper
+    { using type = _Tp; };
 
   template<typename _Tp>
-    struct __is_move_constructible_impl<_Tp, false>
-    : public false_type { };
+    struct __add_rvalue_reference_helper<_Tp, __void_t<_Tp&&>>
+    { using type = _Tp&&; };
 
   template<typename _Tp>
-    struct __is_move_constructible_impl<_Tp, true>
-    : public __is_constructible_impl<_Tp, _Tp&&>
-    { };
+    using __add_rval_ref_t = typename __add_rvalue_reference_helper<_Tp>::type;
   /// @endcond
 
   /// is_move_constructible
   template<typename _Tp>
     struct is_move_constructible
-    : public __is_move_constructible_impl<_Tp>
+    : public __is_constructible_impl<_Tp, __add_rval_ref_t<_Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1045,7 +1070,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_nothrow_constructible
   template<typename _Tp, typename... _Args>
     struct is_nothrow_constructible
-    : public __is_nothrow_constructible_impl<_Tp, _Args...>::type
+    : public __is_nothrow_constructible_impl<_Tp, _Args...>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1054,112 +1079,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_nothrow_default_constructible
   template<typename _Tp>
     struct is_nothrow_default_constructible
-    : public __bool_constant<__is_nothrow_constructible(_Tp)>
+    : public __is_nothrow_constructible_impl<_Tp>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
-  /// @cond undocumented
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_nothrow_copy_constructible_impl;
-
-  template<typename _Tp>
-    struct __is_nothrow_copy_constructible_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_nothrow_copy_constructible_impl<_Tp, true>
-    : public __is_nothrow_constructible_impl<_Tp, const _Tp&>
-    { };
-  /// @endcond
 
   /// is_nothrow_copy_constructible
   template<typename _Tp>
     struct is_nothrow_copy_constructible
-    : public __is_nothrow_copy_constructible_impl<_Tp>::type
+    : public __is_nothrow_constructible_impl<_Tp, __add_lval_ref_t<const _Tp>>
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
+	"template argument must be a complete class or an unbounded array");
+    };
+
+  /// is_nothrow_move_constructible
+  template<typename _Tp>
+    struct is_nothrow_move_constructible
+    : public __is_nothrow_constructible_impl<_Tp, __add_rval_ref_t<_Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
 
   /// @cond undocumented
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_nothrow_move_constructible_impl;
-
-  template<typename _Tp>
-    struct __is_nothrow_move_constructible_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_nothrow_move_constructible_impl<_Tp, true>
-    : public __is_nothrow_constructible_impl<_Tp, _Tp&&>
-    { };
+  template<typename _Tp, typename _Up>
+    using __is_assignable_impl = __bool_constant<__is_assignable(_Tp, _Up)>;
   /// @endcond
-
-  /// is_nothrow_move_constructible
-  template<typename _Tp>
-    struct is_nothrow_move_constructible
-    : public __is_nothrow_move_constructible_impl<_Tp>::type
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
 
   /// is_assignable
   template<typename _Tp, typename _Up>
     struct is_assignable
-    : public __bool_constant<__is_assignable(_Tp, _Up)>
+    : public __is_assignable_impl<_Tp, _Up>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_copy_assignable_impl;
-
-  template<typename _Tp>
-    struct __is_copy_assignable_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_copy_assignable_impl<_Tp, true>
-    : public __bool_constant<__is_assignable(_Tp&, const _Tp&)>
-    { };
 
   /// is_copy_assignable
   template<typename _Tp>
     struct is_copy_assignable
-    : public __is_copy_assignable_impl<_Tp>::type
+    : public __is_assignable_impl<__add_lval_ref_t<_Tp>,
+				  __add_lval_ref_t<const _Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_move_assignable_impl;
-
-  template<typename _Tp>
-    struct __is_move_assignable_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_move_assignable_impl<_Tp, true>
-    : public __bool_constant<__is_assignable(_Tp&, _Tp&&)>
-    { };
 
   /// is_move_assignable
   template<typename _Tp>
     struct is_move_assignable
-    : public __is_move_assignable_impl<_Tp>::type
+    : public __is_assignable_impl<__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Tp, typename _Up>
     using __is_nothrow_assignable_impl
       = __bool_constant<__is_nothrow_assignable(_Tp, _Up)>;
+  /// @endcond
 
   /// is_nothrow_assignable
   template<typename _Tp, typename _Up>
@@ -1170,52 +1151,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_nt_copy_assignable_impl;
-
-  template<typename _Tp>
-    struct __is_nt_copy_assignable_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_nt_copy_assignable_impl<_Tp, true>
-    : public __is_nothrow_assignable_impl<_Tp&, const _Tp&>
-    { };
-
   /// is_nothrow_copy_assignable
   template<typename _Tp>
     struct is_nothrow_copy_assignable
-    : public __is_nt_copy_assignable_impl<_Tp>
+    : public __is_nothrow_assignable_impl<__add_lval_ref_t<_Tp>,
+					  __add_lval_ref_t<const _Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_nt_move_assignable_impl;
-
-  template<typename _Tp>
-    struct __is_nt_move_assignable_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_nt_move_assignable_impl<_Tp, true>
-    : public __is_nothrow_assignable_impl<_Tp&, _Tp&&>
-    { };
 
   /// is_nothrow_move_assignable
   template<typename _Tp>
     struct is_nothrow_move_assignable
-    : public __is_nt_move_assignable_impl<_Tp>
+    : public __is_nothrow_assignable_impl<__add_lval_ref_t<_Tp>,
+					  __add_rval_ref_t<_Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
+  template<typename _Tp, typename... _Args>
+    using __is_trivially_constructible_impl
+      = __bool_constant<__is_trivially_constructible(_Tp, _Args...)>;
+  /// @endcond
+
   /// is_trivially_constructible
   template<typename _Tp, typename... _Args>
     struct is_trivially_constructible
-    : public __bool_constant<__is_trivially_constructible(_Tp, _Args...)>
+    : public __is_trivially_constructible_impl<_Tp, _Args...>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1224,7 +1189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_default_constructible
   template<typename _Tp>
     struct is_trivially_default_constructible
-    : public __bool_constant<__is_trivially_constructible(_Tp)>
+    : public __is_trivially_constructible_impl<_Tp>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1257,101 +1222,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp>
     struct __is_implicitly_default_constructible
     : public __and_<__is_constructible_impl<_Tp>,
-		    __is_implicitly_default_constructible_safe<_Tp>>
-    { };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_trivially_copy_constructible_impl;
-
-  template<typename _Tp>
-    struct __is_trivially_copy_constructible_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_trivially_copy_constructible_impl<_Tp, true>
-    : public __and_<__is_copy_constructible_impl<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_constructible(_Tp, const _Tp&)>>
+		    __is_implicitly_default_constructible_safe<_Tp>>::type
     { };
 
   /// is_trivially_copy_constructible
   template<typename _Tp>
     struct is_trivially_copy_constructible
-    : public __is_trivially_copy_constructible_impl<_Tp>
+    : public __is_trivially_constructible_impl<_Tp, __add_lval_ref_t<const _Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_trivially_move_constructible_impl;
-
-  template<typename _Tp>
-    struct __is_trivially_move_constructible_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_trivially_move_constructible_impl<_Tp, true>
-    : public __and_<__is_move_constructible_impl<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_constructible(_Tp, _Tp&&)>>
-    { };
 
   /// is_trivially_move_constructible
   template<typename _Tp>
     struct is_trivially_move_constructible
-    : public __is_trivially_move_constructible_impl<_Tp>
+    : public __is_trivially_constructible_impl<_Tp, __add_rval_ref_t<_Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
+
+  /// @cond undocumented
+  template<typename _Tp, typename _Up>
+    using __is_trivially_assignable_impl
+      = __bool_constant<__is_trivially_assignable(_Tp, _Up)>;
+  /// @endcond
 
   /// is_trivially_assignable
   template<typename _Tp, typename _Up>
     struct is_trivially_assignable
-    : public __bool_constant<__is_trivially_assignable(_Tp, _Up)>
+    : public __is_trivially_assignable_impl<_Tp, _Up>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_trivially_copy_assignable_impl;
-
-  template<typename _Tp>
-    struct __is_trivially_copy_assignable_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_trivially_copy_assignable_impl<_Tp, true>
-    : public __bool_constant<__is_trivially_assignable(_Tp&, const _Tp&)>
-    { };
 
   /// is_trivially_copy_assignable
   template<typename _Tp>
     struct is_trivially_copy_assignable
-    : public __is_trivially_copy_assignable_impl<_Tp>
+    : public __is_trivially_assignable_impl<__add_lval_ref_t<_Tp>,
+					    __add_lval_ref_t<const _Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
 
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __is_trivially_move_assignable_impl;
-
-  template<typename _Tp>
-    struct __is_trivially_move_assignable_impl<_Tp, false>
-    : public false_type { };
-
-  template<typename _Tp>
-    struct __is_trivially_move_assignable_impl<_Tp, true>
-    : public __bool_constant<__is_trivially_assignable(_Tp&, _Tp&&)>
-    { };
-
   /// is_trivially_move_assignable
   template<typename _Tp>
     struct is_trivially_move_assignable
-    : public __is_trivially_move_assignable_impl<_Tp>
+    : public __is_trivially_assignable_impl<__add_lval_ref_t<_Tp>,
+					    __add_rval_ref_t<_Tp>>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1361,7 +1282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_trivially_destructible
     : public __and_<__is_destructible_safe<_Tp>,
-		    __bool_constant<__has_trivial_destructor(_Tp)>>
+		    __bool_constant<__has_trivial_destructor(_Tp)>>::type
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1403,23 +1324,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
 
   /// extent
-  template<typename, unsigned _Uint>
+  template<typename, unsigned _Uint = 0>
     struct extent
-    : public integral_constant<std::size_t, 0> { };
+    : public integral_constant<size_t, 0> { };
 
-  template<typename _Tp, unsigned _Uint, std::size_t _Size>
+  template<typename _Tp, size_t _Size>
+    struct extent<_Tp[_Size], 0>
+    : public integral_constant<size_t, _Size> { };
+
+  template<typename _Tp, unsigned _Uint, size_t _Size>
     struct extent<_Tp[_Size], _Uint>
-    : public integral_constant<std::size_t,
-			       _Uint == 0 ? _Size : extent<_Tp,
-							   _Uint - 1>::value>
-    { };
+    : public extent<_Tp, _Uint - 1>::type { };
+
+  template<typename _Tp>
+    struct extent<_Tp[], 0>
+    : public integral_constant<size_t, 0> { };
 
   template<typename _Tp, unsigned _Uint>
     struct extent<_Tp[], _Uint>
-    : public integral_constant<std::size_t,
-			       _Uint == 0 ? 0 : extent<_Tp,
-						       _Uint - 1>::value>
-    { };
+    : public extent<_Tp, _Uint - 1>::type { };
 
 
   // Type relations.
@@ -1633,33 +1556,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct remove_reference<_Tp&&>
     { typedef _Tp   type; };
 
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __add_lvalue_reference_helper
-    { typedef _Tp   type; };
-
-  template<typename _Tp>
-    struct __add_lvalue_reference_helper<_Tp, true>
-    { typedef _Tp&   type; };
-
   /// add_lvalue_reference
   template<typename _Tp>
     struct add_lvalue_reference
-    : public __add_lvalue_reference_helper<_Tp>
-    { };
-
-  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
-    struct __add_rvalue_reference_helper
-    { typedef _Tp   type; };
-
-  template<typename _Tp>
-    struct __add_rvalue_reference_helper<_Tp, true>
-    { typedef _Tp&&   type; };
+    { using type = __add_lval_ref_t<_Tp>; };
 
   /// add_rvalue_reference
   template<typename _Tp>
     struct add_rvalue_reference
-    : public __add_rvalue_reference_helper<_Tp>
-    { };
+    { using type = __add_rval_ref_t<_Tp>; };
 
 #if __cplusplus > 201103L
   /// Alias template for remove_reference
@@ -2060,20 +1965,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __remove_pointer_helper<_Tp, __remove_cv_t<_Tp>>
     { };
 
-  template<typename _Tp, bool = __or_<__is_referenceable<_Tp>,
-				      is_void<_Tp>>::value>
+  template<typename _Tp, typename = void>
     struct __add_pointer_helper
-    { typedef _Tp     type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
-    struct __add_pointer_helper<_Tp, true>
-    { typedef typename remove_reference<_Tp>::type*     type; };
+    struct __add_pointer_helper<_Tp, __void_t<_Tp*>>
+    { using type = _Tp*; };
 
   /// add_pointer
   template<typename _Tp>
     struct add_pointer
     : public __add_pointer_helper<_Tp>
     { };
+
+  template<typename _Tp>
+    struct add_pointer<_Tp&>
+    { using type = _Tp*; };
+
+  template<typename _Tp>
+    struct add_pointer<_Tp&&>
+    { using type = _Tp*; };
 
 #if __cplusplus > 201103L
   /// Alias template for remove_pointer
@@ -2167,34 +2079,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Decay trait for arrays and functions, used for perfect forwarding
   // in make_pair, make_tuple, etc.
-  template<typename _Up,
-	   bool _IsArray = is_array<_Up>::value,
-	   bool _IsFunction = is_function<_Up>::value>
-    struct __decay_selector;
-
-  // NB: DR 705.
   template<typename _Up>
-    struct __decay_selector<_Up, false, false>
-    { typedef __remove_cv_t<_Up> __type; };
+    struct __decay_selector
+    : __conditional_t<is_const<const _Up>::value, // false for functions
+		      remove_cv<_Up>,		  // N.B. DR 705.
+		      add_pointer<_Up>>		  // function decays to pointer
+    { };
 
-  template<typename _Up>
-    struct __decay_selector<_Up, true, false>
-    { typedef typename remove_extent<_Up>::type* __type; };
+  template<typename _Up, size_t _Nm>
+    struct __decay_selector<_Up[_Nm]>
+    { using type = _Up*; };
 
   template<typename _Up>
-    struct __decay_selector<_Up, false, true>
-    { typedef typename add_pointer<_Up>::type __type; };
+    struct __decay_selector<_Up[]>
+    { using type = _Up*; };
+
   /// @endcond
 
   /// decay
   template<typename _Tp>
-    class decay
-    {
-      typedef typename remove_reference<_Tp>::type __remove_type;
+    struct decay
+    { using type = typename __decay_selector<_Tp>::type; };
 
-    public:
-      typedef typename __decay_selector<__remove_type>::__type type;
-    };
+  template<typename _Tp>
+    struct decay<_Tp&>
+    { using type = typename __decay_selector<_Tp>::type; };
+
+  template<typename _Tp>
+    struct decay<_Tp&&>
+    { using type = typename __decay_selector<_Tp>::type; };
 
   /// @cond undocumented
 
@@ -2219,22 +2132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __decay_and_strip = __strip_reference_wrapper<__decay_t<_Tp>>;
   /// @endcond
 
-  // Primary template.
-  /// Define a member typedef `type` only if a boolean constant is true.
-  template<bool, typename _Tp = void>
-    struct enable_if
-    { };
-
-  // Partial specialization for true.
-  template<typename _Tp>
-    struct enable_if<true, _Tp>
-    { typedef _Tp type; };
-
   /// @cond undocumented
-
-  // __enable_if_t (std::enable_if_t for C++11)
-  template<bool _Cond, typename _Tp = void>
-    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
 
   // Helper for SFINAE constraints
   template<typename... _Cond>
@@ -3077,7 +2975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nt_invocable_impl<_Result, _Ret,
 				  __void_t<typename _Result::type>>
     : __or_<is_void<_Ret>,
-	    __is_nothrow_convertible<typename _Result::type, _Ret>>
+	    __is_nothrow_convertible<typename _Result::type, _Ret>>::type
     { };
   /// @endcond
 
@@ -3121,16 +3019,24 @@ template <typename _Tp>
   inline constexpr bool is_integral_v = is_integral<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_floating_point_v = is_floating_point<_Tp>::value;
+
 template <typename _Tp>
-  inline constexpr bool is_array_v = is_array<_Tp>::value;
+  inline constexpr bool is_array_v = false;
+template <typename _Tp>
+  inline constexpr bool is_array_v<_Tp[]> = true;
+template <typename _Tp, size_t _Num>
+  inline constexpr bool is_array_v<_Tp[_Num]> = true;
+
 template <typename _Tp>
   inline constexpr bool is_pointer_v = is_pointer<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_lvalue_reference_v =
-    is_lvalue_reference<_Tp>::value;
+  inline constexpr bool is_lvalue_reference_v = false;
 template <typename _Tp>
-  inline constexpr bool is_rvalue_reference_v =
-    is_rvalue_reference<_Tp>::value;
+  inline constexpr bool is_lvalue_reference_v<_Tp&> = true;
+template <typename _Tp>
+  inline constexpr bool is_rvalue_reference_v = false;
+template <typename _Tp>
+  inline constexpr bool is_rvalue_reference_v<_Tp&&> = true;
 template <typename _Tp>
   inline constexpr bool is_member_object_pointer_v =
     is_member_object_pointer<_Tp>::value;
@@ -3138,15 +3044,19 @@ template <typename _Tp>
   inline constexpr bool is_member_function_pointer_v =
     is_member_function_pointer<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_enum_v = is_enum<_Tp>::value;
+  inline constexpr bool is_enum_v = __is_enum(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_union_v = is_union<_Tp>::value;
+  inline constexpr bool is_union_v = __is_union(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_class_v = is_class<_Tp>::value;
+  inline constexpr bool is_class_v = __is_class(_Tp);
 template <typename _Tp>
   inline constexpr bool is_function_v = is_function<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_reference_v = is_reference<_Tp>::value;
+  inline constexpr bool is_reference_v = false;
+template <typename _Tp>
+  inline constexpr bool is_reference_v<_Tp&> = true;
+template <typename _Tp>
+  inline constexpr bool is_reference_v<_Tp&&> = true;
 template <typename _Tp>
   inline constexpr bool is_arithmetic_v = is_arithmetic<_Tp>::value;
 template <typename _Tp>
@@ -3160,9 +3070,13 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_const_v = is_const<_Tp>::value;
+  inline constexpr bool is_const_v = false;
 template <typename _Tp>
-  inline constexpr bool is_volatile_v = is_volatile<_Tp>::value;
+  inline constexpr bool is_const_v<const _Tp> = true;
+template <typename _Tp>
+  inline constexpr bool is_volatile_v = false;
+template <typename _Tp>
+  inline constexpr bool is_volatile_v<volatile _Tp> = true;
 template <typename _Tp>
   inline constexpr bool is_trivial_v = is_trivial<_Tp>::value;
 template <typename _Tp>
@@ -3179,83 +3093,93 @@ template <typename _Tp>
   _GLIBCXX17_DEPRECATED
   inline constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;
 #pragma GCC diagnostic pop
- template <typename _Tp>
-  inline constexpr bool is_empty_v = is_empty<_Tp>::value;
 template <typename _Tp>
-  inline constexpr bool is_polymorphic_v = is_polymorphic<_Tp>::value;
+  inline constexpr bool is_empty_v = __is_empty(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_abstract_v = is_abstract<_Tp>::value;
+  inline constexpr bool is_polymorphic_v = __is_polymorphic(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_final_v = is_final<_Tp>::value;
+  inline constexpr bool is_abstract_v = __is_abstract(_Tp);
+template <typename _Tp>
+  inline constexpr bool is_final_v = __is_final(_Tp);
 template <typename _Tp>
   inline constexpr bool is_signed_v = is_signed<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_unsigned_v = is_unsigned<_Tp>::value;
+
 template <typename _Tp, typename... _Args>
-  inline constexpr bool is_constructible_v =
-    is_constructible<_Tp, _Args...>::value;
+  inline constexpr bool is_constructible_v = __is_constructible(_Tp, _Args...);
 template <typename _Tp>
-  inline constexpr bool is_default_constructible_v =
-    is_default_constructible<_Tp>::value;
+  inline constexpr bool is_default_constructible_v = __is_constructible(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_copy_constructible_v =
-    is_copy_constructible<_Tp>::value;
+  inline constexpr bool is_copy_constructible_v
+    = __is_constructible(_Tp, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_move_constructible_v =
-    is_move_constructible<_Tp>::value;
+  inline constexpr bool is_move_constructible_v
+    = __is_constructible(_Tp, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_assignable_v = is_assignable<_Tp, _Up>::value;
+  inline constexpr bool is_assignable_v = __is_assignable(_Tp, _Up);
 template <typename _Tp>
-  inline constexpr bool is_copy_assignable_v = is_copy_assignable<_Tp>::value;
+  inline constexpr bool is_copy_assignable_v
+    = __is_assignable(__add_lval_ref_t<_Tp>, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_move_assignable_v = is_move_assignable<_Tp>::value;
+  inline constexpr bool is_move_assignable_v
+    = __is_assignable(__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp>
   inline constexpr bool is_destructible_v = is_destructible<_Tp>::value;
+
 template <typename _Tp, typename... _Args>
-  inline constexpr bool is_trivially_constructible_v =
-    is_trivially_constructible<_Tp, _Args...>::value;
+  inline constexpr bool is_trivially_constructible_v
+    = __is_trivially_constructible(_Tp, _Args...);
 template <typename _Tp>
-  inline constexpr bool is_trivially_default_constructible_v =
-    is_trivially_default_constructible<_Tp>::value;
+  inline constexpr bool is_trivially_default_constructible_v
+    = __is_trivially_constructible(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_trivially_copy_constructible_v =
-    is_trivially_copy_constructible<_Tp>::value;
+  inline constexpr bool is_trivially_copy_constructible_v
+    = __is_trivially_constructible(_Tp, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_trivially_move_constructible_v =
-    is_trivially_move_constructible<_Tp>::value;
+  inline constexpr bool is_trivially_move_constructible_v
+    = __is_trivially_constructible(_Tp, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_trivially_assignable_v =
-    is_trivially_assignable<_Tp, _Up>::value;
+  inline constexpr bool is_trivially_assignable_v
+    = __is_trivially_assignable(_Tp, _Up);
 template <typename _Tp>
-  inline constexpr bool is_trivially_copy_assignable_v =
-    is_trivially_copy_assignable<_Tp>::value;
+  inline constexpr bool is_trivially_copy_assignable_v
+    = __is_trivially_assignable(__add_lval_ref_t<_Tp>,
+				__add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_trivially_move_assignable_v =
-    is_trivially_move_assignable<_Tp>::value;
+  inline constexpr bool is_trivially_move_assignable_v
+    = __is_trivially_assignable(__add_lval_ref_t<_Tp>,
+				__add_rval_ref_t<_Tp>);
 template <typename _Tp>
   inline constexpr bool is_trivially_destructible_v =
     is_trivially_destructible<_Tp>::value;
 template <typename _Tp, typename... _Args>
-  inline constexpr bool is_nothrow_constructible_v =
-    is_nothrow_constructible<_Tp, _Args...>::value;
+  inline constexpr bool is_nothrow_constructible_v
+    = __is_nothrow_constructible(_Tp, _Args...);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_default_constructible_v =
-    is_nothrow_default_constructible<_Tp>::value;
+  inline constexpr bool is_nothrow_default_constructible_v
+    = __is_nothrow_constructible(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_copy_constructible_v =
-    is_nothrow_copy_constructible<_Tp>::value;
+  inline constexpr bool is_nothrow_copy_constructible_v
+    = __is_nothrow_constructible(_Tp, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_move_constructible_v =
-    is_nothrow_move_constructible<_Tp>::value;
+  inline constexpr bool is_nothrow_move_constructible_v
+    = __is_nothrow_constructible(_Tp, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_nothrow_assignable_v =
-    is_nothrow_assignable<_Tp, _Up>::value;
+  inline constexpr bool is_nothrow_assignable_v
+    = __is_nothrow_assignable(_Tp, _Up);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_copy_assignable_v =
-    is_nothrow_copy_assignable<_Tp>::value;
+  inline constexpr bool is_nothrow_copy_assignable_v
+    = __is_nothrow_assignable(__add_lval_ref_t<_Tp>,
+			      __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_move_assignable_v =
-    is_nothrow_move_assignable<_Tp>::value;
+  inline constexpr bool is_nothrow_move_assignable_v
+    = __is_nothrow_assignable(__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp>
   inline constexpr bool is_nothrow_destructible_v =
     is_nothrow_destructible<_Tp>::value;
@@ -3264,10 +3188,25 @@ template <typename _Tp>
     has_virtual_destructor<_Tp>::value;
 template <typename _Tp>
   inline constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
+
 template <typename _Tp>
-  inline constexpr size_t rank_v = rank<_Tp>::value;
+  inline constexpr size_t rank_v = 0;
+template <typename _Tp, size_t _Size>
+  inline constexpr size_t rank_v<_Tp[_Size]> = 1 + rank_v<_Tp>;
+template <typename _Tp>
+  inline constexpr size_t rank_v<_Tp[]> = 1 + rank_v<_Tp>;
+
 template <typename _Tp, unsigned _Idx = 0>
-  inline constexpr size_t extent_v = extent<_Tp, _Idx>::value;
+  inline constexpr size_t extent_v = 0;
+template <typename _Tp, size_t _Size>
+  inline constexpr size_t extent_v<_Tp[_Size], 0> = _Size;
+template <typename _Tp, unsigned _Idx, size_t _Size>
+  inline constexpr size_t extent_v<_Tp[_Size], _Idx> = extent_v<_Tp, _Idx - 1>;
+template <typename _Tp>
+  inline constexpr size_t extent_v<_Tp[], 0> = 0;
+template <typename _Tp, unsigned _Idx>
+  inline constexpr size_t extent_v<_Tp[], _Idx> = extent_v<_Tp, _Idx - 1>;
+
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_SAME
 template <typename _Tp, typename _Up>
   inline constexpr bool is_same_v = __is_same(_Tp, _Up);
@@ -3276,7 +3215,7 @@ template <typename _Tp, typename _Up>
   inline constexpr bool is_same_v = std::is_same<_Tp, _Up>::value;
 #endif
 template <typename _Base, typename _Derived>
-  inline constexpr bool is_base_of_v = is_base_of<_Base, _Derived>::value;
+  inline constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 template<typename _Fn, typename... _Args>
@@ -3314,16 +3253,19 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 # define __cpp_lib_is_aggregate 201703L
-  /// is_aggregate
+  /// is_aggregate - true if the type is an aggregate.
   /// @since C++17
   template<typename _Tp>
     struct is_aggregate
     : bool_constant<__is_aggregate(remove_cv_t<_Tp>)>
     { };
 
-  /// @ingroup variable_templates
+  /** is_aggregate_v - true if the type is an aggregate.
+   *  @ingroup variable_templates
+   *  @since C++17
+   */
   template<typename _Tp>
-    inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
+    inline constexpr bool is_aggregate_v = __is_aggregate(remove_cv_t<_Tp>);
 #endif
 #endif // C++17
 
@@ -3396,30 +3338,36 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #define __cpp_lib_bounded_array_traits 201902L
 
   /// True for a type that is an array of known bound.
+  /// @ingroup variable_templates
+  /// @since C++20
+  template<typename _Tp>
+    inline constexpr bool is_bounded_array_v = false;
+
+  template<typename _Tp, size_t _Size>
+    inline constexpr bool is_bounded_array_v<_Tp[_Size]> = true;
+
+  /// True for a type that is an array of unknown bound.
+  /// @ingroup variable_templates
+  /// @since C++20
+  template<typename _Tp>
+    inline constexpr bool is_unbounded_array_v = false;
+
+  template<typename _Tp>
+    inline constexpr bool is_unbounded_array_v<_Tp[]> = true;
+
+  /// True for a type that is an array of known bound.
   /// @since C++20
   template<typename _Tp>
     struct is_bounded_array
-    : public __is_array_known_bounds<_Tp>
+    : public bool_constant<is_bounded_array_v<_Tp>>
     { };
 
   /// True for a type that is an array of unknown bound.
   /// @since C++20
   template<typename _Tp>
     struct is_unbounded_array
-    : public __is_array_unknown_bounds<_Tp>
+    : public bool_constant<is_unbounded_array_v<_Tp>>
     { };
-
-  /// @ingroup variable_templates
-  /// @since C++20
-  template<typename _Tp>
-    inline constexpr bool is_bounded_array_v
-      = is_bounded_array<_Tp>::value;
-
-  /// @ingroup variable_templates
-  /// @since C++20
-  template<typename _Tp>
-    inline constexpr bool is_unbounded_array_v
-      = is_unbounded_array<_Tp>::value;
 
 #if __has_builtin(__is_layout_compatible)
 
@@ -3486,17 +3434,8 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
   template<typename _Tp>
     requires __is_enum(_Tp)
-    && requires(_Tp __t) { __t = __t; } // fails if incomplete
+    && requires(remove_cv_t<_Tp> __t) { __t = __t; } // fails if incomplete
     struct is_scoped_enum<_Tp>
-    : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
-    { };
-
-  // FIXME remove this partial specialization and use remove_cv_t<_Tp> above
-  // when PR c++/99968 is fixed.
-  template<typename _Tp>
-    requires __is_enum(_Tp)
-    && requires(_Tp __t) { __t = __t; } // fails if incomplete
-    struct is_scoped_enum<const _Tp>
     : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
     { };
 

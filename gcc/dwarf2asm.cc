@@ -35,10 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "fold-const.h"
 
-#ifndef XCOFF_DEBUGGING_INFO
-#define XCOFF_DEBUGGING_INFO 0
-#endif
-
 
 /* Output an unaligned integer with the given value and size.  Prefer not
    to print a newline, since the caller may want to add a comment.  */
@@ -384,16 +380,13 @@ dw2_asm_output_nstring (const char *str, size_t orig_len,
 
   if (flag_debug_asm && comment)
     {
-      if (XCOFF_DEBUGGING_INFO)
-	fputs ("\t.byte \"", asm_out_file);
-      else
-	fputs ("\t.ascii \"", asm_out_file);
+      fputs ("\t.ascii \"", asm_out_file);
 
       for (i = 0; i < len; i++)
 	{
 	  int c = str[i];
 	  if (c == '\"')
-	    fputc (XCOFF_DEBUGGING_INFO ? '\"' : '\\', asm_out_file);
+	    fputc ('\\', asm_out_file);
 	  else if (c == '\\')
 	    fputc ('\\', asm_out_file);
 	  if (ISPRINT (c))
@@ -913,7 +906,7 @@ static GTY(()) hash_map<const char *, tree> *indirect_pool;
 static GTY(()) int dw2_const_labelno;
 
 #if defined(HAVE_GAS_HIDDEN)
-# define USE_LINKONCE_INDIRECT (SUPPORTS_ONE_ONLY && !XCOFF_DEBUGGING_INFO)
+# define USE_LINKONCE_INDIRECT (SUPPORTS_ONE_ONLY)
 #else
 # define USE_LINKONCE_INDIRECT 0
 #endif

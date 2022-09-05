@@ -1094,8 +1094,8 @@ extern rtx bfin_cc_rtx, bfin_rets_rtx;
 /* This works for GAS and some other assemblers.  */
 #define SET_ASM_OP              ".set "
 
-/* DBX register number for a given compiler register number */
-#define DBX_REGISTER_NUMBER(REGNO)  (REGNO) 
+/* Debugger register number for a given compiler register number */
+#define DEBUGGER_REGNO(REGNO)  (REGNO) 
 
 #define SIZE_ASM_OP     "\t.size\t"
 

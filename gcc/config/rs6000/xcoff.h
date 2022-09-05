@@ -21,9 +21,6 @@
 
 #define TARGET_OBJECT_FORMAT OBJECT_XCOFF
 
-/* The RS/6000 uses the XCOFF format.  */
-#define XCOFF_DEBUGGING_INFO 1
-
 /* Define if the object format being used is COFF or a superset.  */
 #define OBJECT_FORMAT_COFF
 

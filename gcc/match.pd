@@ -4804,7 +4804,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (!HONOR_SIGNED_ZEROS (type))
      @1))
   (simplify
-   (cnd (cmp @0 zerop) integer_zerop (negate@1 @0))
+   (cnd (cmp @0 zerop) zerop (negate@1 @0))
     (if (!HONOR_SIGNED_ZEROS (type))
      @1))
  )
@@ -5300,7 +5300,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		 if (cmp == LT_EXPR || cmp == GE_EXPR)
 		   tow = dconst0;
 		 else
-		   real_inf (&tow);
+		   tow = dconstinf;
 		 real_nextafter (&c2alt, fmt, &c2, &tow);
 		 real_convert (&c2alt, fmt, &c2alt);
 		 if (REAL_VALUE_ISINF (c2alt))

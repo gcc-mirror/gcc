@@ -10806,7 +10806,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10819 "configure"
+#line 10809 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10912,7 +10912,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10925 "configure"
+#line 10915 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13031,7 +13031,7 @@ case "$host" in
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
-	# and if assembler supports CET insn.
+	# and if compiler and assembler support CET insn.
 	cet_save_CFLAGS="$CFLAGS"
 	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext

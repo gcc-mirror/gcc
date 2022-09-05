@@ -51,9 +51,6 @@
 #include "tree-ssa-propagate.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
-#if TARGET_XCOFF
-#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
 
@@ -1085,7 +1082,12 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
       unsigned nvec = (fncode == RS6000_BIF_DISASSEMBLE_ACC) ? 4 : 2;
       tree dst_ptr = gimple_call_arg (stmt, 0);
       tree src_ptr = gimple_call_arg (stmt, 1);
-      tree src_type = TREE_TYPE (src_ptr);
+      tree src_type = (fncode == RS6000_BIF_DISASSEMBLE_ACC)
+		      ? build_pointer_type (vector_quad_type_node)
+		      : build_pointer_type (vector_pair_type_node);
+      if (TREE_TYPE (src_ptr) != src_type)
+	src_ptr = build1 (NOP_EXPR, src_type, src_ptr);
+
       tree src = create_tmp_reg_or_ssa_name (TREE_TYPE (src_type));
       gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
 
@@ -1096,7 +1098,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 	  || (fncode == RS6000_BIF_DISASSEMBLE_PAIR_V
 	      && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_pair_type_node))
 	{
-	  tree dst = build_simple_mem_ref (build1 (VIEW_CONVERT_EXPR,
+	  tree dst = build_simple_mem_ref (build1 (NOP_EXPR,
 						   src_type, dst_ptr));
 	  gimplify_assign (dst, src, &new_seq);
 	  pop_gimplify_context (NULL);
@@ -1120,7 +1122,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 	= rs6000_builtin_decls[rs6000_builtin_info[fncode].assoc_bif];
       tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
 						   ptr_mode, true);
-      tree dst_base = build1 (VIEW_CONVERT_EXPR, dst_type, dst_ptr);
+      tree dst_base = build1 (NOP_EXPR, dst_type, dst_ptr);
       for (unsigned i = 0; i < nvec; i++)
 	{
 	  unsigned index = WORDS_BIG_ENDIAN ? i : nvec - 1 - i;
@@ -1146,7 +1148,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
       tree ptr = gimple_call_arg (stmt, 1);
       tree lhs = gimple_call_lhs (stmt);
       if (TREE_TYPE (TREE_TYPE (ptr)) != vector_pair_type_node)
-	ptr = build1 (VIEW_CONVERT_EXPR,
+	ptr = build1 (NOP_EXPR,
 		      build_pointer_type (vector_pair_type_node), ptr);
       tree mem = build_simple_mem_ref (build2 (POINTER_PLUS_EXPR,
 					       TREE_TYPE (ptr), ptr, offset));
@@ -1163,7 +1165,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
       tree offset = gimple_call_arg (stmt, 1);
       tree ptr = gimple_call_arg (stmt, 2);
       if (TREE_TYPE (TREE_TYPE (ptr)) != vector_pair_type_node)
-	ptr = build1 (VIEW_CONVERT_EXPR,
+	ptr = build1 (NOP_EXPR,
 		      build_pointer_type (vector_pair_type_node), ptr);
       tree mem = build_simple_mem_ref (build2 (POINTER_PLUS_EXPR,
 					       TREE_TYPE (ptr), ptr, offset));

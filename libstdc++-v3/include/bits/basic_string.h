@@ -942,7 +942,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read/write iterator that points to the first character in
        *  the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(_M_data()); }
@@ -951,7 +951,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read-only (constant) iterator that points to the first
        *  character in the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_M_data()); }
@@ -960,7 +960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read/write iterator that points one past the last
        *  character in the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       iterator
       end() _GLIBCXX_NOEXCEPT
       { return iterator(_M_data() + this->size()); }
@@ -969,7 +969,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read-only (constant) iterator that points one past the
        *  last character in the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_M_data() + this->size()); }
@@ -979,7 +979,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  character in the %string.  Iteration is done in reverse element
        *  order.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(this->end()); }
@@ -989,7 +989,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  to the last character in the %string.  Iteration is done in
        *  reverse element order.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(this->end()); }
@@ -999,7 +999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  first character in the %string.  Iteration is done in reverse
        *  element order.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(this->begin()); }
@@ -1009,7 +1009,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  to one before the first character in the %string.  Iteration
        *  is done in reverse element order.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(this->begin()); }
@@ -1019,7 +1019,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read-only (constant) iterator that points to the first
        *  character in the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_iterator
       cbegin() const noexcept
       { return const_iterator(this->_M_data()); }
@@ -1028,7 +1028,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read-only (constant) iterator that points one past the
        *  last character in the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_iterator
       cend() const noexcept
       { return const_iterator(this->_M_data() + this->size()); }
@@ -1038,7 +1038,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  to the last character in the %string.  Iteration is done in
        *  reverse element order.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(this->end()); }
@@ -1048,7 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  to one before the first character in the %string.  Iteration
        *  is done in reverse element order.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(this->begin()); }
@@ -1058,20 +1058,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // Capacity:
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       size() const _GLIBCXX_NOEXCEPT
       { return _M_string_length; }
 
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       length() const _GLIBCXX_NOEXCEPT
       { return _M_string_length; }
 
       ///  Returns the size() of the largest possible %string.
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
       { return (_Alloc_traits::max_size(_M_get_allocator()) - 1) / 2; }
@@ -1127,7 +1127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns the total number of characters that the %string can hold
        *  before needing to allocate more memory.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       {
@@ -1194,7 +1194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  out_of_range lookups are not defined. (For checked lookups
        *  see at().)
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       operator[] (size_type __pos) const _GLIBCXX_NOEXCEPT
       {
@@ -1212,7 +1212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  out_of_range lookups are not defined. (For checked lookups
        *  see at().)
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       operator[](size_type __pos)
       {
@@ -1234,7 +1234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  first checked that it is in the range of the string.  The function
        *  throws out_of_range if the check fails.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       at(size_type __n) const
       {
@@ -1256,7 +1256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  first checked that it is in the range of the string.  The function
        *  throws out_of_range if the check fails.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       at(size_type __n)
       {
@@ -1273,7 +1273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read/write reference to the data at the first
        *  element of the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       front() noexcept
       {
@@ -1285,7 +1285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       front() const noexcept
       {
@@ -1297,7 +1297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read/write reference to the data at the last
        *  element of the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       back() noexcept
       {
@@ -1309,7 +1309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns a read-only (constant) reference to the data at the
        *  last element of the %string.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       back() const noexcept
       {
@@ -2549,7 +2549,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  This is a handle to internal data.  Do not modify or dire things may
        *  happen.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const _CharT*
       c_str() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
@@ -2562,7 +2562,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  allows modifying the contents use @c &str[0] instead,
        *  (or in C++17 the non-const @c str.data() overload).
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const _CharT*
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
@@ -2574,7 +2574,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  This is a pointer to the character sequence held by the string.
        *  Modifying the characters in the sequence is allowed.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       _CharT*
       data() noexcept
       { return _M_data(); }
@@ -2583,7 +2583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        *  @brief  Return copy of allocator used to construct this string.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
       { return _M_get_allocator(); }
@@ -2600,7 +2600,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns the index where it begins.  If not found, returns
        *  npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find(const _CharT* __s, size_type __pos, size_type __n) const
       _GLIBCXX_NOEXCEPT;
@@ -2615,7 +2615,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  this string.  If found, returns the index where it begins.  If not
        *  found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find(const basic_string& __str, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT
@@ -2629,7 +2629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Index of start of first occurrence.
       */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, size_type>
 	find(const _Tp& __svt, size_type __pos = 0) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -2649,7 +2649,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  __s within this string.  If found, returns the index where
        *  it begins.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find(const _CharT* __s, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       {
@@ -2667,7 +2667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  this string.  If found, returns the index where it was
        *  found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT;
 
@@ -2681,7 +2681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  __str within this string.  If found, returns the index where
        *  it begins.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       rfind(const basic_string& __str, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT
@@ -2695,7 +2695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Index of start of last occurrence.
       */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, size_type>
 	rfind(const _Tp& __svt, size_type __pos = npos) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -2717,7 +2717,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns the index where it begins.  If not found, returns
        *  npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       rfind(const _CharT* __s, size_type __pos, size_type __n) const
       _GLIBCXX_NOEXCEPT;
@@ -2732,7 +2732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @a __s within this string.  If found, returns the index
        *  where it begins.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       rfind(const _CharT* __s, size_type __pos = npos) const
       {
@@ -2750,7 +2750,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  this string.  If found, returns the index where it was
        *  found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       rfind(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT;
 
@@ -2765,7 +2765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns the index where it was found.  If not found, returns
        *  npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_of(const basic_string& __str, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT
@@ -2780,7 +2780,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Index of first occurrence.
       */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, size_type>
 	find_first_of(const _Tp& __svt, size_type __pos = 0) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -2802,7 +2802,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  found, returns the index where it was found.  If not found,
        *  returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
       _GLIBCXX_NOEXCEPT;
@@ -2817,7 +2817,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  characters of @a __s within this string.  If found, returns
        *  the index where it was found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_of(const _CharT* __s, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT
@@ -2838,7 +2838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        *  Note: equivalent to find(__c, __pos).
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       { return this->find(__c, __pos); }
@@ -2854,7 +2854,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns the index where it was found.  If not found, returns
        *  npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_of(const basic_string& __str, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT
@@ -2869,7 +2869,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Index of last occurrence.
       */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, size_type>
 	find_last_of(const _Tp& __svt, size_type __pos = npos) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -2891,7 +2891,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  found, returns the index where it was found.  If not found,
        *  returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
       _GLIBCXX_NOEXCEPT;
@@ -2906,7 +2906,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  characters of @a __s within this string.  If found, returns
        *  the index where it was found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_of(const _CharT* __s, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT
@@ -2927,7 +2927,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        *  Note: equivalent to rfind(__c, __pos).
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_of(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT
       { return this->rfind(__c, __pos); }
@@ -2942,7 +2942,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  in @a __str within this string.  If found, returns the index where it
        *  was found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_not_of(const basic_string& __str, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT
@@ -2957,8 +2957,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Index of first occurrence.
        */
       template<typename _Tp>
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, size_type>
-	_GLIBCXX20_CONSTEXPR
 	find_first_not_of(const _Tp& __svt, size_type __pos = 0) const
 	noexcept(is_same<_Tp, __sv_type>::value)
 	{
@@ -2979,7 +2979,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  this string.  If found, returns the index where it was
        *  found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos,
 			size_type __n) const _GLIBCXX_NOEXCEPT;
@@ -2994,7 +2994,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  contained in @a __s within this string.  If found, returns
        *  the index where it was found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT
@@ -3013,7 +3013,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  other than @a __c within this string.  If found, returns the
        *  index where it was found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_first_not_of(_CharT __c, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT;
@@ -3029,7 +3029,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns the index where it was found.  If not found, returns
        *  npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_not_of(const basic_string& __str, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT
@@ -3044,7 +3044,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Index of last occurrence.
        */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, size_type>
 	find_last_not_of(const _Tp& __svt, size_type __pos = npos) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -3066,7 +3066,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  If found, returns the index where it was found.  If not found,
        *  returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos,
 		       size_type __n) const _GLIBCXX_NOEXCEPT;
@@ -3081,7 +3081,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  returns the index where it was found.  If not found, returns
        *  npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT
@@ -3100,7 +3100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @a __c within this string.  If found, returns the index where it was
        *  found.  If not found, returns npos.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       find_last_not_of(_CharT __c, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT;
@@ -3117,7 +3117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  short, use the remainder of the characters.  If @a __pos is
        *  beyond the end of the string, out_of_range is thrown.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       basic_string
       substr(size_type __pos = 0, size_type __n = npos) const
       { return basic_string(*this,
@@ -3137,7 +3137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  If the result of the comparison is nonzero returns it,
        *  otherwise the shorter one is ordered first.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       int
       compare(const basic_string& __str) const
       {
@@ -3158,7 +3158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Integer < 0, 0, or > 0.
        */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, int>
 	compare(const _Tp& __svt) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -3183,7 +3183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Integer < 0, 0, or > 0.
        */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, int>
 	compare(size_type __pos, size_type __n, const _Tp& __svt) const
 	noexcept(is_same<_Tp, __sv_type>::value)
@@ -3203,7 +3203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  Integer < 0, 0, or > 0.
        */
       template<typename _Tp>
-	_GLIBCXX20_CONSTEXPR
+	_GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
 	_If_sv<_Tp, int>
 	compare(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos) const
@@ -3234,7 +3234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  result of the comparison is nonzero returns it, otherwise
        *  the shorter one is ordered first.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos, size_type __n, const basic_string& __str) const
       {
@@ -3271,7 +3271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  If the result of the comparison is nonzero returns it,
        *  otherwise the shorter one is ordered first.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos1, size_type __n1, const basic_string& __str,
 	      size_type __pos2, size_type __n2 = npos) const
@@ -3302,7 +3302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  comparison is nonzero returns it, otherwise the shorter one is
        *  ordered first.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       int
       compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT
       {
@@ -3337,7 +3337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  the comparison is nonzero returns it, otherwise the shorter
        *  one is ordered first.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s) const
       {
@@ -3376,7 +3376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  NB: s must have at least n2 characters, &apos;\\0&apos; has
        *  no special meaning.
       */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const
@@ -3392,40 +3392,49 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
 #if __cplusplus >= 202002L
+      [[nodiscard]]
       constexpr bool
       starts_with(basic_string_view<_CharT, _Traits> __x) const noexcept
       { return __sv_type(this->data(), this->size()).starts_with(__x); }
 
+      [[nodiscard]]
       constexpr bool
       starts_with(_CharT __x) const noexcept
       { return __sv_type(this->data(), this->size()).starts_with(__x); }
 
+      [[nodiscard, __gnu__::__nonnull__]]
       constexpr bool
       starts_with(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).starts_with(__x); }
 
+      [[nodiscard]]
       constexpr bool
       ends_with(basic_string_view<_CharT, _Traits> __x) const noexcept
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 
+      [[nodiscard]]
       constexpr bool
       ends_with(_CharT __x) const noexcept
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 
+      [[nodiscard, __gnu__::__nonnull__]]
       constexpr bool
       ends_with(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 #endif // C++20
 
 #if __cplusplus > 202002L
+      [[nodiscard]]
       constexpr bool
       contains(basic_string_view<_CharT, _Traits> __x) const noexcept
       { return __sv_type(this->data(), this->size()).contains(__x); }
 
+      [[nodiscard]]
       constexpr bool
       contains(_CharT __x) const noexcept
       { return __sv_type(this->data(), this->size()).contains(__x); }
 
+      [[nodiscard, __gnu__::__nonnull__]]
       constexpr bool
       contains(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).contains(__x); }
@@ -3480,7 +3489,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  New string with value of @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3497,7 +3506,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  New string with value of @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     basic_string<_CharT,_Traits,_Alloc>
     operator+(const _CharT* __lhs,
 	      const basic_string<_CharT,_Traits,_Alloc>& __rhs);
@@ -3509,7 +3518,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  New string with @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     basic_string<_CharT,_Traits,_Alloc>
     operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs);
 
@@ -3520,7 +3529,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  New string with @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const _CharT* __rhs)
@@ -3537,7 +3546,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  New string with @a __lhs followed by @a __rhs.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs, _CharT __rhs)
     {
@@ -3550,7 +3559,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
 #if __cplusplus >= 201103L
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3564,7 +3573,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     { return std::move(__rhs.insert(0, __lhs)); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
@@ -3587,28 +3596,28 @@ _GLIBCXX_END_NAMESPACE_CXX11
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const _CharT* __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     { return std::move(__rhs.insert(0, __lhs)); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(_CharT __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     { return std::move(__rhs.insert(0, 1, __lhs)); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      const _CharT* __rhs)
     { return std::move(__lhs.append(__rhs)); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      _CharT __rhs)
@@ -3623,7 +3632,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs.compare(@a __rhs) == 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3640,7 +3649,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs.compare(@a __rhs) == 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
@@ -3658,6 +3667,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *	       greater than, or incomparable with `__rhs`.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
     constexpr auto
     operator<=>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 		const basic_string<_CharT, _Traits, _Alloc>& __rhs) noexcept
@@ -3672,6 +3682,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *	       greater than, or incomparable with `__rhs`.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
     constexpr auto
     operator<=>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 		const _CharT* __rhs) noexcept
@@ -3685,6 +3696,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __rhs.compare(@a __lhs) == 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator==(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3698,6 +3710,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs.compare(@a __rhs) != 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator!=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3711,6 +3724,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __rhs.compare(@a __lhs) != 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator!=(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3723,6 +3737,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs.compare(@a __rhs) != 0.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator!=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
@@ -3736,6 +3751,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs precedes @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3749,6 +3765,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs precedes @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const _CharT* __rhs)
@@ -3761,6 +3778,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs precedes @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<(const _CharT* __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3774,6 +3792,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs follows @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3787,6 +3806,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs follows @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const _CharT* __rhs)
@@ -3799,6 +3819,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs follows @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>(const _CharT* __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3812,6 +3833,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs doesn't follow @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3825,6 +3847,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs doesn't follow @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
@@ -3837,6 +3860,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs doesn't follow @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<=(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3850,6 +3874,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs doesn't precede @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -3863,6 +3888,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs doesn't precede @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
@@ -3875,6 +3901,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *  @return  True if @a __lhs doesn't precede @a __rhs.  False otherwise.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>=(const _CharT* __lhs,
 	     const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -4057,6 +4084,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   // DR 1261. Insufficent overloads for to_string / to_wstring
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(int __val)
 #if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_INT__) <= 32
@@ -4071,6 +4099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(unsigned __val)
 #if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_INT__) <= 32
@@ -4082,6 +4111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(long __val)
 #if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_LONG__) <= 32
@@ -4096,6 +4126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(unsigned long __val)
 #if _GLIBCXX_USE_CXX11_ABI && (__CHAR_BIT__ * __SIZEOF_LONG__) <= 32
@@ -4107,6 +4138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(long long __val)
   {
@@ -4119,6 +4151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(unsigned long long __val)
   {
@@ -4130,6 +4163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if _GLIBCXX_USE_C99_STDIO
   // NB: (v)snprintf vs sprintf.
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(float __val)
   {
@@ -4139,6 +4173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 					   "%f", __val);
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(double __val)
   {
@@ -4148,6 +4183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 					   "%f", __val);
   }
 
+  _GLIBCXX_NODISCARD
   inline string
   to_string(long double __val)
   {
@@ -4199,40 +4235,47 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #ifndef _GLIBCXX_HAVE_BROKEN_VSWPRINTF
   // DR 1261.
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(int __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, 4 * sizeof(int),
 					    L"%d", __val); }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(unsigned __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
 					    4 * sizeof(unsigned),
 					    L"%u", __val); }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(long __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, 4 * sizeof(long),
 					    L"%ld", __val); }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(unsigned long __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
 					    4 * sizeof(unsigned long),
 					    L"%lu", __val); }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(long long __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
 					    4 * sizeof(long long),
 					    L"%lld", __val); }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(unsigned long long __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
 					    4 * sizeof(unsigned long long),
 					    L"%llu", __val); }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(float __val)
   {
@@ -4242,6 +4285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 					    L"%f", __val);
   }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(double __val)
   {
@@ -4251,6 +4295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 					    L"%f", __val);
   }
 
+  _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(long double __val)
   {
@@ -4284,6 +4329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __str_hash_base
     : public __hash_base<size_t, _StrT>
     {
+      [[__nodiscard__]]
       size_t
       operator()(const _StrT& __s) const noexcept
       { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(_CharT)); }

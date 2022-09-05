@@ -147,6 +147,9 @@ struct c_expr
      etc), so we stash a copy here.  */
   source_range src_range;
 
+  /* True if this was directly from a decimal constant token.  */
+  bool m_decimal : 1;
+
   /* Access to the first and last locations within the source spelling
      of this expression.  */
   location_t get_start () const { return src_range.m_start; }

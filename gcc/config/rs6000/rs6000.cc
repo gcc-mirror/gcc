@@ -75,9 +75,6 @@
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "except.h"
-#if TARGET_XCOFF
-#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
@@ -3823,12 +3820,6 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);
-
-#ifdef XCOFF_DEBUGGING_INFO
-  /* For AIX default to 64-bit DWARF.  */
-  if (!OPTION_SET_P (dwarf_offset_size))
-    dwarf_offset_size = POINTER_SIZE_UNITS;
-#endif
 
   /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
      off all of the options that depend on those flags.  */
@@ -20949,9 +20940,14 @@ rs6000_elf_file_end (void)
 
 #if TARGET_XCOFF
 
-#ifndef HAVE_XCOFF_DWARF_EXTRAS
-#define HAVE_XCOFF_DWARF_EXTRAS 0
-#endif
+/* Names of bss and data sections.  These should be unique names for each
+   compilation unit.  */
+
+char *xcoff_bss_section_name;
+char *xcoff_private_data_section_name;
+char *xcoff_private_rodata_section_name;
+char *xcoff_tls_data_section_name;
+char *xcoff_read_only_section_name;
 
 static enum unwind_info_type
 rs6000_xcoff_debug_unwind_info (void)
@@ -21466,9 +21462,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
 							&data, true);
   if (!DECL_IGNORED_P (decl))
     {
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	xcoffout_declare_function (file, decl, buffer);
-      else if (dwarf_debuginfo_p ())
+      if (dwarf_debuginfo_p ())
 	{
 	  name = (*targetm.strip_name_encoding) (name);
 	  fprintf (file, "\t.function .%s,.%s,2,0\n", name, name);
@@ -23643,7 +23637,7 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
      2 -- DWARF .eh_frame section  */
 
 unsigned int
-rs6000_dbx_register_number (unsigned int regno, unsigned int format)
+rs6000_debugger_regno (unsigned int regno, unsigned int format)
 {
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
@@ -24861,6 +24855,7 @@ rs6000_get_function_versions_dispatcher (void *decl)
 
       /* Right now, the dispatching is done via ifunc.  */
       dispatch_decl = make_dispatcher_decl (default_node->decl);
+      TREE_NOTHROW (dispatch_decl) = TREE_NOTHROW (fn);
 
       dispatcher_node = cgraph_node::get_create (dispatch_decl);
       gcc_assert (dispatcher_node != NULL);
@@ -28187,28 +28182,6 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 	return N_("invalid conversion from type %<__vector_pair%>");
       if (tomode == OOmode)
 	return N_("invalid conversion to type %<__vector_pair%>");
-    }
-  else if (POINTER_TYPE_P (fromtype) && POINTER_TYPE_P (totype))
-    {
-      /* We really care about the modes of the base types.  */
-      frommode = TYPE_MODE (TREE_TYPE (fromtype));
-      tomode = TYPE_MODE (TREE_TYPE (totype));
-
-      /* Do not allow conversions to/from XOmode and OOmode pointer
-	 types, except to/from void pointers.  */
-      if (frommode != tomode
-	  && frommode != VOIDmode
-	  && tomode != VOIDmode)
-	{
-	  if (frommode == XOmode)
-	    return N_("invalid conversion from type %<__vector_quad *%>");
-	  if (tomode == XOmode)
-	    return N_("invalid conversion to type %<__vector_quad *%>");
-	  if (frommode == OOmode)
-	    return N_("invalid conversion from type %<__vector_pair *%>");
-	  if (tomode == OOmode)
-	    return N_("invalid conversion to type %<__vector_pair *%>");
-	}
     }
 
   /* Conversion allowed.  */

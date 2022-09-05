@@ -2069,6 +2069,8 @@ struct cp_parser_expression_stack_entry
   enum cp_parser_prec prec;
   /* Location of the binary operation we are parsing.  */
   location_t loc;
+  /* Flags from the operator token.  */
+  unsigned char flags;
 };
 
 /* The stack for storing partial expressions.  We only need NUM_PREC_VALUES
@@ -5614,7 +5616,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  if (!cast_p)
 	    cp_parser_non_integral_constant_expression (parser, NIC_FLOAT);
 	}
-      return (cp_expr (token->u.value, token->location)
+      return (cp_expr (token->u.value, token->location, token->flags & DECIMAL_INT)
 	      .maybe_add_location_wrapper ());
 
     case CPP_CHAR_USERDEF:
@@ -10160,6 +10162,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
      get_rhs:
       current.tree_type = binops_by_token[token->type].tree_type;
       current.loc = token->location;
+      current.flags = token->flags;
 
       /* We used the operator token.  */
       cp_lexer_consume_token (parser->lexer);
@@ -10243,6 +10246,18 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
 	warn_logical_not_parentheses (current.loc, current.tree_type,
 				      current.lhs, maybe_constant_value (rhs));
+
+      if (warn_xor_used_as_pow
+	  && current.tree_type == BIT_XOR_EXPR
+	  /* Don't warn for named "xor" (as opposed to '^').  */
+	  && !(current.flags & NAMED_OP)
+	  && current.lhs.decimal_p ()
+	  && rhs.decimal_p ())
+	check_for_xor_used_as_pow
+	  (current.lhs.get_location (),
+	   tree_strip_any_location_wrapper (current.lhs),
+	   current.loc,
+	   tree_strip_any_location_wrapper (rhs));
 
       overload = NULL;
 
@@ -11979,14 +11994,18 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 	    if (dir->id == PRAGMA_OMP_ORDERED)
 	      {
 		/* ordered is C_OMP_DIR_CONSTRUCT only if it doesn't contain
-		   depend clause.  */
-		if (directive[1] && strcmp (directive[1], "depend") == 0)
+		   depend/doacross clause.  */
+		if (directive[1]
+		    && (strcmp (directive[1], "depend") == 0
+			|| strcmp (directive[1], "doacross") == 0))
 		  kind = C_OMP_DIR_STANDALONE;
 		else if (first + 2 < last
 			 && first[1].type == CPP_COMMA
 			 && first[2].type == CPP_NAME
-			 && strcmp (IDENTIFIER_POINTER (first[2].u.value),
-				    "depend") == 0)
+			 && (strcmp (IDENTIFIER_POINTER (first[2].u.value),
+				     "depend") == 0
+			     || strcmp (IDENTIFIER_POINTER (first[2].u.value),
+					"doacross") == 0))
 		  kind = C_OMP_DIR_STANDALONE;
 	      }
 	    else if (dir->id == PRAGMA_OMP_ERROR)
@@ -36587,6 +36606,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_DEVICE_TYPE;
 	  else if (!strcmp ("dist_schedule", p))
 	    result = PRAGMA_OMP_CLAUSE_DIST_SCHEDULE;
+	  else if (!strcmp ("doacross", p))
+	    result = PRAGMA_OMP_CLAUSE_DOACROSS;
 	  break;
 	case 'e':
 	  if (!strcmp ("enter", p))
@@ -39314,8 +39335,8 @@ cp_parser_omp_clause_simdlen (cp_parser *parser, tree list,
 */
 
 static tree
-cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
-				  tree list)
+cp_parser_omp_clause_doacross_sink (cp_parser *parser, location_t clause_loc,
+				    tree list, bool depend_p)
 {
   tree vec = NULL;
 
@@ -39323,6 +39344,29 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
     {
       cp_parser_error (parser, "expected identifier");
       return list;
+    }
+
+  if (!depend_p)
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      if (strcmp (IDENTIFIER_POINTER (id), "omp_cur_iteration") == 0
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_MINUS)
+	  && cp_lexer_nth_token_is (parser->lexer, 3, CPP_NUMBER)
+	  && cp_lexer_nth_token_is (parser->lexer, 4, CPP_CLOSE_PAREN))
+	{
+	  tree val = cp_lexer_peek_nth_token (parser->lexer, 3)->u.value;
+	  if (integer_onep (val)
+	      && same_type_p (TREE_TYPE (val), integer_type_node))
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	      tree u = build_omp_clause (clause_loc, OMP_CLAUSE_DOACROSS);
+	      OMP_CLAUSE_DOACROSS_KIND (u) = OMP_CLAUSE_DOACROSS_SINK;
+	      OMP_CLAUSE_CHAIN (u) = list;
+	      return u;
+	    }
+	}
     }
 
   while (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
@@ -39372,7 +39416,7 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
 	{
 	  vec = tree_cons (addend, t, vec);
 	  if (neg)
-	    OMP_CLAUSE_DEPEND_SINK_NEGATIVE (vec) = 1;
+	    OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (vec) = 1;
 	}
 
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
@@ -39384,8 +39428,9 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
 
   if (vec)
     {
-      tree u = build_omp_clause (clause_loc, OMP_CLAUSE_DEPEND);
-      OMP_CLAUSE_DEPEND_KIND (u) = OMP_CLAUSE_DEPEND_SINK;
+      tree u = build_omp_clause (clause_loc, OMP_CLAUSE_DOACROSS);
+      OMP_CLAUSE_DOACROSS_KIND (u) = OMP_CLAUSE_DOACROSS_SINK;
+      OMP_CLAUSE_DOACROSS_DEPEND (u) = depend_p;
       OMP_CLAUSE_DECL (u) = nreverse (vec);
       OMP_CLAUSE_CHAIN (u) = list;
       return u;
@@ -39634,6 +39679,7 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 {
   tree nlist, c, iterators = NULL_TREE;
   enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_LAST;
+  enum omp_clause_doacross_kind dkind = OMP_CLAUSE_DOACROSS_LAST;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -39667,9 +39713,9 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
       else if (strcmp ("depobj", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_DEPOBJ;
       else if (strcmp ("sink", p) == 0)
-	kind = OMP_CLAUSE_DEPEND_SINK;
+	dkind = OMP_CLAUSE_DOACROSS_SINK;
       else if (strcmp ("source", p) == 0)
-	kind = OMP_CLAUSE_DEPEND_SOURCE;
+	dkind = OMP_CLAUSE_DOACROSS_SOURCE;
       else
 	goto invalid_kind;
       break;
@@ -39679,18 +39725,20 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
   cp_lexer_consume_token (parser->lexer);
 
   if (iterators
-      && (kind == OMP_CLAUSE_DEPEND_SOURCE || kind == OMP_CLAUSE_DEPEND_SINK))
+      && (dkind == OMP_CLAUSE_DOACROSS_SOURCE
+	  || dkind == OMP_CLAUSE_DOACROSS_SINK))
     {
       poplevel (0, 1, 0);
       error_at (loc, "%<iterator%> modifier incompatible with %qs",
-		kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
+		dkind == OMP_CLAUSE_DOACROSS_SOURCE ? "source" : "sink");
       iterators = NULL_TREE;
     }
 
-  if (kind == OMP_CLAUSE_DEPEND_SOURCE)
+  if (dkind == OMP_CLAUSE_DOACROSS_SOURCE)
     {
-      c = build_omp_clause (loc, OMP_CLAUSE_DEPEND);
-      OMP_CLAUSE_DEPEND_KIND (c) = kind;
+      c = build_omp_clause (loc, OMP_CLAUSE_DOACROSS);
+      OMP_CLAUSE_DOACROSS_KIND (c) = dkind;
+      OMP_CLAUSE_DOACROSS_DEPEND (c) = 1;
       OMP_CLAUSE_DECL (c) = NULL_TREE;
       OMP_CLAUSE_CHAIN (c) = list;
       if (!parens.require_close (parser))
@@ -39703,9 +39751,9 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
   if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
     goto resync_fail;
 
-  if (kind == OMP_CLAUSE_DEPEND_SINK)
+  if (dkind == OMP_CLAUSE_DOACROSS_SINK)
     {
-      nlist = cp_parser_omp_clause_depend_sink (parser, loc, list);
+      nlist = cp_parser_omp_clause_doacross_sink (parser, loc, list, true);
       if (!parens.require_close (parser))
 	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					       /*or_comma=*/false,
@@ -39744,6 +39792,73 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 					 /*or_comma=*/false,
 					 /*consume_paren=*/true);
   return list;
+}
+
+/* OpenMP 5.2:
+   doacross ( source : )
+   doacross ( source : omp_cur_iteration )
+
+   doacross ( sink : vec )
+   doacross ( sink : omp_cur_iteration - logical_iteration )  */
+
+static tree
+cp_parser_omp_clause_doacross (cp_parser *parser, tree list, location_t loc)
+{
+  tree nlist;
+  enum omp_clause_doacross_kind kind = OMP_CLAUSE_DOACROSS_LAST;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+    {
+    invalid_kind:
+      cp_parser_error (parser, "invalid doacross kind");
+    resync_fail:
+      cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					     /*or_comma=*/false,
+					     /*consume_paren=*/true);
+      return list;
+    }
+
+  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+  const char *p = IDENTIFIER_POINTER (id);
+
+  if (strcmp ("sink", p) == 0)
+    kind = OMP_CLAUSE_DOACROSS_SINK;
+  else if (strcmp ("source", p) == 0)
+    kind = OMP_CLAUSE_DOACROSS_SOURCE;
+  else
+    goto invalid_kind;
+
+  cp_lexer_consume_token (parser->lexer);
+
+  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+    goto resync_fail;
+
+  if (kind == OMP_CLAUSE_DOACROSS_SOURCE)
+    {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  p = IDENTIFIER_POINTER (id);
+	  if (strcmp (p, "omp_cur_iteration") == 0)
+	    cp_lexer_consume_token (parser->lexer);
+	}
+      nlist = build_omp_clause (loc, OMP_CLAUSE_DOACROSS);
+      OMP_CLAUSE_DOACROSS_KIND (nlist) = OMP_CLAUSE_DOACROSS_SOURCE;
+      OMP_CLAUSE_DECL (nlist) = NULL_TREE;
+      OMP_CLAUSE_CHAIN (nlist) = list;
+    }
+  else
+    nlist = cp_parser_omp_clause_doacross_sink (parser, loc, list, false);
+
+  if (!parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+  return nlist;
 }
 
 /* OpenMP 4.0:
@@ -40687,6 +40802,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_depend (parser, clauses,
 						 token->location);
 	  c_name = "depend";
+	  break;
+	case PRAGMA_OMP_CLAUSE_DOACROSS:
+	  clauses = cp_parser_omp_clause_doacross (parser, clauses,
+						   token->location);
+	  c_name = "doacross";
 	  break;
 	case PRAGMA_OMP_CLAUSE_DETACH:
 	  clauses = cp_parser_omp_clause_detach (parser, clauses);
@@ -41926,7 +42046,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 					   /*consume_paren=*/true);
 
   tree clause = NULL_TREE;
-  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_SOURCE;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INVALID;
   location_t c_loc = cp_lexer_peek_token (parser->lexer)->location;
   /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
   if (parser->lexer->in_omp_attribute_pragma
@@ -41974,7 +42094,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 		  else if (!strcmp ("inoutset", p2))
 		    kind = OMP_CLAUSE_DEPEND_INOUTSET;
 		}
-	      if (kind == OMP_CLAUSE_DEPEND_SOURCE)
+	      if (kind == OMP_CLAUSE_DEPEND_INVALID)
 		{
 		  clause = error_mark_node;
 		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%>, "
@@ -41990,7 +42110,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 	    clause = error_mark_node;
 	}
     }
-  if (!clause && kind == OMP_CLAUSE_DEPEND_SOURCE)
+  if (!clause && kind == OMP_CLAUSE_DEPEND_INVALID)
     {
       clause = error_mark_node;
       error_at (c_loc, "expected %<depend%>, %<destroy%> or %<update%> clause");
@@ -42822,19 +42942,6 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	= build_int_cst (NULL_TREE, collapse);
       ordered = collapse;
     }
-  if (ordered)
-    {
-      for (tree *pc = &clauses; *pc; )
-	if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_LINEAR)
-	  {
-	    error_at (OMP_CLAUSE_LOCATION (*pc),
-		      "%<linear%> clause may not be specified together "
-		      "with %<ordered%> clause with a parameter");
-	    *pc = OMP_CLAUSE_CHAIN (*pc);
-	  }
-	else
-	  pc = &OMP_CLAUSE_CHAIN (*pc);
-    }
 
   gcc_assert (tiling || (collapse >= 1 && ordered >= 0));
   count = ordered ? ordered : collapse;
@@ -43286,15 +43393,6 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
     {
       cp_omp_split_clauses (loc, OMP_SIMD, mask, clauses, cclauses);
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
-      tree c = omp_find_clause (cclauses[C_OMP_CLAUSE_SPLIT_FOR],
-				OMP_CLAUSE_ORDERED);
-      if (c && OMP_CLAUSE_ORDERED_EXPR (c))
-	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%<ordered%> clause with parameter may not be specified "
-		    "on %qs construct", p_name);
-	  OMP_CLAUSE_ORDERED_EXPR (c) = NULL_TREE;
-	}
     }
 
   keep_next_level (true);
@@ -43556,7 +43654,8 @@ cp_parser_omp_masked (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SIMD))
 
 #define OMP_ORDERED_DEPEND_CLAUSE_MASK				\
-	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DOACROSS))
 
 static bool
 cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
@@ -43575,7 +43674,7 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
       tree id = cp_lexer_peek_nth_token (parser->lexer, n)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
-      if (strcmp (p, "depend") == 0)
+      if (strcmp (p, "depend") == 0 || strcmp (p, "doacross") == 0)
 	{
 	  if (!flag_openmp)	/* flag_openmp_simd */
 	    {
@@ -43585,8 +43684,8 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
 	  if (context == pragma_stmt)
 	    {
 	      error_at (pragma_tok->location, "%<#pragma omp ordered%> with "
-			"%<depend%> clause may only be used in compound "
-			"statements");
+			"%qs clause may only be used in compound "
+			"statements", p);
 	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
 	      return true;
 	    }

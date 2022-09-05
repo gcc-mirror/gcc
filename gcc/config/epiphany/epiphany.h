@@ -795,14 +795,9 @@ do \
 
 /* Debugging information.  */
 
-/* Generate DBX and DWARF debugging information.  */
-#define DBX_DEBUGGING_INFO 1
-
+/* Generate DWARF debugging information.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-/* Turn off splitting of long stabs.  */
-#define DBX_CONTIN_LENGTH 0
 
 /* Miscellaneous.  */
 

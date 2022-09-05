@@ -452,7 +452,7 @@ enum reg_class
 
 #define DWARF_FRAME_REGISTERS 20
 #define DWARF_FRAME_REGNUM(N) m32c_dwarf_frame_regnum (N)
-#define DBX_REGISTER_NUMBER(N) m32c_dwarf_frame_regnum (N)
+#define DEBUGGER_REGNO(N) m32c_dwarf_frame_regnum (N)
 
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 /* This is the same as the default in practice, except that by making

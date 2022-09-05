@@ -6534,6 +6534,22 @@ be presented in subsequent sections.
   ALI file named in the ``gnatbind`` command line.
 
 
+  .. index:: -k  (gnatbind)
+
+:switch:`-k`
+  Disable checking of elaboration flags. When using :switch:`-n`
+  either explicitly or implicitly, :switch:`-F` is also implied,
+  unless :switch:`-k` is used. This switch should be used with care
+  and you should ensure manually that elaboration routines are not called
+  twice unintentionally.
+
+
+  .. index:: -K  (gnatbind)
+
+:switch:`-K`
+  Give list of linker options specified for link.
+
+
   .. index:: -l  (gnatbind)
 
 :switch:`-l`

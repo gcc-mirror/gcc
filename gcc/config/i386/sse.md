@@ -297,9 +297,9 @@
 (define_mode_iterator V_256
   [V32QI V16HI V8SI V4DI V8SF V4DF])
 
-;; All 256bit vector modes including HF vector mode
+;; All 256bit vector modes including HF/BF vector modes
 (define_mode_iterator V_256H
-  [V32QI V16HI V8SI V4DI V8SF V4DF V16HF])
+  [V32QI V16HI V8SI V4DI V8SF V4DF V16HF V16BF])
 
 ;; All 128bit and 256bit vector modes
 (define_mode_iterator V_128_256
@@ -747,7 +747,8 @@
    (V8HI "avx512vl") (V16HI "avx512vl") (V32HI "avx512bw")])
 
 (define_mode_attr shuffletype
-  [(V32HF "f") (V16HF "f") (V8HF "f")
+  [(V32HF "i") (V16HF "i") (V8HF "i")
+   (V32BF "i") (V16BF "i") (V8BF "i")
    (V16SF "f") (V16SI "i") (V8DF "f") (V8DI "i")
    (V8SF "f") (V8SI "i") (V4DF "f") (V4DI "i")
    (V4SF "f") (V4SI "i") (V2DF "f") (V2DI "i")
@@ -983,6 +984,7 @@
    (V16SI "QI") (V8SI  "QI") (V4SI  "QI")
    (V8DI  "QI") (V4DI  "QI") (V2DI  "QI")
    (V32HF "HI") (V16HF "QI") (V8HF  "QI")
+   (V32BF "HI") (V16BF "QI") (V8BF  "QI")
    (V16SF "QI") (V8SF  "QI") (V4SF  "QI")
    (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
 
@@ -1136,10 +1138,10 @@
   [(V64QI "b") (V32HI "w") (V16SI "k") (V8DI "q")
    (V32QI "b") (V16HI "w") (V8SI "k") (V4DI "q")
    (V16QI "b") (V8HI "w") (V4SI "k") (V2DI "q")
-   (V32HF "w") (V16SF "k") (V8DF "q")
-   (V16HF "w") (V8SF "k") (V4DF "q")
-   (V8HF "w") (V4SF "k") (V2DF "q")
-   (HF "w") (SF "k") (DF "q")])
+   (V32HF "w") (V32BF "w") (V16SF "k") (V8DF "q")
+   (V16HF "w") (V16BF "w") (V8SF "k") (V4DF "q")
+   (V8HF "w") (V8BF "w") (V4SF "k") (V2DF "q")
+   (HF "w") (BF "w") (SF "k") (DF "q")])
 
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix
@@ -1251,7 +1253,7 @@
 ;; For 256-bit modes for TARGET_AVX512VL && TARGET_AVX512DQ
 ;; i32x4, f32x4, i64x2 or f64x2 suffixes.
 (define_mode_attr i128vldq
-  [(V8SF "f32x4") (V4DF "f64x2")
+  [(V16HF "i32x4") (V16BF "i32x4") (V8SF "f32x4") (V4DF "f64x2")
    (V32QI "i32x4") (V16HI "i32x4") (V8SI "i32x4") (V4DI "i64x2")])
 
 ;; Mix-n-match
@@ -10711,7 +10713,7 @@
 	   ]
 	   (symbol_ref "true")))])
 
-(define_insn "vec_set<mode>_0"
+(define_insn "@vec_set<mode>_0"
   [(set (match_operand:V8_128 0 "register_operand"
 	  "=v,v,v,x,x,Yr,*x,x,x,x,v,v")
 	(vec_merge:V8_128
@@ -17894,7 +17896,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_high<mode><mask_name>"
+(define_insn "@vec_interleave_high<mode><mask_name>"
   [(set (match_operand:V8_128 0 "register_operand" "=x,Yw")
 	(vec_select:V8_128
 	  (vec_concat:<ssedoublevecmode>
@@ -17962,7 +17964,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_low<mode><mask_name>"
+(define_insn "@vec_interleave_low<mode><mask_name>"
   [(set (match_operand:V8_128 0 "register_operand" "=x,Yw")
 	(vec_select:V8_128
 	  (vec_concat:<ssedoublevecmode>
@@ -23897,7 +23899,7 @@
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512ER"
-  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%1, %2, %0<mask_operand3>|<mask_opernad3>%0, %2, %<iptr>1<round_saeonly_mask_op3>}"
+  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%1, %2, %0<mask_operand3>|<mask_operand3>%0, %2, %<iptr>1<round_saeonly_mask_op3>}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "type" "sse")

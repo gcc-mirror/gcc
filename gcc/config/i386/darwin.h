@@ -237,11 +237,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Darwin uses the standard DWARF register numbers but the default
    register numbers for STABS.  Fortunately for 64-bit code the
    default and the standard are the same.  */
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) 					\
-  (TARGET_64BIT ? dbx64_register_map[n]				\
-   : dwarf_debuginfo_p () ? svr4_dbx_register_map[n]		\
-   : dbx_register_map[n])
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n) 					\
+  (TARGET_64BIT ? debugger64_register_map[n]				\
+   : dwarf_debuginfo_p () ? svr4_debugger_register_map[n]		\
+   : debugger_register_map[n])
 
 /* Unfortunately, the 32-bit EH information also doesn't use the standard
    DWARF register numbers.  */

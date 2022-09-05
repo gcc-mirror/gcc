@@ -54,13 +54,23 @@ class cp_expr
 {
 public:
   cp_expr () :
-    m_value (NULL), m_loc (UNKNOWN_LOCATION) {}
+    m_value (NULL), m_loc (UNKNOWN_LOCATION),
+    m_decimal (false)
+  {}
 
   cp_expr (tree value) :
-    m_value (value), m_loc (cp_expr_location (m_value)) {}
+    m_value (value), m_loc (cp_expr_location (m_value)),
+    m_decimal (false)
+  {}
 
   cp_expr (tree value, location_t loc):
-    m_value (value), m_loc (loc)
+    m_value (value), m_loc (loc), m_decimal (false)
+  {
+    protected_set_expr_location (value, loc);
+  }
+
+  cp_expr (tree value, location_t loc, bool decimal):
+    m_value (value), m_loc (loc), m_decimal (decimal)
   {
     protected_set_expr_location (value, loc);
   }
@@ -102,9 +112,12 @@ public:
     return *this;
   }
 
+  bool decimal_p () const { return m_decimal; }
+
  private:
   tree m_value;
   location_t m_loc;
+  bool m_decimal : 1;
 };
 
 inline bool
@@ -187,9 +200,6 @@ enum cp_tree_index
     CPTI_NOEXCEPT_FALSE_SPEC,
     CPTI_NOEXCEPT_DEFERRED_SPEC,
 
-    CPTI_NULLPTR,
-    CPTI_NULLPTR_TYPE,
-
     CPTI_ANY_TARG,
 
     CPTI_MODULE_HWM,
@@ -254,8 +264,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define conv_op_marker			cp_global_trees[CPTI_CONV_OP_MARKER]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
-#define nullptr_node			cp_global_trees[CPTI_NULLPTR]
-#define nullptr_type_node		cp_global_trees[CPTI_NULLPTR_TYPE]
 /* std::align_val_t */
 #define align_type_node			cp_global_trees[CPTI_ALIGN_TYPE]
 
@@ -4405,9 +4413,6 @@ get_vec_init_expr (tree t)
    || TREE_CODE (TYPE) == REAL_TYPE \
    || TREE_CODE (TYPE) == COMPLEX_TYPE)
 
-/* True iff TYPE is cv decltype(nullptr).  */
-#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
-
 /* [basic.types]
 
    Arithmetic types, enumeration types, pointer types,
@@ -7606,7 +7611,6 @@ extern tree force_paren_expr			(tree, bool = false);
 inline tree force_paren_expr_uneval 		(tree t)
 { return force_paren_expr (t, true); }
 extern tree maybe_undo_parenthesized_ref	(tree);
-extern tree maybe_strip_ref_conversion		(tree);
 extern tree finish_non_static_data_member       (tree, tree, tree,
 						 tsubst_flags_t = tf_warning_or_error);
 extern tree begin_stmt_expr			(void);

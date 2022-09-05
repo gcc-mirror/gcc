@@ -4531,6 +4531,12 @@ c_init_decl_processing (void)
   pushdecl (build_decl (UNKNOWN_LOCATION, TYPE_DECL, get_identifier ("_Bool"),
 			boolean_type_node));
 
+  /* C-specific nullptr initialization.  */
+  record_builtin_type (RID_MAX, "nullptr_t", nullptr_type_node);
+  /* The size and alignment of nullptr_t is the same as for a pointer to
+     character type.  */
+  SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
+
   input_location = save_loc;
 
   make_fname_decl = c_make_fname_decl;
@@ -5180,27 +5186,13 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	  initialized = false;
 	else if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	  {
-	    /* A complete type is ok if size is fixed.  */
-
-	    if (!poly_int_tree_p (TYPE_SIZE (TREE_TYPE (decl)))
-		|| C_DECL_VARIABLE_SIZE (decl))
-	      {
-		error ("variable-sized object may not be initialized");
-		initialized = false;
-	      }
+	    /* A complete type is ok if size is fixed.  If the size is
+	       variable, an empty initializer is OK and nonempty
+	       initializers will be diagnosed in the parser.  */
 	  }
 	else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
 	  {
 	    error ("variable %qD has initializer but incomplete type", decl);
-	    initialized = false;
-	  }
-	else if (C_DECL_VARIABLE_SIZE (decl))
-	  {
-	    /* Although C99 is unclear about whether incomplete arrays
-	       of VLAs themselves count as VLAs, it does not make
-	       sense to permit them to be initialized given that
-	       ordinary VLAs may not be initialized.  */
-	    error ("variable-sized object may not be initialized");
 	    initialized = false;
 	  }
       }
@@ -7876,7 +7868,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       error ("%<[*]%> not allowed in other than function prototype scope");
     }
 
-  if (arg_types == NULL_TREE && !funcdef_flag
+  if (arg_types == NULL_TREE && !funcdef_flag && !flag_isoc2x
       && !in_system_header_at (input_location))
     warning (OPT_Wstrict_prototypes,
 	     "function declaration isn%'t a prototype");
@@ -7904,9 +7896,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       tree parm, type, typelt;
       unsigned int parmno;
 
-      /* In C2X, convert () in a function definition to (void).  */
+      /* In C2X, convert () to (void).  */
       if (flag_isoc2x
-	  && funcdef_flag
 	  && !arg_types
 	  && !arg_info->parms)
 	arg_types = arg_info->types = void_list_node;

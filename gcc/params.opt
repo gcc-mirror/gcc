@@ -1137,6 +1137,10 @@ Whether to use canonical types.
 Common Joined UInteger Var(param_vect_epilogues_nomask) Init(1) IntegerRange(0, 1) Param Optimization
 Enable loop epilogue vectorization using smaller vector size.
 
+-param=vect-max-layout-candidates=
+Common Joined UInteger Var(param_vect_max_layout_candidates) Init(32) Param Optimization
+Maximum number of possible vector layouts (such as permutations) to consider when optimizing to-be-vectorized code.
+
 -param=vect-max-peeling-for-alignment=
 Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(0, 64) Param Optimization
 Maximum number of loop peels to enhance alignment of data references in a loop.

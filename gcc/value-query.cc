@@ -211,11 +211,31 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-    case REAL_CST:
       if (TREE_OVERFLOW_P (expr))
 	expr = drop_tree_overflow (expr);
       r.set (expr, expr);
       return true;
+
+    case REAL_CST:
+      {
+	if (TREE_OVERFLOW_P (expr))
+	  expr = drop_tree_overflow (expr);
+
+	frange &f = as_a <frange> (r);
+	f.set (expr, expr);
+
+	// Singletons from the tree world have known properties.
+	REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (expr);
+	if (real_isnan (rv))
+	  f.set_nan (fp_prop::YES);
+	else
+	  f.set_nan (fp_prop::NO);
+	if (real_isneg (rv))
+	  f.set_signbit (fp_prop::YES);
+	else
+	  f.set_signbit (fp_prop::NO);
+	return true;
+      }
 
     case SSA_NAME:
       gimple_range_global (r, expr);

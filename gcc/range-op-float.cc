@@ -150,6 +150,26 @@ range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) cons
   return VREL_VARYING;
 }
 
+// Set R to [NAN, NAN].
+
+static inline void
+frange_set_nan (frange &r, tree type)
+{
+  REAL_VALUE_TYPE rv;
+  bool res = real_nan (&rv, "", 1, TYPE_MODE (type));
+  if (flag_checking)
+    gcc_assert (res);
+  r.set (type, rv, rv);
+}
+
+// Return TRUE if OP1 is known to be free of NANs.
+
+static inline bool
+finite_operand_p (const frange &op1)
+{
+  return flag_finite_math_only || op1.get_nan ().no_p ();
+}
+
 // Return TRUE if OP1 and OP2 are known to be free of NANs.
 
 static inline bool
@@ -178,21 +198,74 @@ frelop_early_resolve (irange &r, tree type,
 	  && relop_early_resolve (r, type, op1, op2, rel, my_rel));
 }
 
-// Default implementation of fold_range for relational operators.
-// This amounts to passing on any known relations from the oracle, iff
-// we know the operands are not NAN or -ffinite-math-only holds.
+// Crop R to [-INF, MAX] where MAX is the maximum representable number
+// for TYPE.
 
-static inline bool
-default_frelop_fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_kind rel, relation_kind my_rel)
+static inline void
+frange_drop_inf (frange &r, tree type)
 {
-  if (frelop_early_resolve (r, type, op1, op2, rel, my_rel))
-    return true;
+  // FIXME: build_real() bails on decimal float modes when called with
+  // a max representable endpoint.
+  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
+    return;
 
-  r.set_varying (type);
-  return true;
+  REAL_VALUE_TYPE max;
+  real_max_representable (&max, type);
+  frange tmp (type, r.lower_bound (), max);
+  r.intersect (tmp);
 }
+
+// Crop R to [MIN, +INF] where MIN is the minimum representable number
+// for TYPE.
+
+static inline void
+frange_drop_ninf (frange &r, tree type)
+{
+  // FIXME: build_real() bails on decimal float modes when called with
+  // a max representable endpoint.
+  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
+    return;
+
+  REAL_VALUE_TYPE min;
+  real_min_representable (&min, type);
+  frange tmp (type, min, r.upper_bound ());
+  r.intersect (tmp);
+}
+
+// (X <= VAL) produces the range of [-INF, VAL].
+
+static void
+build_le (frange &r, tree type, const REAL_VALUE_TYPE &val)
+{
+  r.set (type, dconstninf, val);
+}
+
+// (X < VAL) produces the range of [-INF, VAL).
+
+static void
+build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
+{
+  // Hijack LE because we only support closed intervals.
+  build_le (r, type, val);
+}
+
+// (X >= VAL) produces the range of [VAL, +INF].
+
+static void
+build_ge (frange &r, tree type, const REAL_VALUE_TYPE &val)
+{
+  r.set (type, val, dconstinf);
+}
+
+// (X > VAL) produces the range of (VAL, +INF].
+
+static void
+build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)
+{
+  // Hijack GE because we only support closed intervals.
+  build_ge (r, type, val);
+}
+
 
 class foperator_identity : public range_operator_float
 {
@@ -224,10 +297,7 @@ class foperator_equal : public range_operator_float
 
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
-  {
-    return default_frelop_fold_range (r, type, op1, op2, rel, VREL_EQ);
-  }
+		   relation_kind rel) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return equal_op1_op2_relation (lhs);
@@ -244,6 +314,39 @@ class foperator_equal : public range_operator_float
 } fop_equal;
 
 bool
+foperator_equal::fold_range (irange &r, tree type,
+			     const frange &op1, const frange &op2,
+			     relation_kind rel) const
+{
+  if (frelop_early_resolve (r, type, op1, op2, rel, VREL_EQ))
+    return true;
+
+  // We can be sure the values are always equal or not if both ranges
+  // consist of a single value, and then compare them.
+  if (op1.singleton_p () && op2.singleton_p ())
+    {
+      if (op1 == op2)
+	r = range_true (type);
+      else
+	r = range_false (type);
+    }
+  else if (finite_operands_p (op1, op2))
+    {
+      // If ranges do not intersect, we know the range is not equal,
+      // otherwise we don't know anything for sure.
+      frange tmp = op1;
+      tmp.intersect (op2);
+      if (tmp.undefined_p ())
+	r = range_false (type);
+      else
+	r = range_true_and_false (type);
+    }
+  else
+    r = range_true_and_false (type);
+  return true;
+}
+
+bool
 foperator_equal::op1_range (frange &r, tree type,
 			    const irange &lhs,
 			    const frange &op2 ATTRIBUTE_UNUSED,
@@ -254,6 +357,9 @@ foperator_equal::op1_range (frange &r, tree type,
     case BRS_TRUE:
       // If it's true, the result is the same as OP2.
       r = op2;
+      // Make sure we don't copy the sign bit if we may have a zero.
+      if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
+	r.set_signbit (fp_prop::VARYING);
       // The TRUE side of op1 == op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;
@@ -262,7 +368,15 @@ foperator_equal::op1_range (frange &r, tree type,
       r.set_varying (type);
       // The FALSE side of op1 == op1 implies op1 is a NAN.
       if (rel == VREL_EQ)
-	r.set_nan (fp_prop::YES);
+	frange_set_nan (r, type);
+      // If the result is false, the only time we know anything is
+      // if OP2 is a constant.
+      else if (op2.singleton_p ()
+	       || (finite_operand_p (op2) && op2.zero_p ()))
+	{
+	  REAL_VALUE_TYPE tmp = op2.lower_bound ();
+	  r.set (type, tmp, tmp, VR_ANTI_RANGE);
+	}
       break;
 
     default:
@@ -278,10 +392,7 @@ class foperator_not_equal : public range_operator_float
 
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
-  {
-    return default_frelop_fold_range (r, type, op1, op2, rel, VREL_NE);
-  }
+		   relation_kind rel) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return not_equal_op1_op2_relation (lhs);
@@ -292,6 +403,39 @@ class foperator_not_equal : public range_operator_float
 } fop_not_equal;
 
 bool
+foperator_not_equal::fold_range (irange &r, tree type,
+				 const frange &op1, const frange &op2,
+				 relation_kind rel) const
+{
+  if (frelop_early_resolve (r, type, op1, op2, rel, VREL_NE))
+    return true;
+
+  // We can be sure the values are always equal or not if both ranges
+  // consist of a single value, and then compare them.
+  if (op1.singleton_p () && op2.singleton_p ())
+    {
+      if (op1 != op2)
+	r = range_true (type);
+      else
+	r = range_false (type);
+    }
+  else if (finite_operands_p (op1, op2))
+    {
+      // If ranges do not intersect, we know the range is not equal,
+      // otherwise we don't know anything for sure.
+      frange tmp = op1;
+      tmp.intersect (op2);
+      if (tmp.undefined_p ())
+	r = range_true (type);
+      else
+	r = range_true_and_false (type);
+    }
+  else
+    r = range_true_and_false (type);
+  return true;
+}
+
+bool
 foperator_not_equal::op1_range (frange &r, tree type,
 				const irange &lhs,
 				const frange &op2 ATTRIBUTE_UNUSED,
@@ -300,11 +444,26 @@ foperator_not_equal::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
+      // If the result is true, the only time we know anything is if
+      // OP2 is a constant.
+      if (op2.singleton_p ())
+	{
+	  // This is correct even if op1 is NAN, because the following
+	  // range would be ~[tmp, tmp] with the NAN property set to
+	  // maybe (VARYING).
+	  REAL_VALUE_TYPE tmp = op2.lower_bound ();
+	  r.set (type, tmp, tmp, VR_ANTI_RANGE);
+	}
+      else
+	r.set_varying (type);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      // If it's false, the result is the same as OP2.
+      r = op2;
+      // Make sure we don't copy the sign bit if we may have a zero.
+      if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
+	r.set_signbit (fp_prop::VARYING);
       // The FALSE side of op1 != op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;
@@ -323,10 +482,7 @@ class foperator_lt : public range_operator_float
 
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
-  {
-    return default_frelop_fold_range (r, type, op1, op2, rel, VREL_LT);
-  }
+		   relation_kind rel) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return lt_op1_op2_relation (lhs);
@@ -340,6 +496,31 @@ class foperator_lt : public range_operator_float
 } fop_lt;
 
 bool
+foperator_lt::fold_range (irange &r, tree type,
+			  const frange &op1, const frange &op2,
+			  relation_kind rel) const
+{
+  if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LT))
+    return true;
+
+  if (finite_operands_p (op1, op2))
+    {
+      if (real_less (&op1.upper_bound (), &op2.lower_bound ()))
+	r = range_true (type);
+      else if (finite_operands_p (op1, op2)
+	       && !real_less (&op1.lower_bound (), &op2.upper_bound ()))
+	r = range_false (type);
+      else
+	r = range_true_and_false (type);
+    }
+  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+    r = range_false (type);
+  else
+    r = range_true_and_false (type);
+  return true;
+}
+
+bool
 foperator_lt::op1_range (frange &r,
 			 tree type,
 			 const irange &lhs,
@@ -349,14 +530,14 @@ foperator_lt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 < op2 implies op1 is !NAN and !INF.
+      build_lt (r, type, op2.upper_bound ());
       r.set_nan (fp_prop::NO);
-      r.set_inf (fp_prop::NO);
+      // x < y implies x is not +INF.
+      frange_drop_inf (r, type);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      build_ge (r, type, op2.lower_bound ());
       break;
 
     default:
@@ -375,14 +556,14 @@ foperator_lt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 < op2 implies op2 is !NAN and !NINF.
+      build_gt (r, type, op1.lower_bound ());
       r.set_nan (fp_prop::NO);
-      r.set_ninf (fp_prop::NO);
+      // x < y implies y is not -INF.
+      frange_drop_ninf (r, type);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      build_le (r, type, op1.upper_bound ());
       break;
 
     default:
@@ -399,10 +580,7 @@ class foperator_le : public range_operator_float
 
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
-  {
-    return default_frelop_fold_range (r, type, op1, op2, rel, VREL_LE);
-  }
+		   relation_kind rel) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return le_op1_op2_relation (lhs);
@@ -412,29 +590,74 @@ class foperator_le : public range_operator_float
 		  relation_kind rel) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override
-  {
-    return op1_range (r, type, lhs, op1, rel);
-  }
+		  relation_kind rel) const final override;
 } fop_le;
+
+bool
+foperator_le::fold_range (irange &r, tree type,
+			  const frange &op1, const frange &op2,
+			  relation_kind rel) const
+{
+  if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LE))
+    return true;
+
+  if (finite_operands_p (op1, op2))
+    {
+      if (real_compare (LE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
+	r = range_true (type);
+      else if (finite_operands_p (op1, op2)
+	       && !real_compare (LE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
+	r = range_false (type);
+      else
+	r = range_true_and_false (type);
+    }
+  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+    r = range_false (type);
+  else
+    r = range_true_and_false (type);
+  return true;
+}
 
 bool
 foperator_le::op1_range (frange &r,
 			 tree type,
 			 const irange &lhs,
-			 const frange &op2 ATTRIBUTE_UNUSED,
+			 const frange &op2,
 			 relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 <= op2 implies op1 is !NAN.
+      build_le (r, type, op2.upper_bound ());
       r.set_nan (fp_prop::NO);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      build_gt (r, type, op2.lower_bound ());
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+bool
+foperator_le::op2_range (frange &r,
+			 tree type,
+			 const irange &lhs,
+			 const frange &op1,
+			 relation_kind) const
+{
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_ge (r, type, op1.lower_bound ());
+      r.set_nan (fp_prop::NO);
+      break;
+
+    case BRS_FALSE:
+      build_lt (r, type, op1.upper_bound ());
       break;
 
     default:
@@ -451,10 +674,7 @@ class foperator_gt : public range_operator_float
 
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
-  {
-    return default_frelop_fold_range (r, type, op1, op2, rel, VREL_GT);
-  }
+		   relation_kind rel) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return gt_op1_op2_relation (lhs);
@@ -468,6 +688,31 @@ class foperator_gt : public range_operator_float
 } fop_gt;
 
 bool
+foperator_gt::fold_range (irange &r, tree type,
+			  const frange &op1, const frange &op2,
+			  relation_kind rel) const
+{
+  if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GT))
+    return true;
+
+  if (finite_operands_p (op1, op2))
+    {
+      if (real_compare (GT_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
+	r = range_true (type);
+      else if (finite_operands_p (op1, op2)
+	       && !real_compare (GT_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
+	r = range_false (type);
+      else
+	r = range_true_and_false (type);
+    }
+  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+    r = range_false (type);
+  else
+    r = range_true_and_false (type);
+  return true;
+}
+
+bool
 foperator_gt::op1_range (frange &r,
 			 tree type,
 			 const irange &lhs,
@@ -477,14 +722,14 @@ foperator_gt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 > op2 implies op1 is !NAN and !NINF.
+      build_gt (r, type, op2.lower_bound ());
       r.set_nan (fp_prop::NO);
-      r.set_ninf (fp_prop::NO);
+      // x > y implies x is not -INF.
+      frange_drop_ninf (r, type);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      build_le (r, type, op2.upper_bound ());
       break;
 
     default:
@@ -503,14 +748,14 @@ foperator_gt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 > op2 implies op2 is !NAN and !INF.
+      build_lt (r, type, op1.upper_bound ());
       r.set_nan (fp_prop::NO);
-      r.set_inf (fp_prop::NO);
+      // x > y implies y is not +INF.
+      frange_drop_inf (r, type);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      build_ge (r, type, op1.lower_bound ());
       break;
 
     default:
@@ -527,10 +772,7 @@ class foperator_ge : public range_operator_float
 
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
-  {
-    return default_frelop_fold_range (r, type, op1, op2, rel, VREL_GE);
-  }
+		   relation_kind rel) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return ge_op1_op2_relation (lhs);
@@ -540,29 +782,73 @@ class foperator_ge : public range_operator_float
 		  relation_kind rel) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override
-  {
-    return op1_range (r, type, lhs, op1, rel);
-  }
+		  relation_kind rel) const final override;
 } fop_ge;
+
+bool
+foperator_ge::fold_range (irange &r, tree type,
+			  const frange &op1, const frange &op2,
+			  relation_kind rel) const
+{
+  if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GE))
+    return true;
+
+  if (finite_operands_p (op1, op2))
+    {
+      if (real_compare (GE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
+	r = range_true (type);
+      else if (finite_operands_p (op1, op2)
+	       && !real_compare (GE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
+	r = range_false (type);
+      else
+	r = range_true_and_false (type);
+    }
+  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+    r = range_false (type);
+  else
+    r = range_true_and_false (type);
+  return true;
+}
 
 bool
 foperator_ge::op1_range (frange &r,
 			 tree type,
 			 const irange &lhs,
-			 const frange &op2 ATTRIBUTE_UNUSED,
+			 const frange &op2,
 			 relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 >= op2 implies op1 is !NAN.
+      build_ge (r, type, op2.lower_bound ());
       r.set_nan (fp_prop::NO);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
+      build_lt (r, type, op2.upper_bound ());
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+bool
+foperator_ge::op2_range (frange &r, tree type,
+			 const irange &lhs,
+			 const frange &op1,
+			 relation_kind) const
+{
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_FALSE:
+      build_gt (r, type, op1.lower_bound ());
+      break;
+
+    case BRS_TRUE:
+      build_le (r, type, op1.upper_bound ());
+      r.set_nan (fp_prop::NO);
       break;
 
     default:
@@ -623,7 +909,7 @@ foperator_unordered::op1_range (frange &r, tree type,
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
       if (op2.get_nan ().no_p ())
-	r.set_nan (fp_prop::YES);
+	frange_set_nan (r, type);
       break;
 
     case BRS_FALSE:

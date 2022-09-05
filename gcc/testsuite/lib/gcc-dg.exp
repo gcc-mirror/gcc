@@ -656,7 +656,7 @@ proc gcc-dg-target-supports-debug-format { target_compile trivial type } {
 proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
     if ![info exists DEBUG_TORTURE_OPTIONS] {
 	set DEBUG_TORTURE_OPTIONS ""
-	foreach type {-gctf -gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+} {
+	foreach type {-gctf -gdwarf-2} {
 	    if [expr [gcc-dg-target-supports-debug-format \
 		      $target_compile $trivial $type]] {
 		if { $type == "-gctf" } {

@@ -338,8 +338,8 @@ parloops_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	      && parloops_valid_reduction_input_p (def_stmt_info))
 	    {
 	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location, "swapping oprnds: %G",
-				 next_stmt);
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "swapping oprnds: %G", (gimple *) next_stmt);
 
 	      swap_ssa_operands (next_stmt,
 				 gimple_assign_rhs1_ptr (next_stmt),
@@ -2484,8 +2484,6 @@ transform_to_exit_first_loop_alt (class loop *loop,
   /* Recalculate dominance info.  */
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-
-  checking_verify_ssa (true, true);
 }
 
 /* Tries to moves the exit condition of LOOP to the beginning of its header

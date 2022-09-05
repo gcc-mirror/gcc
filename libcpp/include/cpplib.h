@@ -190,7 +190,7 @@ struct GTY(()) cpp_string {
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
 				     comment.  */
-#define BOL		(1 << 6) /* Token at beginning of line.  */
+#define DECIMAL_INT     (1 << 6) /* Decimal integer, set in c-lex.cc.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
@@ -199,6 +199,7 @@ struct GTY(()) cpp_string {
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
 #define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
+#define BOL		(1 << 12) /* Token at beginning of line.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -560,6 +561,13 @@ struct cpp_options
      cpp_bidirectional_level.  */
   unsigned char cpp_warn_bidirectional;
 
+  /* True if libcpp should warn about invalid UTF-8 characters in comments.
+     2 if it should be a pedwarn.  */
+  unsigned char cpp_warn_invalid_utf8;
+
+  /* True if -finput-charset= option has been used explicitly.  */
+  bool cpp_input_charset_explicit;
+
   /* Dependency generation.  */
   struct
   {
@@ -666,7 +674,8 @@ enum cpp_warning_reason {
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
-  CPP_W_BIDIRECTIONAL
+  CPP_W_BIDIRECTIONAL,
+  CPP_W_INVALID_UTF8
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

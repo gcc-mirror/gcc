@@ -64,6 +64,11 @@ static const struct default_options s390_option_optimization_table[] =
     /* Enable -fsched-pressure by default when optimizing.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
 
+    /* Enable -munroll-only-small-loops with -funroll-loops to unroll small
+       loops at -O2 and above by default.  */
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_funroll_loops, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_munroll_only_small_loops, NULL, 1 },
+
     /* ??? There are apparently still problems with -fcaller-saves.  */
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
 

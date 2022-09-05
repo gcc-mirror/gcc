@@ -4394,9 +4394,8 @@ package body Sem_Ch4 is
 
    procedure Analyze_Quantified_Expression (N : Node_Id) is
       function Is_Empty_Range (Typ : Entity_Id) return Boolean;
-      --  If the iterator is part of a quantified expression, and the range is
-      --  known to be statically empty, emit a warning and replace expression
-      --  with its static value. Returns True if the replacement occurs.
+      --  Return True if the iterator is part of a quantified expression and
+      --  the range is known to be statically empty.
 
       function No_Else_Or_Trivial_True (If_Expr : Node_Id) return Boolean;
       --  Determine whether if expression If_Expr lacks an else part or if it
@@ -4407,36 +4406,12 @@ package body Sem_Ch4 is
       --------------------
 
       function Is_Empty_Range (Typ : Entity_Id) return Boolean is
-         Loc : constant Source_Ptr := Sloc (N);
-
       begin
-         if Is_Array_Type (Typ)
+         return Is_Array_Type (Typ)
            and then Compile_Time_Known_Bounds (Typ)
            and then
-             (Expr_Value (Type_Low_Bound  (Etype (First_Index (Typ)))) >
-              Expr_Value (Type_High_Bound (Etype (First_Index (Typ)))))
-         then
-            Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
-
-            if All_Present (N) then
-               Error_Msg_N
-                 ("??quantified expression with ALL "
-                  & "over a null range has value True", N);
-               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-
-            else
-               Error_Msg_N
-                 ("??quantified expression with SOME "
-                  & "over a null range has value False", N);
-               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-            end if;
-
-            Analyze (N);
-            return True;
-
-         else
-            return False;
-         end if;
+             Expr_Value (Type_Low_Bound  (Etype (First_Index (Typ)))) >
+             Expr_Value (Type_High_Bound (Etype (First_Index (Typ))));
       end Is_Empty_Range;
 
       -----------------------------
@@ -4456,6 +4431,7 @@ package body Sem_Ch4 is
       --  Local variables
 
       Cond    : constant Node_Id := Condition (N);
+      Loc     : constant Source_Ptr := Sloc (N);
       Loop_Id : Entity_Id;
       QE_Scop : Entity_Id;
 
@@ -4466,7 +4442,7 @@ package body Sem_Ch4 is
       --  expression. The scope is needed to provide proper visibility of the
       --  loop variable.
 
-      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
+      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
       Set_Etype  (QE_Scop, Standard_Void_Type);
       Set_Scope  (QE_Scop, Current_Scope);
       Set_Parent (QE_Scop, N);
@@ -4482,11 +4458,30 @@ package body Sem_Ch4 is
          Preanalyze (Iterator_Specification (N));
 
          --  Do not proceed with the analysis when the range of iteration is
-         --  empty. The appropriate error is issued by Is_Empty_Range.
+         --  empty.
 
          if Is_Entity_Name (Name (Iterator_Specification (N)))
            and then Is_Empty_Range (Etype (Name (Iterator_Specification (N))))
          then
+            Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
+            End_Scope;
+
+            --  Emit a warning and replace expression with its static value
+
+            if All_Present (N) then
+               Error_Msg_N
+                 ("??quantified expression with ALL "
+                  & "over a null range has value True", N);
+               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+
+            else
+               Error_Msg_N
+                 ("??quantified expression with SOME "
+                  & "over a null range has value False", N);
+               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+            end if;
+
+            Analyze (N);
             return;
          end if;
 

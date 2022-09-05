@@ -1,3 +1,96 @@
+2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Be prepared for
+	rewritten aggregates as expressions.
+
+2022-09-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return) Bypass creation of an actual
+	subtype and unchecked conversion to that subtype when the underlying type
+	of the expression has discriminants without defaults.
+
+2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Check for the presence
+	of the Is_Constr_Subt_For_U_Nominal flag instead of the absence
+	of the Is_Constr_Subt_For_UN_Aliased flag on the subtype of the
+	expression of an object declaration before reusing this subtype.
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not incorrectly
+	set the Is_Constr_Subt_For_UN_Aliased flag on the actual subtype
+	of an array with definite nominal subtype.  Remove useless test.
+
+2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst
+	(No_Dependence): Cite implicit dependences on the runtime library.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2022-09-02  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-strmap.adb: Add variants to simple and while loops.
+	* libgnat/a-strsea.adb: Idem.
+
+2022-09-02  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-expmod.adb (Lemma_Add_Mod): Add new lemma to factor
+	out a complex sub-proof.
+	(Exp_Modular): Add assertion to help proof.
+
+2022-09-02  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-widthu.adb (Lemma_Euclidean): Lemma to prove the
+	relation between the quotient/remainder of a division.
+
+2022-09-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb: Add or rework ghost code.
+	* libgnat/s-aridou.ads: Add Big_Positive subtype.
+
+2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst
+	(Non-Symbolic Traceback): Update section.
+	* gnat_rm.texi, gnat_ugn.texi, gnat-style.texi: Regenerate.
+
+2022-09-02  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-nbnbig.ads: Add Always_Return annotation.
+	* libgnat/s-vaispe.ads: New ghost unit for the specification of
+	System.Value_I. Restore proofs.
+	* libgnat/s-vauspe.ads: New ghost unit for the specification of
+	System.Value_U. Restore proofs.
+	* libgnat/s-valuei.adb: The specification only subprograms are
+	moved to System.Value_I_Spec. Restore proofs.
+	* libgnat/s-valueu.adb: The specification only subprograms are
+	moved to System.Value_U_Spec. Restore proofs.
+	* libgnat/s-valuti.ads
+	(Uns_Params): Generic unit used to bundle together the
+	specification functions of System.Value_U_Spec.
+	(Int_Params): Generic unit used to bundle together the
+	specification functions of System.Value_I_Spec.
+	* libgnat/s-imagef.adb: It is now possible to instantiate the
+	appropriate specification units instead of creating imported ghost
+	subprograms.
+	* libgnat/s-imagei.adb: Update to refactoring of specifications
+	and fix proofs.
+	* libgnat/s-imageu.adb: Likewise.
+	* libgnat/s-imgint.ads: Ghost parameters are grouped together in a
+	package now.
+	* libgnat/s-imglli.ads: Likewise.
+	* libgnat/s-imgllu.ads: Likewise.
+	* libgnat/s-imgllli.ads: Likewise.
+	* libgnat/s-imglllu.ads: Likewise.
+	* libgnat/s-imguns.ads: Likewise.
+	* libgnat/s-vallli.ads: Likewise.
+	* libgnat/s-valllli.ads: Likewise.
+	* libgnat/s-imagei.ads: Likewise.
+	* libgnat/s-imageu.ads: Likewise.
+	* libgnat/s-vaispe.adb: Likewise.
+	* libgnat/s-valint.ads: Likewise.
+	* libgnat/s-valuei.ads: Likewise.
+	* libgnat/s-valueu.ads: Likewise.
+	* libgnat/s-vauspe.adb: Likewise.
+
 2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (gnat_to_gnu) <N_Assignment_Statement>: Fix

@@ -173,7 +173,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 32bit mode.  */
 
-int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
+int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 4, 5,
@@ -204,7 +204,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 64bit mode.  */
 
-int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
+int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 1, 2, 3, 4, 5, 6, 7,
@@ -283,7 +283,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 	17 for %st(6) (gcc regno = 14)
 	18 for %st(7) (gcc regno = 15)
 */
-int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
+int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 5, 4,
@@ -18452,6 +18452,15 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_PBLENDVB256:
+    case IX86_BUILTIN_BLENDVPS256:
+    case IX86_BUILTIN_BLENDVPD256:
+      /* pcmpeqb/d/q is under avx2, w/o avx2, it's veclower
+	 to scalar operations and not combined back.  */
+      if (!TARGET_AVX2)
+	break;
+
+      /* FALLTHRU.  */
     case IX86_BUILTIN_BLENDVPD:
       /* blendvpd is under sse4.1 but pcmpgtq is under sse4.2,
 	 w/o sse4.2, it's veclowered to scalar operations and
@@ -18460,10 +18469,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	break;
       /* FALLTHRU.  */
     case IX86_BUILTIN_PBLENDVB128:
-    case IX86_BUILTIN_PBLENDVB256:
     case IX86_BUILTIN_BLENDVPS:
-    case IX86_BUILTIN_BLENDVPS256:
-    case IX86_BUILTIN_BLENDVPD256:
       gcc_assert (n_args == 3);
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);

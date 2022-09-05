@@ -1330,12 +1330,7 @@ do { \
 
 /* Debugging information.  */
 
-/* Generate DBX and DWARF debugging information.  */
-#ifdef DBX_DEBUGGING_INFO
-#undef DBX_DEBUGGING_INFO
-#endif
-#define DBX_DEBUGGING_INFO
-
+/* Generate DWARF debugging information.  */
 #ifdef DWARF2_DEBUGGING_INFO
 #undef DWARF2_DEBUGGING_INFO
 #endif
@@ -1345,8 +1340,8 @@ do { \
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO)				\
+/* How to renumber registers for gdb.  */
+#define DEBUGGER_REGNO(REGNO)				\
   ((TARGET_MULMAC_32BY16_SET && (REGNO) >= 56 && (REGNO) <= 57) \
    ? ((REGNO) ^ !TARGET_BIG_ENDIAN)				\
    : (TARGET_MUL64_SET && (REGNO) >= 57 && (REGNO) <= 58)	\
@@ -1384,9 +1379,6 @@ do { \
 #define EH_RETURN_DATA_REGNO(N)  ((N) < 2 ? (N) : INVALID_REGNUM)
 
 #define EH_RETURN_STACKADJ_RTX   gen_rtx_REG (Pmode, 2)
-
-/* Turn off splitting of long stabs.  */
-#define DBX_CONTIN_LENGTH 0
 
 /* Miscellaneous.  */
 

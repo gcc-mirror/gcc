@@ -568,8 +568,6 @@ extern (C++) class FuncDeclaration : Declaration
             if (tf.isreturnscope)
                 vthis.storage_class |= STC.returnScope;
         }
-        if (flags & FUNCFLAG.inferScope && !(vthis.storage_class & STC.scope_))
-            vthis.storage_class |= STC.maybescope;
 
         vthis.dsymbolSemantic(sc);
         if (!sc.insert(vthis))

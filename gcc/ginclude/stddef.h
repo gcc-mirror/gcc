@@ -443,6 +443,14 @@ typedef struct {
 #endif
 #endif /* C++11.  */
 
+#if (defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L)
+#ifndef _GCC_NULLPTR_T
+#define _GCC_NULLPTR_T
+  typedef __typeof__(nullptr) nullptr_t;
+/* ??? This doesn't define __STDC_VERSION_STDDEF_H__ yet.  */
+#endif
+#endif /* C23.  */
+
 #endif /* _STDDEF_H was defined this time */
 
 #endif /* !_STDDEF_H && !_STDDEF_H_ && !_ANSI_STDDEF_H && !__STDDEF_H__

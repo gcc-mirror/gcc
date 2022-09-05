@@ -1544,6 +1544,7 @@ package body Bindgen is
 
                Check_Elab_Flag :=
                  Units.Table (Unum_Spec).Set_Elab_Entity
+                   and then Check_Elaboration_Flags
                    and then not CodePeer_Mode
                    and then (Force_Checking_Of_Elaboration_Flags
                               or Interface_Library_Unit

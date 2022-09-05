@@ -992,7 +992,7 @@ vect_set_loop_condition (class loop *loop, loop_vec_info loop_vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "New loop exit condition: %G",
-		     cond_stmt);
+		     (gimple *) cond_stmt);
 }
 
 /* Helper routine of slpeel_tree_duplicate_loop_to_edge_cfg.
@@ -1539,7 +1539,8 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
       stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "vect_update_ivs_after_vectorizer: phi: %G", phi);
+			 "vect_update_ivs_after_vectorizer: phi: %G",
+			 (gimple *) phi);
 
       /* Skip reduction and virtual phis.  */
       if (!iv_phi_p (phi_info))
@@ -1978,7 +1979,8 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
   else
     ni_minus_gap = niters;
 
-  unsigned HOST_WIDE_INT const_vf;
+  /* To silence some unexpected warnings, simply initialize to 0. */
+  unsigned HOST_WIDE_INT const_vf = 0;
   if (vf.is_constant (&const_vf)
       && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {

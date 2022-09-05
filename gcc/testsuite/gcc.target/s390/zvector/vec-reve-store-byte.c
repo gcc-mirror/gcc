@@ -16,13 +16,11 @@ bar (signed char *target, vector signed char x)
   vec_xst (vec_reve (x), 0, target);
 }
 
-/* { dg-final { scan-assembler-times "vstbrq\t" 2 } } */
-
-/* mem -> mem: This becomes vlbrq + vst */
+/* mem -> mem: This becomes vl + vstbrq */
 void
 baz (vector signed char *target, vector signed char *x)
 {
   *target = vec_reve (*x);
 }
 
-/* { dg-final { scan-assembler-times "vlbrq\t" 1 } } */
+/* { dg-final { scan-assembler-times "vstbrq\t" 3 } } */

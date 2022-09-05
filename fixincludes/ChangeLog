@@ -1,3 +1,16 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2022-02-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* inclhack.def (hpux_math_constexpr): New hack.

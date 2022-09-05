@@ -714,8 +714,17 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 
   if (clause)
     {
-      gcc_assert (TREE_CODE (clause) == OMP_CLAUSE
-		  && OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_DEPEND);
+      gcc_assert (TREE_CODE (clause) == OMP_CLAUSE);
+      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_DOACROSS)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (clause),
+		    "%<depend(%s)%> is only allowed in %<omp ordered%>",
+		    OMP_CLAUSE_DOACROSS_KIND (clause)
+		    == OMP_CLAUSE_DOACROSS_SOURCE
+		    ? "source" : "sink");
+	  return;
+	}
+      gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_DEPEND);
       if (OMP_CLAUSE_CHAIN (clause))
 	error_at (OMP_CLAUSE_LOCATION (clause),
 		  "more than one locator in %<depend%> clause on %<depobj%> "
@@ -726,13 +735,6 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	  error_at (OMP_CLAUSE_LOCATION (clause),
 		    "%<depobj%> dependence type specified in %<depend%> "
 		    "clause on %<depobj%> construct");
-	  return;
-	case OMP_CLAUSE_DEPEND_SOURCE:
-	case OMP_CLAUSE_DEPEND_SINK:
-	  error_at (OMP_CLAUSE_LOCATION (clause),
-		    "%<depend(%s)%> is only allowed in %<omp ordered%>",
-		    OMP_CLAUSE_DEPEND_KIND (clause) == OMP_CLAUSE_DEPEND_SOURCE
-		    ? "source" : "sink");
 	  return;
 	case OMP_CLAUSE_DEPEND_IN:
 	case OMP_CLAUSE_DEPEND_OUT:
@@ -765,7 +767,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	}
     }
   else
-    gcc_assert (kind != OMP_CLAUSE_DEPEND_SOURCE);
+    gcc_assert (kind != OMP_CLAUSE_DEPEND_INVALID);
 
   if (depobj == error_mark_node)
     return;

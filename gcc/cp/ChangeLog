@@ -1,3 +1,97 @@
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Handle doacross.
+	(cp_parser_omp_clause_depend_sink): Renamed to ...
+	(cp_parser_omp_clause_doacross_sink): ... this.  Add depend_p
+	argument.  Handle parsing of doacross(sink:omp_cur_iteration-1).  Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS instead
+	of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND flag on it.
+	(cp_parser_omp_clause_depend): Use OMP_CLAUSE_DOACROSS_SINK and
+	OMP_CLAUSE_DOACROSS_SOURCE instead of OMP_CLAUSE_DEPEND_SINK and
+	OMP_CLAUSE_DEPEND_SOURCE, build OMP_CLAUSE_DOACROSS for depend(source)
+	and set OMP_CLAUSE_DOACROSS_DEPEND on it.
+	(cp_parser_omp_clause_doacross): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DOACROSS.
+	(cp_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	(cp_parser_omp_for_loop): Don't diagnose here linear clause together
+	with ordered with argument.
+	(cp_parser_omp_simd): Don't diagnose ordered clause with argument on
+	for simd.
+	(OMP_ORDERED_DEPEND_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	(cp_parser_omp_ordered): Handle also doacross and adjust for it
+	diagnostic wording.
+	* pt.cc (tsubst_omp_clause_decl): Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE.
+	(tsubst_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	(tsubst_expr): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	* semantics.cc (cp_finish_omp_clause_depend_sink): Rename to ...
+	(cp_finish_omp_clause_doacross_sink): ... this.
+	(finish_omp_clauses): Handle OMP_CLAUSE_DOACROSS.  Don't handle
+	OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* cp-tree.h (class cp_expr): Add bitfield m_decimal.  Clear it in
+	existing ctors.  Add ctor that allows specifying its value.
+	(cp_expr::decimal_p): New accessor.
+	* parser.cc (cp_parser_expression_stack_entry::flags): New field.
+	(cp_parser_primary_expression): Set m_decimal of cp_expr when
+	handling numbers.
+	(cp_parser_binary_expression): Extract flags from token when
+	populating stack.  Call check_for_xor_used_as_pow.
+
+2022-09-01  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (maybe_strip_ref_conversion): Remove.
+
+2022-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* Make-lang.in: Add rule to rebuild std-name-hint.h from
+	std-name-hint.gperf.
+	* name-lookup.cc (get_std_name_hint): Remove hints array.
+	Use gperf-generated class std_name_hint_lookup.
+	Include "std-name-hint.h".
+	* std-name-hint.gperf: New file.
+	* std-name-hint.h: New file.  Generated from the .gperf file.
+
+2022-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106759
+	* cp-objcp-common.cc (names_builtin_p): Handle RID_IS_NOTHROW_ASSIGNABLE
+	and RID_IS_NOTHROW_CONSTRUCTIBLE.
+
+2022-08-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106712
+	* decl.cc (grokdeclarator): Reverse the order of arguments to
+	attr_chainon.
+
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* typeck.cc (maybe_warn_self_move): New.
+	(cp_build_modify_expr): Call maybe_warn_self_move.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Remove CTI_NULLPTR, CTI_NULLPTR_TYPE.
+	Move it to c_tree_index.
+	(nullptr_node): No longer define here.
+	(nullptr_type_node): Likewise.
+	(NULLPTR_TYPE_P): Likewise.
+	* decl.cc (cxx_init_decl_processing): Only keep C++-specific nullptr
+	initialization; move the shared code to c_common_nodes_and_builtins.
+
+2022-08-25  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (unsafe_return_slot_p): Return 2 for *this in a
+	constructor.
+
 2022-08-23  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.cc (maybe_warn_pessimizing_move): Don't warn about

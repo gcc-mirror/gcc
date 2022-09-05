@@ -1234,6 +1234,14 @@ real_isinf (const REAL_VALUE_TYPE *r)
   return (r->cl == rvc_inf);
 }
 
+/* Determine whether a floating-point value X is infinite with SIGN.  */
+
+bool
+real_isinf (const REAL_VALUE_TYPE *r, bool sign)
+{
+  return real_isinf (r) && r->sign == sign;
+}
+
 /* Determine whether a floating-point value X is a NaN.  */
 
 bool
@@ -1262,6 +1270,22 @@ bool
 real_isneg (const REAL_VALUE_TYPE *r)
 {
   return r->sign;
+}
+
+/* Determine whether a floating-point value X is plus or minus zero.  */
+
+bool
+real_iszero (const REAL_VALUE_TYPE *r)
+{
+  return r->cl == rvc_zero;
+}
+
+/* Determine whether a floating-point value X is zero with SIGN.  */
+
+bool
+real_iszero (const REAL_VALUE_TYPE *r, bool sign)
+{
+  return real_iszero (r) && r->sign == sign;
 }
 
 /* Determine whether a floating-point value X is minus zero.  */
@@ -2484,12 +2508,12 @@ dconst_sqrt2_ptr (void)
   return &value;
 }
 
-/* Fills R with +Inf.  */
+/* Fills R with Inf with SIGN.  */
 
 void
-real_inf (REAL_VALUE_TYPE *r)
+real_inf (REAL_VALUE_TYPE *r, bool sign)
 {
-  get_inf (r, 0);
+  get_inf (r, sign);
 }
 
 /* Fills R with a NaN whose significand is described by STR.  If QUIET,
@@ -2930,7 +2954,7 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image = sign << 31;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 24)) & 0x7fffff;
@@ -3151,7 +3175,7 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
 {
   unsigned long image_lo, image_hi, sig_lo, sig_hi, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image_hi = sign << 31;
   image_lo = 0;
@@ -3409,7 +3433,7 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
 		      const REAL_VALUE_TYPE *r)
 {
   unsigned long image_hi, sig_hi, sig_lo;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image_hi = r->sign << 15;
   sig_hi = sig_lo = 0;
@@ -3940,7 +3964,7 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
 {
   unsigned long image3, image2, image1, image0, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
   REAL_VALUE_TYPE u;
 
   image3 = sign << 31;
@@ -4697,7 +4721,7 @@ encode_ieee_half (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image = sign << 15;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 11)) & 0x3ff;
@@ -4811,7 +4835,7 @@ encode_arm_bfloat_half (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  bool denormal = real_isdenormal (r);
 
   image = sign << 15;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 8)) & 0x7f;

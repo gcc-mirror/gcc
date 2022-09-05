@@ -9,7 +9,7 @@
 void
 foo (void)
 {
-  #pragma omp target device (ancestor: 1) /* { dg-message "sorry, unimplemented: 'ancestor' not yet supported" } */
+  #pragma omp target device (ancestor: 1)
   ;
 
 }

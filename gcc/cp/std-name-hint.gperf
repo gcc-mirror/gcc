@@ -1,0 +1,287 @@
+%language=C++
+%define class-name std_name_hint_lookup
+%struct-type
+%{
+/* Copyright (C) 2022 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+%}
+struct std_name_hint
+{
+  /* A name within "std::".  */
+  const char *name;
+
+  /* The header name defining it within the C++ Standard Library
+     (with '<' and '>').  */
+  const char* header;
+
+  /* The dialect of C++ in which this was added.  */
+  enum cxx_dialect min_dialect;
+};
+%%
+# The standard-defined types, functions, and options in the std:: namespace
+# as defined in the C++ language specification.  The result is used in the
+# get_std_name_hint functions.
+#   throws an exception.
+#
+# <any>
+any, "<any>", cxx17
+any_cast, "<any>", cxx17
+make_any, "<any>", cxx17
+# <array>
+array, "<array>", cxx11
+to_array, "<array>", cxx20
+# <atomic>
+atomic, "<atomic>", cxx11
+atomic_flag, "<atomic>", cxx11
+atomic_ref, "<atomic>", cxx20
+# <bitset>
+bitset, "<bitset>", cxx11
+# <compare>
+weak_equality, "<compare>", cxx20
+strong_equality, "<compare>", cxx20
+partial_ordering, "<compare>", cxx20
+weak_ordering, "<compare>", cxx20
+strong_ordering, "<compare>", cxx20
+# <complex>
+complex, "<complex>", cxx98
+complex_literals, "<complex>", cxx14
+# <condition_variable>. */
+condition_variable, "<condition_variable>", cxx11
+condition_variable_any, "<condition_variable>", cxx11
+# <cstddef>
+byte, "<cstddef>", cxx17
+# <deque>
+deque, "<deque>", cxx98
+# <forward_list>
+forward_list, "<forward_list>", cxx11
+# <fstream>
+basic_filebuf, "<fstream>", cxx98
+basic_ifstream, "<fstream>", cxx98
+basic_ofstream, "<fstream>", cxx98
+basic_fstream, "<fstream>", cxx98
+fstream, "<fstream>", cxx98
+ifstream, "<fstream>", cxx98
+ofstream, "<fstream>", cxx98
+# <functional>
+bind, "<functional>", cxx11
+bind_front, "<functional>", cxx20
+function, "<functional>", cxx11
+hash, "<functional>", cxx11
+invoke, "<functional>", cxx17
+mem_fn, "<functional>", cxx11
+not_fn, "<functional>", cxx17
+reference_wrapper, "<functional>", cxx11
+unwrap_reference, "<functional>", cxx20
+unwrap_reference_t, "<functional>", cxx20
+unwrap_ref_decay, "<functional>", cxx20
+unwrap_ref_decay_t, "<functional>", cxx20
+# <future>. */
+async, "<future>", cxx11
+future, "<future>", cxx11
+packaged_task, "<future>", cxx11
+promise, "<future>", cxx11
+# <iomanip>
+resetiosflags, "<iomanip>", cxx98
+setiosflags, "<iomanip>", cxx98
+setbase, "<iomanip>", cxx98
+setfill, "<iomanip>", cxx98
+setprecision, "<iomanip>", cxx98
+setw, "<iomanip>", cxx98
+get_money, "<iomanip>", cxx11
+put_money, "<iomanip>", cxx11
+get_time, "<iomanip>", cxx11
+put_time, "<iomanip>", cxx11
+quoted, "<iomanip>", cxx14
+# <ios>
+boolalpha, "<ios>", cxx98
+noboolalpha, "<ios>", cxx98
+showbase, "<ios>", cxx98
+noshowbase, "<ios>", cxx98
+showpoint, "<ios>", cxx98
+noshowpoint, "<ios>", cxx98
+showpos, "<ios>", cxx98
+noshowpos, "<ios>", cxx98
+skipws, "<ios>", cxx98
+noskipws, "<ios>", cxx98
+uppercase, "<ios>", cxx98
+nouppercase, "<ios>", cxx98
+unitbuf, "<ios>", cxx98
+nounitbuf, "<ios>", cxx98
+internal, "<ios>", cxx98
+left, "<ios>", cxx98
+right, "<ios>", cxx98
+dec, "<ios>", cxx98
+hex, "<ios>", cxx98
+oct, "<ios>", cxx98
+fixed, "<ios>", cxx98
+scientific, "<ios>", cxx98
+hexfloat, "<ios>", cxx11
+defaultfloat, "<ios>", cxx11
+# <iostream>
+cin, "<iostream>", cxx98
+cout, "<iostream>", cxx98
+cerr, "<iostream>", cxx98
+clog, "<iostream>", cxx98
+wcin, "<iostream>", cxx98
+wcout, "<iostream>", cxx98
+wclog, "<iostream>", cxx98
+# <istream>
+istream, "<istream>", cxx98
+ws, "<istream>", cxx98
+# <iterator>
+advance, "<iterator>", cxx98
+back_inserter, "<iterator>", cxx98
+begin, "<iterator>", cxx11
+distance, "<iterator>", cxx98
+end, "<iterator>", cxx11
+front_inserter, "<iterator>", cxx98
+inserter, "<iterator>", cxx98
+istream_iterator, "<iterator>", cxx98
+istreambuf_iterator, "<iterator>", cxx98
+iterator_traits, "<iterator>", cxx98
+move_iterator, "<iterator>", cxx11
+next, "<iterator>", cxx11
+ostream_iterator, "<iterator>", cxx98
+ostreambuf_iterator, "<iterator>", cxx98
+prev, "<iterator>", cxx11
+reverse_iterator, "<iterator>", cxx98
+# <ostream>
+ostream, "<ostream>", cxx98
+ends, "<ostream>", cxx98
+flush, "<ostream>", cxx98
+endl, "<ostream>", cxx98
+emit_on_flush, "<ostream>", cxx20
+noemit_on_flush, "<ostream>", cxx20
+flush_emit, "<ostream>", cxx20
+# <list>
+list, "<list>", cxx98
+# <map>
+map, "<map>", cxx98
+multimap, "<map>", cxx98
+# <memory>
+allocate_shared, "<memory>", cxx11
+allocator, "<memory>", cxx98
+allocator_traits, "<memory>", cxx11
+make_shared, "<memory>", cxx11
+make_unique, "<memory>", cxx14
+shared_ptr, "<memory>", cxx11
+unique_ptr, "<memory>", cxx11
+weak_ptr, "<memory>", cxx11
+# <memory_resource>
+pmr, "<memory_resource>", cxx17
+# <mutex>
+mutex, "<mutex>", cxx11
+timed_mutex, "<mutex>", cxx11
+recursive_mutex, "<mutex>", cxx11
+recursive_timed_mutex, "<mutex>", cxx11
+once_flag, "<mutex>", cxx11
+call_once, "<mutex>", cxx11
+lock, "<mutex>", cxx11
+scoped_lock, "<mutex>", cxx17
+try_lock, "<mutex>", cxx11
+lock_guard, "<mutex>", cxx11
+unique_lock, "<mutex>", cxx11
+# <optional>. */
+optional, "<optional>", cxx17
+make_optional, "<optional>", cxx17
+# <ostream>
+ostream, "<ostream>", cxx98
+wostream, "<ostream>", cxx98
+ends, "<ostream>", cxx98
+flush, "<ostream>", cxx98
+endl, "<ostream>", cxx98
+# <queue>
+queue, "<queue>", cxx98
+priority_queue, "<queue>", cxx98
+# <set>
+set, "<set>", cxx98
+multiset, "<set>", cxx98
+# <shared_mutex>
+shared_lock, "<shared_mutex>", cxx14
+shared_mutex, "<shared_mutex>", cxx17
+shared_timed_mutex, "<shared_mutex>", cxx14
+# <source_location>
+source_location, "<source_location>", cxx20
+# <sstream>
+basic_stringbuf, "<sstream>", cxx98
+basic_istringstream, "<sstream>", cxx98
+basic_ostringstream, "<sstream>", cxx98
+basic_stringstream, "<sstream>", cxx98
+istringstream, "<sstream>", cxx98
+ostringstream, "<sstream>", cxx98
+stringstream, "<sstream>", cxx98
+# <stack>
+stack, "<stack>", cxx98
+# <string>
+basic_string, "<string>", cxx98
+string, "<string>", cxx98
+wstring, "<string>", cxx98
+u8string, "<string>", cxx20
+u16string, "<string>", cxx11
+u32string, "<string>", cxx11
+# <string_view>
+basic_string_view, "<string_view>", cxx17
+string_view, "<string_view>", cxx17
+# <thread>
+thread, "<thread>", cxx11
+this_thread, "<thread>", cxx11
+# <tuple>
+apply, "<tuple>", cxx17
+forward_as_tuple, "<tuple>", cxx11
+make_from_tuple, "<tuple>", cxx17
+make_tuple, "<tuple>", cxx11
+tie, "<tuple>", cxx11
+tuple, "<tuple>", cxx11
+tuple_cat, "<tuple>", cxx11
+tuple_element, "<tuple>", cxx11
+tuple_element_t, "<tuple>", cxx14
+tuple_size, "<tuple>", cxx11
+tuple_size_v, "<tuple>", cxx17
+# <type_traits>
+enable_if, "<type_traits>", cxx11
+enable_if_t, "<type_traits>", cxx14
+invoke_result, "<type_traits>", cxx17
+invoke_result_t, "<type_traits>", cxx17
+remove_cvref, "<type_traits>", cxx20
+remove_cvref_t, "<type_traits>", cxx20
+type_identity, "<type_traits>", cxx20
+type_identity_t, "<type_traits>", cxx20
+void_t, "<type_traits>", cxx17
+conjunction, "<type_traits>", cxx17
+conjunction_v, "<type_traits>", cxx17
+disjunction, "<type_traits>", cxx17
+disjunction_v, "<type_traits>", cxx17
+negation, "<type_traits>", cxx17
+negation_v, "<type_traits>", cxx17
+# <unordered_map>
+unordered_map, "<unordered_map>", cxx11
+unordered_multimap, "<unordered_map>", cxx11
+# <unordered_set>
+unordered_set, "<unordered_set>", cxx11
+unordered_multiset, "<unordered_set>", cxx11
+# <utility>
+declval, "<utility>", cxx11
+forward, "<utility>", cxx11
+make_pair, "<utility>", cxx98
+move, "<utility>", cxx11
+pair, "<utility>", cxx98
+# <variant>
+variant, "<variant>", cxx17
+visit, "<variant>", cxx17
+# <vector>
+vector, "<vector>", cxx98

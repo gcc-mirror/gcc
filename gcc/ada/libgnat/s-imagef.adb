@@ -31,7 +31,8 @@
 
 with System.Image_I;
 with System.Img_Util; use System.Img_Util;
-with System.Val_Util;
+with System.Value_I_Spec;
+with System.Value_U_Spec;
 
 package body System.Image_F is
 
@@ -69,70 +70,16 @@ package body System.Image_F is
    --  if the small is larger than 1, and smaller than 2**(Int'Size - 1) / 10
    --  if the small is smaller than 1.
 
-   --  Define ghost subprograms without implementation (marked as Import) to
-   --  create a suitable package Int_Params for type Int, as instantiations
-   --  of System.Image_F use for this type one of the derived integer types
-   --  defined in Interfaces, instead of the standard signed integer types
-   --  which are used to define System.Img_*.Int_Params.
-
-   type Uns_Option (Overflow : Boolean := False) is record
-      case Overflow is
-         when True =>
-            null;
-         when False =>
-            Value : Uns := 0;
-      end case;
-   end record;
-
    Unsigned_Width_Ghost : constant Natural := Int'Width;
 
-   function Wrap_Option (Value : Uns) return Uns_Option
-     with Ghost, Import;
-   function Only_Decimal_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-     with Ghost, Import;
-   function Hexa_To_Unsigned_Ghost (X : Character) return Uns
-     with Ghost, Import;
-   function Scan_Based_Number_Ghost
-     (Str      : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-      return Uns_Option
-     with Ghost, Import;
-   function Is_Integer_Ghost (Str : String) return Boolean
-     with Ghost, Import;
-   procedure Prove_Iter_Scan_Based_Number_Ghost
-     (Str1, Str2 : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-     with Ghost, Import;
-   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
-     with Ghost, Import;
-   function Abs_Uns_Of_Int (Val : Int) return Uns
-     with Ghost, Import;
-   function Value_Integer (Str : String) return Int
-     with Ghost, Import;
+   package Uns_Spec is new System.Value_U_Spec (Uns);
+   package Int_Spec is new System.Value_I_Spec (Int, Uns, Uns_Spec.Uns_Params);
 
-   package Int_Params is new Val_Util.Int_Params
-     (Int                                => Int,
-      Uns                                => Uns,
-      Uns_Option                         => Uns_Option,
-      Unsigned_Width_Ghost               => Unsigned_Width_Ghost,
-      Wrap_Option                        => Wrap_Option,
-      Only_Decimal_Ghost                 => Only_Decimal_Ghost,
-      Hexa_To_Unsigned_Ghost             => Hexa_To_Unsigned_Ghost,
-      Scan_Based_Number_Ghost            => Scan_Based_Number_Ghost,
-      Is_Integer_Ghost                   => Is_Integer_Ghost,
-      Prove_Iter_Scan_Based_Number_Ghost => Prove_Iter_Scan_Based_Number_Ghost,
-      Prove_Scan_Only_Decimal_Ghost      => Prove_Scan_Only_Decimal_Ghost,
-      Abs_Uns_Of_Int                     => Abs_Uns_Of_Int,
-      Value_Integer                      => Value_Integer);
-
-   package Image_I is new System.Image_I (Int_Params);
+   package Image_I is new System.Image_I
+     (Int                  => Int,
+      Uns                  => Uns,
+      Unsigned_Width_Ghost => Unsigned_Width_Ghost,
+      Int_Params           => Int_Spec.Int_Params);
 
    procedure Set_Image_Integer
      (V : Int;

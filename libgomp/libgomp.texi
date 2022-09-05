@@ -225,7 +225,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
-      @tab P @tab Reverse offload unsupported
+      @tab Y @tab See comment for @code{requires}
 @item Implicit declare target directive @tab Y @tab
 @item Discontiguous array section with @code{target update} construct
       @tab N @tab

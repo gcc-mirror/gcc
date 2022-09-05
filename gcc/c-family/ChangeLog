@@ -1,3 +1,75 @@
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	* c-omp.cc (c_finish_omp_depobj): Check also for OMP_CLAUSE_DOACROSS
+	clause and diagnose it.  Don't handle OMP_CLAUSE_DEPEND_SOURCE and
+	OMP_CLAUSE_DEPEND_SINK.  Assert kind is not OMP_CLAUSE_DEPEND_INVALID.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-common.h (check_for_xor_used_as_pow): New decl.
+	* c-lex.cc (c_lex_with_flags): Add DECIMAL_INT to flags as appropriate.
+	* c-warn.cc (check_for_xor_used_as_pow): New.
+	* c.opt (Wxor-used-as-pow): New.
+
+2022-09-01  Jason Merrill  <jason@redhat.com>
+
+	* c-common.cc (c_common_nodes_and_builtins): Set TREE_STRING_FLAG on
+	char8_t.
+	(braced_list_to_string): Check for char-sized elements.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* c.opt (-Winvalid-utf8): New warning.
+	* c-opts.cc (c_common_handle_option) <case OPT_finput_charset_>:
+	Set cpp_opts->cpp_input_charset_explicit.
+	(c_common_post_options): If -finput-charset=UTF-8 is explicit
+	in C++23, enable -Winvalid-utf8 by default and if -pedantic
+	or -pedantic-errors, make it a pedwarn.
+
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.cc (handle_deprecated_attribute): Check and pedwarn
+	for LABEL_DECL.
+	* c-common.cc (c_add_case_label): Add argument ATTRS.  Call
+	decl_attributes.
+	* c-common.h (do_case, c_add_case_label): Update declarations.
+	* c-lex.cc (c_common_has_attribute): For C, produce a result of
+	201910 for fallthrough and 202106 for maybe_unused.
+
+2022-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81159
+	* c.opt (Wself-move): New option.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (check_builtin_function_arguments): Handle
+	BUILT_IN_ISSIGNALING.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_named_character_escapes to 202207L.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.cc (c_common_reswords): Enable nullptr in C2X.
+	(c_common_nodes_and_builtins): Create the built-in node for nullptr.
+	* c-common.h (enum c_tree_index): Add CTI_NULLPTR, CTI_NULLPTR_TYPE.
+	(struct c_common_resword): Resize the disable member.
+	(D_C2X): Add.
+	(nullptr_node): Define.
+	(nullptr_type_node): Define.
+	(NULLPTR_TYPE_P): Define.
+	* c-pretty-print.cc (c_pretty_printer::simple_type_specifier): Handle
+	NULLPTR_TYPE.
+	(c_pretty_printer::direct_abstract_declarator): Likewise.
+	(c_pretty_printer::constant): Likewise.
+
 2022-08-16  Tom Honermann  <tom@honermann.net>
 
 	PR c++/106423

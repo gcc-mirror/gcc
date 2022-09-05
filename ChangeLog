@@ -1,3 +1,8 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* configure.ac: Delete hpux9 and hpux10.
+
 2022-08-18  Sergei Trofimovich  <siarheit@google.com>
 
 	* Makefile.def: Drop libelf module and gcc-configure dependency
