@@ -32,7 +32,7 @@ FROM DynamicStrings IMPORT String, InitString, EqualArray, InitStringCharStar, K
 FROM StringConvert IMPORT CardinalToString, ostoc ;
 FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ, getExtendedOpaque, writeGPLheader, getGccConfigSystem ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
-FROM libc IMPORT printf ;
+FROM libc IMPORT printf, memset ;
 FROM mcMetaError IMPORT metaError1, metaError2, metaError3, metaErrors1, metaErrors2 ;
 FROM mcError IMPORT errorAbort0, flushErrors ;
 
@@ -760,6 +760,7 @@ VAR
    d: node ;
 BEGIN
    NEW (d) ;
+   d := memset (d, 0, SIZE (node)) ;
    IF d=NIL
    THEN
       HALT
@@ -4316,9 +4317,8 @@ BEGIN
    THEN
       RETURN e
    ELSE
-      NEW (n) ;
+      n := newNode (k) ;
       WITH n^ DO
-         kind := k ;
          CASE kind OF
 
          min,
@@ -4516,9 +4516,8 @@ PROCEDURE doMakeBinary (k: nodeT; l, r: node; res: node) : node ;
 VAR
    n: node ;
 BEGIN
-   NEW (n) ;
+   n := newNode (k) ;
    WITH n^ DO
-      kind := k;
       CASE kind OF
 
       cmplx,
@@ -4721,9 +4720,8 @@ PROCEDURE makeBase (k: nodeT) : node ;
 VAR
    n: node ;
 BEGIN
-   NEW (n) ;
+   n := newNode (k) ;
    WITH n^ DO
-      kind := k ;
       CASE k OF
 
       new,

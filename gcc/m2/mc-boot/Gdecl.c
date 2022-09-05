@@ -6617,6 +6617,7 @@ static decl_node newNode (nodeT k)
   decl_node d;
 
   Storage_ALLOCATE ((void **) &d, sizeof (_T5));
+  d = static_cast<decl_node> (libc_memset (reinterpret_cast<void *> (d), 0, static_cast<size_t> (sizeof (decl_node))));
   if (d == NULL)
     {
       M2RTS_HALT (-1);
@@ -8309,8 +8310,7 @@ static decl_node makeUnary (nodeT k, decl_node e, decl_node res)
     }
   else
     {
-      Storage_ALLOCATE ((void **) &n, sizeof (_T5));
-      n->kind = k;
+      n = newNode (k);
       switch (n->kind)
         {
           case min:
@@ -8541,8 +8541,7 @@ static decl_node doMakeBinary (nodeT k, decl_node l, decl_node r, decl_node res)
 {
   decl_node n;
 
-  Storage_ALLOCATE ((void **) &n, sizeof (_T5));
-  n->kind = k;
+  n = newNode (k);
   switch (n->kind)
     {
       case cmplx:
@@ -8646,8 +8645,7 @@ static decl_node makeBase (nodeT k)
 {
   decl_node n;
 
-  Storage_ALLOCATE ((void **) &n, sizeof (_T5));
-  n->kind = k;
+  n = newNode (k);
   switch (k)
     {
       case new_:
@@ -18232,6 +18230,7 @@ static void visitIntrinsicFunction (alists_alist v, decl_node n, nodeProcedure p
         visitNode (v, n->binaryF.resultType, p);
         break;
 
+      case length:
       case adr:
       case size:
       case tsize:
@@ -18246,11 +18245,6 @@ static void visitIntrinsicFunction (alists_alist v, decl_node n, nodeProcedure p
       case max:
       case re:
       case im:
-        visitNode (v, n->unaryF.arg, p);
-        visitNode (v, n->unaryF.resultType, p);
-        break;
-
-      case length:
         visitNode (v, n->unaryF.arg, p);
         visitNode (v, n->unaryF.resultType, p);
         break;

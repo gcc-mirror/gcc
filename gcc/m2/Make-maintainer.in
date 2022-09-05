@@ -378,7 +378,7 @@ mc-push: force
 	cp -p m2/mc-boot-gen/*.c $(srcdir)/m2/mc-boot/
 	cp -p m2/mc-boot-gen/*.h $(srcdir)/m2/mc-boot/
 
-mc-clean: force
+mc-clean: force m2/mc-obj
 	$(RM) m2/mc-boot-gen/*.[ch] m2/boot-bin/* m2/mc-boot/* m2/mc-boot-ch/*
 
 mc-maintainer: mc-clean mc-autogen mc-push mc-clean mc-bootstrap
@@ -397,6 +397,9 @@ mc-help:  force
 	@echo "mc-verify       builds mc from Modula-2 sources and mc from C sources and run both on all sources diffing the output"
 	@echo "mc              builds mc from Modula-2 sources, quickly"
 	@echo "m2/pge          build the parser generator (needed by mc-maintainer)"
+
+m2/mc-obj:
+	mkdir $@
 
 mc-verify:  mc-clean mc-bootstrap mc
 	mv mc m2/boot-bin/mc.m2
@@ -430,13 +433,13 @@ mc-stage2:  force
 
 mc-devel: m2/boot-bin/mc-devel$(exeext)
 
-m2/boot-bin/mc-devel$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
-                                $(objdir)/m2/gm2-auto/mcp2.mod \
-                                $(objdir)/m2/gm2-auto/mcp3.mod \
-                                $(objdir)/m2/gm2-auto/mcp4.mod \
-                                $(objdir)/m2/gm2-auto/mcp5.mod \
-                                mcflex.c \
-                                m2/mc-boot-ch/Gabort.o
+m2/boot-bin/mc-devel$(exeext): m2/mc-obj/mcp1.mod \
+                               m2/mc-obj/mcp2.mod \
+                               m2/mc-obj/mcp3.mod \
+                               m2/mc-obj/mcp4.mod \
+                               m2/mc-obj/mcp5.mod \
+                               mcflex.c \
+                               m2/mc-boot-ch/Gabort.o
 	$(RM) -rf mc-obj
 	mkdir mc-obj
 	$(CC) -I$(srcdir)/m2/mc -c -g mcflex.c -o mc-obj/mcflex.o
@@ -448,11 +451,11 @@ m2/boot-bin/mc-devel$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcMetaError.mod -o mc-obj/mcMetaError.o
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcOptions.mod -o mc-obj/mcOptions.o
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcComp.mod -o mc-obj/mcComp.o
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp1.mod -o mc-obj/mcp1.o
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp2.mod -o mc-obj/mcp2.o
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp3.mod -o mc-obj/mcp3.o
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp4.mod -o mc-obj/mcp4.o
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp5.mod -o mc-obj/mcp5.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/mc-obj/mcp1.mod -o mc-obj/mcp1.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/mc-obj/mcp2.mod -o mc-obj/mcp2.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/mc-obj/mcp3.mod -o mc-obj/mcp3.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/mc-obj/mcp4.mod -o mc-obj/mcp4.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/mc-obj/mcp5.mod -o mc-obj/mcp5.o
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/wlists.mod -o mc-obj/wlists.o
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/alists.mod -o mc-obj/alists.o
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/symbolKey.mod -o mc-obj/symbolKey.o
@@ -474,19 +477,19 @@ m2/boot-bin/mc-devel$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
             m2/gm2-libs-boot/RTcodummy.o \
             m2/gm2-libs-boot/dtoa.o m2/gm2-libs-boot/ldtoa.o mc-obj/*o m2/mc-boot-ch/Gabort.o
 
-m2/boot-bin/mc-opt$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
-                                $(objdir)/m2/gm2-auto/mcp2.mod \
-                                $(objdir)/m2/gm2-auto/mcp3.mod \
-                                $(objdir)/m2/gm2-auto/mcp4.mod \
-                                $(objdir)/m2/gm2-auto/mcp5.mod \
-                                mcflex.c
+m2/boot-bin/mc-opt$(exeext): m2/mc-obj/mcp1.mod \
+                             m2/mc-obj/mcp2.mod \
+                             m2/mc-obj/mcp3.mod \
+                             m2/mc-obj/mcp4.mod \
+                             m2/mc-obj/mcp5.mod \
+                             mcflex.c
 	g++ -I$(srcdir)/m2/mc -c -g mcflex.c
-	$(BOOTGM2) -fsources -fm2-whole-program -g -I$(srcdir)/m2/mc:$(objdir)/m2/gm2-auto:$(srcdir)/m2/gm2-libs:$(srcdir)/m2/mc $(srcdir)/m2/mc/top.mod
+	$(BOOTGM2) -fsources -fm2-whole-program -g -I$(srcdir)/m2/mc:$(objdir)/m2/mc-obj:$(srcdir)/m2/gm2-libs:$(srcdir)/m2/mc $(srcdir)/m2/mc/top.mod
 
 m2/mc/decl.o:  $(srcdir)/m2/mc/decl.mod
 	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) -o $@ $(srcdir)/m2/mc/decl.mod
 
-$(objdir)/m2/gm2-auto/%.mod: $(srcdir)/m2/mc/%.bnf
+m2/mc-obj/%.mod: $(srcdir)/m2/mc/%.bnf $(PGE)
 	$(PGE) -l $< -o $@
 
 gm2-bootstrap: mc-devel
@@ -541,7 +544,7 @@ m2/mc-boot-gen/$(SRC_PREFIX)%.c: $(srcdir)/m2/gm2-libs/%.mod
 m2/mc-boot-gen/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs-iso/%.def
 	./mc $(MC_OPTIONS) -I$(srcdir)/m2/mc:$(srcdir)/m2/gm2-libs:$(srcdir)/m2/gm2-libs-iso $(EXTENDED_OPAQUE) --h-file-prefix=$(SRC_PREFIX) -o=$@ $<
 
-m2/mc-boot-gen/$(SRC_PREFIX)%.c: m2/gm2-auto/%.mod
+m2/mc-boot-gen/$(SRC_PREFIX)%.c: m2/mc-obj/%.mod
 	./mc $(MC_OPTIONS) -I$(srcdir)/m2/mc:$(srcdir)/m2/gm2-libs:$(srcdir)/m2/gm2-libs-iso $(EXTENDED_OPAQUE) --h-file-prefix=$(SRC_PREFIX) -o=$@ $<
 
 # mc-bootstrap compiles mc using the C version previously generated by mc-autogen.
@@ -708,22 +711,22 @@ m2/gm2-compiler-paranoid/%.o: $(srcdir)/m2/gm2-compiler/%.mod
 m2/gm2-compiler-paranoid/%.o: m2/gm2-compiler-paranoid/%.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
-m2/gm2-compiler-paranoid/P0SyntaxCheck.o: $(objdir)/m2/gm2-compiler-paranoid/P0SyntaxCheck.mod
+m2/gm2-compiler-paranoid/P0SyntaxCheck.o: m2/gm2-compiler-paranoid/P0SyntaxCheck.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
-m2/gm2-compiler-paranoid/P1Build.o: $(objdir)/m2/gm2-compiler-paranoid/P1Build.mod
+m2/gm2-compiler-paranoid/P1Build.o: m2/gm2-compiler-paranoid/P1Build.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
-m2/gm2-compiler-paranoid/P2Build.o: $(objdir)/m2/gm2-compiler-paranoid/P2Build.mod
+m2/gm2-compiler-paranoid/P2Build.o: m2/gm2-compiler-paranoid/P2Build.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
-m2/gm2-compiler-paranoid/P3Build.o: $(objdir)/m2/gm2-compiler-paranoid/P3Build.mod
+m2/gm2-compiler-paranoid/P3Build.o: m2/gm2-compiler-paranoid/P3Build.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
-m2/gm2-compiler-paranoid/PHBuild.o: $(objdir)/m2/gm2-compiler-paranoid/PHBuild.mod
+m2/gm2-compiler-paranoid/PHBuild.o: m2/gm2-compiler-paranoid/PHBuild.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
-m2/gm2-compiler-paranoid/PCBuild.o: $(objdir)/m2/gm2-compiler-paranoid/PCBuild.mod
+m2/gm2-compiler-paranoid/PCBuild.o: m2/gm2-compiler-paranoid/PCBuild.mod
 	$(GM2_2) $(GM2_O_S3) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
 m2/gm2-libs-paranoid/host.o: $(srcdir)/m2/gm2-libs-ch/host.c m2/gm2-libs/gm2-libs-host.h
@@ -803,5 +806,5 @@ m2/gm2-compiler-paranoid/M2Version.mod:
 m2/gm2-compiler-paranoid/M2Version.o: m2/gm2-compiler-paranoid/M2Version.mod
 	$(GM2_2) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc $< -o $@
 
-$(objdir)/m2/gm2-compiler-paranoid/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
+m2/gm2-compiler-paranoid/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
 	$(PGE) -k -l $< -o $@
