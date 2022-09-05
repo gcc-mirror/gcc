@@ -727,8 +727,11 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
 
   tree condition
     = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
+  tree exit_condition
+    = fold_build1_loc (expr.get_locus ().gcc_location (), TRUTH_NOT_EXPR,
+		       boolean_type_node, condition);
   tree exit_expr
-    = ctx->get_backend ()->exit_expression (condition, expr.get_locus ());
+    = ctx->get_backend ()->exit_expression (exit_condition, expr.get_locus ());
   ctx->add_statement (exit_expr);
 
   tree code_block_stmt
