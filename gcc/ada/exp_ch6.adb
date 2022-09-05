@@ -5052,11 +5052,11 @@ package body Exp_Ch6 is
 
       Set_Analyzed (N);
 
-      --  A function which returns a controlled object uses the secondary
-      --  stack. Rewrite the call into a temporary which obtains the result of
-      --  the function using 'reference.
+      --  Apply the transformation, unless it was already applied manually
 
-      Remove_Side_Effects (N);
+      if Nkind (Par) /= N_Reference then
+         Remove_Side_Effects (N);
+      end if;
 
       --  The side effect removal of the function call produced a temporary.
       --  When the context is a case expression, if expression, or expression
