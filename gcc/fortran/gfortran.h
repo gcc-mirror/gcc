@@ -1265,7 +1265,7 @@ enum gfc_omp_reduction_op
   OMP_REDUCTION_USER
 };
 
-enum gfc_omp_depend_op
+enum gfc_omp_depend_doacross_op
 {
   OMP_DEPEND_UNSET,
   OMP_DEPEND_IN,
@@ -1275,7 +1275,8 @@ enum gfc_omp_depend_op
   OMP_DEPEND_MUTEXINOUTSET,
   OMP_DEPEND_DEPOBJ,
   OMP_DEPEND_SINK_FIRST,
-  OMP_DEPEND_SINK
+  OMP_DOACROSS_SINK_FIRST,
+  OMP_DOACROSS_SINK
 };
 
 enum gfc_omp_map_op
@@ -1343,7 +1344,7 @@ typedef struct gfc_omp_namelist
   union
     {
       gfc_omp_reduction_op reduction_op;
-      gfc_omp_depend_op depend_op;
+      gfc_omp_depend_doacross_op depend_doacross_op;
       gfc_omp_map_op map_op;
       struct
 	{
@@ -1536,17 +1537,17 @@ typedef struct gfc_omp_clauses
   unsigned nowait:1, ordered:1, untied:1, mergeable:1, ancestor:1;
   unsigned inbranch:1, notinbranch:1, nogroup:1;
   unsigned sched_simd:1, sched_monotonic:1, sched_nonmonotonic:1;
-  unsigned simd:1, threads:1, depend_source:1, destroy:1, order_concurrent:1;
+  unsigned simd:1, threads:1, doacross_source:1, depend_source:1, destroy:1;
   unsigned order_unconstrained:1, order_reproducible:1, capture:1;
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
-  unsigned non_rectangular:1;
+  unsigned non_rectangular:1, order_concurrent:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
   ENUM_BITFIELD (gfc_omp_memorder) fail:3;
   ENUM_BITFIELD (gfc_omp_cancel_kind) cancel:3;
   ENUM_BITFIELD (gfc_omp_proc_bind_kind) proc_bind:3;
-  ENUM_BITFIELD (gfc_omp_depend_op) depobj_update:4;
+  ENUM_BITFIELD (gfc_omp_depend_doacross_op) depobj_update:4;
   ENUM_BITFIELD (gfc_omp_bind_type) bind:2;
   ENUM_BITFIELD (gfc_omp_at_type) at:2;
   ENUM_BITFIELD (gfc_omp_severity_type) severity:2;

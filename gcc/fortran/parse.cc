@@ -1026,7 +1026,8 @@ decode_omp_directive (void)
       matcho ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
       break;
     case 'o':
-      if (gfc_match ("ordered depend (") == MATCH_YES)
+      if (gfc_match ("ordered depend (") == MATCH_YES
+	  || gfc_match ("ordered doacross (") == MATCH_YES)
 	{
 	  gfc_current_locus = old_locus;
 	  if (!flag_openmp)

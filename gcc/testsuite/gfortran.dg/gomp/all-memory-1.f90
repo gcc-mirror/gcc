@@ -50,5 +50,5 @@ subroutine f6
   !$omp target depend ( depobj : omp_all_memory)  ! { dg-error "'omp_all_memory' used with DEPEND kind other than OUT or INOUT" }
   !!$omp end target
 
-  !$omp ordered depend ( sink : omp_all_memory)  ! { dg-error "'omp_all_memory' used with DEPEND kind other than OUT or INOUT" }
+  !$omp ordered depend ( sink : omp_all_memory)  ! { dg-error "used with dependence-type other than OUT or INOUT" }
 end
