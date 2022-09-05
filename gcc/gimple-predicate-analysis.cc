@@ -52,10 +52,6 @@
 #define MAX_NUM_CHAINS 8
 #define MAX_CHAIN_LEN 5
 
-/* The limit for the number of switch cases when we do the linear search
-   for the case corresponding to an edge.  */
-#define MAX_SWITCH_CASES 40
-
 /* Return true if X1 is the negation of X2.  */
 
 static inline bool
@@ -1751,28 +1747,12 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	    }
 	  else if (gswitch *gs = dyn_cast<gswitch *> (cond_stmt))
 	    {
-	      tree l = NULL_TREE;
 	      /* Find the case label, but avoid quadratic behavior.  */
-	      if (gimple_switch_num_labels (gs) <= MAX_SWITCH_CASES)
-		for (unsigned idx = 0;
-		     idx < gimple_switch_num_labels (gs); ++idx)
-		  {
-		    tree tl = gimple_switch_label (gs, idx);
-		    if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
-		      {
-			if (!l)
-			  l = tl;
-			else
-			  {
-			    l = NULL_TREE;
-			    break;
-			  }
-		      }
-		  }
+	      tree l = get_cases_for_edge (e, gs);
 	      /* If more than one label reaches this block or the case
 		 label doesn't have a contiguous range of values (like the
 		 default one) fail.  */
-	      if (!l || !CASE_LOW (l))
+	      if (!l || CASE_CHAIN (l) || !CASE_LOW (l))
 		has_valid_pred = false;
 	      else if (!CASE_HIGH (l)
 		      || operand_equal_p (CASE_LOW (l), CASE_HIGH (l)))
