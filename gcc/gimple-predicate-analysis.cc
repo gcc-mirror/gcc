@@ -150,34 +150,34 @@ format_edge_vecs (const vec<edge> eva[], unsigned n)
   return str;
 }
 
-/* Dump a single pred_info to DUMP_FILE.  */
+/* Dump a single pred_info to F.  */
 
 static void
-dump_pred_info (const pred_info &pred)
+dump_pred_info (FILE *f, const pred_info &pred)
 {
   if (pred.invert)
-    fprintf (dump_file, "NOT (");
-  print_generic_expr (dump_file, pred.pred_lhs);
-  fprintf (dump_file, " %s ", op_symbol_code (pred.cond_code));
-  print_generic_expr (dump_file, pred.pred_rhs);
+    fprintf (f, "NOT (");
+  print_generic_expr (f, pred.pred_lhs);
+  fprintf (f, " %s ", op_symbol_code (pred.cond_code));
+  print_generic_expr (f, pred.pred_rhs);
   if (pred.invert)
-    fputc (')', dump_file);
+    fputc (')', f);
 }
 
-/* Dump a pred_chain to DUMP_FILE.  */
+/* Dump a pred_chain to F.  */
 
 static void
-dump_pred_chain (const pred_chain &chain)
+dump_pred_chain (FILE *f, const pred_chain &chain)
 {
   unsigned np = chain.length ();
   for (unsigned j = 0; j < np; j++)
     {
       if (j > 0)
-	fprintf (dump_file, " AND (");
+	fprintf (f, " AND (");
       else
-	fputc ('(', dump_file);
-      dump_pred_info (chain[j]);
-      fputc (')', dump_file);
+	fputc ('(', f);
+      dump_pred_info (f, chain[j]);
+      fputc (')', f);
     }
 }
 
@@ -1405,7 +1405,7 @@ predicate::simplify (gimple *use_or_def, bool is_use)
   if (dump_file && dump_flags & TDF_DETAILS)
     {
       fprintf (dump_file, "Before simplication ");
-      dump (use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
+      dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
   unsigned n = m_preds.length ();
@@ -1641,7 +1641,7 @@ predicate::normalize (gimple *use_or_def, bool is_use)
   if (dump_file && dump_flags & TDF_DETAILS)
     {
       fprintf (dump_file, "Before normalization ");
-      dump (use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
+      dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
   predicate norm_preds;
@@ -1658,7 +1658,7 @@ predicate::normalize (gimple *use_or_def, bool is_use)
   if (dump_file)
     {
       fprintf (dump_file, "After normalization ");
-      dump (use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
+      dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 }
 
@@ -1748,7 +1748,7 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		{
 		  fprintf (dump_file, "%d -> %d: one_pred = ",
 			   e->src->index, e->dest->index);
-		  dump_pred_info (one_pred);
+		  dump_pred_info (dump_file, one_pred);
 		  fputc ('\n', dump_file);
 		}
 
@@ -1845,7 +1845,7 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
     }
 
   if (DEBUG_PREDICATE_ANALYZER && dump_file)
-    dump (NULL, "");
+    dump (dump_file);
 }
 
 /* Store a PRED in *THIS.  */
@@ -1858,35 +1858,51 @@ predicate::push_pred (const pred_info &pred)
   m_preds.safe_push (chain);
 }
 
-/* Dump predicates in *THIS for STMT prepended by MSG.  */
+/* Dump predicates in *THIS to F.  */
 
 void
-predicate::dump (gimple *stmt, const char *msg) const
+predicate::dump (FILE *f) const
 {
-  fprintf (dump_file, "%s", msg);
-  if (stmt)
-    {
-      fputc ('\t', dump_file);
-      print_gimple_stmt (dump_file, stmt, 0);
-      fprintf (dump_file, "  is conditional on:\n");
-    }
-
   unsigned np = m_preds.length ();
   if (np == 0)
     {
-      fprintf (dump_file, "\tTRUE (empty)\n");
+      fprintf (f, "\tTRUE (empty)\n");
       return;
     }
 
   for (unsigned i = 0; i < np; i++)
     {
       if (i > 0)
-	fprintf (dump_file, "\tOR (");
+	fprintf (f, "\tOR (");
       else
-	fprintf (dump_file, "\t(");
-      dump_pred_chain (m_preds[i]);
-      fprintf (dump_file, ")\n");
+	fprintf (f, "\t(");
+      dump_pred_chain (f, m_preds[i]);
+      fprintf (f, ")\n");
     }
+}
+
+/* Dump predicates in *THIS to stderr.  */
+
+void
+predicate::debug () const
+{
+  dump (stderr);
+}
+
+/* Dump predicates in *THIS for STMT prepended by MSG to F.  */
+
+void
+predicate::dump (FILE *f, gimple *stmt, const char *msg) const
+{
+  fprintf (f, "%s", msg);
+  if (stmt)
+    {
+      fputc ('\t', f);
+      print_gimple_stmt (f, stmt, 0);
+      fprintf (f, "  is conditional on:\n");
+    }
+
+  dump (f);
 }
 
 /* Initialize USE_PREDS with the predicates of the control dependence chains

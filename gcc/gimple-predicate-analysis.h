@@ -67,7 +67,9 @@ class predicate
 
   void init_from_control_deps (const vec<edge> *, unsigned, bool);
 
-  void dump (gimple *, const char *) const;
+  void dump (FILE *) const;
+  void dump (FILE *, gimple *, const char *) const;
+  void debug () const;
 
   void normalize (gimple * = NULL, bool = false);
   void simplify (gimple * = NULL, bool = false);
