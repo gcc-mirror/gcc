@@ -3006,9 +3006,9 @@ package body Sem_Warn is
          then
             return True;
 
-         --  Else test warnings off
+         --  Else test warnings off on the subprogram
 
-         elsif Warnings_Off_Check_Spec (S) then
+         elsif Warnings_Off (S) then
             return True;
 
          --  All tests for suppressing warning failed
@@ -3029,11 +3029,9 @@ package body Sem_Warn is
 
          begin
             --  Suppress warning in specific cases (see details in comments for
-            --  No_Warn_On_In_Out), or if there is a pragma Unmodified.
+            --  No_Warn_On_In_Out).
 
-            if Has_Pragma_Unmodified_Check_Spec (E1)
-              or else No_Warn_On_In_Out (E1)
-            then
+            if No_Warn_On_In_Out (E1) then
                null;
 
             --  Here we generate the warning
