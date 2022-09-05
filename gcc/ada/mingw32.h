@@ -101,23 +101,6 @@ extern UINT __gnat_current_ccs_encoding;
 
 #include <stdlib.h>
 
-/* STD_MINGW: standard if MINGW32 version > 1.3, we have switched to this
-   version instead of the previous enhanced version to ease building GNAT on
-   Windows platforms. By using STD_MINGW or OLD_MINGW it is possible to build
-   GNAT using both MingW include files (Old MingW + ACT changes and standard
-   MingW starting with version 1.3.
-   For w64 Mingw the define STD_MINGW is always set to value 1, because
-   there is no old header set present.  */
-#ifdef _WIN64
-#define STD_MINGW 1
-#else
-#define STD_MINGW ((__MINGW32_MAJOR_VERSION == 1 \
-		   && __MINGW32_MINOR_VERSION >= 3) \
-     || (__MINGW32_MAJOR_VERSION >= 2))
-#endif
-
-#define OLD_MINGW (!(STD_MINGW))
-
 #ifndef MAXPATHLEN
 #define MAXPATHLEN MAX_PATH
 #endif
