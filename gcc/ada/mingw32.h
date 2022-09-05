@@ -99,10 +99,4 @@ extern UINT __gnat_current_ccs_encoding;
 #define WS2S(str,wstr,len) strncpy(str,wstr,len)
 #endif
 
-#include <stdlib.h>
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN MAX_PATH
-#endif
-
 #endif /* _MINGW32_H */
