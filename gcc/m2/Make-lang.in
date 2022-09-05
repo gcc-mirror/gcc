@@ -1363,7 +1363,7 @@ m2/gm2-compiler-boot/%.o: $(srcdir)/m2/gm2-compiler/%.mod $(BUILD-BOOT-H) $(MCDE
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -Im2/gm2-libiberty \
             -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
 
-m2/gm2-compiler-boot/%.o: $(objdir)/m2/gm2-compiler-boot/%.mod $(MCDEPS) $(BUILD-BOOT-H)
+m2/gm2-compiler-boot/%.o: m2/gm2-compiler-boot/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) -o=m2/gm2-compiler-boot/$*.c m2/gm2-compiler-boot/$*.mod
 	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
