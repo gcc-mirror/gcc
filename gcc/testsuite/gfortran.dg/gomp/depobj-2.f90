@@ -21,13 +21,13 @@ subroutine f1
   !$omp depobj(d) depend( inout : a)                 ! { dg-error "DEPOBJ in DEPOBJ construct at .1. shall be a scalar integer of OMP_DEPEND_KIND kind" }
   !$omp depobj(depobj) depend( inout : a, b)         ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall have only a single locator" }
   !$omp depobj(depobj) depend(mutexinoutset : a)     ! OK
-  !$omp depobj(depobj) depend(source)                ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type SOURCE, SINK or DEPOBJ" }
-  !$omp depobj(depobj) depend(sink : i + 1)          ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type SOURCE, SINK or DEPOBJ" }
+  !$omp depobj(depobj) depend(source)                ! { dg-error "SOURCE at .1. not permitted as dependence-type for this directive" }
+  !$omp depobj(depobj) depend(sink : i + 1)          ! { dg-error "SINK at .1. not permitted as dependence-type for this directive" }
   !$omp depobj(depobj) update(source)                ! { dg-error "Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET followed by '\\)'" }
   !$omp depobj(depobj) update(sink)                  ! { dg-error "Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET followed by '\\)'" }
   !$omp depobj(depobj) update(depobj)                ! { dg-error "Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET followed by '\\)'" }
 
   ! Valid in OpenMP 5.1:
-  !$omp depobj(depobj5) depend(depobj: depobj3)      ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type SOURCE, SINK or DEPOBJ" }
+  !$omp depobj(depobj5) depend(depobj: depobj3)      ! { dg-error "DEPEND clause at .1. of OMP DEPOBJ construct shall not have dependence-type DEPOBJ" }
 end subroutine f1
 

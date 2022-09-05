@@ -1,3 +1,10 @@
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Update doacross/omp_cur_iteration status.
+
 2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
