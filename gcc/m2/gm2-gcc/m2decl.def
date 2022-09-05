@@ -162,7 +162,8 @@ PROCEDURE RememberVariables (l: Tree) ;
                               needsLong and needsUnsigned appropriately.
 *)
 
-PROCEDURE DetermineSizeOfConstant (str: ADDRESS; base: CARDINAL;
+PROCEDURE DetermineSizeOfConstant (location: location_t;
+                                   str: ADDRESS; base: CARDINAL;
                                    VAR needsLong, needsUnsigned: BOOLEAN) ;
 
 
@@ -173,7 +174,8 @@ PROCEDURE DetermineSizeOfConstant (str: ADDRESS; base: CARDINAL;
                               positive value.
 *)
 
-PROCEDURE BuildConstLiteralNumber (str: ADDRESS; base: CARDINAL) : Tree ;
+PROCEDURE BuildConstLiteralNumber (location: location_t;
+                                   str: ADDRESS; base: CARDINAL) : Tree ;
 
 
 (*

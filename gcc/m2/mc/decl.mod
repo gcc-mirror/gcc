@@ -12710,6 +12710,7 @@ BEGIN
              visitNode (v, right, p) ;
              visitNode (v, resultType, p)
            END |
+   length,
    adr,
    size,
    tsize,
@@ -12727,10 +12728,6 @@ BEGIN
              visitNode (v, arg, p) ;
              visitNode (v, resultType, p)
           END |
-   length: WITH n^.unaryF DO
-             visitNode (v, arg, p) ;
-             visitNode (v, resultType, p)
-           END |
    throw:  WITH n^.intrinsicF DO
               visitNode (v, args, p) ;
               visitNode (v, type, p)

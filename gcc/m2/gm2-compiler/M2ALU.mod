@@ -1171,49 +1171,54 @@ END IsReal ;
    PushString - pushes the numerical value of the string onto the stack.
 *)
 
-PROCEDURE PushString (s: Name) ;
+PROCEDURE PushString (tokenno: CARDINAL; s: Name) ;
 VAR
-   ch    : CHAR ;
-   a, b  : DynamicStrings.String ;
-   length: CARDINAL ;
+   ch      : CHAR ;
+   a, b    : DynamicStrings.String ;
+   length  : CARDINAL ;
+   location: location_t ;
 BEGIN
-   a := DynamicStrings.InitStringCharStar(KeyToCharStar(s)) ;
+   a := DynamicStrings.InitStringCharStar (KeyToCharStar (s)) ;
    b := NIL ;
-   length := DynamicStrings.Length(a) ;
+   length := DynamicStrings.Length (a) ;
    IF length>0
    THEN
-      DEC(length) ;
-      ch := DynamicStrings.char(a, length) ;
+      DEC (length) ;
+      ch := DynamicStrings.char (a, length) ;
+      location := TokenToLocation (tokenno) ;
       CASE ch OF
 
       'H': (* hexadecimal *)
-           b := DynamicStrings.Slice(a, 0, -1) ;
-           PushIntegerTree(BuildConstLiteralNumber(DynamicStrings.string(b),
-                                                   16)) |
+           b := DynamicStrings.Slice (a, 0, -1) ;
+           PushIntegerTree (BuildConstLiteralNumber (location,
+                                                     DynamicStrings.string (b),
+                                                     16)) |
       'A': (* binary *)
-           b := DynamicStrings.Slice(a, 0, -1) ;
-           PushIntegerTree(BuildConstLiteralNumber(DynamicStrings.string(b),
-                                                   2)) |
+           b := DynamicStrings.Slice (a, 0, -1) ;
+           PushIntegerTree (BuildConstLiteralNumber (location,
+                                                     DynamicStrings.string (b),
+                                                     2)) |
       'C', (* --fixme-- question:
               should we type this as a char rather than an int? *)
       'B': (* octal *)
-           b := DynamicStrings.Slice(a, 0, -1) ;
-           PushIntegerTree(BuildConstLiteralNumber(DynamicStrings.string(b),
-                                                   8))
+           b := DynamicStrings.Slice (a, 0, -1) ;
+           PushIntegerTree (BuildConstLiteralNumber (location,
+                                                     DynamicStrings.string (b),
+                                                     8))
 
       ELSE
-         IF IsReal(a)
+         IF IsReal (a)
          THEN
-            PushRealTree(RealToTree(KeyToCharStar(s)))
+            PushRealTree (RealToTree (KeyToCharStar (s)))
          ELSE
-            PushIntegerTree(BuildConstLiteralNumber(KeyToCharStar(s), 10))
+            PushIntegerTree (BuildConstLiteralNumber (location, KeyToCharStar (s), 10))
          END
       END
    ELSE
       InternalError ('expecting constant literal')
    END ;
-   a := DynamicStrings.KillString(a) ;
-   b := DynamicStrings.KillString(b)
+   a := DynamicStrings.KillString (a) ;
+   b := DynamicStrings.KillString (b)
 END PushString ;
 
 

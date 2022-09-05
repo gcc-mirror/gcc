@@ -1282,8 +1282,7 @@ m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-
 	$(CXX) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
-	unset CC ; $(M2LINK) -s --langc++ --exit --name mainmcinit.c $(srcdir)/m2/init/mcinit
-	mv mainmcinit.c m2/mc-boot/main.c
+	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.c $(srcdir)/m2/init/mcinit
 	$(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.c -o $@
 
 mcflex.o: mcflex.c
@@ -1406,7 +1405,7 @@ m2/gm2-compiler/m2flex.o: m2/gm2-compiler/m2flex.c m2/gm2-libs/gm2-libs-host.h $
 	$(COMPILER) -c -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           $(GM2GCC) -Im2/gm2-compiler-boot -Im2/gm2-libs-boot $< -o $@
 
-m2/gm2-compiler/%.o: $(objdir)/m2/gm2-compiler/%.mod
+m2/gm2-compiler/%.o: m2/gm2-compiler/%.mod
 	$(GM2_1) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
 m2/gm2-compiler/M2Version.mod:
@@ -1519,10 +1518,10 @@ m2/gm2-auto/%.o: m2/gm2-auto/%.mod $(MCDEPS)
 m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler-boot/%.def $(MCDEPS)
 	$(MC) --quiet -o=$@ $(srcdir)/m2/gm2-compiler-boot/$*.def
 
-$(objdir)/m2/gm2-compiler/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
+m2/gm2-compiler/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
 	$(PGE) -k -l $< -o $@
 
-$(objdir)/m2/gm2-compiler-boot/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
+m2/gm2-compiler-boot/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
 	$(PGE) -k -l $< -o $@
 
 check-m2: check-gm2

@@ -30,9 +30,12 @@ FROM libc IMPORT printf ;
 IMPORT Indexing ;
 FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice, PutIndice, GetIndice ;
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
+FROM m2linemap IMPORT location_t ;
 
 FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic ;
-FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo, FindFileNameFromToken ;
+
+FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo,
+                     FindFileNameFromToken, TokenToLocation ;
 
 FROM M2ALU IMPORT InitValue, PtrToValue, PushCard, PopInto,
                   PushString, PushFrom, PushChar, PushInt,
@@ -4614,7 +4617,7 @@ VAR
 BEGIN
    IF constType=NulSym
    THEN
-      constType := GetConstLitType (constName)
+      constType := GetConstLitType (tok, constName)
    END ;
    NewSym (Sym) ;
    pSym := GetPsym (Sym) ;
@@ -4624,7 +4627,7 @@ BEGIN
 
       ConstLitSym : ConstLit.name := constName ;
                     ConstLit.Value := InitValue () ;
-                    PushString (constName) ;
+                    PushString (tok, constName) ;
                     PopInto (ConstLit.Value) ;
                     ConstLit.Type := constType ;
                     ConstLit.IsSet := FALSE ;
@@ -6216,8 +6219,9 @@ END IsHiddenType ;
                      depending upon their value.
 *)
 
-PROCEDURE GetConstLitType (name: Name) : CARDINAL ;
+PROCEDURE GetConstLitType (tok: CARDINAL; name: Name) : CARDINAL ;
 VAR
+   loc          : location_t ;
    s            : String ;
    needsLong,
    needsUnsigned: BOOLEAN ;
@@ -6233,17 +6237,18 @@ BEGIN
          s := KillString (s) ;
          RETURN RType
       END ;
+      loc := TokenToLocation (tok) ;
       CASE char (s, -1) OF
 
-      'H':  DetermineSizeOfConstant (string (s), 16,
+      'H':  DetermineSizeOfConstant (loc, string (s), 16,
                                      needsLong, needsUnsigned) |
-      'B':  DetermineSizeOfConstant (string (s), 8,
+      'B':  DetermineSizeOfConstant (loc, string (s), 8,
                                      needsLong, needsUnsigned) |
-      'A':  DetermineSizeOfConstant (string (s), 2,
+      'A':  DetermineSizeOfConstant (loc, string (s), 2,
                                      needsLong, needsUnsigned)
 
       ELSE
-         DetermineSizeOfConstant (string (s), 10,
+         DetermineSizeOfConstant (loc, string (s), 10,
                                   needsLong, needsUnsigned)
       END ;
       s := KillString (s) ;

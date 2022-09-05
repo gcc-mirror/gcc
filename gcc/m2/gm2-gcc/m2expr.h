@@ -128,7 +128,8 @@ EXTERN int m2expr_interpret_integer (const char *str, unsigned int base,
                                      unsigned HOST_WIDE_INT *low,
                                      HOST_WIDE_INT *high);
 EXTERN int m2expr_interpret_m2_integer (const char *str, unsigned int base,
-                                        unsigned int *low, int *high);
+                                        unsigned int *low, int *high,
+					int *needsLong, int *needsUnsigned);
 
 EXTERN tree m2expr_BuildAddCheck (location_t location, tree op1, tree op2,
                                   tree lowest, tree min, tree max);

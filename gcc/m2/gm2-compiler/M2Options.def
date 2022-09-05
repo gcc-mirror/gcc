@@ -83,7 +83,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  DebugBuiltins, setdefextension, setmodextension,
                  SetStatistics, SetWall, SetSaveTemps, SetSaveTempsDir,
                  SaveTemps, GenModuleList,
-                 CppProg, CppArg, CppCommandLine, CppRemember,
+                 CppArg, CppCommandLine, CppRemember,
 		 SetDebugFunctionLineNumbers, DebugFunctionLineNumbers,
 		 SetGenerateStatementNote, GenerateStatementNote,
                  ScaffoldDynamic, ScaffoldStatic,
@@ -665,13 +665,6 @@ PROCEDURE SetStatistics (on: BOOLEAN) ;
 *)
 
 PROCEDURE SetVerbose (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
-   CppProg - sets the cpp program to be, program.
-*)
-
-PROCEDURE CppProg (program: ADDRESS) ;
 
 
 (*

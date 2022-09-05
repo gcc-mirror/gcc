@@ -43,9 +43,11 @@ EXTERN tree m2decl_DeclareModuleCtor (tree decl);
 EXTERN tree m2decl_GetDeclContext (tree t);
 EXTERN tree m2decl_BuildStringConstant (location_t location, const char *string, int length);
 EXTERN tree m2decl_BuildCStringConstant (const char *string, int length);
-EXTERN tree m2decl_BuildConstLiteralNumber (const char *str,
+EXTERN tree m2decl_BuildConstLiteralNumber (location_t location,
+					    const char *str,
                                             unsigned int base);
-EXTERN void m2decl_DetermineSizeOfConstant (const char *str, unsigned int base,
+EXTERN void m2decl_DetermineSizeOfConstant (location_t location,
+					    const char *str, unsigned int base,
                                             int *needsLong,
                                             int *needsUnsigned);
 EXTERN void m2decl_RememberVariables (tree l);

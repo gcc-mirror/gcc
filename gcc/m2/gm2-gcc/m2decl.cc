@@ -284,22 +284,16 @@ m2decl_DeclareModuleCtor (tree decl)
    and needsUnsigned appropriately.  */
 
 void
-m2decl_DetermineSizeOfConstant (const char *str, unsigned int base,
+m2decl_DetermineSizeOfConstant (location_t location,
+				const char *str, unsigned int base,
                                 int *needsLong, int *needsUnsigned)
 {
-  int low;
+  unsigned int ulow;
   int high;
-  int overflow;
-
-  overflow
-      = m2expr_interpret_m2_integer (str, base, (unsigned int *)&low, &high);
-  *needsLong = (high != 0);
-  if (*needsLong)
-    *needsUnsigned = (high < 0);
-  else
-    *needsUnsigned = (low < 0);
+  int overflow = m2expr_interpret_m2_integer (str, base, &ulow, &high,
+					      needsLong, needsUnsigned);
   if (overflow)
-    error ("constant too large");
+    error_at (location, "constant %qs is too large", str);
 }
 
 /* BuildConstLiteralNumber - returns a GCC TREE built from the
@@ -307,7 +301,7 @@ m2decl_DetermineSizeOfConstant (const char *str, unsigned int base,
    Modula-2.  It always returns a positive value.  */
 
 tree
-m2decl_BuildConstLiteralNumber (const char *str, unsigned int base)
+m2decl_BuildConstLiteralNumber (location_t location, const char *str, unsigned int base)
 {
   tree value, type;
   unsigned HOST_WIDE_INT low;
@@ -322,7 +316,7 @@ m2decl_BuildConstLiteralNumber (const char *str, unsigned int base)
 
   widest_int wval = widest_int::from_array (ival, 3);
 
-  m2decl_DetermineSizeOfConstant (str, base, &needLong, &needUnsigned);
+  m2decl_DetermineSizeOfConstant (location, str, base, &needLong, &needUnsigned);
 
   if (needUnsigned && needLong)
     type = m2type_GetM2LongCardType ();
@@ -332,7 +326,7 @@ m2decl_BuildConstLiteralNumber (const char *str, unsigned int base)
   value = wide_int_to_tree (type, wval);
 
   if (overflow || m2expr_TreeOverflow (value))
-    error ("constant too large");
+    error_at (location, "constant %qs is too large", str);
 
   return m2block_RememberConstant (value);
 }

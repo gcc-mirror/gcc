@@ -3966,7 +3966,7 @@ m2expr_interpret_integer (const char *str, unsigned int base,
           else
             {
               overflow = append_digit (low, high, c, base);
-              max = 0; /* From now on we always use append_digit.  */
+              max = 0;  /* From now on we always use append_digit.  */
             }
         }
     }
@@ -3978,12 +3978,13 @@ m2expr_interpret_integer (const char *str, unsigned int base,
 
 static int
 append_m2_digit (unsigned int *low, int *high, unsigned int digit,
-                 unsigned int base)
+                 unsigned int base, int *needsUnsigned)
 {
   unsigned int shift;
   int overflow;
   int add_high, res_high, test_high;
   unsigned int add_low, res_low, test_low;
+  unsigned int add_uhigh, res_uhigh, test_uhigh;
 
   switch (base)
     {
@@ -4035,7 +4036,15 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
     add_high++;
   test_high = res_high + add_high;
   if (test_high < res_high)
-    overflow = TRUE;
+    {
+      res_uhigh = res_high;
+      add_uhigh = add_high;
+      test_uhigh = res_uhigh + add_uhigh;
+      if (test_uhigh < res_uhigh)
+	overflow = TRUE;
+      else
+	*needsUnsigned = TRUE;
+    }
 
   *low = res_low + add_low;
   *high = res_high + add_high;
@@ -4047,15 +4056,18 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
    constants.  Heavily borrowed from gcc/cppexp.cc.  Note that this is a
    copy of the above code except that it uses `int' rather than
    HOST_WIDE_INT to allow gm2 to determine what Modula-2 base type to
-   use for this constant.  */
+   use for this constant and it also sets needsLong and needsUnsigned
+   if an overflow can be avoided by using these techniques.  */
 
 int
 m2expr_interpret_m2_integer (const char *str, unsigned int base,
-                             unsigned int *low, int *high)
+                             unsigned int *low, int *high,
+			     int *needsLong, int *needsUnsigned)
 {
   const unsigned char *p, *end;
-  int overflow = FALSE;
   int len;
+  *needsLong = FALSE;
+  *needsUnsigned = FALSE;
 
   *low = 0;
   *high = 0;
@@ -4083,19 +4095,22 @@ m2expr_interpret_m2_integer (const char *str, unsigned int base,
           if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
             c = hex_value (c);
           else
-            return overflow;
+            return FALSE;  /* End of string and no overflow found.  */
 
           /* Strict inequality for when max is set to zero.  */
           if (*low < max)
             *low = (*low) * base + c;
           else
             {
-              overflow = append_m2_digit (low, high, c, base);
-              max = 0; /* From now on we always use append_digit.  */
+	      *needsLong = TRUE;
+	      if (append_m2_digit (low, high, c, base,
+				   needsUnsigned))
+		return TRUE;  /* We have overflowed so bail out.  */
+              max = 0;  /* From now on we always use append_digit.  */
             }
         }
     }
-  return overflow;
+  return FALSE;
 }
 
 /* GetSizeOfInBits return the number of bits used to contain, type.  */

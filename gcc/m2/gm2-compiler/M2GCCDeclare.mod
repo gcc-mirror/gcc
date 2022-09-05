@@ -401,7 +401,7 @@ BEGIN
 
       tobesolvedbyquads :  doInclude(ToBeSolvedByQuads, "symbol %d -> ToBeSolvedByQuads\n", sym) |
       fullydeclared     :  doInclude(FullyDeclared, "symbol %d -> FullyDeclared\n", sym) ;
-                           IF sym=449
+                           IF sym=1265
                            THEN
                               mystop
                            END |
@@ -2782,6 +2782,7 @@ PROCEDURE StartDeclareScope (scope: CARDINAL) ;
 VAR
    n: Name ;
 BEGIN
+   (* AddSymToWatch (1265) ;  *)
    (* AddSymToWatch (1157) ;  *)  (* watch goes here *)
    (* AddSymToWatch(TryFindSymbol('IOLink', 'DeviceId')) ; *)
    (* AddSymToWatch(819) ; *)
