@@ -1,3 +1,69 @@
+2022-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin):
+	Enforce the use of a valid MMA pointer type.
+
+2022-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2022-08-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/106187
+	* alias.h (mems_same_for_tbaa_p): Declare.
+	* alias.cc (mems_same_for_tbaa_p): New function.
+	* dse.cc (record_store): Use it instead of open-coding
+	alias check.
+	* cselib.h (cselib_redundant_set_p): Declare.
+	* cselib.cc: Include alias.h
+	(cselib_redundant_set_p): New function.
+	* cfgcleanup.cc: (mark_effect): Use cselib_redundant_set_p instead
+	of rtx_equal_for_cselib_p.
+	* postreload.cc (reload_cse_simplify): Use cselib_redundant_set_p.
+	(reload_cse_noop_set_p): Delete.
+
+2022-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2022-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/105463
+	* config/arm/mve.md (*movmisalign<mode>_mve_store): Use
+	mve_memory_operand.
+	(*movmisalign<mode>_mve_load): Likewise.
+	* config/arm/vec-common.md (movmisalign<mode>): Convert to generator
+	form...
+	(@movmisalign<mode>): ... thus.  Use generic predicates and then
+	rework operands if they are not valid.  For MVE rework to a
+	narrower element size if the alignment is not high enough.
+
+2022-09-02  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2022-09-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR other/106782
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::prefer_unrolled_loop): Replace %u with
+	HOST_WIDE_INT_PRINT_UNSIGNED.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/106782
+	* tree-vect-slp.cc (vect_print_slp_tree): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of %u.
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of %d.
+	* tree-vect-slp-patterns.cc (vect_pattern_validate_optab): Use %G
+	instead of %T and STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (node))
+	instead of SLP_TREE_DEF_TYPE (node).
+
 2022-08-30  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
