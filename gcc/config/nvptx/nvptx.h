@@ -321,6 +321,9 @@ struct GTY(()) machine_function
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)	\
   do						\
     {						\
+      (void) (FILE);				\
+      (void) (LABEL1);				\
+      (void) (LABEL2);				\
       gcc_unreachable ();			\
     }						\
   while (0)

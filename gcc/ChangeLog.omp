@@ -1,6 +1,13 @@
 2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-09-30  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/nvptx/nvptx.h (ASM_OUTPUT_DEF): Reference macro arguments.
+
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DOACROSS.
