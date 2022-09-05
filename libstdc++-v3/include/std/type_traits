@@ -286,18 +286,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     >::type __is_complete_or_unbounded(_TypeIdentity)
     { return {}; }
 
-  // For several sfinae-friendly trait implementations we transport both the
-  // result information (as the member type) and the failure information (no
-  // member type). This is very similar to std::enable_if, but we cannot use
-  // them, because we need to derive from them as an implementation detail.
-
-  template<typename _Tp>
-    struct __success_type
-    { typedef _Tp type; };
-
-  struct __failure_type
-  { };
-
   // __remove_cv_t (std::remove_cv_t for C++11).
   template<typename _Tp>
     using __remove_cv_t = typename remove_cv<_Tp>::type;
@@ -2162,6 +2150,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Sfinae-friendly common_type implementation:
 
   /// @cond undocumented
+
+  // For several sfinae-friendly trait implementations we transport both the
+  // result information (as the member type) and the failure information (no
+  // member type). This is very similar to std::enable_if, but we cannot use
+  // that, because we need to derive from them as an implementation detail.
+
+  template<typename _Tp>
+    struct __success_type
+    { typedef _Tp type; };
+
+  struct __failure_type
+  { };
+
   struct __do_common_type_impl
   {
     template<typename _Tp, typename _Up>
