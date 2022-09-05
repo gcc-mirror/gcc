@@ -1,3 +1,19 @@
+2022-09-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::union_): Do not drop properties when
+	unioning a NAN with something else.
+	(range_tests_signed_zeros): Add tests.
+
+2022-09-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.cc (encode_ieee_single): Use real_isdenormal.
+	(encode_ieee_double): Same.
+	(encode_ieee_extended): Same.
+	(encode_ieee_quad): Same.
+	(encode_ieee_half): Same.
+	(encode_arm_bfloat_half): Same.
+	* real.h (real_isdenormal): New.
+
 2022-09-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (frange::singleton_p): Move NAN check to the top.

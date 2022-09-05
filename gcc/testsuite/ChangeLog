@@ -1,3 +1,8 @@
+2022-09-04  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100136
+	* gfortran.dg/PR100136.f90: New test.
+
 2022-09-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100245
