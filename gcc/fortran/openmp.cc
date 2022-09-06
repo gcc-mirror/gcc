@@ -7625,10 +7625,6 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			    linear_op = n->u.linear.op;
 			  }
 		      }
-		    else if (omp_clauses->orderedc)
-		      gfc_error ("LINEAR clause specified together with "
-				 "ORDERED clause with argument at %L",
-				 &n->where);
 		    else if (n->u.linear.op != OMP_LINEAR_REF
 			     && n->sym->ts.type != BT_INTEGER)
 		      gfc_error ("LINEAR variable %qs must be INTEGER "
