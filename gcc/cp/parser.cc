@@ -39355,8 +39355,7 @@ cp_parser_omp_clause_doacross_sink (cp_parser *parser, location_t clause_loc,
 	  && cp_lexer_nth_token_is (parser->lexer, 4, CPP_CLOSE_PAREN))
 	{
 	  tree val = cp_lexer_peek_nth_token (parser->lexer, 3)->u.value;
-	  if (integer_onep (val)
-	      && same_type_p (TREE_TYPE (val), integer_type_node))
+	  if (integer_onep (val))
 	    {
 	      cp_lexer_consume_token (parser->lexer);
 	      cp_lexer_consume_token (parser->lexer);

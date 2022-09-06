@@ -15993,8 +15993,7 @@ c_parser_omp_clause_doacross_sink (c_parser *parser, location_t clause_loc,
 	  && c_parser_peek_nth_token (parser, 4)->type == CPP_CLOSE_PAREN)
 	{
 	  tree val = c_parser_peek_nth_token (parser, 3)->value;
-	  if (integer_onep (val)
-	      && comptypes (TREE_TYPE (val), integer_type_node))
+	  if (integer_onep (val))
 	    {
 	      c_parser_consume_token (parser);
 	      c_parser_consume_token (parser);

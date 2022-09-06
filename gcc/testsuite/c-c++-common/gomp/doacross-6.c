@@ -81,6 +81,26 @@ corge (int n)
   #pragma omp for ordered
   for (i = 0; i < 8; i += n)
     {
-      #pragma omp ordered doacross(sink:omp_cur_iteration - 1LL)	/* { dg-error "'omp_cur_iteration' undeclared \\\(first use in this function\\\)" "" { target c } } */
-    }									/* { dg-error "'omp_cur_iteration' has not been declared" "" { target c++ } .-1 } */
+      #pragma omp ordered doacross(sink:omp_cur_iteration - 1)
+    }
+  #pragma omp for ordered
+  for (i = 0; i < 8; i += n)
+    {
+      #pragma omp ordered doacross(sink:omp_cur_iteration - 1LL)
+    }
+  #pragma omp for ordered
+  for (i = 0; i < 8; i += n)
+    {
+      #pragma omp ordered doacross(sink:omp_cur_iteration - 0x00001)
+    }
+  #pragma omp for ordered
+  for (i = 0; i < 8; i += n)
+    {
+      #pragma omp ordered doacross(sink:omp_cur_iteration - 001)
+    }
+  #pragma omp for ordered
+  for (i = 0; i < 8; i += n)
+    {
+      #pragma omp ordered doacross(sink:omp_cur_iteration - 1ULL)
+    }
 }
