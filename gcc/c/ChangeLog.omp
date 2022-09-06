@@ -1,5 +1,10 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* c-typeck.cc (c_finish_omp_clauses): Add braces and reindent
+	OMP_CLAUSE_TO/OMP_CLAUSE_FROM/OMP_CLAUSE__CACHE_ stanza.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	Revert:
 	2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
 
