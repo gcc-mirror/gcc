@@ -5620,7 +5620,7 @@ type_has_virtual_destructor (tree type)
 {
   tree dtor;
 
-  if (!CLASS_TYPE_P (type))
+  if (!NON_UNION_CLASS_TYPE_P (type))
     return false;
 
   gcc_assert (COMPLETE_TYPE_P (type));

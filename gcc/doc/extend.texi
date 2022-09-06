@@ -25174,14 +25174,17 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @item __has_virtual_destructor (type)
 If @code{type} is a class type with a virtual destructor
 ([class.dtor]) then the trait is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
 
 @item __is_abstract (type)
 If @code{type} is an abstract class ([class.abstract]) then the trait
 is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
+
+@item __is_aggregate (type)
+If @code{type} is an aggregate type ([dcl.init.aggr]) the trait is
+@code{true}, else it is @code{false}.
+Requires: If @code{type} is a class type, it shall be a complete type.
 
 @item __is_base_of (base_type, derived_type)
 If @code{base_type} is a base class of @code{derived_type}
@@ -25206,12 +25209,16 @@ any, are bit-fields of length 0, and @code{type} has no virtual
 members, and @code{type} has no virtual base classes, and @code{type}
 has no base classes @code{base_type} for which
 @code{__is_empty (base_type)} is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
 
 @item __is_enum (type)
 If @code{type} is a cv enumeration type ([basic.compound]) the trait is
 @code{true}, else it is @code{false}.
+
+@item __is_final (type)
+If @code{type} is a class or union type marked @code{final}, then the trait
+is @code{true}, else it is @code{false}.
+Requires: If @code{type} is a class type, it shall be a complete type.
 
 @item __is_literal_type (type)
 If @code{type} is a literal type ([basic.types]) the trait is
@@ -25228,20 +25235,19 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @item __is_polymorphic (type)
 If @code{type} is a polymorphic class ([class.virtual]) then the trait
 is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
 
 @item __is_standard_layout (type)
 If @code{type} is a standard-layout type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: @code{type} shall be a complete type, an array of complete types,
+or (possibly cv-qualified) @code{void}.
 
 @item __is_trivial (type)
 If @code{type} is a trivial type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: @code{type} shall be a complete type, an array of complete types,
+or (possibly cv-qualified) @code{void}.
 
 @item __is_union (type)
 If @code{type} is a cv union type ([basic.compound]) the trait is
