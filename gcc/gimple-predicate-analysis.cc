@@ -990,13 +990,16 @@ dfs_mark_dominating_region (edge exit, basic_block dom, int flag,
    *NUM_CALLS is the number of recursive calls to control unbounded
    recursion.
    Return true if the information is successfully computed, false if
-   there is no control dependence or not computed.  */
+   there is no control dependence or not computed.
+   *COMPLETE_P is set to false if we stopped walking due to limits.
+   In this case there might be missing chains.  */
 
 static bool
 compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
 			   vec<edge> &cur_cd_chain, unsigned *num_calls,
-			   unsigned in_region = 0, unsigned depth = 0)
+			   unsigned in_region, unsigned depth,
+			   bool *complete_p)
 {
   /* In our recursive calls this doesn't happen.  */
   if (single_succ_p (dom_bb))
@@ -1009,6 +1012,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
       if (dump_file)
 	fprintf (dump_file, "MAX_CHAIN_LEN exceeded: %u\n", cur_chain_len);
 
+      *complete_p = false;
       return false;
     }
 
@@ -1077,6 +1081,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      if (dump_file)
 		fprintf (dump_file, "param_uninit_control_dep_attempts "
 			 "exceeded: %u\n", *num_calls);
+	      *complete_p = false;
 	      break;
 	    }
 	  ++*num_calls;
@@ -1085,7 +1090,8 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	  if (!single_succ_p (cd_bb)
 	      && compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
 					    num_chains, cur_cd_chain,
-					    num_calls, in_region, depth + 1))
+					    num_calls, in_region, depth + 1,
+					    complete_p))
 	    {
 	      found_cd_chain = true;
 	      break;
@@ -1109,6 +1115,9 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   return found_cd_chain;
 }
 
+/* Wrapper around the compute_control_dep_chain worker above.  Returns
+   true when the collected set of chains in CD_CHAINS is complete.  */
+
 static bool
 compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
@@ -1117,8 +1126,11 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_cd_chain;
   unsigned num_calls = 0;
   unsigned depth = 0;
-  return compute_control_dep_chain (dom_bb, dep_bb, cd_chains, num_chains,
-				    cur_cd_chain, &num_calls, in_region, depth);
+  bool complete_p = true;
+  compute_control_dep_chain (dom_bb, dep_bb, cd_chains, num_chains,
+			     cur_cd_chain, &num_calls, in_region, depth,
+			     &complete_p);
+  return complete_p;
 }
 
 /* Implemented simplifications:
@@ -1888,6 +1900,10 @@ bool
 uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
 				 basic_block use_bb)
 {
+  if (DEBUG_PREDICATE_ANALYZER && dump_file)
+    fprintf (dump_file, "init_use_preds (def_bb = %u, use_bb = %u)\n",
+	     def_bb->index, use_bb->index);
+
   gcc_assert (use_preds.is_empty ()
 	      && dominated_by_p (CDI_DOMINATORS, use_bb, def_bb));
 
@@ -1919,16 +1935,19 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
   unsigned num_chains = 0;
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
 
-  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains))
+  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains)
+      /* ???  Workaround PR106754.  */
+      || num_chains == 0)
     {
-      gcc_assert (num_chains == 0);
+      /* If the info in dep_chains is not complete we need to use a
+	 conservative approximation for the use predicate.  */
+      if (DEBUG_PREDICATE_ANALYZER && dump_file)
+	fprintf (dump_file, "init_use_preds: dep_chain incomplete, using "
+		 "conservative approximation\n");
+      num_chains = 1;
+      dep_chains[0].truncate (0);
       simple_control_dep_chain (dep_chains[0], cd_root, use_bb);
-      num_chains++;
     }
-
-  if (DEBUG_PREDICATE_ANALYZER && dump_file)
-    fprintf (dump_file, "init_use_preds (def_bb = %u, use_bb = %u)\n",
-	     def_bb->index, use_bb->index);
 
   /* From the set of edges computed above initialize *THIS as the OR
      condition under which the definition in DEF_BB is used in USE_BB.
@@ -2021,13 +2040,18 @@ uninit_analysis::init_from_phi_def (gphi *phi)
     {
       edge e = def_edges[i];
       unsigned prev_nc = num_chains;
-      compute_control_dep_chain (cd_root, e->src, dep_chains,
-				 &num_chains, in_region);
+      bool complete_p = compute_control_dep_chain (cd_root, e->src, dep_chains,
+						   &num_chains, in_region);
 
       /* Update the newly added chains with the phi operand edge.  */
       if (EDGE_COUNT (e->src->succs) > 1)
 	{
-	  if (prev_nc == num_chains && num_chains < MAX_NUM_CHAINS)
+	  if (complete_p
+	      && prev_nc == num_chains
+	      && num_chains < MAX_NUM_CHAINS)
+	    /* We can only add a chain for the PHI operand edge when the
+	       collected info was complete, otherwise the predicate may
+	       not be conservative.  */
 	    dep_chains[num_chains++] = vNULL;
 	  for (unsigned j = prev_nc; j < num_chains; j++)
 	    dep_chains[j].safe_push (e);
