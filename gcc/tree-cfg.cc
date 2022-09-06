@@ -1305,7 +1305,7 @@ end_recording_case_labels (void)
 
    Otherwise return NULL.  */
 
-static tree
+tree
 get_cases_for_edge (edge e, gswitch *t)
 {
   tree *slot;

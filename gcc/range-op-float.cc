@@ -204,11 +204,6 @@ frelop_early_resolve (irange &r, tree type,
 static inline void
 frange_drop_inf (frange &r, tree type)
 {
-  // FIXME: build_real() bails on decimal float modes when called with
-  // a max representable endpoint.
-  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
-    return;
-
   REAL_VALUE_TYPE max;
   real_max_representable (&max, type);
   frange tmp (type, r.lower_bound (), max);
@@ -221,11 +216,6 @@ frange_drop_inf (frange &r, tree type)
 static inline void
 frange_drop_ninf (frange &r, tree type)
 {
-  // FIXME: build_real() bails on decimal float modes when called with
-  // a max representable endpoint.
-  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
-    return;
-
   REAL_VALUE_TYPE min;
   real_min_representable (&min, type);
   frange tmp (type, min, r.upper_bound ());

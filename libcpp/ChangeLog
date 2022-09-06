@@ -1,3 +1,7 @@
+2022-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.cc (lang_defaults): Disable trigraphs for C2x.
+
 2022-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/90885

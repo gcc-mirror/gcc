@@ -1,3 +1,57 @@
+2022-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/c11-trigraphs-1.c, gcc.dg/cpp/c2x-trigraphs-1.c,
+	gcc.dg/cpp/c2x-trigraphs-2.c: New tests.
+
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-signbit-2.c: New test.
+
+2022-09-05  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/106453
+	* gcc.target/i386/pr106453.c: New test.
+
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/all-memory-1.f90: Update dg-error.
+	* gfortran.dg/gomp/depend-iterator-2.f90: Likewise.
+	* gfortran.dg/gomp/depobj-2.f90: Likewise.
+	* gfortran.dg/gomp/doacross-5.f90: New test.
+	* gfortran.dg/gomp/doacross-6.f90: New test.
+
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/106824
+	* g++.dg/pr106824.C: New test.
+
+2022-09-05  Tim Lange  <mail@tim-lange.me>
+
+	* gcc.dg/analyzer/out-of-bounds-4.c: New test.
+	* gcc.dg/analyzer/strcpy-3.c: New test.
+
+2022-09-05  Tim Lange  <mail@tim-lange.me>
+
+	* gcc.dg/analyzer/fold-string-to-char.c: New test.
+
+2022-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/spellcheck_10.c: New test.
+
+2022-09-05  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/zmmul-1.c: New test.
+	* gcc.target/riscv/zmmul-2.c: New test.
+
+2022-09-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/direct-extern-1.c: New test.
+	* gcc.target/loongarch/direct-extern-2.c: New test.
+
+2022-09-05  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr106742.c: New test.
+
 2022-09-04  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100136

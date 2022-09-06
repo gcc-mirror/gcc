@@ -1556,6 +1556,16 @@ cast_region::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of region::get_relative_concrete_offset vfunc
+   for cast_region.  */
+
+bool
+cast_region::get_relative_concrete_offset (bit_offset_t *out) const
+{
+  *out = (int) 0;
+  return true;
+}
+
 /* class heap_allocated_region : public region.  */
 
 /* Implementation of region::dump_to_pp vfunc for heap_allocated_region.  */

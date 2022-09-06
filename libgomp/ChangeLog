@@ -1,3 +1,7 @@
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Update doacross/omp_cur_iteration status.
+
 2022-08-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0): Mark 'ancestor' as implemented but
