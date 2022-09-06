@@ -16497,15 +16497,15 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Alias_Subp   : Entity_Id;
-      Act_List     : Elist_Id;
-      Act_Elmt     : Elmt_Id;
-      Act_Subp     : Entity_Id := Empty;
-      Elmt         : Elmt_Id;
-      Need_Search  : Boolean   := False;
-      New_Subp     : Entity_Id := Empty;
-      Parent_Base  : Entity_Id;
-      Subp         : Entity_Id;
+      Alias_Subp  : Entity_Id;
+      Act_List    : Elist_Id;
+      Act_Elmt    : Elmt_Id;
+      Act_Subp    : Entity_Id := Empty;
+      Elmt        : Elmt_Id;
+      Need_Search : Boolean   := False;
+      New_Subp    : Entity_Id;
+      Parent_Base : Entity_Id;
+      Subp        : Entity_Id;
 
    --  Start of processing for Derive_Subprograms
 
