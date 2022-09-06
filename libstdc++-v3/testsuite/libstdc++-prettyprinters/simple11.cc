@@ -30,6 +30,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <sstream>
 #include <vector>
 #include <ext/slist>
 
@@ -161,6 +162,20 @@ main()
 
   __gnu_cxx::slist<int>::iterator slliter0;
 // { dg-final { note-test slliter0 {non-dereferenceable iterator for __gnu_cxx::slist} } }
+
+  std::stringstream sstream;
+  sstream << "abc";
+// { dg-final { note-test sstream "\"abc\"" } }
+  std::stringstream ssin("input", std::ios::in);
+// { dg-final { note-test ssin "\"input\"" } }
+  std::istringstream ssin2("input");
+// { dg-final { note-test ssin2 "\"input\"" } }
+  std::ostringstream ssout;
+  ssout << "out";
+// { dg-final { note-test ssout "\"out\"" } }
+  std::stringstream redirected("xxx");
+  static_cast<std::basic_ios<std::stringstream::char_type>&>(redirected).rdbuf(sstream.rdbuf());
+// { dg-final { regexp-test redirected {std::.*stringstream redirected to .*} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT
