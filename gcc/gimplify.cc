@@ -9154,7 +9154,8 @@ omp_group_last (tree *start_p)
 	unsigned HOST_WIDE_INT num_mappings
 	  = tree_to_uhwi (OMP_CLAUSE_SIZE (c));
 	if (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_POINTER
-	    || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+	    || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_REFERENCE
+	    || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_ATTACH_DETACH)
 	  grp_last_p = &OMP_CLAUSE_CHAIN (*grp_last_p);
 	for (unsigned i = 0; i < num_mappings; i++)
 	  grp_last_p = &OMP_CLAUSE_CHAIN (*grp_last_p);
@@ -9170,12 +9171,13 @@ omp_group_last (tree *start_p)
    associated GOMP_MAP_POINTER mappings).  Return a vector of omp_mapping_group
    if we have more than one such group, else return NULL.  */
 
-static vec<omp_mapping_group> *
-omp_gather_mapping_groups (tree *list_p)
+static void
+omp_gather_mapping_groups_1 (tree *list_p, vec<omp_mapping_group> *groups,
+			     tree gather_sentinel)
 {
-  vec<omp_mapping_group> *groups = new vec<omp_mapping_group> ();
-
-  for (tree *cp = list_p; *cp; cp = &OMP_CLAUSE_CHAIN (*cp))
+  for (tree *cp = list_p;
+       *cp && *cp != gather_sentinel;
+       cp = &OMP_CLAUSE_CHAIN (*cp))
     {
       if (OMP_CLAUSE_CODE (*cp) != OMP_CLAUSE_MAP)
 	continue;
@@ -9193,6 +9195,14 @@ omp_gather_mapping_groups (tree *list_p)
 
       cp = grp_last_p;
     }
+}
+
+static vec<omp_mapping_group> *
+omp_gather_mapping_groups (tree *list_p)
+{
+  vec<omp_mapping_group> *groups = new vec<omp_mapping_group> ();
+
+  omp_gather_mapping_groups_1 (list_p, groups, NULL_TREE);
 
   if (groups->length () > 0)
     return groups;
@@ -9241,7 +9251,8 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
       node = OMP_CLAUSE_CHAIN (node);
       if (node && OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_TO_PSET)
 	{
-	  gcc_assert (node != grp->grp_end);
+	  if (node == grp->grp_end)
+	    return *grp->grp_start;
 	  node = OMP_CLAUSE_CHAIN (node);
 	}
       if (node)
@@ -9339,18 +9350,22 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
 /* Given a vector of omp_mapping_groups, build a hash table so we can look up
    nodes by tree_operand_hash.  */
 
-static hash_map<tree_operand_hash, omp_mapping_group *> *
-omp_index_mapping_groups (vec<omp_mapping_group> *groups)
+static void
+omp_index_mapping_groups_1 (hash_map<tree_operand_hash,
+				     omp_mapping_group *> *grpmap,
+			    vec<omp_mapping_group> *groups,
+			    tree reindex_sentinel)
 {
-  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap
-    = new hash_map<tree_operand_hash, omp_mapping_group *>;
-
   omp_mapping_group *grp;
   unsigned int i;
+  bool reindexing = reindex_sentinel != NULL_TREE, above_hwm = false;
 
   FOR_EACH_VEC_ELT (*groups, i, grp)
     {
-      if (grp->deleted)
+      if (reindexing && *grp->grp_start == reindex_sentinel)
+	above_hwm = true;
+
+      if (reindexing && !above_hwm)
 	continue;
 
       tree fpp;
@@ -9372,8 +9387,7 @@ omp_index_mapping_groups (vec<omp_mapping_group> *groups)
 	     source instead.  FIXME.  */
 	  if (TREE_CODE (decl) == MEM_REF
 	      && integer_zerop (TREE_OPERAND (decl, 1)))
-	    decl = build1 (INDIRECT_REF, TREE_TYPE (decl),
-			   TREE_OPERAND (decl, 0));
+	    decl = build_fold_indirect_ref (TREE_OPERAND (decl, 0));
 
 	  omp_mapping_group **prev = grpmap->get (decl);
 
@@ -9402,7 +9416,7 @@ omp_index_mapping_groups (vec<omp_mapping_group> *groups)
 	continue;
 
       omp_mapping_group **prev = grpmap->get (fpp);
-      if (prev)
+      if (prev && *prev != grp)
 	{
 	  grp->sibling = (*prev)->sibling;
 	  (*prev)->sibling = grp;
@@ -9410,6 +9424,48 @@ omp_index_mapping_groups (vec<omp_mapping_group> *groups)
       else
 	grpmap->put (fpp, grp);
     }
+}
+
+static hash_map<tree_operand_hash, omp_mapping_group *> *
+omp_index_mapping_groups (vec<omp_mapping_group> *groups)
+{
+  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap
+    = new hash_map<tree_operand_hash, omp_mapping_group *>;
+
+  omp_index_mapping_groups_1 (grpmap, groups, NULL_TREE);
+
+  return grpmap;
+}
+
+/* Rebuild group map from partially-processed clause list (during
+   omp_build_struct_sibling_lists).  We have already processed nodes up until
+   a high-water mark (HWM).  This is a bit tricky because the list is being
+   reordered as it is scanned, but we know:
+
+   1. The list after HWM has not been touched yet, so we can reindex it safely.
+
+   2. The list before and including HWM has been altered, but remains
+      well-formed throughout the sibling-list building operation.
+
+   so, we can do the reindex operation in two parts, on the processed and
+   then the unprocessed halves of the list.  */
+
+static hash_map<tree_operand_hash, omp_mapping_group *> *
+omp_reindex_mapping_groups (tree *list_p,
+			    vec<omp_mapping_group> *groups,
+			    vec<omp_mapping_group> *processed_groups,
+			    tree sentinel)
+{
+  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap
+    = new hash_map<tree_operand_hash, omp_mapping_group *>;
+
+  processed_groups->truncate (0);
+
+  omp_gather_mapping_groups_1 (list_p, processed_groups, sentinel);
+  omp_index_mapping_groups_1 (grpmap, processed_groups, NULL_TREE);
+  if (sentinel)
+    omp_index_mapping_groups_1 (grpmap, groups, sentinel);
+
   return grpmap;
 }
 
@@ -9435,6 +9491,45 @@ omp_containing_struct (tree expr)
     expr = TREE_OPERAND (expr, 0);
 
   return expr;
+}
+
+/* Return TRUE if DECL describes a component that is part of a whole structure
+   that is mapped elsewhere in GRPMAP.  *MAPPED_BY_GROUP is set to the group
+   that maps that structure, if present.  */
+
+static bool
+omp_mapped_by_containing_struct (hash_map<tree_operand_hash,
+					  omp_mapping_group *> *grpmap,
+				 tree decl,
+				 omp_mapping_group **mapped_by_group)
+{
+  tree wsdecl = NULL_TREE;
+
+  *mapped_by_group = NULL;
+
+  while (true)
+    {
+      wsdecl = omp_containing_struct (decl);
+      if (wsdecl == decl)
+	break;
+      omp_mapping_group **wholestruct = grpmap->get (wsdecl);
+      if (!wholestruct
+	  && TREE_CODE (wsdecl) == MEM_REF
+	  && integer_zerop (TREE_OPERAND (wsdecl, 1)))
+	{
+	  tree deref = TREE_OPERAND (wsdecl, 0);
+	  deref = build_fold_indirect_ref (deref);
+	  wholestruct = grpmap->get (deref);
+	}
+      if (wholestruct)
+	{
+	  *mapped_by_group = *wholestruct;
+	  return true;
+	}
+      decl = wsdecl;
+    }
+
+  return false;
 }
 
 /* Helper function for omp_tsort_mapping_groups.  Returns TRUE on success, or
@@ -9464,9 +9559,8 @@ omp_tsort_mapping_groups_1 (omp_mapping_group ***outlist,
     {
       omp_mapping_group **basep = grpmap->get (attaches_to);
 
-      if (basep)
+      if (basep && *basep != grp)
 	{
-	  gcc_assert (*basep != grp);
 	  for (omp_mapping_group *w = *basep; w; w = w->sibling)
 	    if (!omp_tsort_mapping_groups_1 (outlist, groups, grpmap, w))
 	      return false;
@@ -9483,25 +9577,16 @@ omp_tsort_mapping_groups_1 (omp_mapping_group ***outlist,
 	break;
 
       omp_mapping_group **innerp = grpmap->get (base);
+      omp_mapping_group *wholestruct;
 
       /* We should treat whole-structure mappings as if all (pointer, in this
 	 case) members are mapped as individual list items.  Check if we have
 	 such a whole-structure mapping, if we don't have an explicit reference
 	 to the pointer member itself.  */
-      if (!innerp && TREE_CODE (base) == COMPONENT_REF)
-	{
-	  base = omp_containing_struct (base);
-	  innerp = grpmap->get (base);
-
-	  if (!innerp
-	      && TREE_CODE (base) == MEM_REF
-	      && integer_zerop (TREE_OPERAND (base, 1)))
-	    {
-	      tree ind = TREE_OPERAND (base, 0);
-	      ind = build1 (INDIRECT_REF, TREE_TYPE (base), ind);
-	      innerp = grpmap->get (ind);
-	    }
-	}
+      if (!innerp
+	  && TREE_CODE (base) == COMPONENT_REF
+	  && omp_mapped_by_containing_struct (grpmap, base, &wholestruct))
+	innerp = &wholestruct;
 
       if (innerp && *innerp != grp)
 	{
@@ -10285,7 +10370,8 @@ omp_build_struct_sibling_lists (enum tree_code code,
 				enum omp_region_type region_type,
 				vec<omp_mapping_group> *groups,
 				hash_map<tree_operand_hash, omp_mapping_group *>
-				  **grpmap)
+				  **grpmap,
+				tree *list_p)
 {
   unsigned i;
   omp_mapping_group *grp;
@@ -10293,15 +10379,21 @@ omp_build_struct_sibling_lists (enum tree_code code,
   bool success = true;
   tree *new_next = NULL;
   tree *tail = &OMP_CLAUSE_CHAIN ((*groups)[groups->length () - 1].grp_end);
+  auto_vec<omp_mapping_group> pre_hwm_groups;
 
   FOR_EACH_VEC_ELT (*groups, i, grp)
     {
       tree c = grp->grp_end;
       tree decl = OMP_CLAUSE_DECL (c);
-      tree *grp_start_p = new_next ? new_next : grp->grp_start;
       tree grp_end = grp->grp_end;
+      tree sentinel = OMP_CLAUSE_CHAIN (grp_end);
+
+      if (new_next)
+	grp->grp_start = new_next;
 
       new_next = NULL;
+
+      tree *grp_start_p = grp->grp_start;
 
       if (DECL_P (decl))
 	continue;
@@ -10342,36 +10434,16 @@ omp_build_struct_sibling_lists (enum tree_code code,
       if (TREE_CODE (decl) != COMPONENT_REF)
 	continue;
 
-      omp_mapping_group **wholestruct = NULL;
-      tree wsdecl = omp_containing_struct (OMP_CLAUSE_DECL (c));
-
-      if (!(region_type & ORT_ACC) && wsdecl != OMP_CLAUSE_DECL (c))
-	{
-	  wholestruct = (*grpmap)->get (wsdecl);
-	  if (!wholestruct
-	      && TREE_CODE (wsdecl) == MEM_REF
-	      && integer_zerop (TREE_OPERAND (wsdecl, 1)))
-	    {
-	      tree deref = TREE_OPERAND (wsdecl, 0);
-	      deref = build1 (INDIRECT_REF, TREE_TYPE (wsdecl), deref);
-	      wholestruct = (*grpmap)->get (deref);
-	    }
-	}
-
-      if (wholestruct)
+      /* If we're mapping the whole struct in another node, skip creation of
+	 sibling lists.  */
+      omp_mapping_group *wholestruct;
+      if (!(region_type & ORT_ACC)
+	  && omp_mapped_by_containing_struct (*grpmap, OMP_CLAUSE_DECL (c),
+					      &wholestruct))
 	{
 	  if (*grp_start_p == grp_end)
-	    {
-	      /* Remove the whole of this mapping -- redundant.  */
-	      if (i + 1 < groups->length ())
-		{
-		  omp_mapping_group *nextgrp = &(*groups)[i + 1];
-		  nextgrp->grp_start = grp_start_p;
-		}
-	      grp->deleted = true;
-	      new_next = grp_start_p;
-	      *grp_start_p = OMP_CLAUSE_CHAIN (grp_end);
-	    }
+	    /* Remove the whole of this mapping -- redundant.  */
+	    grp->deleted = true;
 
 	  continue;
 	}
@@ -10416,7 +10488,6 @@ omp_build_struct_sibling_lists (enum tree_code code,
 		*tail = inner;
 
 	      OMP_CLAUSE_CHAIN (inner) = NULL_TREE;
-
 	      omp_mapping_group newgrp;
 	      newgrp.grp_start = new_next ? new_next : tail;
 	      newgrp.grp_end = inner;
@@ -10430,11 +10501,37 @@ omp_build_struct_sibling_lists (enum tree_code code,
 		 map.  Rebuild it here.  This is a bit inefficient, but
 		 shouldn't happen very often.  */
 	      delete (*grpmap);
-	      *grpmap = omp_index_mapping_groups (groups);
+	      *grpmap
+		= omp_reindex_mapping_groups (list_p, groups, &pre_hwm_groups,
+					      sentinel);
 
 	      tail = &OMP_CLAUSE_CHAIN (inner);
 	    }
 	}
+    }
+
+  /* Delete groups marked for deletion above.  At this point the order of the
+     groups may no longer correspond to the order of the underlying list,
+     which complicates this a little.  First clear out OMP_CLAUSE_DECL for
+     deleted nodes...  */
+
+  FOR_EACH_VEC_ELT (*groups, i, grp)
+    if (grp->deleted)
+      for (tree d = *grp->grp_start;
+	   d != OMP_CLAUSE_CHAIN (grp->grp_end);
+	   d = OMP_CLAUSE_CHAIN (d))
+	OMP_CLAUSE_DECL (d) = NULL_TREE;
+
+  /* ...then sweep through the list removing the now-empty nodes.  */
+
+  tail = list_p;
+  while (*tail)
+    {
+      if (OMP_CLAUSE_CODE (*tail) == OMP_CLAUSE_MAP
+	  && OMP_CLAUSE_DECL (*tail) == NULL_TREE)
+	*tail = OMP_CLAUSE_CHAIN (*tail);
+      else
+	tail = &OMP_CLAUSE_CHAIN (*tail);
     }
 
 error_out:
@@ -10497,7 +10594,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap;
 	  grpmap = omp_index_mapping_groups (groups);
 
-	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap);
+	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap,
+					  list_p);
 
 	  omp_mapping_group *outlist = NULL;
 
@@ -10532,7 +10630,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap;
 	  grpmap = omp_index_mapping_groups (groups);
 
-	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap);
+	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap,
+					  list_p);
 
 	  delete groups;
 	  delete grpmap;

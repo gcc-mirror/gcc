@@ -6755,10 +6755,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 	}
 
+  tree *grp_start_p = NULL, grp_sentinel = NULL_TREE;
+
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
       bool remove = false;
       bool field_ok = false;
+
+      /* We've reached the end of a list of expanded nodes.  Reset the group
+	 start pointer.  */
+      if (c == grp_sentinel)
+	grp_start_p = NULL;
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -7982,6 +7989,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
+	      grp_start_p = pc;
+	      grp_sentinel = OMP_CLAUSE_CHAIN (c);
+
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
 	      else
@@ -8353,6 +8363,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		       && (OMP_CLAUSE_MAP_KIND (c)
 			   != GOMP_MAP_ATTACH_DETACH))
 		{
+		  grp_start_p = pc;
+		  grp_sentinel = OMP_CLAUSE_CHAIN (c);
+
 		  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					      OMP_CLAUSE_MAP);
 		  if (TREE_CODE (t) == COMPONENT_REF)
@@ -8763,7 +8776,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	}
 
       if (remove)
-	*pc = OMP_CLAUSE_CHAIN (c);
+	{
+	  if (grp_start_p)
+	    {
+	      /* If we found a clause to remove, we want to remove the whole
+		 expanded group, otherwise gimplify can get confused.  */
+	      *grp_start_p = grp_sentinel;
+	      pc = grp_start_p;
+	      grp_start_p = NULL;
+	    }
+	  else
+	    *pc = OMP_CLAUSE_CHAIN (c);
+	}
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }
