@@ -316,8 +316,20 @@ package body Sem_Util is
                --  Ignore transient scopes made during expansion
 
                if Comes_From_Source (Node_Par) then
-                  return
-                    Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                  --  Note that in some rare cases the scope depth may not be
+                  --  set, for example, when we are in the middle of analyzing
+                  --  a type and the enclosing scope is said type. So, instead,
+                  --  continue to move up the parent chain since the scope
+                  --  depth of the type's parent is the same as that of the
+                  --  type.
+
+                  if not Scope_Depth_Set (Encl_Scop) then
+                     pragma Assert (Nkind (Parent (Encl_Scop))
+                                     = N_Full_Type_Declaration);
+                  else
+                     return
+                       Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                  end if;
                end if;
 
             --  For a return statement within a function, return
