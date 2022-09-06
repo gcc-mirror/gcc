@@ -1,3 +1,11 @@
+2022-07-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106836
+	* c-omp.cc (c_omp_split_clauses): Handle OMP_CLAUSE_DOACROSS.
+
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
