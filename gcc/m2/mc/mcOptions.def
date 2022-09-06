@@ -114,6 +114,20 @@ PROCEDURE getGccConfigSystem () : BOOLEAN ;
 
 
 (*
+   getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
+*)
+
+PROCEDURE getScaffoldDynamic () : BOOLEAN ;
+
+
+(*
+   getScaffoldMain - return true if the --scaffold-main option was present.
+*)
+
+PROCEDURE getScaffoldMain () : BOOLEAN ;
+
+
+(*
    writeGPLheader - writes out the GPL or the GLPL as a comment.
 *)
 

@@ -30,7 +30,7 @@ FROM SFIO IMPORT OpenToWrite, WriteS ;
 FROM FIO IMPORT File, Close, FlushBuffer, StdOut, WriteLine, WriteChar ;
 FROM DynamicStrings IMPORT String, InitString, EqualArray, InitStringCharStar, KillString, ConCat, Mark, RemoveWhitePostfix, RemoveWhitePrefix ;
 FROM StringConvert IMPORT CardinalToString, ostoc ;
-FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ, getExtendedOpaque, writeGPLheader, getGccConfigSystem ;
+FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ, getExtendedOpaque, writeGPLheader, getGccConfigSystem, getScaffoldDynamic, getScaffoldMain ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM libc IMPORT printf, memset ;
 FROM mcMetaError IMPORT metaError1, metaError2, metaError3, metaErrors1, metaErrors2 ;
@@ -73,7 +73,7 @@ CONST
    (* this is a work around to avoid ever having to handle dangling else.  *)
    forceCompoundStatement = TRUE ;    (* TRUE will avoid dangling else, by always using {}.  *)
    enableDefForCStrings   = FALSE ;   (* currently disabled.  *)
-
+   enableMemsetOnAllocation = TRUE ;  (* Should we memset (..., 0, ...) the allocated mem?  *)
 
 TYPE
    language = (ansiC, ansiCP, pim4) ;
@@ -122,7 +122,9 @@ TYPE
 	    lsl, lsr, lor, land, lnot, lxor,
 	    and, or, not, identlist, vardecl, setvalue) ;
 
-    node = POINTER TO RECORD
+    node = POINTER TO nodeRec ;
+
+    nodeRec =         RECORD
                          CASE kind: nodeT OF
 
                          unreachable,
@@ -760,7 +762,10 @@ VAR
    d: node ;
 BEGIN
    NEW (d) ;
-   d := memset (d, 0, SIZE (node)) ;
+   IF enableMemsetOnAllocation
+   THEN
+      d := memset (d, 0, SIZE (d^))
+   END ;
    IF d=NIL
    THEN
       HALT
@@ -14049,10 +14054,10 @@ END topologicallyOut ;
 
 
 (*
-   outImpInitC -
+   scaffoldStatic -
 *)
 
-PROCEDURE outImpInitC (p: pretty; n: node) ;
+PROCEDURE scaffoldStatic (p: pretty; n: node) ;
 BEGIN
    outText (p, "\n") ;
    doExternCP (p) ;
@@ -14078,6 +14083,137 @@ BEGIN
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.finallyStatements) ;
    p := outKc (p, "}\n")
+END scaffoldStatic ;
+
+
+(*
+   emitCtor -
+*)
+
+PROCEDURE emitCtor (p: pretty; n: node) ;
+VAR
+   s: String ;
+BEGIN
+   outText (p, "\n") ;
+   outText (p, "static void") ;
+   setNeedSpace (p) ;
+   outText (p, "ctorFunction ()\n") ;
+   doFQNameC (p, n) ;
+   p := outKc (p, "{\n") ;
+   outText (p, 'M2RTS_RegisterModule ("') ;
+   s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
+   prints (p, s) ;
+   outText (p, '",\n') ;
+   outText (p, 'init, fini, dependencies);\n') ;
+   p := outKc (p, "}\n\n") ;
+   p := outKc (p, "struct ") ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2 { ") ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2 (); ~") ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2 (); } global_module_") ;
+   prints (p, s) ;
+   outText (p, ';\n\n') ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2::") ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2 ()\n") ;
+   p := outKc (p, "{\n") ;
+   outText (p, 'M2RTS_RegisterModule ("') ;
+   prints (p, s) ;
+   outText (p, '", init, fini, dependencies);') ;
+   p := outKc (p, "}\n") ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2::~") ;
+   prints (p, s) ;
+   p := outKc (p, "_module_m2 ()\n") ;
+   p := outKc (p, "{\n") ;
+   p := outKc (p, "}\n") ;
+   s := KillString (s)
+END emitCtor ;
+
+
+(*
+   scaffoldDynamic -
+*)
+
+PROCEDURE scaffoldDynamic (p: pretty; n: node) ;
+BEGIN
+   outText (p, "\n") ;
+   doExternCP (p) ;
+   outText (p, "void") ;
+   setNeedSpace (p) ;
+   outText (p, "_M2_") ;
+   doFQNameC (p, n) ;
+   outText (p, "_init") ;
+   setNeedSpace (p) ;
+   outText (p, "(__attribute__((unused)) int argc,") ;
+   outText (p, " __attribute__((unused)) char *argv[],") ;
+   outText (p, " __attribute__((unused)) char *envp[])\n") ;
+   p := outKc (p, "{\n") ;
+   doStatementsC (p, n^.impF.beginStatements) ;
+   p := outKc (p, "}\n") ;
+   outText (p, "\n") ;
+   doExternCP (p) ;
+   outText (p, "void") ;
+   setNeedSpace (p) ;
+   outText (p, "_M2_") ;
+   doFQNameC (p, n) ;
+   outText (p, "_fini") ;
+   setNeedSpace (p) ;
+   outText (p, "(__attribute__((unused)) int argc,") ;
+   outText (p, " __attribute__((unused)) char *argv[],") ;
+   outText (p, " __attribute__((unused)) char *envp[])\n") ;
+   p := outKc (p, "{\n") ;
+   doStatementsC (p, n^.impF.finallyStatements) ;
+   p := outKc (p, "}\n") ;
+   emitCtor (p, n)
+END scaffoldDynamic ;
+
+
+(*
+   scaffoldMain -
+*)
+
+PROCEDURE scaffoldMain (p: pretty; n: node) ;
+VAR
+   s: String ;
+BEGIN
+   outText (p, "int\n") ;
+   outText (p, "main") ;
+   setNeedSpace (p) ;
+   outText (p, "(int argc, char *argv[], char *envp[])\n") ;
+   p := outKc (p, "{\n") ;
+   outText (p, "M2RTS_ConstructModules (") ;
+   s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
+   prints (p, s) ;
+   outText (p, ", argc, argv, envp);\n");
+   outText (p, "M2RTS_DeconstructModules (") ;
+   prints (p, s) ;
+   outText (p, ", argc, argv, envp);\n");
+   outText (p, "return 0;") ;
+   p := outKc (p, "}\n") ;
+   s := KillString (s)
+END scaffoldMain ;
+
+
+(*
+   outImpInitC - emit the init/fini functions and main function if required.
+*)
+
+PROCEDURE outImpInitC (p: pretty; n: node) ;
+BEGIN
+   IF getScaffoldDynamic ()
+   THEN
+      scaffoldDynamic (p, n)
+   ELSE
+      scaffoldStatic (p, n)
+   END ;
+   IF getScaffoldMain ()
+   THEN
+      scaffoldMain (p, n)
+   END
 END outImpInitC ;
 
 

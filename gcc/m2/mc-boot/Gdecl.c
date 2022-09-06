@@ -47,9 +47,9 @@ typedef unsigned int nameKey_Name;
 #   define nameKey_NulName 0
 typedef struct mcPretty_writeProc_p mcPretty_writeProc;
 
-typedef struct _T9_r _T9;
+typedef struct _T8_r _T8;
 
-typedef _T9 *symbolKey_symbolTree;
+typedef _T8 *symbolKey_symbolTree;
 
 typedef struct mcPretty_writeLnProc_p mcPretty_writeLnProc;
 
@@ -59,11 +59,11 @@ extern FIO_File FIO_StdOut;
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
 #   define ASCII_tab ASCII_ht
-typedef struct _T14_r _T14;
+typedef struct _T13_r _T13;
 
-typedef _T14 *alists_alist;
+typedef _T13 *alists_alist;
 
-typedef struct _T15_a _T15;
+typedef struct _T14_a _T14;
 
 #   define ASCII_ht (char) 011
 #   define ASCII_lf ASCII_nl
@@ -126,9 +126,9 @@ typedef struct libc_timeb_r libc_timeb;
 
 typedef struct libc_exitP_p libc_exitP;
 
-typedef struct _T12_r _T12;
+typedef struct _T11_r _T11;
 
-typedef _T12 *mcError_error;
+typedef _T11 *mcError_error;
 
 extern int mcLexBuf_currentinteger;
 extern unsigned int mcLexBuf_currentcolumn;
@@ -149,6 +149,9 @@ typedef struct StdIO_ProcRead_p StdIO_ProcRead;
 #   define returnException TRUE
 #   define forceCompoundStatement TRUE
 #   define enableDefForCStrings FALSE
+#   define enableMemsetOnAllocation TRUE
+typedef struct nodeRec_r nodeRec;
+
 typedef struct intrinsicT_r intrinsicT;
 
 typedef struct fixupInfo_r fixupInfo;
@@ -265,8 +268,6 @@ typedef struct nodeProcedure_p nodeProcedure;
 
 typedef struct cnameT_r cnameT;
 
-typedef struct _T5_r _T5;
-
 #   define MaxBuf 127
 #   define maxNoOfElements 5
 typedef enum {explist, funccall, exit_, return_, stmtseq, comment, halt, new_, dispose, inc, dec, incl, excl, length, nil, true_, false_, address, loc, byte, word, csizet, cssizet, char_, cardinal, longcard, shortcard, integer, longint, shortint, real, longreal, shortreal, bitset, boolean, proc, ztype, rtype, complex_, longcomplex, shortcomplex, type, record, varient, var, enumeration, subrange, array, subscript, string, const_, literal, varparam, param, varargs, optarg_, pointer, recordfield, varientfield, enumerationfield, set, proctype, procedure, def, imp, module, loop, while_, for_, repeat, case_, caselabellist, caselist, range, assignment, if_, elsif, constexp, neg, cast, val, plus, sub, div_, mod, mult, divide, in, adr, size, tsize, ord, float_, trunc_, chr, abs_, cap, high, throw_, unreachable, cmplx, re, im, min, max, componentref, pointerref, arrayref, deref, equal, notequal, less, greater, greequal, lessequal, lsl, lsr, lor, land, lnot, lxor, and_, or_, not_, identlist, vardecl, setvalue} nodeT;
@@ -281,42 +282,42 @@ typedef enum {completed, blocked, partial, recursive} dependentState;
 
 typedef enum {text, punct, space} outputStates;
 
-typedef _T5 *decl_node;
+typedef nodeRec *decl_node;
+
+typedef struct _T5_r _T5;
 
 typedef struct _T6_r _T6;
-
-typedef struct _T7_r _T7;
 
 typedef enum {unknown, procedureHeading, inBody, afterStatement} commentType;
 
 typedef struct stringRecord_r stringRecord;
 
-typedef struct _T10_r _T10;
+typedef struct _T9_r _T9;
 
-typedef struct _T13_r _T13;
+typedef struct _T12_r _T12;
 
 typedef struct Contents_r Contents;
 
-typedef struct _T8_a _T8;
+typedef struct _T7_a _T7;
 
-typedef struct _T11_a _T11;
+typedef struct _T10_a _T10;
 
-typedef _T6 *Indexing_Index;
+typedef _T5 *Indexing_Index;
 
-typedef _T7 *mcComment_commentDesc;
+typedef _T6 *mcComment_commentDesc;
 
 extern mcComment_commentDesc mcLexBuf_currentcomment;
 extern mcComment_commentDesc mcLexBuf_lastcomment;
 typedef stringRecord *DynamicStrings_String;
 
-typedef _T10 *wlists_wlist;
+typedef _T9 *wlists_wlist;
 
-typedef _T13 *mcPretty_pretty;
+typedef _T12 *mcPretty_pretty;
 
 typedef void (*mcPretty_writeProc_t) (char);
 struct mcPretty_writeProc_p { mcPretty_writeProc_t proc; };
 
-struct _T9_r {
+struct _T8_r {
                nameKey_Name name;
                void *key;
                symbolKey_symbolTree left;
@@ -329,7 +330,7 @@ struct mcPretty_writeLnProc_p { mcPretty_writeLnProc_t proc; };
 typedef void (*symbolKey_performOperation_t) (void *);
 struct symbolKey_performOperation_p { symbolKey_performOperation_t proc; };
 
-struct _T15_a { void * array[MaxnoOfelements-1+1]; };
+struct _T14_a { void * array[MaxnoOfelements-1+1]; };
 typedef void (*Indexing_IndexProcedure_t) (void *);
 struct Indexing_IndexProcedure_p { Indexing_IndexProcedure_t proc; };
 
@@ -368,7 +369,7 @@ typedef libc_exitP_t libc_exitP_C;
 
 struct libc_exitP_p { libc_exitP_t proc; };
 
-struct _T12_r {
+struct _T11_r {
                 mcError_error parent;
                 mcError_error child;
                 mcError_error next;
@@ -644,7 +645,7 @@ struct cnameT_r {
                   unsigned int init;
                 };
 
-struct _T6_r {
+struct _T5_r {
                void *ArrayStart;
                unsigned int ArraySize;
                unsigned int Used;
@@ -654,18 +655,18 @@ struct _T6_r {
                unsigned int Map;
              };
 
-struct _T7_r {
+struct _T6_r {
                commentType type;
                DynamicStrings_String content;
                nameKey_Name procName;
                unsigned int used;
              };
 
-struct _T8_a { char array[(MaxBuf-1)+1]; };
-struct _T11_a { unsigned int array[maxNoOfElements-1+1]; };
-struct _T14_r {
+struct _T7_a { char array[(MaxBuf-1)+1]; };
+struct _T10_a { unsigned int array[maxNoOfElements-1+1]; };
+struct _T13_r {
                 unsigned int noOfelements;
-                _T15 elements;
+                _T14 elements;
                 alists_alist next;
               };
 
@@ -825,13 +826,13 @@ struct impT_r {
                 commentPair com;
               };
 
-struct _T10_r {
-                unsigned int noOfElements;
-                _T11 elements;
-                wlists_wlist next;
-              };
+struct _T9_r {
+               unsigned int noOfElements;
+               _T10 elements;
+               wlists_wlist next;
+             };
 
-struct _T13_r {
+struct _T12_r {
                 mcPretty_writeProc write_;
                 mcPretty_writeLnProc writeln;
                 unsigned int needsSpace;
@@ -844,7 +845,7 @@ struct _T13_r {
               };
 
 struct Contents_r {
-                    _T8 buf;
+                    _T7 buf;
                     unsigned int len;
                     DynamicStrings_String next;
                   };
@@ -873,63 +874,63 @@ struct DebugInfo_r {
                      void *proc;
                    };
 
-struct _T5_r {
-               nodeT kind;  /* case tag */
-               union {
-                       intrinsicT intrinsicF;
-                       explistT explistF;
-                       exitT exitF;
-                       returnT returnF;
-                       stmtT stmtF;
-                       commentT commentF;
-                       typeT typeF;
-                       recordT recordF;
-                       varientT varientF;
-                       varT varF;
-                       enumerationT enumerationF;
-                       subrangeT subrangeF;
-                       subscriptT subscriptF;
-                       arrayT arrayF;
-                       stringT stringF;
-                       constT constF;
-                       literalT literalF;
-                       varparamT varparamF;
-                       paramT paramF;
-                       varargsT varargsF;
-                       optargT optargF;
-                       pointerT pointerF;
-                       recordfieldT recordfieldF;
-                       varientfieldT varientfieldF;
-                       enumerationfieldT enumerationfieldF;
-                       setT setF;
-                       proctypeT proctypeF;
-                       procedureT procedureF;
-                       defT defF;
-                       impT impF;
-                       moduleT moduleF;
-                       loopT loopF;
-                       whileT whileF;
-                       forT forF;
-                       repeatT repeatF;
-                       caseT caseF;
-                       caselabellistT caselabellistF;
-                       caselistT caselistF;
-                       rangeT rangeF;
-                       ifT ifF;
-                       elsifT elsifF;
-                       assignmentT assignmentF;
-                       arrayrefT arrayrefF;
-                       pointerrefT pointerrefF;
-                       componentrefT componentrefF;
-                       binaryT binaryF;
-                       unaryT unaryF;
-                       identlistT identlistF;
-                       vardeclT vardeclF;
-                       funccallT funccallF;
-                       setvalueT setvalueF;
-                     };
-               where at;
-             };
+struct nodeRec_r {
+                   nodeT kind;  /* case tag */
+                   union {
+                           intrinsicT intrinsicF;
+                           explistT explistF;
+                           exitT exitF;
+                           returnT returnF;
+                           stmtT stmtF;
+                           commentT commentF;
+                           typeT typeF;
+                           recordT recordF;
+                           varientT varientF;
+                           varT varF;
+                           enumerationT enumerationF;
+                           subrangeT subrangeF;
+                           subscriptT subscriptF;
+                           arrayT arrayF;
+                           stringT stringF;
+                           constT constF;
+                           literalT literalF;
+                           varparamT varparamF;
+                           paramT paramF;
+                           varargsT varargsF;
+                           optargT optargF;
+                           pointerT pointerF;
+                           recordfieldT recordfieldF;
+                           varientfieldT varientfieldF;
+                           enumerationfieldT enumerationfieldF;
+                           setT setF;
+                           proctypeT proctypeF;
+                           procedureT procedureF;
+                           defT defF;
+                           impT impF;
+                           moduleT moduleF;
+                           loopT loopF;
+                           whileT whileF;
+                           forT forF;
+                           repeatT repeatF;
+                           caseT caseF;
+                           caselabellistT caselabellistF;
+                           caselistT caselistF;
+                           rangeT rangeF;
+                           ifT ifF;
+                           elsifT elsifF;
+                           assignmentT assignmentF;
+                           arrayrefT arrayrefF;
+                           pointerrefT pointerrefF;
+                           componentrefT componentrefF;
+                           binaryT binaryF;
+                           unaryT unaryF;
+                           identlistT identlistF;
+                           vardeclT vardeclF;
+                           funccallT funccallF;
+                           setvalueT setvalueF;
+                         };
+                   where at;
+                 };
 
 struct stringRecord_r {
                         Contents contents;
@@ -2737,6 +2738,8 @@ extern "C" unsigned int mcOptions_getDebugTopological (void);
 extern "C" DynamicStrings_String mcOptions_getHPrefix (void);
 extern "C" unsigned int mcOptions_getIgnoreFQ (void);
 extern "C" unsigned int mcOptions_getGccConfigSystem (void);
+extern "C" unsigned int mcOptions_getScaffoldDynamic (void);
+extern "C" unsigned int mcOptions_getScaffoldMain (void);
 extern "C" void mcOptions_writeGPLheader (FIO_File f);
 extern "C" DynamicStrings_String FormatStrings_Sprintf0 (DynamicStrings_String fmt);
 extern "C" DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String fmt, const unsigned char *w_, unsigned int _w_high);
@@ -6174,7 +6177,31 @@ static void populateTodo (nodeProcedure p);
 static void topologicallyOut (nodeProcedure c, nodeProcedure t, nodeProcedure v, nodeProcedure tp, nodeProcedure pc, nodeProcedure pt, nodeProcedure pv);
 
 /*
-   outImpInitC -
+   scaffoldStatic -
+*/
+
+static void scaffoldStatic (mcPretty_pretty p, decl_node n);
+
+/*
+   emitCtor -
+*/
+
+static void emitCtor (mcPretty_pretty p, decl_node n);
+
+/*
+   scaffoldDynamic -
+*/
+
+static void scaffoldDynamic (mcPretty_pretty p, decl_node n);
+
+/*
+   scaffoldMain -
+*/
+
+static void scaffoldMain (mcPretty_pretty p, decl_node n);
+
+/*
+   outImpInitC - emit the init/fini functions and main function if required.
 */
 
 static void outImpInitC (mcPretty_pretty p, decl_node n);
@@ -6616,8 +6643,11 @@ static decl_node newNode (nodeT k)
 {
   decl_node d;
 
-  Storage_ALLOCATE ((void **) &d, sizeof (_T5));
-  d = static_cast<decl_node> (libc_memset (reinterpret_cast<void *> (d), 0, static_cast<size_t> (sizeof (decl_node))));
+  Storage_ALLOCATE ((void **) &d, sizeof (nodeRec));
+  if (enableMemsetOnAllocation)
+    {
+      d = static_cast<decl_node> (libc_memset (reinterpret_cast<void *> (d), 0, static_cast<size_t> (sizeof ((*d)))));
+    }
   if (d == NULL)
     {
       M2RTS_HALT (-1);
@@ -6642,7 +6672,7 @@ static decl_node newNode (nodeT k)
 
 static void disposeNode (decl_node *n)
 {
-  Storage_DEALLOCATE ((void **) &(*n), sizeof (_T5));
+  Storage_DEALLOCATE ((void **) &(*n), sizeof (nodeRec));
   (*n) = NULL;
 }
 
@@ -20010,10 +20040,10 @@ static void topologicallyOut (nodeProcedure c, nodeProcedure t, nodeProcedure v,
 
 
 /*
-   outImpInitC -
+   scaffoldStatic -
 */
 
-static void outImpInitC (mcPretty_pretty p, decl_node n)
+static void scaffoldStatic (mcPretty_pretty p, decl_node n)
 {
   outText (p, (const char *) "\\n", 2);
   doExternCP (p);
@@ -20039,6 +20069,139 @@ static void outImpInitC (mcPretty_pretty p, decl_node n)
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->impF.finallyStatements);
   p = outKc (p, (const char *) "}\\n", 3);
+}
+
+
+/*
+   emitCtor -
+*/
+
+static void emitCtor (mcPretty_pretty p, decl_node n)
+{
+  DynamicStrings_String s;
+
+  outText (p, (const char *) "\\n", 2);
+  outText (p, (const char *) "static void", 11);
+  mcPretty_setNeedSpace (p);
+  outText (p, (const char *) "ctorFunction ()\\n", 17);
+  doFQNameC (p, n);
+  p = outKc (p, (const char *) "{\\n", 3);
+  outText (p, (const char *) "M2RTS_RegisterModule (\"", 23);
+  s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
+  mcPretty_prints (p, s);
+  outText (p, (const char *) "\",\\n", 4);
+  outText (p, (const char *) "init, fini, dependencies);\\n", 28);
+  p = outKc (p, (const char *) "}\\n\\n", 5);
+  p = outKc (p, (const char *) "struct ", 7);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2 { ", 13);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2 (); ~", 16);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2 (); } global_module_", 31);
+  mcPretty_prints (p, s);
+  outText (p, (const char *) ";\\n\\n", 5);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2::", 12);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2 ()\\n", 15);
+  p = outKc (p, (const char *) "{\\n", 3);
+  outText (p, (const char *) "M2RTS_RegisterModule (\"", 23);
+  mcPretty_prints (p, s);
+  outText (p, (const char *) "\", init, fini, dependencies);", 29);
+  p = outKc (p, (const char *) "}\\n", 3);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2::~", 13);
+  mcPretty_prints (p, s);
+  p = outKc (p, (const char *) "_module_m2 ()\\n", 15);
+  p = outKc (p, (const char *) "{\\n", 3);
+  p = outKc (p, (const char *) "}\\n", 3);
+  s = DynamicStrings_KillString (s);
+}
+
+
+/*
+   scaffoldDynamic -
+*/
+
+static void scaffoldDynamic (mcPretty_pretty p, decl_node n)
+{
+  outText (p, (const char *) "\\n", 2);
+  doExternCP (p);
+  outText (p, (const char *) "void", 4);
+  mcPretty_setNeedSpace (p);
+  outText (p, (const char *) "_M2_", 4);
+  doFQNameC (p, n);
+  outText (p, (const char *) "_init", 5);
+  mcPretty_setNeedSpace (p);
+  outText (p, (const char *) "(__attribute__((unused)) int argc,", 34);
+  outText (p, (const char *) " __attribute__((unused)) char *argv[],", 38);
+  outText (p, (const char *) " __attribute__((unused)) char *envp[])\\n", 40);
+  p = outKc (p, (const char *) "{\\n", 3);
+  doStatementsC (p, n->impF.beginStatements);
+  p = outKc (p, (const char *) "}\\n", 3);
+  outText (p, (const char *) "\\n", 2);
+  doExternCP (p);
+  outText (p, (const char *) "void", 4);
+  mcPretty_setNeedSpace (p);
+  outText (p, (const char *) "_M2_", 4);
+  doFQNameC (p, n);
+  outText (p, (const char *) "_fini", 5);
+  mcPretty_setNeedSpace (p);
+  outText (p, (const char *) "(__attribute__((unused)) int argc,", 34);
+  outText (p, (const char *) " __attribute__((unused)) char *argv[],", 38);
+  outText (p, (const char *) " __attribute__((unused)) char *envp[])\\n", 40);
+  p = outKc (p, (const char *) "{\\n", 3);
+  doStatementsC (p, n->impF.finallyStatements);
+  p = outKc (p, (const char *) "}\\n", 3);
+  emitCtor (p, n);
+}
+
+
+/*
+   scaffoldMain -
+*/
+
+static void scaffoldMain (mcPretty_pretty p, decl_node n)
+{
+  DynamicStrings_String s;
+
+  outText (p, (const char *) "int\\n", 5);
+  outText (p, (const char *) "main", 4);
+  mcPretty_setNeedSpace (p);
+  outText (p, (const char *) "(int argc, char *argv[], char *envp[])\\n", 40);
+  p = outKc (p, (const char *) "{\\n", 3);
+  outText (p, (const char *) "M2RTS_ConstructModules (", 24);
+  s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
+  mcPretty_prints (p, s);
+  outText (p, (const char *) ", argc, argv, envp);\\n", 22);
+  outText (p, (const char *) "M2RTS_DeconstructModules (", 26);
+  mcPretty_prints (p, s);
+  outText (p, (const char *) ", argc, argv, envp);\\n", 22);
+  outText (p, (const char *) "return 0;", 9);
+  p = outKc (p, (const char *) "}\\n", 3);
+  s = DynamicStrings_KillString (s);
+}
+
+
+/*
+   outImpInitC - emit the init/fini functions and main function if required.
+*/
+
+static void outImpInitC (mcPretty_pretty p, decl_node n)
+{
+  if (mcOptions_getScaffoldDynamic ())
+    {
+      scaffoldDynamic (p, n);
+    }
+  else
+    {
+      scaffoldStatic (p, n);
+    }
+  if (mcOptions_getScaffoldMain ())
+    {
+      scaffoldMain (p, n);
+    }
 }
 
 

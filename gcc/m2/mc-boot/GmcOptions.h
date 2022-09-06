@@ -116,6 +116,18 @@ EXTERN unsigned int mcOptions_getIgnoreFQ (void);
 EXTERN unsigned int mcOptions_getGccConfigSystem (void);
 
 /*
+   getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
+*/
+
+EXTERN unsigned int mcOptions_getScaffoldDynamic (void);
+
+/*
+   getScaffoldMain - return true if the --scaffold-main option was present.
+*/
+
+EXTERN unsigned int mcOptions_getScaffoldMain (void);
+
+/*
    writeGPLheader - writes out the GPL or the GLPL as a comment.
 */
 

@@ -44,6 +44,8 @@ VAR
    glplHeader,
    summary,
    contributed,
+   scaffoldMain,
+   scaffoldDynamic,
    caseRuntime,
    arrayRuntime,
    returnRuntime,
@@ -117,6 +119,8 @@ BEGIN
    printf0 ('  --contributed="foo" generate a one line contribution comment near the top of the file\n') ;
    printf0 ('  --project="foo"     include the project name within the GPL3 or GLPL3 header\n') ;
    printf0 ('  --automatic         generate a comment at the start of the file warning not to edit as it was automatically generated\n') ;
+   printf0 ('  --scaffold-dynamic  generate dynamic module initialization code for C++\n') ;
+   printf0 ('  --scaffold-main     generate main function which calls upon the dynamic initialization support in M2RTS\n') ;
    printf0 ("  filename            the source file must be the last option\n") ;
    exit (0)
 END displayHelp ;
@@ -512,6 +516,26 @@ END getGccConfigSystem ;
 
 
 (*
+   getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
+*)
+
+PROCEDURE getScaffoldDynamic () : BOOLEAN ;
+BEGIN
+   RETURN scaffoldDynamic
+END getScaffoldDynamic ;
+
+
+(*
+   getScaffoldMain - return true if the --scaffold-main option was present.
+*)
+
+PROCEDURE getScaffoldMain () : BOOLEAN ;
+BEGIN
+   RETURN scaffoldMain
+END getScaffoldMain ;
+
+
+(*
    optionIs - returns TRUE if the first len (right) characters
               match left.
 *)
@@ -620,6 +644,12 @@ BEGIN
    ELSIF optionIs ('--gcc-config-system', arg)
    THEN
       gccConfigSystem := TRUE
+   ELSIF optionIs ('--scaffold-main', arg)
+   THEN
+      scaffoldMain := TRUE
+   ELSIF optionIs ('--scaffold-dynamic', arg)
+   THEN
+      scaffoldDynamic := TRUE
    END
 END handleOption ;
 
@@ -676,6 +706,8 @@ BEGIN
    debugTopological := FALSE ;
    ignoreFQ := FALSE ;
    gccConfigSystem := FALSE ;
+   scaffoldMain := FALSE ;
+   scaffoldDynamic := FALSE ;
    hPrefix := InitString ('') ;
    cppArgs := InitString ('') ;
    cppProgram := InitString ('') ;

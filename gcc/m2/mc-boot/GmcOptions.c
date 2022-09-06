@@ -58,6 +58,8 @@ static unsigned int gplHeader;
 static unsigned int glplHeader;
 static unsigned int summary;
 static unsigned int contributed;
+static unsigned int scaffoldMain;
+static unsigned int scaffoldDynamic;
 static unsigned int caseRuntime;
 static unsigned int arrayRuntime;
 static unsigned int returnRuntime;
@@ -150,6 +152,18 @@ extern "C" unsigned int mcOptions_getIgnoreFQ (void);
 */
 
 extern "C" unsigned int mcOptions_getGccConfigSystem (void);
+
+/*
+   getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
+*/
+
+extern "C" unsigned int mcOptions_getScaffoldDynamic (void);
+
+/*
+   getScaffoldMain - return true if the --scaffold-main option was present.
+*/
+
+extern "C" unsigned int mcOptions_getScaffoldMain (void);
 
 /*
    writeGPLheader - writes out the GPL or the LGPL as a comment.
@@ -332,6 +346,8 @@ static void displayHelp (void)
   mcPrintf_printf0 ((const char *) "  --contributed=\"foo\" generate a one line contribution comment near the top of the file\\n", 89);
   mcPrintf_printf0 ((const char *) "  --project=\"foo\"     include the project name within the GPL3 or GLPL3 header\\n", 80);
   mcPrintf_printf0 ((const char *) "  --automatic         generate a comment at the start of the file warning not to edit as it was automatically generated\\n", 121);
+  mcPrintf_printf0 ((const char *) "  --scaffold-dynamic  generate dynamic module initialization code for C++\\n", 75);
+  mcPrintf_printf0 ((const char *) "  --scaffold-main     generate main function which calls upon the dynamic initialization support in M2RTS\\n", 107);
   mcPrintf_printf0 ((const char *) "  filename            the source file must be the last option\\n", 63);
   libc_exit (0);
 }
@@ -764,6 +780,16 @@ static void handleOption (DynamicStrings_String arg)
       /* avoid dangling else.  */
       gccConfigSystem = TRUE;
     }
+  else if (optionIs ((const char *) "--scaffold-main", 15, arg))
+    {
+      /* avoid dangling else.  */
+      scaffoldMain = TRUE;
+    }
+  else if (optionIs ((const char *) "--scaffold-dynamic", 18, arg))
+    {
+      /* avoid dangling else.  */
+      scaffoldDynamic = TRUE;
+    }
 }
 
 
@@ -953,6 +979,30 @@ extern "C" unsigned int mcOptions_getGccConfigSystem (void)
 
 
 /*
+   getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
+*/
+
+extern "C" unsigned int mcOptions_getScaffoldDynamic (void)
+{
+  return scaffoldDynamic;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   getScaffoldMain - return true if the --scaffold-main option was present.
+*/
+
+extern "C" unsigned int mcOptions_getScaffoldMain (void)
+{
+  return scaffoldMain;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    writeGPLheader - writes out the GPL or the LGPL as a comment.
 */
 
@@ -980,6 +1030,8 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribut
   debugTopological = FALSE;
   ignoreFQ = FALSE;
   gccConfigSystem = FALSE;
+  scaffoldMain = FALSE;
+  scaffoldDynamic = FALSE;
   hPrefix = DynamicStrings_InitString ((const char *) "", 0);
   cppArgs = DynamicStrings_InitString ((const char *) "", 0);
   cppProgram = DynamicStrings_InitString ((const char *) "", 0);

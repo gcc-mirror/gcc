@@ -2424,8 +2424,8 @@ BEGIN
          int
          main (int argc, char *argv[], char *envp[])
          {
-            init (argc, argv, envp);
-            finish ();
+            _M2_init (argc, argv, envp);
+            _M2_fini (argc, argv, envp);
             return 0;
          }
       *)
@@ -2442,7 +2442,7 @@ BEGIN
       PushT (3) ;
       BuildProcedureCall (tokno) ;
 
-      (* _M2_finish (argc, argv, envp);  *)
+      (* _M2_fini (argc, argv, envp);  *)
       PushTtok (finiFunction, tokno) ;
       PushTtok (RequestSym (tokno, MakeKey ("argc")), tokno) ;
       PushTtok (RequestSym (tokno, MakeKey ("argv")), tokno) ;
