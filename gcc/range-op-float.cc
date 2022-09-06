@@ -224,36 +224,79 @@ frange_drop_ninf (frange &r, tree type)
 
 // (X <= VAL) produces the range of [-INF, VAL].
 
-static void
+static bool
 build_le (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
   r.set (type, dconstninf, val);
+  return true;
 }
 
 // (X < VAL) produces the range of [-INF, VAL).
 
-static void
+static bool
 build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
+  // < -INF is outside the range.
+  if (real_isinf (&val, 1))
+    {
+      if (HONOR_NANS (type))
+	frange_set_nan (r, type);
+      else
+	r.set_undefined ();
+      return false;
+    }
   // Hijack LE because we only support closed intervals.
   build_le (r, type, val);
+  return true;
 }
 
 // (X >= VAL) produces the range of [VAL, +INF].
 
-static void
+static bool
 build_ge (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
   r.set (type, val, dconstinf);
+  return true;
 }
 
 // (X > VAL) produces the range of (VAL, +INF].
 
-static void
+static bool
 build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
+  // > +INF is outside the range.
+  if (real_isinf (&val, 0))
+    {
+      if (HONOR_NANS (type))
+	frange_set_nan (r, type);
+      else
+	r.set_undefined ();
+      return false;
+    }
+
   // Hijack GE because we only support closed intervals.
   build_ge (r, type, val);
+  return true;
 }
 
 
@@ -520,10 +563,12 @@ foperator_lt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_lt (r, type, op2.upper_bound ());
-      r.set_nan (fp_prop::NO);
-      // x < y implies x is not +INF.
-      frange_drop_inf (r, type);
+      if (build_lt (r, type, op2.upper_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x < y implies x is not +INF.
+	  frange_drop_inf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -546,10 +591,12 @@ foperator_lt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_gt (r, type, op1.lower_bound ());
-      r.set_nan (fp_prop::NO);
-      // x < y implies y is not -INF.
-      frange_drop_ninf (r, type);
+      if (build_gt (r, type, op1.lower_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x < y implies y is not -INF.
+	  frange_drop_ninf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -618,8 +665,8 @@ foperator_le::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_le (r, type, op2.upper_bound ());
-      r.set_nan (fp_prop::NO);
+      if (build_le (r, type, op2.upper_bound ()))
+	r.set_nan (fp_prop::NO);
       break;
 
     case BRS_FALSE:
@@ -642,8 +689,8 @@ foperator_le::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_ge (r, type, op1.lower_bound ());
-      r.set_nan (fp_prop::NO);
+      if (build_ge (r, type, op1.lower_bound ()))
+	r.set_nan (fp_prop::NO);
       break;
 
     case BRS_FALSE:
@@ -712,10 +759,12 @@ foperator_gt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_gt (r, type, op2.lower_bound ());
-      r.set_nan (fp_prop::NO);
-      // x > y implies x is not -INF.
-      frange_drop_ninf (r, type);
+      if (build_gt (r, type, op2.lower_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x > y implies x is not -INF.
+	  frange_drop_ninf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -738,10 +787,12 @@ foperator_gt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_lt (r, type, op1.upper_bound ());
-      r.set_nan (fp_prop::NO);
-      // x > y implies y is not +INF.
-      frange_drop_inf (r, type);
+      if (build_lt (r, type, op1.upper_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x > y implies y is not +INF.
+	  frange_drop_inf (r, type);
+	}
       break;
 
     case BRS_FALSE:
