@@ -1,3 +1,12 @@
+2022-09-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-04  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100136
+	* trans-expr.cc (gfc_conv_procedure_call): Add handling of pointer
+	expressions.
+
 2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
