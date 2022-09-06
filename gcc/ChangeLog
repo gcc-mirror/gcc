@@ -1,3 +1,308 @@
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Ignore sign bit
+	when there's the possibility of a NAN.
+
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Fold a set signbit
+	in __builtin_signbit to nonzero.
+
+2022-09-05  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/106453
+	* config/i386/i386.md (sse4_2_crc32di): Model that only low 32
+	bits of operand 0 are consumed, and the result is zero-extended
+	to 64 bits.
+
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/106831
+	* value-range.h (frange::supports_p): Disable decimal floats.
+	* range-op-float.cc (frange_drop_inf): Remove DECIMAL_FLOAT_MODE_P
+	check.
+	(frange_drop_ninf): Same.
+
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/106824
+	* value-range.cc (frange::set_nan): Set undefined when updating a
+	NAN to a non-NAN.
+
+2022-09-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_option_override): Fix wrong
+	condition for MASK_DIV and simplify incompatible checking.
+	* config/riscv/riscv.md (muldi3): Adding parentheses.
+
+2022-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_validate_march): Check if invalid arch
+	string is a valid -mcpu string and emit hint.
+
+2022-09-05  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: Add Zmmul.
+	* config/riscv/riscv-opts.h (MASK_ZMMUL): New.
+	(TARGET_ZMMUL): Ditto.
+	* config/riscv/riscv.cc (riscv_option_override):Ditto.
+	* config/riscv/riscv.md: Add Zmmul
+	* config/riscv/riscv.opt: Ditto.
+
+2022-09-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.h (get_cases_for_edge): Declare.
+	* tree-cfg.cc (get_cases_for_edge): Export.
+	* tree-ssa-uninit.cc (execute_late_warn_uninitialized):
+	Start and end recording case labels.
+	* gimple-predicate-analysis.cc (MAX_SWITCH_CASES): Remove.
+	(predicate::init_from_control_deps): Use get_cases_for_edge.
+
+2022-09-05  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (MAX_POSTDOM_CHECK): Remove.
+	(compute_control_dep_chain): Move uninit-control-dep-attempts
+	checking where it also counts the post-dominator check
+	invocations.
+
+2022-09-05  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h (predicate::debug): New.
+	(predicate::dump): Add FILE * argument, add base overload.
+	* gimple-predicate-analysis.cc (debug): New.
+	(dump_pred_info): Add FILE * argument.
+	(dump_pred_chain): Likewise.
+	(predicate::dump): Split out preamble into overload.  Add
+	FILE * argument.
+	(predicate::debug): New.
+	(predicate::simplify): Adjust.
+	(predicate::normalize): Likewise.
+	(predicate::init_from_control_deps): Likewise.
+
+2022-09-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_init_simd_builtins): Remove prototype.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_simd_builtins_initialized_p): Delete.
+	(aarch64_init_simd_builtins): Make static.  Remove protection
+	against multiple calls.
+	* config/aarch64/aarch64-c.cc (aarch64_pragma_target_parse): Remove
+	lazy SIMD builtin initialization.
+	* config/aarch64/aarch64.cc
+	(aarch64_option_valid_attribute_p): Likewise.
+
+2022-09-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/loongarch.opt.in: Add
+	-mdirect-extern-access option.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.cc
+	(loongarch_symbol_binds_local_p): Return true if
+	TARGET_DIRECT_EXTERN_ACCESS.
+	(loongarch_option_override_internal): Complain if
+	-mdirect-extern-access is used with -fPIC or -fpic.
+	* doc/invoke.texi: Document -mdirect-extern-access for
+	LoongArch.
+
+2022-09-05  Martin Liska  <mliska@suse.cz>
+
+	* doc/tm.texi.in: Rename DEBUGGER_REGISTER_NUMBER to
+	  DEBUGGER_REGNO.
+	* doc/tm.texi: Regenerate.
+
+2022-09-05  Martin Liska  <mliska@suse.cz>
+
+	* config/aarch64/aarch64-protos.h (aarch64_dbx_regno):
+	Rename DBX_REGISTER_NUMBER to DEBUGGER_REGNO.
+	(aarch64_debugger_regno): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_dbx_regno): Likewise.
+	(aarch64_debugger_regno): Likewise.
+	* config/aarch64/aarch64.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(DWARF_FRAME_REGNUM): Likewise.
+	* config/alpha/alpha.h (DWARF_FRAME_REGNUM): Likewise.
+	* config/arc/arc.cc (arc_init_reg_tables): Likewise.
+	* config/arc/arc.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/arm/arm-protos.h (arm_dbx_regno): Likewise.
+	(arm_debugger_regno): Likewise.
+	* config/arm/arm.cc (arm_dbx_regno): Likewise.
+	(arm_debugger_regno): Likewise.
+	* config/arm/arm.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/bfin/bfin.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/c6x/c6x.cc: Likewise.
+	* config/c6x/c6x.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/cris/cris.h (enum reg_class): Likewise.
+	(DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/csky/csky.cc (enum reg_class): Likewise.
+	* config/csky/csky.h (DWARF_FRAME_REGNUM): Likewise.
+	(DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/frv/frv.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/gcn/gcn-hsa.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/gcn/gcn.cc (print_operand): Likewise.
+	* config/i386/bsd.h (ASM_QUAD): Likewise.
+	* config/i386/cygming.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(DWARF_FRAME_REGNUM): Likewise.
+	* config/i386/darwin.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/djgpp.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/dragonfly.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/freebsd.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/gas.h: Likewise.
+	* config/i386/gnu-user.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/i386.cc (enum reg_class): Likewise.
+	* config/i386/i386.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/i386elf.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/iamcu.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/lynx.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/netbsd-elf.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/nto.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/openbsdelf.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/sysv4.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/vxworks.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/i386/x86-64.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/ia64/ia64-protos.h (ia64_dbx_regno): Likewise.
+	(ia64_debugger_regno): Likewise.
+	* config/ia64/ia64.cc (ia64_output_function_prologue): Likewise.
+	(ia64_dbx_regno): Likewise.
+	(ia64_debugger_regno): Likewise.
+	(process_cfa_adjust_cfa): Likewise.
+	(process_cfa_register): Likewise.
+	(ia64_asm_unwind_emit): Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ia64/sysv4.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/lm32/lm32.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/m32c/m32c.cc (m32c_eh_return_stackadj_rtx): Likewise.
+	* config/m32c/m32c.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/m68k/linux.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/m68k/m68k.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(__transfer_from_trampoline): Likewise.
+	* config/m68k/m68kelf.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/m68k/netbsd-elf.h (M68K_STATIC_CHAIN_REG_NAME): Likewise.
+	(DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/microblaze/microblaze.cc (microblaze_option_override): Likewise.
+	* config/microblaze/microblaze.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(GP_DBX_FIRST): Likewise.
+	(GP_DEBUGGER_FIRST): Likewise.
+	* config/mips/vxworks.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/mmix/mmix-protos.h (mmix_dbx_regno): Likewise.
+	(mmix_debugger_regno): Likewise.
+	* config/mmix/mmix.cc (mmix_dbx_regno): Likewise.
+	(mmix_debugger_regno): Likewise.
+	* config/mmix/mmix.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/nds32/nds32-protos.h (nds32_dbx_regno): Likewise.
+	(nds32_debugger_regno): Likewise.
+	* config/nds32/nds32.cc (nds32_dbx_regno): Likewise.
+	(nds32_debugger_regno): Likewise.
+	(nds32_use_blocks_for_constant_p): Likewise.
+	* config/nds32/nds32.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/nvptx/nvptx.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/or1k/or1k.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/pa/pa32-regs.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/pa/pa64-regs.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_dbx_regno): Likewise.
+	(rs6000_debugger_regno): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_dbx_regno): Likewise.
+	(rs6000_debugger_regno): Likewise.
+	* config/rs6000/rs6000.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(DWARF2_FRAME_REG_OUT): Likewise.
+	* config/s390/s390.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/sh/elf.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/sh/linux.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/sh/sh.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(SH_DBX_REGISTER_NUMBER): Likewise.
+	(SH_DEBUGGER_REGNO): Likewise.
+	* config/visium/visium.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/xtensa/elf.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/xtensa/linux.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/xtensa/uclinux.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* config/xtensa/xtensa-protos.h (xtensa_dbx_regno): Likewise.
+	(xtensa_debugger_regno): Likewise.
+	* config/xtensa/xtensa.cc (xtensa_dbx_regno): Likewise.
+	(xtensa_debugger_regno): Likewise.
+	* config/xtensa/xtensa.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	* defaults.h (DBX_REGISTER_NUMBER): Likewise.
+	(DEBUGGER_REGNO): Likewise.
+	(DWARF_FRAME_REGNUM): Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* dwarf2out.cc (dbx_reg_number): Likewise.
+	(debugger_reg_number): Likewise.
+	(reg_loc_descriptor): Likewise.
+	(multiple_reg_loc_descriptor): Likewise.
+	(mem_loc_descriptor): Likewise.
+	* except.cc: Likewise.
+
+2022-09-05  konglin1  <lingling.kong@intel.com>
+
+	PR target/106742
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
+	Handle V8BF mode.
+	(expand_vec_perm_broadcast_1): Ditto.
+	* config/i386/sse.md (avx512fmaskhalfmode): Add BF vector mode.
+	(vec_set<mode>_0): Add @ to it.
+	(@vec_set<mode>_0): Ditto.
+	(vec_interleave_high<mode><mask_name>): Ditto.
+	(@vec_interleave_high<mode><mask_name>): Ditto.
+	(vec_interleave_low<mode><mask_name>): Ditto.
+	(@vec_interleave_low<mode><mask_name>): Ditto.
+	* config/i386/subst.md (SUBST_V): Add BF vector mode.
+
+2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (early_nan_resolve): Remove.
+	(frange::intersect): Handle NANs.
+
 2022-09-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (frange::union_): Do not drop properties when

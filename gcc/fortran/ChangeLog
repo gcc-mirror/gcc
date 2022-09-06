@@ -1,3 +1,29 @@
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist, show_omp_clauses): Handle
+	omp_cur_iteration and distinguish doacross/depend.
+	* gfortran.h (enum gfc_omp_depend_doacross_op): Renamed from
+	gfc_omp_depend_op.
+	(enum gfc_omp_depend_doacross_op): Add OMP_DOACROSS_SINK_FIRST,
+	Rename OMP_DEPEND_SINK to OMP_DOACROSS_SINK.
+	(gfc_omp_namelist) Handle renaming, rename depend_op to
+	depend_doacross_op.
+	(struct gfc_omp_clauses): Add doacross_source.
+	* openmp.cc (gfc_match_omp_depend_sink): Renamed to ...
+	(gfc_match_omp_doacross_sink): ... this; handle omp_all_memory.
+	(enum omp_mask2): Add OMP_CLAUSE_DOACROSS.
+	(gfc_match_omp_clauses): Handle 'doacross' and syntax changes to
+	depend.
+	(gfc_match_omp_depobj): Simplify as sink/source are now impossible.
+	(gfc_match_omp_ordered_depend): Request OMP_CLAUSE_DOACROSS.
+	(resolve_omp_clauses): Update sink/source checks.
+	(gfc_resolve_omp_directive): Resolve EXEC_OMP_ORDERED clauses.
+	* parse.cc (decode_omp_directive): Handle 'ordered doacross'.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle doacross.
+	(gfc_trans_omp_do): Fix OMP_FOR_ORIG_DECLS handling if 'ordered'
+	clause is present.
+	(gfc_trans_omp_depobj): Update for member name change.
+
 2022-09-04  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100136

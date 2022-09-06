@@ -1,3 +1,242 @@
+2022-09-05  Martin Liska  <mliska@suse.cz>
+
+	* sigtramp-vxworks-target.h: Rename DBX_REGISTER_NUMBER to
+	  DEBUGGER_REGNO.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Check_Bounds): Move code and comment related to
+	check for null array aggregate from Resolve_Null_Array_Aggregate.
+	* sem_aggr.ads (Is_Null_Aggregate): Move spec from unit body.
+	* sem_aggr.adb (Resolve_Null_Array_Aggregate): Move check to
+	expansion.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb
+	(Array_Aggr_Subtype): Bypass call to Collect_Aggr_Bound with
+	dedicated code for null array aggregates.
+	(Resolve_Array_Aggregate): Remove special handling of null array
+	aggregates.
+	(Resolve_Array_Aggregate): Create bounds, but let
+	Array_Aggr_Subtype create itype entities.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Null_Array_Aggregate): Insert check as a
+	Raise_Constraint_Error node and not an If_Statement.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb
+	(Resolve_Container_Aggregate): Style cleanup.
+	(Resolve_Record_Aggregate): Remove redundant guard.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.ads (Entry_Names_OK): Remove spec.
+	* exp_util.adb (Entry_Names_OK): Remove body.
+
+2022-09-05  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-coinve.adb, libgnat/a-convec.adb
+	(Append): If the Append that takes an Element and a Count is
+	called with Count = 1, then call the Append that does not take a
+	Count parameter; otherwise call the code that handles the general
+	case. Move the special case detection/handling code that was
+	formerly in that version of Append into the version that does not
+	take a Count parameter, so that now both versions get the
+	performance benefit.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Null_Array_Aggregate): Create internal
+	type for the aggregate as an itype.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Itype_Has_Declaration): Remove spec.
+	* sem_util.adb (Itype_Has_Declaration): Remove body.
+
+2022-09-05  Steve Baird  <baird@adacore.com>
+
+	* exp_ch3.adb
+	(Expand_N_Object_Declaration): In deciding whether to emit a DIC
+	check, we were previously testing the Has_Init_Expression flag.
+	Continue to test that flag as before, but add a test for the
+	syntactic presence of an initial value in the object declaration.
+	This new test would not supersede the old test in the case where
+	an explicit initial value has been eliminated as part of some tree
+	transformation.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Validate_Unchecked_Conversions): Use
+	Has_Warnings_Off.
+	* sem_elab.adb (Check_Internal_Call_Continue): Likewise.
+
+2022-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Decimal_Digits): Consistently avoid
+	initializing local variables.
+	(Scan_Integral_Digits): Likewise.
+	(Scan_Raw_Real): Likewise and add a couple of comments.
+
+2022-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Freeze_Entity_Checks): Build predicate functions
+	only after checking the variant part of a record type, if any.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb
+	(Two_Pass_Aggregate_Expansion): Expand into implicit rather than
+	ordinary loops, to detect violations of restriction
+	No_Implicit_Loops.
+	(Generate_Loop): Likewise for delta array aggregates.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Two_Pass_Aggregate_Expansion): Expand iterated
+	component association with an unanalyzed copy of iterated
+	expression. The previous code worked only because the expanded
+	loop used both an analyzed copy of the iterator_specification and
+	an analyzed copy of the iterated expression. Now the iterated
+	expression is reanalyzed in the context of the expanded loop.
+	* par-ch4.adb (Build_Iterated_Component_Association): Don't set
+	defining identifier when iterator specification is present.
+	* sem_aggr.adb (Resolve_Iterated_Association): Pick index name
+	from the iterator specification.
+	* sem_elab.adb (Traverse_Potential_Scenario): Handle iterated
+	element association just like iterated component association. Not
+	strictly part of this fix, but still worth for the completeness.
+	* sem_res.adb (Resolve): Pick index name from the iterator
+	specification, when present.
+	* sem_util.adb (Traverse_More): For completeness, just like the
+	change in Traverse_Potential_Scenario.
+	* sinfo.ads
+	(ITERATED_COMPONENT_ASSOCIATION): Fix and complete description.
+	(ITERATED_ELEMENT_ASSOCIATION): Likewise.
+
+2022-09-05  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb
+	(Analyze_Subprogram_Body_Helper): Use First_Real_Statement to deal
+	with this case. Note that First_Real_Statement is likely to be
+	removed as part of this ticket, so this is a temporary fix.
+
+2022-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali.adb (Scan_ALI): Special case i-c*.ali when setting
+	Sec_Stack_Used.
+
+2022-09-05  Bob Duff  <duff@adacore.com>
+
+	* par-ch5.adb
+	(P_Sequence_Of_Statements): Call Error_Msg_GNAT_Extension to give
+	the error message.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Split
+	processing of cases with and without iterator specification; reuse
+	analysis of iterator specification; improve diagnostics for
+	premature usage of iterator index in discrete choices.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Check_Subtype_Definition): Remove redundant call to
+	Present; style cleanup.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Change an inconsistent
+	use of False into its local equivalent Failure.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Change
+	generic name Ent to a more intuitive Scop; rename Remove_Ref to
+	Remove_Reference, so it can be instantiated as a traversal routine
+	with plural name.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb
+	(Is_Empty_Range): Move error reporting to the caller.
+	(Analyze_Qualified_Expression): Move error reporting from Is_Empty_Range;
+	add matching call to End_Scope before rewriting and returning.
+
+2022-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): Check for Check_Elaboration_Flags.
+	* bindusg.adb (Display): Add -k.
+	* opt.ads (Check_Elaboration_Flags): New.
+	* switch-b.adb (Scan_Binder_Switches): Add processing of -k.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add
+	documentation for -k and -K.
+	* gnat_ugn.texi: Regenerate.
+
+2022-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* treepr.adb: Remove local To_Lower and use the procedure
+	version instead.
+
+2022-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.ads (Delaying Evaluation of Aspect): Fix typos.
+	* exp_ch3.adb (Freeze_Type): Do not generate Invariant and DIC
+	procedures for internal types.
+	* exp_util.adb (Build_DIC_Procedure_Body): Adjust comment.
+	* freeze.adb (Freeze_Entity): Call Inherit_Delayed_Rep_Aspects for
+	subtypes and derived types only after the base or parent type has
+	been frozen.  Remove useless freezing for first subtype.
+	(Freeze_Fixed_Point_Type): Call Inherit_Delayed_Rep_Aspects too.
+	* layout.adb (Set_Elem_Alignment): Deal with private types.
+	* sem_ch3.adb (Build_Derived_Enumeration_Type): Build the implicit
+	base as an itype and do not insert its declaration in the tree.
+	(Build_Derived_Numeric_Type): Do not freeze the implicit base.
+	(Derived_Standard_Character): Likewise.
+	(Constrain_Enumeration): Inherit the chain of representation items
+	instead of replacing it.
+	* sem_ch13.ads (Inherit_Aspects_At_Freeze_Point): Add ??? comment.
+	(Inherit_Delayed_Rep_Aspects): Declare.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Do not invoke
+	Inherit_Delayed_Rep_Aspects.
+	(Inherit_Aspects_At_Freeze_Point): Deal with private types.
+	(Inherit_Delayed_Rep_Aspects): Move to library level.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo-utils.adb (Number_Entries): Refine type of a local variable.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Rename Conctyp to
+	Prottyp; refactor repeated calls to New_Occurrence_Of; replace
+	Number_Entries with Has_Entries.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Likewise; remove Subprg
+	variable (apparently copy-pasted from expansion of the attribute).
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Fix detection of the
+	enclosing protected type and of the enclosing protected subprogram.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Likewise.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Freeze_Itype): Remove excessive guard.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Likewise.
+
+2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Handle iterator_specification within
+	iterated_component_association and iterator_filter within
+	iterator_specification.
+
+2022-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Fix rest syntax
+	* gnat_ugn.texi: Regenerate.
+
 2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.adb (Expand_Subtype_From_Expr): Be prepared for

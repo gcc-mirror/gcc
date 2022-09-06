@@ -1,3 +1,15 @@
+2022-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__success_type, __failure_type): Move
+	definitions later in the file.
+
+2022-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_trivial_v, is_trivially_copyable_v)
+	(is_standard_layout_v, is_pod_v, is_literal_type_v): Use
+	built-in instead of class template.
+	(is_same_v): Add partial specialization for true case.
+
 2022-09-02  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/tuple (tuple::_UseOtherCtor): Use ::type when
