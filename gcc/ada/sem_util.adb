@@ -531,7 +531,7 @@ package body Sem_Util is
 
       --  Local variables
 
-      E   : Entity_Id := Original_Node (Expr);
+      E   : Node_Id := Original_Node (Expr);
       Pre : Node_Id;
 
    --  Start of processing for Accessibility_Level
@@ -777,8 +777,18 @@ package body Sem_Util is
 
          --  We don't handle function calls in prefix notation correctly ???
 
-         when N_Indexed_Component | N_Selected_Component =>
-            Pre := Original_Node (Prefix (E));
+         when N_Indexed_Component | N_Selected_Component | N_Slice =>
+            Pre := Prefix (E);
+
+            --  Fetch the original node when the prefix comes from the result
+            --  of expanding a function call since we want to find the level
+            --  of the original source call.
+
+            if not Comes_From_Source (Pre)
+              and then Nkind (Original_Node (Pre)) = N_Function_Call
+            then
+               Pre := Original_Node (Pre);
+            end if;
 
             --  When E is an indexed component or selected component and
             --  the current Expr is a function call, we know that we are
