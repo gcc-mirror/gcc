@@ -1077,7 +1077,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      if (dump_file)
 		fprintf (dump_file, "param_uninit_control_dep_attempts "
 			 "exceeded: %u\n", *num_calls);
-	      return false;
+	      break;
 	    }
 	  ++*num_calls;
 
