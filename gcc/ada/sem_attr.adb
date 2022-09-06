@@ -7399,10 +7399,19 @@ package body Sem_Attr is
          if Comes_From_Source (N) then
             Check_Object_Reference (P);
 
+            --  Attribute 'Valid_Scalars is illegal on unchecked union types
+            --  regardles of the privacy, because it is not always guaranteed
+            --  that the components are retrievable based on whether the
+            --  discriminants are inferable.
+
+            if Has_Unchecked_Union (Validated_View (P_Type)) then
+               Error_Attr_P
+                 ("attribute % not allowed for Unchecked_Union type");
+
             --  Do not emit any diagnostics related to private types to avoid
             --  disclosing the structure of the type.
 
-            if Is_Private_Type (P_Type) then
+            elsif Is_Private_Type (P_Type) then
 
                --  Attribute 'Valid_Scalars is not supported on private tagged
                --  types due to a code generation issue. Is_Visible_Component
@@ -7431,15 +7440,6 @@ package body Sem_Attr is
                   Error_Msg_F
                     ("??attribute % always True, no scalars to check", P);
                   Set_Boolean_Result (N, True);
-               end if;
-
-               --  Attribute 'Valid_Scalars is illegal on unchecked union types
-               --  because it is not always guaranteed that the components are
-               --  retrievable based on whether the discriminants are inferable
-
-               if Has_Unchecked_Union (P_Type) then
-                  Error_Attr_P
-                    ("attribute % not allowed for Unchecked_Union type");
                end if;
             end if;
          end if;
