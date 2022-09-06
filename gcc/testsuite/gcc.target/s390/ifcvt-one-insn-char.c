@@ -1,7 +1,7 @@
 /* Check load on condition for global char.  */
 
 /* { dg-do compile { target { s390*-*-* } } } */
-/* { dg-options "-O2 -march=z13" } */
+/* { dg-options "-O2 -march=z13 -mzarch" } */
 
 /* { dg-final { scan-assembler "locrnh\t%r.?,%r.?" } } */
 #include <stdbool.h>
