@@ -5799,6 +5799,15 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 	 to use walk_gimple_op.  */
       wi.is_lhs = 0;
       walk_gimple_op (stmt_info->stmt, vect_detect_hybrid_slp, &wi);
+      /* For gather/scatter make sure to walk the offset operand, that
+	 can be a scaling and conversion away.  */
+      gather_scatter_info gs_info;
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+	  && vect_check_gather_scatter (stmt_info, loop_vinfo, &gs_info))
+	{
+	  int dummy;
+	  vect_detect_hybrid_slp (&gs_info.offset, &dummy, &wi);
+	}
     }
 }
 
