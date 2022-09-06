@@ -3718,7 +3718,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 			  "a loop region with an %<ordered%> clause");
 		return false;
 	      }
-	    if (omp_find_clause (c, OMP_CLAUSE_DOACROSS) == NULL_TREE)
+	    if (!gimple_omp_ordered_standalone_p (stmt))
 	      {
 		if (OMP_CLAUSE_ORDERED_DOACROSS (o))
 		  {
@@ -9989,8 +9989,7 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   bool threads = omp_find_clause (gimple_omp_ordered_clauses (ord_stmt),
 				  OMP_CLAUSE_THREADS);
 
-  if (omp_find_clause (gimple_omp_ordered_clauses (ord_stmt),
-		       OMP_CLAUSE_DOACROSS))
+  if (gimple_omp_ordered_standalone_p (ord_stmt))
     {
       /* FIXME: This is needs to be moved to the expansion to verify various
 	 conditions only testable on cfg with dominators computed, and also

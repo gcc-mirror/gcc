@@ -12427,7 +12427,7 @@ gimplify_omp_taskloop_expr (tree type, tree *tp, gimple_seq *pre_p,
 }
 
 /* Helper function of gimplify_omp_for, find OMP_ORDERED with
-   OMP_CLAUSE_DOACROSS clause inside of OMP_FOR's body.  */
+   null OMP_ORDERED_BODY inside of OMP_FOR's body.  */
 
 static tree
 find_standalone_omp_ordered (tree *tp, int *walk_subtrees, void *)
@@ -12435,7 +12435,7 @@ find_standalone_omp_ordered (tree *tp, int *walk_subtrees, void *)
   switch (TREE_CODE (*tp))
     {
     case OMP_ORDERED:
-      if (omp_find_clause (OMP_ORDERED_CLAUSES (*tp), OMP_CLAUSE_DOACROSS))
+      if (OMP_ORDERED_BODY (*tp) == NULL_TREE)
 	return *tp;
       break;
     case OMP_SIMD:
@@ -15839,6 +15839,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		break;
 	      case OMP_ORDERED:
 		g = gimplify_omp_ordered (*expr_p, body);
+		if (OMP_BODY (*expr_p) == NULL_TREE
+		    && gimple_code (g) == GIMPLE_OMP_ORDERED)
+		  gimple_omp_ordered_standalone (g);
 		break;
 	      case OMP_MASKED:
 		gimplify_scan_omp_clauses (&OMP_MASKED_CLAUSES (*expr_p),

@@ -10487,8 +10487,7 @@ expand_omp (struct omp_region *region)
 	  {
 	    gomp_ordered *ord_stmt
 	      = as_a <gomp_ordered *> (last_stmt (region->entry));
-	    if (omp_find_clause (gimple_omp_ordered_clauses (ord_stmt),
-				 OMP_CLAUSE_DOACROSS))
+	    if (gimple_omp_ordered_standalone_p (ord_stmt))
 	      {
 		/* We'll expand these when expanding corresponding
 		   worksharing region with ordered(n) clause.  */
@@ -10616,9 +10615,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		}
 	    }
 	  else if (code == GIMPLE_OMP_ORDERED
-		   && omp_find_clause (gimple_omp_ordered_clauses
-					 (as_a <gomp_ordered *> (stmt)),
-				       OMP_CLAUSE_DOACROSS))
+		   && gimple_omp_ordered_standalone_p (stmt))
 	    /* #pragma omp ordered depend is also just a stand-alone
 	       directive.  */
 	    region = NULL;
@@ -10842,9 +10839,7 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_ORDERED:
       cur_region = new_omp_region (bb, code, cur_region);
       fallthru = true;
-      if (omp_find_clause (gimple_omp_ordered_clauses
-			     (as_a <gomp_ordered *> (last)),
-			   OMP_CLAUSE_DOACROSS))
+      if (gimple_omp_ordered_standalone_p (last))
 	cur_region = cur_region->outer;
       break;
 
