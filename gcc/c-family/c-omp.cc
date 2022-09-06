@@ -1877,6 +1877,12 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_DEPEND:
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  break;
+	case OMP_CLAUSE_DOACROSS:
+	  /* This can happen with invalid depend(source) or
+	     depend(sink:vec) on target combined with other constructs.  */
+	  gcc_assert (OMP_CLAUSE_DOACROSS_DEPEND (clauses));
+	  s = C_OMP_CLAUSE_SPLIT_TARGET;
+	  break;
 	case OMP_CLAUSE_NUM_TEAMS:
 	  s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
