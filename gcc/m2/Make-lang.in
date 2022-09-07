@@ -158,7 +158,7 @@ gm2-libs.texi-check:  m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
 
 m2/gm2-ebnf.texi: gm2-ebnf.texi-check; @true
 
-gm2-ebnf.texi-check: m2/gm2-auto $(PGE) $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf
+gm2-ebnf.texi-check: $(PGE) $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf
 	$(PGE) -c -p -t -f $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf > m2/gm2-ebnf.texi
 	$(STAMP) gm2-ebnf.texi-check
 
@@ -193,9 +193,6 @@ $(objdir)/m2/gm2-libs-boot:
 	test -d $@ || mkdir $@
 
 $(objdir)/m2/gm2-libiberty:
-	test -d $@ || mkdir $@
-
-$(objdir)/m2/gm2-auto:
 	test -d $@ || mkdir $@
 
 $(objdir)/m2/gm2-gcc:
@@ -1510,10 +1507,6 @@ m2/gm2-compiler-boot/gm2.a: m2/boot-bin/mc$(exeext)
 
 m2/boot-bin/mklink$(exeext): $(srcdir)/m2/tools-src/mklink.c
 	$(CXX) $(CFLAGS) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) $< -o $@
-
-m2/gm2-auto/%.o: m2/gm2-auto/%.mod $(MCDEPS)
-	$(MC) --quiet -o=m2/gm2-auto/$*.c m2/gm2-auto/$*.mod
-	$(COMPILER) -c $(CFLAGS) -I. -I$(srcdir)/../include -I$(srcdir) -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) m2/gm2-auto/$*.c -o $@
 
 m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler-boot/%.def $(MCDEPS)
 	$(MC) --quiet -o=$@ $(srcdir)/m2/gm2-compiler-boot/$*.def
