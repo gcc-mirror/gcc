@@ -6466,6 +6466,16 @@ loongarch_use_anchors_for_symbol_p (const_rtx symbol)
   return default_use_anchors_for_symbol_p (symbol);
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+loongarch_asan_shadow_offset (void)
+{
+  /* We only have libsanitizer support for LOONGARCH64 at present.
+     This value is taken from the file libsanitizer/asan/asan_mappint.h.  */
+  return TARGET_64BIT ? (HOST_WIDE_INT_1 << 46) : 0;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -6659,6 +6669,9 @@ loongarch_use_anchors_for_symbol_p (const_rtx symbol)
 
 #undef  TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P loongarch_use_anchors_for_symbol_p
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET loongarch_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
