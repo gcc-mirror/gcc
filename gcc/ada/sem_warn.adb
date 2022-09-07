@@ -1720,7 +1720,6 @@ package body Sem_Warn is
             elsif Is_Generic_Subprogram (E1)
               and then not Is_Instantiated (E1)
               and then not Publicly_Referenceable (E1)
-              and then Instantiation_Depth (Sloc (E1)) = 0
               and then Warn_On_Redundant_Constructs
             then
                if not Warnings_Off_E1 and then not Has_Junk_Name (E1) then
