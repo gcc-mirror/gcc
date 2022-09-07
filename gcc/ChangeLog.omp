@@ -1,3 +1,24 @@
+2022-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Add GF_OMP_ORDERED_STANDALONE enumerator.
+	(gimple_omp_subcode):  Use GIMPLE_OMP_ORDERED instead of
+	GIMPLE_OMP_TEAMS as upper bound.
+	(gimple_omp_ordered_standalone_p, gimple_omp_ordered_standalone): New
+	inline functions.
+	* gimplify.cc (find_standalone_omp_ordered): Look for OMP_ORDERED with
+	NULL OMP_ORDERED_BODY rather than with OMP_DOACROSS clause.
+	(gimplify_expr): Call gimple_omp_ordered_standalone for OMP_ORDERED
+	with NULL OMP_ORDERED_BODY.
+	* omp-low.cc (check_omp_nesting_restrictions): Use
+	gimple_omp_ordered_standalone_p test instead of
+	omp_find_clause (..., OMP_CLAUSE_DOACROSS).
+	(lower_omp_ordered): Likewise.
+	* omp-expand.cc (expand_omp, build_omp_regions_1,
+	omp_make_gimple_edges): Likewise.
+
 2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

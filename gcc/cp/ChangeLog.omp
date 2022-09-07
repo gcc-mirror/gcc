@@ -1,3 +1,11 @@
+2022-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.cc (tsubst_expr) <case OMP_ORDERED>: If OMP_BODY was NULL, keep
+	it NULL after instantiation too.
+
 2022-09-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

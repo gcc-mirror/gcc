@@ -1,3 +1,12 @@
+2022-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sink-3.c: Don't expect a superfluous error during
+	error recovery.
+	* c-c++-common/gomp/doacross-6.c (foo): Add further tests.
+
 2022-09-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

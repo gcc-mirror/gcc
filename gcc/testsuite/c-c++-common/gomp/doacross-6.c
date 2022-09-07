@@ -22,6 +22,18 @@ foo (int n)
     {
       #pragma omp ordered doacross(sink)		/* { dg-error "expected ':' before '\\\)' token" } */
     }
+  #pragma omp for ordered
+  for (i = 0; i < 8; i += n)
+    {
+      #pragma omp ordered doacross(source)		/* { dg-error "expected ':' before '\\\)' token" } */
+      #pragma omp ordered doacross(sink:i-1)
+    }
+  #pragma omp for ordered
+  for (i = 0; i < 8; i += n)
+    {
+      #pragma omp ordered doacross(source:)
+      #pragma omp ordered doacross(sink)		/* { dg-error "expected ':' before '\\\)' token" } */
+    }
 }
 
 void
