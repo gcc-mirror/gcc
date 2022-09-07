@@ -289,23 +289,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __remove_cv_t (std::remove_cv_t for C++11).
   template<typename _Tp>
     using __remove_cv_t = typename remove_cv<_Tp>::type;
+  /// @endcond
 
   // Primary type categories.
-
-  template<typename>
-    struct __is_void_helper
-    : public false_type { };
-
-  template<>
-    struct __is_void_helper<void>
-    : public true_type { };
-  /// @endcond
 
   /// is_void
   template<typename _Tp>
     struct is_void
-    : public __is_void_helper<__remove_cv_t<_Tp>>::type
-    { };
+    : public false_type { };
+
+  template<>
+    struct is_void<void>
+    : public true_type { };
+
+  template<>
+    struct is_void<const void>
+    : public true_type { };
+
+  template<>
+    struct is_void<volatile void>
+    : public true_type { };
+
+  template<>
+    struct is_void<const volatile void>
+    : public true_type { };
 
   /// @cond undocumented
   template<typename>
@@ -571,19 +578,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_is_null_pointer 201309L
 
-  template<typename>
-    struct __is_null_pointer_helper
-    : public false_type { };
-
-  template<>
-    struct __is_null_pointer_helper<std::nullptr_t>
-    : public true_type { };
-
   /// is_null_pointer (LWG 2247).
   template<typename _Tp>
     struct is_null_pointer
-    : public __is_null_pointer_helper<__remove_cv_t<_Tp>>::type
-    { };
+    : public false_type { };
+
+  template<>
+    struct is_null_pointer<std::nullptr_t>
+    : public true_type { };
+
+  template<>
+    struct is_null_pointer<const std::nullptr_t>
+    : public true_type { };
+
+  template<>
+    struct is_null_pointer<volatile std::nullptr_t>
+    : public true_type { };
+
+  template<>
+    struct is_null_pointer<const volatile std::nullptr_t>
+    : public true_type { };
 
   /// __is_nullptr_t (deprecated extension).
   /// @deprecated Non-standard. Use `is_null_pointer` instead.
