@@ -3146,7 +3146,7 @@ package body Sem_Warn is
               ("?j?with of obsolescent procedure& declared#", N, E);
          else
             Error_Msg_NE
-              ("??with of obsolescent function& declared#", N, E);
+              ("?j?with of obsolescent function& declared#", N, E);
          end if;
 
       --  If we do not have a with clause, then ignore any reference to an
