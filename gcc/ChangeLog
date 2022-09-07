@@ -1,3 +1,104 @@
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106754
+	* gimple-predicate-analysis.cc (compute_control_dep_chain_pdom):
+	New function, split out from compute_control_dep_chain.  Handle
+	loop-exit like conditions here by pushing to the control vector.
+	(compute_control_dep_chain): Adjust and streamline dumping.
+	In the wrapper perform a post-dominator walk as well.
+	(uninit_analysis::init_use_preds): Remove premature early exit.
+
+2022-09-06  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/linux.h (LINK_SPEC): Add static-pie.
+
+2022-09-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_le): Handle NANs and going past infinity.
+	(build_lt): Same.
+	(build_ge): Same.
+	(build_gt): Same.
+	(foperator_lt::op1_range): Avoid adjustments to range if build_*
+	returned false.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Add output flag to indicate whether we possibly have dropped
+	any chains.  Return whether the info is complete from the
+	wrapping overload.
+	(uninit_analysis::init_use_preds): Adjust accordingly, with
+	a workaround for PR106754.
+	(uninit_analysis::init_from_phi_def): Properly guard the
+	case where we complete an empty chain.
+
+2022-09-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/msp430/msp430.cc (msp430_single_op_cost): Document unused argument.
+
+2022-09-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-forwprop.cc (simplify_permutation): Set res_type to a vector
+	type with same element type as arg0, and length as op2.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106844
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Return whether we found a chain.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106841
+	* tree-vect-slp.cc (vect_detect_hybrid_slp): Also process
+	scatter/gather offset.
+
+2022-09-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/bpf/bpf.h (REGNO_REG_CLASS): Reference arguments as (void).
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Add GF_OMP_ORDERED_STANDALONE enumerator.
+	(gimple_omp_subcode):  Use GIMPLE_OMP_ORDERED instead of
+	GIMPLE_OMP_TEAMS as upper bound.
+	(gimple_omp_ordered_standalone_p, gimple_omp_ordered_standalone): New
+	inline functions.
+	* gimplify.cc (find_standalone_omp_ordered): Look for OMP_ORDERED with
+	NULL OMP_ORDERED_BODY rather than with OMP_DOACROSS clause.
+	(gimplify_expr): Call gimple_omp_ordered_standalone for OMP_ORDERED
+	with NULL OMP_ORDERED_BODY.
+	* omp-low.cc (check_omp_nesting_restrictions): Use
+	gimple_omp_ordered_standalone_p test instead of
+	omp_find_clause (..., OMP_CLAUSE_DOACROSS).
+	(lower_omp_ordered): Likewise.
+	* omp-expand.cc (expand_omp, build_omp_regions_1,
+	omp_make_gimple_edges): Likewise.
+
+2022-09-06  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.md (cskyv2_addcc): Fix missing operand.
+	(cskyv2_addcc_invert): Likewise.
+
+2022-09-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_expand_prologue): Remove unused automatic
+	`insn'.
+	(bpf_expand_epilogue): Likewise.
+
+2022-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtin.def (IX86_BUILTIN_CVTPS2PH512):
+	Map to CODE_FOR_avx512f_vcvtps2ph512_mask_sae.
+	* config/i386/sse.md (<mask_codefor>avx512f_vcvtps2ph512<mask_name>): Extend to ..
+	(<mask_codefor>avx512f_vcvtps2ph512<mask_name><round_saeonly_name>): .. this.
+	(avx512f_vcvtps2ph512_mask_sae): New expander
+
 2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-fold.cc

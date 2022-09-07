@@ -1,3 +1,7 @@
+2022-09-06  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* MAINTAINERS: Update c-sky port maintainers' emails.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

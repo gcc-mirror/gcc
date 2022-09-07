@@ -1,3 +1,8 @@
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106836
+	* c-omp.cc (c_omp_split_clauses): Handle OMP_CLAUSE_DOACROSS.
+
 2022-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DOACROSS.

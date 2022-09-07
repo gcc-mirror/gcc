@@ -1,3 +1,8 @@
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_doacross_sink): Don't verify val
+	in omp_cur_iteration - 1 has integer_type_node type.
+
 2022-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_omp_clause_name): Handle doacross.

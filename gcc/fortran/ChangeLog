@@ -1,3 +1,8 @@
+2022-09-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses): Remove ordered/linear
+	check as it is handled now in the middle end.
+
 2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_namelist, show_omp_clauses): Handle

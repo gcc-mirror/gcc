@@ -1,3 +1,47 @@
+2022-09-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/subscript8.C: New test.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106754
+	* gcc.dg/uninit-pred-12.c: New testcase.
+	* gcc.dg/uninit-pr106155-1.c: Likewise.
+
+2022-09-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-inf-1.c: New test.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106844
+	* gcc.dg/pr106844.c: New testcase.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106841
+	* g++.dg/vect/pr106841.cc: New testcase.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/doacross-6.c (corge): Don't expect an error here.
+	Add a few further tests.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106836
+	* c-c++-common/gomp/pr106836.c: New test.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sink-3.c: Don't expect a superfluous error during
+	error recovery.
+	* c-c++-common/gomp/doacross-6.c (foo): Add further tests.
+
+2022-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-vcvtps2ph-sae.c: New test.
+
 2022-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/c11-trigraphs-1.c, gcc.dg/cpp/c2x-trigraphs-1.c,

@@ -1,3 +1,17 @@
+2022-09-06  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grok_op_properties): Return sooner for C++23 op[].
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_doacross_sink): Don't verify val
+	in omp_cur_iteration - 1 has integer_type_node type.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.cc (tsubst_expr) <case OMP_ORDERED>: If OMP_BODY was NULL, keep
+	it NULL after instantiation too.
+
 2022-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_parser_omp_clause_name): Handle doacross.
