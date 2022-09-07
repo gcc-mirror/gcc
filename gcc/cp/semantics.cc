@@ -9555,16 +9555,15 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
 {
   omp_target_walk_data data;
   data.this_expr_accessed = false;
+  data.current_object = NULL_TREE;
 
-  tree ct = current_nonlambda_class_type ();
-  if (ct)
-    {
-      tree object = maybe_dummy_object (ct, NULL);
-      object = maybe_resolve_dummy (object, true);
-      data.current_object = object;
-    }
-  else
-    data.current_object = NULL_TREE;
+  if (DECL_NONSTATIC_MEMBER_P (current_function_decl) && current_class_ptr)
+    if (tree ct = current_nonlambda_class_type ())
+      {
+	tree object = maybe_dummy_object (ct, NULL);
+	object = maybe_resolve_dummy (object, true);
+	data.current_object = object;
+      }
 
   if (DECL_LAMBDA_FUNCTION_P (current_function_decl))
     {
