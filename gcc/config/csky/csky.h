@@ -165,6 +165,10 @@
 			     || CSKY_ISA_FEATURE (fpv3_sf) \
 			     || CSKY_ISA_FEATURE (fpv3_df))
 
+#define TARGET_SUPPORT_FPV2 (CSKY_ISA_FEATURE(fpv2_sf)    \
+			     || CSKY_ISA_FEATURE(fpv2_df) \
+			     || CSKY_ISA_FEATURE(fpv2_divd))
+
 /* Number of loads/stores handled by ldm/stm.  */
 #define CSKY_MIN_MULTIPLE_STLD	3
 #define CSKY_MAX_MULTIPLE_STLD	12

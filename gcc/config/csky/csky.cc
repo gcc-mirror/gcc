@@ -6342,9 +6342,7 @@ csky_emit_compare_float (enum rtx_code code, rtx op0, rtx op1)
     case GT:
     case LT:
     case LE:
-      if (op1 == CONST0_RTX (mode) && (CSKY_ISA_FEATURE_GET(fpv2_sf)
-				       || CSKY_ISA_FEATURE_GET(fpv2_df)
-				       || CSKY_ISA_FEATURE_GET(fpv2_divd)))
+      if (op1 == CONST0_RTX (mode) && TARGET_SUPPORT_FPV2)
 	op1 = force_reg (mode, op1);
       break;
     case ORDERED:
