@@ -7315,22 +7315,16 @@ package body Sem_Prag is
          Parent_Node : Node_Id;
 
       begin
-         if not Is_List_Member (N) then
-            return False;
-
-         else
+         if Is_List_Member (N) then
             Plist := List_Containing (N);
             Parent_Node := Parent (Plist);
 
-            if Parent_Node = Empty
-              or else Nkind (Parent_Node) /= N_Compilation_Unit
-              or else Context_Items (Parent_Node) /= Plist
-            then
-               return False;
-            end if;
+            return Present (Parent_Node)
+              and then Nkind (Parent_Node) = N_Compilation_Unit
+              and then Context_Items (Parent_Node) = Plist;
          end if;
 
-         return True;
+         return False;
       end Is_In_Context_Clause;
 
       ---------------------------------
