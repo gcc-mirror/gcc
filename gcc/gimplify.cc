@@ -9639,7 +9639,9 @@ omp_tsort_mapping_groups (vec<omp_mapping_group> *groups,
 /* Split INLIST into two parts, moving groups corresponding to
    ALLOC/RELEASE/DELETE mappings to one list, and other mappings to another.
    The former list is then appended to the latter.  Each sub-list retains the
-   order of the original list.  */
+   order of the original list.
+   Note that ATTACH nodes are later moved to the end of the list in
+   gimplify_adjust_omp_clauses, for target regions.  */
 
 static omp_mapping_group *
 omp_segregate_mapping_groups (omp_mapping_group *inlist)
@@ -12411,10 +12413,15 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    *list_p = c2;
 	  }
     }
+
+  tree attach_list = NULL_TREE;
+  tree *attach_tail = &attach_list;
+
   while ((c = *list_p) != NULL)
     {
       splay_tree_node n;
       bool remove = false;
+      bool move_attach = false;
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -12576,6 +12583,19 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      remove = true;
 	      break;
 	    }
+	  /* If we have a target region, we can push all the attaches to the
+	     end of the list (we may have standalone "attach" operations
+	     synthesized for GOMP_MAP_STRUCT nodes that must be processed after
+	     the attachment point AND the pointed-to block have been mapped).
+	     If we have something else, e.g. "enter data", we need to keep
+	     "attach" nodes together with the previous node they attach to so
+	     that separate "exit data" operations work properly (see
+	     libgomp/target.c).  */
+	  if ((ctx->region_type & ORT_TARGET) != 0
+	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		  || (OMP_CLAUSE_MAP_KIND (c)
+		      == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION)))
+	    move_attach = true;
 	  decl = OMP_CLAUSE_DECL (c);
 	  /* Data clauses associated with reductions must be
 	     compatible with present_or_copy.  Warn and adjust the clause
@@ -12890,8 +12910,23 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
       if (remove)
 	*list_p = OMP_CLAUSE_CHAIN (c);
+      else if (move_attach)
+	{
+	  /* Remove attach node from here, separate out into its own list.  */
+	  *attach_tail = c;
+	  *list_p = OMP_CLAUSE_CHAIN (c);
+	  OMP_CLAUSE_CHAIN (c) = NULL_TREE;
+	  attach_tail = &OMP_CLAUSE_CHAIN (c);
+	}
       else
 	list_p = &OMP_CLAUSE_CHAIN (c);
+    }
+
+  /* Splice attach nodes at the end of the list.  */
+  if (attach_list)
+    {
+      *list_p = attach_list;
+      list_p = attach_tail;
     }
 
   /* Add in any implicit data sharing.  */
