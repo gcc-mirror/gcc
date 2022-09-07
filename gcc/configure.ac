@@ -5066,6 +5066,15 @@ LCF0:
 	  ],,
 	  [AC_DEFINE(HAVE_AS_REF, 1,
 	    [Define if your assembler supports .ref])])
+
+	gcc_GAS_CHECK_FEATURE([AIX DWARF location lists section support],
+	  gcc_cv_as_aix_dwloc,,
+	  [	.dwsect 0xA0000
+	Lframe..0:
+		.vbyte 4,Lframe..0
+	  ],,
+	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
+	    [Define if your assembler supports AIX debug frame section label reference.])])
 	;;
     esac
     ;;

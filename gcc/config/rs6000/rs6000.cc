@@ -20946,6 +20946,11 @@ rs6000_elf_file_end (void)
 
 #if TARGET_XCOFF
 
+#ifndef HAVE_XCOFF_DWARF_EXTRAS
+#define HAVE_XCOFF_DWARF_EXTRAS 0
+#endif
+
+
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
 
