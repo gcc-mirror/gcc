@@ -175,7 +175,7 @@ public:
 
   bool involves_p (const svalue *sval) const;
 
-  region_offset get_offset () const;
+  region_offset get_offset (region_model_manager *mgr) const;
 
   /* Attempt to get the size of this region as a concrete number of bytes.
      If successful, return true and write the size to *OUT.
@@ -195,6 +195,11 @@ public:
      If successful, return true and write to *OUT.
      Otherwise return false.  */
   virtual bool get_relative_concrete_offset (bit_offset_t *out) const;
+
+  /* Get the offset in bytes of this region relative to its parent as a svalue.
+     Might return an unknown_svalue.  */
+  virtual const svalue *
+  get_relative_symbolic_offset (region_model_manager *mgr) const;
 
   /* Attempt to get the position and size of this region expressed as a
      concrete range of bytes relative to its parent.
@@ -226,7 +231,7 @@ public:
   region (complexity c, unsigned id, const region *parent, tree type);
 
  private:
-  region_offset calc_offset () const;
+  region_offset calc_offset (region_model_manager *mgr) const;
 
   complexity m_complexity;
   unsigned m_id; // purely for deterministic sorting at this stage, for dumps
@@ -751,6 +756,8 @@ public:
   tree get_field () const { return m_field; }
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
 
 private:
   tree m_field;
@@ -835,6 +842,8 @@ public:
 
   virtual bool
   get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
 
 private:
   const svalue *m_index;
@@ -919,6 +928,8 @@ public:
   const svalue *get_byte_offset () const { return m_byte_offset; }
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
   const svalue * get_byte_size_sval (region_model_manager *mgr)
     const final override;
 
@@ -1245,6 +1256,8 @@ public:
   bool get_bit_size (bit_size_t *out) const final override;
   const svalue *get_byte_size_sval (region_model_manager *mgr) const final override;
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
 
 private:
   bit_range m_bits;

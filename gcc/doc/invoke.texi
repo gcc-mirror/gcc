@@ -10051,9 +10051,11 @@ This warning requires @option{-fanalyzer} to enable it; use
 @option{-Wno-analyzer-out-of-bounds} to disable it.
 
 This diagnostic warns for path through the code in which a buffer is
-definitely read or written out-of-bounds.  The diagnostic only applies
-for cases where the analyzer is able to determine a constant offset and
-for accesses past the end of a buffer, also a constant capacity.
+definitely read or written out-of-bounds.  The diagnostic applies for
+cases where the analyzer is able to determine a constant offset and for
+accesses past the end of a buffer, also a constant capacity.  Further,
+the diagnostic does limited checking for accesses past the end when the
+offset as well as the capacity is symbolic.
 
 See @uref{https://cwe.mitre.org/data/definitions/119.html, CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer}.
 

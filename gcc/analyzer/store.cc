@@ -123,7 +123,7 @@ uncertainty_t::dump (bool simple) const
 const binding_key *
 binding_key::make (store_manager *mgr, const region *r)
 {
-  region_offset offset = r->get_offset ();
+  region_offset offset = r->get_offset (mgr->get_svalue_manager ());
   if (offset.symbolic_p ())
     return mgr->get_symbolic_binding (r);
   else
@@ -897,7 +897,7 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
     = get_subregion_within_ctor (parent_reg, min_index, mgr);
   const region *max_element
     = get_subregion_within_ctor (parent_reg, max_index, mgr);
-  region_offset min_offset = min_element->get_offset ();
+  region_offset min_offset = min_element->get_offset (mgr);
   if (min_offset.symbolic_p ())
     return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
@@ -955,11 +955,11 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 	  gcc_assert (sval_byte_size != -1);
 	  bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
 	  /* Get offset of child relative to base region.  */
-	  region_offset child_base_offset = child_reg->get_offset ();
+	  region_offset child_base_offset = child_reg->get_offset (mgr);
 	  if (child_base_offset.symbolic_p ())
 	    return false;
 	  /* Convert to an offset relative to the parent region.  */
-	  region_offset parent_base_offset = parent_reg->get_offset ();
+	  region_offset parent_base_offset = parent_reg->get_offset (mgr);
 	  gcc_assert (!parent_base_offset.symbolic_p ());
 	  bit_offset_t child_parent_offset
 	    = (child_base_offset.get_bit_offset ()
@@ -1365,7 +1365,8 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 				     const region *reg,
 				     const compound_svalue *compound_sval)
 {
-  region_offset reg_offset = reg->get_offset ();
+  region_offset reg_offset
+    = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
     {
       m_touched = true;
@@ -1614,7 +1615,7 @@ binding_cluster::get_any_binding (store_manager *mgr,
   /* Alternatively, if this is a symbolic read and the cluster has any bindings,
      then we don't know if we're reading those values or not, so the result
      is also "UNKNOWN".  */
-  if (reg->get_offset ().symbolic_p ()
+  if (reg->get_offset (mgr->get_svalue_manager ()).symbolic_p ()
       && m_map.elements () > 0)
     {
       region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
@@ -1643,10 +1644,11 @@ const svalue *
 binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 					     const region *reg) const
 {
-  region_offset cluster_offset = m_base_region->get_offset ();
+  region_offset cluster_offset
+    = m_base_region->get_offset (mgr->get_svalue_manager ());
   if (cluster_offset.symbolic_p ())
     return NULL;
-  region_offset reg_offset = reg->get_offset ();
+  region_offset reg_offset = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
     return NULL;
 

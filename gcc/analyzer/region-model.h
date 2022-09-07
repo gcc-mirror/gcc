@@ -717,6 +717,9 @@ class region_model
 				      const svalue *rhs) const;
   tristate compare_initial_and_pointer (const initial_svalue *init,
 					const region_svalue *ptr) const;
+  tristate symbolic_greater_than (const binop_svalue *a,
+				  const svalue *b) const;
+  tristate structural_equality (const svalue *a, const svalue *b) const;
   tristate eval_condition (tree lhs,
 			   enum tree_code op,
 			   tree rhs,
@@ -874,6 +877,12 @@ class region_model
 			      region_model_context *ctxt) const;
   void check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 			  region_model_context *ctxt) const;
+  void check_symbolic_bounds (const region *base_reg,
+			      const svalue *sym_byte_offset,
+			      const svalue *num_bytes_sval,
+			      const svalue *capacity,
+			      enum access_direction dir,
+			      region_model_context *ctxt) const;
   void check_region_bounds (const region *reg, enum access_direction dir,
 			    region_model_context *ctxt) const;
 

@@ -172,16 +172,17 @@ public:
   static region_offset make_concrete (const region *base_region,
 				      bit_offset_t offset)
   {
-    return region_offset (base_region, offset, false);
+    return region_offset (base_region, offset, NULL);
   }
-  static region_offset make_symbolic (const region *base_region)
+  static region_offset make_symbolic (const region *base_region,
+				      const svalue *sym_offset)
   {
-    return region_offset (base_region, 0, true);
+    return region_offset (base_region, 0, sym_offset);
   }
 
   const region *get_base_region () const { return m_base_region; }
 
-  bool symbolic_p () const { return m_is_symbolic; }
+  bool symbolic_p () const { return m_sym_offset != NULL; }
 
   bit_offset_t get_bit_offset () const
   {
@@ -189,22 +190,28 @@ public:
     return m_offset;
   }
 
+  const svalue *get_symbolic_byte_offset () const
+  {
+    gcc_assert (symbolic_p ());
+    return m_sym_offset;
+  }
+
   bool operator== (const region_offset &other) const
   {
     return (m_base_region == other.m_base_region
 	    && m_offset == other.m_offset
-	    && m_is_symbolic == other.m_is_symbolic);
+	    && m_sym_offset == other.m_sym_offset);
   }
 
 private:
   region_offset (const region *base_region, bit_offset_t offset,
-		 bool is_symbolic)
-  : m_base_region (base_region), m_offset (offset), m_is_symbolic (is_symbolic)
+		 const svalue *sym_offset)
+  : m_base_region (base_region), m_offset (offset), m_sym_offset (sym_offset)
   {}
 
   const region *m_base_region;
   bit_offset_t m_offset;
-  bool m_is_symbolic;
+  const svalue *m_sym_offset;
 };
 
 extern location_t get_stmt_location (const gimple *stmt, function *fun);
