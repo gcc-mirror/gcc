@@ -635,6 +635,7 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
 	}
       else
 	{
+	  gimple_call_set_ctrl_altering (call, true);
 	  gimple_call_set_tail (call, true);
 	  cfun->tail_call_marked = true;
 	  remove_edge (single_succ_edge (bb));
