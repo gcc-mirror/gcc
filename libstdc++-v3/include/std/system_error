@@ -194,7 +194,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  error_code make_error_code(errc) noexcept;
+namespace __adl_only
+{
+  void make_error_code() = delete;
+  void make_error_condition() = delete;
+}
 
   /** Class error_code
    *
@@ -225,7 +229,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _ErrorCodeEnum, typename = typename
 	     enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type>
       error_code(_ErrorCodeEnum __e) noexcept
-      { *this = make_error_code(__e); }
+      {
+	using __adl_only::make_error_code;
+	*this = make_error_code(__e);
+      }
 
     void
     assign(int __v, const error_category& __cat) noexcept
@@ -328,8 +335,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
 
-  error_condition make_error_condition(errc) noexcept;
-
   /** Class error_condition
    *
    * This class represents error conditions that may be visible at an API
@@ -356,7 +361,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _ErrorConditionEnum, typename = typename
 	 enable_if<is_error_condition_enum<_ErrorConditionEnum>::value>::type>
       error_condition(_ErrorConditionEnum __e) noexcept
-      { *this = make_error_condition(__e); }
+      {
+	using __adl_only::make_error_condition;
+	*this = make_error_condition(__e);
+      }
 
     /// Set the value and category.
     void
