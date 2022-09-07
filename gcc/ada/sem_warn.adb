@@ -2971,7 +2971,7 @@ package body Sem_Warn is
 
    procedure Output_Non_Modified_In_Out_Warnings is
 
-      function No_Warn_On_In_Out (E : Entity_Id) return Boolean;
+      function Warn_On_In_Out (E : Entity_Id) return Boolean;
       --  Given a formal parameter entity E, determines if there is a reason to
       --  suppress IN OUT warnings (not modified, could be IN) for formals of
       --  the subprogram. We suppress these warnings if Warnings Off is set, or
@@ -2980,11 +2980,11 @@ package body Sem_Warn is
       --  context may force use of IN OUT, even if the parameter is not
       --  modified for this particular case).
 
-      -----------------------
-      -- No_Warn_On_In_Out --
-      -----------------------
+      --------------------
+      -- Warn_On_In_Out --
+      --------------------
 
-      function No_Warn_On_In_Out (E : Entity_Id) return Boolean is
+      function Warn_On_In_Out (E : Entity_Id) return Boolean is
          S  : constant Entity_Id := Scope (E);
          SE : constant Entity_Id := Spec_Entity (E);
 
@@ -2995,7 +2995,7 @@ package body Sem_Warn is
          if Address_Taken (S)
            or else (Present (SE) and then Address_Taken (Scope (SE)))
          then
-            return True;
+            return False;
 
          --  Do not warn if used as a generic actual, since the generic may be
          --  what is forcing the use of an "unnecessary" IN OUT.
@@ -3003,19 +3003,19 @@ package body Sem_Warn is
          elsif Used_As_Generic_Actual (S)
            or else (Present (SE) and then Used_As_Generic_Actual (Scope (SE)))
          then
-            return True;
+            return False;
 
          --  Else test warnings off on the subprogram
 
          elsif Warnings_Off (S) then
-            return True;
+            return False;
 
          --  All tests for suppressing warning failed
 
          else
-            return False;
+            return True;
          end if;
-      end No_Warn_On_In_Out;
+      end Warn_On_In_Out;
 
    --  Start of processing for Output_Non_Modified_In_Out_Warnings
 
@@ -3030,12 +3030,7 @@ package body Sem_Warn is
             --  Suppress warning in specific cases (see details in comments for
             --  No_Warn_On_In_Out).
 
-            if No_Warn_On_In_Out (E1) then
-               null;
-
-            --  Here we generate the warning
-
-            else
+            if Warn_On_In_Out (E1) then
                --  If -gnatwk is set then output message that it could be IN
 
                if not Is_Trivial_Subprogram (Scope (E1)) then
