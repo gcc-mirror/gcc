@@ -2552,6 +2552,9 @@ package body Bindgen is
       if Enable_CUDA_Expansion then
          WBI ("with Interfaces.C;");
          WBI ("with Interfaces.C.Strings;");
+
+         --  with of CUDA.Internal needed for CUDA_Execute pragma expansion
+         WBI ("with CUDA.Internal;");
       end if;
 
       Resolve_Binder_Options (Elab_Order);
