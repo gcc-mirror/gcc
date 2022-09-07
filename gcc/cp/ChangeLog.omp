@@ -1,3 +1,13 @@
+2022-09-09  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* semantics.cc (finish_omp_target_clauses): If current_function_decl
+	isn't a nonstatic member function, don't set data.current_object to
+	non-NULL.
+
 2022-09-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

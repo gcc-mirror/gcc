@@ -1,3 +1,11 @@
+2022-09-09  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* g++.dg/gomp/pr106829.C: New test.
+
 2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
