@@ -19847,6 +19847,7 @@ aarch64_conditional_register_usage (void)
 	{
 	  fixed_regs[i] = 1;
 	  call_used_regs[i] = 1;
+	  CLEAR_HARD_REG_BIT (operand_reg_set, i);
 	}
     }
   if (!TARGET_SVE)
