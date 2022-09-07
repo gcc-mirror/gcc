@@ -611,8 +611,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_reference
   template<typename _Tp>
     struct is_reference
-    : public __or_<is_lvalue_reference<_Tp>,
-                   is_rvalue_reference<_Tp>>::type
+    : public false_type
+    { };
+
+  template<typename _Tp>
+    struct is_reference<_Tp&>
+    : public true_type
+    { };
+
+  template<typename _Tp>
+    struct is_reference<_Tp&&>
+    : public true_type
     { };
 
   /// is_arithmetic
