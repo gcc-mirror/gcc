@@ -2630,13 +2630,14 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   tree string = NULL_TREE;
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT));
+  tree spelling = c_parser_peek_token (parser)->value;
   assert_loc = c_parser_peek_token (parser)->location;
   if (flag_isoc99)
     pedwarn_c99 (assert_loc, OPT_Wpedantic,
-		 "ISO C99 does not support %<_Static_assert%>");
+		 "ISO C99 does not support %qE", spelling);
   else
     pedwarn_c99 (assert_loc, OPT_Wpedantic,
-		 "ISO C90 does not support %<_Static_assert%>");
+		 "ISO C90 does not support %qE", spelling);
   c_parser_consume_token (parser);
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -2667,7 +2668,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
        new C2X feature of _Static_assert.  */
     pedwarn_c11 (assert_loc, OPT_Wpedantic,
 		 "ISO C11 does not support omitting the string in "
-		 "%<_Static_assert%>");
+		 "%qE", spelling);
   parens.require_close (parser);
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (value)))
@@ -3774,13 +3775,14 @@ c_parser_alignas_specifier (c_parser * parser)
   tree ret = error_mark_node;
   location_t loc = c_parser_peek_token (parser)->location;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNAS));
+  tree spelling = c_parser_peek_token (parser)->value;
   c_parser_consume_token (parser);
   if (flag_isoc99)
     pedwarn_c99 (loc, OPT_Wpedantic,
-		 "ISO C99 does not support %<_Alignas%>");
+		 "ISO C99 does not support %qE", spelling);
   else
     pedwarn_c99 (loc, OPT_Wpedantic,
-		 "ISO C90 does not support %<_Alignas%>");
+		 "ISO C90 does not support %qE", spelling);
   matching_parens parens;
   if (!parens.require_open (parser))
     return ret;
@@ -8399,10 +8401,12 @@ c_parser_alignof_expression (c_parser *parser)
   location_t end_loc;
   tree alignof_spelling = c_parser_peek_token (parser)->value;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNOF));
-  bool is_c11_alignof = strcmp (IDENTIFIER_POINTER (alignof_spelling),
-				"_Alignof") == 0;
+  bool is_c11_alignof = (strcmp (IDENTIFIER_POINTER (alignof_spelling),
+				"_Alignof") == 0
+			 || strcmp (IDENTIFIER_POINTER (alignof_spelling),
+				    "alignof") == 0);
   /* A diagnostic is not required for the use of this identifier in
-     the implementation namespace; only diagnose it for the C11
+     the implementation namespace; only diagnose it for the C11 or C2X
      spelling because of existing code using the other spellings.  */
   if (is_c11_alignof)
     {
@@ -10271,6 +10275,16 @@ c_parser_postfix_expression (c_parser *parser)
 	  set_c_expr_source_range (&expr, tok_range);
 	  pedwarn_c11 (loc, OPT_Wpedantic,
 		       "ISO C does not support %qs before C2X", "nullptr");
+	  break;
+	case RID_TRUE:
+	  c_parser_consume_token (parser);
+	  expr.value = boolean_true_node;
+	  set_c_expr_source_range (&expr, tok_range);
+	  break;
+	case RID_FALSE:
+	  c_parser_consume_token (parser);
+	  expr.value = boolean_false_node;
+	  set_c_expr_source_range (&expr, tok_range);
 	  break;
 	default:
 	  c_parser_error (parser, "expected expression");

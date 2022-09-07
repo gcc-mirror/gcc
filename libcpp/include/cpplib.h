@@ -526,6 +526,9 @@ struct cpp_options
   /* Nonzero for C++23 delimited escape sequences.  */
   unsigned char delimited_escape_seqs;
 
+  /* Nonzero for 'true' and 'false' in #if expressions.  */
+  unsigned char true_false;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
