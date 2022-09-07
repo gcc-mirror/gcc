@@ -365,7 +365,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
--Winvalid-pch  -Winvalid-utf8 -Wjump-misses-init  @gol
+-Winvalid-pch  -Winvalid-utf8  -Wno-unicode  -Wjump-misses-init  @gol
 -Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op  @gol
 -Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
 -Wmemset-elt-size  -Wmemset-transposed-args @gol
@@ -9577,6 +9577,12 @@ the search path but cannot be used.
 Warn if an invalid UTF-8 character is found.
 This warning is on by default for C++23 if @option{-finput-charset=UTF-8}
 is used and turned into error with @option{-pedantic-errors}.
+
+@item -Wno-unicode
+@opindex Wunicode
+@opindex Wno-unicode
+Don't diagnose invalid forms of delimited or named escape sequences which are
+treated as separate tokens.  @option{Wunicode} is enabled by default.
 
 @item -Wlong-long
 @opindex Wlong-long
