@@ -20502,10 +20502,16 @@ package body Sem_Prag is
 
             if No (Decl) then
 
-               --  First case: library level compilation unit declaration with
+               --  Case 0: library level compilation unit declaration with
+               --  the pragma preceding the declaration.
+
+               if Nkind (Parent (N)) = N_Compilation_Unit then
+                  Pragma_Misplaced;
+
+               --  Case 1: library level compilation unit declaration with
                --  the pragma immediately following the declaration.
 
-               if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+               elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
                   Set_Obsolescent
                     (Defining_Entity (Unit (Parent (Parent (N)))));
                   return;
