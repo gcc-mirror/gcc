@@ -1305,7 +1305,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   fn_entries = img_header->fn_num;
   fn_descs = img_header->fn_descs;
 
-  /* Currently, the only other entry kind is 'device number'.  */
+  /* Currently, other_entries contains only the struct of ICVs.  */
   other_entries = 1;
 
   targ_tbl = GOMP_PLUGIN_malloc (sizeof (struct addr_pair)
@@ -1358,20 +1358,19 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       targ_tbl->end = targ_tbl->start + bytes;
     }
 
-  CUdeviceptr device_num_varptr;
-  size_t device_num_varsize;
-  CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &device_num_varptr,
-				  &device_num_varsize, module,
-				  XSTRING (GOMP_DEVICE_NUM_VAR));
+  CUdeviceptr varptr;
+  size_t varsize;
+  CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
+				  module, XSTRING (GOMP_ADDITIONAL_ICVS));
+
   if (r == CUDA_SUCCESS)
     {
-      targ_tbl->start = (uintptr_t) device_num_varptr;
-      targ_tbl->end = (uintptr_t) (device_num_varptr + device_num_varsize);
+      targ_tbl->start = (uintptr_t) varptr;
+      targ_tbl->end = (uintptr_t) (varptr + varsize);
     }
   else
-    /* The 'GOMP_DEVICE_NUM_VAR' variable was not in this image.  */
+    /* The variable was not in this image.  */
     targ_tbl->start = targ_tbl->end = 0;
-  targ_tbl++;
 
   nvptx_set_clocktick (module, dev);
 

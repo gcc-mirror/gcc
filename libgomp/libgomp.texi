@@ -284,7 +284,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{declare variant}: new clauses @code{adjust_args} and
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
-@item device-specific ICV settings the environment variables @tab N @tab
+@item device-specific ICV settings with environment variables @tab Y @tab
 @item @code{assume} directive @tab N @tab
 @item @code{nothing} directive @tab Y @tab
 @item @code{error} directive @tab Y @tab

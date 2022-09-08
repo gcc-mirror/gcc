@@ -3367,6 +3367,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   struct kernel_info *kernel;
   int kernel_count = image_desc->kernel_count;
   unsigned var_count = image_desc->global_variable_count;
+  /* Currently, "others" is a struct of ICVS.  */
   int other_count = 1;
 
   agent = get_agent_info (ord);
@@ -3464,36 +3465,40 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	}
     }
 
-  GCN_DEBUG ("Looking for variable %s\n", XSTRING (GOMP_DEVICE_NUM_VAR));
+  GCN_DEBUG ("Looking for variable %s\n", XSTRING (GOMP_ADDITIONAL_ICVS));
 
   hsa_status_t status;
   hsa_executable_symbol_t var_symbol;
   status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						 XSTRING (GOMP_DEVICE_NUM_VAR),
+						 XSTRING (GOMP_ADDITIONAL_ICVS),
 						 agent->id, 0, &var_symbol);
   if (status == HSA_STATUS_SUCCESS)
     {
-      uint64_t device_num_varptr;
-      uint32_t device_num_varsize;
+      uint64_t varptr;
+      uint32_t varsize;
 
       status = hsa_fns.hsa_executable_symbol_get_info_fn
 	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
-	 &device_num_varptr);
+	 &varptr);
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not extract a variable from its symbol", status);
       status = hsa_fns.hsa_executable_symbol_get_info_fn
 	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_SIZE,
-	 &device_num_varsize);
+	 &varsize);
       if (status != HSA_STATUS_SUCCESS)
-	hsa_fatal ("Could not extract a variable size from its symbol", status);
+	hsa_fatal ("Could not extract a variable size from its symbol",
+		   status);
 
-      pair->start = device_num_varptr;
-      pair->end = device_num_varptr + device_num_varsize;
+      pair->start = varptr;
+      pair->end = varptr + varsize;
     }
   else
-    /* The 'GOMP_DEVICE_NUM_VAR' variable was not in this image.  */
-    pair->start = pair->end = 0;
-  pair++;
+    {
+      /* The variable was not in this image.  */
+      GCN_DEBUG ("Variable not found in image: %s\n",
+		 XSTRING (GOMP_ADDITIONAL_ICVS));
+      pair->start = pair->end = 0;
+    }
 
   /* Ensure that constructors are run first.  */
   struct GOMP_kernel_launch_attributes kla =
