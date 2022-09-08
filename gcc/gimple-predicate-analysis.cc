@@ -1060,9 +1060,12 @@ compute_control_dep_chain_pdom (basic_block cd_bb, const_basic_block dep_bb,
 	 gcc.dg/unninit-pred-12.c and PR106754.  */
       if (single_pred_p (cd_bb))
 	{
-	  edge e2 = find_edge (prev_cd_bb, cd_bb);
-	  gcc_assert (e2);
-	  cur_cd_chain.safe_push (e2);
+	  edge e2 = single_pred_edge (cd_bb);
+	  gcc_assert (e2->src == prev_cd_bb);
+	  /* But avoid adding fallthru or abnormal edges.  */
+	  if (!(e2->flags & (EDGE_FAKE | EDGE_ABNORMAL | EDGE_DFS_BACK))
+	      && !single_succ_p (prev_cd_bb))
+	    cur_cd_chain.safe_push (e2);
 	}
     }
   return found_cd_chain;
