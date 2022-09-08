@@ -1029,15 +1029,16 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 	frange tmp;
 	if (src.get_operand (tmp, arg))
 	  {
-	    if (tmp.get_signbit ().varying_p ()
-		// FIXME: We don't support signed NANs yet.
-		|| !tmp.get_nan ().no_p ())
-	      return false;
-	    if (tmp.get_signbit ().yes_p ())
-	      r.set_nonzero (type);
-	    else
-	      r.set_zero (type);
-	    return true;
+	    bool signbit;
+	    if (tmp.known_signbit (signbit))
+	      {
+		if (signbit)
+		  r.set_nonzero (type);
+		else
+		  r.set_zero (type);
+		return true;
+	      }
+	    return false;
 	  }
 	break;
       }
