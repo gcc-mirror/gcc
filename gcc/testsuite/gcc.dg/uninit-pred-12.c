@@ -31,4 +31,4 @@ unsigned foo (unsigned v, int y, int w)
 }
 
 /* Make sure predicate analysis picked up the loop exit condition.  */
-/* { dg-final { scan-tree-dump "AND \\(NOT \\(ivtmp" "uninit1" } } */
+/* { dg-final { scan-tree-dump "AND \\(NOT \\((ivtmp|doloop)" "uninit1" } } */
