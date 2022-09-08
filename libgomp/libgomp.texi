@@ -397,8 +397,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{source}/@code{sink} modifier @tab Y @tab
 @item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
       @tab N @tab
-@item @code{omp_cur_iteration} keyword @tab P
-      @tab @code{sink: omp_cur_iteration - 1} unsupported
+@item @code{omp_cur_iteration} keyword @tab Y @tab
 @end multitable
 
 @unnumberedsubsec Other new OpenMP 5.2 features

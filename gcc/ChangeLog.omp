@@ -1,4 +1,22 @@
-2022-09-07  Tobias Burnus  <tobias@codesourcery.com>
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_ordered_sink): Add CONT_BB argument.
+	Add doacross(sink:omp_cur_iteration-1) support.
+	(expand_omp_ordered_source_sink): Clear counts[fd->ordered + 1].
+	Adjust expand_omp_ordered_sink caller.
+	(expand_omp_for_ordered_loops): If counts[fd->ordered + 1] is
+	non-NULL, set that variable to true at the start of outermost
+	non-collapsed loop and set it to false at the end of innermost
+	ordered loop.
+	(expand_omp_for_generic): If fd->ordered, allocate
+	1 + (fd->ordered - fd->collapse) further elements in counts array.
+	Copy to counts + 2 + fd->ordered the counts of fd->collapse ..
+	fd->ordered - 1 loop if any.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
 	2022-09-06  Jakub Jelinek  <jakub@redhat.com>

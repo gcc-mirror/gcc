@@ -1,6 +1,18 @@
 2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mention that omp_cur_iteration is now
+	fully supported.
+	* testsuite/libgomp.c/doacross-4.c: New test.
+	* testsuite/libgomp.c/doacross-5.c: New test.
+	* testsuite/libgomp.c/doacross-6.c: New test.
+	* testsuite/libgomp.c/doacross-7.c: New test.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"
