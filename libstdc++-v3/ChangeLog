@@ -1,3 +1,26 @@
+2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier: Add missing runtime exception.
+
+2022-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (is_reference): Make the primary
+	template derive from false_type.  Define two partial
+	specializations that derive from true_type.
+
+2022-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (__is_void_helper): Remove.
+	(is_void): Make the primary template derive from false_type,
+	and define four explicit specializations that derive from
+	true_type.
+	(__is_null_pointer_helper, is_null_pointer): Likewise.
+
+2022-09-07  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/dyncast.cc (__dynamic_cast): Avoid virtual function
+	call in simple success case.
+
 2022-09-06  Philipp Fent  <fent@in.tum.de>
 
 	* testsuite/libstdc++-prettyprinters/48362.cc: Fix expected

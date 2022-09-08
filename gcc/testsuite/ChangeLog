@@ -1,3 +1,108 @@
+2022-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106793
+	* g++.dg/cpp23/auto-array2.C: Adjust.
+	* g++.dg/cpp1z/class-deduction113.C: New test.
+
+2022-09-07  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105586
+	* gcc.target/powerpc/pr105586.c: New test.
+
+2022-09-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106188
+	PR c++/106713
+	* g++.dg/coroutines/pr106188.C: New test.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-keywords-1.c, gcc.dg/c2x-align-1.c,
+	gcc.dg/c2x-align-6.c, gcc.dg/c2x-bool-2.c,
+	gcc.dg/c2x-static-assert-3.c, gcc.dg/c2x-static-assert-4.c,
+	gcc.dg/c2x-thread-local-1.c: New tests.
+	* gcc.dg/c2x-bool-1.c: Update expectations.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106866
+	* gcc.dg/uninit-pr106866.c: New testcase.
+
+2022-09-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106867
+	* gcc.dg/tree-ssa/pr106867.c: New test.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106860
+	* g++.dg/opt/pr106860.C: New testcase.
+
+2022-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/movqi_1.c: New test.
+	* gcc.target/aarch64/movhi_1.c: Likewise.
+	* gcc.target/aarch64/movsi_1.c: Likewise.
+	* gcc.target/aarch64/movdi_2.c: Likewise.
+	* gcc.target/aarch64/movti_2.c: Likewise.
+	* gcc.target/aarch64/movhf_1.c: Likewise.
+	* gcc.target/aarch64/movsf_1.c: Likewise.
+	* gcc.target/aarch64/movdf_1.c: Likewise.
+	* gcc.target/aarch64/movtf_2.c: Likewise.
+	* gcc.target/aarch64/movv8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv16qi_1.c: Likewise.
+
+2022-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/nofp_2.c: New test.
+
+2022-09-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/106828
+	* g++.target/loongarch/pr106828.C: New test.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* g++.dg/gomp/pr106829.C: New test.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/delimited-escape-seq-4.c: New test.
+	* c-c++-common/cpp/delimited-escape-seq-5.c: New test.
+	* c-c++-common/cpp/delimited-escape-seq-6.c: New test.
+	* c-c++-common/cpp/delimited-escape-seq-7.c: New test.
+	* c-c++-common/cpp/named-universal-char-escape-5.c: New test.
+	* c-c++-common/cpp/named-universal-char-escape-6.c: New test.
+	* c-c++-common/cpp/named-universal-char-escape-7.c: New test.
+	* g++.dg/cpp23/named-universal-char-escape1.C: New test.
+	* g++.dg/cpp23/named-universal-char-escape2.C: New test.
+
+2022-09-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106345
+	* lib/target-supports.exp (check_effective_target_powerpc_sqrt): Add
+	a function definition to avoid pedwarn about empty translation unit.
+	(check_effective_target_has_arch_pwr5): Likewise.
+	(check_effective_target_has_arch_pwr6): Likewise.
+	(check_effective_target_has_arch_pwr7): Likewise.
+	(check_effective_target_has_arch_pwr8): Likewise.
+	(check_effective_target_has_arch_pwr9): Likewise.
+	(check_effective_target_has_arch_pwr10): Likewise.
+	(check_effective_target_has_arch_ppc64): Likewise.
+	(check_effective_target_ppc_float128): Likewise.
+	(check_effective_target_ppc_float128_insns): Likewise.
+	(check_effective_target_powerpc_vsx): Likewise.
+
+2022-09-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103144-mul-1.c: New test.
+	* gcc.target/i386/pr103144-mul-2.c: New test.
+	* gcc.target/i386/pr103144-neg-1.c: New test.
+	* gcc.target/i386/pr103144-neg-2.c: New test.
+	* gcc.target/i386/pr103144-shift-1.c: New test.
+	* gcc.target/i386/pr103144-shift-2.c: New test.
+
 2022-09-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp23/subscript8.C: New test.

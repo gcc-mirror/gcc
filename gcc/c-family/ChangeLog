@@ -1,3 +1,15 @@
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY
+	for alignas, alignof, bool, false, static_assert, thread_local and
+	true.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Winvalid-utf8): Use ObjC instead of objC.  Remove
+	" in comments" from description.
+	(Wunicode): New option.
+
 2022-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/106836

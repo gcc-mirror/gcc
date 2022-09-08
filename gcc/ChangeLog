@@ -1,3 +1,132 @@
+2022-09-07  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Restore detection of  HAVE_XCOFF_DWARF_EXTRAS.
+	* config/rs6000/rs6000.cc (HAVE_XCOFF_DWARF_EXTRAS): Reset it.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2022-09-07  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105586
+	* sched-rgn.cc (save_state_for_fallthru_edge): New function.
+	(schedule_region): Use it for all blocks.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stdalign.h [defined __STDC_VERSION__ &&
+	__STDC_VERSION__ > 201710L]: Disable all content.
+	* ginclude/stdbool.h [defined __STDC_VERSION__ && __STDC_VERSION__
+	> 201710L] (bool, true, false): Do not define.
+
+2022-09-07  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/106855
+	* collect2.cc (scan_prog_file): Restore if XCOFF_DEBUGGING_INFO.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	  Restore usage of XCOFF_DEBUGGING_INFO.
+	* config/rs6000/xcoff.h (XCOFF_DEBUGGING_INFO): Restore.
+	* dwarf2asm.cc (XCOFF_DEBUGGING_INFO): Restore support for
+	  XCOFF_DEBUGGING_INFO.
+	(dw2_asm_output_nstring): Likewise.
+	(USE_LINKONCE_INDIRECT): Likewise.
+	* dwarf2out.cc (XCOFF_DEBUGGING_INFO): Likewise.
+	(HAVE_XCOFF_DWARF_EXTRAS): Likewise.
+	(output_fde): Likewise.
+	(output_call_frame_info): Likewise.
+	(have_macinfo): Likewise.
+	(add_AT_loc_list): Likewise.
+	(add_AT_view_list): Likewise.
+	(output_compilation_unit_header): Likewise.
+	(output_pubnames): Likewise.
+	(output_aranges): Likewise.
+	(output_line_info): Likewise.
+	(output_macinfo): Likewise.
+	(dwarf2out_finish): Likewise.
+	(dwarf2out_early_finish): Likewise.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106866
+	* tree-ssa-dce.cc (eliminate_unnecessary_stmts): When
+	we changed cfun->calls_setjmp make sure to purge all
+	abnormal call edges.
+
+2022-09-07  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.cc (csky_emit_compare_float): Fix the expanding of
+	float LE comparing with zero for fpuv3.
+	* config/csky/csky.h (TARGET_SUPPORT_FPV2): New, true if any fpuv2
+	features are enabled.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106860
+	* tree-ssa-loop-split.cc (split_loop): Find the exit to
+	latch edge from the loop exit edge instead of from the
+	latch.  Verify we're going to find it.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (dfs_mark_dominating_region):
+	Adjust to take the region exit source as argument.
+	(uninit_analysis::init_from_phi_def): Adjust.
+	(uninit_analysis::init_use_preds): Mark the dominating region
+	before computing control dependences.
+
+2022-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<SHORT:mode>_aarch64): Extend
+	w<-w, r<-w and w<-r alternatives to !simd, using 32-bit moves
+	in that case.  Extend w<-r to w<-Z.
+	(*mov<HFBF:mode>_aarch64): Likewise, but with Y instead of Z.
+	(*movti_aarch64): Use an FMOV from XZR for w<-Z if MOVI is not
+	available.
+	(define_split): Do not apply the floating-point immediate-to-register
+	split to zeros, even if MOVI is not available.
+
+2022-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_conditional_register_usage):
+	Disallow use of FPRs in register asms for !TARGET_FLOAT.
+
+2022-09-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/106828
+	* config/loongarch/loongarch.cc (loongarch_asan_shadow_offset): New.
+	(TARGET_ASAN_SHADOW_OFFSET): New.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Wno-unicode): Document.
+
+2022-09-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (const_scalar_int splitter): Remove.
+
+2022-09-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md: (constant splitters): Use "(pc)" as the
+	replacements.
+
+2022-09-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103144
+	* tree-vect-loop.cc (vect_is_nonlinear_iv_evolution): New function.
+	(vect_analyze_scalar_cycles_1): Detect nonlinear iv by upper function.
+	(vect_create_nonlinear_iv_init): New function.
+	(vect_peel_nonlinear_iv_init): Ditto.
+	(vect_create_nonlinear_iv_step): Ditto
+	(vect_create_nonlinear_iv_vec_step): Ditto
+	(vect_update_nonlinear_iv): Ditto
+	(vectorizable_nonlinear_induction): Ditto.
+	(vectorizable_induction): Call
+	vectorizable_nonlinear_induction when induction_type is not
+	vect_step_op_add.
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Update nonlinear iv for epilogue loop.
+	* tree-vectorizer.h (enum vect_induction_op_type): New enum.
+	(STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE): New Macro.
+
 2022-09-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/106754

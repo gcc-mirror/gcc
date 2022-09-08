@@ -1,3 +1,26 @@
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add true_false.
+	* expr.cc (eval_token): Check true_false not cplusplus to
+	determine whether to handle true and false keywords.
+	* init.cc (struct lang_flags): Add true_false.
+	(lang_defaults): Update.
+	(cpp_set_lang): Set true_false.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add cpp_warn_unicode member.
+	(enum cpp_warning_reason): Add CPP_W_UNICODE.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_unicode.
+	* charset.cc (_cpp_valid_ucn): In possible identifier contexts, don't
+	handle \u{ or \N{ specially in -std=c* modes except -std=c++2{3,b}.
+	In possible identifier contexts, don't emit an error and punt
+	if \N isn't followed by {, or if \N{} surrounds some lower case
+	letters or _.  In possible identifier contexts when not C++23, don't
+	emit an error but warning about unknown character names and treat as
+	separate tokens.  When treating as separate tokens \u{ or \N{, emit
+	warnings.
+
 2022-09-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* init.cc (lang_defaults): Disable trigraphs for C2x.

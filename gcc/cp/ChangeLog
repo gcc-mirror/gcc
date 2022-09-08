@@ -1,3 +1,23 @@
+2022-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106793
+	* decl.cc (grokdeclarator): Improve placeholder diagnostics.
+	* parser.cc (cp_parser_type_id_1): Add fixit.
+
+2022-09-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106188
+	PR c++/106713
+	* coroutines.cc (coro_rewrite_function_body): Ensure we have a
+	BIND_EXPR wrapping the function body.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* semantics.cc (finish_omp_target_clauses): If current_function_decl
+	isn't a nonstatic member function, don't set data.current_object to
+	non-NULL.
+
 2022-09-06  Jason Merrill  <jason@redhat.com>
 
 	* decl.cc (grok_op_properties): Return sooner for C++23 op[].

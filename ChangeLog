@@ -1,3 +1,13 @@
+2022-09-07  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-09-07  Tom de Vries  <tdevries@suse.de>
+
+	* configure.ac: Set extra_host_libiberty_configure_flags and
+	extra_host_zlib_configure_flags in separate case statements.
+	* configure: Regenerate.
+
 2022-09-06  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
 
 	* MAINTAINERS: Update c-sky port maintainers' emails.

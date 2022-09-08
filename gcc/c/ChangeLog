@@ -1,3 +1,10 @@
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_static_assert_declaration_no_semi)
+	(c_parser_alignas_specifier, c_parser_alignof_expression): Allow
+	for C2x spellings of keywords.
+	(c_parser_postfix_expression): Handle RID_TRUE and RID_FALSE.
+
 2022-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_omp_clause_doacross_sink): Don't verify val
