@@ -5212,7 +5212,7 @@ vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
       if (SLP_TREE_SCALAR_STMTS (node).length ())
 	{
 	  auto &stmts = SLP_TREE_SCALAR_STMTS (result);
-	  stmts.safe_splice (SLP_TREE_SCALAR_STMTS (result));
+	  stmts.safe_splice (SLP_TREE_SCALAR_STMTS (node));
 	  if (from_layout_i != 0)
 	    vect_slp_permute (m_perms[from_layout_i], stmts, false);
 	  if (to_layout_i != 0)
