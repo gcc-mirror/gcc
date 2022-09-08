@@ -1,3 +1,11 @@
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"
+	comment for omp_display_env feature.
+
 2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
