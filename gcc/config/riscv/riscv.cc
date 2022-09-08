@@ -5440,6 +5440,11 @@ riscv_file_start (void)
   if (! riscv_mrelax)
     fprintf (asm_out_file, "\t.option norelax\n");
 
+  /* If the user specifies "-mcsr-check" on the command line then enable csr
+     check in the assembler.  */
+  if (riscv_mcsr_check)
+    fprintf (asm_out_file, "\t.option csr-check\n");
+
   if (riscv_emit_attribute_p)
     riscv_emit_attribute ();
 }
