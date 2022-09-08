@@ -265,19 +265,40 @@ further remove checks found to be redundant.
 For additional hardening, the ``hardbool`` :samp:`Machine_Attribute`
 pragma can be used to annotate boolean types with representation
 clauses, so that expressions of such types used as conditions are
-checked even when compiling with :switch:`-gnatVT`.
+checked even when compiling with :switch:`-gnatVT`:
 
 .. code-block:: ada
 
    pragma Machine_Attribute (HBool, "hardbool");
 
+   function To_Boolean (X : HBool) returns Boolean is (Boolean (X));
+
+
+is compiled roughly like:
+
+.. code-block:: ada
+
+   function To_Boolean (X : HBool) returns Boolean is
+   begin
+     if X not in True | False then
+       raise Constraint_Error;
+     elsif X in True then
+       return True;
+     else
+       return False;
+     end if;
+   end To_Boolean;
+
 
 Note that :switch:`-gnatVn` will disable even ``hardbool`` testing.
 
 Analogous behavior is available as a GCC extension to the C and
-Objective C programming languages, through the ``hardbool`` attribute.
-For usage and more details on that attribute, see :title:`Using the
-GNU Compiler Collection (GCC)`.
+Objective C programming languages, through the ``hardbool`` attribute,
+with the difference that, instead of raising a Constraint_Error
+exception, when a hardened boolean variable is found to hold a value
+that stands for neither True nor False, the program traps.  For usage
+and more details on that attribute, see :title:`Using the GNU Compiler
+Collection (GCC)`.
 
 
 .. Control Flow Redundancy:

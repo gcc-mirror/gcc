@@ -28920,17 +28920,37 @@ further remove checks found to be redundant.
 For additional hardening, the @code{hardbool} @code{Machine_Attribute}
 pragma can be used to annotate boolean types with representation
 clauses, so that expressions of such types used as conditions are
-checked even when compiling with @code{-gnatVT}.
+checked even when compiling with @code{-gnatVT}:
 
 @example
 pragma Machine_Attribute (HBool, "hardbool");
+
+function To_Boolean (X : HBool) returns Boolean is (Boolean (X));
+@end example
+
+is compiled roughly like:
+
+@example
+function To_Boolean (X : HBool) returns Boolean is
+begin
+  if X not in True | False then
+    raise Constraint_Error;
+  elsif X in True then
+    return True;
+  else
+    return False;
+  end if;
+end To_Boolean;
 @end example
 
 Note that @code{-gnatVn} will disable even @code{hardbool} testing.
 
 Analogous behavior is available as a GCC extension to the C and
-Objective C programming languages, through the @code{hardbool} attribute.
-For usage and more details on that attribute, see @cite{Using the GNU Compiler Collection (GCC)}.
+Objective C programming languages, through the @code{hardbool} attribute,
+with the difference that, instead of raising a Constraint_Error
+exception, when a hardened boolean variable is found to hold a value
+that stands for neither True nor False, the program traps.  For usage
+and more details on that attribute, see @cite{Using the GNU Compiler Collection (GCC)}.
 
 @c Control Flow Redundancy:
 
