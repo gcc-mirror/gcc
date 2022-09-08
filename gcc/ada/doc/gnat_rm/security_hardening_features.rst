@@ -203,11 +203,58 @@ activated by a separate command-line option.
 
 The option :switch:`-fharden-compares` enables hardening of compares
 that compute results stored in variables, adding verification that the
-reversed compare yields the opposite result.
+reversed compare yields the opposite result, turning:
+
+.. code-block:: ada
+
+    B := X = Y;
+
+
+into:
+
+.. code-block:: ada
+
+    B := X = Y;
+    declare
+      NotB : Boolean := X /= Y; -- Computed independently of B.
+    begin
+      if B = NotB then
+        <__builtin_trap>;
+      end if;
+    end;
+
 
 The option :switch:`-fharden-conditional-branches` enables hardening
 of compares that guard conditional branches, adding verification of
-the reversed compare to both execution paths.
+the reversed compare to both execution paths, turning:
+
+.. code-block:: ada
+
+    if X = Y then
+      X := Z + 1;
+    else
+      Y := Z - 1;
+    end if;
+
+
+into:
+
+.. code-block:: ada
+
+    if X = Y then
+      if X /= Y then -- Computed independently of X = Y.
+        <__builtin_trap>;
+      end if;
+      X := Z + 1;
+    else
+      if X /= Y then -- Computed independently of X = Y.
+        null;
+      else
+        <__builtin_trap>;
+      end if;
+      Y := Z - 1;
+    end if;
+
 
 These transformations are introduced late in the compilation pipeline,
 long after boolean expressions are decomposed into separate compares,
