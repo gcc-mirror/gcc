@@ -74,6 +74,58 @@ or a variable.)
      --  scrubbing of the stack space used by that subprogram.
 
 
+Given these declarations, Foo has its type and body modified as
+follows:
+
+.. code-block:: ada
+
+     function Foo (<WaterMark> : in out System.Address) returns Integer
+     is
+       --  ...
+     begin
+       <__strub_update> (<WaterMark>);  --  Updates the stack WaterMark.
+       --  ...
+     end;
+
+
+whereas its callers are modified from:
+
+.. code-block:: ada
+
+     X := Foo;
+
+to:
+
+.. code-block:: ada
+
+     declare
+       <WaterMark> : System.Address;
+     begin
+       <__strub_enter> (<WaterMark>);  -- Initialize <WaterMark>.
+       X := Foo (<WaterMark>);
+       <__strub_leave> (<WaterMark>);  -- Scrubs stack up to <WaterMark>.
+     end;
+
+
+As for Bar, because it is strubbed in internal mode, its callers are
+not modified.  Its definition is modified roughly as follows:
+
+.. code-block:: ada
+
+     procedure Bar is
+       <WaterMark> : System.Address;
+       procedure Strubbed_Bar (<WaterMark> : in out System.Address) is
+       begin
+         <__strub_update> (<WaterMark>);  --  Updates the stack WaterMark.
+         -- original Bar body.
+       end Strubbed_Bar;
+     begin
+       <__strub_enter> (<WaterMark>);  -- Initialize <WaterMark>.
+       Strubbed_Bar (<WaterMark>);
+       <__strub_leave> (<WaterMark>);  -- Scrubs stack up to <WaterMark>.
+     end Bar;
+
+
 There are also :switch:`-fstrub={choice}` command-line options to
 control default settings.  For usage and more details on the
 command-line options, on the ``strub`` attribute, and their use with
