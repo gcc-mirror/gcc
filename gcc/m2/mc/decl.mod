@@ -10913,7 +10913,6 @@ BEGIN
    length,
    min,
    max,
-   throw,
    re,
    im,
    cmplx:  RETURN TRUE
@@ -12730,11 +12729,7 @@ BEGIN
    im   : WITH n^.unaryF DO
              visitNode (v, arg, p) ;
              visitNode (v, resultType, p)
-          END |
-   throw:  WITH n^.intrinsicF DO
-              visitNode (v, args, p) ;
-              visitNode (v, type, p)
-           END
+          END
 
    END
 END visitIntrinsicFunction ;

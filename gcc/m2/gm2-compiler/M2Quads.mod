@@ -2238,7 +2238,7 @@ END BuildRetry ;
                     it fails then it falls back onto default constants.
 *)
 
-PROCEDURE SafeRequestSym (procedure: CARDINAL; tok: CARDINAL; name: Name) : CARDINAL ;
+PROCEDURE SafeRequestSym (tok: CARDINAL; name: Name) : CARDINAL ;
 VAR
    sym: CARDINAL ;
 BEGIN
@@ -2385,7 +2385,7 @@ END BuildM2DepFunction ;
                          cause the linker to pull in all the module ctors.
 *)
 
-PROCEDURE BuildM2LinkFunction (tokno: CARDINAL; modulesym: CARDINAL) ;
+PROCEDURE BuildM2LinkFunction (tokno: CARDINAL) ;
 BEGIN
    IF ScaffoldDynamic
    THEN
@@ -2415,7 +2415,7 @@ END BuildM2LinkFunction ;
    BuildM2MainFunction - creates the main function with appropriate calls to the scaffold.
 *)
 
-PROCEDURE BuildM2MainFunction (tokno: CARDINAL; modulesym: CARDINAL) ;
+PROCEDURE BuildM2MainFunction (tokno: CARDINAL) ;
 BEGIN
    IF (ScaffoldDynamic OR ScaffoldStatic) AND (NOT SharedFlag)
    THEN
@@ -2503,18 +2503,18 @@ BEGIN
             PushT(1) ;
             BuildAdrFunction ;
 
-            PushTtok (SafeRequestSym (initFunction, tok, MakeKey ("argc")), tok) ;
-            PushTtok (SafeRequestSym (initFunction, tok, MakeKey ("argv")), tok) ;
-            PushTtok (SafeRequestSym (initFunction, tok, MakeKey ("envp")), tok) ;
+            PushTtok (SafeRequestSym (tok, MakeKey ("argc")), tok) ;
+            PushTtok (SafeRequestSym (tok, MakeKey ("argv")), tok) ;
+            PushTtok (SafeRequestSym (tok, MakeKey ("envp")), tok) ;
             PushT (4) ;
             BuildProcedureCall (tok) ;
          END
       ELSIF ScaffoldStatic
       THEN
          ForeachModuleCallInit (tok,
-                                SafeRequestSym (initFunction, tok, MakeKey ("argc")),
-                                SafeRequestSym (initFunction, tok, MakeKey ("argv")),
-                                SafeRequestSym (initFunction, tok, MakeKey ("envp")))
+                                SafeRequestSym (tok, MakeKey ("argc")),
+                                SafeRequestSym (tok, MakeKey ("argv")),
+                                SafeRequestSym (tok, MakeKey ("envp")))
       END ;
       EndScope ;
       BuildProcedureEnd ;
@@ -2558,18 +2558,18 @@ BEGIN
             PushT(1) ;
             BuildAdrFunction ;
 
-            PushTtok (SafeRequestSym (finiFunction, tok, MakeKey ("argc")), tok) ;
-            PushTtok (SafeRequestSym (finiFunction, tok, MakeKey ("argv")), tok) ;
-            PushTtok (SafeRequestSym (finiFunction, tok, MakeKey ("envp")), tok) ;
+            PushTtok (SafeRequestSym (tok, MakeKey ("argc")), tok) ;
+            PushTtok (SafeRequestSym (tok, MakeKey ("argv")), tok) ;
+            PushTtok (SafeRequestSym (tok, MakeKey ("envp")), tok) ;
             PushT (4) ;
             BuildProcedureCall (tok)
          END
       ELSIF ScaffoldStatic
       THEN
          ForeachModuleCallFinish (tok,
-                                  SafeRequestSym (finiFunction, tok, MakeKey ("argc")),
-                                  SafeRequestSym (finiFunction, tok, MakeKey ("argv")),
-                                  SafeRequestSym (finiFunction, tok, MakeKey ("envp")))
+                                  SafeRequestSym (tok, MakeKey ("argc")),
+                                  SafeRequestSym (tok, MakeKey ("argv")),
+                                  SafeRequestSym (tok, MakeKey ("envp")))
       END ;
       EndScope ;
       BuildProcedureEnd ;
@@ -2646,8 +2646,8 @@ BEGIN
          (* There are module init/fini functions and
             application init/fini functions.
             Here we create the application pair.  *)
-         BuildM2LinkFunction (tok, moduleSym) ;
-         BuildM2MainFunction (tok, moduleSym) ;
+         BuildM2LinkFunction (tok) ;
+         BuildM2MainFunction (tok) ;
          BuildM2InitFunction (tok, moduleSym) ;  (* Application init.  *)
          BuildM2FiniFunction (tok, moduleSym) ;  (* Application fini.  *)
       END ;

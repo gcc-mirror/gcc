@@ -16155,7 +16155,6 @@ static unsigned int isIntrinsicFunction (decl_node n)
       case length:
       case min:
       case max:
-      case throw_:
       case re:
       case im:
       case cmplx:
@@ -18277,11 +18276,6 @@ static void visitIntrinsicFunction (alists_alist v, decl_node n, nodeProcedure p
       case im:
         visitNode (v, n->unaryF.arg, p);
         visitNode (v, n->unaryF.resultType, p);
-        break;
-
-      case throw_:
-        visitNode (v, n->intrinsicF.args, p);
-        visitNode (v, n->intrinsicF.type, p);
         break;
 
 
