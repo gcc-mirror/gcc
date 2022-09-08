@@ -113,6 +113,8 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 * OpenACC Library Interoperability:: OpenACC library interoperability with the
                                NVIDIA CUBLAS library.
 * OpenACC Profiling Interface::
+* OpenMP-Implementation Specifics:: Notes specifics of this OpenMP
+                               implementation
 * Offload-Target Specifics::   Notes on offload-target specific internals
 * The libgomp ABI::            Notes on the external ABI presented by libgomp.
 * Reporting Bugs::             How to report bugs in the GNU Offloading and
@@ -4274,16 +4276,15 @@ offloading devices (it's not clear if they should be):
 @end itemize
 
 @c ---------------------------------------------------------------------
-@c Offload-Target Specifics
+@c OpenMP-Implementation Specifics
 @c ---------------------------------------------------------------------
 
-@node Offload-Target Specifics
-@chapter Offload-Target Specifics
-
-The following sections present notes on the offload-target specifics.
+@node OpenMP-Implementation Specifics
+@chapter OpenMP-Implementation Specifics
 
 @menu
 * OpenMP Context Selectors::
+* Memory allocation with libmemkind::
 @end menu
 
 @node OpenMP Context Selectors
@@ -4302,8 +4303,126 @@ The following sections present notes on the offload-target specifics.
       @tab See @code{-march=} in ``AMD GCN Options''
 @item @code{nvptx}
       @tab @code{gpu}
-      @tab See @code{-misa=} in ``Nvidia PTX Options''
+      @tab See @code{-march=} in ``Nvidia PTX Options''
 @end multitable
+
+@node Memory allocation with libmemkind
+@section Memory allocation with libmemkind
+
+On Linux systems, where the @uref{https://github.com/memkind/memkind, memkind
+library} (@code{libmemkind.so.0}) is available at runtime, it is used when
+creating memory allocators requesting
+
+@itemize
+@item the memory space @code{omp_high_bw_mem_space}
+@item the memory space @code{omp_large_cap_mem_space}
+@item the partition trait @code{omp_atv_interleaved}
+@end itemize
+
+
+@c ---------------------------------------------------------------------
+@c Offload-Target Specifics
+@c ---------------------------------------------------------------------
+
+@node Offload-Target Specifics
+@chapter Offload-Target Specifics
+
+The following sections present notes on the offload-target specifics
+
+@menu
+* AMD Radeon::
+* nvptx::
+@end menu
+
+@node AMD Radeon
+@section AMD Radeon (GCN)
+
+On the hardware side, there is the hierarchy (fine to coarse):
+@itemize
+@item work item (thread)
+@item wavefront
+@item work group
+@item compute unite (CU)
+@end itemize
+
+All OpenMP and OpenACC levels are used, i.e.
+@itemize
+@item OpenMP's simd and OpenACC's vector map to work items (thread)
+@item OpenMP's threads (``parallel'') and OpenACC's workers map
+      to wavefronts
+@item OpenMP's teams and OpenACC's gang use a threadpool with the
+      size of the number of teams or gangs, respectively.
+@end itemize
+
+The used sizes are
+@itemize
+@item Number of teams is the specified @code{num_teams} (OpenMP) or
+      @code{num_gangs} (OpenACC) or otherwise the number of CU
+@item Number of wavefronts is 4 for gfx900 and 16 otherwise;
+      @code{num_threads} (OpenMP) and @code{num_workers} (OpenACC)
+      overrides this if smaller.
+@item The wavefront has 102 scalars and 64 vectors
+@item Number of workitems is always 64
+@item The hardware permits maximally 40 workgroups/CU and
+      16 wavefronts/workgroup up to a limit of 40 wavefronts in total per CU.
+@item 80 scalars registers and 24 vector registers in non-kernel functions
+      (the chosen procedure-calling API).
+@item For the kernel itself: as many as register pressure demands (number of
+      teams and number of threads, scaled down if registers are exhausted)
+@end itemize
+
+The implementation remark:
+@itemize
+@item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
+      using the C library @code{printf} functions and the Fortran
+      @code{print}/@code{write} statements.
+@end itemize
+
+
+
+@node nvptx
+@section nvptx
+
+On the hardware side, there is the hierarchy (fine to coarse):
+@itemize
+@item thread
+@item warp
+@item thread block
+@item streaming multiprocessor
+@end itemize
+
+All OpenMP and OpenACC levels are used, i.e.
+@itemize
+@item OpenMP's simd and OpenACC's vector map to threads
+@item OpenMP's threads (``parallel'') and OpenACC's workers map to warps
+@item OpenMP's teams and OpenACC's gang use a threadpool with the
+      size of the number of teams or gangs, respectively.
+@end itemize
+
+The used sizes are
+@itemize
+@item The @code{warp_size} is always 32
+@item CUDA kernel launched: @code{dim=@{#teams,1,1@}, blocks=@{#threads,warp_size,1@}}.
+@end itemize
+
+Additional information can be obtained by setting the environment variable to
+@code{GOMP_DEBUG=1} (very verbose; grep for @code{kernel.*launch} for launch
+parameters).
+
+GCC generates generic PTX ISA code, which is just-in-time compiled by CUDA,
+which caches the JIT in the user's directory (see CUDA documentation; can be
+tuned by the environment variables @code{CUDA_CACHE_@{DISABLE,MAXSIZE,PATH@}}.
+
+Note: While PTX ISA is generic, the @code{-mptx=} and @code{-march=} commandline
+options still affect the used PTX ISA code and, thus, the requirments on
+CUDA version and hardware.
+
+The implementation remark:
+@itemize
+@item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
+      using the C library @code{printf} functions. Note that the Fortran
+      @code{print}/@code{write} statements are not supported, yet.
+@end itemize
 
 
 @c ---------------------------------------------------------------------
