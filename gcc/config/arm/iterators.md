@@ -330,6 +330,63 @@
 ;; Saturating addition, subtraction
 (define_code_iterator SSPLUSMINUS [ss_plus ss_minus])
 
+;; MVE integer binary operations.
+(define_code_iterator MVE_INT_BINARY_RTX [plus minus mult])
+
+(define_int_iterator MVE_INT_M_BINARY   [
+		     VADDQ_M_S VADDQ_M_U
+		     VMULQ_M_S VMULQ_M_U
+		     VSUBQ_M_S VSUBQ_M_U
+		     ])
+
+(define_int_iterator MVE_INT_M_N_BINARY [
+		     VADDQ_M_N_S VADDQ_M_N_U
+		     VMULQ_M_N_S VMULQ_M_N_U
+		     VSUBQ_M_N_S VSUBQ_M_N_U
+		     ])
+
+(define_int_iterator MVE_INT_N_BINARY   [
+		     VADDQ_N_S VADDQ_N_U
+		     VMULQ_N_S VMULQ_N_U
+		     VSUBQ_N_S VSUBQ_N_U
+		     ])
+
+(define_int_iterator MVE_FP_M_BINARY   [
+		     VADDQ_M_F
+		     VMULQ_M_F
+		     VSUBQ_M_F
+		     ])
+
+(define_int_iterator MVE_FP_M_N_BINARY [
+		     VADDQ_M_N_F
+		     VMULQ_M_N_F
+		     VSUBQ_M_N_F
+		     ])
+
+(define_int_iterator MVE_FP_N_BINARY   [
+		     VADDQ_N_F
+		     VMULQ_N_F
+		     VSUBQ_N_F
+		     ])
+
+(define_code_attr mve_addsubmul [
+		 (minus "vsub")
+		 (mult "vmul")
+		 (plus "vadd")
+		 ])
+
+(define_int_attr mve_insn [
+		 (VADDQ_M_N_S "vadd") (VADDQ_M_N_U "vadd") (VADDQ_M_N_F "vadd")
+		 (VADDQ_M_S "vadd") (VADDQ_M_U "vadd") (VADDQ_M_F "vadd")
+		 (VADDQ_N_S "vadd") (VADDQ_N_U "vadd") (VADDQ_N_F "vadd")
+		 (VMULQ_M_N_S "vmul") (VMULQ_M_N_U "vmul") (VMULQ_M_N_F "vmul")
+		 (VMULQ_M_S "vmul") (VMULQ_M_U "vmul") (VMULQ_M_F "vmul")
+		 (VMULQ_N_S "vmul") (VMULQ_N_U "vmul") (VMULQ_N_F "vmul")
+		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
+		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
+		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
+		 ])
+
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
 ;; a stack pointer operand.  The minus operation is a candidate for an rsub
 ;; and hence only plus is supported.
