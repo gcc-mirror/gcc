@@ -1246,3 +1246,7 @@ Support PREFETCHI built-in functions and code generation.
 mraoint
 Target Mask(ISA2_RAOINT) Var(ix86_isa_flags2) Save
 Support RAOINT built-in functions and code generation.
+
+munroll-only-small-loops
+Target Var(ix86_unroll_only_small_loops) Init(0) Save
+Enable conservative small loop unrolling.

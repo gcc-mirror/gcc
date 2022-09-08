@@ -219,6 +219,11 @@ struct processor_costs {
   const char *const align_jump;		/* Jump alignment.  */
   const char *const align_label;	/* Label alignment.  */
   const char *const align_func;		/* Function alignment.  */
+
+  const unsigned small_unroll_ninsns;	/* Insn count limit for small loop
+					   to be unrolled.  */
+  const unsigned small_unroll_factor;   /* Unroll factor for small loop to
+					   be unrolled.  */
 };
 
 extern const struct processor_costs *ix86_cost;
