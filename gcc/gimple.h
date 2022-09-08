@@ -194,6 +194,7 @@ enum gf_mask {
     GF_OMP_RETURN_NOWAIT	= 1 << 0,
 
     GF_OMP_SECTION_LAST		= 1 << 0,
+    GF_OMP_ORDERED_STANDALONE   = 1 << 0,
     GF_OMP_ATOMIC_MEMORY_ORDER  = (1 << 6) - 1,
     GF_OMP_ATOMIC_NEED_VALUE	= 1 << 6,
     GF_OMP_ATOMIC_WEAK		= 1 << 7,
@@ -2312,7 +2313,7 @@ static inline unsigned
 gimple_omp_subcode (const gimple *s)
 {
   gcc_gimple_checking_assert (gimple_code (s) >= GIMPLE_OMP_ATOMIC_LOAD
-			      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
+			      && gimple_code (s) <= GIMPLE_OMP_ORDERED);
   return s->subcode;
 }
 
@@ -2399,6 +2400,27 @@ gimple_omp_section_set_last (gimple *g)
 {
   GIMPLE_CHECK (g, GIMPLE_OMP_SECTION);
   g->subcode |= GF_OMP_SECTION_LAST;
+}
+
+
+/* Return true if OMP ordered construct is stand-alone
+   (G has the GF_OMP_ORDERED_STANDALONE flag set).  */
+
+static inline bool
+gimple_omp_ordered_standalone_p (const gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_ORDERED);
+  return (gimple_omp_subcode (g) & GF_OMP_ORDERED_STANDALONE) != 0;
+}
+
+
+/* Set the GF_OMP_ORDERED_STANDALONE flag on G.  */
+
+static inline void
+gimple_omp_ordered_standalone (gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_ORDERED);
+  g->subcode |= GF_OMP_ORDERED_STANDALONE;
 }
 
 

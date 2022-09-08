@@ -1610,6 +1610,9 @@ loongarch_weak_symbol_p (const_rtx x)
 bool
 loongarch_symbol_binds_local_p (const_rtx x)
 {
+  if (TARGET_DIRECT_EXTERN_ACCESS)
+    return true;
+
   if (SYMBOL_REF_P (x))
     return (SYMBOL_REF_DECL (x)
 	    ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
@@ -6093,6 +6096,9 @@ loongarch_option_override_internal (struct gcc_options *opts)
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
 
+  if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
+    error ("%qs cannot be used for compiling a shared library",
+	   "-mdirect-extern-access");
 
   switch (la_target.cmodel)
     {
@@ -6460,6 +6466,16 @@ loongarch_use_anchors_for_symbol_p (const_rtx symbol)
   return default_use_anchors_for_symbol_p (symbol);
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+loongarch_asan_shadow_offset (void)
+{
+  /* We only have libsanitizer support for LOONGARCH64 at present.
+     This value is taken from the file libsanitizer/asan/asan_mappint.h.  */
+  return TARGET_64BIT ? (HOST_WIDE_INT_1 << 46) : 0;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -6653,6 +6669,9 @@ loongarch_use_anchors_for_symbol_p (const_rtx symbol)
 
 #undef  TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P loongarch_use_anchors_for_symbol_p
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET loongarch_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

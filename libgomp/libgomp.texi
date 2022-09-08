@@ -394,10 +394,11 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Default map-type for @code{map} clause in @code{target enter/exit data}
       @tab Y @tab
 @item New @code{doacross} clause as alias for @code{depend} with
-      @code{source}/@code{sink} modifier @tab N @tab
+      @code{source}/@code{sink} modifier @tab Y @tab
 @item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
       @tab N @tab
-@item @code{omp_cur_iteration} keyword @tab N @tab
+@item @code{omp_cur_iteration} keyword @tab P
+      @tab @code{sink: omp_cur_iteration - 1} unsupported
 @end multitable
 
 @unnumberedsubsec Other new OpenMP 5.2 features

@@ -38,7 +38,13 @@ generic
 
    Maxpow : Positive;
 
-   Powten_Address : System.Address;
+   Powfive_Address : System.Address;
+
+   Powfive_100_Address : System.Address;
+
+   Powfive_200_Address : System.Address;
+
+   Powfive_300_Address : System.Address;
 
    type Uns is mod <>;
 

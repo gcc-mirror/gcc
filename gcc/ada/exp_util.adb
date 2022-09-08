@@ -1293,7 +1293,8 @@ package body Exp_Util is
                --  Gigi expects a different profile in the Secondary_Stack_Pool
                --  case. There must be no uses of the two missing formals
                --  (i.e., Pool_Param and Alignment_Param) in this case.
-               Formal_Params := New_List (Address_Param, Size_Param);
+               Formal_Params := New_List
+                 (Address_Param, Size_Param, Alignment_Param);
             else
                Formal_Params := New_List (
                  Pool_Param, Address_Param, Size_Param, Alignment_Param);
@@ -2042,7 +2043,7 @@ package body Exp_Util is
       elsif Is_Underlying_Full_View (Work_Typ) then
          return;
 
-      --  Use the first subtype when dealing with various base types
+      --  Use the first subtype when dealing with implicit base types
 
       elsif Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
@@ -5186,19 +5187,6 @@ package body Exp_Util is
          Insert_Action (N, IR);
       end if;
    end Ensure_Defined;
-
-   --------------------
-   -- Entry_Names_OK --
-   --------------------
-
-   function Entry_Names_OK return Boolean is
-   begin
-      return
-        not Restricted_Profile
-          and then not Global_Discard_Names
-          and then not Restriction_Active (No_Implicit_Heap_Allocations)
-          and then not Restriction_Active (No_Local_Allocators);
-   end Entry_Names_OK;
 
    -------------------
    -- Evaluate_Name --

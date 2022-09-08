@@ -189,7 +189,7 @@ package body Debug is
    --  d_U  Disable prepending messages with "error:".
    --  d_V  Enable verifications on the expanded tree
    --  d_W
-   --  d_X
+   --  d_X  Disable assertions to check matching of extra formals
    --  d_Y
    --  d_Z
 
@@ -201,7 +201,7 @@ package body Debug is
    --  d6   Default access unconstrained to thin pointers
    --  d7   Suppress version/source stamp/compilation time for -gnatv/-gnatl
    --  d8   Force opposite endianness in packed stuff
-   --  d9   Allow lock free implementation
+   --  d9
 
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
@@ -1043,6 +1043,10 @@ package body Debug is
 
    --  d_V  Enable verification of the expanded code before calling the backend
    --       and generate error messages on each inconsistency found.
+
+   --  d_X  Disable assertions to check matching of extra formals; switch added
+   --       temporarily to disable these checks until this work is complete if
+   --       they cause unexpected assertion failures.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

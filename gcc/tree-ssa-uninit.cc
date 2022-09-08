@@ -1402,6 +1402,9 @@ execute_late_warn_uninitialized (function *fun)
 
   timevar_push (TV_TREE_UNINIT);
 
+  /* Avoid quadratic beahvior when looking up case labels for edges.  */
+  start_recording_case_labels ();
+
   possibly_undefined_names = new hash_set<tree>;
   defined_args = new hash_map<gphi *, uninit_analysis::func_t::phi_arg_set_t>;
 
@@ -1432,6 +1435,7 @@ execute_late_warn_uninitialized (function *fun)
   possibly_undefined_names = NULL;
   delete defined_args;
   defined_args = NULL;
+  end_recording_case_labels ();
   free_dominance_info (CDI_POST_DOMINATORS);
   timevar_pop (TV_TREE_UNINIT);
 }

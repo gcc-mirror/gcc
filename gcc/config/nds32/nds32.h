@@ -1332,7 +1332,7 @@ enum reg_class
    This is used to unwind the stack to an exception handler's call frame.  */
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, 2)
 
-#define DBX_REGISTER_NUMBER(REGNO) nds32_dbx_register_number (REGNO)
+#define DEBUGGER_REGNO(REGNO) nds32_debugger_regno (REGNO)
 
 #define STACK_POINTER_REGNUM SP_REGNUM
 

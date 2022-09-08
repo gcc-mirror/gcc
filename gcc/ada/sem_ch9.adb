@@ -27,7 +27,6 @@ with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Contracts;      use Contracts;
-with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -65,6 +64,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Style;
+with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 
@@ -140,14 +140,6 @@ package body Sem_Ch9 is
       pragma Assert
         (Nkind (N) in N_Protected_Type_Declaration | N_Protected_Body);
 
-      --  The lock-free implementation is currently enabled through a debug
-      --  flag. When Lock_Free_Given is True, an aspect Lock_Free forces the
-      --  lock-free implementation. In that case, the debug flag is not needed.
-
-      if not Lock_Free_Given and then not Debug_Flag_9 then
-         return False;
-      end if;
-
       --  Get the number of errors detected by the compiler so far
 
       if Lock_Free_Given then
@@ -215,6 +207,27 @@ package body Sem_Ch9 is
                         Next (Par);
                      end loop;
                   end;
+
+               elsif Nkind (Decl) = N_Subprogram_Declaration
+                 and then
+                   Nkind (Specification (Decl)) = N_Function_Specification
+                 and then
+                   Nkind (Result_Definition (Specification (Decl)))
+                     in N_Has_Entity
+                 and then
+                   Needs_Secondary_Stack
+                     (Entity (Result_Definition (Specification (Decl))))
+               then
+                  if Lock_Free_Given then
+                     --  Message text is imprecise; "unconstrained" is
+                     --  similar to "needs secondary stack" but not identical.
+                     Error_Msg_N
+                       ("unconstrained function result subtype not allowed "
+                        & "when Lock_Free given",
+                        Decl);
+                  else
+                     return False;
+                  end if;
                end if;
 
                --  Examine private declarations after visible declarations
@@ -254,11 +267,6 @@ package body Sem_Ch9 is
             function Satisfies_Lock_Free_Requirements
               (Sub_Body : Node_Id) return Boolean
             is
-               Is_Procedure : constant Boolean    :=
-                                Ekind (Corresponding_Spec (Sub_Body)) =
-                                  E_Procedure;
-               --  Indicates if Sub_Body is a procedure body
-
                Comp : Entity_Id := Empty;
                --  Track the current component which the body references
 
@@ -338,222 +346,220 @@ package body Sem_Ch9 is
                --  Start of processing for Check_Node
 
                begin
-                  if Is_Procedure then
-                     --  Allocators restricted
+                  --  Allocators restricted
 
-                     if Kind = N_Allocator then
-                        if Lock_Free_Given then
-                           Error_Msg_N ("allocator not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Aspects Address, Export and Import restricted
-
-                     elsif Kind = N_Aspect_Specification then
-                        declare
-                           Asp_Name : constant Name_Id   :=
-                                        Chars (Identifier (N));
-                           Asp_Id   : constant Aspect_Id :=
-                                        Get_Aspect_Id (Asp_Name);
-
-                        begin
-                           if Asp_Id = Aspect_Address or else
-                              Asp_Id = Aspect_Export  or else
-                              Asp_Id = Aspect_Import
-                           then
-                              Error_Msg_Name_1 := Asp_Name;
-
-                              if Lock_Free_Given then
-                                 Error_Msg_N ("aspect% not allowed", N);
-                                 return Skip;
-                              end if;
-
-                              return Abandon;
-                           end if;
-                        end;
-
-                     --  Address attribute definition clause restricted
-
-                     elsif Kind = N_Attribute_Definition_Clause
-                       and then Get_Attribute_Id (Chars (N)) =
-                                  Attribute_Address
-                     then
-                        Error_Msg_Name_1 := Chars (N);
-
-                        if Lock_Free_Given then
-                           if From_Aspect_Specification (N) then
-                              Error_Msg_N ("aspect% not allowed", N);
-                           else
-                              Error_Msg_N ("% clause not allowed", N);
-                           end if;
-
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Non-static Attribute references that don't denote a
-                     --  static function restricted.
-
-                     elsif Kind = N_Attribute_Reference
-                       and then not Is_OK_Static_Expression (N)
-                       and then not Is_Static_Function (N)
-                     then
-                        if Lock_Free_Given then
-                           Error_Msg_N
-                             ("non-static attribute reference not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Delay statements restricted
-
-                     elsif Kind in N_Delay_Statement then
-                        if Lock_Free_Given then
-                           Error_Msg_N ("delay not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Dereferences of access values restricted
-
-                     elsif Kind = N_Explicit_Dereference
-                       or else (Kind = N_Selected_Component
-                                 and then Is_Access_Type (Etype (Prefix (N))))
-                     then
-                        if Lock_Free_Given then
-                           Error_Msg_N
-                             ("dereference of access value not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Non-static function calls restricted
-
-                     elsif Kind = N_Function_Call
-                       and then not Is_OK_Static_Expression (N)
-                     then
-                        if Lock_Free_Given then
-                           Error_Msg_N
-                             ("non-static function call not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Goto statements restricted
-
-                     elsif Kind = N_Goto_Statement then
-                        if Lock_Free_Given then
-                           Error_Msg_N ("goto statement not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  References
-
-                     elsif Kind = N_Identifier
-                       and then Present (Entity (N))
-                     then
-                        declare
-                           Id     : constant Entity_Id := Entity (N);
-                           Sub_Id : constant Entity_Id :=
-                                      Corresponding_Spec (Sub_Body);
-
-                        begin
-                           --  Prohibit references to non-constant entities
-                           --  outside the protected subprogram scope.
-
-                           if Ekind (Id) in Assignable_Kind
-                             and then not
-                               Scope_Within_Or_Same (Scope (Id), Sub_Id)
-                             and then not
-                               Scope_Within_Or_Same
-                                 (Scope (Id),
-                                  Protected_Body_Subprogram (Sub_Id))
-                           then
-                              if Lock_Free_Given then
-                                 Error_Msg_NE
-                                   ("reference to global variable& not " &
-                                    "allowed", N, Id);
-                                 return Skip;
-                              end if;
-
-                              return Abandon;
-                           end if;
-                        end;
-
-                     --  Loop statements restricted
-
-                     elsif Kind = N_Loop_Statement then
-                        if Lock_Free_Given then
-                           Error_Msg_N ("loop not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Pragmas Export and Import restricted
-
-                     elsif Kind = N_Pragma then
-                        declare
-                           Prag_Name : constant Name_Id   :=
-                             Pragma_Name (N);
-                           Prag_Id   : constant Pragma_Id :=
-                             Get_Pragma_Id (Prag_Name);
-
-                        begin
-                           if Prag_Id = Pragma_Export
-                             or else Prag_Id = Pragma_Import
-                           then
-                              Error_Msg_Name_1 := Prag_Name;
-
-                              if Lock_Free_Given then
-                                 if From_Aspect_Specification (N) then
-                                    Error_Msg_N ("aspect% not allowed", N);
-                                 else
-                                    Error_Msg_N ("pragma% not allowed", N);
-                                 end if;
-
-                                 return Skip;
-                              end if;
-
-                              return Abandon;
-                           end if;
-                        end;
-
-                     --  Procedure call statements restricted
-
-                     elsif Kind = N_Procedure_Call_Statement then
-                        if Lock_Free_Given then
-                           Error_Msg_N ("procedure call not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
-
-                     --  Quantified expression restricted. Note that we have
-                     --  to check the original node as well, since at this
-                     --  stage, it may have been rewritten.
-
-                     elsif Kind = N_Quantified_Expression
-                       or else
-                         Nkind (Original_Node (N)) = N_Quantified_Expression
-                     then
-                        if Lock_Free_Given then
-                           Error_Msg_N
-                             ("quantified expression not allowed", N);
-                           return Skip;
-                        end if;
-
-                        return Abandon;
+                  if Kind = N_Allocator then
+                     if Lock_Free_Given then
+                        Error_Msg_N ("allocator not allowed", N);
+                        return Skip;
                      end if;
+
+                     return Abandon;
+
+                  --  Aspects Address, Export and Import restricted
+
+                  elsif Kind = N_Aspect_Specification then
+                     declare
+                        Asp_Name : constant Name_Id   :=
+                                     Chars (Identifier (N));
+                        Asp_Id   : constant Aspect_Id :=
+                                     Get_Aspect_Id (Asp_Name);
+
+                     begin
+                        if Asp_Id = Aspect_Address or else
+                           Asp_Id = Aspect_Export  or else
+                           Asp_Id = Aspect_Import
+                        then
+                           Error_Msg_Name_1 := Asp_Name;
+
+                           if Lock_Free_Given then
+                              Error_Msg_N ("aspect% not allowed", N);
+                              return Skip;
+                           end if;
+
+                           return Abandon;
+                        end if;
+                     end;
+
+                  --  Address attribute definition clause restricted
+
+                  elsif Kind = N_Attribute_Definition_Clause
+                    and then Get_Attribute_Id (Chars (N)) =
+                               Attribute_Address
+                  then
+                     Error_Msg_Name_1 := Chars (N);
+
+                     if Lock_Free_Given then
+                        if From_Aspect_Specification (N) then
+                           Error_Msg_N ("aspect% not allowed", N);
+                        else
+                           Error_Msg_N ("% clause not allowed", N);
+                        end if;
+
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Non-static Attribute references that don't denote a
+                  --  static function restricted.
+
+                  elsif Kind = N_Attribute_Reference
+                    and then not Is_OK_Static_Expression (N)
+                    and then not Is_Static_Function (N)
+                  then
+                     if Lock_Free_Given then
+                        Error_Msg_N
+                          ("non-static attribute reference not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Delay statements restricted
+
+                  elsif Kind in N_Delay_Statement then
+                     if Lock_Free_Given then
+                        Error_Msg_N ("delay not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Dereferences of access values restricted
+
+                  elsif Kind = N_Explicit_Dereference
+                    or else (Kind = N_Selected_Component
+                              and then Is_Access_Type (Etype (Prefix (N))))
+                  then
+                     if Lock_Free_Given then
+                        Error_Msg_N
+                          ("dereference of access value not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Non-static function calls restricted
+
+                  elsif Kind = N_Function_Call
+                    and then not Is_OK_Static_Expression (N)
+                  then
+                     if Lock_Free_Given then
+                        Error_Msg_N
+                          ("non-static function call not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Goto statements restricted
+
+                  elsif Kind = N_Goto_Statement then
+                     if Lock_Free_Given then
+                        Error_Msg_N ("goto statement not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  References
+
+                  elsif Kind = N_Identifier
+                    and then Present (Entity (N))
+                  then
+                     declare
+                        Id     : constant Entity_Id := Entity (N);
+                        Sub_Id : constant Entity_Id :=
+                                   Corresponding_Spec (Sub_Body);
+
+                     begin
+                        --  Prohibit references to non-constant entities
+                        --  outside the protected subprogram scope.
+
+                        if Ekind (Id) in Assignable_Kind
+                          and then not
+                            Scope_Within_Or_Same (Scope (Id), Sub_Id)
+                          and then not
+                            Scope_Within_Or_Same
+                              (Scope (Id),
+                               Protected_Body_Subprogram (Sub_Id))
+                        then
+                           if Lock_Free_Given then
+                              Error_Msg_NE
+                                ("reference to global variable& not " &
+                                 "allowed", N, Id);
+                              return Skip;
+                           end if;
+
+                           return Abandon;
+                        end if;
+                     end;
+
+                  --  Loop statements restricted
+
+                  elsif Kind = N_Loop_Statement then
+                     if Lock_Free_Given then
+                        Error_Msg_N ("loop not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Pragmas Export and Import restricted
+
+                  elsif Kind = N_Pragma then
+                     declare
+                        Prag_Name : constant Name_Id   :=
+                          Pragma_Name (N);
+                        Prag_Id   : constant Pragma_Id :=
+                          Get_Pragma_Id (Prag_Name);
+
+                     begin
+                        if Prag_Id = Pragma_Export
+                          or else Prag_Id = Pragma_Import
+                        then
+                           Error_Msg_Name_1 := Prag_Name;
+
+                           if Lock_Free_Given then
+                              if From_Aspect_Specification (N) then
+                                 Error_Msg_N ("aspect% not allowed", N);
+                              else
+                                 Error_Msg_N ("pragma% not allowed", N);
+                              end if;
+
+                              return Skip;
+                           end if;
+
+                           return Abandon;
+                        end if;
+                     end;
+
+                  --  Procedure call statements restricted
+
+                  elsif Kind = N_Procedure_Call_Statement then
+                     if Lock_Free_Given then
+                        Error_Msg_N ("procedure call not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
+
+                  --  Quantified expression restricted. Note that we have
+                  --  to check the original node as well, since at this
+                  --  stage, it may have been rewritten.
+
+                  elsif Kind = N_Quantified_Expression
+                    or else
+                      Nkind (Original_Node (N)) = N_Quantified_Expression
+                  then
+                     if Lock_Free_Given then
+                        Error_Msg_N
+                          ("quantified expression not allowed", N);
+                        return Skip;
+                     end if;
+
+                     return Abandon;
                   end if;
 
                   --  A protected subprogram (function or procedure) may
@@ -644,6 +650,10 @@ package body Sem_Ch9 is
             --  Start of processing for Satisfies_Lock_Free_Requirements
 
             begin
+               if not Support_Atomic_Primitives_On_Target then
+                  return False;
+               end if;
+
                --  Get the number of errors detected by the compiler so far
 
                if Lock_Free_Given then

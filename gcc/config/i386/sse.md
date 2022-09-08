@@ -984,6 +984,7 @@
    (V16SI "QI") (V8SI  "QI") (V4SI  "QI")
    (V8DI  "QI") (V4DI  "QI") (V2DI  "QI")
    (V32HF "HI") (V16HF "QI") (V8HF  "QI")
+   (V32BF "HI") (V16BF "QI") (V8BF  "QI")
    (V16SF "QI") (V8SF  "QI") (V4SF  "QI")
    (V8DF  "QI") (V4DF  "QI") (V2DF  "QI")])
 
@@ -10712,7 +10713,7 @@
 	   ]
 	   (symbol_ref "true")))])
 
-(define_insn "vec_set<mode>_0"
+(define_insn "@vec_set<mode>_0"
   [(set (match_operand:V8_128 0 "register_operand"
 	  "=v,v,v,x,x,Yr,*x,x,x,x,v,v")
 	(vec_merge:V8_128
@@ -17895,7 +17896,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_high<mode><mask_name>"
+(define_insn "@vec_interleave_high<mode><mask_name>"
   [(set (match_operand:V8_128 0 "register_operand" "=x,Yw")
 	(vec_select:V8_128
 	  (vec_concat:<ssedoublevecmode>
@@ -17963,7 +17964,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "vec_interleave_low<mode><mask_name>"
+(define_insn "@vec_interleave_low<mode><mask_name>"
   [(set (match_operand:V8_128 0 "register_operand" "=x,Yw")
 	(vec_select:V8_128
 	  (vec_concat:<ssedoublevecmode>
@@ -26902,14 +26903,40 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "V8SF")])
 
-(define_insn "<mask_codefor>avx512f_vcvtps2ph512<mask_name>"
+;; vcvtps2ph is special, it encodes {sae} in evex, but round control in the imm
+;; For intrinsic _mm512_cvt_roundps_ph (a, imm), imm contains both {sae}
+;; and round control, we need to separate it in the assembly output.
+;; op2 in avx512f_vcvtps2ph512_mask_sae contains both sae and round control.
+(define_expand "avx512f_vcvtps2ph512_mask_sae"
+ [(set (match_operand:V16HI 0 "register_operand" "=v")
+       (vec_merge:V16HI
+	 (unspec:V16HI
+	   [(match_operand:V16SF 1 "register_operand" "v")
+	   (match_operand:SI 2 "const_0_to_255_operand")]
+	   UNSPEC_VCVTPS2PH)
+	 (match_operand:V16HI 3 "nonimm_or_0_operand")
+	 (match_operand:HI 4 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  int round = INTVAL (operands[2]);
+  /* Separate {sae} from rounding control imm,
+     imm[3:7] will be ignored by the instruction.  */
+  if (round & 8)
+    {
+      emit_insn (gen_avx512f_vcvtps2ph512_mask_round (operands[0], operands[1],
+	  operands[2], operands[3], operands[4], GEN_INT (8)));
+      DONE;
+    }
+})
+
+(define_insn "<mask_codefor>avx512f_vcvtps2ph512<mask_name><round_saeonly_name>"
   [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(unspec:V16HI
 	  [(match_operand:V16SF 1 "register_operand" "v")
 	   (match_operand:SI 2 "const_0_to_255_operand")]
 	  UNSPEC_VCVTPS2PH))]
   "TARGET_AVX512F"
-  "vcvtps2ph\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  "vcvtps2ph\t{%2, <round_saeonly_mask_op3>%1, %0<mask_operand3>|%0<mask_operand3>, %1<round_saeonly_mask_op3>, %2}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])

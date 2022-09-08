@@ -146,8 +146,13 @@ static bool IsDyldHdr(const mach_header *hdr) {
 // until we hit a Mach header matching dyld instead. These recurse
 // calls are expensive, but the first memory map generation occurs
 // early in the process, when dyld is one of the only images loaded,
-// so it will be hit after only a few iterations.  These assumptions don't hold
-// on macOS 13+ anymore (dyld itself has moved into the shared cache).
+// so it will be hit after only a few iterations.  These assumptions don't
+// hold on macOS 13+ anymore (dyld itself has moved into the shared cache).
+
+// FIXME: Unfortunately, the upstream revised version to deal with macOS 13+
+// is incompatible with GCC and also uses APIs not available on earlier
+// systems which we support; backed out for now.
+
 static mach_header *GetDyldImageHeaderViaVMRegion() {
   vm_address_t address = 0;
 
@@ -171,64 +176,17 @@ static mach_header *GetDyldImageHeaderViaVMRegion() {
   }
 }
 
-extern "C" {
-struct dyld_shared_cache_dylib_text_info {
-  uint64_t version;  // current version 2
-  // following fields all exist in version 1
-  uint64_t loadAddressUnslid;
-  uint64_t textSegmentSize;
-  uuid_t dylibUuid;
-  const char *path;  // pointer invalid at end of iterations
-  // following fields all exist in version 2
-  uint64_t textSegmentOffset;  // offset from start of cache
-};
-typedef struct dyld_shared_cache_dylib_text_info
-    dyld_shared_cache_dylib_text_info;
-
-extern bool _dyld_get_shared_cache_uuid(uuid_t uuid);
-extern const void *_dyld_get_shared_cache_range(size_t *length);
-extern int dyld_shared_cache_iterate_text(
-    const uuid_t cacheUuid,
-    void (^callback)(const dyld_shared_cache_dylib_text_info *info));
-}  // extern "C"
-
-static mach_header *GetDyldImageHeaderViaSharedCache() {
-  uuid_t uuid;
-  bool hasCache = _dyld_get_shared_cache_uuid(uuid);
-  if (!hasCache)
-    return nullptr;
-
-  size_t cacheLength;
-  __block uptr cacheStart = (uptr)_dyld_get_shared_cache_range(&cacheLength);
-  CHECK(cacheStart && cacheLength);
-
-  __block mach_header *dyldHdr = nullptr;
-  int res = dyld_shared_cache_iterate_text(
-      uuid, ^(const dyld_shared_cache_dylib_text_info *info) {
-        CHECK_GE(info->version, 2);
-        mach_header *hdr =
-            (mach_header *)(cacheStart + info->textSegmentOffset);
-        if (IsDyldHdr(hdr))
-          dyldHdr = hdr;
-      });
-  CHECK_EQ(res, 0);
-
-  return dyldHdr;
-}
-
 const mach_header *get_dyld_hdr() {
   if (!dyld_hdr) {
     // On macOS 13+, dyld itself has moved into the shared cache.  Looking it up
     // via vm_region_recurse_64() causes spins/hangs/crashes.
+    // FIXME: find a way to do this compatible with GCC.
     if (GetMacosAlignedVersion() >= MacosVersion(13, 0)) {
-      dyld_hdr = GetDyldImageHeaderViaSharedCache();
-      if (!dyld_hdr) {
         VReport(1,
-                "Failed to lookup the dyld image header in the shared cache on "
-                "macOS 13+ (or no shared cache in use).  Falling back to "
+                "looking up the dyld image header in the shared cache on "
+                "macOS 13+ is not yet supported.  Falling back to "
                 "lookup via vm_region_recurse_64().\n");
         dyld_hdr = GetDyldImageHeaderViaVMRegion();
-      }
     } else {
       dyld_hdr = GetDyldImageHeaderViaVMRegion();
     }

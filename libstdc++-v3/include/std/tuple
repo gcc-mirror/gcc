@@ -826,7 +826,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // then TUPLE should match tuple(UTypes&&...) instead.
       template<typename _Tuple, typename _Tp, typename _Up>
 	struct _UseOtherCtor<_Tuple, tuple<_Tp>, tuple<_Up>>
-	: __or_<is_convertible<_Tuple, _Tp>, is_constructible<_Tp, _Tuple>>
+	: __or_<is_convertible<_Tuple, _Tp>, is_constructible<_Tp, _Tuple>>::type
 	{ };
       // If TUPLE and *this each have a single element of the same type,
       // then TUPLE should match a copy/move constructor instead.

@@ -26,10 +26,6 @@
 #define TARGET_CPU_CPP_BUILTINS()	\
   aarch64_cpu_cpp_builtins (pfile)
 
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS aarch64_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO aarch64_d_register_target_info
-
 
 
 #define REGISTER_TARGET_PRAGMAS() aarch64_register_pragmas ()
@@ -631,12 +627,12 @@
 #define DWARF_FRAME_REGISTERS           (DWARF_ALT_FRAME_RETURN_COLUMN + 1)
 
 
-#define DBX_REGISTER_NUMBER(REGNO)	aarch64_dbx_register_number (REGNO)
+#define DEBUGGER_REGNO(REGNO)	aarch64_debugger_regno (REGNO)
 /* Provide a definition of DWARF_FRAME_REGNUM here so that fallback unwinders
    can use DWARF_ALT_FRAME_RETURN_COLUMN defined below.  This is just the same
    as the default definition in dwarf2out.cc.  */
 #undef DWARF_FRAME_REGNUM
-#define DWARF_FRAME_REGNUM(REGNO)	DBX_REGISTER_NUMBER (REGNO)
+#define DWARF_FRAME_REGNUM(REGNO)	DEBUGGER_REGNO (REGNO)
 
 #define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (LR_REGNUM)
 

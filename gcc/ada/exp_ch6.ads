@@ -121,6 +121,18 @@ package Exp_Ch6 is
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
 
+   function Has_BIP_Extra_Formal
+     (E              : Entity_Id;
+      Kind           : BIP_Formal_Kind;
+      Must_Be_Frozen : Boolean := True) return Boolean;
+   --  Given a subprogram, subprogram type, entry or entry family, return True
+   --  if E has the BIP extra formal associated with Kind. In general this
+   --  subprogram must be invoked with a frozen entity or a subprogram type of
+   --  a dispatching call since we can only rely on the availability of extra
+   --  formals on these entities; this requirement can be relaxed using the
+   --  formal Must_Be_Frozen in scenarios where we know that the entity has
+   --  the extra formals.
+
    procedure Install_Class_Preconditions_Check (Call_Node : Node_Id);
    --  Install check of class-wide preconditions on the caller.
 

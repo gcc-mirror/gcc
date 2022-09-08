@@ -4697,19 +4697,6 @@ package body Sem_Attr is
 
          Set_Etype (N, Standard_Boolean);
 
-      ---------------
-      -- Lock_Free --
-      ---------------
-
-      when Attribute_Lock_Free =>
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
-
-         if not Is_Protected_Type (P_Type) then
-            Error_Attr_P
-              ("prefix of % attribute must be a protected object");
-         end if;
-
       ----------------
       -- Loop_Entry --
       ----------------
@@ -8338,15 +8325,6 @@ package body Sem_Attr is
 
             return;
 
-         --  For Lock_Free, we apply the attribute to the type of the object.
-         --  This is allowed since we have already verified that the type is a
-         --  protected type.
-
-         elsif Id = Attribute_Lock_Free then
-            P_Entity := Etype (P);
-
-         --  No other attributes for objects are folded
-
          else
             Check_Expressions;
             return;
@@ -8476,7 +8454,6 @@ package body Sem_Attr is
              Id = Attribute_Has_Access_Values            or else
              Id = Attribute_Has_Discriminants            or else
              Id = Attribute_Has_Tagged_Values            or else
-             Id = Attribute_Lock_Free                    or else
              Id = Attribute_Preelaborable_Initialization or else
              Id = Attribute_Type_Class                   or else
              Id = Attribute_Unconstrained_Array          or else
@@ -8595,7 +8572,7 @@ package body Sem_Attr is
       --  only the First, Last and Length attributes are possibly static.
 
       --  Atomic_Always_Lock_Free, Definite, Descriptor_Size, Has_Access_Values
-      --  Has_Discriminants, Has_Tagged_Values, Lock_Free, Type_Class, and
+      --  Has_Discriminants, Has_Tagged_Values, Type_Class, and
       --  Unconstrained_Array are again exceptions, because they apply as well
       --  to unconstrained types.
 
@@ -8614,7 +8591,6 @@ package body Sem_Attr is
             Id = Attribute_Has_Access_Values            or else
             Id = Attribute_Has_Discriminants            or else
             Id = Attribute_Has_Tagged_Values            or else
-            Id = Attribute_Lock_Free                    or else
             Id = Attribute_Preelaborable_Initialization or else
             Id = Attribute_Type_Class                   or else
             Id = Attribute_Unconstrained_Array          or else
@@ -9314,24 +9290,6 @@ package body Sem_Attr is
                Ureal_2 ** (4 * Mantissa) * (Ureal_1 - Ureal_2 ** (-Mantissa)),
                True);
          end if;
-
-      ---------------
-      -- Lock_Free --
-      ---------------
-
-      when Attribute_Lock_Free => Lock_Free : declare
-         V : constant Entity_Id := Boolean_Literals (Uses_Lock_Free (P_Type));
-
-      begin
-         Rewrite (N, New_Occurrence_Of (V, Loc));
-
-         --  Analyze and resolve as boolean. Note that this attribute is a
-         --  static attribute in GNAT.
-
-         Analyze_And_Resolve (N, Standard_Boolean);
-         Static := True;
-         Set_Is_Static_Expression (N);
-      end Lock_Free;
 
       ----------
       -- Last --

@@ -54,12 +54,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #endif
 
-/* Provide our target specific DBX_REGISTER_NUMBER.  VxWorks relies on
+/* Provide our target specific DEBUGGER_REGNO.  VxWorks relies on
    the SVR4 numbering.  */
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) \
-  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n) \
+  (TARGET_64BIT ? debugger64_register_map[n] : svr4_debugger_register_map[n])
 
 /* CPU macro definitions, ordered to account for VxWorks 7 not
    supporting CPUs older than PENTIUM4 since SR0650.  */

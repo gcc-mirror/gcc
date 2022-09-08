@@ -106,6 +106,14 @@ package body Sem_Case is
 
    package Composite_Case_Ops is
 
+      Simplified_Composite_Coverage_Rules : constant Boolean := True;
+      --  Indicates that, as a temporary stopgap, we implement
+      --  simpler coverage-checking rules when casing on a
+      --  composite selector:
+      --     1) Require that an Others choice must be given, regardless
+      --        of whether all possible values are covered explicitly.
+      --     2) No legality checks regarding overlapping choices.
+
       function Box_Value_Required (Subtyp : Entity_Id) return Boolean;
       --  If result is True, then the only allowed value (in a choice
       --  aggregate) for a component of this (sub)type is a box. This rule
@@ -263,7 +271,6 @@ package body Sem_Case is
          type Bound_Values is array (Positive range <>) of Node_Id;
 
       end Choice_Analysis;
-
    end Composite_Case_Ops;
 
    procedure Expand_Others_Choice
@@ -2526,6 +2533,14 @@ package body Sem_Case is
                for P in Part_Id loop
                   Insert_Representative (Component_Bounds (P).Low, P);
                end loop;
+
+               if Simplified_Composite_Coverage_Rules then
+                  --  Omit other representative values to avoid capacity
+                  --  problems building data structures only used in
+                  --  compile-time checks that will not be performed.
+                  return Result;
+               end if;
+
                for C of Choices_Bounds loop
                   if not C.Is_Others then
                      for P in Part_Id loop
@@ -3368,8 +3383,6 @@ package body Sem_Case is
          --------------------------------
 
          procedure Check_Case_Pattern_Choices is
-            --  ??? Need to Free/Finalize value sets allocated here.
-
             package Ops is new Composite_Case_Ops.Choice_Analysis
               (Case_Statement => N);
             use Ops;
@@ -3394,8 +3407,14 @@ package body Sem_Case is
 
                Covered : Value_Set := Empty;
                --  The union of all alternatives seen so far
-
             begin
+               if Composite_Case_Ops.Simplified_Composite_Coverage_Rules then
+                  if not (for some Choice of Info => Choice.Is_Others) then
+                     Error_Msg_N ("others choice required", N);
+                  end if;
+                  return;
+               end if;
+
                for Choice of Info loop
                   if Choice.Is_Others then
                      Others_Seen := True;

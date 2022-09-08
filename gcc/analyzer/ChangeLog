@@ -1,3 +1,17 @@
+2022-09-05  Tim Lange  <mail@tim-lange.me>
+
+	* region-model-impl-calls.cc (region_model::impl_call_strcpy):
+	Handle the constant string case.
+	* region-model.cc (region_model::get_string_size):
+	New function to get the string size from a region or svalue.
+	* region-model.h (class region_model): Add get_string_size.
+
+2022-09-05  Tim Lange  <mail@tim-lange.me>
+
+	* region.cc (cast_region::get_relative_concrete_offset):
+	New overloaded method.
+	* region.h: Add cast_region::get_relative_concrete_offset.
+
 2022-08-22  Martin Liska  <mliska@suse.cz>
 
 	* region-model.cc: Add missing final keyword.

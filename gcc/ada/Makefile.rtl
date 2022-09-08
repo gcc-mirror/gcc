@@ -778,6 +778,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-vaenu8$(objext) \
   s-vafi32$(objext) \
   s-vafi64$(objext) \
+  s-vaispe$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
   s-valflt$(objext) \
@@ -796,6 +797,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-valuns$(objext) \
   s-valuti$(objext) \
   s-valwch$(objext) \
+  s-vauspe$(objext) \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \

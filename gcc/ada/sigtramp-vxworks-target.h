@@ -149,7 +149,7 @@
 
    In general:
    There is no unique numbering for the x86 architecture.  It's parameterized
-   by DWARF_FRAME_REGNUM, which is DBX_REGISTER_NUMBER except for Windows, and
+   by DWARF_FRAME_REGNUM, which is DEBUGGER_REGNO except for Windows, and
    the latter depends on the platform.
 */
 

@@ -9430,8 +9430,8 @@ package body Sem_Prag is
 
                   --  If the pragma comes from an aspect specification, there
                   --  must be an Import aspect specified as well. In the rare
-                  --  case where Import is set to False, the suprogram needs to
-                  --  have a local completion.
+                  --  case where Import is set to False, the subprogram needs
+                  --  to have a local completion.
 
                   declare
                      Imp_Aspect : constant Node_Id :=
@@ -20139,7 +20139,7 @@ package body Sem_Prag is
                end loop;
 
                --  If entity in not in current scope it may be the enclosing
-               --  suprogram body to which the aspect applies.
+               --  subprogram body to which the aspect applies.
 
                if not Found then
                   if Entity (Id) = Current_Scope
@@ -26138,12 +26138,9 @@ package body Sem_Prag is
       if Class_Present (N) then
 
          --  Verify that a class-wide condition is legal, i.e. the operation is
-         --  a primitive of a tagged type. Note that a generic subprogram is
-         --  not a primitive operation.
+         --  a primitive of a tagged type.
 
-         Disp_Typ := Find_Dispatching_Type (Spec_Id);
-
-         if No (Disp_Typ) or else Is_Generic_Subprogram (Spec_Id) then
+         if not Is_Dispatching_Operation (Spec_Id) then
             Error_Msg_Name_1 := Original_Aspect_Pragma_Name (N);
 
             if From_Aspect_Specification (N) then
@@ -26162,6 +26159,7 @@ package body Sem_Prag is
          --  Remaining semantic checks require a full tree traversal
 
          else
+            Disp_Typ := Find_Dispatching_Type (Spec_Id);
             Check_Class_Wide_Condition (Expr);
          end if;
 

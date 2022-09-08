@@ -59,7 +59,6 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
-with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Res;        use Sem_Res;
@@ -926,10 +925,6 @@ package body Exp_Ch7 is
 
             pragma Assert (Present (Param));
             pragma Assert (Present (Conc_Typ));
-
-            --  Historical note: In earlier versions of GNAT, there was code
-            --  at this point to generate stuff to service entry queues. It is
-            --  now abstracted in Build_Protected_Subprogram_Call_Cleanup.
 
             Build_Protected_Subprogram_Call_Cleanup
               (Specification (N), Conc_Typ, Loc, Stmts);
@@ -2066,10 +2061,15 @@ package body Exp_Ch7 is
                --  In the case where the last construct to contain a controlled
                --  object is either a nested package, an instantiation or a
                --  freeze node, the body must be inserted directly after the
-               --  construct.
+               --  construct, except if the insertion point is already placed
+               --  after the construct, typically in the statement list.
 
                if Nkind (Last_Top_Level_Ctrl_Construct) in
                     N_Freeze_Entity | N_Package_Declaration | N_Package_Body
+                 and then not
+                  (List_Containing (Last_Top_Level_Ctrl_Construct) = Spec_Decls
+                    and then Present (Stmts)
+                    and then List_Containing (Finalizer_Insert_Nod) = Stmts)
                then
                   Finalizer_Insert_Nod := Last_Top_Level_Ctrl_Construct;
                end if;
@@ -2546,7 +2546,7 @@ package body Exp_Ch7 is
                            --  template and not the actually instantiation
                            --  (which is generated too late for us to process
                            --  it), so there is no need to update in particular
-                           --  to update Last_Top_Level_Ctrl_Construct here.
+                           --  Last_Top_Level_Ctrl_Construct here.
 
                            if Counter_Val > Old_Counter_Val then
                               Counter_Val := Old_Counter_Val;
@@ -3692,15 +3692,6 @@ package body Exp_Ch7 is
    --------------------------
 
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id) is
-      Is_Protected_Subp_Body : constant Boolean :=
-        Nkind (N) = N_Subprogram_Body
-        and then Is_Protected_Subprogram_Body (N);
-      --  Determine whether N denotes the protected version of a subprogram
-      --  which belongs to a protected type.
-
-      Loc : constant Source_Ptr := Sloc (N);
-      HSS : Node_Id := Handled_Statement_Sequence (N);
-
    begin
       --  Do not perform this expansion in SPARK mode because we do not create
       --  finalizers in the first place.
@@ -3730,19 +3721,40 @@ package body Exp_Ch7 is
       --        end;
       --     end Prot_SubpP;
 
-      if Is_Protected_Subp_Body then
-         HSS := Handled_Statement_Sequence (Last (Statements (HSS)));
-      end if;
+      declare
+         Loc : constant Source_Ptr := Sloc (N);
 
-      pragma Assert (No (At_End_Proc (HSS)));
-      Set_At_End_Proc (HSS, New_Occurrence_Of (Fin_Id, Loc));
+         Is_Protected_Subp_Body : constant Boolean :=
+           Nkind (N) = N_Subprogram_Body
+           and then Is_Protected_Subprogram_Body (N);
+         --  True if N is the protected version of a subprogram that belongs to
+         --  a protected type.
 
-      --  Attach reference to finalizer to tree, for LLVM use
+         HSS : constant Node_Id :=
+           (if Is_Protected_Subp_Body
+             then Handled_Statement_Sequence
+               (Last (Statements (Handled_Statement_Sequence (N))))
+             else Handled_Statement_Sequence (N));
 
-      Set_Parent (At_End_Proc (HSS), HSS);
+         --  We attach the At_End_Proc to the HSS if this is an accept
+         --  statement or extended return statement. Also in the case of
+         --  a protected subprogram, because if Service_Entries raises an
+         --  exception, we do not lock the PO, so we also do not want to
+         --  unlock it.
 
-      Analyze (At_End_Proc (HSS));
-      Expand_At_End_Handler (HSS, Empty);
+         Use_HSS : constant Boolean :=
+           Nkind (N) in N_Accept_Statement | N_Extended_Return_Statement
+           or else Is_Protected_Subp_Body;
+
+         At_End_Proc_Bearer : constant Node_Id := (if Use_HSS then HSS else N);
+      begin
+         pragma Assert (No (At_End_Proc (At_End_Proc_Bearer)));
+         Set_At_End_Proc (At_End_Proc_Bearer, New_Occurrence_Of (Fin_Id, Loc));
+         --  Attach reference to finalizer to tree, for LLVM use
+         Set_Parent (At_End_Proc (At_End_Proc_Bearer), At_End_Proc_Bearer);
+         Analyze (At_End_Proc (At_End_Proc_Bearer));
+         Expand_At_End_Handler (At_End_Proc_Bearer, Empty);
+      end;
    end Build_Finalizer_Call;
 
    ---------------------
@@ -5544,12 +5556,6 @@ package body Exp_Ch7 is
                                  Nkind (N) = N_Block_Statement
                                    and then Present (Cleanup_Actions (N));
 
-      Has_Postcondition      : constant Boolean :=
-                                 Nkind (N) = N_Subprogram_Body
-                                   and then Present
-                                              (Postconditions_Proc
-                                                (Unique_Defining_Entity (N)));
-
       Actions_Required       : constant Boolean :=
                                  Requires_Cleanup_Actions (N, True)
                                    or else Is_Asynchronous_Call
@@ -5560,46 +5566,8 @@ package body Exp_Ch7 is
                                    or else Needs_Sec_Stack_Mark
                                    or else Needs_Custom_Cleanup;
 
-      HSS : Node_Id := Handled_Statement_Sequence (N);
       Loc : Source_Ptr;
       Cln : List_Id;
-
-      procedure Wrap_HSS_In_Block;
-      --  Move HSS inside a new block along with the original exception
-      --  handlers. Make the newly generated block the sole statement of HSS.
-
-      -----------------------
-      -- Wrap_HSS_In_Block --
-      -----------------------
-
-      procedure Wrap_HSS_In_Block is
-         Block : constant Node_Id :=
-           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
-         Block_Id : constant Entity_Id :=
-           New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
-         End_Lab : constant Node_Id := End_Label (HSS);
-         --  Preserve end label to provide proper cross-reference information
-
-      begin
-         Set_Identifier (Block, New_Occurrence_Of (Block_Id, Loc));
-         Set_Etype (Block_Id, Standard_Void_Type);
-         Set_Block_Node (Block_Id, Identifier (Block));
-
-         --  Signal the finalization machinery that this particular block
-         --  contains the original context.
-
-         Set_Is_Finalization_Wrapper (Block);
-
-         HSS := Make_Handled_Sequence_Of_Statements (Loc,
-           Statements => New_List (Block),
-           End_Label => End_Lab);
-         Set_First_Real_Statement (HSS, Block);
-         Set_Handled_Statement_Sequence (N, HSS);
-
-         if Nkind (N) = N_Subprogram_Body then
-            Set_Has_Nested_Block_With_Handler (Scop);
-         end if;
-      end Wrap_HSS_In_Block;
 
    --  Start of processing for Expand_Cleanup_Actions
 
@@ -5671,12 +5639,14 @@ package body Exp_Ch7 is
          Cln := No_List;
       end if;
 
-      declare
-         Decls     : List_Id := Declarations (N);
-         Fin_Id    : Entity_Id;
-         Mark      : Entity_Id := Empty;
-         New_Decls : List_Id;
+      if No (Declarations (N)) then
+         Set_Declarations (N, New_List);
+      end if;
 
+      declare
+         Decls  : constant List_Id := Declarations (N);
+         Fin_Id : Entity_Id;
+         Mark   : Entity_Id := Empty;
       begin
          --  If we are generating expanded code for debugging purposes, use the
          --  Sloc of the point of insertion for the cleanup code. The Sloc will
@@ -5703,108 +5673,21 @@ package body Exp_Ch7 is
             Establish_Task_Master (N);
          end if;
 
-         New_Decls := New_List;
-
          --  If secondary stack is in use, generate:
          --
          --    Mnn : constant Mark_Id := SS_Mark;
 
          if Needs_Sec_Stack_Mark then
+            Set_Uses_Sec_Stack (Scop, False); -- avoid duplicate SS marks
             Mark := Make_Temporary (Loc, 'M');
 
-            Append_To (New_Decls, Build_SS_Mark_Call (Loc, Mark));
-            Set_Uses_Sec_Stack (Scop, False);
-         end if;
-
-         --  If exception handlers are present in a non-subprogram
-         --  construct, wrap the sequence of statements in a block.
-         --  Otherwise, code can be moved so that the wrong handlers
-         --  apply. It is important not to do this for function bodies,
-         --  because otherwise transient finalizable objects created
-         --  by a return statement get finalized too late. It is harmless
-         --  not to do this for procedures.
-
-         if Present (Exception_Handlers (HSS))
-           and then Nkind (N) /= N_Subprogram_Body
-         then
-            Wrap_HSS_In_Block;
-
-         --  Ensure that the First_Real_Statement field is set
-
-         elsif No (First_Real_Statement (HSS)) then
-            Set_First_Real_Statement (HSS, First (Statements (HSS)));
-         end if;
-
-         --  Do not move the Activation_Chain declaration in the context of
-         --  task allocation blocks. Task allocation blocks use _chain in their
-         --  cleanup handlers and gigi complains if it is declared in the
-         --  sequence of statements of the scope that declares the handler.
-
-         if Is_Task_Allocation then
             declare
-               Chain_Decl : constant N_Object_Declaration_Id :=
-                 Parent (Activation_Chain_Entity (N));
-               pragma Assert (List_Containing (Chain_Decl) = Decls);
+               Mark_Call : constant Node_Id := Build_SS_Mark_Call (Loc, Mark);
             begin
-               Remove (Chain_Decl);
-               Prepend_To (New_Decls, Chain_Decl);
+               Prepend_To (Decls, Mark_Call);
+               Analyze (Mark_Call);
             end;
          end if;
-
-         --  Move the _postconditions subprogram declaration and its associated
-         --  objects into the declarations section so that it is callable
-         --  within _postconditions.
-
-         if Has_Postcondition then
-            declare
-               Decl      : Node_Id;
-               Prev_Decl : Node_Id;
-
-            begin
-               Decl :=
-                 Prev (Subprogram_Body
-                        (Postconditions_Proc (Current_Subprogram)));
-               while Present (Decl) loop
-                  Prev_Decl := Prev (Decl);
-
-                  Remove (Decl);
-                  Prepend_To (New_Decls, Decl);
-
-                  exit when Nkind (Decl) = N_Subprogram_Declaration
-                              and then Chars (Corresponding_Body (Decl))
-                                         = Name_uPostconditions;
-
-                  Decl := Prev_Decl;
-               end loop;
-            end;
-         end if;
-
-         --  Ensure the presence of a declaration list in order to successfully
-         --  append all original statements to it.
-
-         if No (Decls) then
-            Set_Declarations (N, New_List);
-            Decls := Declarations (N);
-         end if;
-
-         --  Move the declarations into the sequence of statements in order to
-         --  have them protected by the At_End handler. It may seem weird to
-         --  put declarations in the sequence of statement but in fact nothing
-         --  forbids that at the tree level.
-
-         Append_List_To (Decls, Statements (HSS));
-         Set_Statements (HSS, Decls);
-
-         --  Reset the Sloc of the handled statement sequence to properly
-         --  reflect the new initial "statement" in the sequence.
-
-         Set_Sloc (HSS, Sloc (First (Decls)));
-
-         --  The declarations of finalizer spec and auxiliary variables replace
-         --  the old declarations that have been moved inward.
-
-         Set_Declarations (N, New_Decls);
-         Analyze_Declarations (New_Decls);
 
          --  Generate finalization calls for all controlled objects appearing
          --  in the statements of N. Add context specific cleanup for various
@@ -5814,7 +5697,7 @@ package body Exp_Ch7 is
            (N           => N,
             Clean_Stmts => Build_Cleanup_Statements (N, Cln),
             Mark_Id     => Mark,
-            Top_Decls   => New_Decls,
+            Top_Decls   => Decls,
             Defer_Abort => Nkind (Original_Node (N)) = N_Task_Body
                              or else Is_Master,
             Fin_Id      => Fin_Id);
@@ -10102,9 +9985,6 @@ package body Exp_Ch7 is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (Loop_Copy)));
-
-      Set_First_Real_Statement
-        (Handled_Statement_Sequence (Local_Body), Loop_Copy);
 
       Rewrite (Loop_Stmt, Local_Body);
       Analyze (Loop_Stmt);

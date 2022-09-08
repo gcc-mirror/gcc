@@ -1305,9 +1305,6 @@ package body Exp_Ch11 is
       then
          pragma Assert (not Is_Thunk (Current_Scope));
          Expand_Cleanup_Actions (Parent (N));
-
-      else
-         Set_First_Real_Statement (N, First (Statements (N)));
       end if;
    end Expand_N_Handled_Sequence_Of_Statements;
 

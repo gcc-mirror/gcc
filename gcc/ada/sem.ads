@@ -32,7 +32,7 @@
 
 --    Analysis     implements the bulk of semantic analysis such as
 --                 name analysis and type resolution for declarations,
---                 instructions and expressions. The main routine
+--                 statements, and expressions. The main routine
 --                 driving this process is procedure Analyze given below.
 --                 This analysis phase is really a bottom up pass that is
 --                 achieved during the recursive traversal performed by the
@@ -46,26 +46,25 @@
 --                 completed during analysis (because of overloading
 --                 ambiguities). Specifically, after completing the bottom
 --                 up pass carried out during analysis for expressions, the
---                 Resolve routine (see the spec of sem_res for more info)
+--                 Resolve routine (see the spec of Sem_Res for more info)
 --                 is called to perform a top down resolution with
 --                 recursive calls to itself to resolve operands.
 
---    Expansion    if we are not generating code this phase is a no-op.
+--    Expansion    If we are not generating code this phase is a no-op.
 --                 Otherwise this phase expands, i.e. transforms, original
---                 declaration, expressions or instructions into simpler
---                 structures that can be handled by the back-end. This
---                 phase is also in charge of generating code which is
---                 implicit in the original source (for instance for
---                 default initializations, controlled types, etc.)
---                 There are two separate instances where expansion is
+--                 source constructs into simpler constructs that can be
+--                 handled by the back-end. This phase is also in charge of
+--                 generating code which is implicit in the original source
+--                 (for instance for default initializations, controlled types,
+--                 etc.)  There are two separate instances where expansion is
 --                 invoked. For declarations and instructions, expansion is
---                 invoked just after analysis since no resolution needs
---                 to be performed. For expressions, expansion is done just
---                 after resolution. In both cases expansion is done from the
---                 bottom up just before the end of Analyze for instructions
---                 and declarations or the call to Resolve for expressions.
---                 The main routine driving expansion is Expand.
---                 See the spec of Expander for more details.
+--                 invoked just after analysis since no resolution needs to be
+--                 performed. For expressions, expansion is done just after
+--                 resolution. In both cases expansion is done from the bottom
+--                 up just before the end of Analyze for instructions and
+--                 declarations or the call to Resolve for expressions.  The
+--                 main routine driving expansion is Expand.  See the spec of
+--                 Expander for more details.
 
 --  To summarize, in normal code generation mode we recursively traverse the
 --  abstract syntax tree top-down performing semantic analysis bottom
@@ -110,7 +109,7 @@
 --  pragmas that appear with subprogram specifications rather than in the body.
 
 --  Collectively we call these Spec_Expressions. The routine that performs the
---  special analysis is called Analyze_Spec_Expression.
+--  special analysis is called Preanalyze_Spec_Expression.
 
 --  Expansion has to be deferred since you can't generate code for expressions
 --  that reference types that have not been frozen yet. As an example, consider
@@ -134,7 +133,7 @@
 --  of the expression cannot be obtained at the point of declaration, only at
 --  the point of use.
 
---  Generally our model is to combine analysis resolution and expansion, but
+--  Generally our model is to combine analysis, resolution, and expansion, but
 --  this is the one case where this model falls down. Here is how we patch
 --  it up without causing too much distortion to our basic model.
 
@@ -175,7 +174,7 @@
 --  children is performed before expansion of the parent does not work if the
 --  code generated for the children by the expander needs to be evaluated
 --  repeatedly (for instance in the above aggregate "new Thing (Function_Call)"
---  needs to be called 100 times.)
+--  needs to be called 100 times).
 
 --  The reason this mechanism does not work is that the expanded code for the
 --  children is typically inserted above the parent and thus when the parent

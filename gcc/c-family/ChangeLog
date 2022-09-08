@@ -1,3 +1,35 @@
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY
+	for alignas, alignof, bool, false, static_assert, thread_local and
+	true.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Winvalid-utf8): Use ObjC instead of objC.  Remove
+	" in comments" from description.
+	(Wunicode): New option.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106836
+	* c-omp.cc (c_omp_split_clauses): Handle OMP_CLAUSE_DOACROSS.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	* c-omp.cc (c_finish_omp_depobj): Check also for OMP_CLAUSE_DOACROSS
+	clause and diagnose it.  Don't handle OMP_CLAUSE_DEPEND_SOURCE and
+	OMP_CLAUSE_DEPEND_SINK.  Assert kind is not OMP_CLAUSE_DEPEND_INVALID.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-common.h (check_for_xor_used_as_pow): New decl.
+	* c-lex.cc (c_lex_with_flags): Add DECIMAL_INT to flags as appropriate.
+	* c-warn.cc (check_for_xor_used_as_pow): New.
+	* c.opt (Wxor-used-as-pow): New.
+
 2022-09-01  Jason Merrill  <jason@redhat.com>
 
 	* c-common.cc (c_common_nodes_and_builtins): Set TREE_STRING_FLAG on

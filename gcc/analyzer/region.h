@@ -1087,6 +1087,8 @@ public:
   void accept (visitor *v) const final override;
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
+  bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+
   const region *get_original_region () const { return m_original_region; }
 
 private:

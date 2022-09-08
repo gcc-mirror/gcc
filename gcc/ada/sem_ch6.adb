@@ -34,6 +34,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
+with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch9;        use Exp_Ch9;
 with Exp_Dbug;       use Exp_Dbug;
@@ -199,6 +200,13 @@ package body Sem_Ch6 is
    procedure Enter_Overloaded_Entity (S : Entity_Id);
    --  This procedure makes S, a new overloaded entity, into the first visible
    --  entity with that name.
+
+   function Has_Reliable_Extra_Formals (E : Entity_Id) return Boolean;
+   --  E is the entity for a subprogram spec. Returns False for abstract
+   --  predefined dispatching primitives of Root_Controlled since they
+   --  cannot have extra formals (this is required to build the runtime);
+   --  it also returns False for predefined stream dispatching operations
+   --  not emitted by the frontend. Otherwise returns True.
 
    function Is_Non_Overriding_Operation
      (Prev_E : Entity_Id;
@@ -2032,7 +2040,7 @@ package body Sem_Ch6 is
       end loop;
 
       --  Determine whether the null procedure may be a completion of a generic
-      --  suprogram, in which case we use the new null body as the completion
+      --  subprogram, in which case we use the new null body as the completion
       --  and set minimal semantic information on the original declaration,
       --  which is rewritten as a null statement.
 
@@ -3349,7 +3357,8 @@ package body Sem_Ch6 is
                       or else
                         (Is_Class_Wide_Type (Designated_Type (Etype (Scop)))
                            and then
-                         Is_Limited_Record (Designated_Type (Etype (Scop)))))
+                         Is_Limited_Record
+                           (Etype (Designated_Type (Etype (Scop))))))
            and then Expander_Active
          then
             Decl := Build_Master_Declaration (Loc);
@@ -5410,13 +5419,11 @@ package body Sem_Ch6 is
       --  the warning.
 
       declare
-         Stm : Node_Id;
-
+         Stm : Node_Id := First (Statements (HSS));
       begin
          --  Skip call markers installed by the ABE mechanism, labels, and
          --  Push_xxx_Error_Label to find the first real statement.
 
-         Stm := First (Statements (HSS));
          while Nkind (Stm) in N_Call_Marker | N_Label | N_Push_xxx_Label loop
             Next (Stm);
          end loop;
@@ -8470,6 +8477,253 @@ package body Sem_Ch6 is
         (New_Id, Old_Id, Type_Conformant, True, Result, Err_Loc);
    end Check_Type_Conformant;
 
+   -----------------------------
+   -- Check_Untagged_Equality --
+   -----------------------------
+
+   procedure Check_Untagged_Equality (Eq_Op : Entity_Id) is
+      Eq_Decl : constant Node_Id   := Unit_Declaration_Node (Eq_Op);
+      Typ     : constant Entity_Id := Etype (First_Formal (Eq_Op));
+
+      procedure Freezing_Point_Warning (N : Node_Id; S : String);
+      --  Output a warning about the freezing point N of Typ
+
+      function Is_Actual_Of_Instantiation
+        (E    : Entity_Id;
+         Inst : Node_Id) return Boolean;
+      --  Return True if E is an actual parameter of instantiation Inst
+
+      -----------------------------------
+      -- Output_Freezing_Point_Warning --
+      -----------------------------------
+
+      procedure Freezing_Point_Warning (N : Node_Id; S : String) is
+      begin
+         Error_Msg_String (1 .. S'Length) := S;
+         Error_Msg_Strlen := S'Length;
+
+         if Ada_Version >= Ada_2012 then
+            Error_Msg_NE ("type& is frozen by ~??", N, Typ);
+            Error_Msg_N
+              ("\an equality operator cannot be declared after this point??",
+               N);
+
+         else
+            Error_Msg_NE ("type& is frozen by ~ (Ada 2012)?y?", N, Typ);
+            Error_Msg_N
+              ("\an equality operator cannot be declared after this point"
+               & " (Ada 2012)?y?", N);
+         end if;
+      end Freezing_Point_Warning;
+
+      --------------------------------
+      -- Is_Actual_Of_Instantiation --
+      --------------------------------
+
+      function Is_Actual_Of_Instantiation
+        (E    : Entity_Id;
+         Inst : Node_Id) return Boolean
+      is
+         Assoc : Node_Id;
+
+      begin
+         if Present (Generic_Associations (Inst)) then
+            Assoc := First (Generic_Associations (Inst));
+
+            while Present (Assoc) loop
+               if Present (Explicit_Generic_Actual_Parameter (Assoc))
+                 and then
+                   Is_Entity_Name (Explicit_Generic_Actual_Parameter (Assoc))
+                 and then
+                   Entity (Explicit_Generic_Actual_Parameter (Assoc)) = E
+               then
+                  return True;
+               end if;
+
+               Next (Assoc);
+            end loop;
+         end if;
+
+         return False;
+      end Is_Actual_Of_Instantiation;
+
+      --  Local variable
+
+      Decl : Node_Id;
+
+   --  Start of processing for Check_Untagged_Equality
+
+   begin
+      --  This check applies only if we have a subprogram declaration or a
+      --  subprogram body that is not a completion, for an untagged record
+      --  type, and that is conformant with the predefined operator.
+
+      if (Nkind (Eq_Decl) /= N_Subprogram_Declaration
+           and then not (Nkind (Eq_Decl) = N_Subprogram_Body
+                          and then Acts_As_Spec (Eq_Decl)))
+        or else not Is_Record_Type (Typ)
+        or else Is_Tagged_Type (Typ)
+        or else not Is_User_Defined_Equality (Eq_Op)
+      then
+         return;
+      end if;
+
+      --  In Ada 2012 case, we will output errors or warnings depending on
+      --  the setting of debug flag -gnatd.E.
+
+      if Ada_Version >= Ada_2012 then
+         Error_Msg_Warn := Debug_Flag_Dot_EE;
+
+      --  In earlier versions of Ada, nothing to do unless we are warning on
+      --  Ada 2012 incompatibilities (Warn_On_Ada_2012_Incompatibility set).
+
+      else
+         if not Warn_On_Ada_2012_Compatibility then
+            return;
+         end if;
+      end if;
+
+      --  Cases where the type has already been frozen
+
+      if Is_Frozen (Typ) then
+
+         --  The check applies to a primitive operation, so check that type
+         --  and equality operation are in the same scope.
+
+         if Scope (Typ) /= Current_Scope then
+            return;
+
+         --  If the type is a generic actual (sub)type, the operation is not
+         --  primitive either because the base type is declared elsewhere.
+
+         elsif Is_Generic_Actual_Type (Typ) then
+            return;
+
+         --  Here we may have an error of declaration after freezing, but we
+         --  must make sure not to flag the equality operator itself causing
+         --  the freezing when it is a subprogram body.
+
+         else
+            Decl := Next (Declaration_Node (Typ));
+
+            while Present (Decl) and then Decl /= Eq_Decl loop
+
+               --  The declaration of an object of the type
+
+               if Nkind (Decl) = N_Object_Declaration
+                 and then Etype (Defining_Identifier (Decl)) = Typ
+               then
+                  Freezing_Point_Warning (Decl, "declaration");
+                  exit;
+
+               --  The instantiation of a generic on the type
+
+               elsif Nkind (Decl) in N_Generic_Instantiation
+                 and then Is_Actual_Of_Instantiation (Typ, Decl)
+               then
+                  Freezing_Point_Warning (Decl, "instantiation");
+                  exit;
+
+               --  A noninstance proper body, body stub or entry body
+
+               elsif Nkind (Decl) in N_Proper_Body
+                                   | N_Body_Stub
+                                   | N_Entry_Body
+                 and then not Is_Generic_Instance (Defining_Entity (Decl))
+               then
+                  Freezing_Point_Warning (Decl, "body");
+                  exit;
+
+               --  If we have reached the freeze node and immediately after we
+               --  have the body or generated code for the body, then it is the
+               --  body that caused the freezing and this is legal.
+
+               elsif Nkind (Decl) = N_Freeze_Entity
+                 and then Entity (Decl) = Typ
+                 and then (Next (Decl) = Eq_Decl
+                            or else
+                           Sloc (Next (Decl)) = Sloc (Eq_Decl))
+               then
+                  return;
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            --  Here we have a definite error of declaration after freezing
+
+            if Ada_Version >= Ada_2012 then
+               Error_Msg_NE
+                 ("equality operator must be declared before type & is "
+                  & "frozen (RM 4.5.2 (9.8)) (Ada 2012)<<", Eq_Op, Typ);
+
+               --  In Ada 2012 mode with error turned to warning, output one
+               --  more warning to warn that the equality operation may not
+               --  compose. This is the consequence of ignoring the error.
+
+               if Error_Msg_Warn then
+                  Error_Msg_N ("\equality operation may not compose??", Eq_Op);
+               end if;
+
+            else
+               Error_Msg_NE
+                 ("equality operator must be declared before type& is "
+                  & "frozen (RM 4.5.2 (9.8)) (Ada 2012)?y?", Eq_Op, Typ);
+            end if;
+
+            --  If we have found no freezing point and the declaration of the
+            --  operator could not be reached from that of the type and we are
+            --  in a package body, this must be because the type is declared
+            --  in the spec of the package. Add a message tailored to this.
+
+            if No (Decl) and then In_Package_Body (Scope (Typ)) then
+               if Ada_Version >= Ada_2012 then
+                  if Nkind (Eq_Decl) = N_Subprogram_Body then
+                     Error_Msg_N
+                       ("\put declaration in package spec<<", Eq_Op);
+                  else
+                     Error_Msg_N
+                       ("\move declaration to package spec<<", Eq_Op);
+                  end if;
+
+               else
+                  if Nkind (Eq_Decl) = N_Subprogram_Body then
+                     Error_Msg_N
+                       ("\put declaration in package spec (Ada 2012)?y?",
+                        Eq_Op);
+                  else
+                     Error_Msg_N
+                       ("\move declaration to package spec (Ada 2012)?y?",
+                        Eq_Op);
+                  end if;
+               end if;
+            end if;
+         end if;
+
+      --  Now check for AI12-0352: the declaration of a user-defined primitive
+      --  equality operation for a record type T is illegal if it occurs after
+      --  a type has been derived from T.
+
+      else
+         Decl := Next (Declaration_Node (Typ));
+
+         while Present (Decl) and then Decl /= Eq_Decl loop
+            if Nkind (Decl) = N_Full_Type_Declaration
+              and then Etype (Defining_Identifier (Decl)) = Typ
+            then
+               Error_Msg_N
+                 ("equality operator cannot appear after derivation", Eq_Op);
+               Error_Msg_NE
+                 ("an equality operator for& cannot be declared after "
+                  & "this point??",
+                  Decl, Typ);
+            end if;
+
+            Next (Decl);
+         end loop;
+      end if;
+   end Check_Untagged_Equality;
+
    ---------------------------
    -- Can_Override_Operator --
    ---------------------------
@@ -8949,6 +9203,29 @@ package body Sem_Ch6 is
       --  BIP_xxx denotes an extra formal for a build-in-place function. See
       --  the full list in exp_ch6.BIP_Formal_Kind.
 
+      function Has_BIP_Formals (E : Entity_Id) return Boolean;
+      --  Determines if a given entity has build-in-place formals
+
+      function Has_Extra_Formals (E : Entity_Id) return Boolean;
+      --  Determines if E has its extra formals
+
+      function Needs_Accessibility_Check_Extra
+        (E      : Entity_Id;
+         Formal : Node_Id) return Boolean;
+      --  Determines whether the given formal of E needs an extra formal for
+      --  supporting accessibility checking. Returns True for both anonymous
+      --  access formals and formals of named access types that are marked as
+      --  controlling formals. The latter case can occur when the subprogram
+      --  Expand_Dispatching_Call creates a subprogram-type and substitutes
+      --  the types of access-to-class-wide actuals for the anonymous access-
+      --  to-specific-type of controlling formals.
+
+      function Parent_Subprogram (Subp_Id : Entity_Id) return Entity_Id;
+      --  Subp_Id is a subprogram of a derived type; return its parent
+      --  subprogram if Subp_Id overrides a parent primitive or derives
+      --  from a parent primitive, and such parent primitive can have extra
+      --  formals. Otherwise return Empty.
+
       ----------------------
       -- Add_Extra_Formal --
       ----------------------
@@ -8959,10 +9236,7 @@ package body Sem_Ch6 is
          Scope        : Entity_Id;
          Suffix       : String) return Entity_Id
       is
-         EF : constant Entity_Id :=
-                Make_Defining_Identifier (Sloc (Assoc_Entity),
-                  Chars  => New_External_Name (Chars (Assoc_Entity),
-                                               Suffix => Suffix));
+         EF : Entity_Id;
 
       begin
          --  A little optimization. Never generate an extra formal for the
@@ -8972,6 +9246,10 @@ package body Sem_Ch6 is
          if Chars (Formal) = Name_uInit then
             return Empty;
          end if;
+
+         EF := Make_Defining_Identifier (Sloc (Assoc_Entity),
+                 Chars => New_External_Name (Chars (Assoc_Entity),
+                                             Suffix => Suffix));
 
          Mutate_Ekind        (EF, E_In_Parameter);
          Set_Actual_Subtype  (EF, Typ);
@@ -8994,37 +9272,214 @@ package body Sem_Ch6 is
          return EF;
       end Add_Extra_Formal;
 
+      ---------------------
+      -- Has_BIP_Formals --
+      ---------------------
+
+      function Has_BIP_Formals (E : Entity_Id) return Boolean is
+         Formal : Entity_Id := First_Formal_With_Extras (E);
+
+      begin
+         while Present (Formal) loop
+            if Is_Build_In_Place_Entity (Formal) then
+               return True;
+            end if;
+
+            Next_Formal_With_Extras (Formal);
+         end loop;
+
+         return False;
+      end Has_BIP_Formals;
+
+      -----------------------
+      -- Has_Extra_Formals --
+      -----------------------
+
+      function Has_Extra_Formals (E : Entity_Id) return Boolean is
+      begin
+         return Present (Extra_Formals (E))
+           or else
+             (Ekind (E) = E_Function
+                and then Present (Extra_Accessibility_Of_Result (E)));
+      end Has_Extra_Formals;
+
+      -------------------------------------
+      -- Needs_Accessibility_Check_Extra --
+      -------------------------------------
+
+      function Needs_Accessibility_Check_Extra
+        (E      : Entity_Id;
+         Formal : Node_Id) return Boolean is
+
+      begin
+         --  For dispatching operations this extra formal is not suppressed
+         --  since all the derivations must have matching formals.
+
+         --  For non-dispatching operations it is suppressed if we specifically
+         --  suppress accessibility checks at the package level for either the
+         --  subprogram, or the package in which it resides. However, we do
+         --  not suppress it simply if the scope has accessibility checks
+         --  suppressed, since this could cause trouble when clients are
+         --  compiled with a different suppression setting. The explicit checks
+         --  at the package level are safe from this point of view.
+
+         if not Is_Dispatching_Operation (E)
+           and then
+             (Explicit_Suppress (E, Accessibility_Check)
+                or else Explicit_Suppress (Scope (E), Accessibility_Check))
+         then
+            return False;
+         end if;
+
+         --  Base_Type is applied to handle cases where there is a null
+         --  exclusion the formal may have an access subtype.
+
+         return
+           Ekind (Base_Type (Etype (Formal))) = E_Anonymous_Access_Type
+             or else
+               (Is_Controlling_Formal (Formal)
+                  and then Is_Access_Type (Base_Type (Etype (Formal))));
+      end Needs_Accessibility_Check_Extra;
+
+      -----------------------
+      -- Parent_Subprogram --
+      -----------------------
+
+      function Parent_Subprogram (Subp_Id : Entity_Id) return Entity_Id is
+         pragma Assert (not Is_Thunk (Subp_Id));
+         Ovr_E     : Entity_Id := Overridden_Operation (Subp_Id);
+         Ovr_Alias : Entity_Id;
+
+      begin
+         if Present (Ovr_E) then
+            Ovr_Alias := Ultimate_Alias (Ovr_E);
+
+            --  There is no real overridden subprogram if there is a mutual
+            --  reference between the E and its overridden operation. This
+            --  weird scenery occurs in the following cases:
+
+            --  1) Controlling function wrappers internally built by
+            --     Make_Controlling_Function_Wrappers.
+
+            --  2) Hidden overridden primitives of type extensions or private
+            --     extensions (cf. Find_Hidden_Overridden_Primitive). These
+            --     hidden primitives have suffix 'P'.
+
+            --  3) Overridding primitives of stub types (see the subprogram
+            --     Add_RACW_Primitive_Declarations_And_Bodies).
+
+            if Ovr_Alias = Subp_Id then
+               pragma Assert
+                 ((Is_Wrapper (Subp_Id)
+                     and then Has_Controlling_Result (Subp_Id))
+                   or else Has_Suffix (Ovr_E, 'P')
+                   or else Is_RACW_Stub_Type
+                             (Find_Dispatching_Type (Subp_Id)));
+
+               if Present (Overridden_Operation (Ovr_E)) then
+                  Ovr_E := Overridden_Operation (Ovr_E);
+
+               --  Ovr_E is an internal entity built by Derive_Subprogram and
+               --  we have no direct way to climb to the corresponding parent
+               --  subprogram but this internal entity has the extra formals
+               --  (if any) required for the purpose of checking the extra
+               --  formals of Subp_Id.
+
+               else
+                  pragma Assert (not Comes_From_Source (Ovr_E));
+               end if;
+
+            --  Use as our reference entity the ultimate renaming of the
+            --  overriddden subprogram.
+
+            elsif Present (Alias (Ovr_E)) then
+               pragma Assert (No (Overridden_Operation (Ovr_Alias))
+                 or else Overridden_Operation (Ovr_Alias) /= Ovr_E);
+
+               Ovr_E := Ovr_Alias;
+            end if;
+         end if;
+
+         if Present (Ovr_E) and then Has_Reliable_Extra_Formals (Ovr_E) then
+            return Ovr_E;
+         else
+            return Empty;
+         end if;
+      end Parent_Subprogram;
+
       --  Local variables
 
-      Formal_Type : Entity_Id;
-      P_Formal    : Entity_Id;
+      Formal_Type      : Entity_Id;
+      May_Have_Alias   : Boolean;
+      Alias_Formal     : Entity_Id := Empty;
+      Alias_Subp       : Entity_Id := Empty;
+      Parent_Formal    : Entity_Id := Empty;
+      Parent_Subp      : Entity_Id := Empty;
+      Ref_E            : Entity_Id;
 
    --  Start of processing for Create_Extra_Formals
 
    begin
+      pragma Assert (Is_Subprogram_Or_Entry (E)
+        or else Ekind (E) in E_Subprogram_Type);
+
       --  We never generate extra formals if expansion is not active because we
       --  don't need them unless we are generating code.
 
       if not Expander_Active then
          return;
-      end if;
+
+      --  Enumeration literals have no extra formal; this case occurs when
+      --  a function renames it.
+
+      elsif Ekind (E) = E_Function
+        and then Ekind (Ultimate_Alias (E)) = E_Enumeration_Literal
+      then
+         return;
 
       --  No need to generate extra formals in thunks whose target has no extra
       --  formals, but we can have two of them chained (interface and stack).
 
-      if Is_Thunk (E) and then No (Extra_Formals (Thunk_Target (E))) then
+      elsif Is_Thunk (E) and then No (Extra_Formals (Thunk_Target (E))) then
+         return;
+
+      --  If Extra_Formals were already created, don't do it again. This
+      --  situation may arise for subprogram types created as part of
+      --  dispatching calls (see Expand_Dispatching_Call).
+
+      elsif Has_Extra_Formals (E) then
+         return;
+
+      --  Extra formals of renamings of generic actual subprograms and
+      --  renamings of instances of generic subprograms are shared. The
+      --  check performed on the last formal is required to ensure that
+      --  this is the renaming built by Analyze_Instance_And_Renamings
+      --  (which shares all the formals); otherwise this would be wrong.
+
+      elsif Ekind (E) in E_Function | E_Procedure
+        and then Is_Generic_Instance (E)
+        and then Present (Alias (E))
+        and then Last_Formal (Ultimate_Alias (E)) = Last_Formal (E)
+      then
+         pragma Assert (Is_Generic_Instance (E)
+           = Is_Generic_Instance (Ultimate_Alias (E)));
+
+         Create_Extra_Formals (Ultimate_Alias (E));
+
+         --  Share the extra formals
+
+         Set_Extra_Formals (E, Extra_Formals (Ultimate_Alias (E)));
+
+         if Ekind (E) = E_Function then
+            Set_Extra_Accessibility_Of_Result (E,
+              Extra_Accessibility_Of_Result (Ultimate_Alias (E)));
+         end if;
+
+         pragma Assert (Extra_Formals_OK (E));
          return;
       end if;
 
-      --  If this is a derived subprogram then the subtypes of the parent
-      --  subprogram's formal parameters will be used to determine the need
-      --  for extra formals.
-
-      if Is_Overloadable (E) and then Present (Alias (E)) then
-         P_Formal := First_Formal (Alias (E));
-      else
-         P_Formal := Empty;
-      end if;
+      --  Locate the last formal; required by Add_Extra_Formal.
 
       Formal := First_Formal (E);
       while Present (Formal) loop
@@ -9032,11 +9487,65 @@ package body Sem_Ch6 is
          Next_Formal (Formal);
       end loop;
 
-      --  If Extra_Formals were already created, don't do it again. This
-      --  situation may arise for subprogram types created as part of
-      --  dispatching calls (see Expand_Dispatching_Call).
+      --  We rely on three entities to ensure consistency of extra formals of
+      --  entity E:
+      --
+      --    1. A reference entity (Ref_E). For thunks it is their target
+      --       primitive since this ensures that they have exactly the
+      --       same extra formals; otherwise it is the identity.
+      --
+      --    2. The parent subprogram; only for derived types and references
+      --       either the overridden subprogram or the internal entity built
+      --       by Derive_Subprogram that has the extra formals of the parent
+      --       subprogram; otherwise it is Empty. This entity ensures matching
+      --       extra formals in derived types.
+      --
+      --    3. For renamings, their ultimate alias; this ensures taking the
+      --       same decision in all the renamings (independently of the Ada
+      --       mode on which they are compiled). For example:
+      --
+      --          pragma Ada_2012;
+      --          function Id_A (I : access Integer) return access Integer;
+      --
+      --          pragma Ada_2005;
+      --          function Id_B (I : access Integer) return access Integer
+      --             renames Id_A;
 
-      if Present (Last_Extra) and then Present (Extra_Formal (Last_Extra)) then
+      if Is_Thunk (E) then
+         Ref_E := Thunk_Target (E);
+      else
+         Ref_E := E;
+      end if;
+
+      if Is_Subprogram (Ref_E) then
+         Parent_Subp := Parent_Subprogram (Ref_E);
+      end if;
+
+      May_Have_Alias :=
+        (Is_Subprogram (Ref_E) or else Ekind (Ref_E) = E_Subprogram_Type);
+
+      --  If the parent subprogram is available then its ultimate alias of
+      --  Ref_E is not needed since it will not be used to check its extra
+      --  formals.
+
+      if No (Parent_Subp)
+        and then May_Have_Alias
+        and then Present (Alias (Ref_E))
+        and then Has_Reliable_Extra_Formals (Ultimate_Alias (Ref_E))
+      then
+         Alias_Subp := Ultimate_Alias (Ref_E);
+      end if;
+
+      --  Cannot add extra formals to subprograms and access types that have
+      --  foreign convention nor to subprograms overriding primitives that
+      --  have foreign convention since the foreign language does not know
+      --  how to handle these extra formals; same for renamings of entities
+      --  with foreign convention.
+
+      if Has_Foreign_Convention (Ref_E)
+        or else (Present (Alias_Subp)
+                   and then Has_Foreign_Convention (Alias_Subp))
+      then
          return;
       end if;
 
@@ -9051,8 +9560,67 @@ package body Sem_Ch6 is
          goto Test_For_Func_Result_Extras;
       end if;
 
+      --  Process the formals relying on the formals of our reference entities:
+      --  Parent_Formal, Alias_Formal and Formal. Notice that we don't use the
+      --  formal of Ref_E; we must use the formal of E which is the entity to
+      --  which we are adding the extra formals.
+
+      --  If this is a derived subprogram then the subtypes of the parent
+      --  subprogram's formal parameters will be used to determine the need
+      --  for extra formals.
+
+      if Present (Parent_Subp) then
+         Parent_Formal := First_Formal (Parent_Subp);
+
+         --  For concurrent types, the controlling argument of a dispatching
+         --  primitive implementing an interface primitive is implicit. For
+         --  example:
+         --
+         --     type Iface is protected interface;
+         --     function Prim
+         --       (Obj   : Iface;
+         --        Value : Integer) return Natural is abstract;
+         --
+         --     protected type PO is new Iface with
+         --        function Prim (Value : Integer) return Natural;
+         --     end PO;
+
+         if Convention (Ref_E) = Convention_Protected
+           and then Is_Abstract_Subprogram (Parent_Subp)
+           and then Is_Interface (Find_Dispatching_Type (Parent_Subp))
+         then
+            Parent_Formal := Next_Formal (Parent_Formal);
+
+            --  This is the non-dispatching subprogram of a concurrent type
+            --  that overrides the interface primitive; the expander will
+            --  create the dispatching primitive (without Convention_Protected)
+            --  with all the matching formals (see exp_ch9.Build_Wrapper_Specs)
+
+            pragma Assert (not Is_Dispatching_Operation (Ref_E));
+         end if;
+
+      --  Ensure that the ultimate alias has all its extra formals
+
+      elsif Present (Alias_Subp) then
+         Create_Extra_Formals (Alias_Subp);
+         Alias_Formal := First_Formal (Alias_Subp);
+      end if;
+
       Formal := First_Formal (E);
       while Present (Formal) loop
+
+         --  Here we establish our priority for deciding on the extra
+         --  formals: 1) Parent primitive 2) Aliased primitive 3) Identity
+
+         if Present (Parent_Formal) then
+            Formal_Type := Etype (Parent_Formal);
+
+         elsif Present (Alias_Formal) then
+            Formal_Type := Etype (Alias_Formal);
+
+         else
+            Formal_Type := Etype (Formal);
+         end if;
 
          --  Create extra formal for supporting the attribute 'Constrained.
          --  The case of a private type view without discriminants also
@@ -9060,11 +9628,6 @@ package body Sem_Ch6 is
          --  discriminants.
 
          if Ekind (Formal) /= E_In_Parameter then
-            if Present (P_Formal) then
-               Formal_Type := Etype (P_Formal);
-            else
-               Formal_Type := Etype (Formal);
-            end if;
 
             --  Do not produce extra formals for Unchecked_Union parameters.
             --  Jump directly to the end of the loop.
@@ -9109,36 +9672,22 @@ package body Sem_Ch6 is
             end if;
          end if;
 
-         --  Create extra formal for supporting accessibility checking. This
-         --  is done for both anonymous access formals and formals of named
-         --  access types that are marked as controlling formals. The latter
-         --  case can occur when Expand_Dispatching_Call creates a subprogram
-         --  type and substitutes the types of access-to-class-wide actuals
-         --  for the anonymous access-to-specific-type of controlling formals.
-         --  Base_Type is applied because in cases where there is a null
-         --  exclusion the formal may have an access subtype.
+         --  Extra formal for supporting accessibility checking
 
-         --  This is suppressed if we specifically suppress accessibility
-         --  checks at the package level for either the subprogram, or the
-         --  package in which it resides. However, we do not suppress it
-         --  simply if the scope has accessibility checks suppressed, since
-         --  this could cause trouble when clients are compiled with a
-         --  different suppression setting. The explicit checks at the
-         --  package level are safe from this point of view.
+         if Needs_Accessibility_Check_Extra (Ref_E, Formal) then
+            pragma Assert (No (Parent_Formal)
+              or else Present (Extra_Accessibility (Parent_Formal)));
+            pragma Assert (No (Alias_Formal)
+              or else Present (Extra_Accessibility (Alias_Formal)));
 
-         if (Ekind (Base_Type (Etype (Formal))) = E_Anonymous_Access_Type
-              or else (Is_Controlling_Formal (Formal)
-                        and then Is_Access_Type (Base_Type (Etype (Formal)))))
-           and then not
-             (Explicit_Suppress (E, Accessibility_Check)
-               or else
-              Explicit_Suppress (Scope (E), Accessibility_Check))
-           and then
-             (No (P_Formal)
-               or else Present (Extra_Accessibility (P_Formal)))
-         then
             Set_Extra_Accessibility
               (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "L"));
+
+         else
+            pragma Assert (No (Parent_Formal)
+              or else No (Extra_Accessibility (Parent_Formal)));
+            pragma Assert (No (Alias_Formal)
+              or else No (Extra_Accessibility (Alias_Formal)));
          end if;
 
          --  This label is required when skipping extra formal generation for
@@ -9146,8 +9695,12 @@ package body Sem_Ch6 is
 
          <<Skip_Extra_Formal_Generation>>
 
-         if Present (P_Formal) then
-            Next_Formal (P_Formal);
+         if Present (Parent_Formal) then
+            Next_Formal (Parent_Formal);
+         end if;
+
+         if Present (Alias_Formal) then
+            Next_Formal (Alias_Formal);
          end if;
 
          Next_Formal (Formal);
@@ -9155,20 +9708,47 @@ package body Sem_Ch6 is
 
       <<Test_For_Func_Result_Extras>>
 
-      --  Ada 2012 (AI05-234): "the accessibility level of the result of a
-      --  function call is ... determined by the point of call ...".
+      --  Assume the worse scenery (Ada 2022) to evaluate this extra formal;
+      --  required to ensure matching of extra formals between subprograms
+      --  and access to subprogram types in projects with mixed Ada dialects.
 
-      if Needs_Result_Accessibility_Level (E) then
-         Set_Extra_Accessibility_Of_Result
-           (E, Add_Extra_Formal (E, Standard_Natural, E, "L"));
-      end if;
+      declare
+         Save_Ada_Version : constant Ada_Version_Type := Ada_Version;
+
+      begin
+         Ada_Version := Ada_2022;
+
+         if Needs_Result_Accessibility_Level (Ref_E) then
+            pragma Assert (No (Parent_Subp)
+              or else Needs_Result_Accessibility_Level (Parent_Subp));
+            pragma Assert (No (Alias_Subp)
+              or else Needs_Result_Accessibility_Level (Alias_Subp));
+
+            Set_Extra_Accessibility_Of_Result (E,
+              Add_Extra_Formal (E, Standard_Natural, E, "L"));
+
+         else
+            pragma Assert (No (Parent_Subp)
+              or else not Needs_Result_Accessibility_Level (Parent_Subp));
+            pragma Assert (No (Alias_Subp)
+              or else not Needs_Result_Accessibility_Level (Alias_Subp));
+         end if;
+
+         Ada_Version := Save_Ada_Version;
+      end;
 
       --  Ada 2005 (AI-318-02): In the case of build-in-place functions, add
       --  appropriate extra formals. See type Exp_Ch6.BIP_Formal_Kind.
 
-      if Is_Build_In_Place_Function (E) then
+      if (Present (Parent_Subp) and then Has_BIP_Formals (Parent_Subp))
+            or else
+         (Present (Alias_Subp) and then Has_BIP_Formals (Alias_Subp))
+            or else
+         (Is_Build_In_Place_Function (Ref_E)
+            and then Has_Reliable_Extra_Formals (Ref_E))
+      then
          declare
-            Result_Subt : constant Entity_Id := Etype (E);
+            Result_Subt : constant Entity_Id := Etype (Ref_E);
             Formal_Typ  : Entity_Id;
             Subp_Decl   : Node_Id;
             Discard     : Entity_Id;
@@ -9186,7 +9766,14 @@ package body Sem_Ch6 is
             --  dispatching context and such calls must be handled like calls
             --  to a class-wide function.
 
-            if Needs_BIP_Alloc_Form (E) then
+            if Needs_BIP_Alloc_Form (Ref_E) then
+               pragma Assert (No (Parent_Subp)
+                 or else Has_BIP_Extra_Formal (Parent_Subp, BIP_Alloc_Form,
+                           Must_Be_Frozen => False));
+               pragma Assert (No (Alias_Subp)
+                 or else Has_BIP_Extra_Formal (Alias_Subp, BIP_Alloc_Form,
+                           Must_Be_Frozen => False));
+
                Discard :=
                  Add_Extra_Formal
                    (E, Standard_Natural,
@@ -9202,23 +9789,66 @@ package body Sem_Ch6 is
                       (E, RTE (RE_Root_Storage_Pool_Ptr),
                        E, BIP_Formal_Suffix (BIP_Storage_Pool));
                end if;
+
+            else
+               pragma Assert (No (Parent_Subp)
+                 or else not
+                   Has_BIP_Extra_Formal (Parent_Subp, BIP_Alloc_Form,
+                     Must_Be_Frozen => False));
+               pragma Assert (No (Alias_Subp)
+                 or else not
+                   Has_BIP_Extra_Formal (Alias_Subp, BIP_Alloc_Form,
+                     Must_Be_Frozen => False));
             end if;
 
             --  In the case of functions whose result type needs finalization,
             --  add an extra formal which represents the finalization master.
 
-            if Needs_BIP_Finalization_Master (E) then
+            if Needs_BIP_Finalization_Master (Ref_E) then
+               pragma Assert (No (Parent_Subp)
+                 or else Has_BIP_Extra_Formal (Parent_Subp,
+                           Kind           => BIP_Finalization_Master,
+                           Must_Be_Frozen => False));
+               pragma Assert (No (Alias_Subp)
+                 or else Has_BIP_Extra_Formal (Alias_Subp,
+                           Kind           => BIP_Finalization_Master,
+                           Must_Be_Frozen => False));
+
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Finalization_Master_Ptr),
                     E, BIP_Formal_Suffix (BIP_Finalization_Master));
+
+            else
+               pragma Assert (No (Parent_Subp)
+                 or else not
+                   Has_BIP_Extra_Formal (Parent_Subp,
+                     Kind           => BIP_Finalization_Master,
+                     Must_Be_Frozen => False));
+               pragma Assert (No (Alias_Subp)
+                 or else not
+                   Has_BIP_Extra_Formal (Alias_Subp,
+                     Kind           => BIP_Finalization_Master,
+                     Must_Be_Frozen => False));
             end if;
 
             --  When the result type contains tasks, add two extra formals: the
             --  master of the tasks to be created, and the caller's activation
             --  chain.
 
-            if Needs_BIP_Task_Actuals (E) then
+            if Needs_BIP_Task_Actuals (Ref_E) then
+               pragma Assert (No (Parent_Subp)
+                 or else Has_BIP_Extra_Formal (Parent_Subp, BIP_Task_Master,
+                           Must_Be_Frozen => False));
+               pragma Assert (No (Alias_Subp)
+                 or else Has_BIP_Extra_Formal (Alias_Subp, BIP_Task_Master,
+                           Must_Be_Frozen => False)
+                 or else
+                   (Is_Abstract_Subprogram (Ref_E)
+                      and then Is_Predefined_Dispatching_Operation (Ref_E)
+                      and then Is_Interface
+                                 (Find_Dispatching_Type (Alias_Subp))));
+
                Discard :=
                  Add_Extra_Formal
                    (E, Standard_Integer,
@@ -9230,6 +9860,16 @@ package body Sem_Ch6 is
                  Add_Extra_Formal
                    (E, RTE (RE_Activation_Chain_Access),
                     E, BIP_Formal_Suffix (BIP_Activation_Chain));
+
+            else
+               pragma Assert (No (Parent_Subp)
+                 or else not
+                   Has_BIP_Extra_Formal (Parent_Subp, BIP_Task_Master,
+                     Must_Be_Frozen => False));
+               pragma Assert (No (Alias_Subp)
+                 or else not
+                   Has_BIP_Extra_Formal (Alias_Subp, BIP_Task_Master,
+                     Must_Be_Frozen => False));
             end if;
 
             --  All build-in-place functions get an extra formal that will be
@@ -9295,6 +9935,14 @@ package body Sem_Ch6 is
       if Is_Generic_Instance (E) and then Present (Alias (E)) then
          Set_Extra_Formals (Alias (E), Extra_Formals (E));
       end if;
+
+      pragma Assert (No (Alias_Subp)
+        or else Extra_Formals_Match_OK (E, Alias_Subp));
+
+      pragma Assert (No (Parent_Subp)
+        or else Extra_Formals_Match_OK (E, Parent_Subp));
+
+      pragma Assert (Extra_Formals_OK (E));
    end Create_Extra_Formals;
 
    -----------------------------
@@ -9525,252 +10173,162 @@ package body Sem_Ch6 is
       end if;
    end Enter_Overloaded_Entity;
 
-   -----------------------------
-   -- Check_Untagged_Equality --
-   -----------------------------
+   ----------------------------
+   -- Extra_Formals_Match_OK --
+   ----------------------------
 
-   procedure Check_Untagged_Equality (Eq_Op : Entity_Id) is
-      Eq_Decl : constant Node_Id   := Unit_Declaration_Node (Eq_Op);
-      Typ     : constant Entity_Id := Etype (First_Formal (Eq_Op));
+   function Extra_Formals_Match_OK
+     (E     : Entity_Id;
+      Ref_E : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Is_Subprogram (E));
 
-      procedure Freezing_Point_Warning (N : Node_Id; S : String);
-      --  Output a warning about the freezing point N of Typ
+      --  Cases were no check can be performed:
+      --    1) When expansion is not active (since we never generate extra
+      --       formals if expansion is not active because we don't need them
+      --       unless we are generating code).
+      --    2) On abstract predefined dispatching operations of Root_Controlled
+      --       and predefined stream operations not emitted by the frontend.
+      --    3) On renamings of abstract predefined dispatching operations of
+      --       interface types (since limitedness is not inherited in such
+      --       case (AI-419)).
+      --    4) The controlling formal of the non-dispatching subprogram of
+      --       a concurrent type that overrides an interface primitive is
+      --       implicit and hence we cannot check here if all its extra
+      --       formals match; the expander will create the dispatching
+      --       primitive (without Convention_Protected) with the matching
+      --       formals (see exp_ch9.Build_Wrapper_Specs) which will be
+      --       checked later.
 
-      function Is_Actual_Of_Instantiation
-        (E    : Entity_Id;
-         Inst : Node_Id) return Boolean;
-      --  Return True if E is an actual parameter of instantiation Inst
+      if Debug_Flag_Underscore_XX
+        or else not Expander_Active
+        or else
+          (Is_Predefined_Dispatching_Operation (E)
+             and then (not Has_Reliable_Extra_Formals (E)
+                         or else not Has_Reliable_Extra_Formals (Ref_E)))
+        or else
+          (Is_Predefined_Dispatching_Operation (E)
+             and then Is_Abstract_Subprogram (E)
+             and then Is_Interface (Find_Dispatching_Type (Ref_E)))
+      then
+         return True;
 
-      -----------------------------------
-      -- Output_Freezing_Point_Warning --
-      -----------------------------------
+      elsif Convention (E) = Convention_Protected
+        and then not Is_Dispatching_Operation (E)
+        and then Is_Abstract_Subprogram (Ref_E)
+        and then Is_Interface (Find_Dispatching_Type (Ref_E))
+      then
+         return True;
+      end if;
 
-      procedure Freezing_Point_Warning (N : Node_Id; S : String) is
+      --  Perform the checks
+
+      if No (Extra_Formals (E)) then
+         return No (Extra_Formals (Ref_E));
+      end if;
+
+      if Ekind (E) in E_Function | E_Subprogram_Type
+        and then Present (Extra_Accessibility_Of_Result (E))
+                   /= Present (Extra_Accessibility_Of_Result (Ref_E))
+      then
+         return False;
+      end if;
+
+      declare
+         Formal_1 : Entity_Id := Extra_Formals (E);
+         Formal_2 : Entity_Id := Extra_Formals (Ref_E);
+
       begin
-         Error_Msg_String (1 .. S'Length) := S;
-         Error_Msg_Strlen := S'Length;
-
-         if Ada_Version >= Ada_2012 then
-            Error_Msg_NE ("type& is frozen by ~??", N, Typ);
-            Error_Msg_N
-              ("\an equality operator cannot be declared after this point??",
-               N);
-
-         else
-            Error_Msg_NE ("type& is frozen by ~ (Ada 2012)?y?", N, Typ);
-            Error_Msg_N
-              ("\an equality operator cannot be declared after this point"
-               & " (Ada 2012)?y?", N);
-         end if;
-      end Freezing_Point_Warning;
-
-      --------------------------------
-      -- Is_Actual_Of_Instantiation --
-      --------------------------------
-
-      function Is_Actual_Of_Instantiation
-        (E    : Entity_Id;
-         Inst : Node_Id) return Boolean
-      is
-         Assoc : Node_Id;
-
-      begin
-         if Present (Generic_Associations (Inst)) then
-            Assoc := First (Generic_Associations (Inst));
-
-            while Present (Assoc) loop
-               if Present (Explicit_Generic_Actual_Parameter (Assoc))
-                 and then
-                   Is_Entity_Name (Explicit_Generic_Actual_Parameter (Assoc))
-                 and then
-                   Entity (Explicit_Generic_Actual_Parameter (Assoc)) = E
-               then
-                  return True;
+         while Present (Formal_1) and then Present (Formal_2) loop
+            if Has_Suffix (Formal_1, 'L') then
+               if not Has_Suffix (Formal_2, 'L') then
+                  return False;
                end if;
 
-               Next (Assoc);
-            end loop;
-         end if;
+            elsif Has_Suffix (Formal_1, 'O') then
+               if not Has_Suffix (Formal_2, 'O') then
+                  return False;
+               end if;
 
-         return False;
-      end Is_Actual_Of_Instantiation;
+            elsif BIP_Suffix_Kind (Formal_1) /= BIP_Suffix_Kind (Formal_2) then
+               return False;
+            end if;
 
-      --  Local variable
+            Formal_1 := Next_Formal_With_Extras (Formal_1);
+            Formal_2 := Next_Formal_With_Extras (Formal_2);
+         end loop;
 
-      Decl : Node_Id;
+         return No (Formal_1) and then No (Formal_2);
+      end;
+   end Extra_Formals_Match_OK;
 
-   --  Start of processing for Check_Untagged_Equality
+   ----------------------
+   -- Extra_Formals_OK --
+   ----------------------
+
+   function Extra_Formals_OK (E : Entity_Id) return Boolean is
+      Last_Formal       : Entity_Id := Empty;
+      Formal            : Entity_Id;
+      Has_Extra_Formals : Boolean := False;
 
    begin
-      --  This check applies only if we have a subprogram declaration or a
-      --  subprogram body that is not a completion, for an untagged record
-      --  type, and that is conformant with the predefined operator.
+      --  No check required if explicitly disabled
 
-      if (Nkind (Eq_Decl) /= N_Subprogram_Declaration
-           and then not (Nkind (Eq_Decl) = N_Subprogram_Body
-                          and then Acts_As_Spec (Eq_Decl)))
-        or else not Is_Record_Type (Typ)
-        or else Is_Tagged_Type (Typ)
-        or else not Is_User_Defined_Equality (Eq_Op)
+      if Debug_Flag_Underscore_XX then
+         return True;
+
+      --  No check required if expansion is disabled because extra
+      --  formals are only generated when we are generating code.
+      --  See Create_Extra_Formals.
+
+      elsif not Expander_Active then
+         return True;
+      end if;
+
+      --  Check attribute Extra_Formal: If available, it must be set only
+      --  on the last formal of E.
+
+      Formal := First_Formal (E);
+      while Present (Formal) loop
+         if Present (Extra_Formal (Formal)) then
+            if Has_Extra_Formals then
+               return False;
+            end if;
+
+            Has_Extra_Formals := True;
+         end if;
+
+         Last_Formal := Formal;
+         Next_Formal (Formal);
+      end loop;
+
+      --  Check attribute Extra_Accessibility_Of_Result
+
+      if Ekind (E) in E_Function | E_Subprogram_Type
+        and then Needs_Result_Accessibility_Level (E)
+        and then No (Extra_Accessibility_Of_Result (E))
       then
-         return;
+         return False;
       end if;
 
-      --  In Ada 2012 case, we will output errors or warnings depending on
-      --  the setting of debug flag -gnatd.E.
+      --  Check attribute Extra_Formals: If E has extra formals, then this
+      --  attribute must point to the first extra formal of E.
 
-      if Ada_Version >= Ada_2012 then
-         Error_Msg_Warn := Debug_Flag_Dot_EE;
+      if Has_Extra_Formals then
+         return Present (Extra_Formals (E))
+           and then Present (Extra_Formal (Last_Formal))
+           and then Extra_Formal (Last_Formal) = Extra_Formals (E);
 
-      --  In earlier versions of Ada, nothing to do unless we are warning on
-      --  Ada 2012 incompatibilities (Warn_On_Ada_2012_Incompatibility set).
+      --  When E has no formals, the first extra formal is available through
+      --  the Extra_Formals attribute.
+
+      elsif Present (Extra_Formals (E)) then
+         return No (First_Formal (E));
 
       else
-         if not Warn_On_Ada_2012_Compatibility then
-            return;
-         end if;
+         return True;
       end if;
-
-      --  Cases where the type has already been frozen
-
-      if Is_Frozen (Typ) then
-
-         --  The check applies to a primitive operation, so check that type
-         --  and equality operation are in the same scope.
-
-         if Scope (Typ) /= Current_Scope then
-            return;
-
-         --  If the type is a generic actual (sub)type, the operation is not
-         --  primitive either because the base type is declared elsewhere.
-
-         elsif Is_Generic_Actual_Type (Typ) then
-            return;
-
-         --  Here we may have an error of declaration after freezing, but we
-         --  must make sure not to flag the equality operator itself causing
-         --  the freezing when it is a subprogram body.
-
-         else
-            Decl := Next (Declaration_Node (Typ));
-
-            while Present (Decl) and then Decl /= Eq_Decl loop
-
-               --  The declaration of an object of the type
-
-               if Nkind (Decl) = N_Object_Declaration
-                 and then Etype (Defining_Identifier (Decl)) = Typ
-               then
-                  Freezing_Point_Warning (Decl, "declaration");
-                  exit;
-
-               --  The instantiation of a generic on the type
-
-               elsif Nkind (Decl) in N_Generic_Instantiation
-                 and then Is_Actual_Of_Instantiation (Typ, Decl)
-               then
-                  Freezing_Point_Warning (Decl, "instantiation");
-                  exit;
-
-               --  A noninstance proper body, body stub or entry body
-
-               elsif Nkind (Decl) in N_Proper_Body
-                                   | N_Body_Stub
-                                   | N_Entry_Body
-                 and then not Is_Generic_Instance (Defining_Entity (Decl))
-               then
-                  Freezing_Point_Warning (Decl, "body");
-                  exit;
-
-               --  If we have reached the freeze node and immediately after we
-               --  have the body or generated code for the body, then it is the
-               --  body that caused the freezing and this is legal.
-
-               elsif Nkind (Decl) = N_Freeze_Entity
-                 and then Entity (Decl) = Typ
-                 and then (Next (Decl) = Eq_Decl
-                            or else
-                           Sloc (Next (Decl)) = Sloc (Eq_Decl))
-               then
-                  return;
-               end if;
-
-               Next (Decl);
-            end loop;
-
-            --  Here we have a definite error of declaration after freezing
-
-            if Ada_Version >= Ada_2012 then
-               Error_Msg_NE
-                 ("equality operator must be declared before type & is "
-                  & "frozen (RM 4.5.2 (9.8)) (Ada 2012)<<", Eq_Op, Typ);
-
-               --  In Ada 2012 mode with error turned to warning, output one
-               --  more warning to warn that the equality operation may not
-               --  compose. This is the consequence of ignoring the error.
-
-               if Error_Msg_Warn then
-                  Error_Msg_N ("\equality operation may not compose??", Eq_Op);
-               end if;
-
-            else
-               Error_Msg_NE
-                 ("equality operator must be declared before type& is "
-                  & "frozen (RM 4.5.2 (9.8)) (Ada 2012)?y?", Eq_Op, Typ);
-            end if;
-
-            --  If we have found no freezing point and the declaration of the
-            --  operator could not be reached from that of the type and we are
-            --  in a package body, this must be because the type is declared
-            --  in the spec of the package. Add a message tailored to this.
-
-            if No (Decl) and then In_Package_Body (Scope (Typ)) then
-               if Ada_Version >= Ada_2012 then
-                  if Nkind (Eq_Decl) = N_Subprogram_Body then
-                     Error_Msg_N
-                       ("\put declaration in package spec<<", Eq_Op);
-                  else
-                     Error_Msg_N
-                       ("\move declaration to package spec<<", Eq_Op);
-                  end if;
-
-               else
-                  if Nkind (Eq_Decl) = N_Subprogram_Body then
-                     Error_Msg_N
-                       ("\put declaration in package spec (Ada 2012)?y?",
-                        Eq_Op);
-                  else
-                     Error_Msg_N
-                       ("\move declaration to package spec (Ada 2012)?y?",
-                        Eq_Op);
-                  end if;
-               end if;
-            end if;
-         end if;
-
-      --  Now check for AI12-0352: the declaration of a user-defined primitive
-      --  equality operation for a record type T is illegal if it occurs after
-      --  a type has been derived from T.
-
-      else
-         Decl := Next (Declaration_Node (Typ));
-
-         while Present (Decl) and then Decl /= Eq_Decl loop
-            if Nkind (Decl) = N_Full_Type_Declaration
-              and then Etype (Defining_Identifier (Decl)) = Typ
-            then
-               Error_Msg_N
-                 ("equality operator cannot appear after derivation", Eq_Op);
-               Error_Msg_NE
-                 ("an equality operator for& cannot be declared after "
-                  & "this point??",
-                  Decl, Typ);
-            end if;
-
-            Next (Decl);
-         end loop;
-      end if;
-   end Check_Untagged_Equality;
+   end Extra_Formals_OK;
 
    -----------------------------
    -- Find_Corresponding_Spec --
@@ -10654,6 +11212,70 @@ package body Sem_Ch6 is
          return True;
       end if;
    end Fully_Conformant_Discrete_Subtypes;
+
+   --------------------------------
+   -- Has_Reliable_Extra_Formals --
+   --------------------------------
+
+   function Has_Reliable_Extra_Formals (E : Entity_Id) return Boolean is
+      Alias_E : Entity_Id;
+
+   begin
+      --  Extra formals are not added if expansion is not active (and hence if
+      --  available they are not reliable for extra formals check).
+
+      if not Expander_Active then
+         return False;
+
+      --  Currently the unique cases where extra formals are not reliable
+      --  are associated with predefined dispatching operations; otherwise
+      --  they are properly added when required.
+
+      elsif not Is_Predefined_Dispatching_Operation (E) then
+         return True;
+      end if;
+
+      Alias_E := Ultimate_Alias (E);
+
+      --  Abstract predefined primitives of Root_Controlled don't have
+      --  extra formals; this is required to build the runtime.
+
+      if Ekind (Alias_E) = E_Function
+        and then Is_Abstract_Subprogram (Alias_E)
+        and then Is_RTE (Underlying_Type (Etype (Alias_E)),
+                           RE_Root_Controlled)
+      then
+         return False;
+
+      --  Predefined stream dispatching operations that are not emitted by
+      --  the frontend; they have a renaming of the corresponding primive
+      --  of their parent type and hence they don't have extra formals.
+
+      else
+         declare
+            Typ : constant Entity_Id :=
+                    Underlying_Type (Find_Dispatching_Type (Alias_E));
+
+         begin
+            if (Get_TSS_Name (E) = TSS_Stream_Input
+                  and then not Stream_Operation_OK (Typ, TSS_Stream_Input))
+              or else
+                (Get_TSS_Name (E) = TSS_Stream_Output
+                   and then not Stream_Operation_OK (Typ, TSS_Stream_Output))
+              or else
+                (Get_TSS_Name (E) = TSS_Stream_Read
+                   and then not Stream_Operation_OK (Typ, TSS_Stream_Read))
+              or else
+                (Get_TSS_Name (E) = TSS_Stream_Write
+                   and then not Stream_Operation_OK (Typ, TSS_Stream_Write))
+            then
+               return False;
+            end if;
+         end;
+      end if;
+
+      return True;
+   end Has_Reliable_Extra_Formals;
 
    --------------------
    -- Install_Entity --

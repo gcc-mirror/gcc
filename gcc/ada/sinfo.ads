@@ -891,9 +891,12 @@ package Sinfo is
    --    required for the corresponding reference or modification.
 
    --  At_End_Proc
-   --    This field is present in an N_Handled_Sequence_Of_Statements node.
+   --    This field is present in N_Handled_Sequence_Of_Statements,
+   --    N_Package_Body, N_Subprogram_Body, N_Task_Body, N_Block_Statement,
+   --    and N_Entry_Body.
    --    It contains an identifier reference for the cleanup procedure to be
-   --    called. See description of this node for further details.
+   --    called. See description of N_Handled_Sequence_Of_Statements node
+   --    for further details.
 
    --  Backwards_OK
    --    A flag present in the N_Assignment_Statement node. It is used only
@@ -1306,15 +1309,6 @@ package Sinfo is
    --    opposed to the actual order in the call which may be different due to
    --    named associations). Note: this field points to the explicit actual
    --    parameter itself, not the N_Parameter_Association node (its parent).
-
-   --  First_Real_Statement
-   --    Present in N_Handled_Sequence_Of_Statements node. Normally set to
-   --    Empty. Used only when declarations are moved into the statement part
-   --    of a construct as a result of wrapping an AT END handler that is
-   --    required to cover the declarations. In this case, this field is used
-   --    to remember the location in the statements list of the first real
-   --    statement, i.e. the statement that used to be first in the statement
-   --    list before the declarations were prepended.
 
    --  First_Subtype_Link
    --    Present in N_Freeze_Entity node for an anonymous base type that is
@@ -4183,11 +4177,15 @@ package Sinfo is
 
       --  ITERATED_COMPONENT_ASSOCIATION ::=
       --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
+      --    for ITERATOR_SPECIFICATION => EXPRESSION
+
+      --  At most one of (Defining_Identifier, Iterator_Specification)
+      --  is present at a time, in which case the other one is empty.
 
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
       --  Defining_Identifier
-      --  Iterator_Specification (set to Empty if no Iterator_Spec)
+      --  Iterator_Specification
       --  Expression
       --  Discrete_Choices
       --  Loop_Actions
@@ -4207,8 +4205,12 @@ package Sinfo is
       --  Etype
 
       ---------------------------------
-      --  3.4.5 Comtainer_Aggregates --
+      --  3.4.5 Container_Aggregates --
       ---------------------------------
+
+      --  ITERATED_ELEMENT_ASSOCIATION ::=
+      --    for LOOP_PARAMETER_SPECIFICATION[ use KEY_EXPRESSION] => EXPRESSION
+      --  | for ITERATOR_SPECIFICATION[ use KEY_EXPRESSION] => EXPRESSION
 
       --  N_Iterated_Element_Association
       --  Key_Expression
@@ -5159,6 +5161,7 @@ package Sinfo is
       --  Is_Finalization_Wrapper
       --  Is_Initialization_Block
       --  Is_Task_Master
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -------------------------
       -- 5.7  Exit Statement --
@@ -5678,6 +5681,7 @@ package Sinfo is
       --  Handled_Statement_Sequence (set to Empty if no HSS present)
       --  Corresponding_Spec
       --  Was_Originally_Stub
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       --  Note: if a source level package does not contain a handled sequence
       --  of statements, then the parser supplies a dummy one with a null
@@ -6156,6 +6160,7 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -----------------------------------
       -- 9.5.2  Entry Body Formal Part --
@@ -6707,6 +6712,7 @@ package Sinfo is
       --  Corresponding_Spec_Of_Stub
       --  Library_Unit points to the subunit
       --  Corresponding_Body
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -------------------------------
       -- 10.1.3  Package Body Stub --
@@ -6737,6 +6743,7 @@ package Sinfo is
       --  Corresponding_Spec_Of_Stub
       --  Library_Unit points to the subunit
       --  Corresponding_Body
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       ---------------------------------
       -- 10.1.3  Protected Body Stub --
@@ -6822,6 +6829,11 @@ package Sinfo is
       --  declarations. The big difference is that the cleanup actions occur
       --  on either a normal or an abnormal exit from the statement sequence.
 
+      --  At_End_Proc is also a field of various nodes that can contain
+      --  both Declarations and Handled_Statement_Sequence, such as subprogram
+      --  bodies and block statements. In that case, the At_End_Proc
+      --  protects the Declarations as well as the Handled_Statement_Sequence.
+
       --  Note: the list of Exception_Handlers can contain pragmas as well
       --  as actual handlers. In practice these pragmas can only occur at
       --  the start of the list, since any pragmas occurring later on will
@@ -6848,7 +6860,6 @@ package Sinfo is
       --  End_Label (set to Empty if expander generated)
       --  Exception_Handlers (set to No_List if none present)
       --  At_End_Proc (set to Empty if no clean up procedure)
-      --  First_Real_Statement
 
       --  Note: A Handled_Sequence_Of_Statements can contain both
       --  Exception_Handlers and an At_End_Proc.

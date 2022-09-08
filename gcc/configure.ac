@@ -2109,7 +2109,6 @@ AC_SUBST(HAVE_AUTO_BUILD)
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
-tm_d_file="${tm_d_file} defaults.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
@@ -2353,13 +2352,9 @@ for f in $tm_p_file; do
 done
 
 tm_d_file_list=
-tm_d_include_list="options.h insn-constants.h"
+tm_d_include_list=
 for f in $tm_d_file; do
   case $f in
-    defaults.h )
-       tm_d_file_list="${tm_d_file_list} \$(srcdir)/$f"
-       tm_d_include_list="${tm_d_include_list} $f"
-       ;;
     * )
        tm_d_file_list="${tm_d_file_list} \$(srcdir)/config/$f"
        tm_d_include_list="${tm_d_include_list} config/$f"
@@ -5071,6 +5066,15 @@ LCF0:
 	  ],,
 	  [AC_DEFINE(HAVE_AS_REF, 1,
 	    [Define if your assembler supports .ref])])
+
+	gcc_GAS_CHECK_FEATURE([AIX DWARF location lists section support],
+	  gcc_cv_as_aix_dwloc,,
+	  [	.dwsect 0xA0000
+	Lframe..0:
+		.vbyte 4,Lframe..0
+	  ],,
+	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
+	    [Define if your assembler supports AIX debug frame section label reference.])])
 	;;
     esac
     ;;

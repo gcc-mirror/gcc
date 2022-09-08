@@ -17830,8 +17830,8 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
     }
 
   /* Handle an OpenMP array section represented as a TREE_LIST (or
-     OMP_CLAUSE_DEPEND_KIND).  An OMP_CLAUSE_DEPEND (with a depend
-     kind of OMP_CLAUSE_DEPEND_SINK) can also be represented as a
+     OMP_CLAUSE_DOACROSS_KIND).  An OMP_CLAUSE_DOACROSS (with a depend
+     kind of OMP_CLAUSE_DOACROSS_SINK) can also be represented as a
      TREE_LIST.  We can handle it exactly the same as an array section
      (purpose, value, and a chain), even though the nomenclature
      (low_bound, length, etc) is different.  */
@@ -17849,8 +17849,8 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
 	  && TREE_CHAIN (decl) == chain)
 	return decl;
       tree ret = tree_cons (low_bound, length, chain);
-      OMP_CLAUSE_DEPEND_SINK_NEGATIVE (ret)
-	= OMP_CLAUSE_DEPEND_SINK_NEGATIVE (decl);
+      OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (ret)
+	= OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (decl);
       return ret;
     }
   tree ret = tsubst_expr (decl, args, complain, in_decl,
@@ -17898,6 +17898,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_COPYPRIVATE:
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DOACROSS:
 	case OMP_CLAUSE_AFFINITY:
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE_TO:
@@ -19414,7 +19415,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       r = RECUR (OMP_DEPOBJ_DEPOBJ (t));
       if (OMP_DEPOBJ_CLAUSES (t) && OMP_DEPOBJ_CLAUSES (t) != error_mark_node)
 	{
-	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_SOURCE;
+	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INVALID;
 	  if (TREE_CODE (OMP_DEPOBJ_CLAUSES (t)) == OMP_CLAUSE)
 	    {
 	      tmp = tsubst_omp_clauses (OMP_DEPOBJ_CLAUSES (t), C_ORT_OMP,
@@ -19432,7 +19433,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	}
       else
 	finish_omp_depobj (EXPR_LOCATION (t), r,
-			   OMP_CLAUSE_DEPEND_SOURCE,
+			   OMP_CLAUSE_DEPEND_INVALID,
 			   OMP_DEPOBJ_CLAUSES (t));
       break;
 
@@ -19525,9 +19526,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OMP_ORDERED:
       tmp = tsubst_omp_clauses (OMP_ORDERED_CLAUSES (t), C_ORT_OMP, args,
 				complain, in_decl);
-      stmt = push_stmt_list ();
-      RECUR (OMP_BODY (t));
-      stmt = pop_stmt_list (stmt);
+      if (OMP_BODY (t))
+	{
+	  stmt = push_stmt_list ();
+	  RECUR (OMP_BODY (t));
+	  stmt = pop_stmt_list (stmt);
+	}
+      else
+	stmt = NULL_TREE;
 
       t = copy_node (t);
       OMP_BODY (t) = stmt;

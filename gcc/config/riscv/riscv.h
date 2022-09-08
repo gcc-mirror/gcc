@@ -27,10 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)
 
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS riscv_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO riscv_d_register_target_info
-
 #ifdef TARGET_BIG_ENDIAN_DEFAULT
 #define DEFAULT_ENDIAN_SPEC    "b"
 #else

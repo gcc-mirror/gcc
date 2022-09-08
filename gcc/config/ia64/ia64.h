@@ -1422,20 +1422,6 @@ do {									\
 /* Macros Affecting all Debug Formats.  */
 
 /* This is handled in sysv4.h.  */
-
-
-/* Specific Options for DBX Output.  */
-
-
-/* Open ended Hooks for DBX Output.  */
-
-/* Likewise.  */
-
-
-/* File names in DBX format.  */
-
-/* Likewise.  */
-
 
 /* Macros for Dwarf Output.  */
 

@@ -6239,9 +6239,12 @@ proc check_effective_target_powerpc_sqrt { } {
     }
 
     return [check_no_compiler_messages powerpc_sqrt object {
+	void test (void)
+	{
 	#ifndef _ARCH_PPCSQ
 	#error _ARCH_PPCSQ is not defined
 	#endif
+	}
     } {}]
 }
 
@@ -6349,71 +6352,92 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 # as provided by the test.
 proc check_effective_target_has_arch_pwr5 { } {
 	return [check_no_compiler_messages_nocache arch_pwr5 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR5
 		#error does not have power5 support.
 		#else
 		/* "has power5 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr6 { } {
 	return [check_no_compiler_messages_nocache arch_pwr6 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR6
 		#error does not have power6 support.
 		#else
 		/* "has power6 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr7 { } {
 	return [check_no_compiler_messages_nocache arch_pwr7 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR7
 		#error does not have power7 support.
 		#else
 		/* "has power7 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr8 { } {
 	return [check_no_compiler_messages_nocache arch_pwr8 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR8
 		#error does not have power8 support.
 		#else
 		/* "has power8 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr9 { } {
 	return [check_no_compiler_messages_nocache arch_pwr9 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR9
 		#error does not have power9 support.
 		#else
 		/* "has power9 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr10 { } {
 	return [check_no_compiler_messages_nocache arch_pwr10 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR10
 		#error does not have power10 support.
 		#else
 		/* "has power10 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_ppc64 { } {
 	return [check_no_compiler_messages_nocache arch_ppc64 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PPC64
 		#error does not have ppc64 support.
 		#else
 		/* "has ppc64 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
@@ -6500,9 +6524,12 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
 
 proc check_effective_target_ppc_float128 { } {
     return [check_no_compiler_messages_nocache ppc_float128 object {
+	void test (void)
+	{
 	#ifndef __FLOAT128__
 	  nope no good
 	#endif
+	}
     }]
 }
 
@@ -6510,9 +6537,12 @@ proc check_effective_target_ppc_float128 { } {
 
 proc check_effective_target_ppc_float128_insns { } {
     return [check_no_compiler_messages_nocache ppc_float128 object {
+	void test (void)
+	{
 	#ifndef __FLOAT128_HARDWARE__
 	  nope no good
 	#endif
+	}
     }]
 }
 
@@ -6520,9 +6550,12 @@ proc check_effective_target_ppc_float128_insns { } {
 
 proc check_effective_target_powerpc_vsx { } {
     return [check_no_compiler_messages_nocache powerpc_vsx object {
+	void test (void)
+	{
 	#ifndef __VSX__
 	  nope no vsx
 	#endif
+	}
     }]
 }
 

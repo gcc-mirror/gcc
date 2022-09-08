@@ -100,4 +100,4 @@ crti.o%s \
 
 #define TARGET_POSIX_IO
 
-#undef DBX_REGISTER_NUMBER
+#undef DEBUGGER_REGNO

@@ -1,3 +1,84 @@
+2022-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106793
+	* decl.cc (grokdeclarator): Improve placeholder diagnostics.
+	* parser.cc (cp_parser_type_id_1): Add fixit.
+
+2022-09-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106188
+	PR c++/106713
+	* coroutines.cc (coro_rewrite_function_body): Ensure we have a
+	BIND_EXPR wrapping the function body.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* semantics.cc (finish_omp_target_clauses): If current_function_decl
+	isn't a nonstatic member function, don't set data.current_object to
+	non-NULL.
+
+2022-09-06  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grok_op_properties): Return sooner for C++23 op[].
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_doacross_sink): Don't verify val
+	in omp_cur_iteration - 1 has integer_type_node type.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.cc (tsubst_expr) <case OMP_ORDERED>: If OMP_BODY was NULL, keep
+	it NULL after instantiation too.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Handle doacross.
+	(cp_parser_omp_clause_depend_sink): Renamed to ...
+	(cp_parser_omp_clause_doacross_sink): ... this.  Add depend_p
+	argument.  Handle parsing of doacross(sink:omp_cur_iteration-1).  Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS instead
+	of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND flag on it.
+	(cp_parser_omp_clause_depend): Use OMP_CLAUSE_DOACROSS_SINK and
+	OMP_CLAUSE_DOACROSS_SOURCE instead of OMP_CLAUSE_DEPEND_SINK and
+	OMP_CLAUSE_DEPEND_SOURCE, build OMP_CLAUSE_DOACROSS for depend(source)
+	and set OMP_CLAUSE_DOACROSS_DEPEND on it.
+	(cp_parser_omp_clause_doacross): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DOACROSS.
+	(cp_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	(cp_parser_omp_for_loop): Don't diagnose here linear clause together
+	with ordered with argument.
+	(cp_parser_omp_simd): Don't diagnose ordered clause with argument on
+	for simd.
+	(OMP_ORDERED_DEPEND_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	(cp_parser_omp_ordered): Handle also doacross and adjust for it
+	diagnostic wording.
+	* pt.cc (tsubst_omp_clause_decl): Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE.
+	(tsubst_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	(tsubst_expr): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	* semantics.cc (cp_finish_omp_clause_depend_sink): Rename to ...
+	(cp_finish_omp_clause_doacross_sink): ... this.
+	(finish_omp_clauses): Handle OMP_CLAUSE_DOACROSS.  Don't handle
+	OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* cp-tree.h (class cp_expr): Add bitfield m_decimal.  Clear it in
+	existing ctors.  Add ctor that allows specifying its value.
+	(cp_expr::decimal_p): New accessor.
+	* parser.cc (cp_parser_expression_stack_entry::flags): New field.
+	(cp_parser_primary_expression): Set m_decimal of cp_expr when
+	handling numbers.
+	(cp_parser_binary_expression): Extract flags from token when
+	populating stack.  Call check_for_xor_used_as_pow.
+
 2022-09-01  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h (maybe_strip_ref_conversion): Remove.

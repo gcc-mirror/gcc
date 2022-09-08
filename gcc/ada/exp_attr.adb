@@ -2079,7 +2079,8 @@ package body Exp_Attr is
 
       case Id is
 
-      --  Attributes related to Ada 2012 iterators
+      --  Attributes related to Ada 2012 iterators. They are only allowed in
+      --  attribute definition clauses and should never be expanded.
 
       when Attribute_Constant_Indexing
          | Attribute_Default_Iterator
@@ -2088,7 +2089,7 @@ package body Exp_Attr is
          | Attribute_Iterator_Element
          | Attribute_Variable_Indexing
       =>
-         null;
+         raise Program_Error;
 
       --  Internal attributes used to deal with Ada 2012 delayed aspects. These
       --  were already rejected by the parser. Thus they shouldn't appear here.
@@ -2310,19 +2311,40 @@ package body Exp_Attr is
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
-            --  If prefix is a subprogram that has class-wide preconditions and
-            --  an indirect-call wrapper (ICW) of such subprogram is available
-            --  then replace the prefix by the ICW.
-
             elsif Is_Access_Subprogram_Type (Btyp)
               and then Is_Entity_Name (Pref)
-              and then Present (Class_Preconditions (Entity (Pref)))
-              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
             then
-               Rewrite (Pref,
-                 New_Occurrence_Of
-                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
-               Analyze_And_Resolve (N, Typ);
+               --  If prefix is a subprogram that has class-wide preconditions
+               --  and an indirect-call wrapper (ICW) of the subprogram is
+               --  available then replace the prefix by the ICW.
+
+               if Present (Class_Preconditions (Entity (Pref)))
+                 and then Present (Indirect_Call_Wrapper (Entity (Pref)))
+               then
+                  Rewrite (Pref,
+                    New_Occurrence_Of
+                      (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+                  Analyze_And_Resolve (N, Typ);
+               end if;
+
+               --  Ensure the availability of the extra formals to check that
+               --  they match.
+
+               if not Is_Frozen (Entity (Pref))
+                 or else From_Limited_With (Etype (Entity (Pref)))
+               then
+                  Create_Extra_Formals (Entity (Pref));
+               end if;
+
+               if not Is_Frozen (Btyp_DDT)
+                 or else From_Limited_With (Etype (Btyp_DDT))
+               then
+                  Create_Extra_Formals (Btyp_DDT);
+               end if;
+
+               pragma Assert
+                 (Extra_Formals_Match_OK
+                   (E => Entity (Pref), Ref_E => Btyp_DDT));
 
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.
@@ -4883,7 +4905,6 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
          Decl    : Node_Id;
@@ -5667,33 +5688,35 @@ package body Exp_Attr is
       --  which is illegal, because of the lack of aliasing.
 
       when Attribute_Priority => Priority : declare
-         Call           : Node_Id;
-         Conctyp        : Entity_Id;
-         New_Itype      : Entity_Id;
-         Object_Parm    : Node_Id;
-         Subprg         : Entity_Id;
-         RT_Subprg_Name : Node_Id;
+         Call        : Node_Id;
+         New_Itype   : Entity_Id;
+         Object_Parm : Node_Id;
+         Prottyp     : Entity_Id;
+         RT_Subprg   : RE_Id;
+         Subprg      : Entity_Id;
 
       begin
-         --  Look for the enclosing concurrent type
+         --  Look for the enclosing protected type
 
-         Conctyp := Current_Scope;
-         while not Is_Concurrent_Type (Conctyp) loop
-            Conctyp := Scope (Conctyp);
+         Prottyp := Current_Scope;
+         while not Is_Protected_Type (Prottyp) loop
+            Prottyp := Scope (Prottyp);
          end loop;
 
-         pragma Assert (Is_Protected_Type (Conctyp));
+         pragma Assert (Is_Protected_Type (Prottyp));
 
          --  Generate the actual of the call
 
          Subprg := Current_Scope;
-         while not Present (Protected_Body_Subprogram (Subprg)) loop
+         while not (Is_Subprogram_Or_Entry (Subprg)
+                    and then Present (Protected_Body_Subprogram (Subprg)))
+         loop
             Subprg := Scope (Subprg);
          end loop;
 
          --  Use of 'Priority inside protected entries and barriers (in both
          --  cases the type of the first formal of their expanded subprogram
-         --  is Address)
+         --  is Address).
 
          if Etype (First_Entity (Protected_Body_Subprogram (Subprg))) =
               RTE (RE_Address)
@@ -5708,7 +5731,7 @@ package body Exp_Attr is
             New_Itype := Create_Itype (E_Access_Type, N);
             Set_Etype (New_Itype, New_Itype);
             Set_Directly_Designated_Type (New_Itype,
-              Corresponding_Record_Type (Conctyp));
+              Corresponding_Record_Type (Prottyp));
             Freeze_Itype (New_Itype, N);
 
             --  Generate:
@@ -5743,15 +5766,16 @@ package body Exp_Attr is
 
          --  Select the appropriate run-time subprogram
 
-         if Number_Entries (Conctyp) = 0 then
-            RT_Subprg_Name := New_Occurrence_Of (RTE (RE_Get_Ceiling), Loc);
+         if Has_Entries (Prottyp) then
+            RT_Subprg := RO_PE_Get_Ceiling;
          else
-            RT_Subprg_Name := New_Occurrence_Of (RTE (RO_PE_Get_Ceiling), Loc);
+            RT_Subprg := RE_Get_Ceiling;
          end if;
 
          Call :=
            Make_Function_Call (Loc,
-             Name                   => RT_Subprg_Name,
+             Name                   =>
+               New_Occurrence_Of (RTE (RT_Subprg), Loc),
              Parameter_Associations => New_List (Object_Parm));
 
          Rewrite (N, Call);
@@ -7099,7 +7123,11 @@ package body Exp_Attr is
       --  See separate sections below for the generated code in each case.
 
       when Attribute_Valid => Valid : declare
-         PBtyp : Entity_Id := Base_Type (Ptyp);
+         PBtyp : Entity_Id := Implementation_Base_Type (Validated_View (Ptyp));
+         pragma Assert (Is_Scalar_Type (PBtyp)
+                          or else Serious_Errors_Detected > 0);
+
+         --  The scalar base type, looking through private types
 
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
          --  Save the validity checking mode. We always turn off validity
@@ -7146,21 +7174,27 @@ package body Exp_Attr is
                Temp := Duplicate_Subexpr (Pref);
             end if;
 
-            return
-              Make_In (Loc,
-                Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
-                Right_Opnd =>
-                  Make_Range (Loc,
-                    Low_Bound  =>
-                      Unchecked_Convert_To (PBtyp,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_First)),
-                    High_Bound =>
-                      Unchecked_Convert_To (PBtyp,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_Last))));
+            declare
+               Val_Typ : constant Entity_Id := Validated_View (Ptyp);
+            begin
+               return
+                 Make_In (Loc,
+                   Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
+                   Right_Opnd =>
+                     Make_Range (Loc,
+                       Low_Bound  =>
+                         Unchecked_Convert_To (PBtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Val_Typ, Loc),
+                             Attribute_Name => Name_First)),
+                       High_Bound =>
+                         Unchecked_Convert_To (PBtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Val_Typ, Loc),
+                             Attribute_Name => Name_Last))));
+            end;
          end Make_Range_Test;
 
          --  Local variables
@@ -7181,13 +7215,6 @@ package body Exp_Attr is
          --  checks to intefere with the explicit check from the attribute
 
          Validity_Checks_On := False;
-
-         --  Retrieve the base type. Handle the case where the base type is a
-         --  private enumeration type.
-
-         if Is_Private_Type (PBtyp) and then Present (Full_View (PBtyp)) then
-            PBtyp := Full_View (PBtyp);
-         end if;
 
          --  Floating-point case. This case is handled by the Valid attribute
          --  code in the floating-point attribute run-time library.
@@ -7458,7 +7485,7 @@ package body Exp_Attr is
                Uns  : constant Boolean :=
                         Is_Unsigned_Type (Ptyp)
                           or else (Is_Private_Type (Ptyp)
-                                    and then Is_Unsigned_Type (Btyp));
+                                    and then Is_Unsigned_Type (PBtyp));
                Size : Uint;
                P    : Node_Id := Pref;
 
@@ -7943,7 +7970,6 @@ package body Exp_Attr is
          | Attribute_Large
          | Attribute_Last_Valid
          | Attribute_Library_Level
-         | Attribute_Lock_Free
          | Attribute_Machine_Emax
          | Attribute_Machine_Emin
          | Attribute_Machine_Mantissa

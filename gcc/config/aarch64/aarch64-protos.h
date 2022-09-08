@@ -878,7 +878,7 @@ rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
 bool aarch64_stepped_int_parallel_p (rtx, int);
 rtx aarch64_tls_get_addr (void);
-unsigned aarch64_dbx_register_number (unsigned);
+unsigned aarch64_debugger_regno (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
 void aarch64_cpu_cpp_builtins (cpp_reader *);
@@ -907,7 +907,6 @@ void aarch64_sve_expand_vector_init (rtx, rtx);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned, bool = false);
 void aarch64_init_expanders (void);
-void aarch64_init_simd_builtins (void);
 void aarch64_emit_call_insn (rtx);
 void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
@@ -1039,10 +1038,6 @@ enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
 						       std::string *);
 void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
 std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
-
-/* Defined in aarch64-d.cc  */
-extern void aarch64_d_target_versions (void);
-extern void aarch64_d_register_target_info (void);
 
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);

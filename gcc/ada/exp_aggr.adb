@@ -5734,7 +5734,8 @@ package body Exp_Aggr is
 
       procedure Check_Bounds (Aggr_Bounds_Node, Index_Bounds_Node : Node_Id);
       --  Checks that the bounds of Aggr_Bounds are within the bounds defined
-      --  by Index_Bounds.
+      --  by Index_Bounds. For null array aggregate (Ada 2022) check that the
+      --  aggregate bounds define a null range.
 
       procedure Check_Same_Aggr_Bounds (Sub_Aggr : Node_Id; Dim : Pos);
       --  Checks that in a multidimensional array aggregate all subaggregates
@@ -5850,6 +5851,22 @@ package body Exp_Aggr is
          Cond : Node_Id := Empty;
 
       begin
+         --  For a null array aggregate check that high bound (i.e., low
+         --  bound predecessor) exists. Fail if low bound is low bound of
+         --  base subtype (in all cases, including modular).
+
+         if Is_Null_Aggregate (N) then
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Op_Eq (Loc,
+                    New_Copy_Tree (Aggr_Bounds.First),
+                    New_Copy_Tree
+                      (Type_Low_Bound (Base_Type (Etype (Ind_Bounds.First))))),
+                Reason    => CE_Range_Check_Failed));
+            return;
+         end if;
+
          --  Generate the following test:
 
          --    [constraint_error when
@@ -6430,7 +6447,7 @@ package body Exp_Aggr is
                          Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
                          Right_Opnd => Make_Integer_Literal (Loc, 1)));
 
-            One_Loop := Make_Loop_Statement (Loc,
+            One_Loop := Make_Implicit_Loop_Statement (N,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
                   Iterator_Specification => New_Copy_Tree (Iter)),
@@ -6536,7 +6553,7 @@ package body Exp_Aggr is
                     Prefix => New_Occurrence_Of (TmpE, Loc),
                     Expressions =>
                       New_List (New_Occurrence_Of (Index_Id, Loc))),
-               Expression => New_Copy_Tree (Expression (Assoc)));
+               Expression => Copy_Separate_Tree (Expression (Assoc)));
 
             --  Advance index position for insertion.
 
@@ -6562,7 +6579,7 @@ package body Exp_Aggr is
                       Attribute_Name => Name_Last)),
                Then_Statements => New_List (Incr));
 
-            One_Loop := Make_Loop_Statement (Loc,
+            One_Loop := Make_Implicit_Loop_Statement (N,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
                   Iterator_Specification => Copy_Separate_Tree (Iter)),
@@ -7500,11 +7517,11 @@ package body Exp_Aggr is
 
             --  Iterated_Component_Association.
 
-            Loop_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => Chars (Defining_Identifier (Comp)));
-
             if Present (Iterator_Specification (Comp)) then
+               Loop_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => Chars (Defining_Identifier
+                              (Iterator_Specification (Comp))));
                L_Iteration_Scheme :=
                  Make_Iteration_Scheme (Loc,
                    Iterator_Specification => Iterator_Specification (Comp));
@@ -7513,6 +7530,9 @@ package body Exp_Aggr is
                --  Loop_Parameter_Specification is parsed with a choice list.
                --  where the range is the first (and only) choice.
 
+               Loop_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => Chars (Defining_Identifier (Comp)));
                L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
 
                L_Iteration_Scheme :=
@@ -7997,7 +8017,7 @@ package body Exp_Aggr is
          end if;
 
          return
-           Make_Loop_Statement (Loc,
+           Make_Implicit_Loop_Statement (C,
              Iteration_Scheme =>
                Make_Iteration_Scheme (Sl,
                  Loop_Parameter_Specification =>

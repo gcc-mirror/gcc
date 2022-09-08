@@ -3821,6 +3821,12 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);
 
+#ifdef XCOFF_DEBUGGING_INFO
+  /* For AIX default to 64-bit DWARF.  */
+  if (!OPTION_SET_P (dwarf_offset_size))
+    dwarf_offset_size = POINTER_SIZE_UNITS;
+#endif
+
   /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
      off all of the options that depend on those flags.  */
   ignore_masks = rs6000_disable_incompatible_switches ();
@@ -20940,6 +20946,11 @@ rs6000_elf_file_end (void)
 
 #if TARGET_XCOFF
 
+#ifndef HAVE_XCOFF_DWARF_EXTRAS
+#define HAVE_XCOFF_DWARF_EXTRAS 0
+#endif
+
+
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
 
@@ -23637,7 +23648,7 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
      2 -- DWARF .eh_frame section  */
 
 unsigned int
-rs6000_dbx_register_number (unsigned int regno, unsigned int format)
+rs6000_debugger_regno (unsigned int regno, unsigned int format)
 {
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */

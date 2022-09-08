@@ -183,7 +183,6 @@ package Gen_IL.Fields is
       First_Inlined_Subprogram,
       First_Name,
       First_Named_Actual,
-      First_Real_Statement,
       First_Subtype_Link,
       Float_Truncate,
       Formal_Type_Definition,

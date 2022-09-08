@@ -2864,15 +2864,18 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		gfc_init_block (&iter_block);
 	      prev = n;
 	      if (list == OMP_LIST_DEPEND
-		  && n->u.depend_op == OMP_DEPEND_SINK_FIRST)
+		  && (n->u.depend_doacross_op == OMP_DOACROSS_SINK_FIRST
+		      || n->u.depend_doacross_op == OMP_DEPEND_SINK_FIRST))
 		{
 		  tree vec = NULL_TREE;
 		  unsigned int i;
+		  bool is_depend
+		    = n->u.depend_doacross_op == OMP_DEPEND_SINK_FIRST;
 		  for (i = 0; ; i++)
 		    {
 		      tree addend = integer_zero_node, t;
 		      bool neg = false;
-		      if (n->expr)
+		      if (n->sym && n->expr)
 			{
 			  addend = gfc_conv_constant_to_tree (n->expr);
 			  if (TREE_CODE (addend) == INTEGER_CST
@@ -2883,7 +2886,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 						   TREE_TYPE (addend), addend);
 			    }
 			}
-		      t = gfc_trans_omp_variable (n->sym, false);
+
+		      if (n->sym == NULL)
+			t = null_pointer_node;  /* "omp_cur_iteration - 1".  */
+		      else
+			t = gfc_trans_omp_variable (n->sym, false);
 		      if (t != error_mark_node)
 			{
 			  if (i < vec_safe_length (doacross_steps)
@@ -2897,10 +2904,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    }
 			  vec = tree_cons (addend, t, vec);
 			  if (neg)
-			    OMP_CLAUSE_DEPEND_SINK_NEGATIVE (vec) = 1;
+			    OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (vec) = 1;
 			}
 		      if (n->next == NULL
-			  || n->next->u.depend_op != OMP_DEPEND_SINK)
+			  || n->next->u.depend_doacross_op != OMP_DOACROSS_SINK)
 			break;
 		      n = n->next;
 		    }
@@ -2908,8 +2915,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    continue;
 
 		  tree node = build_omp_clause (input_location,
-						OMP_CLAUSE_DEPEND);
-		  OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_SINK;
+						OMP_CLAUSE_DOACROSS);
+		  OMP_CLAUSE_DOACROSS_KIND (node) = OMP_CLAUSE_DOACROSS_SINK;
+		  OMP_CLAUSE_DOACROSS_DEPEND (node) = is_depend;
 		  OMP_CLAUSE_DECL (node) = nreverse (vec);
 		  omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 		  continue;
@@ -2961,7 +2969,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (ptr);
 		}
 	      if (list == OMP_LIST_DEPEND)
-		switch (n->u.depend_op)
+		switch (n->u.depend_doacross_op)
 		  {
 		  case OMP_DEPEND_IN:
 		    OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_IN;
@@ -4252,10 +4260,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
-  if (clauses->depend_source)
+  if (clauses->doacross_source)
     {
-      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEPEND);
-      OMP_CLAUSE_DEPEND_KIND (c) = OMP_CLAUSE_DEPEND_SOURCE;
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DOACROSS);
+      OMP_CLAUSE_DOACROSS_KIND (c) = OMP_CLAUSE_DOACROSS_SOURCE;
+      OMP_CLAUSE_DOACROSS_DEPEND (c) = clauses->depend_source;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -5117,7 +5126,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   init = make_tree_vec (collapse);
   cond = make_tree_vec (collapse);
   incr = make_tree_vec (collapse);
-  orig_decls = clauses->orderedc ? make_tree_vec (collapse) : NULL_TREE;
+  orig_decls = clauses->ordered ? make_tree_vec (collapse) : NULL_TREE;
 
   if (pblock == NULL)
     {
@@ -5217,6 +5226,10 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 						    MODIFY_EXPR,
 						    type, dovar,
 						    TREE_VEC_ELT (incr, i));
+	  if (orig_decls && !clauses->orderedc)
+	    orig_decls = NULL;
+	  else if (orig_decls)
+	    TREE_VEC_ELT (orig_decls, i) = dovar_decl;
 	}
       else
 	{
@@ -5257,9 +5270,9 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		vec_safe_grow_cleared (doacross_steps, clauses->orderedc, true);
 	      (*doacross_steps)[i] = step;
 	    }
+	  if (orig_decls)
+	    TREE_VEC_ELT (orig_decls, i) = dovar_decl;
 	}
-      if (orig_decls)
-	TREE_VEC_ELT (orig_decls, i) = dovar_decl;
 
       if (dovar_found == 3
 	  && op == EXEC_OMP_SIMD
@@ -5626,7 +5639,7 @@ gfc_trans_omp_depobj (gfc_code *code)
   int k = -1; /* omp_clauses->destroy */
   if (!code->ext.omp_clauses->destroy)
     switch (code->ext.omp_clauses->depobj_update != OMP_DEPEND_UNSET
-	    ? code->ext.omp_clauses->depobj_update : n->u.depend_op)
+	    ? code->ext.omp_clauses->depobj_update : n->u.depend_doacross_op)
       {
       case OMP_DEPEND_IN: k = GOMP_DEPEND_IN; break;
       case OMP_DEPEND_OUT: k = GOMP_DEPEND_OUT; break;

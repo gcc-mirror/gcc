@@ -1485,6 +1485,10 @@ extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
 extern void warn_for_multistatement_macros (location_t, location_t,
 					    location_t, enum rid);
 
+extern void check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
+				       location_t operator_loc,
+				       tree rhs_val);
+
 /* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);
 extern tree handle_deprecated_attribute (tree *, tree, tree, int, bool *);

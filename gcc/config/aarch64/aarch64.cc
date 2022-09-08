@@ -3357,7 +3357,7 @@ aarch64_reassociation_width (unsigned opc, machine_mode mode)
 
 /* Provide a mapping from gcc register numbers to dwarf register numbers.  */
 unsigned
-aarch64_dbx_register_number (unsigned regno)
+aarch64_debugger_regno (unsigned regno)
 {
    if (GP_REGNUM_P (regno))
      return AARCH64_DWARF_R0 + regno - R0_REGNUM;
@@ -18019,6 +18019,11 @@ aarch64_validate_march (const char *str, const struct processor **res,
       case AARCH64_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-march%>", str);
 	aarch64_print_hint_for_arch (str);
+	/* A common user error is confusing -march and -mcpu.
+	   If the -march string matches a known CPU suggest -mcpu.  */
+	parse_res = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
+	if (parse_res == AARCH64_PARSE_OK)
+	  inform (input_location, "did you mean %<-mcpu=%s%>?", str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-march=%s%>",
@@ -18898,18 +18903,6 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   if (ret)
     {
       aarch64_override_options_internal (&global_options);
-      /* Initialize SIMD builtins if we haven't already.
-	 Set current_target_pragma to NULL for the duration so that
-	 the builtin initialization code doesn't try to tag the functions
-	 being built with the attributes specified by any current pragma, thus
-	 going into an infinite recursion.  */
-      if (TARGET_SIMD)
-	{
-	  tree saved_current_target_pragma = current_target_pragma;
-	  current_target_pragma = NULL;
-	  aarch64_init_simd_builtins ();
-	  current_target_pragma = saved_current_target_pragma;
-	}
       new_target = build_target_option_node (&global_options,
 					     &global_options_set);
     }
@@ -19854,6 +19847,7 @@ aarch64_conditional_register_usage (void)
 	{
 	  fixed_regs[i] = 1;
 	  call_used_regs[i] = 1;
+	  CLEAR_HARD_REG_BIT (operand_reg_set, i);
 	}
     }
   if (!TARGET_SVE)

@@ -345,6 +345,9 @@ enum omp_clause_code {
   /* OpenMP clause: has_device_addr (variable-list).  */
   OMP_CLAUSE_HAS_DEVICE_ADDR,
 
+  /* OpenMP clause: doacross ({source,sink}:vec).  */
+  OMP_CLAUSE_DOACROSS,
+
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
@@ -1525,10 +1528,16 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_INOUT,
   OMP_CLAUSE_DEPEND_MUTEXINOUTSET,
   OMP_CLAUSE_DEPEND_INOUTSET,
-  OMP_CLAUSE_DEPEND_SOURCE,
-  OMP_CLAUSE_DEPEND_SINK,
   OMP_CLAUSE_DEPEND_DEPOBJ,
+  OMP_CLAUSE_DEPEND_INVALID,
   OMP_CLAUSE_DEPEND_LAST
+};
+
+enum omp_clause_doacross_kind
+{
+  OMP_CLAUSE_DOACROSS_SOURCE,
+  OMP_CLAUSE_DOACROSS_SINK,
+  OMP_CLAUSE_DOACROSS_LAST
 };
 
 enum omp_clause_proc_bind_kind
@@ -1620,6 +1629,7 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_default_kind   default_kind;
     enum omp_clause_schedule_kind  schedule_kind;
     enum omp_clause_depend_kind    depend_kind;
+    enum omp_clause_doacross_kind  doacross_kind;
     /* See include/gomp-constants.h for enum gomp_map_kind's values.  */
     unsigned int		   map_kind;
     enum omp_clause_proc_bind_kind proc_bind_kind;

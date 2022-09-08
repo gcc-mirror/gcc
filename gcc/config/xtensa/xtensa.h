@@ -216,7 +216,7 @@ along with GCC; see the file COPYING3.  If not see
 #define FIRST_PSEUDO_REGISTER 36
 
 /* Return the stabs register number to use for REGNO.  */
-#define DBX_REGISTER_NUMBER(REGNO) xtensa_dbx_register_number (REGNO)
+#define DEBUGGER_REGNO(REGNO) xtensa_debugger_regno (REGNO)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */

@@ -1598,7 +1598,7 @@ is
 
              --  Key now maps to New_Item
 
-             and Element (Container, Key) = New_Item
+             and Element (Container, Find (Container, Key)'Old) = New_Item
 
              --  New_Item is contained in Container
 
@@ -1622,8 +1622,9 @@ is
                     E_Right  => Elements (Container),
                     P_Left   => Positions (Container)'Old,
                     P_Right  => Positions (Container),
-                    Position => Find (Container, Key))
-             and Positions (Container) = Positions (Container)'Old;
+                    Position => Find (Container, Key)'Old)
+             and P.Keys_Included (Positions (Container),
+                                  Positions (Container)'Old);
 
       procedure Exclude (Container : in out Set; Key : Key_Type) with
         Global         => null,

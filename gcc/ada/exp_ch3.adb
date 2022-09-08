@@ -44,7 +44,6 @@ with Exp_Dist;       use Exp_Dist;
 with Exp_Put_Image;
 with Exp_Smem;       use Exp_Smem;
 with Exp_Strm;       use Exp_Strm;
-with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Ghost;          use Ghost;
@@ -407,15 +406,6 @@ package body Exp_Ch3 is
    function Predefined_Primitive_Freeze (Tag_Typ : Entity_Id) return List_Id;
    --  Freeze entities of all predefined primitive operations. This is needed
    --  because the bodies of these operations do not normally do any freezing.
-
-   function Stream_Operation_OK
-     (Typ       : Entity_Id;
-      Operation : TSS_Name_Type) return Boolean;
-   --  Check whether the named stream operation must be emitted for a given
-   --  type. The rules for inheritance of stream attributes by type extensions
-   --  are enforced by this function. Furthermore, various restrictions prevent
-   --  the generation of these operations, as a useful optimization or for
-   --  certification purposes and to save unnecessary generated code.
 
    --------------------------
    -- Adjust_Discriminants --
@@ -5379,6 +5369,10 @@ package body Exp_Ch3 is
       procedure Register_Dispatch_Table_Wrappers (Typ : Entity_Id);
       --  Register dispatch-table wrappers in the dispatch table of Typ
 
+      procedure Validate_Tagged_Type_Extra_Formals (Typ : Entity_Id);
+      --  Check extra formals of dispatching primitives of tagged type Typ.
+      --  Used in pragma Debug.
+
       ---------------------------------------
       -- Build_Class_Condition_Subprograms --
       ---------------------------------------
@@ -5507,6 +5501,71 @@ package body Exp_Ch3 is
             Next_Elmt (Elmt);
          end loop;
       end Register_Dispatch_Table_Wrappers;
+
+      ----------------------------------------
+      -- Validate_Tagged_Type_Extra_Formals --
+      ----------------------------------------
+
+      procedure Validate_Tagged_Type_Extra_Formals (Typ : Entity_Id) is
+         Ovr_Subp : Entity_Id;
+         Elmt     : Elmt_Id;
+         Subp     : Entity_Id;
+
+      begin
+         pragma Assert (not Is_Class_Wide_Type (Typ));
+
+         --  No check required if expansion is not active since we never
+         --  generate extra formals in such case.
+
+         if not Expander_Active then
+            return;
+         end if;
+
+         Elmt := First_Elmt (Primitive_Operations (Typ));
+         while Present (Elmt) loop
+            Subp := Node (Elmt);
+
+            --  Extra formals of a primitive must match the extra formals of
+            --  its covered interface primitive.
+
+            if Present (Interface_Alias (Subp)) then
+               pragma Assert
+                 (Extra_Formals_Match_OK
+                   (E     => Interface_Alias (Subp),
+                    Ref_E => Alias (Subp)));
+
+            elsif Present (Overridden_Operation (Subp)) then
+               Ovr_Subp := Overridden_Operation (Subp);
+
+               --  Handle controlling function wrapper
+
+               if Is_Wrapper (Subp)
+                 and then Ultimate_Alias (Ovr_Subp) = Subp
+               then
+                  if Present (Overridden_Operation (Ovr_Subp)) then
+                     pragma Assert
+                       (Extra_Formals_Match_OK
+                         (E     => Subp,
+                          Ref_E => Overridden_Operation (Ovr_Subp)));
+                  end if;
+
+               else
+                  pragma Assert
+                    (Extra_Formals_Match_OK
+                      (E     => Subp,
+                       Ref_E => Overridden_Operation (Subp)));
+               end if;
+
+            elsif Present (Alias (Subp)) then
+               pragma Assert
+                 (Extra_Formals_Match_OK
+                   (E     => Subp,
+                    Ref_E => Ultimate_Alias (Subp)));
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end Validate_Tagged_Type_Extra_Formals;
 
       --  Local variables
 
@@ -5896,28 +5955,58 @@ package body Exp_Ch3 is
          --  inherited functions, then add their bodies to the freeze actions.
 
          Append_Freeze_Actions (Typ, Wrapper_Body_List);
+      end if;
 
-         --  Create extra formals for the primitive operations of the type.
-         --  This must be done before analyzing the body of the initialization
-         --  procedure, because a self-referential type might call one of these
-         --  primitives in the body of the init_proc itself.
+      --  Create extra formals for the primitive operations of the type.
+      --  This must be done before analyzing the body of the initialization
+      --  procedure, because a self-referential type might call one of these
+      --  primitives in the body of the init_proc itself.
+      --
+      --  This is not needed:
+      --    1) If expansion is disabled, because extra formals are only added
+      --       when we are generating code.
+      --
+      --    2) For types with foreign convention since primitives with foreign
+      --       convention don't have extra formals and AI-117 requires that all
+      --       primitives of a tagged type inherit the convention.
 
+      if Expander_Active
+        and then Is_Tagged_Type (Typ)
+        and then not Has_Foreign_Convention (Typ)
+      then
          declare
             Elmt : Elmt_Id;
-            Subp : Entity_Id;
+            E    : Entity_Id;
 
          begin
+            --  Add extra formals to primitive operations
+
             Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Elmt) loop
-               Subp := Node (Elmt);
-               if not Has_Foreign_Convention (Subp)
-                 and then not Is_Predefined_Dispatching_Operation (Subp)
-               then
-                  Create_Extra_Formals (Subp);
-               end if;
-
+               Create_Extra_Formals (Node (Elmt));
                Next_Elmt (Elmt);
             end loop;
+
+            --  Add extra formals to renamings of primitive operations. The
+            --  addition of extra formals is done in two steps to minimize
+            --  the compile time required for this action; the evaluation of
+            --  Find_Dispatching_Type() and Contains() is only done here for
+            --  renamings that are not primitive operations.
+
+            E := First_Entity (Scope (Typ));
+            while Present (E) loop
+               if Is_Dispatching_Operation (E)
+                 and then Present (Alias (E))
+                 and then Find_Dispatching_Type (E) = Typ
+                 and then not Contains (Primitive_Operations (Typ), E)
+               then
+                  Create_Extra_Formals (E);
+               end if;
+
+               Next_Entity (E);
+            end loop;
+
+            pragma Debug (Validate_Tagged_Type_Extra_Formals (Typ));
          end;
       end if;
 
@@ -7850,6 +7939,7 @@ package body Exp_Ch3 is
         and then Present (DIC_Procedure (Typ))
         and then not Has_Null_Body (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
+        and then No (Expr)
         and then not Is_Imported (Def_Id)
       then
          declare
@@ -9182,9 +9272,12 @@ package body Exp_Ch3 is
       --  the runtime verification of all invariants that pertain to the type.
       --  This includes invariants on the partial and full view, inherited
       --  class-wide invariants from parent types or interfaces, and invariants
-      --  on array elements or record components.
+      --  on array elements or record components. But skip internal types.
 
-      if Is_Interface (Def_Id) then
+      if Is_Itype (Def_Id) then
+         null;
+
+      elsif Is_Interface (Def_Id) then
 
          --  Interfaces are treated as the partial view of a private type in
          --  order to achieve uniformity with the general case. As a result, an

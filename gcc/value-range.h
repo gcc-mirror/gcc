@@ -330,6 +330,7 @@ private:
 class frange : public vrange
 {
   friend class frange_storage_slot;
+  friend class vrange_printer;
 public:
   frange ();
   frange (const frange &);
@@ -338,7 +339,10 @@ public:
 	  value_range_kind = VR_RANGE);
   static bool supports_p (const_tree type)
   {
-    return SCALAR_FLOAT_TYPE_P (type);
+    // ?? Decimal floats can have multiple representations for the
+    // same number.  Supporting them may be as simple as just
+    // disabling them in singleton_p.  No clue.
+    return SCALAR_FLOAT_TYPE_P (type) && !DECIMAL_FLOAT_TYPE_P (type);
   }
   virtual tree type () const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -363,12 +367,20 @@ public:
   const REAL_VALUE_TYPE &lower_bound () const;
   const REAL_VALUE_TYPE &upper_bound () const;
 
+  // fpclassify like API
+  bool known_finite () const;
+  bool maybe_inf () const;
+  bool known_inf () const;
+  bool maybe_nan () const;
+  bool known_nan () const;
+  bool known_signbit (bool &signbit) const;
+
   // Accessors for FP properties.
-  fp_prop get_nan () const { return m_props.get_nan (); }
   void set_nan (fp_prop::kind f);
-  fp_prop get_signbit () const { return m_props.get_signbit (); }
   void set_signbit (fp_prop::kind);
 private:
+  fp_prop get_nan () const { return m_props.get_nan (); }
+  fp_prop get_signbit () const { return m_props.get_signbit (); }
   void verify_range ();
   bool normalize_kind ();
 
@@ -1182,6 +1194,71 @@ frange_nan (tree type)
 
   gcc_assert (real_nan (&r, "", 1, TYPE_MODE (type)));
   return frange (type, r, r);
+}
+
+// Return TRUE if range is known to be finite.
+
+inline bool
+frange::known_finite () const
+{
+  if (undefined_p () || varying_p () || m_kind == VR_ANTI_RANGE)
+    return false;
+  return (!real_isnan (&m_min)
+	  && !real_isinf (&m_min)
+	  && !real_isinf (&m_max));
+}
+
+// Return TRUE if range may be infinite.
+
+inline bool
+frange::maybe_inf () const
+{
+  if (undefined_p () || m_kind == VR_ANTI_RANGE)
+    return false;
+  if (varying_p ())
+    return true;
+  return real_isinf (&m_min) || real_isinf (&m_max);
+}
+
+// Return TRUE if range is known to be the [-INF,-INF] or [+INF,+INF].
+
+inline bool
+frange::known_inf () const
+{
+  return (m_kind == VR_RANGE
+	  && real_identical (&m_min, &m_max)
+	  && real_isinf (&m_min));
+}
+
+// Return TRUE if range is possibly a NAN.
+
+inline bool
+frange::maybe_nan () const
+{
+  return !get_nan ().no_p ();
+}
+
+// Return TRUE if range is a +NAN or -NAN.
+
+inline bool
+frange::known_nan () const
+{
+  return get_nan ().yes_p ();
+}
+
+// If the signbit for the range is known, set it in SIGNBIT and return
+// TRUE.
+
+inline bool
+frange::known_signbit (bool &signbit) const
+{
+  // FIXME: Signed NANs are not supported yet.
+  if (maybe_nan ())
+    return false;
+  if (get_signbit ().varying_p ())
+    return false;
+  signbit = get_signbit ().yes_p ();
+  return true;
 }
 
 #endif // GCC_VALUE_RANGE_H

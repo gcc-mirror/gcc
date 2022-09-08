@@ -1448,7 +1448,11 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   if (str[-1] == 'u')
     {
       length = 4;
-      if (str < limit && *str == '{')
+      if (str < limit
+	  && *str == '{'
+	  && (!identifier_pos
+	      || CPP_OPTION (pfile, delimited_escape_seqs)
+	      || !CPP_OPTION (pfile, std)))
 	{
 	  str++;
 	  /* Magic value to indicate no digits seen.  */
@@ -1462,8 +1466,22 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   else if (str[-1] == 'N')
     {
       length = 4;
+      if (identifier_pos
+	  && !CPP_OPTION (pfile, delimited_escape_seqs)
+	  && CPP_OPTION (pfile, std))
+	{
+	  *cp = 0;
+	  return false;
+	}
       if (str == limit || *str != '{')
-	cpp_error (pfile, CPP_DL_ERROR, "'\\N' not followed by '{'");
+	{
+	  if (identifier_pos)
+	    {
+	      *cp = 0;
+	      return false;
+	    }
+	  cpp_error (pfile, CPP_DL_ERROR, "'\\N' not followed by '{'");
+	}
       else
 	{
 	  str++;
@@ -1489,15 +1507,19 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 
 	  if (str < limit && *str == '}')
 	    {
-	      if (name == str && identifier_pos)
+	      if (identifier_pos && name == str)
 		{
+		  cpp_warning (pfile, CPP_W_UNICODE,
+			       "empty named universal character escape "
+			       "sequence; treating it as separate tokens");
 		  *cp = 0;
 		  return false;
 		}
 	      if (name == str)
 		cpp_error (pfile, CPP_DL_ERROR,
 			   "empty named universal character escape sequence");
-	      else if (!CPP_OPTION (pfile, delimited_escape_seqs)
+	      else if ((!identifier_pos || strict)
+		       && !CPP_OPTION (pfile, delimited_escape_seqs)
 		       && CPP_OPTION (pfile, cpp_pedantic))
 		cpp_error (pfile, CPP_DL_PEDWARN,
 			   "named universal character escapes are only valid "
@@ -1515,27 +1537,51 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 					   uname2c_tree, NULL);
 		  if (result == (cppchar_t) -1)
 		    {
-		      cpp_error (pfile, CPP_DL_ERROR,
-				 "\\N{%.*s} is not a valid universal "
-				 "character", (int) (str - name), name);
+		      bool ret = true;
+		      if (identifier_pos
+			  && (!CPP_OPTION (pfile, delimited_escape_seqs)
+			      || !strict))
+			ret = cpp_warning (pfile, CPP_W_UNICODE,
+					   "\\N{%.*s} is not a valid "
+					   "universal character; treating it "
+					   "as separate tokens",
+					   (int) (str - name), name);
+		      else
+			cpp_error (pfile, CPP_DL_ERROR,
+				   "\\N{%.*s} is not a valid universal "
+				   "character", (int) (str - name), name);
 
 		      /* Try to do a loose name lookup according to
 			 Unicode loose matching rule UAX44-LM2.  */
 		      char canon_name[uname2c_max_name_len + 1];
 		      result = _cpp_uname2c_uax44_lm2 ((const char *) name,
 						       str - name, canon_name);
-		      if (result != (cppchar_t) -1)
+		      if (result != (cppchar_t) -1 && ret)
 			cpp_error (pfile, CPP_DL_NOTE,
 				   "did you mean \\N{%s}?", canon_name);
 		      else
-			result = 0x40;
+			result = 0xC0;
+		      if (identifier_pos
+			  && (!CPP_OPTION (pfile, delimited_escape_seqs)
+			      || !strict))
+			{
+			  *cp = 0;
+			  return false;
+			}
 		    }
 		}
 	      str++;
 	      extend_char_range (char_range, loc_reader);
 	    }
 	  else if (identifier_pos)
-	    length = 1;
+	    {
+	      cpp_warning (pfile, CPP_W_UNICODE,
+			   "'\\N{' not terminated with '}' after %.*s; "
+			   "treating it as separate tokens",
+			   (int) (str - base), base);
+	      *cp = 0;
+	      return false;
+	    }
 	  else
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR,
@@ -1584,12 +1630,17 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
       }
     while (--length);
 
-  if (delimited
-      && str < limit
-      && *str == '}'
-      && (length != 32 || !identifier_pos))
+  if (delimited && str < limit && *str == '}')
     {
-      if (length == 32)
+      if (length == 32 && identifier_pos)
+	{
+	  cpp_warning (pfile, CPP_W_UNICODE,
+		       "empty delimited escape sequence; "
+		       "treating it as separate tokens");
+	  *cp = 0;
+	  return false;
+	}
+      else if (length == 32)
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "empty delimited escape sequence");
       else if (!CPP_OPTION (pfile, delimited_escape_seqs)
@@ -1607,6 +1658,11 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
      error message in that case.  */
   if (length && identifier_pos)
     {
+      if (delimited)
+	cpp_warning (pfile, CPP_W_UNICODE,
+		     "'\\u{' not terminated with '}' after %.*s; "
+		     "treating it as separate tokens",
+		     (int) (str - base), base);
       *cp = 0;
       return false;
     }

@@ -2262,7 +2262,8 @@ of GNAT specific extensions are recognized as follows:
   will not be executed if the earlier alternative "matches"). All possible
   values of the composite type shall be covered. The composite type of the
   selector shall be an array or record type that is neither limited
-  class-wide.
+  class-wide. Currently, a "when others =>" case choice is required; it is
+  intended that this requirement will be relaxed at some point.
 
   If a subcomponent's subtype does not meet certain restrictions, then
   the only value that can be specified for that subcomponent in a case

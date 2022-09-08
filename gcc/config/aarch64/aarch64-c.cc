@@ -270,19 +270,6 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   if (pop_target)
     aarch64_save_restore_target_globals (pop_target);
 
-  /* Initialize SIMD builtins if we haven't already.
-     Set current_target_pragma to NULL for the duration so that
-     the builtin initialization code doesn't try to tag the functions
-     being built with the attributes specified by any current pragma, thus
-     going into an infinite recursion.  */
-  if (TARGET_SIMD)
-    {
-      tree saved_current_target_pragma = current_target_pragma;
-      current_target_pragma = NULL;
-      aarch64_init_simd_builtins ();
-      current_target_pragma = saved_current_target_pragma;
-    }
-
   return true;
 }
 

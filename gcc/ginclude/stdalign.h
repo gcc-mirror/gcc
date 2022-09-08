@@ -26,7 +26,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _STDALIGN_H
 #define _STDALIGN_H
 
-#ifndef __cplusplus
+#if (!defined __cplusplus						\
+     && !(defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L))
 
 #define alignas _Alignas
 #define alignof _Alignof

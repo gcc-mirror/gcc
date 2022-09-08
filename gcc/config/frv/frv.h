@@ -1737,24 +1737,24 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
 /* Macros Affecting all Debug Formats.  */
 
-/* A C expression that returns the DBX register number for the compiler
+/* A C expression that returns the debugger register number for the compiler
    register number REGNO.  In simple cases, the value of this expression may be
    REGNO itself.  But sometimes there are some registers that the compiler
-   knows about and DBX does not, or vice versa.  In such cases, some register
-   may need to have one number in the compiler and another for DBX.
+   knows about and debugger does not, or vice versa.  In such cases, some register
+   may need to have one number in the compiler and another for debugger.
 
    If two registers have consecutive numbers inside GCC, and they can be
    used as a pair to hold a multiword value, then they *must* have consecutive
-   numbers after renumbering with `DBX_REGISTER_NUMBER'.  Otherwise, debuggers
+   numbers after renumbering with `DEBUGGER_REGNO'.  Otherwise, debuggers
    will be unable to access such a pair, because they expect register pairs to
    be consecutive in their own numbering scheme.
 
-   If you find yourself defining `DBX_REGISTER_NUMBER' in way that does not
+   If you find yourself defining `DEBUGGER_REGNO' in way that does not
    preserve register pairs, then what you must do instead is redefine the
    actual register numbering scheme.
 
    This declaration is required.  */
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+#define DEBUGGER_REGNO(REGNO) (REGNO)
 
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG

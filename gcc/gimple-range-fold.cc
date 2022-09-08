@@ -1029,16 +1029,16 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 	frange tmp;
 	if (src.get_operand (tmp, arg))
 	  {
-	    if (tmp.get_signbit ().varying_p ())
-	      return false;
-	    if (tmp.get_signbit ().yes_p ())
+	    bool signbit;
+	    if (tmp.known_signbit (signbit))
 	      {
-		tree one = build_one_cst (type);
-		r.set (one, one);
+		if (signbit)
+		  r.set_nonzero (type);
+		else
+		  r.set_zero (type);
+		return true;
 	      }
-	    else
-	      r.set_zero (type);
-	    return true;
+	    return false;
 	  }
 	break;
       }

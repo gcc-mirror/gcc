@@ -47,29 +47,53 @@ foo (void)
       #pragma omp ordered threads, simd, threads, simd	/* { dg-error "too many .threads. clauses" } */
       ;	/* { dg-error "too many .simd. clauses" "" { target *-*-* } .-1 } */
     }
-  #pragma omp for simd ordered(1)	/* { dg-error ".ordered. clause with parameter may not be specified on .#pragma omp for simd. construct" } */
+  #pragma omp for simd ordered(1)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
-      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
     }
-  #pragma omp parallel for simd ordered(1)	/* { dg-error ".ordered. clause with parameter may not be specified on .#pragma omp parallel for simd. construct" } */
+  #pragma omp for simd ordered(1)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
-      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered doacross(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered doacross(source:omp_cur_iteration)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+    }
+  #pragma omp parallel for simd ordered(1)
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+    }
+  #pragma omp parallel for simd ordered(1)
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered doacross(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered doacross(source:)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
     }
   #pragma omp parallel for ordered
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
-      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered depend(sink: i - 1)
+      #pragma omp ordered depend(source)
+    }
+  #pragma omp parallel for ordered
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered doacross(sink: i - 1)
+      #pragma omp ordered doacross(source:)
     }
   #pragma omp parallel for
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
-      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered depend(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered depend(source)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+    }
+  #pragma omp parallel for
+  for (i = 0; i < 64; i++)
+    {
+      #pragma omp ordered doacross(sink: i - 1)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered doacross(source:)	/* { dg-error "clause must be closely nested inside a loop with .ordered. clause" } */
     }
 }
 

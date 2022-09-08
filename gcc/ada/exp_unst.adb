@@ -938,7 +938,7 @@ package body Exp_Unst is
                --  subprogram. As above, the called entity must be local and
                --  not imported.
 
-               when N_Handled_Sequence_Of_Statements =>
+               when N_Handled_Sequence_Of_Statements | N_Block_Statement =>
                   if Present (At_End_Proc (N))
                     and then Scope_Within (Entity (At_End_Proc (N)), Subp)
                     and then not Is_Imported (Entity (At_End_Proc (N)))
@@ -1183,6 +1183,15 @@ package body Exp_Unst is
                   --  Make new entry in subprogram table if not already made
 
                   Register_Subprogram (Ent, N);
+
+                  --  Record a call from an At_End_Proc
+
+                  if Present (At_End_Proc (N))
+                    and then Scope_Within (Entity (At_End_Proc (N)), Subp)
+                    and then not Is_Imported (Entity (At_End_Proc (N)))
+                  then
+                     Append_Unique_Call ((N, Ent, Entity (At_End_Proc (N))));
+                  end if;
 
                   --  We make a recursive call to scan the subprogram body, so
                   --  that we can save and restore Current_Subprogram.

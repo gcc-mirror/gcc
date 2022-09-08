@@ -4979,6 +4979,7 @@ package body Freeze is
               and then Convention (Desig) /= Convention_Protected
             then
                Set_Is_Frozen (Desig);
+               Create_Extra_Formals (Desig);
             end if;
          end Check_Itype;
 
@@ -6366,9 +6367,7 @@ package body Freeze is
          end;
       end if;
 
-      if Has_Delayed_Aspects (E)
-        or else May_Inherit_Delayed_Rep_Aspects (E)
-      then
+      if Has_Delayed_Aspects (E) then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
@@ -6799,17 +6798,24 @@ package body Freeze is
             --  A subtype inherits all the type-related representation aspects
             --  from its parents (RM 13.1(8)).
 
+            if May_Inherit_Delayed_Rep_Aspects (E) then
+               Inherit_Delayed_Rep_Aspects (E);
+            end if;
+
             Inherit_Aspects_At_Freeze_Point (E);
 
          --  For a derived type, freeze its parent type first (RM 13.14(15))
 
          elsif Is_Derived_Type (E) then
             Freeze_And_Append (Etype (E), N, Result);
-            Freeze_And_Append (First_Subtype (Etype (E)), N, Result);
 
             --  A derived type inherits each type-related representation aspect
             --  of its parent type that was directly specified before the
             --  declaration of the derived type (RM 13.1(15)).
+
+            if May_Inherit_Delayed_Rep_Aspects (E) then
+               Inherit_Delayed_Rep_Aspects (E);
+            end if;
 
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
@@ -8232,7 +8238,7 @@ package body Freeze is
             if Present (Nam)
               and then Ekind (Nam) = E_Function
               and then Nkind (Parent (N)) = N_Function_Call
-              and then Convention (Nam) = Convention_Ada
+              and then not Has_Foreign_Convention (Nam)
             then
                Create_Extra_Formals (Nam);
             end if;
@@ -9089,6 +9095,11 @@ package body Freeze is
          Set_Has_Delayed_Aspects (Ftyp, False);
       end if;
 
+      if May_Inherit_Delayed_Rep_Aspects (Ftyp) then
+         Inherit_Delayed_Rep_Aspects (Ftyp);
+         Set_May_Inherit_Delayed_Rep_Aspects (Ftyp, False);
+      end if;
+
       --  Inherit the Small value from the first subtype in any case
 
       if Typ /= Ftyp then
@@ -9653,9 +9664,7 @@ package body Freeze is
       Set_Has_Delayed_Freeze (T);
       L := Freeze_Entity (T, N);
 
-      if Is_Non_Empty_List (L) then
-         Insert_Actions (N, L);
-      end if;
+      Insert_Actions (N, L);
    end Freeze_Itype;
 
    --------------------------
@@ -9836,76 +9845,10 @@ package body Freeze is
    -----------------------
 
    procedure Freeze_Subprogram (E : Entity_Id) is
-      function Check_Extra_Formals (E : Entity_Id) return Boolean;
-      --  Return True if the decoration of the attributes associated with extra
-      --  formals are properly set.
 
       procedure Set_Profile_Convention (Subp_Id : Entity_Id);
       --  Set the conventions of all anonymous access-to-subprogram formals and
       --  result subtype of subprogram Subp_Id to the convention of Subp_Id.
-
-      -------------------------
-      -- Check_Extra_Formals --
-      -------------------------
-
-      function Check_Extra_Formals (E : Entity_Id) return Boolean is
-         Last_Formal       : Entity_Id := Empty;
-         Formal            : Entity_Id;
-         Has_Extra_Formals : Boolean := False;
-
-      begin
-         --  No check required if expansion is disabled because extra
-         --  formals are only generated when we are generating code.
-         --  See Create_Extra_Formals.
-
-         if not Expander_Active then
-            return True;
-         end if;
-
-         --  Check attribute Extra_Formal: If available, it must be set only
-         --  on the last formal of E.
-
-         Formal := First_Formal (E);
-         while Present (Formal) loop
-            if Present (Extra_Formal (Formal)) then
-               if Has_Extra_Formals then
-                  return False;
-               end if;
-
-               Has_Extra_Formals := True;
-            end if;
-
-            Last_Formal := Formal;
-            Next_Formal (Formal);
-         end loop;
-
-         --  Check attribute Extra_Accessibility_Of_Result
-
-         if Ekind (E) in E_Function | E_Subprogram_Type
-           and then Needs_Result_Accessibility_Level (E)
-           and then No (Extra_Accessibility_Of_Result (E))
-         then
-            return False;
-         end if;
-
-         --  Check attribute Extra_Formals: If E has extra formals, then this
-         --  attribute must point to the first extra formal of E.
-
-         if Has_Extra_Formals then
-            return Present (Extra_Formals (E))
-              and then Present (Extra_Formal (Last_Formal))
-              and then Extra_Formal (Last_Formal) = Extra_Formals (E);
-
-         --  When E has no formals, the first extra formal is available through
-         --  the Extra_Formals attribute.
-
-         elsif Present (Extra_Formals (E)) then
-            return No (First_Formal (E));
-
-         else
-            return True;
-         end if;
-      end Check_Extra_Formals;
 
       ----------------------------
       -- Set_Profile_Convention --
@@ -10045,30 +9988,26 @@ package body Freeze is
       --  that we know the convention.
 
       if not Has_Foreign_Convention (E) then
-         if No (Extra_Formals (E)) then
 
-            --  Extra formals are shared by derived subprograms; therefore, if
-            --  the ultimate alias of E has been frozen before E then the extra
-            --  formals have been added, but the attribute Extra_Formals is
-            --  still unset (and must be set now).
+         --  Extra formals of dispatching operations are added later by
+         --  Expand_Freeze_Record_Type, which also adds extra formals to
+         --  internal entities built to handle interface types.
 
-            if Present (Alias (E))
-              and then Is_Frozen (Ultimate_Alias (E))
-              and then Present (Extra_Formals (Ultimate_Alias (E)))
-              and then Last_Formal (Ultimate_Alias (E)) = Last_Formal (E)
-            then
-               Set_Extra_Formals (E, Extra_Formals (Ultimate_Alias (E)));
+         if not Is_Dispatching_Operation (E) then
+            Create_Extra_Formals (E);
 
-               if Ekind (E) = E_Function then
-                  Set_Extra_Accessibility_Of_Result (E,
-                    Extra_Accessibility_Of_Result (Ultimate_Alias (E)));
-               end if;
-            else
-               Create_Extra_Formals (E);
-            end if;
+            pragma Assert
+              ((Ekind (E) = E_Subprogram_Type
+                  and then Extra_Formals_OK (E))
+               or else
+                 (Is_Subprogram (E)
+                   and then Extra_Formals_OK (E)
+                   and then
+                     (No (Overridden_Operation (E))
+                       or else Extra_Formals_Match_OK (E,
+                                 Ultimate_Alias (Overridden_Operation (E))))));
          end if;
 
-         pragma Assert (Check_Extra_Formals (E));
          Set_Mechanisms (E);
 
          --  If this is convention Ada and a Valued_Procedure, that's odd

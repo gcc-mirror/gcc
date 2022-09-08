@@ -168,13 +168,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // to either true_type or false_type which allows for a more efficient
   // implementation that avoids recursive class template instantiation.
   template<typename... _Bn>
-    using __or_ = decltype(__detail::__or_fn<_Bn...>(0));
+    struct __or_
+    : decltype(__detail::__or_fn<_Bn...>(0))
+    { };
 
   template<typename... _Bn>
-    using __and_ = decltype(__detail::__and_fn<_Bn...>(0));
+    struct __and_
+    : decltype(__detail::__and_fn<_Bn...>(0))
+    { };
 
   template<typename _Pp>
-    using __not_ = __bool_constant<!bool(_Pp::value)>;
+    struct __not_
+    : __bool_constant<!bool(_Pp::value)>
+    { };
   /// @endcond
 
 #if __cplusplus >= 201703L
@@ -229,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Pp>
     struct negation
-    : __not_<_Pp>
+    : __not_<_Pp>::type
     { };
 
   /** @ingroup variable_templates
@@ -280,38 +286,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     >::type __is_complete_or_unbounded(_TypeIdentity)
     { return {}; }
 
-  // For several sfinae-friendly trait implementations we transport both the
-  // result information (as the member type) and the failure information (no
-  // member type). This is very similar to std::enable_if, but we cannot use
-  // them, because we need to derive from them as an implementation detail.
-
-  template<typename _Tp>
-    struct __success_type
-    { typedef _Tp type; };
-
-  struct __failure_type
-  { };
-
   // __remove_cv_t (std::remove_cv_t for C++11).
   template<typename _Tp>
     using __remove_cv_t = typename remove_cv<_Tp>::type;
+  /// @endcond
 
   // Primary type categories.
-
-  template<typename>
-    struct __is_void_helper
-    : public false_type { };
-
-  template<>
-    struct __is_void_helper<void>
-    : public true_type { };
-  /// @endcond
 
   /// is_void
   template<typename _Tp>
     struct is_void
-    : public __is_void_helper<__remove_cv_t<_Tp>>::type
-    { };
+    : public false_type { };
+
+  template<>
+    struct is_void<void>
+    : public true_type { };
+
+  template<>
+    struct is_void<const void>
+    : public true_type { };
+
+  template<>
+    struct is_void<volatile void>
+    : public true_type { };
+
+  template<>
+    struct is_void<const volatile void>
+    : public true_type { };
 
   /// @cond undocumented
   template<typename>
@@ -577,19 +578,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_is_null_pointer 201309L
 
-  template<typename>
-    struct __is_null_pointer_helper
-    : public false_type { };
-
-  template<>
-    struct __is_null_pointer_helper<std::nullptr_t>
-    : public true_type { };
-
   /// is_null_pointer (LWG 2247).
   template<typename _Tp>
     struct is_null_pointer
-    : public __is_null_pointer_helper<__remove_cv_t<_Tp>>::type
-    { };
+    : public false_type { };
+
+  template<>
+    struct is_null_pointer<std::nullptr_t>
+    : public true_type { };
+
+  template<>
+    struct is_null_pointer<const std::nullptr_t>
+    : public true_type { };
+
+  template<>
+    struct is_null_pointer<volatile std::nullptr_t>
+    : public true_type { };
+
+  template<>
+    struct is_null_pointer<const volatile std::nullptr_t>
+    : public true_type { };
 
   /// __is_nullptr_t (deprecated extension).
   /// @deprecated Non-standard. Use `is_null_pointer` instead.
@@ -603,8 +611,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_reference
   template<typename _Tp>
     struct is_reference
-    : public __or_<is_lvalue_reference<_Tp>,
-                   is_rvalue_reference<_Tp>>::type
+    : public false_type
+    { };
+
+  template<typename _Tp>
+    struct is_reference<_Tp&>
+    : public true_type
+    { };
+
+  template<typename _Tp>
+    struct is_reference<_Tp&&>
+    : public true_type
     { };
 
   /// is_arithmetic
@@ -839,7 +856,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_unsigned
   template<typename _Tp>
     struct is_unsigned
-    : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>
+    : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>::type
     { };
 
   /// @cond undocumented
@@ -1216,7 +1233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp>
     struct __is_implicitly_default_constructible
     : public __and_<__is_constructible_impl<_Tp>,
-		    __is_implicitly_default_constructible_safe<_Tp>>
+		    __is_implicitly_default_constructible_safe<_Tp>>::type
     { };
 
   /// is_trivially_copy_constructible
@@ -1276,7 +1293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_trivially_destructible
     : public __and_<__is_destructible_safe<_Tp>,
-		    __bool_constant<__has_trivial_destructor(_Tp)>>
+		    __bool_constant<__has_trivial_destructor(_Tp)>>::type
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -2156,6 +2173,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Sfinae-friendly common_type implementation:
 
   /// @cond undocumented
+
+  // For several sfinae-friendly trait implementations we transport both the
+  // result information (as the member type) and the failure information (no
+  // member type). This is very similar to std::enable_if, but we cannot use
+  // that, because we need to derive from them as an implementation detail.
+
+  template<typename _Tp>
+    struct __success_type
+    { typedef _Tp type; };
+
+  struct __failure_type
+  { };
+
   struct __do_common_type_impl
   {
     template<typename _Tp, typename _Up>
@@ -2969,7 +2999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nt_invocable_impl<_Result, _Ret,
 				  __void_t<typename _Result::type>>
     : __or_<is_void<_Ret>,
-	    __is_nothrow_convertible<typename _Result::type, _Ret>>
+	    __is_nothrow_convertible<typename _Result::type, _Ret>>::type
     { };
   /// @endcond
 
@@ -3071,22 +3101,19 @@ template <typename _Tp>
   inline constexpr bool is_volatile_v = false;
 template <typename _Tp>
   inline constexpr bool is_volatile_v<volatile _Tp> = true;
+
 template <typename _Tp>
-  inline constexpr bool is_trivial_v = is_trivial<_Tp>::value;
+  inline constexpr bool is_trivial_v = __is_trivial(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_trivially_copyable_v =
-    is_trivially_copyable<_Tp>::value;
+  inline constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_standard_layout_v = is_standard_layout<_Tp>::value;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  inline constexpr bool is_standard_layout_v = __is_standard_layout(_Tp);
 template <typename _Tp>
   _GLIBCXX20_DEPRECATED("use is_standard_layout_v && is_trivial_v instead")
-  inline constexpr bool is_pod_v = is_pod<_Tp>::value;
+  inline constexpr bool is_pod_v = __is_pod(_Tp);
 template <typename _Tp>
   _GLIBCXX17_DEPRECATED
-  inline constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;
-#pragma GCC diagnostic pop
+  inline constexpr bool is_literal_type_v = __is_literal_type(_Tp);
 template <typename _Tp>
   inline constexpr bool is_empty_v = __is_empty(_Tp);
 template <typename _Tp>
@@ -3095,81 +3122,94 @@ template <typename _Tp>
   inline constexpr bool is_abstract_v = __is_abstract(_Tp);
 template <typename _Tp>
   inline constexpr bool is_final_v = __is_final(_Tp);
+
 template <typename _Tp>
   inline constexpr bool is_signed_v = is_signed<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_unsigned_v = is_unsigned<_Tp>::value;
+
 template <typename _Tp, typename... _Args>
-  inline constexpr bool is_constructible_v =
-    is_constructible<_Tp, _Args...>::value;
+  inline constexpr bool is_constructible_v = __is_constructible(_Tp, _Args...);
 template <typename _Tp>
-  inline constexpr bool is_default_constructible_v =
-    is_default_constructible<_Tp>::value;
+  inline constexpr bool is_default_constructible_v = __is_constructible(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_copy_constructible_v =
-    is_copy_constructible<_Tp>::value;
+  inline constexpr bool is_copy_constructible_v
+    = __is_constructible(_Tp, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_move_constructible_v =
-    is_move_constructible<_Tp>::value;
+  inline constexpr bool is_move_constructible_v
+    = __is_constructible(_Tp, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_assignable_v = is_assignable<_Tp, _Up>::value;
+  inline constexpr bool is_assignable_v = __is_assignable(_Tp, _Up);
 template <typename _Tp>
-  inline constexpr bool is_copy_assignable_v = is_copy_assignable<_Tp>::value;
+  inline constexpr bool is_copy_assignable_v
+    = __is_assignable(__add_lval_ref_t<_Tp>, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_move_assignable_v = is_move_assignable<_Tp>::value;
+  inline constexpr bool is_move_assignable_v
+    = __is_assignable(__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp>
   inline constexpr bool is_destructible_v = is_destructible<_Tp>::value;
+
 template <typename _Tp, typename... _Args>
-  inline constexpr bool is_trivially_constructible_v =
-    is_trivially_constructible<_Tp, _Args...>::value;
+  inline constexpr bool is_trivially_constructible_v
+    = __is_trivially_constructible(_Tp, _Args...);
 template <typename _Tp>
-  inline constexpr bool is_trivially_default_constructible_v =
-    is_trivially_default_constructible<_Tp>::value;
+  inline constexpr bool is_trivially_default_constructible_v
+    = __is_trivially_constructible(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_trivially_copy_constructible_v =
-    is_trivially_copy_constructible<_Tp>::value;
+  inline constexpr bool is_trivially_copy_constructible_v
+    = __is_trivially_constructible(_Tp, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_trivially_move_constructible_v =
-    is_trivially_move_constructible<_Tp>::value;
+  inline constexpr bool is_trivially_move_constructible_v
+    = __is_trivially_constructible(_Tp, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_trivially_assignable_v =
-    is_trivially_assignable<_Tp, _Up>::value;
+  inline constexpr bool is_trivially_assignable_v
+    = __is_trivially_assignable(_Tp, _Up);
 template <typename _Tp>
-  inline constexpr bool is_trivially_copy_assignable_v =
-    is_trivially_copy_assignable<_Tp>::value;
+  inline constexpr bool is_trivially_copy_assignable_v
+    = __is_trivially_assignable(__add_lval_ref_t<_Tp>,
+				__add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_trivially_move_assignable_v =
-    is_trivially_move_assignable<_Tp>::value;
+  inline constexpr bool is_trivially_move_assignable_v
+    = __is_trivially_assignable(__add_lval_ref_t<_Tp>,
+				__add_rval_ref_t<_Tp>);
 template <typename _Tp>
   inline constexpr bool is_trivially_destructible_v =
     is_trivially_destructible<_Tp>::value;
 template <typename _Tp, typename... _Args>
-  inline constexpr bool is_nothrow_constructible_v =
-    is_nothrow_constructible<_Tp, _Args...>::value;
+  inline constexpr bool is_nothrow_constructible_v
+    = __is_nothrow_constructible(_Tp, _Args...);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_default_constructible_v =
-    is_nothrow_default_constructible<_Tp>::value;
+  inline constexpr bool is_nothrow_default_constructible_v
+    = __is_nothrow_constructible(_Tp);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_copy_constructible_v =
-    is_nothrow_copy_constructible<_Tp>::value;
+  inline constexpr bool is_nothrow_copy_constructible_v
+    = __is_nothrow_constructible(_Tp, __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_move_constructible_v =
-    is_nothrow_move_constructible<_Tp>::value;
+  inline constexpr bool is_nothrow_move_constructible_v
+    = __is_nothrow_constructible(_Tp, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_nothrow_assignable_v =
-    is_nothrow_assignable<_Tp, _Up>::value;
+  inline constexpr bool is_nothrow_assignable_v
+    = __is_nothrow_assignable(_Tp, _Up);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_copy_assignable_v =
-    is_nothrow_copy_assignable<_Tp>::value;
+  inline constexpr bool is_nothrow_copy_assignable_v
+    = __is_nothrow_assignable(__add_lval_ref_t<_Tp>,
+			      __add_lval_ref_t<const _Tp>);
 template <typename _Tp>
-  inline constexpr bool is_nothrow_move_assignable_v =
-    is_nothrow_move_assignable<_Tp>::value;
+  inline constexpr bool is_nothrow_move_assignable_v
+    = __is_nothrow_assignable(__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>);
+
 template <typename _Tp>
   inline constexpr bool is_nothrow_destructible_v =
     is_nothrow_destructible<_Tp>::value;
+
 template <typename _Tp>
-  inline constexpr bool has_virtual_destructor_v =
-    has_virtual_destructor<_Tp>::value;
+  inline constexpr bool has_virtual_destructor_v
+    = __has_virtual_destructor(_Tp);
+
 template <typename _Tp>
   inline constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
 
@@ -3196,7 +3236,9 @@ template <typename _Tp, typename _Up>
   inline constexpr bool is_same_v = __is_same(_Tp, _Up);
 #else
 template <typename _Tp, typename _Up>
-  inline constexpr bool is_same_v = std::is_same<_Tp, _Up>::value;
+  inline constexpr bool is_same_v = false;
+template <typename _Tp>
+  inline constexpr bool is_same_v<_Tp, _Tp> = true;
 #endif
 template <typename _Base, typename _Derived>
   inline constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);

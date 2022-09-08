@@ -3339,7 +3339,9 @@ package body Sem_Elab is
                Traverse_List (Else_Actions (Scen));
 
             elsif Nkind (Scen) in
-                    N_Component_Association | N_Iterated_Component_Association
+                    N_Component_Association
+                  | N_Iterated_Component_Association
+                  | N_Iterated_Element_Association
             then
                Traverse_List (Loop_Actions (Scen));
 
@@ -18765,9 +18767,9 @@ package body Sem_Elab is
                      T : constant Entity_Id := Etype (First_Formal (E));
                   begin
                      if Is_Controlled (T) then
-                        if Warnings_Off (T)
+                        if Has_Warnings_Off (T)
                           or else (Ekind (T) = E_Private_Type
-                                    and then Warnings_Off (Full_View (T)))
+                                    and then Has_Warnings_Off (Full_View (T)))
                         then
                            goto Output;
                         end if;

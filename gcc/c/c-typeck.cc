@@ -3829,6 +3829,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
 			struct c_expr arg1, struct c_expr arg2)
 {
   struct c_expr result;
+  result.m_decimal = 0;
 
   enum tree_code code1 = arg1.original_code;
   enum tree_code code2 = arg2.original_code;
@@ -3985,6 +3986,14 @@ parser_build_binary_op (location_t location, enum tree_code code,
     warning_at (location, OPT_Wenum_compare,
 		"comparison between %qT and %qT",
 		type1, type2);
+
+  if (warn_xor_used_as_pow
+      && code == BIT_XOR_EXPR
+      && arg1.m_decimal
+      && arg2.m_decimal)
+    check_for_xor_used_as_pow (arg1.get_location (), arg1.value,
+			       location,
+			       arg2.value);
 
   return result;
 }
@@ -14834,15 +14843,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  break;
 
-	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DOACROSS:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
-	    {
-	      gcc_assert (OMP_CLAUSE_DEPEND_KIND (c)
-			  == OMP_CLAUSE_DEPEND_SOURCE);
-	      break;
-	    }
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	    break;
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	    {
 	      gcc_assert (TREE_CODE (t) == TREE_LIST);
 	      for (; t; t = TREE_CHAIN (t))
@@ -14870,7 +14875,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      break;
 	    }
-	  /* FALLTHRU */
+	  gcc_unreachable ();
+	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE_AFFINITY:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST

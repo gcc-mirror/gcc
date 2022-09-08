@@ -804,13 +804,15 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Package_Body, N_Unit_Body,
        (Sy (Defining_Unit_Name, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
-        Sy (Handled_Statement_Sequence, Node_Id, Default_Empty)));
+        Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
+        Sy (At_End_Proc, Node_Id, Default_Empty)));
 
    Cc (N_Subprogram_Body, N_Unit_Body,
        (Sy (Specification, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
         Sy (Bad_Is_Detected, Flag),
+        Sy (At_End_Proc, Node_Id, Default_Empty),
         Sm (Activation_Chain_Entity, Node_Id),
         Sm (Acts_As_Spec, Flag),
         Sm (Corresponding_Entry_Body, Node_Id),
@@ -832,6 +834,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Identifier, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
+        Sy (At_End_Proc, Node_Id, Default_Empty),
         Sm (Activation_Chain_Entity, Node_Id),
         Sm (Is_Task_Master, Flag)));
 
@@ -975,6 +978,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Has_Created_Identifier, Flag),
         Sy (Is_Asynchronous_Call_Block, Flag),
         Sy (Is_Task_Allocation_Block, Flag),
+        Sy (At_End_Proc, Node_Id, Default_Empty),
         Sm (Activation_Chain_Entity, Node_Id),
         Sm (Cleanup_Actions, List_Id),
         Sm (Exception_Junk, Flag),
@@ -1334,6 +1338,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Entry_Body_Formal_Part, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
+        Sy (At_End_Proc, Node_Id, Default_Empty),
         Sm (Activation_Chain_Entity, Node_Id)));
 
    Cc (N_Entry_Call_Alternative, Node_Kind,
@@ -1421,8 +1426,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Statements, List_Id, Default_Empty_List),
         Sy (End_Label, Node_Id, Default_Empty),
         Sy (Exception_Handlers, List_Id, Default_No_List),
-        Sy (At_End_Proc, Node_Id, Default_Empty),
-        Sm (First_Real_Statement, Node_Id)));
+        Sy (At_End_Proc, Node_Id, Default_Empty)));
 
    Cc (N_Index_Or_Discriminant_Constraint, Node_Kind,
        (Sy (Constraints, List_Id)));

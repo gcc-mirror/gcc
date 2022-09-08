@@ -2561,11 +2561,6 @@ package Sem_Util is
    --  Calls Handle_Parameter for each pair of formal and actual parameters of
    --  a function, procedure, or entry call.
 
-   function Itype_Has_Declaration (Id : Entity_Id) return Boolean;
-   --  Applies to Itypes. True if the Itype is attached to a declaration for
-   --  the type through its Parent field, which may or not be present in the
-   --  tree.
-
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False);
    --  This procedure is called to clear all constant indications from all
    --  entities in the current scope and in any parent scopes if the current
@@ -2748,7 +2743,6 @@ package Sem_Util is
    --      fields are recreated after the replication takes place.
    --
    --        First_Named_Actual
-   --        First_Real_Statement
    --        Next_Named_Actual
    --
    --      If applicable, the Etype field (if any) is updated to refer to a
