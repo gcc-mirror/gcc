@@ -2184,12 +2184,10 @@ initialize_env (void)
 	    *(int *) (host_envvars[omp_var].dest[1]) = *(int *) params[1];
 	    break;
 	  case PARSE_BIND:
-	    *(char *) (host_envvars[omp_var].dest[0])
-		  = *(char *) params[0];
-	    *(char *) (host_envvars[omp_var].dest[1])
-		  = *(char *) params[1];
+	    *(char *) (host_envvars[omp_var].dest[0]) = *(char *) params[0];
+	    *(char **) (host_envvars[omp_var].dest[1]) = *(char **) params[1];
 	    *(unsigned long *) (host_envvars[omp_var].dest[2])
-		  = *(unsigned long *) params[2];
+	      = *(unsigned long *) params[2];
 	    break;
 	  }
       }
