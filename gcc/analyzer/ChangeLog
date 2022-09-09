@@ -1,3 +1,54 @@
+2022-09-08  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106625
+	* analyzer.h (region_offset): Eliminate m_is_symbolic member.
+	* region-model-impl-calls.cc (region_model::impl_call_realloc):
+	Refine implementation to be more precise.
+	* region-model.cc (class symbolic_past_the_end):
+	Abstract diagnostic class to complain about accesses past the end
+	with symbolic values.
+	(class symbolic_buffer_overflow):
+	Concrete diagnostic class to complain about buffer overflows with
+	symbolic values.
+	(class symbolic_buffer_overread):
+	Concrete diagnostic class to complain about buffer overreads with
+	symbolic values.
+	(region_model::check_symbolic_bounds): New function.
+	(maybe_get_integer_cst_tree): New helper function.
+	(region_model::check_region_bounds):
+	Add call to check_symbolic_bounds if offset is not concrete.
+	(region_model::eval_condition_without_cm):
+	Add support for EQ_EXPR and GT_EXPR with binaryop_svalues.
+	(is_positive_svalue): New hleper function.
+	(region_model::symbolic_greater_than):
+	New function to handle GT_EXPR comparisons with symbolic values.
+	(region_model::structural_equality): New function to compare
+	whether two svalues are structured the same, i.e. evaluate to
+	the same value.
+	(test_struct): Reflect changes to region::calc_offset.
+	(test_var): Likewise.
+	(test_array_2): Likewise and add selftest with symbolic i.
+	* region-model.h (class region_model): Add check_symbolic_bounds,
+	symbolic_greater_than and structural_equality.
+	* region.cc (region::get_offset):
+	Reflect changes to region::calc_offset.
+	(region::calc_offset):
+	Compute the symbolic offset if the offset is not concrete.
+	(region::get_relative_symbolic_offset): New function to return the
+	symbolic offset in bytes relative to its parent.
+	(field_region::get_relative_symbolic_offset): Likewise.
+	(element_region::get_relative_symbolic_offset): Likewise.
+	(offset_region::get_relative_symbolic_offset): Likewise.
+	(bit_range_region::get_relative_symbolic_offset): Likewise.
+	* region.h: Add get_relative_symbolic_offset.
+	* store.cc (binding_key::make):
+	Reflect changes to region::calc_offset.
+	(binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.
+	(binding_cluster::bind_compound_sval): Likewise.
+	(binding_cluster::get_any_binding): Likewise.
+	(binding_cluster::maybe_get_compound_binding): Likewise.
+
 2022-09-05  Tim Lange  <mail@tim-lange.me>
 
 	* region-model-impl-calls.cc (region_model::impl_call_strcpy):

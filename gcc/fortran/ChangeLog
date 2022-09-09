@@ -1,3 +1,10 @@
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/106670
+	* scanner.cc (skip_fixed_omp_sentinel): Add -Wsurprising warning
+	for 'omx' sentinels with -fopenmp.
+	* invoke.texi (-Wsurprising): Document additional warning case.
+
 2022-09-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.cc (resolve_omp_clauses): Remove ordered/linear

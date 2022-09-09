@@ -1,3 +1,137 @@
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106838
+	* doc/extend.texi (Type Traits): Fix requirements. Document
+	__is_aggregate and __is_final.
+
+2022-09-08  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106625
+	* doc/invoke.texi:
+	State that the checker also reasons about symbolic values.
+
+2022-09-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106886
+	* tree-vect-slp.cc (vect_optimize_slp_pass::get_result_with_layout):
+	Fix copying of scalar stmts.
+
+2022-09-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/linux.h (MUSL_DYNAMIC_LINKER): Add #undef before #define.
+
+2022-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106870
+	* gimple-harden-conditionals.cc (insert_check_and_trap):
+	Set the control-altering flag on the built IFN_TRAP.
+	* gimple.cc (gimple_build_builtin_unreachable): Likewise.
+	* tree-cfg.cc (handle_abnormal_edges): Set the control-altering
+	flag on the .ABNORMAL_DISPATCHER call.
+	* tree-cfgcleanup.cc (cleanup_call_ctrl_altering_flag): Avoid
+	resetting the control altering flag for ECF_NORETURN calls.
+	(cleanup_control_flow_bb): Set the control altering flag on
+	discovered noreturn calls.
+	* symtab-thunks.cc (expand_thunk): Set the control altering
+	flag for the noreturn tailcall case.
+	* tree-eh.cc (lower_resx): Likewisw for trap and unwind_resume
+	calls.
+
+2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_ordered_sink): Add CONT_BB argument.
+	Add doacross(sink:omp_cur_iteration-1) support.
+	(expand_omp_ordered_source_sink): Clear counts[fd->ordered + 1].
+	Adjust expand_omp_ordered_sink caller.
+	(expand_omp_for_ordered_loops): If counts[fd->ordered + 1] is
+	non-NULL, set that variable to true at the start of outermost
+	non-collapsed loop and set it to false at the end of innermost
+	ordered loop.
+	(expand_omp_for_generic): If fd->ordered, allocate
+	1 + (fd->ordered - fd->collapse) further elements in counts array.
+	Copy to counts + 2 + fd->ordered the counts of fd->collapse ..
+	fd->ordered - 1 loop if any.
+
+2022-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106881
+	* gimple-predicate-analysis.cc (compute_control_dep_chain_pdom):
+	Add only non-fallthru edges and avoid the same set of edges
+	as the caller does.
+
+2022-09-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Use fpclassify like API.
+	* range-op-float.cc (finite_operand_p): Same.
+	(finite_operands_p): Same.
+	(foperator_lt::fold_range): Same.
+	(foperator_le::fold_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_ge::fold_range): Same.
+	(foperator_unordered::fold_range): Same.
+	(foperator_unordered::op1_range): Same.
+	(foperator_ordered::fold_range): Same.
+	* value-range.cc (frange::set_nan): Same.
+	(frange::set_signbit): Same.
+	(frange::union_): Same.
+	(frange::intersect): Same.
+	(frange::operator==): Same.
+	(frange::singleton_p): Same.
+	(frange::verify_range): Same.
+	(range_tests_nan): Same.
+	(range_tests_floats): Same.
+	* value-range.h(frange::known_finite): New.
+	(frange::maybe_inf): New.
+	(frange::known_inf): New.
+	(frange::maybe_nan): New.
+	(frange::known_nan): New.
+	(frange::known_signbit): New.
+
+2022-09-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/darwin-d.cc: Include tm.h.
+	* config/dragonfly-d.cc: Likewise.
+	* config/freebsd-d.cc: Remove memmodel.h.
+	* config/glibc-d.cc: Likewise.
+	* config/netbsd-d.cc: Include tm.h.
+	* config/openbsd-d.cc: Likewise.
+	* config/sol2-d.cc: Likewise.
+
+2022-09-08  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vqshluq_n_s<mode>): Use
+	MVE_pred/MVE_constraint instead of mve_imm_7/Ra.
+	(mve_vqshluq_m_n_s<mode>): Likewise.
+	(mve_vqrshrnbq_n_<supf><mode>): Use MVE_pred3/MVE_constraint3
+	instead of mve_imm_8/Rb.
+	(mve_vqrshrunbq_n_s<mode>): Likewise.
+	(mve_vqrshrntq_n_<supf><mode>): Likewise.
+	(mve_vqrshruntq_n_s<mode>): Likewise.
+	(mve_vrshrnbq_n_<supf><mode>): Likewise.
+	(mve_vrshrntq_n_<supf><mode>): Likewise.
+	(mve_vqrshrnbq_m_n_<supf><mode>): Likewise.
+	(mve_vqrshrntq_m_n_<supf><mode>): Likewise.
+	(mve_vrshrnbq_m_n_<supf><mode>): Likewise.
+	(mve_vrshrntq_m_n_<supf><mode>): Likewise.
+	(mve_vqrshrunbq_m_n_s<mode>): Likewise.
+	(mve_vsriq_n_<supf><mode): Use MVE_pred2/MVE_constraint2 instead
+	of mve_imm_selective_upto_8/Rg.
+	(mve_vsriq_m_n_<supf><mode>): Likewise.
+
+2022-09-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (splitter for set to and_mask constants):
+	Use int_reg_operand (instead of int_reg_operand_not_pseudo).
+	(splitter for multi-insn constant loads): Ditto.
+
+2022-09-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (CPP_OS_DEFAULT_SPEC): Define __PPC_VRSAVE__ if
+	-mvrsave is present.
+	* config/rs6000/t-rtems: Add -mvrsave multilib variants for
+	-mcpu=e6500.
+
 2022-09-07  Martin Liska  <mliska@suse.cz>
 
 	* configure.ac: Restore detection of  HAVE_XCOFF_DWARF_EXTRAS.

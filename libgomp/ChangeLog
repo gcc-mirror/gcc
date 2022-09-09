@@ -1,3 +1,128 @@
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/106670
+	* libgomp.texi (OpenMP 5.2): Add comment to ompx/omx entry.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP-Implementation Specifics): New; add libmemkind
+	section; move OpenMP Context Selectors from ...
+	(Offload-Target Specifics): ... here; add 'AMD Radeo (GCN)' and
+	'nvptx' sections.
+
+2022-09-08  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* config/gcn/icv-device.c (omp_get_default_device): Return device-
+	specific ICV.
+	(omp_get_max_teams): Added for GCN devices.
+	(omp_set_num_teams): Likewise.
+	(ialias): Likewise.
+	* config/nvptx/icv-device.c (omp_get_default_device): Return device-
+	specific ICV.
+	(omp_get_max_teams): Added for NVPTX devices.
+	(omp_set_num_teams): Likewise.
+	(ialias): Likewise.
+	* env.c (struct gomp_icv_list): New struct to store entries of initial
+	ICV values.
+	(struct gomp_offload_icv_list): New struct to store entries of device-
+	specific ICV values that are copied to the device and back.
+	(struct gomp_default_icv_values): New struct to store default values of
+	ICVs according to the OpenMP standard.
+	(parse_schedule): Generalized for different variants of OMP_SCHEDULE.
+	(print_env_var_error): Function that prints an error for invalid values
+	for ICVs.
+	(parse_unsigned_long_1): Removed getenv.  Generalized.
+	(parse_unsigned_long): Likewise.
+	(parse_int_1): Likewise.
+	(parse_int): Likewise.
+	(parse_int_secure): Likewise.
+	(parse_unsigned_long_list): Likewise.
+	(parse_target_offload): Likewise.
+	(parse_bind_var): Likewise.
+	(parse_stacksize): Likewise.
+	(parse_boolean): Likewise.
+	(parse_wait_policy): Likewise.
+	(parse_allocator): Likewise.
+	(omp_display_env): Extended to output different variants of environment
+	variables.
+	(print_schedule): New helper function for omp_display_env which prints
+	the values of run_sched_var.
+	(print_proc_bind): New helper function for omp_display_env which prints
+	the values of proc_bind_var.
+	(enum gomp_parse_type): Collection of types used for parsing environment
+	variables.
+	(ENTRY): Preprocess string lengths of environment variables.
+	(OMP_VAR_CNT): Preprocess table size.
+	(OMP_HOST_VAR_CNT): Likewise.
+	(INT_MAX_STR_LEN): Constant for the maximal number of digits of a device
+	number.
+	(gomp_get_icv_flag): Returns if a flag for a particular ICV is set.
+	(gomp_set_icv_flag): Sets a flag for a particular ICV.
+	(print_device_specific_icvs): New helper function for omp_display_env to
+	print device specific ICV values.
+	(get_device_num): New helper function for parse_device_specific.
+	Extracts the device number from an environment variable name.
+	(get_icv_member_addr): Gets the memory address for a particular member
+	of an ICV struct.
+	(gomp_get_initial_icv_item): Get a list item of gomp_initial_icv_list.
+	(initialize_icvs): New function to initialize a gomp_initial_icvs
+	struct.
+	(add_initial_icv_to_list): Adds an ICV struct to gomp_initial_icv_list.
+	(startswith): Checks if a string starts with a given prefix.
+	(initialize_env): Extended to parse the new syntax of environment
+	variables.
+	* icv-device.c (omp_get_max_teams): Added.
+	(ialias): Likewise.
+	(omp_set_num_teams): Likewise.
+	* icv.c (omp_set_num_teams): Moved to icv-device.c.
+	(omp_get_max_teams): Likewise.
+	(ialias): Likewise.
+	* libgomp-plugin.h (GOMP_DEVICE_NUM_VAR): Removed.
+	(GOMP_ADDITIONAL_ICVS): New target-side struct that
+	holds the designated ICVs of the target device.
+	* libgomp.h (enum gomp_icvs): Collection of ICVs.
+	(enum gomp_device_num): Definition of device numbers for _ALL, _DEV, and
+	no suffix.
+	(enum gomp_env_suffix): Collection of possible suffixes of environment
+	variables.
+	(struct gomp_initial_icvs): Contains all ICVs for which we need to store
+	initial values.
+	(struct gomp_default_icv):New struct to hold ICVs for which we need
+	to store initial values.
+	(struct gomp_icv_list): Definition of a linked list that is used for
+	storing ICVs for the devices and also for _DEV, _ALL, and without
+	suffix.
+	(struct gomp_offload_icvs): New struct to hold ICVs that are copied to
+	a device.
+	(struct gomp_offload_icv_list): Definition of a linked list that holds
+	device-specific ICVs that are copied to devices.
+	(gomp_get_initial_icv_item): Get a list item of gomp_initial_icv_list.
+	(gomp_get_icv_flag): Returns if a flag for a particular ICV is set.
+	* libgomp.texi: Updated.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Extended to read
+	further ICVs from the offload image.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Likewise.
+	* target.c (gomp_get_offload_icv_item): Get a list item of
+	gomp_offload_icv_list.
+	(get_gomp_offload_icvs): New. Returns the ICV values
+	depending on the device num and the variable hierarchy.
+	(gomp_load_image_to_device): Extended to copy further ICVs to a device.
+	* testsuite/libgomp.c-c++-common/icv-5.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-6.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-7.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-8.c: New test.
+	* testsuite/libgomp.c-c++-common/omp-display-env-1.c: New test.
+	* testsuite/libgomp.c-c++-common/omp-display-env-2.c: New test.
+
+2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mention that omp_cur_iteration is now
+	fully supported.
+	* testsuite/libgomp.c/doacross-4.c: New test.
+	* testsuite/libgomp.c/doacross-5.c: New test.
+	* testsuite/libgomp.c/doacross-6.c: New test.
+	* testsuite/libgomp.c/doacross-7.c: New test.
+
 2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Update doacross/omp_cur_iteration status.

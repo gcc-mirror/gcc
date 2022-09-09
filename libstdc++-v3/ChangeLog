@@ -1,3 +1,63 @@
+2022-09-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_performance.h (__gnu_test::MallocInfo): New.
+	(__gnu_test::malloc_info): New, replace mallinfo on current platform
+	supporting it and use mallinfo2 when glibc >= 2.33.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106838
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc:
+	Prune additional errors from front-end.
+	* testsuite/20_util/is_move_constructible/incomplete_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/incomplete_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/incomplete_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable_with/incomplete_neg.cc:
+	Likewise.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef (byte): Add always_inline attribute
+	to all operator overloads.
+	(to_integer): Add always_inline attribute.
+
+2022-09-08  Thomas Rodgers  <trodgers@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::__maybe_has_padding):
+	New function.
+	(__atomic_impl::clear_padding): Likewise.
+	(__atomic_impl::__compare_exchange): Likewise.
+	(__atomic_impl::compare_exchange_weak): Delegate to
+	__compare_exchange.
+	(__atomic_impl::compare_exchange_strong): Likewise.
+	* include/std/atomic (atomic<T>::atomic(T)): Clear padding when
+	possible in a constexpr function.
+	(atomic::store): Clear padding.
+	(atomic::exchange): Likewise.
+	(atomic::compare_exchange_weak): Use __compare_exchange.
+	(atomic::compare_exchange_strong): Likewise.
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc: New
+	test.
+	* testsuite/29_atomics/atomic_ref/compare_exchange_padding.cc:
+	New test.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error (__adl_only::make_error_code): Add
+	deleted function.
+	(__adl_only::make_error_condition): Likewise.
+	(error_code::error_code(ErrorCodeEnum)): Add using-declaration
+	for deleted function.
+	(error_condition::error_condition(ErrorConditionEnum)):
+	Likewise.
+	* testsuite/19_diagnostics/error_code/cons/lwg3629.cc: New test.
+	* testsuite/19_diagnostics/error_condition/cons/lwg3629.cc: New test.
+
 2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/barrier: Add missing runtime exception.
