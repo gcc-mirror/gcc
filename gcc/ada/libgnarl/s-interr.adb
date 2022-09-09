@@ -109,8 +109,8 @@ package body System.Interrupts is
          Static      : Boolean);
 
       entry Detach_Handler
-        (Interrupt   : Interrupt_ID;
-         Static      : Boolean);
+        (Interrupt : Interrupt_ID;
+         Static    : Boolean);
 
       entry Bind_Interrupt_To_Entry
         (T         : Task_Id;
@@ -174,15 +174,14 @@ package body System.Interrupts is
    pragma Atomic_Components (Ignored);
    --  True iff the corresponding interrupt is blocked in the process level
 
-   Last_Unblocker :
-     array (Interrupt_ID'Range) of Task_Id := [others => Null_Task];
+   Last_Unblocker : array (Interrupt_ID'Range) of Task_Id :=
+                      [others => Null_Task];
    pragma Atomic_Components (Last_Unblocker);
    --  Holds the ID of the last Task which Unblocked this Interrupt. It
    --  contains Null_Task if no tasks have ever requested the Unblocking
    --  operation or the Interrupt is currently Blocked.
 
-   Server_ID : array (Interrupt_ID'Range) of Task_Id :=
-                 [others => Null_Task];
+   Server_ID : array (Interrupt_ID'Range) of Task_Id := [others => Null_Task];
    pragma Atomic_Components (Server_ID);
    --  Holds the Task_Id of the Server_Task for each interrupt. Task_Id is
    --  needed to accomplish locking per Interrupt base. Also is needed to
