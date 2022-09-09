@@ -3346,11 +3346,14 @@ GOMP_OFFLOAD_init_device (int n)
 
 /* Load GCN object-code module described by struct gcn_image_desc in
    TARGET_DATA and return references to kernel descriptors in TARGET_TABLE.
-   If there are any constructors then run them.  */
+   If there are any constructors then run them.  If not NULL, REV_FN_TABLE will
+   contain the on-device addresses of the functions for reverse offload.  To be
+   freed by the caller.  */
 
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
-			 struct addr_pair **target_table)
+			 struct addr_pair **target_table,
+			 uint64_t **rev_fn_table __attribute__((unused)))
 {
   if (GOMP_VERSION_DEV (version) != GOMP_VERSION_GCN)
     {

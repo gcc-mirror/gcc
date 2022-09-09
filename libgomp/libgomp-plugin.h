@@ -130,7 +130,7 @@ extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
 extern unsigned GOMP_OFFLOAD_version (void);
 extern int GOMP_OFFLOAD_load_image (int, unsigned, const void *,
-				    struct addr_pair **);
+				    struct addr_pair **, uint64_t **);
 extern bool GOMP_OFFLOAD_unload_image (int, unsigned, const void *);
 extern void *GOMP_OFFLOAD_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_free (int, void *);

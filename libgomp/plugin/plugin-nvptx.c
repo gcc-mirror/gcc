@@ -1266,11 +1266,14 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
 }
 
 /* Load the (partial) program described by TARGET_DATA to device
-   number ORD.  Allocate and return TARGET_TABLE.  */
+   number ORD.  Allocate and return TARGET_TABLE.  If not NULL, REV_FN_TABLE
+   will contain the on-device addresses of the functions for reverse offload.
+   To be freed by the caller.  */
 
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
-			 struct addr_pair **target_table)
+			 struct addr_pair **target_table,
+			 uint64_t **rev_fn_table __attribute__((unused)))
 {
   CUmodule module;
   const char *const *var_names;

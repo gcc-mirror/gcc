@@ -2196,7 +2196,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 
   num_target_entries
     = devicep->load_image_func (devicep->target_id, version,
-				target_data, &target_table);
+				target_data, &target_table, NULL);
 
   if (num_target_entries != num_funcs + num_vars
       /* "+1" due to the additional ICV struct.  */
