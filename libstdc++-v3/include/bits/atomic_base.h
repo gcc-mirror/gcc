@@ -990,7 +990,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       _GLIBCXX_ALWAYS_INLINE bool
       __compare_exchange(_Tp& __val, _Val<_Tp>& __e, _Val<_Tp>& __i,
-			 bool __weak, memory_order __s, memory_order __f) noexcept
+			 bool __is_weak,
+			 memory_order __s, memory_order __f) noexcept
       {
 	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
 
@@ -1005,7 +1006,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __atomic_impl::__clear_padding(*__exp);
 	    if (__atomic_compare_exchange(std::__addressof(__val), __exp,
 					  __atomic_impl::__clear_padding(__i),
-					  __weak, int(__s), int(__f)))
+					  __is_weak, int(__s), int(__f)))
 	      return true;
 	    __builtin_memcpy(std::__addressof(__e), __exp, sizeof(_Vp));
 	    return false;
@@ -1014,7 +1015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __atomic_compare_exchange(std::__addressof(__val),
 					   std::__addressof(__e),
 					   std::__addressof(__i),
-					   __weak, int(__s), int(__f));
+					   __is_weak, int(__s), int(__f));
       }
   } // namespace __atomic_impl
 
