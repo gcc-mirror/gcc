@@ -1273,7 +1273,7 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table,
-			 uint64_t **rev_fn_table __attribute__((unused)))
+			 uint64_t **rev_fn_table)
 {
   CUmodule module;
   const char *const *var_names;
@@ -1374,6 +1374,23 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   else
     /* The variable was not in this image.  */
     targ_tbl->start = targ_tbl->end = 0;
+
+  if (rev_fn_table && fn_entries == 0)
+    *rev_fn_table = NULL;
+  else if (rev_fn_table)
+    {
+      CUdeviceptr var;
+      size_t bytes;
+      r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
+			     "$offload_func_table");
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuModuleGetGlobal error: %s", cuda_error (r));
+      assert (bytes == sizeof (uint64_t) * fn_entries);
+      *rev_fn_table = GOMP_PLUGIN_malloc (sizeof (uint64_t) * fn_entries);
+      r = CUDA_CALL_NOCHECK (cuMemcpyDtoH, *rev_fn_table, var, bytes);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
+    }
 
   nvptx_set_clocktick (module, dev);
 
