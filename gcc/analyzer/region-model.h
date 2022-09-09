@@ -532,6 +532,8 @@ public:
   region_model *get_model () const { return m_model; }
   region_model_manager *get_manager () const;
   region_model_context *get_ctxt () const { return m_ctxt; }
+  logger *get_logger () const;
+
   uncertainty_t *get_uncertainty () const;
   tree get_lhs_type () const { return m_lhs_type; }
   const region *get_lhs_region () const { return m_lhs_region; }
@@ -814,10 +816,19 @@ class region_model
   const svalue *get_string_size (const svalue *sval) const;
   const svalue *get_string_size (const region *reg) const;
 
+  void maybe_complain_about_infoleak (const region *dst_reg,
+				      const svalue *copied_sval,
+				      const region *src_reg,
+				      region_model_context *ctxt);
+
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
 			     const svalue *old_ptr_sval,
 			     const svalue *new_ptr_sval);
+
+  /* Implemented in sm-taint.cc.  */
+  void mark_as_tainted (const svalue *sval,
+			region_model_context *ctxt);
 
  private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;

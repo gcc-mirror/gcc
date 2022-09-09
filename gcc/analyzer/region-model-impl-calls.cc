@@ -91,6 +91,17 @@ call_details::get_manager () const
   return m_model->get_manager ();
 }
 
+/* Get any logger associated with this object.  */
+
+logger *
+call_details::get_logger () const
+{
+  if (m_ctxt)
+    return m_ctxt->get_logger ();
+  else
+    return NULL;
+}
+
 /* Get any uncertainty_t associated with the region_model_context.  */
 
 uncertainty_t *

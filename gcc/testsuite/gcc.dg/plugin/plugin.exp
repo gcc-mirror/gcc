@@ -125,6 +125,30 @@ set plugin_test_list [list \
 	  gil-1.c } \
     { analyzer_known_fns_plugin.c \
 	  known-fns-1.c } \
+    { analyzer_kernel_plugin.c \
+	  copy_from_user-1.c \
+	  infoleak-1.c \
+	  infoleak-2.c \
+	  infoleak-3.c \
+	  infoleak-CVE-2011-1078-1.c \
+	  infoleak-CVE-2011-1078-2.c \
+	  infoleak-CVE-2017-18549-1.c \
+	  infoleak-CVE-2017-18550-1.c \
+	  infoleak-antipatterns-1.c \
+	  infoleak-fixit-1.c \
+	  infoleak-net-ethtool-ioctl.c \
+	  infoleak-vfio_iommu_type1.c \
+	  taint-CVE-2011-0521-1-fixed.c \
+	  taint-CVE-2011-0521-1.c \
+	  taint-CVE-2011-0521-2-fixed.c \
+	  taint-CVE-2011-0521-2.c \
+	  taint-CVE-2011-0521-3-fixed.c \
+	  taint-CVE-2011-0521-3.c \
+	  taint-CVE-2011-0521-4.c \
+	  taint-CVE-2011-0521-5.c \
+	  taint-CVE-2011-0521-5-fixed.c \
+	  taint-CVE-2011-0521-6.c \
+	  taint-antipatterns-1.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

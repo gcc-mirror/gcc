@@ -447,6 +447,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
 -Wno-analyzer-exposure-through-output-file @gol
+-Wno-analyzer-exposure-through-uninit-copy @gol
 -Wno-analyzer-fd-access-mode-mismatch @gol
 -Wno-analyzer-fd-double-close @gol
 -Wno-analyzer-fd-leak @gol
@@ -9797,6 +9798,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-exposure-through-uninit-copy @gol
 -Wanalyzer-fd-access-mode-mismatch @gol
 -Wanalyzer-fd-double-close @gol
 -Wanalyzer-fd-leak @gol
@@ -9898,6 +9900,20 @@ security-sensitive value is written to an output file
 (such as writing a password to a log file).
 
 See @uref{https://cwe.mitre.org/data/definitions/532.html, CWE-532: Information Exposure Through Log Files}.
+
+@item Wanalyzer-exposure-through-uninit-copy
+@opindex Wanalyzer-exposure-through-uninit-copy
+@opindex Wno-analyzer-exposure-through-uninit-copy
+This warning requires both @option{-fanalyzer} and the use of a plugin
+to specify a function that copies across a ``trust boundary''.  Use
+@option{-Wno-analyzer-exposure-through-uninit-copy} to disable it.
+
+This diagnostic warns for ``infoleaks'' - paths through the code in which
+uninitialized values are copied across a security boundary
+(such as code within an OS kernel that copies a partially-initialized
+struct on the stack to user space).
+
+See @uref{https://cwe.mitre.org/data/definitions/200.html, CWE-200: Exposure of Sensitive Information to an Unauthorized Actor}.
 
 @item -Wno-analyzer-fd-access-mode-mismatch
 @opindex Wanalyzer-fd-access-mode-mismatch

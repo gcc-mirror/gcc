@@ -1460,11 +1460,12 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 	      if (DECL_P (decl)
 		  && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
 		{
-		  emission_path->add_region_creation_event
-		    (reg,
+		  emission_path->add_region_creation_events
+		    (reg, NULL,
 		     DECL_SOURCE_LOCATION (decl),
 		     NULL_TREE,
-		     0);
+		     0,
+		     m_verbosity > 3);
 		}
 	  }
 	}
@@ -1524,11 +1525,13 @@ diagnostic_manager::add_event_on_final_node (const exploded_node *final_enode,
 		  break;
 		case RK_HEAP_ALLOCATED:
 		case RK_ALLOCA:
-		  emission_path->add_region_creation_event
+		  emission_path->add_region_creation_events
 		    (reg,
-		    src_point.get_location (),
-		    src_point.get_fndecl (),
-		    src_stack_depth);
+		     dst_model,
+		     src_point.get_location (),
+		     src_point.get_fndecl (),
+		     src_stack_depth,
+		     false);
 		  emitted = true;
 		  break;
 		}
@@ -1939,11 +1942,12 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 			if (DECL_P (decl)
 			    && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
 			  {
-			    emission_path->add_region_creation_event
-			      (reg,
+			    emission_path->add_region_creation_events
+			      (reg, dst_state.m_region_model,
 			       DECL_SOURCE_LOCATION (decl),
 			       dst_point.get_fndecl (),
-			       dst_stack_depth);
+			       dst_stack_depth,
+			       m_verbosity > 3);
 			  }
 		    }
 	    }
@@ -2033,11 +2037,12 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		    break;
 		  case RK_HEAP_ALLOCATED:
 		  case RK_ALLOCA:
-		    emission_path->add_region_creation_event
-		      (reg,
+		    emission_path->add_region_creation_events
+		      (reg, dst_model,
 		       src_point.get_location (),
 		       src_point.get_fndecl (),
-		       src_stack_depth);
+		       src_stack_depth,
+		       m_verbosity > 3);
 		    break;
 		  }
 	    }
