@@ -453,6 +453,38 @@ struct gomp_team_state
 
 struct target_mem_desc;
 
+enum gomp_icvs
+{
+   GOMP_ICV_NTEAMS = 1,
+   GOMP_ICV_SCHEDULE = 2,
+   GOMP_ICV_SCHEDULE_CHUNK_SIZE = 3,
+   GOMP_ICV_DYNAMIC = 4,
+   GOMP_ICV_TEAMS_THREAD_LIMIT = 5,
+   GOMP_ICV_THREAD_LIMIT = 6,
+   GOMP_ICV_NTHREADS = 7,
+   GOMP_ICV_NTHREADS_LIST = 8,
+   GOMP_ICV_NTHREADS_LIST_LEN = 9,
+   GOMP_ICV_BIND = 10,
+   GOMP_ICV_BIND_LIST = 11,
+   GOMP_ICV_BIND_LIST_LEN = 12,
+   GOMP_ICV_MAX_ACTIVE_LEVELS = 13,
+   GOMP_ICV_WAIT_POLICY = 14,
+   GOMP_ICV_STACKSIZE = 15,
+   GOMP_ICV_DEFAULT_DEVICE = 16,
+   GOMP_ICV_CANCELLATION = 17,
+   GOMP_ICV_DISPLAY_AFFINITY = 18,
+   GOMP_ICV_TARGET_OFFLOAD = 19,
+   GOMP_ICV_MAX_TASK_PRIORITY = 20,
+   GOMP_ICV_ALLOCATOR = 21
+};
+
+enum gomp_device_num
+{
+  GOMP_DEVICE_NUM_FOR_DEV = -1,
+  GOMP_DEVICE_NUM_FOR_ALL = -2,
+  GOMP_DEVICE_NUM_FOR_NO_SUFFIX = -3
+};
+
 /* These are the OpenMP 4.0 Internal Control Variables described in
    section 2.3.1.  Those described as having one copy per task are
    stored within the structure; those described as having one copy
@@ -470,6 +502,80 @@ struct gomp_task_icv
   char bind_var;
   /* Internal ICV.  */
   struct target_mem_desc *target_data;
+};
+
+enum gomp_env_suffix
+{
+  GOMP_ENV_SUFFIX_UNKNOWN = 0,
+  GOMP_ENV_SUFFIX_NONE = 1,
+  GOMP_ENV_SUFFIX_DEV = 2,
+  GOMP_ENV_SUFFIX_ALL = 4,
+  GOMP_ENV_SUFFIX_DEV_X = 8
+};
+
+/* Struct that contains all ICVs for which we need to store initial values.
+   Keeping the initial values is needed for omp_display_env.  Moreover initial
+   _DEV and _ALL variants of environment variables are also used to determine
+   actually used values for devices and for the host.  */
+struct gomp_initial_icvs
+{
+  unsigned long *nthreads_var_list;
+  char *bind_var_list;
+  unsigned long nthreads_var;
+  unsigned long nthreads_var_list_len;
+  unsigned long bind_var_list_len;
+  unsigned long stacksize;
+  int run_sched_chunk_size;
+  int default_device_var;
+  int nteams_var;
+  int teams_thread_limit_var;
+  int wait_policy;
+  unsigned int thread_limit_var;
+  enum gomp_schedule_type run_sched_var;
+  bool dyn_var;
+  unsigned char max_active_levels_var;
+  char bind_var;
+};
+
+struct gomp_default_icv
+{
+  unsigned long nthreads_var;
+  enum gomp_schedule_type run_sched_var;
+  int run_sched_chunk_size;
+  int default_device_var;
+  unsigned int thread_limit_var;
+  int nteams_var;
+  int teams_thread_limit_var;
+  bool dyn_var;
+  unsigned char max_active_levels_var;
+  char bind_var;
+};
+
+/*  DEVICE_NUM "-1" is reserved for "_DEV" icvs.
+    DEVICE_NUM "-2" is reserved for "_ALL" icvs.
+    DEVICE_NUM "-3" is reserved for ICVs without suffix.
+    Non-negative DEVICE_NUM is for "_DEV_X" icvs.  */
+struct gomp_icv_list
+{
+  int device_num;
+  uint32_t flags;
+  struct gomp_initial_icvs icvs;
+  struct gomp_icv_list *next;
+};
+
+struct gomp_offload_icvs
+{
+  int device_num;
+  int default_device;
+  int nteams;
+  int teams_thread_limit;
+};
+
+struct gomp_offload_icv_list
+{
+  int device_num;
+  struct gomp_offload_icvs icvs;
+  struct gomp_offload_icv_list *next;
 };
 
 enum gomp_target_offload_t
@@ -503,6 +609,9 @@ extern bool gomp_display_affinity_var;
 extern char *gomp_affinity_format_var;
 extern size_t gomp_affinity_format_len;
 extern uintptr_t gomp_def_allocator;
+extern const struct gomp_default_icv gomp_default_icv_values;
+extern struct gomp_icv_list *gomp_initial_icv_list;
+extern struct gomp_offload_icv_list *gomp_offload_icv_list;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
@@ -926,6 +1035,11 @@ extern size_t gomp_display_affinity (char *, size_t, const char *,
 extern void gomp_display_affinity_thread (gomp_thread_handle,
 					  struct gomp_team_state *,
 					  unsigned int) __attribute__((cold));
+
+/* env.c */
+
+extern struct gomp_icv_list *gomp_get_initial_icv_item (int dev_num);
+extern bool gomp_get_icv_flag (uint32_t value, enum gomp_icvs icv);
 
 /* iter.c */
 

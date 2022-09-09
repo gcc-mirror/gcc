@@ -80,3 +80,20 @@ omp_get_device_num (void)
 }
 
 ialias (omp_get_device_num)
+
+int
+omp_get_max_teams (void)
+{
+  return gomp_nteams_var;
+}
+
+ialias (omp_get_max_teams)
+
+void
+omp_set_num_teams (int num_teams)
+{
+  if (num_teams >= 0)
+    gomp_nteams_var = num_teams;
+}
+
+ialias (omp_set_num_teams)
