@@ -54,27 +54,22 @@
 
 with Ada.Exceptions;
 with Ada.Task_Identification;
+with Ada.Unchecked_Conversion;
 
-with System.Task_Primitives;
 with System.Interrupt_Management;
-
 with System.Interrupt_Management.Operations;
-pragma Elaborate_All (System.Interrupt_Management.Operations);
-
 with System.IO;
-
+with System.Parameters;
+with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 with System.Task_Primitives.Interrupt_Operations;
 with System.Storage_Elements;
-with System.Tasking.Utilities;
-
-with System.Tasking.Rendezvous;
-pragma Elaborate_All (System.Tasking.Rendezvous);
-
 with System.Tasking.Initialization;
-with System.Parameters;
+with System.Tasking.Utilities;
+with System.Tasking.Rendezvous;
 
-with Ada.Unchecked_Conversion;
+pragma Elaborate_All (System.Interrupt_Management.Operations);
+pragma Elaborate_All (System.Tasking.Rendezvous);
 
 package body System.Interrupts is
 
