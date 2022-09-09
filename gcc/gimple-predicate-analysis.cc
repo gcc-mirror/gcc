@@ -926,10 +926,14 @@ simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
     {
       basic_block dest = src;
       src = get_immediate_dominator (CDI_DOMINATORS, src);
-      edge pred_e;
-      if (single_pred_p (dest)
-	  && (pred_e = find_edge (src, dest)))
-	chain.safe_push (pred_e);
+      if (single_pred_p (dest))
+	{
+	  edge pred_e = single_pred_edge (dest);
+	  gcc_assert (pred_e->src == src);
+	  if (!(pred_e->flags & ((EDGE_FAKE | EDGE_ABNORMAL | EDGE_DFS_BACK)))
+	      && !single_succ_p (src))
+	    chain.safe_push (pred_e);
+	}
     }
 }
 
