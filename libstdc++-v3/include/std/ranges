@@ -4657,8 +4657,8 @@ namespace views::__adaptor
 	return ranges::min({difference_type(std::get<_Is>(__x._M_current)
 					    - std::get<_Is>(__y._M_current))...},
 			   ranges::less{},
-			   [](difference_type __i) -> make_unsigned_t<difference_type> {
-			     return __i < 0 ? -__i : __i;
+			   [](difference_type __i) {
+			     return __detail::__to_unsigned_like(__i < 0 ? -__i : __i);
 			   });
       }(make_index_sequence<sizeof...(_Vs)>{});
     }
@@ -4726,8 +4726,8 @@ namespace views::__adaptor
       return [&]<size_t... _Is>(index_sequence<_Is...>) {
 	return ranges::min({_Ret(std::get<_Is>(__x._M_current) - std::get<_Is>(__y._M_end))...},
 			   ranges::less{},
-			   [](_Ret __i) -> make_unsigned_t<_Ret> {
-			     return __i < 0 ? -__i : __i;
+			   [](_Ret __i) {
+			     return __detail::__to_unsigned_like(__i < 0 ? -__i : __i);
 			   });
       }(make_index_sequence<sizeof...(_Vs)>{});
     }
