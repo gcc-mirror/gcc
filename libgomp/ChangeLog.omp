@@ -1,6 +1,16 @@
 2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP-Implementation Specifics): New; add libmemkind
+	section; move OpenMP Context Selectors from ...
+	(Offload-Target Specifics): ... here; add 'AMD Radeo (GCN)' and
+	'nvptx' sections.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-09-08  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* config/gcn/icv-device.c (omp_get_default_device): Return device-
