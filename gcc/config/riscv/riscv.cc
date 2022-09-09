@@ -6284,6 +6284,7 @@ riscv_excess_precision (enum excess_precision_type type)
       return (TARGET_ZFH ? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 			 : FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
     case EXCESS_PRECISION_TYPE_IMPLICIT:
+    case EXCESS_PRECISION_TYPE_FLOAT16:
       return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
     default:
       gcc_unreachable ();
