@@ -444,7 +444,6 @@ available}.
 @menu
 * Example usage::         Example compile and link.
 * Compiler options::      GNU Modula-2 compiler options.
-* Environment variables:: GNU Modula-2 related environment variables.
 * Elementary data types:: Data types supported by GNU Modula-2.
 * Standard procedures::   Permanently accessible base procedures.
 * Dialect::               GNU Modula-2 supported dialects.
@@ -549,7 +548,7 @@ add the @samp{-v} flag at the command line, for example:
 This displays the subprocesses initiated by @samp{gm2} which can be useful
 when trouble shooting.}
 
-@node Compiler options, Environment variables, Example usage, Using
+@node Compiler options, Elementary data types, Example usage, Using
 @section Compiler options
 
 This section describes the compiler options specific to GNU Modula-2
@@ -588,106 +587,91 @@ If this option is not specified then the default path is added
 which consists of the current directory followed by the appropriate
 language dialect library directories.
 
-@item -fdebug-builtins
-call a real function, rather than the builtin equivalent.  This can
-be useful for debugging parameter values to a builtin function as
-it allows users to single step code into a real function.
-
-@item -fdump-system-exports
-display all inbuilt system items.
-This is an internal command line option.
-
-@item -fswig
-generate a swig interface file.
-
-@item -fshared
-generate a shared library from the module.
-
-@item -fruntime-modules=
-specify, using a comma separated list, the runtime modules and their
-order.  These modules will initialized first before any other modules
-in the application dependency.  By default the runtime modules list is
-set to @code{Storage,SYSTEM,M2RTS,RTExceptions,IOLink}.  Note that
-these modules will only be linked into your executable if they are
-required.  So adding a long list of dependant modules will not effect
-the size of the executable it merely states the initialization order
-should they be required.
-
-@item -fnil
-generate code to detect accessing data through a
-@code{NIL} value pointer.
-
-@item -fno-nil
-do not generate code to detect accessing data through a
-@code{NIL} value pointer.
-
-@item -fwholediv
-generate code to detect whole number division by zero or modulus by zero.
-
-@item -fno-wholediv
-do not generate code to detect whole number division by zero or
-modulus by zero.
-
-@c @item -fwholevalue
-@c generate code to detect whole number overflow and underflow.
-
-@c @item -fno-wholevalue
-@c do not generate code to detect whole number overflow and underflow.
-
-@c @item -frealdiv
-@c generate code to detect real number division by zero.
-
-@c @item -fno-realdiv
-@c do not generate code to detect real number division by zero.
-
-@c @item -frealvalue
-@c generate code to detect @code{NaN}s real number overflow and underflow.
-
-@c @item -fno-realvalue
-@c do not generate code to detect @code{NaN}s real number overflow and underflow.
-
-@item -findex
-generate code to check whether array index values are out of bounds.
-
-@item -fno-index
-do not generate code to check whether array index values are out of
-bounds.
-
-@item -frange
-generate code to check the assignment range, return value range
-set range and constructor range.
-
-@item -fno-range
-do not generate code to check the assignment range, return value range
-set range and constructor range.
-
-@item -freturn
-generate code to check that functions always exit with a @code{RETURN}
-and do not fall out at the end.
-
-@item -fcase
-turns on compile time checking to check whether a @code{CASE}
-statement requires an @code{ELSE} clause when on was not specified.
-
-@item -fsoft-check-all
-turns on all runtime checks.  This is the same as invoking
-GNU Modula-2 using the command options
-@code{-fnil} @code{-frange} @code{-findex}
-@c @code{-fwholevalue}  --fixme-- add this when working
-@code{-fwholediv} @code{-fcase} @code{-freturn}.
+@c ordered list of options from here.
 
 @item -fauto-init
 turns on auto initialization of pointers to NIL.  Whenever a block is
 created all pointers declarated within this scope will have their
 addresses assigned to NIL.
 
-@item -fno-exceptions
-turns off all generation of exception handling code and no references
-are made to the runtime exception libraries.
+@item -fcase
+turns on compile time checking to check whether a @code{CASE}
+statement requires an @code{ELSE} clause when on was not specified.
 
-@item -v
-display all calls to subsidiary programs, such as the C preprocessor,
-the GNU Modula-2 linker and compiler.
+@item -fcpp
+preprocess the source with @samp{cpp -lang-asm -traditional-cpp}
+For further details about these options @xref{Invocation, , ,cpp}.
+If @samp{-fcpp} is supplied then all definition modules and
+implementation modules which are parsed will be preprocessed by
+@samp{cpp}.
+
+@item -fdebug-builtins
+call a real function, rather than the builtin equivalent.  This can
+be useful for debugging parameter values to a builtin function as
+it allows users to single step code into a real function.
+
+@item -fdef=
+recognise the specified suffix as a definition module filename.
+The default implmentation and module filename suffix is @file{.def}.
+If this option is used GNU Modula-2 will still fall back to this
+default if a requested definition module is not found.
+
+@item -fdump-system-exports
+display all inbuilt system items.
+This is an internal command line option.
+
+@item -fexceptions
+turn on exception handling code.  By default this option is on.
+Exception handling can be disabled by @samp{-fno-exceptions}
+and no references are made to the runtime exception libraries.
+
+@item -fextended-opaque
+allows opaque types to be implemented as any type. This is a GNU
+Modula-2 extension and it requires that the implementation module
+defining the opaque type is available so that it can be resolved when
+compiling the module which imports the opaque type.
+
+@item -fgen-module-list=@file{filename}
+attempt to find all modules when linking and generate a module list.
+If the @file{filename} is @samp{-} then the contents are not written
+and only used to force the linking of all module ctors.
+This option cannot be used if @samp{-fuse-list=} is enabled.
+
+@item -findex
+generate code to check whether array index values are out of bounds.
+Array index checking can be disabled via @samp{-fno-index}.
+
+@item -fiso
+turn on ISO standard features. Currently this enables the ISO
+@code{SYSTEM} module and alters the default library search path so
+that the ISO libraries are searched before the PIM libraries.  It also
+effects the behaviour of @code{DIV} and @code{MOD} operators.
+@xref{Dialect, , ,gm2}.
+
+@item -flibs=
+modifies the default library search path.  The libraries supplied are:
+m2pim, m2iso, m2min, m2log and m2cor.  These map onto the
+Programming in Modula-2 base libraries, ISO standard libraries, minimal
+library support, Logitech compatible library and Programming in
+Modula-2 with coroutines.
+Multiple libraries can be specified and are comma separated with precidence
+going to the first in the list.  It is not necessary to use -flibs=m2pim or
+-flibs=m2iso if you also specify -fpim, -fpim2, -fpim3, -fpim4 or
+-fiso.  Unless you are using -flibs=m2min you should include m2pim as
+the they provide the base modules which all other dialects utilize.
+The option @samp{-fno-libs=-} disables the @samp{gm2} driver from
+modifying the search and library paths.
+
+@item -fm2-g
+improve the debugging experience for new programmers at the expense
+of generating @code{nop} instructions if necessary to ensure single
+stepping precision over all code related keywords.  An example
+of this is in termination of a list of nested @code{IF} statements
+where multiple @code{END} keywords are mapped onto a sequence of
+@code{nop} instructions.
+
+@item -fm2-lower-case
+render keywords in error messages using lower case.
 
 @item -fm2-statistics
 generates quadruple information: number of quadruples generated,
@@ -701,62 +685,17 @@ modules (particularly with the negative operands to modulus).  But
 this option, when coupled together with @code{-O3}, can deliver huge
 performance improvements.
 
-@item -fm2-g
-improve the debugging experience for new programmers at the expense
-of generating @code{nop} instructions if necessary to ensure single
-stepping precision over all code related keywords.  An example
-of this is in termination of a list of nested @code{IF} statements
-where multiple @code{END} keywords are mapped onto a sequence of
-@code{nop} instructions.
+@item -fmod=
+recognise the specified suffix as implementation and module filenames.
+The default implmentation and module filename suffix is @file{.mod}.
+If this option is used GNU Modula-2 will still fall back to this
+default if it needs to read an implmentation module and the specified
+suffixed filename does not exist.
 
-@item -fm2-lower-case
-render keywords in error messages using lower case.
-
-@item fno-pthread
-do not automatically link against the pthread library.  This option is
-likely useful if gm2 is configured as a cross compiler targetting
-embedded systems.  By default GNU Modula-2 uses the GCC pthread
-libraries to implement coroutines (see the SYSTEM implementation
-module).
-
-@item -fuse-list=@file{filename}
-if @samp{-fscaffold-static} is enabled then use the file
-@file{filename} for the initialization order of modules.  Whereas if
-@samp{-fscaffold-dynamic} is enabled then use this file to force
-linking of all module ctors.
-This option cannot be used if @samp{-fgen-module-list=} is enabled.
-
-@item -fgen-module-list=@file{filename}
-attempt to find all modules when linking and generate a module list.
-If the @file{filename} is @samp{-} then the contents are not written
-and only used to force the linking of all module ctors.
-This option cannot be used if @samp{-fuse-list=} is enabled.
-
-@item -fscaffold-static
-the option ensures that @samp{gm2} will generate a static scaffold
-within the program module.  The static scaffold is useful for
-debugging and single stepping the initialization blocks of
-implementation modules.
-
-@item -fscaffold-dynamic
-the option ensures that @samp{gm2} will generate a dynamic scaffold
-infastructure when compiling implementation and program modules.
-By default this option is on.  Use @samp{-fno-scaffold-dynamic}
-to turn it off or select @samp{-fno-scaffold-dynamic}.
-
-@item -fcpp
-preprocess the source with @samp{cpp -lang-asm -traditional-cpp}
-For further details about these options @xref{Invocation, , ,cpp}.
-If @samp{-fcpp} is supplied then all definition modules and
-implementation modules which are parsed will be preprocessed by
-@samp{cpp}.
-
-@item -fiso
-turn on ISO standard features. Currently this enables the ISO
-@code{SYSTEM} module and alters the default library search path so
-that the ISO libraries are searched before the PIM libraries.  It also
-effects the behaviour of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,gm2}.
+@item -fnil
+generate code to detect accessing data through a @code{NIL} value
+pointer.  Dereferencing checking through a @code{NIL} pointer can be
+disabled by @samp{-fno-nil}.
 
 @item -fpim
 turn on PIM standard features. Currently this enables the PIM
@@ -788,46 +727,66 @@ All modulus results are positive and the results from the division are
 rounded to the floor.
 @xref{Dialect, , ,gm2}.
 
-@item -flibs=
-modifies the default library search path.  The libraries supplied are:
-m2pim, m2iso, m2min, m2log and m2cor.  These map onto the
-Programming in Modula-2 base libraries, ISO standard libraries, minimal
-library support, Logitech compatible library and Programming in
-Modula-2 with coroutines.
-Multiple libraries can be specified and are comma separated with precidence
-going to the first in the list.  It is not necessary to use -flibs=m2pim or
--flibs=m2iso if you also specify -fpim, -fpim2, -fpim3, -fpim4 or
--fiso.  Unless you are using -flibs=m2min you should include m2pim as
-the they provide the base modules which all other dialects utilize.
-The option @samp{-fno-libs=-} disables the @samp{gm2} driver from
-modifying the search and library paths.
+@item -fpthread
+link against the pthread library.  By default this option is on.  It
+can be disabled by @samp{-fno-pthread}.  GNU Modula-2 uses the GCC
+pthread libraries to implement coroutines (see the SYSTEM
+implementation module).
 
-@item -fextended-opaque
-allows opaque types to be implemented as any type. This is a GNU
-Modula-2 extension and it requires that the implementation module
-defining the opaque type is available so that it can be resolved when
-compiling the module which imports the opaque type.
+@item -frange
+generate code to check the assignment range, return value range
+set range and constructor range.  Range checking can be disabled
+via @samp{-fno-range}.
+
+@item -freturn
+generate code to check that functions always exit with a @code{RETURN}
+and do not fall out at the end.  Return checking can be disabled
+via @samp{-fno-return}.
+
+@item -fruntime-modules=
+specify, using a comma separated list, the runtime modules and their
+order.  These modules will initialized first before any other modules
+in the application dependency.  By default the runtime modules list is
+set to @code{Storage,SYSTEM,M2RTS,RTExceptions,IOLink}.  Note that
+these modules will only be linked into your executable if they are
+required.  So adding a long list of dependant modules will not effect
+the size of the executable it merely states the initialization order
+should they be required.
+
+@item -fscaffold-dynamic
+the option ensures that @samp{gm2} will generate a dynamic scaffold
+infastructure when compiling implementation and program modules.
+By default this option is on.  Use @samp{-fno-scaffold-dynamic}
+to turn it off or select @samp{-fno-scaffold-static}.
+
+@item -fscaffold-main
+force the generation of the @samp{main} function.  This is not
+necessary if the @samp{-c} is omitted.
+
+@item -fscaffold-static
+the option ensures that @samp{gm2} will generate a static scaffold
+within the program module.  The static scaffold consists of sequences
+of calls to all dependent module initialization and finalialization
+procedures.  The static scaffold is useful for debugging and single
+stepping the initialization blocks of implementation modules.
+
+@item -fshared
+generate a shared library from the module.
+
+@item -fsoft-check-all
+turns on all runtime checks.  This is the same as invoking
+GNU Modula-2 using the command options
+@code{-fnil} @code{-frange} @code{-findex}
+@c @code{-fwholevalue}  --fixme-- add this when working
+@code{-fwholediv} @code{-fcase} @code{-freturn}.
 
 @item -fsources
 displays the path to the source of each module.  This option
 can be used at compile time to check the correct definition module
 is being used.
 
-@item -fdef=
-recognise the specified suffix as a definition module filename.
-The default implmentation and module filename suffix is @file{.def}.
-If this option is used GNU Modula-2 will still fall back to this
-default if a requested definition module is not found.
-
-@item -fmod=
-recognise the specified suffix as implementation and module filenames.
-The default implmentation and module filename suffix is @file{.mod}.
-If this option is used GNU Modula-2 will still fall back to this
-default if it needs to read an implmentation module and the specified
-suffixed filename does not exist.
-
-@item -fxcode
-issues all errors and warnings in the @file{Xcode} format.
+@item -fswig
+generate a swig interface file.
 
 @item -funbounded-by-reference
 enable optimization of unbounded parameters by attempting to pass non
@@ -843,19 +802,43 @@ the address and the array to a procedure, read from the array in
 the procedure and write to the location using the address parameter.
 
 Due to the dangerous nature of this option it is not enabled
-when the -O option is specified.
+when the @samp{-O} option is specified.
 
-@item -Wverbose-unbounded
-inform the user which non @code{VAR} unbounded parameters will be
-passed by reference.  This only produces output if the option
-@samp{-funbounded-by-reference} is also supplied on the command line.
+@item -fuse-list=@file{filename}
+if @samp{-fscaffold-static} is enabled then use the file
+@file{filename} for the initialization order of modules.  Whereas if
+@samp{-fscaffold-dynamic} is enabled then use this file to force
+linking of all module ctors.
+This option cannot be used if @samp{-fgen-module-list=} is enabled.
 
-@item -Wstyle
-checks for poor programming style.  This option is aimed at new users of
-Modula-2 in that it checks for situations which might cause confusion
-and thus mistakes.  It checks whether variables of the same name are
-declared in different scopes and whether variables look like keywords.
-Experienced users might find this option too aggressive.
+@item -fwholediv
+generate code to detect whole number division by zero or modulus by
+zero.  Whole number division checking can be disabled via
+@samp{-fno-wholediv}.
+
+@c @item -fxcode
+@c issues all errors and warnings in the @file{Xcode} format.
+
+@c @item -fwholevalue
+@c generate code to detect whole number overflow and underflow.
+
+@c @item -fno-wholevalue
+@c do not generate code to detect whole number overflow and underflow.
+
+@c @item -frealdiv
+@c generate code to detect real number division by zero.
+
+@c @item -fno-realdiv
+@c do not generate code to detect real number division by zero.
+
+@c @item -frealvalue
+@c generate code to detect @code{NaN}s real number overflow and underflow.
+
+@c @item -fno-realvalue
+@c do not generate code to detect @code{NaN}s real number overflow and underflow.
+
+@item -Wall
+turn on all Modula-2 warnings.
 
 @item -Wpedantic
 forces the compiler to reject nested @code{WITH} statements
@@ -867,11 +850,6 @@ encounters a variable being read before written it will terminate with
 a message.  It will check that @code{FOR} loop indices are not used
 outside the end of this loop without being reset.
 
-@item -Wpedantic-param-names
-procedure parameter names are checked in the definition module
-against their implementation module counterpart.  This is not
-necessary in ISO or PIM versions of Modula-2.
-
 @item -Wpedantic-cast
 warns if the ISO system function is used and if the size of
 the variable is different from that of the type.  This is legal
@@ -879,61 +857,34 @@ in ISO Modula-2, however it can be dangerous.  Some users may prefer
 to use @code{VAL} instead in these situations and use @code{CAST}
 exclusively for changes in type on objects which have the same size.
 
+@item -Wpedantic-param-names
+procedure parameter names are checked in the definition module
+against their implementation module counterpart.  This is not
+necessary in ISO or PIM versions of Modula-2.
+
+@item -Wstyle
+checks for poor programming style.  This option is aimed at new users of
+Modula-2 in that it checks for situations which might cause confusion
+and thus mistakes.  It checks whether variables of the same name are
+declared in different scopes and whether variables look like keywords.
+Experienced users might find this option too aggressive.
+
 @item -Wunused-variable
 warns if a variable has been declared and it not used.
 
 @item -Wunused-parameter
 warns if a parameter has been declared and it not used.
 
-@item -Wall
-turn on all Modula-2 warnings.
+@item -Wverbose-unbounded
+inform the user which non @code{VAR} unbounded parameters will be
+passed by reference.  This only produces output if the option
+@samp{-funbounded-by-reference} is also supplied on the command line.
 
 @end table
 
 @c man end
 
-@node Environment variables, Elementary data types, Compiler options, Using
-@section GNU Modula-2 related environment variables
-
-@c man begin ENVIRONMENT gm2
-
-This section descibes the environment variables used by GNU Modula-2 and
-how they can be used to switch between releases of the compiler.  Other
-environment variables can be set to modify the default library path.
-Initially we will consider environment variables most likely used by
-the end user.  These two environment variables are @code{GM2IPATH}
-and @code{GM2OPATH}.
-
-For example suppose a compile and link on the command line looks like
-this:
-
-@example
-$ gm2 -g -c -I. -I../project -I../project/unix foo.mod
-$ gm2 -fonlylink -g -I. -I../project -I../project/unix \
-  -fobject-path=../project/obj -Iobject-path=../project/unix/obj \
-  -I. foo.mod
-@end example
-
-they can be simplified by utilising two environment variables to do
-exactly the same compile and link.
-
-@example
-$ export GM2IPATH=../project:../project/unix
-$ export GM2OPATH=../project/obj:../project/unix/obj
-$ gm2 -g -I. foo.mod
-@end example
-
-It is important to note that the two environment variables
-@code{GM2IPATH} and @code{GM2OPATH} have a lower priority than any
-@code{-I} or @code{-fobject-path=} command line option.  The search
-order for compiling and linking is: command line switches followed by
-environment variable paths followed by default runtime libraries or
-Modula-2 dialect libraries.  If in doubt include the @code{-v} option
-to see the search path used between the compiler subcomponents.
-
-@c man end
-
-@node Elementary data types, Standard procedures, Environment variables, Using
+@node Elementary data types, Standard procedures, Compiler options, Using
 @section Elementary data types
 
 This section describes the elementary data types supported by GNU
