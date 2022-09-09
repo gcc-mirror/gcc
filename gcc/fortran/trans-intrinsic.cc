@@ -10263,6 +10263,119 @@ conv_intrinsic_ieee_fma (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Generate code for IEEE_{MIN,MAX}_NUM{,_MAG}.  */
+
+static void
+conv_intrinsic_ieee_minmax (gfc_se * se, gfc_expr * expr, int max,
+			    const char *name)
+{
+  tree args[2], func;
+  built_in_function fn;
+
+  conv_ieee_function_args (se, expr, args, 2);
+  gcc_assert (TYPE_PRECISION (TREE_TYPE (args[0])) == TYPE_PRECISION (TREE_TYPE (args[1])));
+  args[0] = gfc_evaluate_now (args[0], &se->pre);
+  args[1] = gfc_evaluate_now (args[1], &se->pre);
+
+  if (startswith (name, "mag"))
+    {
+      /* IEEE_MIN_NUM_MAG and IEEE_MAX_NUM_MAG translate to C functions
+	 fminmag() and fmaxmag(), which do not exist as built-ins.
+
+	 Following glibc, we emit this:
+
+	   fminmag (x, y) {
+	     ax = ABS (x);
+	     ay = ABS (y);
+	     if (isless (ax, ay))
+	       return x;
+	     else if (isgreater (ax, ay))
+	       return y;
+	     else if (ax == ay)
+	       return x < y ? x : y;
+	     else if (issignaling (x) || issignaling (y))
+	       return x + y;
+	     else
+	       return isnan (y) ? x : y;
+	   }
+
+	   fmaxmag (x, y) {
+	     ax = ABS (x);
+	     ay = ABS (y);
+	     if (isgreater (ax, ay))
+	       return x;
+	     else if (isless (ax, ay))
+	       return y;
+	     else if (ax == ay)
+	       return x > y ? x : y;
+	     else if (issignaling (x) || issignaling (y))
+	       return x + y;
+	     else
+	       return isnan (y) ? x : y;
+	   }
+
+	 */
+
+      tree abs0, abs1, sig0, sig1;
+      tree cond1, cond2, cond3, cond4, cond5;
+      tree res;
+      tree type = TREE_TYPE (args[0]);
+
+      func = gfc_builtin_decl_for_float_kind (BUILT_IN_FABS, expr->ts.kind);
+      abs0 = build_call_expr_loc (input_location, func, 1, args[0]);
+      abs1 = build_call_expr_loc (input_location, func, 1, args[1]);
+      abs0 = gfc_evaluate_now (abs0, &se->pre);
+      abs1 = gfc_evaluate_now (abs1, &se->pre);
+
+      cond5 = build_call_expr_loc (input_location,
+				   builtin_decl_explicit (BUILT_IN_ISNAN),
+				   1, args[1]);
+      res = fold_build3_loc (input_location, COND_EXPR, type, cond5,
+			     args[0], args[1]);
+
+      sig0 = build_call_expr_loc (input_location,
+				  builtin_decl_explicit (BUILT_IN_ISSIGNALING),
+				  1, args[0]);
+      sig1 = build_call_expr_loc (input_location,
+				  builtin_decl_explicit (BUILT_IN_ISSIGNALING),
+				  1, args[1]);
+      cond4 = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+			       logical_type_node, sig0, sig1);
+      res = fold_build3_loc (input_location, COND_EXPR, type, cond4,
+			     fold_build2_loc (input_location, PLUS_EXPR,
+					      type, args[0], args[1]),
+			     res);
+
+      cond3 = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			       abs0, abs1);
+      res = fold_build3_loc (input_location, COND_EXPR, type, cond3,
+			     fold_build2_loc (input_location,
+					      max ? MAX_EXPR : MIN_EXPR,
+					      type, args[0], args[1]),
+			     res);
+
+      func = builtin_decl_explicit (max ? BUILT_IN_ISLESS : BUILT_IN_ISGREATER);
+      cond2 = build_call_expr_loc (input_location, func, 2, abs0, abs1);
+      res = fold_build3_loc (input_location, COND_EXPR, type, cond2,
+			     args[1], res);
+
+      func = builtin_decl_explicit (max ? BUILT_IN_ISGREATER : BUILT_IN_ISLESS);
+      cond1 = build_call_expr_loc (input_location, func, 2, abs0, abs1);
+      res = fold_build3_loc (input_location, COND_EXPR, type, cond1,
+			     args[0], res);
+
+      se->expr = res;
+    }
+  else
+    {
+      /* IEEE_MIN_NUM and IEEE_MAX_NUM translate to fmin() and fmax().  */
+      fn = max ? BUILT_IN_FMAX : BUILT_IN_FMIN;
+      func = gfc_builtin_decl_for_float_kind (fn, expr->ts.kind);
+      se->expr = build_call_expr_loc_array (input_location, func, 2, args);
+    }
+}
+
+
 /* Generate code for an intrinsic function from the IEEE_ARITHMETIC
    module.  */
 
@@ -10301,6 +10414,10 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
     conv_intrinsic_ieee_value (se, expr);
   else if (startswith (name, "_gfortran_ieee_fma"))
     conv_intrinsic_ieee_fma (se, expr);
+  else if (startswith (name, "_gfortran_ieee_min_num_"))
+    conv_intrinsic_ieee_minmax (se, expr, 0, name + 23);
+  else if (startswith (name, "_gfortran_ieee_max_num_"))
+    conv_intrinsic_ieee_minmax (se, expr, 1, name + 23);
   else
     /* It is not among the functions we translate directly.  We return
        false, so a library function call is emitted.  */
