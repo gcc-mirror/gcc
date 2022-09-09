@@ -1366,6 +1366,24 @@ riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
   return xasprintf ("-march=%s", arch.c_str());
 }
 
+/* Report error if not found suitable multilib.  */
+const char *
+riscv_multi_lib_check (int argc ATTRIBUTE_UNUSED,
+		       const char **argv ATTRIBUTE_UNUSED)
+{
+  if (riscv_no_matched_multi_lib)
+    fatal_error (
+      input_location,
+      "Cannot find suitable multilib set for %<-march=%s%>/%<-mabi=%s%>",
+      riscv_current_arch_str.c_str (),
+      riscv_current_abi_str.c_str ());
+
+  return "";
+}
+
+/* We only override this in bare-metal toolchain.  */
+#ifdef RISCV_USE_CUSTOMISED_MULTI_LIB
+
 /* Find last switch with the prefix, options are take last one in general,
    return NULL if not found, and return the option value if found, it could
    return empty string if the option has no value.  */
@@ -1438,21 +1456,6 @@ riscv_multi_lib_info_t::parse (
     riscv_subset_list::parse (multi_lib_info->arch_str.c_str (), input_location);
 
   return true;
-}
-
-/* Report error if not found suitable multilib.  */
-const char *
-riscv_multi_lib_check (int argc ATTRIBUTE_UNUSED,
-		       const char **argv ATTRIBUTE_UNUSED)
-{
-  if (riscv_no_matched_multi_lib)
-    fatal_error (
-      input_location,
-      "Can't find suitable multilib set for %<-march=%s%>/%<-mabi=%s%>",
-      riscv_current_arch_str.c_str (),
-      riscv_current_abi_str.c_str ());
-
-  return "";
 }
 
 /* Checking ARG is not appeared in SWITCHES if NOT_ARG is set or
@@ -1533,9 +1536,6 @@ riscv_check_conds (
      list. */
   return match_score + ok_count * 100;
 }
-
-/* We only override this in bare-metal toolchain.  */
-#ifdef RISCV_USE_CUSTOMISED_MULTI_LIB
 
 /* Implement TARGET_COMPUTE_MULTILIB.  */
 static const char *
