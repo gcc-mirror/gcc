@@ -1968,6 +1968,110 @@ maybe_get_const_fn_result (const call_details &cd)
   return sval;
 }
 
+/* Update this model for an outcome of a call that returns zero.
+   If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
+   the state-merger code from merging success and failure outcomes.  */
+
+void
+region_model::update_for_zero_return (const call_details &cd,
+				      bool unmergeable)
+{
+  if (!cd.get_lhs_type ())
+    return;
+  const svalue *result
+    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+  if (unmergeable)
+    result = m_mgr->get_or_create_unmergeable (result);
+  set_value (cd.get_lhs_region (), result, cd.get_ctxt ());
+}
+
+/* Update this model for an outcome of a call that returns non-zero.  */
+
+void
+region_model::update_for_nonzero_return (const call_details &cd)
+{
+  if (!cd.get_lhs_type ())
+    return;
+  const svalue *zero
+    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+  const svalue *result
+    = get_store_value (cd.get_lhs_region (), cd.get_ctxt ());
+  add_constraint (result, NE_EXPR, zero, cd.get_ctxt ());
+}
+
+/* Subroutine of region_model::maybe_get_copy_bounds.
+   The Linux kernel commonly uses
+     min_t([unsigned] long, VAR, sizeof(T));
+   to set an upper bound on the size of a copy_to_user.
+   Attempt to simplify such sizes by trying to get the upper bound as a
+   constant.
+   Return the simplified svalue if possible, or NULL otherwise.  */
+
+static const svalue *
+maybe_simplify_upper_bound (const svalue *num_bytes_sval,
+			    region_model_manager *mgr)
+{
+  tree type = num_bytes_sval->get_type ();
+  while (const svalue *raw = num_bytes_sval->maybe_undo_cast ())
+    num_bytes_sval = raw;
+  if (const binop_svalue *binop_sval = num_bytes_sval->dyn_cast_binop_svalue ())
+    if (binop_sval->get_op () == MIN_EXPR)
+      if (binop_sval->get_arg1 ()->get_kind () == SK_CONSTANT)
+	{
+	  return mgr->get_or_create_cast (type, binop_sval->get_arg1 ());
+	  /* TODO: we might want to also capture the constraint
+	     when recording the diagnostic, or note that we're using
+	     the upper bound.  */
+	}
+  return NULL;
+}
+
+/* Attempt to get an upper bound for the size of a copy when simulating a
+   copy function.
+
+   NUM_BYTES_SVAL is the symbolic value for the size of the copy.
+   Use it if it's constant, otherwise try to simplify it.  Failing
+   that, use the size of SRC_REG if constant.
+
+   Return a symbolic value for an upper limit on the number of bytes
+   copied, or NULL if no such value could be determined.  */
+
+const svalue *
+region_model::maybe_get_copy_bounds (const region *src_reg,
+				     const svalue *num_bytes_sval)
+{
+  if (num_bytes_sval->maybe_get_constant ())
+    return num_bytes_sval;
+
+  if (const svalue *simplified
+      = maybe_simplify_upper_bound (num_bytes_sval, m_mgr))
+    num_bytes_sval = simplified;
+
+  if (num_bytes_sval->maybe_get_constant ())
+    return num_bytes_sval;
+
+  /* For now, try just guessing the size as the capacity of the
+     base region of the src.
+     This is a hack; we might get too large a value.  */
+  const region *src_base_reg = src_reg->get_base_region ();
+  num_bytes_sval = get_capacity (src_base_reg);
+
+  if (num_bytes_sval->maybe_get_constant ())
+    return num_bytes_sval;
+
+  /* Non-constant: give up. */
+  return NULL;
+}
+
+/* Get any known_function for FNDECL, or NULL if there is none.  */
+
+const known_function *
+region_model::get_known_function (tree fndecl) const
+{
+  known_function_manager *known_fn_mgr = m_mgr->get_known_function_manager ();
+  return known_fn_mgr->get_by_fndecl (fndecl);
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -2223,6 +2327,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	{
 	  /* Handle in "on_call_post".  */
+	}
+      else if (const known_function *kf = get_known_function (callee_fndecl))
+	{
+	  kf->impl_call_pre (cd);
+	  return false;
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))

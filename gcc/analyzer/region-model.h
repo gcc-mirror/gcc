@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/svalue.h"
 #include "analyzer/region.h"
+#include "analyzer/known-function-manager.h"
 
 using namespace ana;
 
@@ -347,6 +348,11 @@ public:
   store_manager *get_store_manager () { return &m_store_mgr; }
   bounded_ranges_manager *get_range_manager () const { return m_range_mgr; }
 
+  known_function_manager *get_known_function_manager ()
+  {
+    return &m_known_fn_mgr;
+  }
+
   /* Dynamically-allocated region instances.
      The number of these within the analysis can grow arbitrarily.
      They are still owned by the manager.  */
@@ -504,6 +510,8 @@ private:
 
   bounded_ranges_manager *m_range_mgr;
 
+  known_function_manager m_known_fn_mgr;
+
   /* "Dynamically-allocated" region instances.
      The number of these within the analysis can grow arbitrarily.
      They are still owned by the manager.  */
@@ -521,6 +529,7 @@ public:
   call_details (const gcall *call, region_model *model,
 		region_model_context *ctxt);
 
+  region_model *get_model () const { return m_model; }
   region_model_manager *get_manager () const;
   region_model_context *get_ctxt () const { return m_ctxt; }
   uncertainty_t *get_uncertainty () const;
@@ -644,6 +653,12 @@ class region_model
   void impl_call_va_copy (const call_details &cd);
   void impl_call_va_arg (const call_details &cd);
   void impl_call_va_end (const call_details &cd);
+
+  const svalue *maybe_get_copy_bounds (const region *src_reg,
+				       const svalue *num_bytes_sval);
+  void update_for_zero_return (const call_details &cd,
+			       bool unmergeable);
+  void update_for_nonzero_return (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);
@@ -814,6 +829,8 @@ class region_model
   path_var
   get_representative_path_var_1 (const region *reg,
 				 svalue_set *visited) const;
+
+  const known_function *get_known_function (tree fndecl) const;
 
   bool add_constraint (const svalue *lhs,
 		       enum tree_code op,
@@ -1324,6 +1341,10 @@ public:
   engine (const supergraph *sg = NULL, logger *logger = NULL);
   const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
+  known_function_manager *get_known_function_manager ()
+  {
+    return m_mgr.get_known_function_manager ();
+  }
 
   void log_stats (logger *logger) const;
 

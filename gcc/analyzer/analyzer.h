@@ -113,6 +113,7 @@ class engine;
 class state_machine;
 class logger;
 class visitor;
+class known_function_manager;
 
 /* Forward decls of functions.  */
 
@@ -218,12 +219,24 @@ extern location_t get_stmt_location (const gimple *stmt, function *fun);
 
 extern bool compat_types_p (tree src_type, tree dst_type);
 
+/* Abstract base class for simulating the behavior of known functions,
+   supplied by plugins.  */
+
+class known_function
+{
+public:
+  virtual ~known_function () {}
+  virtual void impl_call_pre (const call_details &cd) const = 0;
+};
+
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
 
 class plugin_analyzer_init_iface
 {
 public:
   virtual void register_state_machine (state_machine *) = 0;
+  virtual void register_known_function (const char *name,
+					known_function *) = 0;
   virtual logger *get_logger () const = 0;
 };
 

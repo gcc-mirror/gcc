@@ -123,6 +123,8 @@ set plugin_test_list [list \
 	  dump-2.c } \
     { analyzer_gil_plugin.c \
 	  gil-1.c } \
+    { analyzer_known_fns_plugin.c \
+	  known-fns-1.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

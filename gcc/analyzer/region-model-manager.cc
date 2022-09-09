@@ -81,7 +81,8 @@ region_model_manager::region_model_manager (logger *logger)
   m_globals_region (alloc_region_id (), &m_root_region),
   m_globals_map (),
   m_store_mgr (this),
-  m_range_mgr (new bounded_ranges_manager ())
+  m_range_mgr (new bounded_ranges_manager ()),
+  m_known_fn_mgr (logger)
 {
 }
 
