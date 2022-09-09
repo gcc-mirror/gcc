@@ -553,6 +553,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	    char *funcname;
 	    if (sscanf (buf, "\t.8byte\t%ms\n", &funcname))
 	      {
+		fputs (buf, out);
 		obstack_ptr_grow (&fns_os, funcname);
 		fn_count++;
 		continue;
@@ -577,7 +578,15 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 		 out);
 	}
       else if (sscanf (buf, " .section .gnu.offload_funcs%c", &dummy) > 0)
-	state = IN_FUNCS;
+	{
+	  state = IN_FUNCS;
+	  /* Likewise for .gnu.offload_vars; used for reverse offload. */
+	  fputs (buf, out);
+	  fputs ("\t.global .offload_func_table\n"
+		 "\t.type .offload_func_table, @object\n"
+		 ".offload_func_table:\n",
+		 out);
+	}
       else if (sscanf (buf, " .amdgpu_metadata%c", &dummy) > 0)
 	{
 	  state = IN_METADATA;
