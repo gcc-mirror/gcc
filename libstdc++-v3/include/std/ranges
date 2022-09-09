@@ -5239,7 +5239,7 @@ namespace views::__adaptor
       requires _Const && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
     {
       for (size_t __j = 0; __j < _Nm; ++__j)
-	_M_current[__j] = std::move(__i[__j]);
+	_M_current[__j] = std::move(__i._M_current[__j]);
     }
 
     constexpr auto

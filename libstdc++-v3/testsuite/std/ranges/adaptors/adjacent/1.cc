@@ -101,10 +101,22 @@ test03()
   return true;
 }
 
+constexpr bool
+test04()
+{
+  // PR libstdc++/106798
+  auto r = views::single(0) | views::lazy_split(0) | views::pairwise;
+  decltype(ranges::cend(r)) s = r.end();
+  VERIFY( r.begin() == s );
+
+  return true;
+}
+
 int
 main()
 {
   static_assert(test01());
   static_assert(test02());
   static_assert(test03());
+  static_assert(test04());
 }
