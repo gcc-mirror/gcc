@@ -1,3 +1,31 @@
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FABSVF, LDEXPVF, LDEXPV, FREXPVF_EXP,
+	FREXPVF_MANT, FREXPV_EXP, FREXPV_MANT): Add new builtins.
+	* config/gcn/gcn-protos.h (gcn_dconst1over2pi): New prototype.
+	* config/gcn/gcn-valu.md (MATH_UNOP_1OR2REG, MATH_UNOP_1REG,
+	MATH_UNOP_TRIG): New iterators.
+	(math_unop): New attributes.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>,
+	<math_unop><mode>2, <math_unop><mode>2<exec>,
+	*<math_unop><mode>2_insn, *<math_unop><mode>2<exec>_insn,
+	ldexp<mode>3, ldexp<mode>3<exec>,
+	frexp<mode>_exp2, frexp<mode>_mant2,
+	frexp<mode>_exp2<exec>, frexp<mode>_mant2<exec>): New instructions.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>): New expanders.
+	* config/gcn/gcn.cc (init_ext_gcn_constants): Update definition of
+	dconst1over2pi.
+	(gcn_dconst1over2pi): New.
+	(gcn_builtin_type_index): Add entry for v64df type.
+	(v64df_type_node): New.
+	(gcn_init_builtin_types): Initialize v64df_type_node.
+	(gcn_expand_builtin_1): Expand new builtins to instructions.
+	(print_operand): Fix assembler output for 1/(2*PI) constant.
+	* config/gcn/gcn.md (unspec): Add new entries.
+
 2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
