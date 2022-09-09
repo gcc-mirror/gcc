@@ -3,6 +3,14 @@
 	Backport from mainline:
 	2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/106670
+	* libgomp.texi (OpenMP 5.2): Add comment to ompx/omx entry.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
 	* libgomp.texi (OpenMP-Implementation Specifics): New; add libmemkind
 	section; move OpenMP Context Selectors from ...
 	(Offload-Target Specifics): ... here; add 'AMD Radeo (GCN)' and

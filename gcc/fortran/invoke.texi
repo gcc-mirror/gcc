@@ -1092,6 +1092,11 @@ The type of a function result is declared more than once with the same type.  If
 
 @item
 A @code{CHARACTER} variable is declared with negative length.
+
+@item
+With @option{-fopenmp}, for fixed-form source code, when an @code{omx}
+vendor-extension sentinel is encountered. (The equivalent @code{ompx},
+used in free-form source code, is diagnosed by default.)
 @end itemize
 
 @item -Wtabs

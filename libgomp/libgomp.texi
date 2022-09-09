@@ -361,7 +361,13 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{omp_in_explicit_task} routine and @emph{implicit-task-var} ICV
       @tab N @tab
 @item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
-      namespaces @tab N/A @tab
+      namespaces @tab N/A
+      @tab warning for @code{omp/ompx} sentinels@footnote{@code{omp/ompx}
+      sentinels as C/C++ pragma and C++ attributes are warned for with
+      @code{-Wunknown-pragmas} (implied by @code{-Wall}) and @code{-Wattributes}
+      (enabled by default), respectively; for Fortran free-source code, there is
+      a warning enabled by default and for fixed-source code with
+      @code{-Wsurprising} (enabled by @code{-Wall})}
 @item Clauses on @code{end} directive can be on directive @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
