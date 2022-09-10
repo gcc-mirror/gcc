@@ -18114,7 +18114,7 @@ get_memref_parts (rtx mem, rtx *base, HOST_WIDE_INT *offset,
 		  HOST_WIDE_INT *size)
 {
   rtx addr_rtx;
-  if MEM_SIZE_KNOWN_P (mem)
+  if (MEM_SIZE_KNOWN_P (mem))
     *size = MEM_SIZE (mem);
   else
     return false;
