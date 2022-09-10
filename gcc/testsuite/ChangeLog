@@ -1,3 +1,27 @@
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106860
+	* g++.dg/opt/pr106860.C: New testcase.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106841
+	* g++.dg/vect/pr106841.cc: New testcase.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* gcc.dg/torture/pr106809.c: New testcase.
+
 2022-09-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:
