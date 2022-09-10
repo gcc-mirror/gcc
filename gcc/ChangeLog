@@ -1,3 +1,119 @@
+2022-09-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md: Rewrite the split pattern that performs
+	the abovementioned process so that insns that overwrite clobbered
+	register no longer need to be contiguous.
+	(DSC): Remove as no longer needed.
+
+2022-09-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (machine_function): New boolean member as
+	a flag that controls whether to emit the insns for stack pointer
+	adjustment inside of the pro/epilogue.
+	(xtensa_emit_adjust_stack_ptr): New function to share the common
+	codes and to emit insns if not inhibited.
+	(xtensa_expand_epilogue): Change to use the function mentioned
+	above when using the CALL0 ABI.
+	(xtensa_expand_prologue): Ditto.
+	And also change to set the inhibit flag used by
+	xtensa_emit_adjust_stack_ptr() to true if the stack pointer is only
+	used for its own adjustment.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wanalyzer-exposure-through-uninit-copy.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add
+	analyzer/known-function-manager.o.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/mkoffload.cc (struct id_map): Add 'dim' member.
+	(record_id): Store func name without quotes, store dim separately.
+	(process): For GOMP_REQUIRES_REVERSE_OFFLOAD, check that -march is
+	at least sm_35, create '$offload_func_table' global array and init
+	with reverse-offload function addresses.
+	* config/nvptx/nvptx.cc (write_fn_proto_1, write_fn_proto): New
+	force_public attribute to force .visible.
+	(nvptx_declare_function_name): For "omp target
+	device_ancestor_nohost" attribut, force .visible/TREE_PUBLIC.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_asm): Create .offload_func_table,
+	similar to pre-existing .offload_var_table.
+
+2022-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stddef.h [__STDC_VERSION__ > 201710L] (unreachable):
+	New macro.
+
+2022-09-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR middle-end/106833
+	* tree.cc (verify_opaque_type): New function.
+	(verify_type): Call verify_opaque_type for OPAQUE_TYPE.
+
+2022-09-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FABSVF, LDEXPVF, LDEXPV, FREXPVF_EXP,
+	FREXPVF_MANT, FREXPV_EXP, FREXPV_MANT): Add new builtins.
+	* config/gcn/gcn-protos.h (gcn_dconst1over2pi): New prototype.
+	* config/gcn/gcn-valu.md (MATH_UNOP_1OR2REG, MATH_UNOP_1REG,
+	MATH_UNOP_TRIG): New iterators.
+	(math_unop): New attributes.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>,
+	<math_unop><mode>2, <math_unop><mode>2<exec>,
+	*<math_unop><mode>2_insn, *<math_unop><mode>2<exec>_insn,
+	ldexp<mode>3, ldexp<mode>3<exec>,
+	frexp<mode>_exp2, frexp<mode>_mant2,
+	frexp<mode>_exp2<exec>, frexp<mode>_mant2<exec>): New instructions.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>): New expanders.
+	* config/gcn/gcn.cc (init_ext_gcn_constants): Update definition of
+	dconst1over2pi.
+	(gcn_dconst1over2pi): New.
+	(gcn_builtin_type_index): Add entry for v64df type.
+	(v64df_type_node): New.
+	(gcn_init_builtin_types): Initialize v64df_type_node.
+	(gcn_expand_builtin_1): Expand new builtins to instructions.
+	(print_operand): Fix assembler output for 1/(2*PI) constant.
+	* config/gcn/gcn.md (unspec): Add new entries.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* tree-predcom.cc (ref_at_iteration): Do not associate the
+	constant part of the offset into the MEM_REF offset
+	operand, across a non-zero offset.
+
+2022-09-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (RISCV_USE_CUSTOMISED_MULTI_LIB):
+	Move forward for cover all all necessary functions for suppress
+	unused function warnings.
+	(riscv_multi_lib_check): Move forward, and tweak message to suppress
+	-Werror=format-diag warning.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106881
+	* gimple-predicate-analysis.cc (simple_control_dep_chain):
+	Add only non-fallthru edges and avoid the same set of edges
+	as compute_control_dep_chain_pdom does.
+
+2022-09-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* doc/tm.texi.in (TARGET_OVERRIDES_FORMAT_ATTRIBUTES): Document requirement
+	of TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT being defined as well.
+	* doc/tm.texi: Regenerate.
+
+2022-09-09  Martin Liska  <mliska@suse.cz>
+
+	* optc-save-gen.awk: Always compare array option values with memcmp.
+
 2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/106838

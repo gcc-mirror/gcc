@@ -1,3 +1,31 @@
+2022-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::__compare_exchange):
+	Rename __weak to __is_weak.
+	* testsuite/17_intro/names.cc: Add __weak and __strong.
+
+2022-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106803
+	* include/std/ranges (views::_ZipTransform::operator()): Correct
+	return type in the empty case.
+	(views::_AdjacentTransform::operator()): Likewise.
+
+2022-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106798
+	* include/std/ranges (adjacent_view::_Iterator::_Iterator): Fix
+	typo.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc (test04): New test.
+
+2022-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106766
+	* include/std/ranges (zip_view::_Iterator::operator-): Use
+	__to_unsigned_like instead of make_unsigned_t.
+	(zip_view::_Sentinel::operator-): Likewise.
+	* testsuite/std/ranges/zip/1.cc (test04): New test.
+
 2022-09-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/util/testsuite_performance.h (__gnu_test::MallocInfo): New.

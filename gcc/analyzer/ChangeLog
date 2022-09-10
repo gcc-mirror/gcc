@@ -1,3 +1,71 @@
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (Wanalyzer-exposure-through-uninit-copy): New.
+	* checker-path.cc (region_creation_event::region_creation_event):
+	Add "capacity" and "kind" params.
+	(region_creation_event::get_desc): Generalize to different kinds
+	of event.
+	(checker_path::add_region_creation_event): Convert to...
+	(checker_path::add_region_creation_events): ...this.
+	* checker-path.h (enum rce_kind): New.
+	(region_creation_event::region_creation_event): Add "capacity" and
+	"kind" params.
+	(region_creation_event::m_capacity): New field.
+	(region_creation_event::m_rce_kind): New field.
+	(checker_path::add_region_creation_event): Convert to...
+	(checker_path::add_region_creation_events): ...this.
+	* diagnostic-manager.cc (diagnostic_manager::build_emission_path):
+	Update for multiple region creation events.
+	(diagnostic_manager::add_event_on_final_node): Likewise.
+	(diagnostic_manager::add_events_for_eedge): Likewise.
+	* region-model-impl-calls.cc (call_details::get_logger): New.
+	* region-model.cc: Define INCLUDE_MEMORY before including
+	"system.h".  Include "gcc-rich-location.h".
+	(class record_layout): New.
+	(class exposure_through_uninit_copy): New.
+	(contains_uninit_p): New.
+	(region_model::maybe_complain_about_infoleak): New.
+	* region-model.h (call_details::get_logger): New decl.
+	(region_model::maybe_complain_about_infoleak): New decl.
+	(region_model::mark_as_tainted): New decl.
+	* sm-taint.cc (region_model::mark_as_tainted): New.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class known_function_manager): New forward decl.
+	(class known_function): New.
+	(plugin_analyzer_init_iface::register_known_function): New.
+	* engine.cc: Include "analyzer/known-function-manager.h".
+	(plugin_analyzer_init_impl::plugin_analyzer_init_impl): Add
+	known_fn_mgr param.
+	(plugin_analyzer_init_impl::register_state_machine): Add
+	LOC_SCOPE.
+	(plugin_analyzer_init_impl::register_known_function): New.
+	(plugin_analyzer_init_impl::m_known_fn_mgr): New.
+	(impl_run_checkers): Update plugin callback invocation to use
+	eng's known_function_manager.
+	* known-function-manager.cc: New file.
+	* known-function-manager.h: New file.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Pass logger to
+	m_known_fn_mgr's ctor.
+	* region-model.cc (region_model::update_for_zero_return): New.
+	(region_model::update_for_nonzero_return): New.
+	(maybe_simplify_upper_bound): New.
+	(region_model::maybe_get_copy_bounds): New.
+	(region_model::get_known_function): New.
+	(region_model::on_call_pre): Handle plugin-supplied known
+	functions.
+	* region-model.h: Include "analyzer/known-function-manager.h".
+	(region_model_manager::get_known_function_manager): New.
+	(region_model_manager::m_known_fn_mgr): New.
+	(call_details::get_model): New accessor.
+	(region_model::maybe_get_copy_bounds): New decl.
+	(region_model::update_for_zero_return): New decl.
+	(region_model::update_for_nonzero_return): New decl.
+	(region_model::get_known_function): New decl.
+	(region_model::get_known_function_manager): New.
+
 2022-09-08  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106625

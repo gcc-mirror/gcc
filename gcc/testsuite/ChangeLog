@@ -1,3 +1,62 @@
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: New test.
+	* gcc.dg/plugin/copy_from_user-1.c: New test.
+	* gcc.dg/plugin/infoleak-1.c: New test.
+	* gcc.dg/plugin/infoleak-2.c: New test.
+	* gcc.dg/plugin/infoleak-3.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-1.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-2.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2014-1446-1.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2017-18549-1.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2017-18550-1.c: New test.
+	* gcc.dg/plugin/infoleak-antipatterns-1.c: New test.
+	* gcc.dg/plugin/infoleak-fixit-1.c: New test.
+	* gcc.dg/plugin/infoleak-net-ethtool-ioctl.c: New test.
+	* gcc.dg/plugin/infoleak-vfio_iommu_type1.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	analyzer_kernel_plugin.c and the new test cases.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-4.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-6.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521.h: New test.
+	* gcc.dg/plugin/taint-antipatterns-1.c: New test.
+	* gcc.dg/plugin/test-uaccess.h: New header for tests.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: New test plugin.
+	* gcc.dg/plugin/known-fns-1.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new plugin
+	and test.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98247
+	* gcc.dg/analyzer/flexible-array-member-1.c: New test.
+
+2022-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unreachable-1.c, gcc.dg/c2x-unreachable-1.c: New
+	tests.
+
+2022-09-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR middle-end/106833
+	* gcc.target/powerpc/pr106833.c: New test.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* gcc.dg/torture/pr106892.c: New testcase.
+
 2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/106670

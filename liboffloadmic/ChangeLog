@@ -1,3 +1,8 @@
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_load_image):
+	Add (unused) uint64_t **rev_fn_table argument.
+
 2022-08-25  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

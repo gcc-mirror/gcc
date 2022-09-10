@@ -1,3 +1,31 @@
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Read offload
+	function address table '$offload_func_table' if rev_fn_table
+	is not NULL.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Read
+	.offload_func_table to populate rev_fn_table when requested.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_load_image): Add
+	'uint64_t **rev_fn_table' argument.
+	* oacc-host.c (host_load_image): Likewise.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Likewise;
+	currently unused.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Likewise.
+	* target.c (gomp_load_image_to_device): Update call but pass
+	NULL for now.
+
+2022-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106894
+	* env.c (initialize_env) <case PARSE_BIND>: Use char ** instead of
+	char * for dest[1] initialization from params[1].  Formatting fixes.
+
 2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/106670
