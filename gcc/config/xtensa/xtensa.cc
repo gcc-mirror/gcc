@@ -1142,6 +1142,37 @@ xtensa_constantsynth (rtx dst, HOST_WIDE_INT srcval)
 					  xtensa_constantsynth_rtx_ADDSUBX,
 					  divisor))
 	    return 1;
+
+      /* loading simm12 followed by left/right bitwise rotation:
+	 MOVI + SSAI + SRC.  */
+      if ((srcval & 0x001FF800) == 0
+	  || (srcval & 0x001FF800) == 0x001FF800)
+	{
+	  int32_t v;
+
+	  for (shift = 1; shift < 12; ++shift)
+	    {
+	      v = (int32_t)(((uint32_t)srcval >> shift)
+			    | ((uint32_t)srcval << (32 - shift)));
+	      if (xtensa_simm12b(v))
+		{
+		  emit_move_insn (dst, GEN_INT (v));
+		  emit_insn (gen_rotlsi3 (dst, dst, GEN_INT (shift)));
+		  return 1;
+		}
+	    }
+	  for (shift = 1; shift < 12; ++shift)
+	    {
+	      v = (int32_t)(((uint32_t)srcval << shift)
+			    | ((uint32_t)srcval >> (32 - shift)));
+	      if (xtensa_simm12b(v))
+		{
+		  emit_move_insn (dst, GEN_INT (v));
+		  emit_insn (gen_rotrsi3 (dst, dst, GEN_INT (shift)));
+		  return 1;
+		}
+	    }
+	}
     }
 
   return 0;
