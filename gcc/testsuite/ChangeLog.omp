@@ -1,3 +1,25 @@
+2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/pr104464.c: Xfail on amdgcn.
+	* gcc.dg/signbit-2.c: Likewise.
+	* gcc.dg/signbit-5.c: Likewise.
+	* gcc.dg/vect/bb-slp-68.c: Likewise.
+	* gcc.dg/vect/bb-slp-cond-1.c: Change expectations on amdgcn.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Change expectations for multiple
+	vector sizes.
+	* gcc.dg/vect/pr33953.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-4.c: Likewise.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
+	* lib/target-supports.exp (available_vector_sizes): Add more sizes
+	for amdgcn.
+
 2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Revert:
