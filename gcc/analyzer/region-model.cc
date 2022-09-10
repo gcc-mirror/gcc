@@ -1828,6 +1828,9 @@ region_model::check_region_bounds (const region *reg,
   /* Find out how many bytes were accessed.  */
   const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
   tree num_bytes_tree = maybe_get_integer_cst_tree (num_bytes_sval);
+  /* Bail out if 0 bytes are accessed.  */
+  if (num_bytes_tree && zerop (num_bytes_tree))
+    return;
 
   /* Get the capacity of the buffer.  */
   const svalue *capacity = get_capacity (base_reg);
