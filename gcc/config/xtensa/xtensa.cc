@@ -191,6 +191,7 @@ static bool xtensa_can_eliminate (const int from ATTRIBUTE_UNUSED,
 static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 static bool xtensa_function_ok_for_sibcall (tree, tree);
+static bool xtensa_constant_ok_for_cprop_p (const_rtx);
 static rtx xtensa_delegitimize_address (rtx);
 
 
@@ -345,11 +346,14 @@ static rtx xtensa_delegitimize_address (rtx);
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
-#undef TARGET_DELEGITIMIZE_ADDRESS
-#define TARGET_DELEGITIMIZE_ADDRESS xtensa_delegitimize_address
-
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL xtensa_function_ok_for_sibcall
+
+#undef TARGET_CONSTANT_OK_FOR_CPROP_P
+#define TARGET_CONSTANT_OK_FOR_CPROP_P xtensa_constant_ok_for_cprop_p
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS xtensa_delegitimize_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4978,6 +4982,16 @@ xtensa_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED, tree exp ATTRIBUTE_U
 {
   /* Do not allow sibcalls when windowed registers ABI is in effect.  */
   if (TARGET_WINDOWED_ABI)
+    return false;
+
+  return true;
+}
+
+/* Implement TARGET_CONSTANT_OK_FOR_CPROP_P.  */
+static bool
+xtensa_constant_ok_for_cprop_p (const_rtx x)
+{
+  if (CONST_INT_P (x) && ! xtensa_simm12b (INTVAL (x)))
     return false;
 
   return true;
