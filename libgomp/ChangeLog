@@ -1,3 +1,7 @@
+2022-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* env.c (initialize_env): Include libiberty environ.h.
+
 2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Read offload

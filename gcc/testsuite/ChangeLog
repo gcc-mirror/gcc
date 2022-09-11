@@ -1,3 +1,14 @@
+2022-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/constsynth_3insns.c (test_4):
+	Add new test function.
+
+2022-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/95644
+	* gfortran.dg/ieee/fma_1.f90: New test.
+	* gfortran.dg/ieee/signbit_1.f90: New test.
+
 2022-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/analyzer_kernel_plugin.c: New test.

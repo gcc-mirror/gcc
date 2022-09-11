@@ -1,3 +1,8 @@
+2022-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/95644
+	* ieee/ieee_arithmetic.F90: Add IEEE_SIGNBIT and IEEE_FMA.
+
 2022-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/106579

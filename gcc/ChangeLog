@@ -1,3 +1,13 @@
+2022-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_constantsynth):
+	Add new pattern for the abovementioned case.
+
+2022-09-10  Akari Takahashi  <akaritakahashioss@gmail.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.cc (get_memref_parts): Regularize some code.
+
 2022-09-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md: Rewrite the split pattern that performs
