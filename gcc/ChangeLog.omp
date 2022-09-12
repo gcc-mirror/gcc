@@ -3,6 +3,21 @@
 	Backport from mainline:
 	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
+	* config/nvptx/mkoffload.cc (struct id_map): Add 'dim' member.
+	(record_id): Store func name without quotes, store dim separately.
+	(process): For GOMP_REQUIRES_REVERSE_OFFLOAD, check that -march is
+	at least sm_35, create '$offload_func_table' global array and init
+	with reverse-offload function addresses.
+	* config/nvptx/nvptx.cc (write_fn_proto_1, write_fn_proto): New
+	force_public attribute to force .visible.
+	(nvptx_declare_function_name): For "omp target
+	device_ancestor_nohost" attribut, force .visible/TREE_PUBLIC.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
 	* config/gcn/mkoffload.cc (process_asm): Create .offload_func_table,
 	similar to pre-existing .offload_var_table.
 

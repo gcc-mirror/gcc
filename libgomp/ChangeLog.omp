@@ -3,6 +3,15 @@
 	Backport from mainline:
 	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Read offload
+	function address table '$offload_func_table' if rev_fn_table
+	is not NULL.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Read
 	.offload_func_table to populate rev_fn_table when requested.
 
