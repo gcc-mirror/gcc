@@ -46,6 +46,31 @@ private:
    */
   void check_function_call (HirId fn_id, Location locus);
 
+  /* All possible const contexts */
+  enum class ConstGenericCtx
+  {
+    Function,
+    TypeAlias,
+    Struct,
+    Enum,
+    Union,
+    Trait,
+    Impl
+  };
+
+  /* Get the string representation of a const context */
+  const char *ctx_to_str (ConstGenericCtx ctx);
+
+  /* Check if a const context allows default values */
+  bool ctx_allows_default (ConstGenericCtx ctx);
+
+  /**
+   * Check that const generic parameters only contains defaults in allowed
+   * contexts
+   */
+  void check_default_const_generics (
+    std::vector<std::unique_ptr<GenericParam>> &param, ConstGenericCtx context);
+
   StackedContexts<HirId> const_context;
   Resolver::Resolver &resolver;
   Analysis::Mappings &mappings;
