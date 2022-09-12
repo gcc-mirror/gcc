@@ -81,7 +81,8 @@ static int
 host_load_image (int n __attribute__ ((unused)),
 		 unsigned v __attribute__ ((unused)),
 		 const void *t __attribute__ ((unused)),
-		 struct addr_pair **r __attribute__ ((unused)))
+		 struct addr_pair **r __attribute__ ((unused)),
+		 uint64_t **f __attribute__ ((unused)))
 {
   return 0;
 }
