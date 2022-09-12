@@ -60,6 +60,7 @@
 #endif /* LIBGOMP_OFFLOADED_ONLY */
 
 #include "secure_getenv.h"
+#include "environ.h"
 
 /* Default values of ICVs according to the OpenMP standard.  */
 const struct gomp_default_icv gomp_default_icv_values = {
@@ -2033,7 +2034,6 @@ startswith (const char *str, const char *prefix)
 static void __attribute__((constructor))
 initialize_env (void)
 {
-  extern char **environ;
   char **env;
   int omp_var, dev_num = 0, dev_num_len = 0, i;
   bool ignore = false;
