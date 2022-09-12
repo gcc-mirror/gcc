@@ -3,6 +3,21 @@
 	Backport from mainline:
 	2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
+	* libgomp.texi (Offload-Target Specifics: nvptx): Document
+	that reverse offload requires >= -march=sm_35.
+	* testsuite/libgomp.c-c++-common/requires-4.c: Build for nvptx
+	with -misa=sm_35.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-6.c: Likewise.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1.c: Likewise.
+	* testsuite/libgomp.fortran/reverse-offload-1.f90: Likewise.
+	* testsuite/libgomp.c/reverse-offload-sm30.c: New test.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
 	* libgomp.texi (OpenMP 5.1 Impl. Status): Add two new minor items.
 	(OpenMP 5.2 Impl. Status): Improve omp/omx/ompx wording.
 
