@@ -1,3 +1,9 @@
+2022-09-11  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106845
+	* gcc.dg/analyzer/out-of-bounds-zero.c: New test.
+	* gcc.dg/analyzer/pr106845.c: New test.
+
 2022-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* gcc.target/xtensa/constsynth_3insns.c (test_4):

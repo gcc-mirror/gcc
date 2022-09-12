@@ -1,3 +1,17 @@
+2022-09-11  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106845
+	* region-model.cc (region_model::check_region_bounds):
+	Bail out if 0 bytes were accessed.
+	* store.cc (byte_range::dump_to_pp):
+	Add special case for empty ranges.
+	(byte_range::exceeds_p): Restrict to non-empty ranges.
+	(byte_range::falls_short_of_p): Restrict to non-empty ranges.
+	* store.h (bit_range::empty_p): New function.
+	(bit_range::get_last_byte_offset): Restrict to non-empty ranges.
+	(byte_range::empty_p): New function.
+	(byte_range::get_last_byte_offset): Restrict to non-empty ranges.
+
 2022-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.opt (Wanalyzer-exposure-through-uninit-copy): New.
