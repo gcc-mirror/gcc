@@ -142,7 +142,7 @@ package body Debug is
    --  d_a  Stop elaboration checks on accept or select statement
    --  d_b  Use designated type model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
-   --  d_d
+   --  d_d  CUDA compilation : compile for the device
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
    --  d_g  Disable large static aggregates
@@ -189,7 +189,7 @@ package body Debug is
    --  d_U  Disable prepending messages with "error:".
    --  d_V  Enable verifications on the expanded tree
    --  d_W
-   --  d_X  Disable assertions to check matching of extra formals
+   --  d_X
    --  d_Y
    --  d_Z
 
@@ -345,8 +345,8 @@ package body Debug is
 
    --  d_a  Ignore the effects of pragma Elaborate_All
    --  d_b  Ignore the effects of pragma Elaborate_Body
-   --  d_c
-   --  d_d
+   --  d_c  CUDA compilation : compile/bind for the host
+   --  d_d  CUDA compilation : compile/bind for the device
    --  d_e  Ignore the effects of pragma Elaborate
    --  d_f
    --  d_g
@@ -1044,10 +1044,6 @@ package body Debug is
    --  d_V  Enable verification of the expanded code before calling the backend
    --       and generate error messages on each inconsistency found.
 
-   --  d_X  Disable assertions to check matching of extra formals; switch added
-   --       temporarily to disable these checks until this work is complete if
-   --       they cause unexpected assertion failures.
-
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
    --       debugging errors caused by expanded code, where the source location
@@ -1092,9 +1088,6 @@ package body Debug is
    --  d8   This forces the packed stuff to generate code assuming the
    --       opposite endianness from the actual correct value. Useful in
    --       testing out code generation from the packed routines.
-
-   --  d9   This allows lock free implementation for protected objects
-   --       (see Exp_Ch9).
 
    --  d.1  Sets Opt.Unnest_Subprogram_Mode to enable unnesting of subprograms.
    --       This special pass does not actually unnest things, but it ensures

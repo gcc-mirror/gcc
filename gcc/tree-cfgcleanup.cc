@@ -220,9 +220,10 @@ cleanup_call_ctrl_altering_flag (basic_block bb, gimple *bb_end)
     return;
 
   int flags = gimple_call_flags (bb_end);
-  if (((flags & (ECF_CONST | ECF_PURE))
-       && !(flags & ECF_LOOPING_CONST_OR_PURE))
-      || (flags & ECF_LEAF))
+  if (!(flags & ECF_NORETURN)
+      && (((flags & (ECF_CONST | ECF_PURE))
+	   && !(flags & ECF_LOOPING_CONST_OR_PURE))
+	  || (flags & ECF_LEAF)))
     gimple_call_set_ctrl_altering (bb_end, false);
   else
     {
@@ -328,6 +329,10 @@ cleanup_control_flow_bb (basic_block bb)
 	gsi_remove (&gsi, true);
       if (remove_fallthru_edge (bb->succs))
 	retval = true;
+      tree lhs = gimple_call_lhs (stmt);
+      if (!lhs
+	  || !should_remove_lhs_p (lhs))
+	gimple_call_set_ctrl_altering (stmt, true);
     }
 
   return retval;

@@ -1,3 +1,133 @@
+2022-09-11  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106845
+	* gcc.dg/analyzer/out-of-bounds-zero.c: New test.
+	* gcc.dg/analyzer/pr106845.c: New test.
+
+2022-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/constsynth_3insns.c (test_4):
+	Add new test function.
+
+2022-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/95644
+	* gfortran.dg/ieee/fma_1.f90: New test.
+	* gfortran.dg/ieee/signbit_1.f90: New test.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: New test.
+	* gcc.dg/plugin/copy_from_user-1.c: New test.
+	* gcc.dg/plugin/infoleak-1.c: New test.
+	* gcc.dg/plugin/infoleak-2.c: New test.
+	* gcc.dg/plugin/infoleak-3.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-1.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-2.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2014-1446-1.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2017-18549-1.c: New test.
+	* gcc.dg/plugin/infoleak-CVE-2017-18550-1.c: New test.
+	* gcc.dg/plugin/infoleak-antipatterns-1.c: New test.
+	* gcc.dg/plugin/infoleak-fixit-1.c: New test.
+	* gcc.dg/plugin/infoleak-net-ethtool-ioctl.c: New test.
+	* gcc.dg/plugin/infoleak-vfio_iommu_type1.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	analyzer_kernel_plugin.c and the new test cases.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-4.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5-fixed.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-6.c: New test.
+	* gcc.dg/plugin/taint-CVE-2011-0521.h: New test.
+	* gcc.dg/plugin/taint-antipatterns-1.c: New test.
+	* gcc.dg/plugin/test-uaccess.h: New header for tests.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: New test plugin.
+	* gcc.dg/plugin/known-fns-1.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new plugin
+	and test.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98247
+	* gcc.dg/analyzer/flexible-array-member-1.c: New test.
+
+2022-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unreachable-1.c, gcc.dg/c2x-unreachable-1.c: New
+	tests.
+
+2022-09-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR middle-end/106833
+	* gcc.target/powerpc/pr106833.c: New test.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106892
+	* gcc.dg/torture/pr106892.c: New testcase.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/106670
+	* c-c++-common/gomp/ompx-1.c: New test.
+	* c-c++-common/gomp/ompx-2.c: New test.
+	* g++.dg/gomp/ompx-attrs-1.C: New test.
+	* gfortran.dg/gomp/ompx-1.f90: New test.
+	* gfortran.dg/gomp/omx-1.f: New test.
+	* gfortran.dg/gomp/omx-2.f: New test.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106838
+	* g++.dg/ext/array4.C: Fix invalid use of __is_constructible.
+	* g++.dg/ext/unary_trait_incomplete.C: Fix tests for traits with
+	different requirements.
+
+2022-09-08  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106625
+	* gcc.dg/analyzer/data-model-1.c: Change expected result.
+	* gcc.dg/analyzer/out-of-bounds-5.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-realloc-grow.c: New test.
+	* gcc.dg/analyzer/symbolic-gt-1.c: New test.
+
+2022-09-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106886
+	* gcc.dg/vect/bb-slp-layout-21.c: New test.
+
+2022-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99209
+	* g++.dg/cpp2a/lambda-uneval17.C: New test.
+
+2022-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99130
+	* g++.dg/cpp0x/constexpr-decltype5.C: New test.
+
+2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/doacross-7.c: New test.
+
+2022-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106881
+	* gcc.dg/uninit-pr106881.c: New testcase.
+
+2022-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/106872
+	* gcc.dg/uninit-pred-12.c: Adjust.
+
 2022-09-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106793

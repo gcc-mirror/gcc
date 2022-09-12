@@ -2504,6 +2504,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
 		     _CharT __c);
 
+      __attribute__((__noinline__, __noclone__, __cold__)) void
+      _M_replace_cold(pointer __p, size_type __len1, const _CharT* __s,
+		      const size_type __len2, const size_type __how_much);
+
       _GLIBCXX20_CONSTEXPR
       basic_string&
       _M_replace(size_type __pos, size_type __len1, const _CharT* __s,

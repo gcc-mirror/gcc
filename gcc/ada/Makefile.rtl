@@ -110,14 +110,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-cbprqu$(objext) \
   a-cbsyqu$(objext) \
   a-cdlili$(objext) \
-  a-cfdlli$(objext) \
-  a-cfhama$(objext) \
-  a-cfhase$(objext) \
-  a-cfidll$(objext) \
-  a-cfinve$(objext) \
-  a-cfinse$(objext) \
-  a-cforma$(objext) \
-  a-cforse$(objext) \
   a-cgaaso$(objext) \
   a-cgarso$(objext) \
   a-cgcaso$(objext) \
@@ -144,14 +136,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-clrefi$(objext) \
   a-coboho$(objext) \
   a-cobove$(objext) \
-  a-cofove$(objext) \
-  a-cofuba$(objext) \
-  a-cofuma$(objext) \
-  a-cofuse$(objext) \
-  a-cofuve$(objext) \
   a-cogeso$(objext) \
-  a-cohama$(objext) \
-  a-cohase$(objext) \
   a-cohata$(objext) \
   a-coinho$(objext) \
   a-coinve$(objext) \

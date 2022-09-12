@@ -237,6 +237,11 @@ struct bit_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  bool empty_p () const
+  {
+    return m_size_in_bits == 0;
+  }
+
   bit_offset_t get_start_bit_offset () const
   {
     return m_start_bit_offset;
@@ -247,6 +252,7 @@ struct bit_range
   }
   bit_offset_t get_last_bit_offset () const
   {
+    gcc_assert (!empty_p ());
     return get_next_bit_offset () - 1;
   }
 
@@ -297,6 +303,11 @@ struct byte_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  bool empty_p () const
+  {
+    return m_size_in_bytes == 0;
+  }
+
   bool contains_p (byte_offset_t offset) const
   {
     return (offset >= get_start_byte_offset ()
@@ -329,6 +340,7 @@ struct byte_range
   }
   byte_offset_t get_last_byte_offset () const
   {
+    gcc_assert (!empty_p ());
     return m_start_byte_offset + m_size_in_bytes - 1;
   }
 

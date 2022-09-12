@@ -2592,6 +2592,8 @@ package body Exp_Unst is
                  and then Is_Library_Level_Entity (Spec_Id)
                then
                   Unnest_Subprogram (Spec_Id, N);
+               else
+                  return Skip;
                end if;
             end;
 

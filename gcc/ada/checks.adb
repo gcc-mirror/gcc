@@ -9951,8 +9951,8 @@ package body Checks is
       --    Typ'Length /= Exp'Length
 
       function Length_Mismatch_Info_Message
-        (Left_Element_Count  : Uint;
-         Right_Element_Count : Uint) return String;
+        (Left_Element_Count  : Unat;
+         Right_Element_Count : Unat) return String;
       --  Returns a message indicating how many elements were expected
       --  (Left_Element_Count) and how many were found (Right_Element_Count).
 
@@ -10150,14 +10150,14 @@ package body Checks is
       ----------------------------------
 
       function Length_Mismatch_Info_Message
-        (Left_Element_Count  : Uint;
-         Right_Element_Count : Uint) return String
+        (Left_Element_Count  : Unat;
+         Right_Element_Count : Unat) return String
       is
 
-         function Plural_Vs_Singular_Ending (Count : Uint) return String;
+         function Plural_Vs_Singular_Ending (Count : Unat) return String;
          --  Returns an empty string if Count is 1; otherwise returns "s"
 
-         function Plural_Vs_Singular_Ending (Count : Uint) return String is
+         function Plural_Vs_Singular_Ending (Count : Unat) return String is
          begin
             if Count = 1 then
                return "";
@@ -10167,12 +10167,19 @@ package body Checks is
          end Plural_Vs_Singular_Ending;
 
       begin
-         return "expected " & UI_Image (Left_Element_Count)
+         return "expected "
+                  & UI_Image (Left_Element_Count, Format => Decimal)
                   & " element"
                   & Plural_Vs_Singular_Ending (Left_Element_Count)
-                  & "; found " & UI_Image (Right_Element_Count)
+                  & "; found "
+                  & UI_Image (Right_Element_Count, Format => Decimal)
                   & " element"
                   & Plural_Vs_Singular_Ending (Right_Element_Count);
+         --  "Format => Decimal" above is needed because otherwise UI_Image
+         --  can sometimes return a hexadecimal number 16#...#, but "#" means
+         --  something special to Errout. A previous version used the default
+         --  Auto, which was essentially the same bug as documented here:
+         --  https://xkcd.com/327/ .
       end Length_Mismatch_Info_Message;
 
       -----------------
@@ -10371,14 +10378,14 @@ package body Checks is
                            if L_Length > R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
-                                  (Wnode, "too few elements for}??", T_Typ,
+                                  (Wnode, "too few elements for}!!??", T_Typ,
                                    Extra_Msg => Length_Mismatch_Info_Message
                                                   (L_Length, R_Length)));
 
                            elsif L_Length < R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
-                                  (Wnode, "too many elements for}??", T_Typ,
+                                  (Wnode, "too many elements for}!!??", T_Typ,
                                    Extra_Msg => Length_Mismatch_Info_Message
                                                   (L_Length, R_Length)));
                            end if;

@@ -821,8 +821,9 @@ handle_abnormal_edges (basic_block *dispatcher_bbs, basic_block for_bb,
       else
 	{
 	  tree arg = inner ? boolean_true_node : boolean_false_node;
-	  gimple *g = gimple_build_call_internal (IFN_ABNORMAL_DISPATCHER,
+	  gcall *g = gimple_build_call_internal (IFN_ABNORMAL_DISPATCHER,
 						 1, arg);
+	  gimple_call_set_ctrl_altering (g, true);
 	  gimple_stmt_iterator gsi = gsi_after_labels (*dispatcher);
 	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 

@@ -316,8 +316,20 @@ package body Sem_Util is
                --  Ignore transient scopes made during expansion
 
                if Comes_From_Source (Node_Par) then
-                  return
-                    Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                  --  Note that in some rare cases the scope depth may not be
+                  --  set, for example, when we are in the middle of analyzing
+                  --  a type and the enclosing scope is said type. So, instead,
+                  --  continue to move up the parent chain since the scope
+                  --  depth of the type's parent is the same as that of the
+                  --  type.
+
+                  if not Scope_Depth_Set (Encl_Scop) then
+                     pragma Assert (Nkind (Parent (Encl_Scop))
+                                     = N_Full_Type_Declaration);
+                  else
+                     return
+                       Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                  end if;
                end if;
 
             --  For a return statement within a function, return
@@ -597,6 +609,7 @@ package body Sem_Util is
                --  Anonymous access types
 
                elsif Nkind (Pre) in N_Has_Entity
+                 and then Ekind (Entity (Pre)) not in Subprogram_Kind
                  and then Present (Get_Dynamic_Accessibility (Entity (Pre)))
                  and then Level = Dynamic_Level
                then
@@ -6691,8 +6704,6 @@ package body Sem_Util is
       Wmsg : Boolean;
       Eloc : Source_Ptr;
 
-   --  Start of processing for Compile_Time_Constraint_Error
-
    begin
       --  If this is a warning, convert it into an error if we are in code
       --  subject to SPARK_Mode being set On, unless Warn is True to force a
@@ -7184,7 +7195,51 @@ package body Sem_Util is
       Typ  : constant Entity_Id := Find_Dispatching_Type (Ancestor_Op);
       Elmt : Elmt_Id;
       Subp : Entity_Id;
-      Prim : Entity_Id;
+
+      function Profile_Matches_Ancestor (S : Entity_Id) return Boolean;
+      --  Returns True if subprogram S has the proper profile for an
+      --  overriding of Ancestor_Op (that is, corresponding formals either
+      --  have the same type, or are corresponding controlling formals,
+      --  and similarly for result types).
+
+      ------------------------------
+      -- Profile_Matches_Ancestor --
+      ------------------------------
+
+      function Profile_Matches_Ancestor (S : Entity_Id) return Boolean is
+         F1 : Entity_Id := First_Formal (Ancestor_Op);
+         F2 : Entity_Id := First_Formal (S);
+
+      begin
+         if Ekind (Ancestor_Op) /= Ekind (S) then
+            return False;
+         end if;
+
+         --  ??? This should probably account for anonymous access formals,
+         --  but the parent function (Corresponding_Primitive_Op) is currently
+         --  only called for user-defined literal functions, which can't have
+         --  such formals. But if this is ever used in a more general context
+         --  it should be extended to handle such formals (and result types).
+
+         while Present (F1) and then Present (F2) loop
+            if Etype (F1) = Etype (F2)
+              or else Is_Ancestor (Typ, Etype (F2))
+            then
+               Next_Formal (F1);
+               Next_Formal (F2);
+            else
+               return False;
+            end if;
+         end loop;
+
+         return No (F1)
+           and then No (F2)
+           and then (Etype (Ancestor_Op) = Etype (S)
+                      or else Is_Ancestor (Typ, Etype (S)));
+      end Profile_Matches_Ancestor;
+
+   --  Start of processing for Corresponding_Primitive_Op
+
    begin
       pragma Assert (Is_Dispatching_Operation (Ancestor_Op));
       pragma Assert (Is_Ancestor (Typ, Descendant_Type)
@@ -7195,12 +7250,12 @@ package body Sem_Util is
       while Present (Elmt) loop
          Subp := Node (Elmt);
 
-         --  For regular primitives we only need to traverse the chain of
-         --  ancestors when the name matches the name of Ancestor_Op, but
-         --  for predefined dispatching operations we cannot rely on the
-         --  name of the primitive to identify a candidate since their name
-         --  is internally built adding a suffix to the name of the tagged
-         --  type.
+         --  For regular primitives we need to check the profile against
+         --  the ancestor when the name matches the name of Ancestor_Op,
+         --  but for predefined dispatching operations we cannot rely on
+         --  the name of the primitive to identify a candidate since their
+         --  name is internally built by adding a suffix to the name of the
+         --  tagged type.
 
          if Chars (Subp) = Chars (Ancestor_Op)
            or else Is_Predefined_Dispatching_Operation (Subp)
@@ -7216,26 +7271,10 @@ package body Sem_Util is
                   return Alias (Subp);
                end if;
 
-            --  Traverse the chain of ancestors searching for Ancestor_Op.
-            --  Overridden primitives have attribute Overridden_Operation;
-            --  inherited primitives have attribute Alias.
+            --  Otherwise, return subprogram when profile matches its ancestor
 
-            else
-               Prim := Subp;
-
-               while Present (Overridden_Operation (Prim))
-                 or else Present (Alias (Prim))
-               loop
-                  if Present (Overridden_Operation (Prim)) then
-                     Prim := Overridden_Operation (Prim);
-                  else
-                     Prim := Alias (Prim);
-                  end if;
-
-                  if Prim = Ancestor_Op then
-                     return Subp;
-                  end if;
-               end loop;
+            elsif Profile_Matches_Ancestor (Subp) then
+               return Subp;
             end if;
          end if;
 
@@ -14096,9 +14135,10 @@ package body Sem_Util is
       if Subp_Nam = Name_uFinalizer then
          return False;
 
-      --  _Postconditions procedure
+      --  _Wrapped_Statements procedure which gets generated as part of the
+      --  expansion of postconditions.
 
-      elsif Subp_Nam = Name_uPostconditions then
+      elsif Subp_Nam = Name_uWrapped_Statements then
          return False;
 
       --  Predicate function
@@ -21622,8 +21662,22 @@ package body Sem_Util is
            N_String_Literal  => Aspect_String_Literal);
 
    begin
-      return Nkind (N) in N_Numeric_Or_String_Literal
-        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N))));
+      --  Return True when N is either a literal or a named number and the
+      --  type has the appropriate user-defined literal aspect.
+
+      return (Nkind (N) in N_Numeric_Or_String_Literal
+        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N)))))
+          or else
+            (Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then
+                ((Ekind (Entity (N)) = E_Named_Integer
+                    and then
+                      Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+                   or else
+                     (Ekind (Entity (N)) = E_Named_Real
+                        and then
+                          Present (Find_Aspect (Typ, Aspect_Real_Literal)))));
    end Is_User_Defined_Literal;
 
    --------------------------------------
@@ -23226,12 +23280,9 @@ package body Sem_Util is
 
          return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
 
-      --  Remaining cases require Ada 2012 mode, unless they are dispatching
-      --  operations, since they may be overridden by Ada_2012 primitives.
+      --  Remaining cases require Ada 2012 mode
 
-      elsif Ada_Version < Ada_2012
-        and then not Is_Dispatching_Operation (Func_Id)
-      then
+      elsif Ada_Version < Ada_2012 then
          return False;
 
       --  Handle the situation where a result is an anonymous access type
@@ -27976,8 +28027,18 @@ package body Sem_Util is
       E : Entity_Id) return Boolean
    is
       Subp_Alias : constant Entity_Id := Alias (S);
+      Subp       : Entity_Id := E;
    begin
-      return S = E or else (Present (Subp_Alias) and then Subp_Alias = E);
+      --  During expansion of subprograms with postconditions the original
+      --  subprogram's declarations and statements get wrapped into a local
+      --  _Wrapped_Statements subprogram.
+
+      if Chars (Subp) = Name_uWrapped_Statements then
+         Subp := Enclosing_Subprogram (Subp);
+      end if;
+
+      return S = Subp
+        or else (Present (Subp_Alias) and then Subp_Alias = Subp);
    end Same_Or_Aliased_Subprograms;
 
    ---------------
@@ -32425,7 +32486,7 @@ package body Sem_Util is
                and then Ekind (Scope (T))
                  in E_Entry | E_Entry_Family | E_Function | E_Procedure
                and then
-                 (Present (Postconditions_Proc (Scope (T)))
+                 (Present (Wrapped_Statements (Scope (T)))
                   or else Present (Contract (Scope (T))))
             then
                --  ??? Should define a flag for this. We could incorrectly

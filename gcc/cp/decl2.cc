@@ -2851,7 +2851,7 @@ determine_visibility (tree decl)
   if (class_type)
     determine_visibility_from_class (decl, class_type);
 
-  if (decl_anon_ns_mem_p (decl))
+  if (decl_internal_context_p (decl))
     /* Names in an anonymous namespace get internal linkage.  */
     constrain_visibility (decl, VISIBILITY_ANON, false);
   else if (TREE_CODE (decl) != TYPE_DECL)
@@ -2965,16 +2965,21 @@ constrain_class_visibility (tree type)
 		  {
 		    if (same_type_p (TREE_TYPE (t), nlt))
 		      warning (OPT_Wsubobject_linkage, "\
-%qT has a field %qD whose type has no linkage",
+%qT has a field %q#D whose type has no linkage",
 			       type, t);
 		    else
 		      warning (OPT_Wsubobject_linkage, "\
 %qT has a field %qD whose type depends on the type %qT which has no linkage",
 			       type, t, nlt);
 		  }
-		else
+		else if (cxx_dialect > cxx98
+			 && !decl_anon_ns_mem_p (ftype))
 		  warning (OPT_Wsubobject_linkage, "\
-%qT has a field %qD whose type uses the anonymous namespace",
+%qT has a field %q#D whose type has internal linkage",
+			   type, t);
+		else // In C++98 this can only happen with unnamed namespaces.
+		  warning (OPT_Wsubobject_linkage, "\
+%qT has a field %q#D whose type uses the anonymous namespace",
 			   type, t);
 	      }
 	  }
@@ -2989,28 +2994,34 @@ constrain_class_visibility (tree type)
   binfo = TYPE_BINFO (type);
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, t); ++i)
     {
-      int subvis = type_visibility (TREE_TYPE (t));
+      tree btype = BINFO_TYPE (t);
+      int subvis = type_visibility (btype);
 
       if (subvis == VISIBILITY_ANON)
         {
 	  if (!in_main_input_context())
 	    {
-	      tree nlt = no_linkage_check (TREE_TYPE (t), /*relaxed_p=*/false);
+	      tree nlt = no_linkage_check (btype, /*relaxed_p=*/false);
 	      if (nlt)
 		{
-		  if (same_type_p (TREE_TYPE (t), nlt))
+		  if (same_type_p (btype, nlt))
 		    warning (OPT_Wsubobject_linkage, "\
-%qT has a base %qT whose type has no linkage",
-			     type, TREE_TYPE (t));
+%qT has a base %qT which has no linkage",
+			     type, btype);
 		  else
 		    warning (OPT_Wsubobject_linkage, "\
-%qT has a base %qT whose type depends on the type %qT which has no linkage",
-			     type, TREE_TYPE (t), nlt);
+%qT has a base %qT which depends on the type %qT which has no linkage",
+			     type, btype, nlt);
 		}
-	      else
+	      else if (cxx_dialect > cxx98
+		       && !decl_anon_ns_mem_p (btype))
 		warning (OPT_Wsubobject_linkage, "\
-%qT has a base %qT whose type uses the anonymous namespace",
-			 type, TREE_TYPE (t));
+%qT has a base %qT which has internal linkage",
+			 type, btype);
+	      else // In C++98 this can only happen with unnamed namespaces.
+		warning (OPT_Wsubobject_linkage, "\
+%qT has a base %qT which uses the anonymous namespace",
+			 type, btype);
 	    }
 	}
       else if (vis < VISIBILITY_HIDDEN
@@ -5381,24 +5392,15 @@ possibly_inlined_p (tree decl)
   return true;
 }
 
-/* Normally, we can wait until instantiation-time to synthesize DECL.
-   However, if DECL is a static data member initialized with a constant
-   or a constexpr function, we need it right now because a reference to
-   such a data member or a call to such function is not value-dependent.
-   For a function that uses auto in the return type, we need to instantiate
-   it to find out its type.  For OpenMP user defined reductions, we need
-   them instantiated for reduction clauses which inline them by hand
-   directly.  */
+/* If DECL is a function or variable template specialization, instantiate
+   its definition now.  */
 
 void
 maybe_instantiate_decl (tree decl)
 {
-  if (DECL_LANG_SPECIFIC (decl)
+  if (VAR_OR_FUNCTION_DECL_P (decl)
+      && DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
-      && (decl_maybe_constant_var_p (decl)
-	  || (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_OMP_DECLARE_REDUCTION_P (decl))
-	  || undeduced_auto_decl (decl))
       && !DECL_DECLARED_CONCEPT_P (decl)
       && !uses_template_parms (DECL_TI_ARGS (decl)))
     {
@@ -5700,15 +5702,13 @@ mark_used (tree decl, tsubst_flags_t complain)
       return false;
     }
 
-  /* Normally, we can wait until instantiation-time to synthesize DECL.
-     However, if DECL is a static data member initialized with a constant
-     or a constexpr function, we need it right now because a reference to
-     such a data member or a call to such function is not value-dependent.
-     For a function that uses auto in the return type, we need to instantiate
-     it to find out its type.  For OpenMP user defined reductions, we need
-     them instantiated for reduction clauses which inline them by hand
-     directly.  */
-  maybe_instantiate_decl (decl);
+  /* If DECL has a deduced return type, we need to instantiate it now to
+     find out its type.  For OpenMP user defined reductions, we need them
+     instantiated for reduction clauses which inline them by hand directly.  */
+  if (undeduced_auto_decl (decl)
+      || (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
+    maybe_instantiate_decl (decl);
 
   if (processing_template_decl || in_template_function ())
     return true;

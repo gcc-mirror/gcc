@@ -12043,7 +12043,8 @@ If defined, this macro is the number of entries in
 If defined, this macro is the name of a global variable containing
 target-specific format overrides for the @option{-Wformat} option. The
 default is to have no target-specific format overrides. If defined,
-@code{TARGET_FORMAT_TYPES} must be defined, too.
+@code{TARGET_FORMAT_TYPES} and @code{TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT}
+must be defined, too.
 @end defmac
 
 @defmac TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT

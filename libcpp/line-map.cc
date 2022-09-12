@@ -85,27 +85,38 @@ location_adhoc_data_eq (const void *l1, const void *l2)
 	  && lb1->data == lb2->data);
 }
 
-/* Update the hashtable when location_adhoc_data is reallocated.  */
+/* Update the hashtable when location_adhoc_data_map::data is reallocated.
+   The param is an array of two pointers, the previous value of the data
+   pointer, and then the new value.  The pointers stored in the hash map
+   are then rebased to be relative to the new data pointer instead of the
+   old one.  */
 
 static int
-location_adhoc_data_update (void **slot, void *data)
+location_adhoc_data_update (void **slot_v, void *param_v)
 {
-  *((char **) slot)
-    = (char *) ((uintptr_t) *((char **) slot) + *((ptrdiff_t *) data));
+  const auto slot = reinterpret_cast<location_adhoc_data **> (slot_v);
+  const auto param = static_cast<location_adhoc_data **> (param_v);
+  *slot = (*slot - param[0]) + param[1];
   return 1;
 }
 
-/* Rebuild the hash table from the location adhoc data.  */
+/* The adhoc data hash table is not part of the GGC infrastructure, so it was
+   not initialized when SET was reconstructed from PCH; take care of that by
+   rebuilding it from scratch.  */
 
 void
 rebuild_location_adhoc_htab (line_maps *set)
 {
-  unsigned i;
   set->location_adhoc_data_map.htab =
       htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
-  for (i = 0; i < set->location_adhoc_data_map.curr_loc; i++)
-    htab_find_slot (set->location_adhoc_data_map.htab,
-		    set->location_adhoc_data_map.data + i, INSERT);
+  for (auto p = set->location_adhoc_data_map.data,
+	    end = p + set->location_adhoc_data_map.curr_loc;
+      p != end; ++p)
+    {
+      const auto slot = reinterpret_cast<location_adhoc_data **>
+	(htab_find_slot (set->location_adhoc_data_map.htab, p, INSERT));
+      *slot = p;
+    }
 }
 
 /* Helper function for get_combined_adhoc_loc.
@@ -211,8 +222,7 @@ get_combined_adhoc_loc (line_maps *set,
       if (set->location_adhoc_data_map.curr_loc >=
 	  set->location_adhoc_data_map.allocated)
 	{
-	  char *orig_data = (char *) set->location_adhoc_data_map.data;
-	  ptrdiff_t offset;
+	  const auto orig_data = set->location_adhoc_data_map.data;
 	  /* Cast away extern "C" from the type of xrealloc.  */
 	  line_map_realloc reallocator = (set->reallocator
 					  ? set->reallocator
@@ -226,10 +236,13 @@ get_combined_adhoc_loc (line_maps *set,
 	      reallocator (set->location_adhoc_data_map.data,
 			   set->location_adhoc_data_map.allocated
 			   * sizeof (struct location_adhoc_data));
-	  offset = (char *) (set->location_adhoc_data_map.data) - orig_data;
 	  if (set->location_adhoc_data_map.allocated > 128)
-	    htab_traverse (set->location_adhoc_data_map.htab,
-			   location_adhoc_data_update, &offset);
+	    {
+	      location_adhoc_data *param[2]
+		= {orig_data, set->location_adhoc_data_map.data};
+	      htab_traverse (set->location_adhoc_data_map.htab,
+			     location_adhoc_data_update, param);
+	    }
 	}
       *slot = set->location_adhoc_data_map.data
 	      + set->location_adhoc_data_map.curr_loc;

@@ -30,6 +30,8 @@
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-nios2.so.1"
+
+#undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER  "/lib/ld-musl-nios2.so.1"
 
 #undef LINK_SPEC

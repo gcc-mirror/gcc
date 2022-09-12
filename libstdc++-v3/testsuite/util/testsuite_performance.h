@@ -36,42 +36,39 @@
 #include <testsuite_common_types.h>
 
 #if defined (__linux__) || defined (__GLIBC__)
-#include <malloc.h>
-#elif defined (__FreeBSD__)
-extern "C"
-{
-  struct mallinfo
-  {
-    int uordblks;
-    int hblkhd;
-  };
-
-  struct mallinfo
-  mallinfo(void)
-  {
-    struct mallinfo m = { (((std::size_t) sbrk (0) + 1023) / 1024), 0 };
-    return m;
-  }
-}
-#elif !defined (__hpux__)
-extern "C"
-{
-  struct mallinfo
-  {
-    int uordblks;
-    int hblkhd;
-  };
-
-  struct mallinfo empty = { 0, 0 };
-
-  struct mallinfo
-  mallinfo(void)
-  { return empty; }
-}
+#include <malloc.h> // For mallinfo.
 #endif
 
 namespace __gnu_test
 {
+  struct MallocInfo
+  {
+    MallocInfo() : uordblks(0), hblkhd(0) { }
+    MallocInfo(std::size_t uordblocks, std::size_t hblockhd)
+      : uordblks(uordblocks), hblkhd(hblockhd)
+    { }
+
+    std::size_t uordblks;
+    std::size_t hblkhd;
+  };
+
+  MallocInfo
+  malloc_info()
+  {
+#if defined (__linux__) || defined (__hpux__) || defined (__GLIBC__)
+#if __GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 33
+    struct mallinfo2 mi = mallinfo2();
+#else
+    struct mallinfo mi = mallinfo();
+#endif
+    return MallocInfo(mi.uordblks, mi.hblkhd);
+#elif defined (__FreeBSD__)
+    return MallocInfo((((std::size_t) sbrk (0) + 1023) / 1024), 0);
+#else
+    return MallocInfo();
+#endif
+  }
+
   class time_counter
   {
   private:
@@ -146,8 +143,8 @@ namespace __gnu_test
     int                 who;
     rusage	        rusage_begin;
     rusage	        rusage_end;
-    struct mallinfo  	allocation_begin;
-    struct mallinfo  	allocation_end;
+    MallocInfo  	allocation_begin;
+    MallocInfo  	allocation_end;
 
   public:
     resource_counter(int i = RUSAGE_SELF) : who(i)
@@ -168,7 +165,7 @@ namespace __gnu_test
       if (getrusage(who, &rusage_begin) != 0 )
 	memset(&rusage_begin, 0, sizeof(rusage_begin));
       void* p __attribute__((unused)) = malloc(0); // Needed for some implementations.
-      allocation_begin = mallinfo();
+      allocation_begin = malloc_info();
     }
 
     void
@@ -176,7 +173,7 @@ namespace __gnu_test
     {
       if (getrusage(who, &rusage_end) != 0 )
 	memset(&rusage_end, 0, sizeof(rusage_end));
-      allocation_end = mallinfo();
+      allocation_end = malloc_info();
     }
 
     int

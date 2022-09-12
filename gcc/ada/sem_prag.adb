@@ -5548,6 +5548,14 @@ package body Sem_Prag is
                then
                   OK := True;
 
+               --  Special case for postconditions wrappers
+
+               elsif Ekind (Scop) in Subprogram_Kind
+                 and then Present (Wrapped_Statements (Scop))
+                 and then Wrapped_Statements (Scop) = Current_Scope
+               then
+                  OK := True;
+
                --  Default case, just check that the pragma occurs in the scope
                --  of the entity denoted by the name.
 
@@ -23168,7 +23176,7 @@ package body Sem_Prag is
          -- SPARK_Mode --
          ----------------
 
-         --  pragma SPARK_Mode [(On | Off)];
+         --  pragma SPARK_Mode [(Auto | On | Off)];
 
          when Pragma_SPARK_Mode => Do_SPARK_Mode : declare
             Mode_Id : SPARK_Mode_Type;
@@ -23654,7 +23662,7 @@ package body Sem_Prag is
             --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
-               Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+               Check_Arg_Is_One_Of (Arg1, Name_Auto, Name_On, Name_Off);
                Mode := Chars (Get_Pragma_Arg (Arg1));
             else
                Mode := Name_On;
@@ -23705,6 +23713,15 @@ package body Sem_Prag is
             --  the pragma resides to find a potential construct.
 
             else
+               --  An explicit mode of Auto is only allowed as a configuration
+               --  pragma. Escape "pragma" to avoid replacement with "aspect".
+
+               if Mode_Id = None then
+                  Error_Pragma_Arg
+                    ("only configuration 'p'r'a'g'm'a% can have value &",
+                     Arg1);
+               end if;
+
                Stmt := Prev (N);
                while Present (Stmt) loop
 
@@ -31155,23 +31172,26 @@ package body Sem_Prag is
       end if;
    end Get_Base_Subprogram;
 
-   -----------------------
+   -------------------------
    -- Get_SPARK_Mode_Type --
-   -----------------------
+   -------------------------
 
    function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type is
    begin
-      if N = Name_On then
-         return On;
-      elsif N = Name_Off then
-         return Off;
+      case N is
+         when Name_Auto =>
+            return None;
+         when Name_On =>
+            return On;
+         when Name_Off =>
+            return Off;
 
-      --  Any other argument is illegal. Assume that no SPARK mode applies to
-      --  avoid potential cascaded errors.
+         --  Any other argument is illegal. Assume that no SPARK mode applies
+         --  to avoid potential cascaded errors.
 
-      else
-         return None;
-      end if;
+         when others =>
+            return None;
+      end case;
    end Get_SPARK_Mode_Type;
 
    ------------------------------------
@@ -32236,10 +32256,10 @@ package body Sem_Prag is
       then
          return;
 
-      --  Do not process internally generated routine _Postconditions
+      --  Do not process internally generated routine _Wrapped_Statements
 
       elsif Ekind (Body_Id) = E_Procedure
-        and then Chars (Body_Id) = Name_uPostconditions
+        and then Chars (Body_Id) = Name_uWrapped_Statements
       then
          return;
       end if;

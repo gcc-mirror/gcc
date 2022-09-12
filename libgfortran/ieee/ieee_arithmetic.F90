@@ -343,6 +343,39 @@ UNORDERED_MACRO(4,4)
   end interface
   public :: IEEE_UNORDERED
 
+  ! IEEE_FMA
+
+  interface
+    elemental real(kind=4) function _gfortran_ieee_fma_4 (A, B, C)
+      real(kind=4), intent(in) :: A, B, C
+    end function
+    elemental real(kind=8) function _gfortran_ieee_fma_8 (A, B, C)
+      real(kind=8), intent(in) :: A, B, C
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_fma_10 (A, B, C)
+      real(kind=10), intent(in) :: A, B, C
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_fma_16 (A, B, C)
+      real(kind=16), intent(in) :: A, B, C
+    end function
+#endif
+  end interface
+
+  interface IEEE_FMA
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_fma_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_fma_10, &
+#endif
+      _gfortran_ieee_fma_8, _gfortran_ieee_fma_4
+  end interface
+  public :: IEEE_FMA
+
   ! IEEE_LOGB
 
   interface
@@ -701,6 +734,39 @@ REM_MACRO(4,4,4)
       _gfortran_ieee_scalb_4_4
   end interface
   public :: IEEE_SCALB
+
+  ! IEEE_SIGNBIT
+
+  interface
+    elemental logical function _gfortran_ieee_signbit_4 (X)
+      real(kind=4), intent(in) :: X
+    end function
+    elemental logical function _gfortran_ieee_signbit_8 (X)
+      real(kind=8), intent(in) :: X
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental logical function _gfortran_ieee_signbit_10 (X)
+      real(kind=10), intent(in) :: X
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental logical function _gfortran_ieee_signbit_16 (X)
+      real(kind=16), intent(in) :: X
+    end function
+#endif
+  end interface
+
+  interface IEEE_SIGNBIT
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_signbit_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_signbit_10, &
+#endif
+      _gfortran_ieee_signbit_8, _gfortran_ieee_signbit_4
+  end interface
+  public :: IEEE_SIGNBIT
 
   ! IEEE_VALUE
 

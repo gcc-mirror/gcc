@@ -1,3 +1,11 @@
+2022-09-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* line-map.cc (location_adhoc_data_update): Remove reliance on
+	undefined behavior.
+	(get_combined_adhoc_loc): Likewise.
+	(rebuild_location_adhoc_htab): Fix issue where the htab was not
+	properly updated.
+
 2022-09-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Add true_false.

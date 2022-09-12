@@ -3752,7 +3752,12 @@ In addition, each protected subprogram body must satisfy:
 * May not dereferenced access values
 * Function calls and attribute references must be static
 
-
+If the Lock_Free aspect is specified to be True for a protected unit
+and the Ceiling_Locking locking policy is in effect, then the run-time
+actions associated with the Ceiling_Locking locking policy (described in
+Ada RM D.3) are not performed when a protected operation of the protected
+unit is executed.
+  
 Pragma Loop_Invariant
 =====================
 
@@ -7120,7 +7125,7 @@ be.
 
 For the variable case, warnings are never given for unreferenced variables
 whose name contains one of the substrings
-``DISCARD, DUMMY, IGNORE, JUNK, UNUSED`` in any casing. Such names
+``DISCARD, DUMMY, IGNORE, JUNK, UNUSE, TMP, TEMP`` in any casing. Such names
 are typically to be used in cases where such warnings are expected.
 Thus it is never necessary to use ``pragma Unmodified`` for such
 variables, though it is harmless to do so.

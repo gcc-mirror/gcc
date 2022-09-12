@@ -70,6 +70,10 @@ Wanalyzer-exposure-through-output-file
 Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
 Warn about code paths in which sensitive data is written to a file.
 
+Wanalyzer-exposure-through-uninit-copy
+Common Var(warn_analyzer_exposure_through_uninit_copy) Init(1) Warning
+Warn about code paths in which sensitive data is copied across a security boundary.
+
 Wanalyzer-fd-access-mode-mismatch
 Common Var(warn_analyzer_fd_mode_mismatch) Init(1) Warning
 Warn about code paths in which read on a write-only file descriptor is attempted, or vice versa.

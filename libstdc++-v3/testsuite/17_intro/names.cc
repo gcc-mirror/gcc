@@ -129,6 +129,10 @@
 // This clashes with newlib so don't use it.
 # define __lockable		cannot be used as an identifier
 
+#ifndef __APPLE__
+#define __weak   predefined qualifier on darwin
+#define __strong predefined qualifier on darwin
+#endif
 
 // Common template parameter names
 #define OutputIterator		OutputIterator is not a reserved name

@@ -695,7 +695,7 @@ gfc_build_intrinsic_lib_fndecls (void)
        C99-like library functions.  For now, we only handle _Float128
        q-suffixed or IEC 60559 f128-suffixed functions.  */
 
-    tree type, complex_type, func_1, func_2, func_cabs, func_frexp;
+    tree type, complex_type, func_1, func_2, func_3, func_cabs, func_frexp;
     tree func_iround, func_lround, func_llround, func_scalbn, func_cpow;
 
     memset (quad_decls, 0, sizeof(tree) * (END_BUILTINS + 1));
@@ -715,6 +715,8 @@ gfc_build_intrinsic_lib_fndecls (void)
 					     type, NULL_TREE);
     /* type (*) (type, type) */
     func_2 = build_function_type_list (type, type, type, NULL_TREE);
+    /* type (*) (type, type, type) */
+    func_3 = build_function_type_list (type, type, type, type, NULL_TREE);
     /* type (*) (type, &int) */
     func_frexp
       = build_function_type_list (type,
@@ -9781,7 +9783,7 @@ conv_ieee_function_args (gfc_se *se, gfc_expr *expr, tree *argarray,
 }
 
 
-/* Generate code for intrinsics IEEE_IS_NAN, IEEE_IS_FINITE,
+/* Generate code for intrinsics IEEE_IS_NAN, IEEE_IS_FINITE
    and IEEE_UNORDERED, which translate directly to GCC type-generic
    built-ins.  */
 
@@ -9798,6 +9800,23 @@ conv_intrinsic_ieee_builtin (gfc_se * se, gfc_expr * expr,
 					nargs, args);
   STRIP_TYPE_NOPS (se->expr);
   se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+
+/* Generate code for intrinsics IEEE_SIGNBIT.  */
+
+static void
+conv_intrinsic_ieee_signbit (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, signbit;
+
+  conv_ieee_function_args (se, expr, &arg, 1);
+  signbit = build_call_expr_loc (input_location,
+				 builtin_decl_explicit (BUILT_IN_SIGNBIT),
+				 1, arg);
+  signbit = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			     signbit, integer_zero_node);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), signbit);
 }
 
 
@@ -10207,6 +10226,30 @@ conv_intrinsic_ieee_value (gfc_se *se, gfc_expr *expr)
 }
 
 
+/* Generate code for IEEE_FMA.  */
+
+static void
+conv_intrinsic_ieee_fma (gfc_se * se, gfc_expr * expr)
+{
+  tree args[3], decl, call;
+  int argprec;
+
+  conv_ieee_function_args (se, expr, args, 3);
+
+  /* All three arguments should have the same type.  */
+  gcc_assert (TYPE_PRECISION (TREE_TYPE (args[0])) == TYPE_PRECISION (TREE_TYPE (args[1])));
+  gcc_assert (TYPE_PRECISION (TREE_TYPE (args[0])) == TYPE_PRECISION (TREE_TYPE (args[2])));
+
+  /* Call the type-generic FMA built-in.  */
+  argprec = TYPE_PRECISION (TREE_TYPE (args[0]));
+  decl = builtin_decl_for_precision (BUILT_IN_FMA, argprec);
+  call = build_call_expr_loc_array (input_location, decl, 3, args);
+
+  /* Convert to the final type.  */
+  se->expr = fold_convert (TREE_TYPE (args[0]), call);
+}
+
+
 /* Generate code for an intrinsic function from the IEEE_ARITHMETIC
    module.  */
 
@@ -10221,6 +10264,8 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISFINITE, 1);
   else if (startswith (name, "_gfortran_ieee_unordered"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISUNORDERED, 2);
+  else if (startswith (name, "_gfortran_ieee_signbit"))
+    conv_intrinsic_ieee_signbit (se, expr);
   else if (startswith (name, "_gfortran_ieee_is_normal"))
     conv_intrinsic_ieee_is_normal (se, expr);
   else if (startswith (name, "_gfortran_ieee_is_negative"))
@@ -10241,6 +10286,8 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
     conv_intrinsic_ieee_class (se, expr);
   else if (startswith (name, "ieee_value_") && ISDIGIT (name[11]))
     conv_intrinsic_ieee_value (se, expr);
+  else if (startswith (name, "_gfortran_ieee_fma"))
+    conv_intrinsic_ieee_fma (se, expr);
   else
     /* It is not among the functions we translate directly.  We return
        false, so a library function call is emitted.  */

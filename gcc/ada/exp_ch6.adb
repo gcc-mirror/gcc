@@ -26,7 +26,6 @@
 with Atree;          use Atree;
 with Aspects;        use Aspects;
 with Checks;         use Checks;
-with Contracts;      use Contracts;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
@@ -314,6 +313,15 @@ package body Exp_Ch6 is
    procedure Expand_Simple_Function_Return (N : Node_Id);
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
+
+   function Has_BIP_Extra_Formal
+     (E    : Entity_Id;
+      Kind : BIP_Formal_Kind) return Boolean;
+   --  Given a frozen subprogram, subprogram type, entry or entry family,
+   --  return True if E has the BIP extra formal associated with Kind. It must
+   --  be invoked with a frozen entity or a subprogram type of a dispatching
+   --  call since we can only rely on the availability of the extra formals
+   --  on these entities.
 
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
@@ -2720,11 +2728,16 @@ package body Exp_Ch6 is
                                 | N_Function_Call
                                 | N_Procedure_Call_Statement);
 
-      --  Check that this is not the call in the body of the wrapper
+      --  Check that this is not the call in the body of the access
+      --  subprogram wrapper or the postconditions wrapper.
 
       if Must_Rewrite_Indirect_Call
         and then (not Is_Overloadable (Current_Scope)
-             or else not Is_Access_Subprogram_Wrapper (Current_Scope))
+             or else not (Is_Access_Subprogram_Wrapper (Current_Scope)
+                           or else
+                             (Chars (Current_Scope) = Name_uWrapped_Statements
+                               and then Is_Access_Subprogram_Wrapper
+                                          (Scope (Current_Scope)))))
       then
          declare
             Loc      : constant Source_Ptr := Sloc (N);
@@ -3804,7 +3817,7 @@ package body Exp_Ch6 is
         and then Thunk_Entity (Current_Scope) = Subp
         and then Present (Extra_Formals (Subp))
       then
-         pragma Assert (Extra_Formals_Match_OK (Current_Scope, Subp));
+         pragma Assert (Present (Extra_Formals (Current_Scope)));
 
          declare
             Target_Formal : Entity_Id;
@@ -4862,11 +4875,12 @@ package body Exp_Ch6 is
                   then
                      Must_Inline := not In_Extended_Main_Source_Unit (Subp);
 
-                  --  Inline calls to _postconditions when generating C code
+                  --  Inline calls to _Wrapped_Statements when generating C
 
                   elsif Modify_Tree_For_C
                     and then In_Same_Extended_Unit (Sloc (Bod), Loc)
-                    and then Chars (Name (Call_Node)) = Name_uPostconditions
+                    and then Chars (Name (Call_Node))
+                               = Name_uWrapped_Statements
                   then
                      Must_Inline := True;
                   end if;
@@ -5038,11 +5052,11 @@ package body Exp_Ch6 is
 
       Set_Analyzed (N);
 
-      --  A function which returns a controlled object uses the secondary
-      --  stack. Rewrite the call into a temporary which obtains the result of
-      --  the function using 'reference.
+      --  Apply the transformation, unless it was already applied manually
 
-      Remove_Side_Effects (N);
+      if Nkind (Par) /= N_Reference then
+         Remove_Side_Effects (N);
+      end if;
 
       --  The side effect removal of the function call produced a temporary.
       --  When the context is a case expression, if expression, or expression
@@ -5558,45 +5572,6 @@ package body Exp_Ch6 is
             Append_To (Stmts, Stmt);
             Set_Analyzed (Stmt);
 
-            --  Call the _Postconditions procedure if the related subprogram
-            --  has contract assertions that need to be verified on exit.
-
-            --  Also, mark the successful return to signal that postconditions
-            --  need to be evaluated when finalization occurs by setting
-            --  Return_Success_For_Postcond to be True.
-
-            if Ekind (Spec_Id) = E_Procedure
-              and then Present (Postconditions_Proc (Spec_Id))
-            then
-               --  Generate:
-               --
-               --    Return_Success_For_Postcond := True;
-               --    if Postcond_Enabled then
-               --       _postconditions;
-               --    end if;
-
-               Insert_Action (Stmt,
-                 Make_Assignment_Statement (Loc,
-                   Name       =>
-                     New_Occurrence_Of
-                       (Get_Return_Success_For_Postcond (Spec_Id), Loc),
-                   Expression => New_Occurrence_Of (Standard_True, Loc)));
-
-               --  Wrap the call to _postconditions within a test of the
-               --  Postcond_Enabled flag to delay postcondition evaluation
-               --  until after finalization when required.
-
-               Insert_Action (Stmt,
-                 Make_If_Statement (Loc,
-                   Condition       =>
-                     New_Occurrence_Of (Get_Postcond_Enabled (Spec_Id), Loc),
-                   Then_Statements => New_List (
-                     Make_Procedure_Call_Statement (Loc,
-                       Name =>
-                         New_Occurrence_Of
-                           (Postconditions_Proc (Spec_Id), Loc)))));
-            end if;
-
             --  Ada 2022 (AI12-0279): append the call to 'Yield unless this is
             --  a generic subprogram (since in such case it will be added to
             --  the instantiations).
@@ -6004,44 +5979,6 @@ package body Exp_Ch6 is
       Lab_Node  : Node_Id;
 
    begin
-      --  Call the _Postconditions procedure if the related subprogram has
-      --  contract assertions that need to be verified on exit.
-
-      --  Also, mark the successful return to signal that postconditions need
-      --  to be evaluated when finalization occurs.
-
-      if Ekind (Scope_Id) in E_Entry | E_Entry_Family | E_Procedure
-        and then Present (Postconditions_Proc (Scope_Id))
-      then
-         --  Generate:
-         --
-         --    Return_Success_For_Postcond := True;
-         --    if Postcond_Enabled then
-         --       _postconditions;
-         --    end if;
-
-         Insert_Action (N,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
-             Expression => New_Occurrence_Of (Standard_True, Loc)));
-
-         --  Wrap the call to _postconditions within a test of the
-         --  Postcond_Enabled flag to delay postcondition evaluation until
-         --  after finalization when required.
-
-         Insert_Action (N,
-           Make_If_Statement (Loc,
-             Condition       =>
-               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name =>
-                   New_Occurrence_Of
-                     (Postconditions_Proc (Scope_Id), Loc)))));
-      end if;
-
       --  Ada 2022 (AI12-0279)
 
       if Has_Yield_Aspect (Scope_Id)
@@ -6986,84 +6923,6 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  Call the _Postconditions procedure if the related function has
-      --  contract assertions that need to be verified on exit.
-
-      if Ekind (Scope_Id) = E_Function
-        and then Present (Postconditions_Proc (Scope_Id))
-      then
-         --  In the case of discriminated objects, we have created a
-         --  constrained subtype above, and used the underlying type. This
-         --  transformation is post-analysis and harmless, except that now the
-         --  call to the post-condition will be analyzed and the type kinds
-         --  have to match.
-
-         if Nkind (Exp) = N_Unchecked_Type_Conversion
-           and then Is_Private_Type (R_Type) /= Is_Private_Type (Etype (Exp))
-         then
-            Rewrite (Exp, Expression (Relocate_Node (Exp)));
-         end if;
-
-         --  We are going to reference the returned value twice in this case,
-         --  once in the call to _Postconditions, and once in the actual return
-         --  statement, but we can't have side effects happening twice.
-
-         Force_Evaluation (Exp, Mode => Strict);
-
-         --  Save the return value or a pointer to the return value since we
-         --  may need to call postconditions after finalization when cleanup
-         --  actions are present.
-
-         --  Generate:
-         --
-         --    Result_Object_For_Postcond := [Exp]'Unrestricted_Access;
-
-         Insert_Action (Exp,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                (Get_Result_Object_For_Postcond (Scope_Id), Loc),
-             Expression =>
-               (if Is_Elementary_Type (Etype (R_Type)) then
-                   New_Copy_Tree (Exp)
-                else
-                   Make_Attribute_Reference (Loc,
-                     Attribute_Name => Name_Unrestricted_Access,
-                     Prefix         => New_Copy_Tree (Exp)))));
-
-         --  Mark the successful return to signal that postconditions need to
-         --  be evaluated when finalization occurs.
-
-         --  Generate:
-         --
-         --    Return_Success_For_Postcond := True;
-         --    if Postcond_Enabled then
-         --       _Postconditions ([exp]);
-         --    end if;
-
-         Insert_Action (Exp,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
-             Expression => New_Occurrence_Of (Standard_True, Loc)));
-
-         --  Wrap the call to _postconditions within a test of the
-         --  Postcond_Enabled flag to delay postcondition evaluation until
-         --  after finalization when required.
-
-         Insert_Action (Exp,
-           Make_If_Statement (Loc,
-             Condition       =>
-               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name                   =>
-                   New_Occurrence_Of
-                     (Postconditions_Proc (Scope_Id), Loc),
-                 Parameter_Associations => New_List (New_Copy_Tree (Exp))))));
-      end if;
-
       --  Ada 2005 (AI-251): If this return statement corresponds with an
       --  simple return statement associated with an extended return statement
       --  and the type of the returned object is an interface then generate an
@@ -7185,9 +7044,8 @@ package body Exp_Ch6 is
    --------------------------
 
    function Has_BIP_Extra_Formal
-     (E              : Entity_Id;
-      Kind           : BIP_Formal_Kind;
-      Must_Be_Frozen : Boolean := True) return Boolean
+     (E    : Entity_Id;
+      Kind : BIP_Formal_Kind) return Boolean
    is
       Extra_Formal : Entity_Id := Extra_Formals (E);
 
@@ -7197,7 +7055,7 @@ package body Exp_Ch6 is
       --  extra formals are added when the target subprogram is frozen; see
       --  Expand_Dispatching_Call).
 
-      pragma Assert ((Is_Frozen (E) or else not Must_Be_Frozen)
+      pragma Assert (Is_Frozen (E)
         or else (Ekind (E) = E_Subprogram_Type
                    and then Is_Dispatch_Table_Entity (E))
         or else (Is_Dispatching_Operation (E)
@@ -7826,7 +7684,7 @@ package body Exp_Ch6 is
                or else
              (Kind = E_Subprogram_Type and then Typ /= Standard_Void_Type))
         and then Is_Build_In_Place_Result_Type (Typ)
-        and then not Has_Foreign_Convention (E);
+        and then not (Is_Imported (E) and then Has_Foreign_Convention (E));
    end Is_Build_In_Place_Function;
 
    -------------------------------------
@@ -8555,11 +8413,6 @@ package body Exp_Ch6 is
       --  initialization expression of the object to Empty, which would be
       --  illegal Ada, and would cause gigi to misallocate X.
 
-      Is_OK_Return_Object : constant Boolean :=
-        Is_Return_Object (Obj_Def_Id)
-          and then
-        not Has_Foreign_Convention (Return_Applies_To (Scope (Obj_Def_Id)));
-
    --  Start of processing for Make_Build_In_Place_Call_In_Object_Declaration
 
    begin
@@ -8612,7 +8465,7 @@ package body Exp_Ch6 is
       --  the result object is in a different (transient) scope, so won't cause
       --  freezing.
 
-      if Definite and then not Is_OK_Return_Object then
+      if Definite and then not Is_Return_Object (Obj_Def_Id) then
 
          --  The presence of an address clause complicates the build-in-place
          --  expansion because the indicated address must be processed before
@@ -8695,7 +8548,7 @@ package body Exp_Ch6 is
       --  really be directly built in place in the aggregate and not in a
       --  temporary. ???)
 
-      if Is_OK_Return_Object then
+      if Is_Return_Object (Obj_Def_Id) then
          Pass_Caller_Acc := True;
 
          --  When the enclosing function has a BIP_Alloc_Form formal then we
@@ -8880,7 +8733,7 @@ package body Exp_Ch6 is
       --  itself the return expression of an enclosing BIP function, then mark
       --  the object as having no initialization.
 
-      if Definite and then not Is_OK_Return_Object then
+      if Definite and then not Is_Return_Object (Obj_Def_Id) then
 
          --  The related object declaration is encased in a transient block
          --  because the build-in-place function call contains at least one
@@ -9237,7 +9090,7 @@ package body Exp_Ch6 is
         and then not No_Run_Time_Mode
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
-                               and then Is_Limited_Record (Etype (Typ))
+                               and then Is_Limited_Record (Typ)
                                and then not Has_Aspect
                                  (Etype (Typ), Aspect_No_Task_Parts)));
    end Might_Have_Tasks;
@@ -9247,6 +9100,7 @@ package body Exp_Ch6 is
    ----------------------------
 
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean is
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Subp_Id  : Entity_Id;
       Func_Typ : Entity_Id;
 
@@ -9271,12 +9125,6 @@ package body Exp_Ch6 is
 
       Func_Typ := Underlying_Type (Etype (Subp_Id));
 
-      --  Functions returning types with foreign convention don't have extra
-      --  formals.
-
-      if Has_Foreign_Convention (Func_Typ) then
-         return False;
-
       --  At first sight, for all the following cases, we could add assertions
       --  to ensure that if Func_Id is frozen then the computed result matches
       --  with the availability of the task master extra formal; unfortunately
@@ -9284,7 +9132,7 @@ package body Exp_Ch6 is
       --  (that is, Is_Frozen has been set by Freeze_Entity but it has not
       --  completed its work).
 
-      elsif Has_Task (Func_Typ) then
+      if Has_Task (Func_Typ) then
          return True;
 
       elsif Ekind (Func_Id) = E_Function then
@@ -9316,6 +9164,8 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
       --  A formal giving the finalization master is needed for build-in-place
       --  functions whose result type needs finalization or is a tagged type.
       --  Tagged primitive build-in-place functions need such a formal because
@@ -9327,8 +9177,7 @@ package body Exp_Ch6 is
       --  such build-in-place functions, primitive or not.
 
       return not Restriction_Active (No_Finalization)
-        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ))
-        and then not Has_Foreign_Convention (Typ);
+        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ));
    end Needs_BIP_Finalization_Master;
 
    --------------------------
@@ -9339,6 +9188,8 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
       --  A formal giving the allocation method is needed for build-in-place
       --  functions whose result type is returned on the secondary stack or
       --  is a tagged type. Tagged primitive build-in-place functions need
@@ -9350,8 +9201,7 @@ package body Exp_Ch6 is
       --  to be passed to all such build-in-place functions, primitive or not.
 
       return not Restriction_Active (No_Secondary_Stack)
-        and then (Needs_Secondary_Stack (Typ) or else Is_Tagged_Type (Typ))
-        and then not Has_Foreign_Convention (Typ);
+        and then (Needs_Secondary_Stack (Typ) or else Is_Tagged_Type (Typ));
    end Needs_BIP_Alloc_Form;
 
    -------------------------------------

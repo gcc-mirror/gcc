@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-error "must be a complete class" "" { target *-*-* } 0 }
+// { dg-prune-output "invalid use of incomplete type" }
 
 #include <type_traits>
 

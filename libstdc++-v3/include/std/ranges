@@ -4657,8 +4657,8 @@ namespace views::__adaptor
 	return ranges::min({difference_type(std::get<_Is>(__x._M_current)
 					    - std::get<_Is>(__y._M_current))...},
 			   ranges::less{},
-			   [](difference_type __i) -> make_unsigned_t<difference_type> {
-			     return __i < 0 ? -__i : __i;
+			   [](difference_type __i) {
+			     return __detail::__to_unsigned_like(__i < 0 ? -__i : __i);
 			   });
       }(make_index_sequence<sizeof...(_Vs)>{});
     }
@@ -4726,8 +4726,8 @@ namespace views::__adaptor
       return [&]<size_t... _Is>(index_sequence<_Is...>) {
 	return ranges::min({_Ret(std::get<_Is>(__x._M_current) - std::get<_Is>(__y._M_end))...},
 			   ranges::less{},
-			   [](_Ret __i) -> make_unsigned_t<_Ret> {
-			     return __i < 0 ? -__i : __i;
+			   [](_Ret __i) {
+			     return __detail::__to_unsigned_like(__i < 0 ? -__i : __i);
 			   });
       }(make_index_sequence<sizeof...(_Vs)>{});
     }
@@ -5071,7 +5071,7 @@ namespace views::__adaptor
 	operator() [[nodiscard]] (_Fp&& __f, _Ts&&... __ts) const
 	{
 	  if constexpr (sizeof...(_Ts) == 0)
-	    return views::empty<decay_t<invoke_result_t<_Fp>>>;
+	    return views::empty<decay_t<invoke_result_t<decay_t<_Fp>&>>>;
 	  else
 	    return zip_transform_view(std::forward<_Fp>(__f), std::forward<_Ts>(__ts)...);
 	}
@@ -5239,7 +5239,7 @@ namespace views::__adaptor
       requires _Const && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
     {
       for (size_t __j = 0; __j < _Nm; ++__j)
-	_M_current[__j] = std::move(__i[__j]);
+	_M_current[__j] = std::move(__i._M_current[__j]);
     }
 
     constexpr auto
@@ -5762,7 +5762,7 @@ namespace views::__adaptor
 	  operator() [[nodiscard]] (_Range&& __r, _Fp&& __f) const
 	  {
 	    if constexpr (_Nm == 0)
-	      return views::empty<tuple<>>;
+	      return zip_transform(std::forward<_Fp>(__f));
 	    else
 	      return adjacent_transform_view<all_t<_Range>, decay_t<_Fp>, _Nm>
 		(std::forward<_Range>(__r), std::forward<_Fp>(__f));

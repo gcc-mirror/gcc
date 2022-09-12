@@ -300,11 +300,9 @@ package body Uintp is
 
       function Better_In_Hex return Boolean is
          T16 : constant Valid_Uint := Uint_2**Int'(16);
-         A   : Valid_Uint;
+         A   : Valid_Uint := UI_Abs (Input);
 
       begin
-         A := UI_Abs (Input);
-
          --  Small values up to 2**16 can always be in decimal
 
          if A < T16 then

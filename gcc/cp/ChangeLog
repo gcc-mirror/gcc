@@ -1,3 +1,20 @@
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106838
+	* class.cc (type_has_virtual_destructor): Return false for
+	union types.
+	* semantics.cc (check_trait_type): Add KIND parameter to support
+	different sets of requirements.
+	(finish_trait_expr): Pass KIND argument for relevant traits.
+
+2022-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99130
+	* decl2.cc (maybe_instantiate_decl): Adjust function comment.
+	Check VAR_OR_FUNCTION_DECL_P.  Pull out the disjunction into ...
+	(mark_used): ... here, removing the decl_maybe_constant_var_p
+	part of it.
+
 2022-09-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106793

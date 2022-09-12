@@ -779,10 +779,18 @@ init_ext_gcn_constants (void)
   /* FIXME: this constant probably does not match what hardware really loads.
      Reality check it eventually.  */
   real_from_string (&dconst1over2pi,
-		    "0.1591549430918953357663423455968866839");
+		    "0.15915494309189532");
   real_convert (&dconst1over2pi, SFmode, &dconst1over2pi);
 
   ext_gcn_constants_init = 1;
+}
+
+REAL_VALUE_TYPE
+gcn_dconst1over2pi (void)
+{
+  if (!ext_gcn_constants_init)
+    init_ext_gcn_constants ();
+  return dconst1over2pi;
 }
 
 /* Return non-zero if X is a constant that can appear as an inline operand.
@@ -3605,6 +3613,7 @@ enum gcn_builtin_type_index
   GCN_BTI_SF,
   GCN_BTI_V64SI,
   GCN_BTI_V64SF,
+  GCN_BTI_V64DF,
   GCN_BTI_V64PTR,
   GCN_BTI_SIPTR,
   GCN_BTI_SFPTR,
@@ -3621,6 +3630,7 @@ static GTY(()) tree gcn_builtin_types[GCN_BTI_MAX];
 #define sf_type_node (gcn_builtin_types[GCN_BTI_SF])
 #define v64si_type_node (gcn_builtin_types[GCN_BTI_V64SI])
 #define v64sf_type_node (gcn_builtin_types[GCN_BTI_V64SF])
+#define v64df_type_node (gcn_builtin_types[GCN_BTI_V64DF])
 #define v64ptr_type_node (gcn_builtin_types[GCN_BTI_V64PTR])
 #define siptr_type_node (gcn_builtin_types[GCN_BTI_SIPTR])
 #define sfptr_type_node (gcn_builtin_types[GCN_BTI_SFPTR])
@@ -3710,6 +3720,7 @@ gcn_init_builtin_types (void)
   sf_type_node = float32_type_node;
   v64si_type_node = build_vector_type (intSI_type_node, 64);
   v64sf_type_node = build_vector_type (float_type_node, 64);
+  v64df_type_node = build_vector_type (double_type_node, 64);
   v64ptr_type_node = build_vector_type (unsigned_intDI_type_node
 					/*build_pointer_type
 					  (integer_type_node) */
@@ -3975,6 +3986,105 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 					  SFmode,
 					  EXPAND_NORMAL));
 	emit_insn (gen_sqrtsf2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FABSVF:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_absv64sf2_exec
+		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_LDEXPVF:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg1 = force_reg (V64SFmode,
+			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					   V64SFmode,
+					   EXPAND_NORMAL));
+	rtx arg2 = force_reg (V64SImode,
+			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
+					   V64SImode,
+					   EXPAND_NORMAL));
+	emit_insn (gen_ldexpv64sf3_exec
+		   (target, arg1, arg2, gcn_gen_undef (V64SFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_LDEXPV:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg1 = force_reg (V64DFmode,
+			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					   V64SFmode,
+					   EXPAND_NORMAL));
+	rtx arg2 = force_reg (V64SImode,
+			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
+					   V64SImode,
+					   EXPAND_NORMAL));
+	emit_insn (gen_ldexpv64df3_exec
+		   (target, arg1, arg2, gcn_gen_undef (V64DFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPVF_EXP:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64sf_exp2_exec
+		   (target, arg, gcn_gen_undef (V64SImode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPVF_MANT:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64sf_mant2_exec
+		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPV_EXP:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64df_exp2_exec
+		   (target, arg, gcn_gen_undef (V64SImode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPV_MANT:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64df_mant2_exec
+		   (target, arg, gcn_gen_undef (V64DFmode), exec));
 	return target;
       }
     case GCN_BUILTIN_OMP_DIM_SIZE:
@@ -6476,7 +6586,7 @@ print_operand (FILE *file, rtx x, int code)
 	      str = "-4.0";
 	      break;
 	    case 248:
-	      str = "1/pi";
+	      str = "0.15915494";
 	      break;
 	    default:
 	      rtx ix = simplify_gen_subreg (GET_MODE (x) == DFmode

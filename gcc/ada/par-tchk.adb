@@ -567,8 +567,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_Semicolon
-              or else Token = Tok_EOF
+              or else Token in Tok_Semicolon | Tok_EOF
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
@@ -597,10 +596,7 @@ package body Tchk is
 
       --  Allow OF or => or = in place of IS (with error message)
 
-      elsif Token = Tok_Of
-        or else Token = Tok_Arrow
-        or else Token = Tok_Equal
-      then
+      elsif Token in Tok_Of | Tok_Arrow | Tok_Equal then
          T_Is; -- give missing IS message and skip bad token
 
       else
@@ -609,8 +605,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_Semicolon
-              or else Token = Tok_EOF
+              or else Token in Tok_Semicolon | Tok_EOF
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
@@ -618,10 +613,7 @@ package body Tchk is
 
             Scan; -- continue search
 
-            if Token = Tok_Is
-              or else Token = Tok_Of
-              or else Token = Tok_Arrow
-            then
+            if Token in Tok_Is | Tok_Of | Tok_Arrow then
                Scan; -- past IS or OF or =>
                return;
             end if;
@@ -642,7 +634,7 @@ package body Tchk is
 
       --  Allow DO or THEN in place of LOOP
 
-      elsif Token = Tok_Then or else Token = Tok_Do then
+      elsif Token in Tok_Then | Tok_Do then
          T_Loop; -- give missing LOOP message
 
       else
@@ -651,8 +643,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_Semicolon
-              or else Token = Tok_EOF
+              or else Token in Tok_Semicolon | Tok_EOF
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
@@ -660,7 +651,7 @@ package body Tchk is
 
             Scan; -- continue search
 
-            if Token = Tok_Loop or else Token = Tok_Then then
+            if Token in Tok_Loop | Tok_Then then
                Scan; -- past loop or then (message already generated)
                return;
             end if;
@@ -686,8 +677,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_Semicolon
-              or else Token = Tok_EOF
+              or else Token in Tok_Semicolon | Tok_EOF
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
@@ -752,8 +742,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_EOF
-              or else Token = Tok_End
+              or else Token in Tok_EOF | Tok_End
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
@@ -789,8 +778,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_Semicolon
-              or else Token = Tok_EOF
+              or else Token in Tok_Semicolon | Tok_EOF
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
@@ -823,8 +811,7 @@ package body Tchk is
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
-              or else Token = Tok_Semicolon
-              or else Token = Tok_EOF
+              or else Token in Tok_Semicolon | Tok_EOF
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;

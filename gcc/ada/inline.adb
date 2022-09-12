@@ -3257,7 +3257,7 @@ package body Inline is
          pragma Assert
            (Modify_Tree_For_C
              and then Is_Subprogram (Enclosing_Subp)
-             and then Present (Postconditions_Proc (Enclosing_Subp)));
+             and then Present (Wrapped_Statements (Enclosing_Subp)));
 
          if Ekind (Enclosing_Subp) = E_Function then
             if Nkind (First (Parameter_Associations (N))) in
@@ -3851,7 +3851,7 @@ package body Inline is
 
             if Modify_Tree_For_C
               and then Nkind (N) = N_Procedure_Call_Statement
-              and then Chars (Name (N)) = Name_uPostconditions
+              and then Chars (Name (N)) = Name_uWrapped_Statements
             then
                Declare_Postconditions_Result;
             end if;
