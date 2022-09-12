@@ -316,9 +316,13 @@ frange::set_signbit (fp_prop::kind k)
   // Ignore sign changes when they're set correctly.
   if (!maybe_nan ())
     {
-      if (real_less (&m_max, &dconst0))
+      // It's negative and we're trying to make it negative or varying.
+      if (real_less (&m_max, &dconst0) && (k == fp_prop::YES
+					   || k == fp_prop::VARYING))
 	return;
-      if (real_less (&dconst0, &m_min))
+      // It's positive and we're trying to make it positive or varying.
+      if (real_less (&dconst0, &m_min) && (k == fp_prop::NO
+					   || k == fp_prop::VARYING))
 	return;
     }
   // Adjust the range depending on the sign bit.
