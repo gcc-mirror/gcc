@@ -1,3 +1,11 @@
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_asm): Create .offload_func_table,
+	similar to pre-existing .offload_var_table.
+
 2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

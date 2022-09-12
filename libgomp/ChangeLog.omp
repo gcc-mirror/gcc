@@ -3,6 +3,14 @@
 	Backport from mainline:
 	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Read
+	.offload_func_table to populate rev_fn_table when requested.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
 	* libgomp-plugin.h (GOMP_OFFLOAD_load_image): Add
 	'uint64_t **rev_fn_table' argument.
 	* oacc-host.c (host_load_image): Likewise.
