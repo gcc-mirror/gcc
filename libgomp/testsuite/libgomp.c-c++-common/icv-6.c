@@ -17,6 +17,7 @@
 
 #include <omp.h>
 #include <stdlib.h>
+#include <string.h>
 
 int
 main ()
@@ -25,21 +26,28 @@ main ()
   int chunk_size;
   omp_get_schedule(&kind, &chunk_size);
 
-  if (omp_get_max_teams () != 42
-      || !omp_get_dynamic ()
-      || kind != 3 || chunk_size != 4
-      || omp_get_teams_thread_limit () != 44
-      || omp_get_thread_limit () != 45
-      || omp_get_max_threads () != 46
-      || omp_get_proc_bind () != omp_proc_bind_spread
-      || omp_get_max_active_levels () != 47)
+  if ((!getenv ("OMP_NUM_TEAMS") && omp_get_max_teams () != 42)
+      || (!getenv ("OMP_DYNAMIC") && !omp_get_dynamic ())
+      || (!getenv ("OMP_SCHEDULE") && (kind != 3 || chunk_size != 4))
+      || (!getenv ("OMP_TEAMS_THREAD_LIMIT") && omp_get_teams_thread_limit () != 44)
+      || (!getenv ("OMP_THREAD_LIMIT") && omp_get_thread_limit () != 45)
+      || (!getenv ("OMP_NUM_THREADS") && omp_get_max_threads () != 46)
+      || (!getenv ("OMP_PROC_BIND") && omp_get_proc_bind () != omp_proc_bind_spread)
+      || (!getenv ("OMP_MAX_ACTIVE_LEVELS") && omp_get_max_active_levels () != 47))
     abort ();
 
   int num_devices = omp_get_num_devices () > 3 ? 3 : omp_get_num_devices ();
-  for (int i=0; i < num_devices; i++)
+  for (int i = 0; i < num_devices; i++)
+    {
+      char name[sizeof ("OMP_NUM_TEAMS_DEV_1")];
+      strcpy (name, "OMP_NUM_TEAMS_DEV_1");
+      name[sizeof ("OMP_NUM_TEAMS_DEV_1") - 2] = '0' + i;
+      if (getenv (name))
+	continue;
     #pragma omp target device (i)
       if (omp_get_max_teams () != 43)
 	abort ();
+    }
 
   return 0;
 }
