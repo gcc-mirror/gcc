@@ -988,15 +988,15 @@ write_var_marker (FILE *file, bool is_defn, bool globalize, const char *name)
 
 static void
 write_fn_proto_1 (std::stringstream &s, bool is_defn,
-		  const char *name, const_tree decl)
+		  const char *name, const_tree decl, bool force_public)
 {
   if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) == NULL)
-    write_fn_marker (s, is_defn, TREE_PUBLIC (decl), name);
+    write_fn_marker (s, is_defn, TREE_PUBLIC (decl) || force_public, name);
 
   /* PTX declaration.  */
   if (DECL_EXTERNAL (decl))
     s << ".extern ";
-  else if (TREE_PUBLIC (decl))
+  else if (TREE_PUBLIC (decl) || force_public)
     s << (DECL_WEAK (decl) ? ".weak " : ".visible ");
   s << (write_as_kernel (DECL_ATTRIBUTES (decl)) ? ".entry " : ".func ");
 
@@ -1085,7 +1085,7 @@ write_fn_proto_1 (std::stringstream &s, bool is_defn,
 
 static void
 write_fn_proto (std::stringstream &s, bool is_defn,
-		const char *name, const_tree decl)
+		const char *name, const_tree decl, bool force_public=false)
 {
   const char *replacement = nvptx_name_replacement (name);
   char *replaced_dots = NULL;
@@ -1102,9 +1102,9 @@ write_fn_proto (std::stringstream &s, bool is_defn,
 
   if (is_defn)
     /* Emit a declaration.  The PTX assembler gets upset without it.  */
-    write_fn_proto_1 (s, false, name, decl);
+    write_fn_proto_1 (s, false, name, decl, force_public);
 
-  write_fn_proto_1 (s, is_defn, name, decl);
+  write_fn_proto_1 (s, is_defn, name, decl, force_public);
 
   if (replaced_dots)
     XDELETE (replaced_dots);
@@ -1480,7 +1480,13 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   tree fntype = TREE_TYPE (decl);
   tree result_type = TREE_TYPE (fntype);
   int argno = 0;
+  bool force_public = false;
 
+  /* For reverse-offload 'nohost' functions: In order to be collectable in
+     '$offload_func_table', cf. mkoffload.cc, the function has to be visible. */
+  if (lookup_attribute ("omp target device_ancestor_nohost",
+			DECL_ATTRIBUTES (decl)))
+    force_public = true;
   if (lookup_attribute ("omp target entrypoint", DECL_ATTRIBUTES (decl))
       && !lookup_attribute ("oacc function", DECL_ATTRIBUTES (decl)))
     {
@@ -1492,7 +1498,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   /* We construct the initial part of the function into a string
      stream, in order to share the prototype writing code.  */
   std::stringstream s;
-  write_fn_proto (s, true, name, decl);
+  write_fn_proto (s, true, name, decl, force_public);
   s << "{\n";
 
   bool return_in_mem = write_return_type (s, false, result_type);

@@ -2661,7 +2661,9 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 
       /* Shuffle of a constructor.  */
       bool ret = false;
-      tree res_type = TREE_TYPE (arg0);
+      tree res_type
+	= build_vector_type (TREE_TYPE (TREE_TYPE (arg0)),
+			     TYPE_VECTOR_SUBPARTS (TREE_TYPE (op2)));
       tree opt = fold_ternary (VEC_PERM_EXPR, res_type, arg0, arg1, op2);
       if (!opt
 	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE (opt) != VECTOR_CST))

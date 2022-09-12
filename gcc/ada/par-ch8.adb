@@ -94,7 +94,7 @@ package body Ch8 is
    begin
       Scan; -- past USE
 
-      if Token = Tok_Type or else Token = Tok_All then
+      if Token in Tok_Type | Tok_All then
          P_Use_Type_Clause (Item_List);
       else
          P_Use_Package_Clause (Item_List);

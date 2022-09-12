@@ -4014,9 +4014,7 @@ package Einfo is
 --       fully initialized when the full view is frozen.
 
 --    Postconditions_Proc
---       Defined in functions, procedures, entries, and entry families. Refers
---       to the entity of the _Postconditions procedure used to check contract
---       assertions on exit from a subprogram.
+--       Obsolete field which can be removed once CodePeer is fixed ???
 
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
@@ -4767,6 +4765,13 @@ package Einfo is
 --       Defined in functions and procedures which have been classified as
 --       Is_Primitive_Wrapper. Set to the entity being wrapper.
 
+--    Wrapped_Statements
+--       Defined in functions, procedures, entries, and entry families. Refers
+--       to the entity of the _Wrapped_Statements procedure which gets
+--       generated as part of the expansion of contracts and postconditions
+--       and contains its enclosing subprogram's original source declarations
+--       and statements.
+
 --    LSP_Subprogram
 --       Defined in subprogram entities. Set on wrappers created to handle
 --       inherited class-wide pre/post conditions that call overridden
@@ -5412,7 +5417,6 @@ package Einfo is
    --    Protected_Body_Subprogram
    --    Barrier_Function
    --    Elaboration_Entity
-   --    Postconditions_Proc
    --    Entry_Parameters_Type
    --    First_Entity
    --    Alias                                (for entry only. Empty)
@@ -5527,7 +5531,6 @@ package Einfo is
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
    --    Elaboration_Entity                   (not implicit /=)
-   --    Postconditions_Proc                  (non-generic case only)
    --    DT_Position
    --    DTC_Entity
    --    First_Entity
@@ -5891,7 +5894,6 @@ package Einfo is
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
    --    Elaboration_Entity
-   --    Postconditions_Proc                  (non-generic case only)
    --    DT_Position
    --    DTC_Entity
    --    First_Entity

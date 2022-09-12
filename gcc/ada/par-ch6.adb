@@ -180,21 +180,6 @@ package body Ch6 is
    --    FUNCTION SPECIFICATION IS (EXPRESSION)
    --      [ASPECT_SPECIFICATIONS];
 
-   --  The value in Pf_Flags indicates which of these possible declarations
-   --  is acceptable to the caller:
-
-   --    Pf_Flags.Decl                 Set if declaration OK
-   --    Pf_Flags.Gins                 Set if generic instantiation OK
-   --    Pf_Flags.Pbod                 Set if proper body OK
-   --    Pf_Flags.Rnam                 Set if renaming declaration OK
-   --    Pf_Flags.Stub                 Set if body stub OK
-   --    Pf_Flags.Pexp                 Set if expression function OK
-
-   --  If an inappropriate form is encountered, it is scanned out but an
-   --  error message indicating that it is appearing in an inappropriate
-   --  context is issued. The only possible values for Pf_Flags are those
-   --  defined as constants in the Par package.
-
    --  The caller has checked that the initial token is FUNCTION, PROCEDURE,
    --  NOT or OVERRIDING.
 
@@ -316,7 +301,7 @@ package body Ch6 is
          then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
-         elsif Token /= Tok_Function and then Token /= Tok_Procedure then
+         elsif Token not in Tok_Function | Tok_Procedure then
             Error_Msg_SC -- CODEFIX
               ("FUNCTION or PROCEDURE expected!");
          end if;
@@ -737,22 +722,15 @@ package body Ch6 is
                   --  or a pragma, then we definitely have a subprogram body.
                   --  This is a common case, so worth testing first.
 
-                  if Token = Tok_Begin
-                    or else Token in Token_Class_Declk
-                    or else Token = Tok_Pragma
-                  then
+                  if Token in Tok_Begin | Token_Class_Declk | Tok_Pragma then
                      return False;
 
                   --  Test for tokens which could only start an expression and
                   --  thus signal the case of a expression function.
 
-                  elsif Token     in Token_Class_Literal
-                    or else Token in Token_Class_Unary_Addop
-                    or else Token =  Tok_Left_Paren
-                    or else Token =  Tok_Abs
-                    or else Token =  Tok_Null
-                    or else Token =  Tok_New
-                    or else Token =  Tok_Not
+                  elsif Token in
+                    Token_Class_Literal | Token_Class_Unary_Addop |
+                    Tok_Left_Paren | Tok_Abs | Tok_Null | Tok_New | Tok_Not
                   then
                      null;
 
@@ -1161,9 +1139,8 @@ package body Ch6 is
             Save_Scan_State (Scan_State);
             Scan; -- past dot
 
-            if Token = Tok_Identifier
-              or else Token = Tok_Operator_Symbol
-              or else Token = Tok_String_Literal
+            if Token in
+              Tok_Identifier | Tok_Operator_Symbol | Tok_String_Literal
             then
                return True;
 
@@ -1180,8 +1157,7 @@ package body Ch6 is
       Ident_Node := Token_Node;
       Scan; -- past initial token
 
-      if Prev_Token = Tok_Operator_Symbol
-        or else Prev_Token = Tok_String_Literal
+      if Prev_Token in Tok_Operator_Symbol | Tok_String_Literal
         or else not Real_Dot
       then
          return Ident_Node;
@@ -1216,7 +1192,7 @@ package body Ch6 is
 
    exception
       when Error_Resync =>
-         while Token = Tok_Dot or else Token = Tok_Identifier loop
+         while Token in Tok_Dot | Tok_Identifier loop
             Scan;
          end loop;
 
@@ -1327,7 +1303,7 @@ package body Ch6 is
 
    exception
       when Error_Resync =>
-         while Token = Tok_Dot or else Token = Tok_Identifier loop
+         while Token in Tok_Dot | Tok_Identifier loop
             Scan;
          end loop;
 
@@ -1462,10 +1438,8 @@ package body Ch6 is
                      --  and on a right paren, e.g. Parms (X Y), and also
                      --  on an assignment symbol, e.g. Parms (X Y := ..)
 
-                     if Token = Tok_Semicolon
-                       or else Token = Tok_Right_Paren
-                       or else Token = Tok_EOF
-                       or else Token = Tok_Colon_Equal
+                     if Token in Tok_Semicolon | Tok_Right_Paren |
+                       Tok_EOF | Tok_Colon_Equal
                      then
                         Restore_Scan_State (Scan_State);
                         exit Ident_Loop;
@@ -1474,9 +1448,7 @@ package body Ch6 is
                      --  comma, e.g. Parms (A B : ...). Also assume a missing
                      --  comma if we hit another comma, e.g. Parms (A B, C ..)
 
-                     elsif Token = Tok_Colon
-                       or else Token = Tok_Comma
-                     then
+                     elsif Token in Tok_Colon | Tok_Comma then
                         Restore_Scan_State (Scan_State);
                         exit Look_Ahead;
                      end if;
@@ -1551,7 +1523,7 @@ package body Ch6 is
                --  Case of IN or OUT present
 
                else
-                  if Token = Tok_In or else Token = Tok_Out then
+                  if Token in Tok_In | Tok_Out then
                      if Not_Null_Present then
                         Error_Msg
                           ("`NOT NULL` can only be used with `ACCESS`",
@@ -1627,7 +1599,7 @@ package body Ch6 is
             --  If we have RETURN or IS after the semicolon, then assume
             --  that semicolon should have been a right parenthesis and exit
 
-            if Token = Tok_Is or else Token = Tok_Return then
+            if Token in Tok_Is | Tok_Return then
                Error_Msg_SP -- CODEFIX
                  ("|"";"" should be "")""");
                exit Specification_Loop;

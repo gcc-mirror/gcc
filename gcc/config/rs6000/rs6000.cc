@@ -3821,6 +3821,12 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);
 
+#ifdef XCOFF_DEBUGGING_INFO
+  /* For AIX default to 64-bit DWARF.  */
+  if (!OPTION_SET_P (dwarf_offset_size))
+    dwarf_offset_size = POINTER_SIZE_UNITS;
+#endif
+
   /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
      off all of the options that depend on those flags.  */
   ignore_masks = rs6000_disable_incompatible_switches ();
@@ -18108,7 +18114,7 @@ get_memref_parts (rtx mem, rtx *base, HOST_WIDE_INT *offset,
 		  HOST_WIDE_INT *size)
 {
   rtx addr_rtx;
-  if MEM_SIZE_KNOWN_P (mem)
+  if (MEM_SIZE_KNOWN_P (mem))
     *size = MEM_SIZE (mem);
   else
     return false;
@@ -20939,6 +20945,11 @@ rs6000_elf_file_end (void)
 #endif
 
 #if TARGET_XCOFF
+
+#ifndef HAVE_XCOFF_DWARF_EXTRAS
+#define HAVE_XCOFF_DWARF_EXTRAS 0
+#endif
+
 
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */

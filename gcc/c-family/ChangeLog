@@ -1,3 +1,24 @@
+2022-09-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* c-format.cc (convert_format_name_to_system_name): Fix warning.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY
+	for alignas, alignof, bool, false, static_assert, thread_local and
+	true.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Winvalid-utf8): Use ObjC instead of objC.  Remove
+	" in comments" from description.
+	(Wunicode): New option.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106836
+	* c-omp.cc (c_omp_split_clauses): Handle OMP_CLAUSE_DOACROSS.
+
 2022-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DOACROSS.

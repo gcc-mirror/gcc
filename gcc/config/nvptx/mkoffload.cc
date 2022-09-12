@@ -47,6 +47,7 @@ struct id_map
 {
   id_map *next;
   char *ptx_name;
+  char *dim;
 };
 
 static id_map *func_ids, **funcs_tail = &func_ids;
@@ -108,8 +109,11 @@ xputenv (const char *string)
 static void
 record_id (const char *p1, id_map ***where)
 {
-  const char *end = strchr (p1, '\n');
-  if (!end)
+  gcc_assert (p1[0] == '"');
+  p1++;
+  const char *end = strchr (p1, '"');
+  const char *end2 = strchr (p1, '\n');
+  if (!end || !end2 || end >= end2)
     fatal_error (input_location, "malformed ptx file");
 
   id_map *v = XNEW (id_map);
@@ -117,6 +121,16 @@ record_id (const char *p1, id_map ***where)
   v->ptx_name = XNEWVEC (char, len + 1);
   memcpy (v->ptx_name, p1, len);
   v->ptx_name[len] = '\0';
+  p1 = end + 1;
+  if (*end != '\n')
+    {
+      len = end2 - p1;
+      v->dim = XNEWVEC (char, len + 1);
+      memcpy (v->dim, p1, len);
+      v->dim[len] = '\0';
+    }
+  else
+    v->dim = NULL;
   v->next = NULL;
   id_map **tail = *where;
   *tail = v;
@@ -242,6 +256,10 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   id_map const *id;
   unsigned obj_count = 0;
   unsigned ix;
+  const char *sm_ver = NULL, *version = NULL;
+  const char *sm_ver2 = NULL, *version2 = NULL;
+  size_t file_cnt = 0;
+  size_t *file_idx = XALLOCAVEC (size_t, len);
 
   fprintf (out, "#include <stdint.h>\n\n");
 
@@ -250,6 +268,8 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   for (size_t i = 0; i != len;)
     {
       char c;
+      bool output_fn_ptr = false;
+      file_idx[file_cnt++] = i;
 
       fprintf (out, "static const char ptx_code_%u[] =\n\t\"", obj_count++);
       while ((c = input[i++]))
@@ -261,6 +281,16 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	    case '\n':
 	      fprintf (out, "\\n\"\n\t\"");
 	      /* Look for mappings on subsequent lines.  */
+	      if (UNLIKELY (startswith (input + i, ".target sm_")))
+		{
+		  sm_ver = input + i + strlen (".target sm_");
+		  continue;
+		}
+	      if (UNLIKELY (startswith (input + i, ".version ")))
+		{
+		  version = input + i + strlen (".version ");
+		  continue;
+		}
 	      while (startswith (input + i, "//:"))
 		{
 		  i += 3;
@@ -268,7 +298,10 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 		  if (startswith (input + i, "VAR_MAP "))
 		    record_id (input + i + 8, &vars_tail);
 		  else if (startswith (input + i, "FUNC_MAP "))
-		    record_id (input + i + 9, &funcs_tail);
+		    {
+		      output_fn_ptr = true;
+		      record_id (input + i + 9, &funcs_tail);
+		    }
 		  else
 		    abort ();
 		  /* Skip to next line. */
@@ -286,6 +319,81 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	  putc (c, out);
 	}
       fprintf (out, "\";\n\n");
+      if (output_fn_ptr
+	  && (omp_requires & GOMP_REQUIRES_REVERSE_OFFLOAD) != 0)
+	{
+	  if (sm_ver && sm_ver[0] == '3' && sm_ver[1] == '0'
+	      && sm_ver[2] == '\n')
+	    fatal_error (input_location,
+			 "%<omp requires reverse_offload%> requires at least "
+			 "%<sm_35%> for %<-misa=%>");
+	  sm_ver2 = sm_ver;
+	  version2 = version;
+	}
+    }
+
+  /* Create function-pointer array, required for reverse
+     offload function-pointer lookup.  */
+
+  if (func_ids && (omp_requires & GOMP_REQUIRES_REVERSE_OFFLOAD) != 0)
+    {
+      const char needle[] = "// BEGIN GLOBAL FUNCTION DECL: ";
+      fprintf (out, "static const char ptx_code_%u[] =\n", obj_count++);
+      fprintf (out, "\t\".version ");
+      for (size_t i = 0; version2[i] != '\0' && version2[i] != '\n'; i++)
+	fputc (version2[i], out);
+      fprintf (out, "\"\n\t\".target sm_");
+      for (size_t i = 0; version2[i] != '\0' && sm_ver2[i] != '\n'; i++)
+	fputc (sm_ver2[i], out);
+      fprintf (out, "\"\n\t\".file 1 \\\"<dummy>\\\"\"\n");
+
+      size_t fidx = 0;
+      for (id = func_ids; id; id = id->next)
+	{
+	  /* Only 'nohost' functions are needed - use NULL for the rest.
+	     Alternatively, besides searching for 'BEGIN FUNCTION DECL',
+	     checking for '.visible .entry ' + id->ptx_name would be
+	     required.  */
+	  if (!endswith (id->ptx_name, "$nohost"))
+	    continue;
+	  fprintf (out, "\t\".extern ");
+	  const char *p = input + file_idx[fidx];
+	  while (true)
+	    {
+	      p = strstr (p, needle);
+	      if (!p)
+		{
+		  fidx++;
+		  if (fidx >= file_cnt)
+		    break;
+		  p = input + file_idx[fidx];
+		  continue;
+		}
+	      p += strlen (needle);
+	      if (!startswith (p, id->ptx_name))
+		continue;
+	      p += strlen (id->ptx_name);
+	      if (*p != '\n')
+		continue;
+	      p++;
+	      gcc_assert (startswith (p, ".visible "));
+	      p += strlen (".visible ");
+	      for (; *p != '\0' && *p != '\n'; p++)
+		fputc (*p, out);
+	      break;
+	    }
+	  fprintf (out, "\"\n");
+	  if (fidx == file_cnt)
+	    fatal_error (input_location,
+			 "Cannot find function declaration for %qs",
+			 id->ptx_name);
+	}
+      fprintf (out, "\t\".visible .global .align 8 .u64 "
+		    "$offload_func_table[] = {");
+      for (comma = "", id = func_ids; id; comma = ",", id = id->next)
+	fprintf (out, "%s\"\n\t\t\"%s", comma,
+		 endswith (id->ptx_name, "$nohost") ? id->ptx_name : "0");
+      fprintf (out, "};\\n\";\n\n");
     }
 
   /* Dump out array of pointers to ptx object strings.  */
@@ -300,7 +408,7 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   /* Dump out variable idents.  */
   fprintf (out, "static const char *const var_mappings[] = {");
   for (comma = "", id = var_ids; id; comma = ",", id = id->next)
-    fprintf (out, "%s\n\t%s", comma, id->ptx_name);
+    fprintf (out, "%s\n\t\"%s\"", comma, id->ptx_name);
   fprintf (out, "\n};\n\n");
 
   /* Dump out function idents.  */
@@ -309,7 +417,8 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	   "  unsigned short dim[%d];\n"
 	   "} func_mappings[] = {\n", GOMP_DIM_MAX);
   for (comma = "", id = func_ids; id; comma = ",", id = id->next)
-    fprintf (out, "%s\n\t{%s}", comma, id->ptx_name);
+    fprintf (out, "%s\n\t{\"%s\"%s}", comma, id->ptx_name,
+	     id->dim ? id->dim : "");
   fprintf (out, "\n};\n\n");
 
   fprintf (out,

@@ -1,3 +1,493 @@
+2022-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_constantsynth):
+	Add new pattern for the abovementioned case.
+
+2022-09-10  Akari Takahashi  <akaritakahashioss@gmail.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.cc (get_memref_parts): Regularize some code.
+
+2022-09-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md: Rewrite the split pattern that performs
+	the abovementioned process so that insns that overwrite clobbered
+	register no longer need to be contiguous.
+	(DSC): Remove as no longer needed.
+
+2022-09-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (machine_function): New boolean member as
+	a flag that controls whether to emit the insns for stack pointer
+	adjustment inside of the pro/epilogue.
+	(xtensa_emit_adjust_stack_ptr): New function to share the common
+	codes and to emit insns if not inhibited.
+	(xtensa_expand_epilogue): Change to use the function mentioned
+	above when using the CALL0 ABI.
+	(xtensa_expand_prologue): Ditto.
+	And also change to set the inhibit flag used by
+	xtensa_emit_adjust_stack_ptr() to true if the stack pointer is only
+	used for its own adjustment.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wanalyzer-exposure-through-uninit-copy.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add
+	analyzer/known-function-manager.o.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/mkoffload.cc (struct id_map): Add 'dim' member.
+	(record_id): Store func name without quotes, store dim separately.
+	(process): For GOMP_REQUIRES_REVERSE_OFFLOAD, check that -march is
+	at least sm_35, create '$offload_func_table' global array and init
+	with reverse-offload function addresses.
+	* config/nvptx/nvptx.cc (write_fn_proto_1, write_fn_proto): New
+	force_public attribute to force .visible.
+	(nvptx_declare_function_name): For "omp target
+	device_ancestor_nohost" attribut, force .visible/TREE_PUBLIC.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_asm): Create .offload_func_table,
+	similar to pre-existing .offload_var_table.
+
+2022-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stddef.h [__STDC_VERSION__ > 201710L] (unreachable):
+	New macro.
+
+2022-09-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR middle-end/106833
+	* tree.cc (verify_opaque_type): New function.
+	(verify_type): Call verify_opaque_type for OPAQUE_TYPE.
+
+2022-09-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FABSVF, LDEXPVF, LDEXPV, FREXPVF_EXP,
+	FREXPVF_MANT, FREXPV_EXP, FREXPV_MANT): Add new builtins.
+	* config/gcn/gcn-protos.h (gcn_dconst1over2pi): New prototype.
+	* config/gcn/gcn-valu.md (MATH_UNOP_1OR2REG, MATH_UNOP_1REG,
+	MATH_UNOP_TRIG): New iterators.
+	(math_unop): New attributes.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>,
+	<math_unop><mode>2, <math_unop><mode>2<exec>,
+	*<math_unop><mode>2_insn, *<math_unop><mode>2<exec>_insn,
+	ldexp<mode>3, ldexp<mode>3<exec>,
+	frexp<mode>_exp2, frexp<mode>_mant2,
+	frexp<mode>_exp2<exec>, frexp<mode>_mant2<exec>): New instructions.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>): New expanders.
+	* config/gcn/gcn.cc (init_ext_gcn_constants): Update definition of
+	dconst1over2pi.
+	(gcn_dconst1over2pi): New.
+	(gcn_builtin_type_index): Add entry for v64df type.
+	(v64df_type_node): New.
+	(gcn_init_builtin_types): Initialize v64df_type_node.
+	(gcn_expand_builtin_1): Expand new builtins to instructions.
+	(print_operand): Fix assembler output for 1/(2*PI) constant.
+	* config/gcn/gcn.md (unspec): Add new entries.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* tree-predcom.cc (ref_at_iteration): Do not associate the
+	constant part of the offset into the MEM_REF offset
+	operand, across a non-zero offset.
+
+2022-09-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (RISCV_USE_CUSTOMISED_MULTI_LIB):
+	Move forward for cover all all necessary functions for suppress
+	unused function warnings.
+	(riscv_multi_lib_check): Move forward, and tweak message to suppress
+	-Werror=format-diag warning.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106881
+	* gimple-predicate-analysis.cc (simple_control_dep_chain):
+	Add only non-fallthru edges and avoid the same set of edges
+	as compute_control_dep_chain_pdom does.
+
+2022-09-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* doc/tm.texi.in (TARGET_OVERRIDES_FORMAT_ATTRIBUTES): Document requirement
+	of TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT being defined as well.
+	* doc/tm.texi: Regenerate.
+
+2022-09-09  Martin Liska  <mliska@suse.cz>
+
+	* optc-save-gen.awk: Always compare array option values with memcmp.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106838
+	* doc/extend.texi (Type Traits): Fix requirements. Document
+	__is_aggregate and __is_final.
+
+2022-09-08  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106625
+	* doc/invoke.texi:
+	State that the checker also reasons about symbolic values.
+
+2022-09-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106886
+	* tree-vect-slp.cc (vect_optimize_slp_pass::get_result_with_layout):
+	Fix copying of scalar stmts.
+
+2022-09-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/linux.h (MUSL_DYNAMIC_LINKER): Add #undef before #define.
+
+2022-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106870
+	* gimple-harden-conditionals.cc (insert_check_and_trap):
+	Set the control-altering flag on the built IFN_TRAP.
+	* gimple.cc (gimple_build_builtin_unreachable): Likewise.
+	* tree-cfg.cc (handle_abnormal_edges): Set the control-altering
+	flag on the .ABNORMAL_DISPATCHER call.
+	* tree-cfgcleanup.cc (cleanup_call_ctrl_altering_flag): Avoid
+	resetting the control altering flag for ECF_NORETURN calls.
+	(cleanup_control_flow_bb): Set the control altering flag on
+	discovered noreturn calls.
+	* symtab-thunks.cc (expand_thunk): Set the control altering
+	flag for the noreturn tailcall case.
+	* tree-eh.cc (lower_resx): Likewisw for trap and unwind_resume
+	calls.
+
+2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_ordered_sink): Add CONT_BB argument.
+	Add doacross(sink:omp_cur_iteration-1) support.
+	(expand_omp_ordered_source_sink): Clear counts[fd->ordered + 1].
+	Adjust expand_omp_ordered_sink caller.
+	(expand_omp_for_ordered_loops): If counts[fd->ordered + 1] is
+	non-NULL, set that variable to true at the start of outermost
+	non-collapsed loop and set it to false at the end of innermost
+	ordered loop.
+	(expand_omp_for_generic): If fd->ordered, allocate
+	1 + (fd->ordered - fd->collapse) further elements in counts array.
+	Copy to counts + 2 + fd->ordered the counts of fd->collapse ..
+	fd->ordered - 1 loop if any.
+
+2022-09-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106881
+	* gimple-predicate-analysis.cc (compute_control_dep_chain_pdom):
+	Add only non-fallthru edges and avoid the same set of edges
+	as the caller does.
+
+2022-09-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Use fpclassify like API.
+	* range-op-float.cc (finite_operand_p): Same.
+	(finite_operands_p): Same.
+	(foperator_lt::fold_range): Same.
+	(foperator_le::fold_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_ge::fold_range): Same.
+	(foperator_unordered::fold_range): Same.
+	(foperator_unordered::op1_range): Same.
+	(foperator_ordered::fold_range): Same.
+	* value-range.cc (frange::set_nan): Same.
+	(frange::set_signbit): Same.
+	(frange::union_): Same.
+	(frange::intersect): Same.
+	(frange::operator==): Same.
+	(frange::singleton_p): Same.
+	(frange::verify_range): Same.
+	(range_tests_nan): Same.
+	(range_tests_floats): Same.
+	* value-range.h(frange::known_finite): New.
+	(frange::maybe_inf): New.
+	(frange::known_inf): New.
+	(frange::maybe_nan): New.
+	(frange::known_nan): New.
+	(frange::known_signbit): New.
+
+2022-09-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/darwin-d.cc: Include tm.h.
+	* config/dragonfly-d.cc: Likewise.
+	* config/freebsd-d.cc: Remove memmodel.h.
+	* config/glibc-d.cc: Likewise.
+	* config/netbsd-d.cc: Include tm.h.
+	* config/openbsd-d.cc: Likewise.
+	* config/sol2-d.cc: Likewise.
+
+2022-09-08  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vqshluq_n_s<mode>): Use
+	MVE_pred/MVE_constraint instead of mve_imm_7/Ra.
+	(mve_vqshluq_m_n_s<mode>): Likewise.
+	(mve_vqrshrnbq_n_<supf><mode>): Use MVE_pred3/MVE_constraint3
+	instead of mve_imm_8/Rb.
+	(mve_vqrshrunbq_n_s<mode>): Likewise.
+	(mve_vqrshrntq_n_<supf><mode>): Likewise.
+	(mve_vqrshruntq_n_s<mode>): Likewise.
+	(mve_vrshrnbq_n_<supf><mode>): Likewise.
+	(mve_vrshrntq_n_<supf><mode>): Likewise.
+	(mve_vqrshrnbq_m_n_<supf><mode>): Likewise.
+	(mve_vqrshrntq_m_n_<supf><mode>): Likewise.
+	(mve_vrshrnbq_m_n_<supf><mode>): Likewise.
+	(mve_vrshrntq_m_n_<supf><mode>): Likewise.
+	(mve_vqrshrunbq_m_n_s<mode>): Likewise.
+	(mve_vsriq_n_<supf><mode): Use MVE_pred2/MVE_constraint2 instead
+	of mve_imm_selective_upto_8/Rg.
+	(mve_vsriq_m_n_<supf><mode>): Likewise.
+
+2022-09-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (splitter for set to and_mask constants):
+	Use int_reg_operand (instead of int_reg_operand_not_pseudo).
+	(splitter for multi-insn constant loads): Ditto.
+
+2022-09-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (CPP_OS_DEFAULT_SPEC): Define __PPC_VRSAVE__ if
+	-mvrsave is present.
+	* config/rs6000/t-rtems: Add -mvrsave multilib variants for
+	-mcpu=e6500.
+
+2022-09-07  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Restore detection of  HAVE_XCOFF_DWARF_EXTRAS.
+	* config/rs6000/rs6000.cc (HAVE_XCOFF_DWARF_EXTRAS): Reset it.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2022-09-07  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105586
+	* sched-rgn.cc (save_state_for_fallthru_edge): New function.
+	(schedule_region): Use it for all blocks.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stdalign.h [defined __STDC_VERSION__ &&
+	__STDC_VERSION__ > 201710L]: Disable all content.
+	* ginclude/stdbool.h [defined __STDC_VERSION__ && __STDC_VERSION__
+	> 201710L] (bool, true, false): Do not define.
+
+2022-09-07  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/106855
+	* collect2.cc (scan_prog_file): Restore if XCOFF_DEBUGGING_INFO.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	  Restore usage of XCOFF_DEBUGGING_INFO.
+	* config/rs6000/xcoff.h (XCOFF_DEBUGGING_INFO): Restore.
+	* dwarf2asm.cc (XCOFF_DEBUGGING_INFO): Restore support for
+	  XCOFF_DEBUGGING_INFO.
+	(dw2_asm_output_nstring): Likewise.
+	(USE_LINKONCE_INDIRECT): Likewise.
+	* dwarf2out.cc (XCOFF_DEBUGGING_INFO): Likewise.
+	(HAVE_XCOFF_DWARF_EXTRAS): Likewise.
+	(output_fde): Likewise.
+	(output_call_frame_info): Likewise.
+	(have_macinfo): Likewise.
+	(add_AT_loc_list): Likewise.
+	(add_AT_view_list): Likewise.
+	(output_compilation_unit_header): Likewise.
+	(output_pubnames): Likewise.
+	(output_aranges): Likewise.
+	(output_line_info): Likewise.
+	(output_macinfo): Likewise.
+	(dwarf2out_finish): Likewise.
+	(dwarf2out_early_finish): Likewise.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106866
+	* tree-ssa-dce.cc (eliminate_unnecessary_stmts): When
+	we changed cfun->calls_setjmp make sure to purge all
+	abnormal call edges.
+
+2022-09-07  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.cc (csky_emit_compare_float): Fix the expanding of
+	float LE comparing with zero for fpuv3.
+	* config/csky/csky.h (TARGET_SUPPORT_FPV2): New, true if any fpuv2
+	features are enabled.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106860
+	* tree-ssa-loop-split.cc (split_loop): Find the exit to
+	latch edge from the loop exit edge instead of from the
+	latch.  Verify we're going to find it.
+
+2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (dfs_mark_dominating_region):
+	Adjust to take the region exit source as argument.
+	(uninit_analysis::init_from_phi_def): Adjust.
+	(uninit_analysis::init_use_preds): Mark the dominating region
+	before computing control dependences.
+
+2022-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<SHORT:mode>_aarch64): Extend
+	w<-w, r<-w and w<-r alternatives to !simd, using 32-bit moves
+	in that case.  Extend w<-r to w<-Z.
+	(*mov<HFBF:mode>_aarch64): Likewise, but with Y instead of Z.
+	(*movti_aarch64): Use an FMOV from XZR for w<-Z if MOVI is not
+	available.
+	(define_split): Do not apply the floating-point immediate-to-register
+	split to zeros, even if MOVI is not available.
+
+2022-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_conditional_register_usage):
+	Disallow use of FPRs in register asms for !TARGET_FLOAT.
+
+2022-09-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/106828
+	* config/loongarch/loongarch.cc (loongarch_asan_shadow_offset): New.
+	(TARGET_ASAN_SHADOW_OFFSET): New.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Wno-unicode): Document.
+
+2022-09-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (const_scalar_int splitter): Remove.
+
+2022-09-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md: (constant splitters): Use "(pc)" as the
+	replacements.
+
+2022-09-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103144
+	* tree-vect-loop.cc (vect_is_nonlinear_iv_evolution): New function.
+	(vect_analyze_scalar_cycles_1): Detect nonlinear iv by upper function.
+	(vect_create_nonlinear_iv_init): New function.
+	(vect_peel_nonlinear_iv_init): Ditto.
+	(vect_create_nonlinear_iv_step): Ditto
+	(vect_create_nonlinear_iv_vec_step): Ditto
+	(vect_update_nonlinear_iv): Ditto
+	(vectorizable_nonlinear_induction): Ditto.
+	(vectorizable_induction): Call
+	vectorizable_nonlinear_induction when induction_type is not
+	vect_step_op_add.
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Update nonlinear iv for epilogue loop.
+	* tree-vectorizer.h (enum vect_induction_op_type): New enum.
+	(STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE): New Macro.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106754
+	* gimple-predicate-analysis.cc (compute_control_dep_chain_pdom):
+	New function, split out from compute_control_dep_chain.  Handle
+	loop-exit like conditions here by pushing to the control vector.
+	(compute_control_dep_chain): Adjust and streamline dumping.
+	In the wrapper perform a post-dominator walk as well.
+	(uninit_analysis::init_use_preds): Remove premature early exit.
+
+2022-09-06  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/linux.h (LINK_SPEC): Add static-pie.
+
+2022-09-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_le): Handle NANs and going past infinity.
+	(build_lt): Same.
+	(build_ge): Same.
+	(build_gt): Same.
+	(foperator_lt::op1_range): Avoid adjustments to range if build_*
+	returned false.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Add output flag to indicate whether we possibly have dropped
+	any chains.  Return whether the info is complete from the
+	wrapping overload.
+	(uninit_analysis::init_use_preds): Adjust accordingly, with
+	a workaround for PR106754.
+	(uninit_analysis::init_from_phi_def): Properly guard the
+	case where we complete an empty chain.
+
+2022-09-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/msp430/msp430.cc (msp430_single_op_cost): Document unused argument.
+
+2022-09-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-forwprop.cc (simplify_permutation): Set res_type to a vector
+	type with same element type as arg0, and length as op2.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106844
+	* gimple-predicate-analysis.cc (compute_control_dep_chain):
+	Return whether we found a chain.
+
+2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106841
+	* tree-vect-slp.cc (vect_detect_hybrid_slp): Also process
+	scatter/gather offset.
+
+2022-09-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/bpf/bpf.h (REGNO_REG_CLASS): Reference arguments as (void).
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Add GF_OMP_ORDERED_STANDALONE enumerator.
+	(gimple_omp_subcode):  Use GIMPLE_OMP_ORDERED instead of
+	GIMPLE_OMP_TEAMS as upper bound.
+	(gimple_omp_ordered_standalone_p, gimple_omp_ordered_standalone): New
+	inline functions.
+	* gimplify.cc (find_standalone_omp_ordered): Look for OMP_ORDERED with
+	NULL OMP_ORDERED_BODY rather than with OMP_DOACROSS clause.
+	(gimplify_expr): Call gimple_omp_ordered_standalone for OMP_ORDERED
+	with NULL OMP_ORDERED_BODY.
+	* omp-low.cc (check_omp_nesting_restrictions): Use
+	gimple_omp_ordered_standalone_p test instead of
+	omp_find_clause (..., OMP_CLAUSE_DOACROSS).
+	(lower_omp_ordered): Likewise.
+	* omp-expand.cc (expand_omp, build_omp_regions_1,
+	omp_make_gimple_edges): Likewise.
+
+2022-09-06  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.md (cskyv2_addcc): Fix missing operand.
+	(cskyv2_addcc_invert): Likewise.
+
+2022-09-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_expand_prologue): Remove unused automatic
+	`insn'.
+	(bpf_expand_epilogue): Likewise.
+
+2022-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtin.def (IX86_BUILTIN_CVTPS2PH512):
+	Map to CODE_FOR_avx512f_vcvtps2ph512_mask_sae.
+	* config/i386/sse.md (<mask_codefor>avx512f_vcvtps2ph512<mask_name>): Extend to ..
+	(<mask_codefor>avx512f_vcvtps2ph512<mask_name><round_saeonly_name>): .. this.
+	(avx512f_vcvtps2ph512_mask_sae): New expander
+
 2022-09-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-fold.cc

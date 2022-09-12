@@ -13680,6 +13680,71 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
     }
 }
 
+/* For OPAQUE_TYPE T, it should have only size and alignment information
+   and its mode should be of class MODE_OPAQUE.  This function verifies
+   these properties of T match TV which is the main variant of T and TC
+   which is the canonical of T.  */
+
+static void
+verify_opaque_type (const_tree t, tree tv, tree tc)
+{
+  gcc_assert (OPAQUE_TYPE_P (t));
+  gcc_assert (tv && tv == TYPE_MAIN_VARIANT (tv));
+  gcc_assert (tc && tc == TYPE_CANONICAL (tc));
+
+  /* For an opaque type T1, check if some of its properties match
+     the corresponding ones of the other opaque type T2, emit some
+     error messages for those inconsistent ones.  */
+  auto check_properties_for_opaque_type = [](const_tree t1, tree t2,
+					     const char *kind_msg)
+  {
+    if (!OPAQUE_TYPE_P (t2))
+      {
+	error ("type %s is not an opaque type", kind_msg);
+	debug_tree (t2);
+	return;
+      }
+    if (!OPAQUE_MODE_P (TYPE_MODE (t2)))
+      {
+	error ("type %s is not with opaque mode", kind_msg);
+	debug_tree (t2);
+	return;
+      }
+    if (TYPE_MODE (t1) != TYPE_MODE (t2))
+      {
+	error ("type %s differs by %<TYPE_MODE%>", kind_msg);
+	debug_tree (t2);
+	return;
+      }
+    poly_uint64 t1_size = tree_to_poly_uint64 (TYPE_SIZE (t1));
+    poly_uint64 t2_size = tree_to_poly_uint64 (TYPE_SIZE (t2));
+    if (maybe_ne (t1_size, t2_size))
+      {
+	error ("type %s differs by %<TYPE_SIZE%>", kind_msg);
+	debug_tree (t2);
+	return;
+      }
+    if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2))
+      {
+	error ("type %s differs by %<TYPE_ALIGN%>", kind_msg);
+	debug_tree (t2);
+	return;
+      }
+    if (TYPE_USER_ALIGN (t1) != TYPE_USER_ALIGN (t2))
+      {
+	error ("type %s differs by %<TYPE_USER_ALIGN%>", kind_msg);
+	debug_tree (t2);
+	return;
+      }
+  };
+
+  if (t != tv)
+    check_properties_for_opaque_type (t, tv, "variant");
+
+  if (t != tc)
+    check_properties_for_opaque_type (t, tc, "canonical");
+}
+
 /* Verify type T.  */
 
 void
@@ -13687,6 +13752,14 @@ verify_type (const_tree t)
 {
   bool error_found = false;
   tree mv = TYPE_MAIN_VARIANT (t);
+  tree ct = TYPE_CANONICAL (t);
+
+  if (OPAQUE_TYPE_P (t))
+    {
+      verify_opaque_type (t, mv, ct);
+      return;
+    }
+
   if (!mv)
     {
       error ("main variant is not defined");
@@ -13701,7 +13774,6 @@ verify_type (const_tree t)
   else if (t != mv && !verify_type_variant (t, mv))
     error_found = true;
 
-  tree ct = TYPE_CANONICAL (t);
   if (!ct)
     ;
   else if (TYPE_CANONICAL (ct) != ct)

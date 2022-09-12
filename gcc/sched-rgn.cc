@@ -3082,6 +3082,27 @@ free_bb_state_array (void)
   bb_state = NULL;
 }
 
+/* If LAST_BB falls through to another block B, record that B should
+   start with DFA start STATE.  */
+
+static void
+save_state_for_fallthru_edge (basic_block last_bb, state_t state)
+{
+  edge f = find_fallthru_edge (last_bb->succs);
+  if (f
+      && (!f->probability.initialized_p ()
+	  || (f->probability.to_reg_br_prob_base () * 100
+	      / REG_BR_PROB_BASE
+	      >= param_sched_state_edge_prob_cutoff)))
+  {
+    memcpy (bb_state[f->dest->index], state,
+	    dfa_state_size);
+    if (sched_verbose >= 5)
+      fprintf (sched_dump, "saving state for edge %d->%d\n",
+	       f->src->index, f->dest->index);
+  }
+}
+
 /* Schedule a region.  A region is either an inner loop, a loop-free
    subroutine, or a single basic block.  Each bb in the region is
    scheduled after its flow predecessors.  */
@@ -3155,6 +3176,7 @@ schedule_region (int rgn)
       if (no_real_insns_p (head, tail))
 	{
 	  gcc_assert (first_bb == last_bb);
+	  save_state_for_fallthru_edge (last_bb, bb_state[first_bb->index]);
 	  continue;
 	}
 
@@ -3173,26 +3195,13 @@ schedule_region (int rgn)
       curr_bb = first_bb;
       if (dbg_cnt (sched_block))
         {
-	  edge f;
 	  int saved_last_basic_block = last_basic_block_for_fn (cfun);
 
 	  schedule_block (&curr_bb, bb_state[first_bb->index]);
 	  gcc_assert (EBB_FIRST_BB (bb) == first_bb);
 	  sched_rgn_n_insns += sched_n_insns;
 	  realloc_bb_state_array (saved_last_basic_block);
-	  f = find_fallthru_edge (last_bb->succs);
-	  if (f
-	      && (!f->probability.initialized_p ()
-		  || (f->probability.to_reg_br_prob_base () * 100
-		      / REG_BR_PROB_BASE
-		      >= param_sched_state_edge_prob_cutoff)))
-	    {
-	      memcpy (bb_state[f->dest->index], curr_state,
-		      dfa_state_size);
-	      if (sched_verbose >= 5)
-		fprintf (sched_dump, "saving state for edge %d->%d\n",
-			 f->src->index, f->dest->index);
-	    }
+	  save_state_for_fallthru_edge (last_bb, curr_state);
         }
       else
         {

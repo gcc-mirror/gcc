@@ -26903,14 +26903,40 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "V8SF")])
 
-(define_insn "<mask_codefor>avx512f_vcvtps2ph512<mask_name>"
+;; vcvtps2ph is special, it encodes {sae} in evex, but round control in the imm
+;; For intrinsic _mm512_cvt_roundps_ph (a, imm), imm contains both {sae}
+;; and round control, we need to separate it in the assembly output.
+;; op2 in avx512f_vcvtps2ph512_mask_sae contains both sae and round control.
+(define_expand "avx512f_vcvtps2ph512_mask_sae"
+ [(set (match_operand:V16HI 0 "register_operand" "=v")
+       (vec_merge:V16HI
+	 (unspec:V16HI
+	   [(match_operand:V16SF 1 "register_operand" "v")
+	   (match_operand:SI 2 "const_0_to_255_operand")]
+	   UNSPEC_VCVTPS2PH)
+	 (match_operand:V16HI 3 "nonimm_or_0_operand")
+	 (match_operand:HI 4 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  int round = INTVAL (operands[2]);
+  /* Separate {sae} from rounding control imm,
+     imm[3:7] will be ignored by the instruction.  */
+  if (round & 8)
+    {
+      emit_insn (gen_avx512f_vcvtps2ph512_mask_round (operands[0], operands[1],
+	  operands[2], operands[3], operands[4], GEN_INT (8)));
+      DONE;
+    }
+})
+
+(define_insn "<mask_codefor>avx512f_vcvtps2ph512<mask_name><round_saeonly_name>"
   [(set (match_operand:V16HI 0 "register_operand" "=v")
 	(unspec:V16HI
 	  [(match_operand:V16SF 1 "register_operand" "v")
 	   (match_operand:SI 2 "const_0_to_255_operand")]
 	  UNSPEC_VCVTPS2PH))]
   "TARGET_AVX512F"
-  "vcvtps2ph\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  "vcvtps2ph\t{%2, <round_saeonly_mask_op3>%1, %0<mask_operand3>|%0<mask_operand3>, %1<round_saeonly_mask_op3>, %2}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])

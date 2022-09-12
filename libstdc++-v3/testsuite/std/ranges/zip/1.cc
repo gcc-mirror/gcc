@@ -102,10 +102,28 @@ test03()
   return true;
 }
 
+constexpr bool
+test04()
+{
+  // PR libstdc++/106766
+#if __SIZEOF_INT128__
+  auto r = views::zip(views::iota(__int128(0), __int128(1)));
+#else
+  auto r = views::zip(views::iota(0ll, 1ll));
+#endif
+  auto i = r.begin();
+  auto s = r.end();
+  VERIFY( s - i == 1 );
+  VERIFY( i + 1 - i == 1 );
+
+  return true;
+}
+
 int
 main()
 {
   static_assert(test01());
   static_assert(test02());
   static_assert(test03());
+  static_assert(test04());
 }

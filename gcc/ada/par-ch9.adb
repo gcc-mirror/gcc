@@ -343,10 +343,7 @@ package body Ch9 is
          --  Ada 2005 (AI-397): Reserved words NOT and OVERRIDING may begin an
          --  entry declaration.
 
-         elsif Token = Tok_Entry
-           or else Token = Tok_Not
-           or else Token = Tok_Overriding
-         then
+         elsif Token in Tok_Entry | Tok_Not | Tok_Overriding then
             Append (P_Entry_Declaration, Items);
 
          elsif Token = Tok_For then
@@ -760,7 +757,7 @@ package body Ch9 is
                Set_Must_Override     (Decl, Is_Overriding);
                Set_Must_Not_Override (Decl, Not_Overriding);
 
-            elsif Token = Tok_Function or else Token = Tok_Procedure then
+            elsif Token in Tok_Function | Tok_Procedure then
                Decl := P_Subprogram (Pf_Decl_Pexp);
 
                Set_Must_Override     (Specification (Decl), Is_Overriding);
@@ -987,7 +984,7 @@ package body Ch9 is
 
             --  If comma or colon after Id, must be Formal_Part
 
-            if Token = Tok_Comma or else Token = Tok_Colon then
+            if Token in Tok_Comma | Tok_Colon then
                Restore_Scan_State (Scan_State); -- to Id
                Set_Parameter_Specifications (Decl_Node, P_Formal_Part);
 
@@ -1095,7 +1092,7 @@ package body Ch9 is
 
             --  If identifier followed by comma or colon, must be Formal_Part
 
-            if Token = Tok_Comma or else Token = Tok_Colon then
+            if Token in Tok_Comma | Tok_Colon then
                Restore_Scan_State (Scan_State); -- to left paren
                Set_Parameter_Specifications (Accept_Node, P_Parameter_Profile);
 

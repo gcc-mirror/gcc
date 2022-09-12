@@ -28,6 +28,10 @@
 
 #include "libgomp.h"
 
+/* This is set to the ICV values of current GPU during device initialization,
+   when the offload image containing this libgomp portion is loaded.  */
+volatile struct gomp_offload_icvs GOMP_ADDITIONAL_ICVS;
+
 void
 omp_set_default_device (int device_num __attribute__((unused)))
 {
@@ -36,7 +40,7 @@ omp_set_default_device (int device_num __attribute__((unused)))
 int
 omp_get_default_device (void)
 {
-  return 0;
+  return GOMP_ADDITIONAL_ICVS.default_device;
 }
 
 int
@@ -58,14 +62,23 @@ omp_is_initial_device (void)
   return 0;
 }
 
-/* This is set to the device number of current GPU during device initialization,
-   when the offload image containing this libgomp portion is loaded.  */
-volatile int GOMP_DEVICE_NUM_VAR;
-
 int
 omp_get_device_num (void)
 {
-  return GOMP_DEVICE_NUM_VAR;
+  return GOMP_ADDITIONAL_ICVS.device_num;
+}
+
+int
+omp_get_max_teams (void)
+{
+  return GOMP_ADDITIONAL_ICVS.nteams;
+}
+
+void
+omp_set_num_teams (int num_teams)
+{
+  if (num_teams >= 0)
+    GOMP_ADDITIONAL_ICVS.nteams = num_teams;
 }
 
 ialias (omp_set_default_device)
@@ -74,3 +87,5 @@ ialias (omp_get_initial_device)
 ialias (omp_get_num_devices)
 ialias (omp_is_initial_device)
 ialias (omp_get_device_num)
+ialias (omp_get_max_teams)
+ialias (omp_set_num_teams)

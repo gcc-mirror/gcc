@@ -24397,8 +24397,11 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 		location_t loc = type_specifier_seq.locations[ds_type_spec];
 		if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
 		  {
-		    error_at (loc, "missing template arguments after %qT",
-			      auto_node);
+		    auto_diagnostic_group g;
+		    gcc_rich_location richloc (loc);
+		    richloc.add_fixit_insert_after ("<>");
+		    error_at (&richloc, "missing template arguments after %qE",
+			      tmpl);
 		    inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here",
 			    tmpl);
 		  }
@@ -39355,8 +39358,7 @@ cp_parser_omp_clause_doacross_sink (cp_parser *parser, location_t clause_loc,
 	  && cp_lexer_nth_token_is (parser->lexer, 4, CPP_CLOSE_PAREN))
 	{
 	  tree val = cp_lexer_peek_nth_token (parser->lexer, 3)->u.value;
-	  if (integer_onep (val)
-	      && same_type_p (TREE_TYPE (val), integer_type_node))
+	  if (integer_onep (val))
 	    {
 	      cp_lexer_consume_token (parser->lexer);
 	      cp_lexer_consume_token (parser->lexer);

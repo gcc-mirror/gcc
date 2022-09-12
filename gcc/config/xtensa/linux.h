@@ -54,9 +54,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC \
  "%{shared:-shared} \
   %{!shared: \
-    %{!static: \
+    %{!static:%{!static-pie: \
       %{rdynamic:-export-dynamic} \
-      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
+      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
+    %{static-pie:-static -pie --no-dynamic-linker -z text} \
     %{static:-static}} \
   %{mabi=windowed:--abi-windowed} \
   %{mabi=call0:--abi-call0}"

@@ -425,6 +425,77 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   return true;
 }
 
+/* Function vect_is_nonlinear_iv_evolution
+
+   Only support nonlinear induction for integer type
+   1. neg
+   2. mul by constant
+   3. lshift/rshift by constant.
+
+   For neg induction, return a fake step as integer -1.  */
+static bool
+vect_is_nonlinear_iv_evolution (class loop* loop, stmt_vec_info stmt_info,
+				gphi* loop_phi_node, tree *init, tree *step)
+{
+  tree init_expr, ev_expr, result, op1, op2;
+  gimple* def;
+
+  if (gimple_phi_num_args (loop_phi_node) != 2)
+    return false;
+
+  init_expr = PHI_ARG_DEF_FROM_EDGE (loop_phi_node, loop_preheader_edge (loop));
+  ev_expr = PHI_ARG_DEF_FROM_EDGE (loop_phi_node, loop_latch_edge (loop));
+
+  /* Support nonlinear induction only for integer type.  */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (init_expr)))
+    return false;
+
+  *init = init_expr;
+  result = PHI_RESULT (loop_phi_node);
+
+  if (TREE_CODE (ev_expr) != SSA_NAME
+      || ((def = SSA_NAME_DEF_STMT (ev_expr)), false)
+      || !is_gimple_assign (def))
+    return false;
+
+  enum tree_code t_code = gimple_assign_rhs_code (def);
+  switch (t_code)
+    {
+    case NEGATE_EXPR:
+      if (gimple_assign_rhs1 (def) != result)
+	return false;
+      *step = build_int_cst (TREE_TYPE (init_expr), -1);
+      STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_neg;
+      break;
+
+    case RSHIFT_EXPR:
+    case LSHIFT_EXPR:
+    case MULT_EXPR:
+      op1 = gimple_assign_rhs1 (def);
+      op2 = gimple_assign_rhs2 (def);
+      if (TREE_CODE (op2) != INTEGER_CST
+	  || op1 != result)
+	return false;
+      *step = op2;
+      if (t_code == LSHIFT_EXPR)
+	STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_shl;
+      else if (t_code == RSHIFT_EXPR)
+	STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_shr;
+      /* NEGATE_EXPR and MULT_EXPR are both vect_step_op_mul.  */
+      else
+	STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_mul;
+      break;
+
+    default:
+      return false;
+    }
+
+  STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_info) = *init;
+  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info) = *step;
+
+  return true;
+}
+
 /* Return true if PHI, described by STMT_INFO, is the inner PHI in
    what we are assuming is a double reduction.  For example, given
    a structure like this:
@@ -513,11 +584,16 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 	    = evolution_part_in_loop_num (access_fn, loop->num);
 	}
 
-      if (!access_fn
-	  || vect_inner_phi_in_double_reduction_p (loop_vinfo, phi)
-	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &init, &step)
-	  || (LOOP_VINFO_LOOP (loop_vinfo) != loop
-	      && TREE_CODE (step) != INTEGER_CST))
+      if ((!access_fn
+	   || vect_inner_phi_in_double_reduction_p (loop_vinfo, phi)
+	   || !vect_is_simple_iv_evolution (loop->num, access_fn,
+					    &init, &step)
+	   || (LOOP_VINFO_LOOP (loop_vinfo) != loop
+	       && TREE_CODE (step) != INTEGER_CST))
+	  /* Only handle nonlinear iv for same loop.  */
+	  && (LOOP_VINFO_LOOP (loop_vinfo) != loop
+	      || !vect_is_nonlinear_iv_evolution (loop, stmt_vinfo,
+						  phi, &init, &step)))
 	{
 	  worklist.safe_push (stmt_vinfo);
 	  continue;
@@ -8233,6 +8309,591 @@ vect_can_vectorize_without_simd_p (code_helper code)
 	  && vect_can_vectorize_without_simd_p (tree_code (code)));
 }
 
+/* Create vector init for vectorized iv.  */
+static tree
+vect_create_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
+			       tree step_expr, poly_uint64 nunits,
+			       tree vectype,
+			       enum vect_induction_op_type induction_type)
+{
+  unsigned HOST_WIDE_INT const_nunits;
+  tree vec_shift, vec_init, new_name;
+  unsigned i;
+  tree itype = TREE_TYPE (vectype);
+
+  /* iv_loop is the loop to be vectorized. Create:
+     vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr).  */
+  new_name = gimple_convert (stmts, itype, init_expr);
+  switch (induction_type)
+    {
+    case vect_step_op_shr:
+    case vect_step_op_shl:
+      /* Build the Initial value from shift_expr.  */
+      vec_init = gimple_build_vector_from_val (stmts,
+					       vectype,
+					       new_name);
+      vec_shift = gimple_build (stmts, VEC_SERIES_EXPR, vectype,
+				build_zero_cst (itype), step_expr);
+      vec_init = gimple_build (stmts,
+			       (induction_type == vect_step_op_shr
+				? RSHIFT_EXPR : LSHIFT_EXPR),
+			       vectype, vec_init, vec_shift);
+      break;
+
+    case vect_step_op_neg:
+      {
+	vec_init = gimple_build_vector_from_val (stmts,
+						 vectype,
+						 new_name);
+	tree vec_neg = gimple_build (stmts, NEGATE_EXPR,
+				     vectype, vec_init);
+	/* The encoding has 2 interleaved stepped patterns.  */
+	vec_perm_builder sel (nunits, 2, 3);
+	sel.quick_grow (6);
+	for (i = 0; i < 3; i++)
+	  {
+	    sel[2 * i] = i;
+	    sel[2 * i + 1] = i + nunits;
+	  }
+	vec_perm_indices indices (sel, 2, nunits);
+	tree perm_mask_even
+	  = vect_gen_perm_mask_checked (vectype, indices);
+	vec_init = gimple_build (stmts, VEC_PERM_EXPR,
+				 vectype,
+				 vec_init, vec_neg,
+				 perm_mask_even);
+      }
+      break;
+
+    case vect_step_op_mul:
+      {
+	/* Use unsigned mult to avoid UD integer overflow.  */
+	gcc_assert (nunits.is_constant (&const_nunits));
+	tree utype = unsigned_type_for (itype);
+	tree uvectype = build_vector_type (utype,
+					   TYPE_VECTOR_SUBPARTS (vectype));
+	new_name = gimple_convert (stmts, utype, new_name);
+	vec_init = gimple_build_vector_from_val (stmts,
+						 uvectype,
+						 new_name);
+	tree_vector_builder elts (uvectype, const_nunits, 1);
+	tree elt_step = build_one_cst (utype);
+
+	elts.quick_push (elt_step);
+	for (i = 1; i < const_nunits; i++)
+	  {
+	    /* Create: new_name_i = new_name + step_expr.  */
+	    elt_step = gimple_build (stmts, MULT_EXPR,
+				     utype, elt_step, step_expr);
+	    elts.quick_push (elt_step);
+	  }
+	/* Create a vector from [new_name_0, new_name_1, ...,
+	   new_name_nunits-1].  */
+	tree vec_mul = gimple_build_vector (stmts, &elts);
+	vec_init = gimple_build (stmts, MULT_EXPR, uvectype,
+				 vec_init, vec_mul);
+	vec_init = gimple_convert (stmts, vectype, vec_init);
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return vec_init;
+}
+
+/* Peel init_expr by skip_niter for induction_type.  */
+tree
+vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
+			     tree skip_niters, tree step_expr,
+			     enum vect_induction_op_type induction_type)
+{
+  gcc_assert (TREE_CODE (skip_niters) == INTEGER_CST);
+  tree type = TREE_TYPE (init_expr);
+  unsigned prec = TYPE_PRECISION (type);
+  switch (induction_type)
+    {
+    case vect_step_op_neg:
+      if (TREE_INT_CST_LOW (skip_niters) % 2)
+	init_expr = gimple_build (stmts, NEGATE_EXPR, type, init_expr);
+      /* else no change.  */
+      break;
+
+    case vect_step_op_shr:
+    case vect_step_op_shl:
+      skip_niters = gimple_convert (stmts, type, skip_niters);
+      step_expr = gimple_build (stmts, MULT_EXPR, type, step_expr, skip_niters);
+      /* When shift mount >= precision, need to avoid UD.
+	 In the original loop, there's no UD, and according to semantic,
+	 init_expr should be 0 for lshr, ashl, and >>= (prec - 1) for ashr.  */
+      if (!tree_fits_uhwi_p (step_expr)
+	  || tree_to_uhwi (step_expr) >= prec)
+	{
+	  if (induction_type == vect_step_op_shl
+	      || TYPE_UNSIGNED (type))
+	    init_expr = build_zero_cst (type);
+	  else
+	    init_expr = gimple_build (stmts, RSHIFT_EXPR, type,
+				      init_expr,
+				      wide_int_to_tree (type, prec - 1));
+	}
+      else
+	init_expr = gimple_build (stmts, (induction_type == vect_step_op_shr
+					  ? RSHIFT_EXPR : LSHIFT_EXPR),
+				  type, init_expr, step_expr);
+      break;
+
+    case vect_step_op_mul:
+      {
+	tree utype = unsigned_type_for (type);
+	init_expr = gimple_convert (stmts, utype, init_expr);
+	unsigned skipn = TREE_INT_CST_LOW (skip_niters);
+	wide_int begin = wi::to_wide (step_expr);
+	for (unsigned i = 0; i != skipn - 1; i++)
+	  begin = wi::mul (begin, wi::to_wide (step_expr));
+	tree mult_expr = wide_int_to_tree (utype, begin);
+	init_expr = gimple_build (stmts, MULT_EXPR, utype, init_expr, mult_expr);
+	init_expr = gimple_convert (stmts, type, init_expr);
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return init_expr;
+}
+
+/* Create vector step for vectorized iv.  */
+static tree
+vect_create_nonlinear_iv_step (gimple_seq* stmts, tree step_expr,
+			       poly_uint64 vf,
+			       enum vect_induction_op_type induction_type)
+{
+  tree expr = build_int_cst (TREE_TYPE (step_expr), vf);
+  tree new_name = NULL;
+  /* Step should be pow (step, vf) for mult induction.  */
+  if (induction_type == vect_step_op_mul)
+    {
+      gcc_assert (vf.is_constant ());
+      wide_int begin = wi::to_wide (step_expr);
+
+      for (unsigned i = 0; i != vf.to_constant () - 1; i++)
+	begin = wi::mul (begin, wi::to_wide (step_expr));
+
+      new_name = wide_int_to_tree (TREE_TYPE (step_expr), begin);
+    }
+  else if (induction_type == vect_step_op_neg)
+    /* Do nothing.  */
+    ;
+  else
+    new_name = gimple_build (stmts, MULT_EXPR, TREE_TYPE (step_expr),
+			     expr, step_expr);
+  return new_name;
+}
+
+static tree
+vect_create_nonlinear_iv_vec_step (loop_vec_info loop_vinfo,
+				   stmt_vec_info stmt_info,
+				   tree new_name, tree vectype,
+				   enum vect_induction_op_type induction_type)
+{
+  /* No step is needed for neg induction.  */
+  if (induction_type == vect_step_op_neg)
+    return NULL;
+
+  tree t = unshare_expr (new_name);
+  gcc_assert (CONSTANT_CLASS_P (new_name)
+	      || TREE_CODE (new_name) == SSA_NAME);
+  tree new_vec = build_vector_from_val (vectype, t);
+  tree vec_step = vect_init_vector (loop_vinfo, stmt_info,
+				    new_vec, vectype, NULL);
+  return vec_step;
+}
+
+/* Update vectorized iv with vect_step, induc_def is init.  */
+static tree
+vect_update_nonlinear_iv (gimple_seq* stmts, tree vectype,
+			  tree induc_def, tree vec_step,
+			  enum vect_induction_op_type induction_type)
+{
+  tree vec_def = induc_def;
+  switch (induction_type)
+    {
+    case vect_step_op_mul:
+      {
+	/* Use unsigned mult to avoid UD integer overflow.  */
+	tree uvectype
+	  = build_vector_type (unsigned_type_for (TREE_TYPE (vectype)),
+			       TYPE_VECTOR_SUBPARTS (vectype));
+	vec_def = gimple_convert (stmts, uvectype, vec_def);
+	vec_step = gimple_convert (stmts, uvectype, vec_step);
+	vec_def = gimple_build (stmts, MULT_EXPR, uvectype,
+				vec_def, vec_step);
+	vec_def = gimple_convert (stmts, vectype, vec_def);
+      }
+      break;
+
+    case vect_step_op_shr:
+      vec_def = gimple_build (stmts, RSHIFT_EXPR, vectype,
+			      vec_def, vec_step);
+      break;
+
+    case vect_step_op_shl:
+      vec_def = gimple_build (stmts, LSHIFT_EXPR, vectype,
+			      vec_def, vec_step);
+      break;
+    case vect_step_op_neg:
+      vec_def = induc_def;
+      /* Do nothing.  */
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return vec_def;
+
+}
+/* Function vectorizable_induction
+
+   Check if STMT_INFO performs an nonlinear induction computation that can be
+   vectorized. If VEC_STMT is also passed, vectorize the induction PHI: create
+   a vectorized phi to replace it, put it in VEC_STMT, and add it to the same
+   basic block.
+   Return true if STMT_INFO is vectorizable in this way.  */
+
+static bool
+vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
+				  stmt_vec_info stmt_info,
+				  gimple **vec_stmt, slp_tree slp_node,
+				  stmt_vector_for_cost *cost_vec)
+{
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  unsigned ncopies;
+  bool nested_in_vect_loop = false;
+  class loop *iv_loop;
+  tree vec_def;
+  edge pe = loop_preheader_edge (loop);
+  basic_block new_bb;
+  tree vec_init, vec_step;
+  tree new_name;
+  gimple *new_stmt;
+  gphi *induction_phi;
+  tree induc_def, vec_dest;
+  tree init_expr, step_expr;
+  tree niters_skip;
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  unsigned i;
+  gimple_stmt_iterator si;
+
+  gphi *phi = dyn_cast <gphi *> (stmt_info->stmt);
+
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  enum vect_induction_op_type induction_type
+    = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info);
+
+  gcc_assert (induction_type > vect_step_op_add);
+
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+  gcc_assert (ncopies >= 1);
+
+  /* FORNOW. Only handle nonlinear induction in the same loop.  */
+  if (nested_in_vect_loop_p (loop, stmt_info))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "nonlinear induction in nested loop.\n");
+      return false;
+    }
+
+  iv_loop = loop;
+  gcc_assert (iv_loop == (gimple_bb (phi))->loop_father);
+
+  /* TODO: Support slp for nonlinear iv. There should be separate vector iv
+     update for each iv and a permutation to generate wanted vector iv.  */
+  if (slp_node)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "SLP induction not supported for nonlinear"
+			 " induction.\n");
+      return false;
+    }
+
+  /* Init_expr will be update by vect_update_ivs_after_vectorizer,
+     if niters is unkown:
+     For shift, when shift mount >= precision, there would be UD.
+     For mult, don't known how to generate
+     init_expr * pow (step, niters) for variable niters.
+     For neg, it should be ok, since niters of vectorized main loop
+     will always be multiple of 2.  */
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && induction_type != vect_step_op_neg)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Peeling for epilogue is not supported"
+			 " for nonlinear induction except neg"
+			 " when iteration count is unknown.\n");
+      return false;
+    }
+
+  /* Also doens't support peel for neg when niter is variable.
+     ??? generate something like niter_expr & 1 ? init_expr : -init_expr?  */
+  niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+  if (niters_skip != NULL_TREE
+      && TREE_CODE (niters_skip) != INTEGER_CST)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Peeling for alignement is not supported"
+			 " for nonlinear induction when niters_skip"
+			 " is not constant.\n");
+      return false;
+    }
+
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && induction_type == vect_step_op_mul)
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "floating point nonlinear induction vectorization"
+			 " not supported.\n");
+      return false;
+    }
+
+  step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
+  init_expr = vect_phi_initial_value (phi);
+  gcc_assert (step_expr != NULL_TREE && init_expr != NULL
+	      && TREE_CODE (step_expr) == INTEGER_CST);
+  /* step_expr should be aligned with init_expr,
+     .i.e. uint64 a >> 1, step is int, but vector<uint64> shift is used.  */
+  step_expr = fold_convert (TREE_TYPE (vectype), step_expr);
+
+  if (TREE_CODE (init_expr) == INTEGER_CST)
+    init_expr = fold_convert (TREE_TYPE (vectype), init_expr);
+  else
+    gcc_assert (tree_nop_conversion_p (TREE_TYPE (vectype),
+				       TREE_TYPE (init_expr)));
+
+  switch (induction_type)
+    {
+    case vect_step_op_neg:
+      if (TREE_CODE (init_expr) != INTEGER_CST
+	  && TREE_CODE (init_expr) != REAL_CST)
+	{
+	  /* Check for backend support of NEGATE_EXPR and vec_perm.  */
+	  if (!directly_supported_p (NEGATE_EXPR, vectype))
+	    return false;
+
+	  /* The encoding has 2 interleaved stepped patterns.  */
+	  vec_perm_builder sel (nunits, 2, 3);
+	  machine_mode mode = TYPE_MODE (vectype);
+	  sel.quick_grow (6);
+	  for (i = 0; i < 3; i++)
+	    {
+	      sel[i * 2] = i;
+	      sel[i * 2 + 1] = i + nunits;
+	    }
+	  vec_perm_indices indices (sel, 2, nunits);
+	  if (!can_vec_perm_const_p (mode, mode, indices))
+	    return false;
+	}
+      break;
+
+    case vect_step_op_mul:
+      {
+	/* Check for backend support of MULT_EXPR.  */
+	if (!directly_supported_p (MULT_EXPR, vectype))
+	  return false;
+
+	/* ?? How to construct vector step for variable number vector.
+	   [ 1, step, pow (step, 2), pow (step, 4), .. ].  */
+	if (!vf.is_constant ())
+	  return false;
+      }
+      break;
+
+    case vect_step_op_shr:
+      /* Check for backend support of RSHIFT_EXPR.  */
+      if (!directly_supported_p (RSHIFT_EXPR, vectype, optab_vector))
+	return false;
+
+      /* Don't shift more than type precision to avoid UD.  */
+      if (!tree_fits_uhwi_p (step_expr)
+	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+		       TYPE_PRECISION (TREE_TYPE (init_expr))))
+	return false;
+      break;
+
+    case vect_step_op_shl:
+      /* Check for backend support of RSHIFT_EXPR.  */
+      if (!directly_supported_p (LSHIFT_EXPR, vectype, optab_vector))
+	return false;
+
+      /* Don't shift more than type precision to avoid UD.  */
+      if (!tree_fits_uhwi_p (step_expr)
+	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+		       TYPE_PRECISION (TREE_TYPE (init_expr))))
+	return false;
+
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!vec_stmt) /* transformation not required.  */
+    {
+      unsigned inside_cost = 0, prologue_cost = 0;
+      /* loop cost for vec_loop. Neg induction doesn't have any
+	 inside_cost.  */
+      inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
+				      stmt_info, 0, vect_body);
+
+      /* loop cost for vec_loop. Neg induction doesn't have any
+	 inside_cost.  */
+      if (induction_type == vect_step_op_neg)
+	inside_cost = 0;
+
+      /* prologue cost for vec_init and vec_step.  */
+      prologue_cost = record_stmt_cost (cost_vec, 2, scalar_to_vec,
+					stmt_info, 0, vect_prologue);
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_induction_cost: inside_cost = %d, "
+			 "prologue_cost = %d. \n", inside_cost,
+			 prologue_cost);
+
+      STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
+      DUMP_VECT_SCOPE ("vectorizable_nonlinear_induction");
+      return true;
+    }
+
+  /* Transform.  */
+
+  /* Compute a vector variable, initialized with the first VF values of
+     the induction variable.  E.g., for an iv with IV_PHI='X' and
+     evolution S, for a vector of 4 units, we want to compute:
+     [X, X + S, X + 2*S, X + 3*S].  */
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "transform induction phi.\n");
+
+  pe = loop_preheader_edge (iv_loop);
+  /* Find the first insertion point in the BB.  */
+  basic_block bb = gimple_bb (phi);
+  si = gsi_after_labels (bb);
+
+  gimple_seq stmts = NULL;
+
+  /* If we are using the loop mask to "peel" for alignment then we need
+     to adjust the start value here.  */
+  if (niters_skip != NULL_TREE)
+    init_expr = vect_peel_nonlinear_iv_init (&stmts, init_expr, niters_skip,
+					     step_expr, induction_type);
+
+  vec_init = vect_create_nonlinear_iv_init (&stmts, init_expr,
+					    step_expr, nunits, vectype,
+					    induction_type);
+  if (stmts)
+    {
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+      gcc_assert (!new_bb);
+    }
+
+  stmts = NULL;
+  new_name = vect_create_nonlinear_iv_step (&stmts, step_expr,
+					    vf, induction_type);
+  if (stmts)
+    {
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+      gcc_assert (!new_bb);
+    }
+
+  vec_step = vect_create_nonlinear_iv_vec_step (loop_vinfo, stmt_info,
+						new_name, vectype,
+						induction_type);
+  /* Create the following def-use cycle:
+     loop prolog:
+     vec_init = ...
+     vec_step = ...
+     loop:
+     vec_iv = PHI <vec_init, vec_loop>
+     ...
+     STMT
+     ...
+     vec_loop = vec_iv + vec_step;  */
+
+  /* Create the induction-phi that defines the induction-operand.  */
+  vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
+  induction_phi = create_phi_node (vec_dest, iv_loop->header);
+  induc_def = PHI_RESULT (induction_phi);
+
+  /* Create the iv update inside the loop.  */
+  stmts = NULL;
+  vec_def = vect_update_nonlinear_iv (&stmts, vectype,
+				      induc_def, vec_step,
+				      induction_type);
+
+  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+  new_stmt = SSA_NAME_DEF_STMT (vec_def);
+
+  /* Set the arguments of the phi node:  */
+  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
+  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
+	       UNKNOWN_LOCATION);
+
+  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (induction_phi);
+  *vec_stmt = induction_phi;
+
+  /* In case that vectorization factor (VF) is bigger than the number
+     of elements that we can fit in a vectype (nunits), we have to generate
+     more than one vector stmt - i.e - we need to "unroll" the
+     vector stmt by a factor VF/nunits.  For more details see documentation
+     in vectorizable_operation.  */
+
+  if (ncopies > 1)
+    {
+      stmts = NULL;
+      /* FORNOW. This restriction should be relaxed.  */
+      gcc_assert (!nested_in_vect_loop);
+
+      new_name = vect_create_nonlinear_iv_step (&stmts, step_expr,
+						nunits, induction_type);
+
+      vec_step = vect_create_nonlinear_iv_vec_step (loop_vinfo, stmt_info,
+						    new_name, vectype,
+						    induction_type);
+      vec_def = induc_def;
+      for (i = 1; i < ncopies; i++)
+	{
+	  /* vec_i = vec_prev + vec_step.  */
+	  stmts = NULL;
+	  vec_def = vect_update_nonlinear_iv (&stmts, vectype,
+					      vec_def, vec_step,
+					      induction_type);
+	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+	  new_stmt = SSA_NAME_DEF_STMT (vec_def);
+	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	}
+    }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "transform induction: created def-use cycle: %G%G",
+		     (gimple *) induction_phi, SSA_NAME_DEF_STMT (vec_def));
+
+  return true;
+}
+
 /* Function vectorizable_induction
 
    Check if STMT_INFO performs an induction computation that can be vectorized.
@@ -8263,6 +8924,8 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   unsigned i;
   tree expr;
   gimple_stmt_iterator si;
+  enum vect_induction_op_type induction_type
+    = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info);
 
   gphi *phi = dyn_cast <gphi *> (stmt_info->stmt);
   if (!phi)
@@ -8274,6 +8937,11 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   /* Make sure it was recognized as induction computation.  */
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
     return false;
+
+  /* Handle nonlinear induction in a separate place.  */
+  if (induction_type != vect_step_op_add)
+    return vectorizable_nonlinear_induction (loop_vinfo, stmt_info,
+					     vec_stmt, slp_node, cost_vec);
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);

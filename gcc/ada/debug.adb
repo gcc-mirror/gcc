@@ -142,7 +142,7 @@ package body Debug is
    --  d_a  Stop elaboration checks on accept or select statement
    --  d_b  Use designated type model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
-   --  d_d
+   --  d_d  CUDA compilation : compile for the device
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
    --  d_g  Disable large static aggregates
@@ -201,7 +201,7 @@ package body Debug is
    --  d6   Default access unconstrained to thin pointers
    --  d7   Suppress version/source stamp/compilation time for -gnatv/-gnatl
    --  d8   Force opposite endianness in packed stuff
-   --  d9   Allow lock free implementation
+   --  d9
 
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
@@ -345,8 +345,8 @@ package body Debug is
 
    --  d_a  Ignore the effects of pragma Elaborate_All
    --  d_b  Ignore the effects of pragma Elaborate_Body
-   --  d_c
-   --  d_d
+   --  d_c  CUDA compilation : compile/bind for the host
+   --  d_d  CUDA compilation : compile/bind for the device
    --  d_e  Ignore the effects of pragma Elaborate
    --  d_f
    --  d_g
@@ -1088,9 +1088,6 @@ package body Debug is
    --  d8   This forces the packed stuff to generate code assuming the
    --       opposite endianness from the actual correct value. Useful in
    --       testing out code generation from the packed routines.
-
-   --  d9   This allows lock free implementation for protected objects
-   --       (see Exp_Ch9).
 
    --  d.1  Sets Opt.Unnest_Subprogram_Mode to enable unnesting of subprograms.
    --       This special pass does not actually unnest things, but it ensures

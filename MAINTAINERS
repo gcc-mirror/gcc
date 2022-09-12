@@ -30,7 +30,7 @@ Richard Biener					<rguenther@suse.de>
 Richard Earnshaw				<richard.earnshaw@arm.com>
 Jakub Jelinek					<jakub@redhat.com>
 Richard Kenner					<kenner@nyu.edu>
-Jeff Law					<jlaw@tachyum.com>
+Jeff Law					<jeffreyalaw@gmail.com>
 Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
@@ -67,8 +67,8 @@ bfin port		Jie Zhang		<jzhang918@gmail.com>
 bpf port		Jose E. Marchesi	<jose.marchesi@oracle.com>
 c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
-c-sky port		Xianmiao Qu		<xianmiao_qu@c-sky.com>
-c-sky port		Yunhai Shang		<yunhai_shang@c-sky.com>
+c-sky port		Xianmiao Qu		<cooper.qu@linux.alibaba.com>
+c-sky port		Yunhai Shang		<yunhai@linux.alibaba.com>
 epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>

@@ -428,7 +428,6 @@ bpf_compute_frame_layout (void)
 void
 bpf_expand_prologue (void)
 {
-  rtx insn;
   HOST_WIDE_INT size;
 
   size = (cfun->machine->local_vars_size
@@ -468,7 +467,7 @@ bpf_expand_prologue (void)
 				       plus_constant (DImode,
 						      hard_frame_pointer_rtx,
 						      fp_offset - 8));
-		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
+		  emit_move_insn (mem, gen_rtx_REG (DImode, regno));
 		  fp_offset -= 8;
 		}
 	    }
@@ -481,15 +480,15 @@ bpf_expand_prologue (void)
      accessor.  */
   if (cfun->calls_alloca)
     {
-      insn = emit_move_insn (stack_pointer_rtx,
-			     hard_frame_pointer_rtx);
+      emit_move_insn (stack_pointer_rtx,
+                      hard_frame_pointer_rtx);
 
       if (size > 0)
 	{
-	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-					 gen_rtx_PLUS (Pmode,
-						       stack_pointer_rtx,
-						       GEN_INT (-size))));
+	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
+                                  gen_rtx_PLUS (Pmode,
+                                                stack_pointer_rtx,
+                                                GEN_INT (-size))));
 	}
     }
 }
@@ -504,7 +503,6 @@ bpf_expand_epilogue (void)
      not restoring callee-saved registers in BPF.  */
   if (TARGET_XBPF)
     {
-      rtx insn;
       int regno;
       int fp_offset = -cfun->machine->local_vars_size;
 
@@ -528,7 +526,7 @@ bpf_expand_epilogue (void)
 				       plus_constant (DImode,
 						      hard_frame_pointer_rtx,
 						      fp_offset - 8));
-		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
+		  emit_move_insn (gen_rtx_REG (DImode, regno), mem);
 		  fp_offset -= 8;
 		}
 	    }

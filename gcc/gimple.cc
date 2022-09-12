@@ -440,6 +440,7 @@ gimple_build_builtin_unreachable (location_t loc)
       gcc_checking_assert (data == NULL_TREE);
       g = gimple_build_call_internal (IFN_TRAP, 0);
     }
+  gimple_call_set_ctrl_altering (g, true);
   gimple_set_location (g, loc);
   return g;
 }

@@ -42,7 +42,10 @@ package System.Val_Flt is
    package Impl is new Val_Real
      (Float,
       System.Powten_Flt.Maxpow,
-      System.Powten_Flt.Powten'Address,
+      System.Powten_Flt.Powfive'Address,
+      System.Null_Address,
+      System.Null_Address,
+      System.Null_Address,
       Unsigned_Types.Unsigned);
 
    function Scan_Float

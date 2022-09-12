@@ -195,7 +195,11 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @{
    */
 
-  error_code make_error_code(errc) noexcept;
+namespace __adl_only
+{
+  void make_error_code() = delete;
+  void make_error_condition() = delete;
+}
 
   /** Class error_code
    *
@@ -231,7 +235,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     template<typename _ErrorCodeEnum,
 	     typename = _Check<_ErrorCodeEnum>>
       error_code(_ErrorCodeEnum __e) noexcept
-      { *this = make_error_code(__e); }
+      {
+	using __adl_only::make_error_code;
+	*this = make_error_code(__e);
+      }
 
     error_code(const error_code&) = default;
     error_code& operator=(const error_code&) = default;
@@ -330,8 +337,6 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
 
-  error_condition make_error_condition(errc) noexcept;
-
   /** Class error_condition
    *
    * This class represents error conditions that may be visible at an API
@@ -363,7 +368,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     template<typename _ErrorConditionEnum,
 	     typename = _Check<_ErrorConditionEnum>>
       error_condition(_ErrorConditionEnum __e) noexcept
-      { *this = make_error_condition(__e); }
+      {
+	using __adl_only::make_error_condition;
+	*this = make_error_condition(__e);
+      }
 
     error_condition(const error_condition&) = default;
     error_condition& operator=(const error_condition&) = default;

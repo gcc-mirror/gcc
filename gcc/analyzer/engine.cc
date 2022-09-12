@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-dfa.h"
+#include "analyzer/known-function-manager.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -5813,14 +5814,24 @@ class plugin_analyzer_init_impl : public plugin_analyzer_init_iface
 {
 public:
   plugin_analyzer_init_impl (auto_delete_vec <state_machine> *checkers,
+			     known_function_manager *known_fn_mgr,
 			     logger *logger)
   : m_checkers (checkers),
+    m_known_fn_mgr (known_fn_mgr),
     m_logger (logger)
   {}
 
   void register_state_machine (state_machine *sm) final override
   {
+    LOG_SCOPE (m_logger);
     m_checkers->safe_push (sm);
+  }
+
+  void register_known_function (const char *name,
+				known_function *kf) final override
+  {
+    LOG_SCOPE (m_logger);
+    m_known_fn_mgr->add (name, kf);
   }
 
   logger *get_logger () const final override
@@ -5830,6 +5841,7 @@ public:
 
 private:
   auto_delete_vec <state_machine> *m_checkers;
+  known_function_manager *m_known_fn_mgr;
   logger *m_logger;
 };
 
@@ -5885,7 +5897,9 @@ impl_run_checkers (logger *logger)
   auto_delete_vec <state_machine> checkers;
   make_checkers (checkers, logger);
 
-  plugin_analyzer_init_impl data (&checkers, logger);
+  plugin_analyzer_init_impl data (&checkers,
+				  eng.get_known_function_manager (),
+				  logger);
   invoke_plugin_callbacks (PLUGIN_ANALYZER_INIT, &data);
 
   if (logger)

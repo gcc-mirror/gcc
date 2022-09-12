@@ -9555,16 +9555,15 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
 {
   omp_target_walk_data data;
   data.this_expr_accessed = false;
+  data.current_object = NULL_TREE;
 
-  tree ct = current_nonlambda_class_type ();
-  if (ct)
-    {
-      tree object = maybe_dummy_object (ct, NULL);
-      object = maybe_resolve_dummy (object, true);
-      data.current_object = object;
-    }
-  else
-    data.current_object = NULL_TREE;
+  if (DECL_NONSTATIC_MEMBER_P (current_function_decl) && current_class_ptr)
+    if (tree ct = current_nonlambda_class_type ())
+      {
+	tree object = maybe_dummy_object (ct, NULL);
+	object = maybe_resolve_dummy (object, true);
+	data.current_object = object;
+      }
 
   if (DECL_LAMBDA_FUNCTION_P (current_function_decl))
     {
@@ -12029,11 +12028,23 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     }
 }
 
-/* If TYPE is an array of unknown bound, or (possibly cv-qualified)
-   void, or a complete type, returns true, otherwise false.  */
+/* Returns true if TYPE meets the requirements for the specified KIND,
+   false otherwise.
+
+   When KIND == 1, TYPE must be an array of unknown bound,
+   or (possibly cv-qualified) void, or a complete type.
+
+   When KIND == 2, TYPE must be a complete type, or array of complete type,
+   or (possibly cv-qualified) void.
+
+   When KIND == 3:
+   If TYPE is a non-union class type, it must be complete.
+
+   When KIND == 4:
+   If TYPE is a class type, it must be complete.  */
 
 static bool
-check_trait_type (tree type)
+check_trait_type (tree type, int kind = 1)
 {
   if (type == NULL_TREE)
     return true;
@@ -12042,8 +12053,14 @@ check_trait_type (tree type)
     return (check_trait_type (TREE_VALUE (type))
 	    && check_trait_type (TREE_CHAIN (type)));
 
-  if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
-    return true;
+  if (kind == 1 && TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
+    return true; // Array of unknown bound. Don't care about completeness.
+
+  if (kind == 3 && !NON_UNION_CLASS_TYPE_P (type))
+    return true; // Not a non-union class type. Don't care about completeness.
+
+  if (kind == 4 && TREE_CODE (type) == ARRAY_TYPE)
+    return true; // Not a class type. Don't care about completeness.
 
   if (VOID_TYPE_P (type))
     return true;
@@ -12081,23 +12098,39 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_TRIVIAL_COPY:
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
-    case CPTK_IS_ABSTRACT:
-    case CPTK_IS_AGGREGATE:
-    case CPTK_IS_EMPTY:
-    case CPTK_IS_FINAL:
+      if (!check_trait_type (type1))
+	return error_mark_node;
+      break;
+
     case CPTK_IS_LITERAL_TYPE:
     case CPTK_IS_POD:
-    case CPTK_IS_POLYMORPHIC:
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
     case CPTK_IS_TRIVIALLY_COPYABLE:
-      if (!check_trait_type (type1))
+      if (!check_trait_type (type1, /* kind = */ 2))
+	return error_mark_node;
+      break;
+
+    case CPTK_IS_EMPTY:
+    case CPTK_IS_POLYMORPHIC:
+    case CPTK_IS_ABSTRACT:
+    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
+      if (!check_trait_type (type1, /* kind = */ 3))
+	return error_mark_node;
+      break;
+
+    /* N.B. std::is_aggregate is kind=2 but we don't need a complete element
+       type to know whether an array is an aggregate, so use kind=4 here.  */
+    case CPTK_IS_AGGREGATE:
+    case CPTK_IS_FINAL:
+      if (!check_trait_type (type1, /* kind = */ 4))
 	return error_mark_node;
       break;
 
     case CPTK_IS_ASSIGNABLE:
     case CPTK_IS_CONSTRUCTIBLE:
+      if (!check_trait_type (type1))
+	return error_mark_node;
       break;
 
     case CPTK_IS_TRIVIALLY_ASSIGNABLE:

@@ -5381,24 +5381,15 @@ possibly_inlined_p (tree decl)
   return true;
 }
 
-/* Normally, we can wait until instantiation-time to synthesize DECL.
-   However, if DECL is a static data member initialized with a constant
-   or a constexpr function, we need it right now because a reference to
-   such a data member or a call to such function is not value-dependent.
-   For a function that uses auto in the return type, we need to instantiate
-   it to find out its type.  For OpenMP user defined reductions, we need
-   them instantiated for reduction clauses which inline them by hand
-   directly.  */
+/* If DECL is a function or variable template specialization, instantiate
+   its definition now.  */
 
 void
 maybe_instantiate_decl (tree decl)
 {
-  if (DECL_LANG_SPECIFIC (decl)
+  if (VAR_OR_FUNCTION_DECL_P (decl)
+      && DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
-      && (decl_maybe_constant_var_p (decl)
-	  || (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_OMP_DECLARE_REDUCTION_P (decl))
-	  || undeduced_auto_decl (decl))
       && !DECL_DECLARED_CONCEPT_P (decl)
       && !uses_template_parms (DECL_TI_ARGS (decl)))
     {
@@ -5700,15 +5691,13 @@ mark_used (tree decl, tsubst_flags_t complain)
       return false;
     }
 
-  /* Normally, we can wait until instantiation-time to synthesize DECL.
-     However, if DECL is a static data member initialized with a constant
-     or a constexpr function, we need it right now because a reference to
-     such a data member or a call to such function is not value-dependent.
-     For a function that uses auto in the return type, we need to instantiate
-     it to find out its type.  For OpenMP user defined reductions, we need
-     them instantiated for reduction clauses which inline them by hand
-     directly.  */
-  maybe_instantiate_decl (decl);
+  /* If DECL has a deduced return type, we need to instantiate it now to
+     find out its type.  For OpenMP user defined reductions, we need them
+     instantiated for reduction clauses which inline them by hand directly.  */
+  if (undeduced_auto_decl (decl)
+      || (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
+    maybe_instantiate_decl (decl);
 
   if (processing_template_decl || in_template_function ())
     return true;

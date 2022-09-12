@@ -167,7 +167,7 @@ frange_set_nan (frange &r, tree type)
 static inline bool
 finite_operand_p (const frange &op1)
 {
-  return flag_finite_math_only || op1.get_nan ().no_p ();
+  return flag_finite_math_only || !op1.maybe_nan ();
 }
 
 // Return TRUE if OP1 and OP2 are known to be free of NANs.
@@ -175,9 +175,7 @@ finite_operand_p (const frange &op1)
 static inline bool
 finite_operands_p (const frange &op1, const frange &op2)
 {
-  return (flag_finite_math_only
-	  || (op1.get_nan ().no_p ()
-	      && op2.get_nan ().no_p ()));
+  return flag_finite_math_only || (!op1.maybe_nan () && !op2.maybe_nan ());
 }
 
 // Floating version of relop_early_resolve that takes into account NAN
@@ -224,36 +222,79 @@ frange_drop_ninf (frange &r, tree type)
 
 // (X <= VAL) produces the range of [-INF, VAL].
 
-static void
+static bool
 build_le (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
   r.set (type, dconstninf, val);
+  return true;
 }
 
 // (X < VAL) produces the range of [-INF, VAL).
 
-static void
+static bool
 build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
+  // < -INF is outside the range.
+  if (real_isinf (&val, 1))
+    {
+      if (HONOR_NANS (type))
+	frange_set_nan (r, type);
+      else
+	r.set_undefined ();
+      return false;
+    }
   // Hijack LE because we only support closed intervals.
   build_le (r, type, val);
+  return true;
 }
 
 // (X >= VAL) produces the range of [VAL, +INF].
 
-static void
+static bool
 build_ge (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
   r.set (type, val, dconstinf);
+  return true;
 }
 
 // (X > VAL) produces the range of (VAL, +INF].
 
-static void
+static bool
 build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)
 {
+  if (real_isnan (&val))
+    {
+      r.set_undefined ();
+      return false;
+    }
+  // > +INF is outside the range.
+  if (real_isinf (&val, 0))
+    {
+      if (HONOR_NANS (type))
+	frange_set_nan (r, type);
+      else
+	r.set_undefined ();
+      return false;
+    }
+
   // Hijack GE because we only support closed intervals.
   build_ge (r, type, val);
+  return true;
 }
 
 
@@ -503,7 +544,7 @@ foperator_lt::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+  else if (op1.known_nan () || op2.known_nan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -520,10 +561,12 @@ foperator_lt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_lt (r, type, op2.upper_bound ());
-      r.set_nan (fp_prop::NO);
-      // x < y implies x is not +INF.
-      frange_drop_inf (r, type);
+      if (build_lt (r, type, op2.upper_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x < y implies x is not +INF.
+	  frange_drop_inf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -546,10 +589,12 @@ foperator_lt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_gt (r, type, op1.lower_bound ());
-      r.set_nan (fp_prop::NO);
-      // x < y implies y is not -INF.
-      frange_drop_ninf (r, type);
+      if (build_gt (r, type, op1.lower_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x < y implies y is not -INF.
+	  frange_drop_ninf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -601,7 +646,7 @@ foperator_le::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+  else if (op1.known_nan () || op2.known_nan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -618,8 +663,8 @@ foperator_le::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_le (r, type, op2.upper_bound ());
-      r.set_nan (fp_prop::NO);
+      if (build_le (r, type, op2.upper_bound ()))
+	r.set_nan (fp_prop::NO);
       break;
 
     case BRS_FALSE:
@@ -642,8 +687,8 @@ foperator_le::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_ge (r, type, op1.lower_bound ());
-      r.set_nan (fp_prop::NO);
+      if (build_ge (r, type, op1.lower_bound ()))
+	r.set_nan (fp_prop::NO);
       break;
 
     case BRS_FALSE:
@@ -695,7 +740,7 @@ foperator_gt::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+  else if (op1.known_nan () || op2.known_nan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -712,10 +757,12 @@ foperator_gt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_gt (r, type, op2.lower_bound ());
-      r.set_nan (fp_prop::NO);
-      // x > y implies x is not -INF.
-      frange_drop_ninf (r, type);
+      if (build_gt (r, type, op2.lower_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x > y implies x is not -INF.
+	  frange_drop_ninf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -738,10 +785,12 @@ foperator_gt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_lt (r, type, op1.upper_bound ());
-      r.set_nan (fp_prop::NO);
-      // x > y implies y is not +INF.
-      frange_drop_inf (r, type);
+      if (build_lt (r, type, op1.upper_bound ()))
+	{
+	  r.set_nan (fp_prop::NO);
+	  // x > y implies y is not +INF.
+	  frange_drop_inf (r, type);
+	}
       break;
 
     case BRS_FALSE:
@@ -793,7 +842,7 @@ foperator_ge::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+  else if (op1.known_nan () || op2.known_nan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -876,10 +925,10 @@ foperator_unordered::fold_range (irange &r, tree type,
 				 relation_kind) const
 {
   // UNORDERED is TRUE if either operand is a NAN.
-  if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+  if (op1.known_nan () || op2.known_nan ())
     r = range_true (type);
   // UNORDERED is FALSE if neither operand is a NAN.
-  else if (op1.get_nan ().no_p () && op2.get_nan ().no_p ())
+  else if (!op1.maybe_nan () && !op2.maybe_nan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -898,7 +947,7 @@ foperator_unordered::op1_range (frange &r, tree type,
       r.set_varying (type);
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
-      if (op2.get_nan ().no_p ())
+      if (!op2.maybe_nan ())
 	frange_set_nan (r, type);
       break;
 
@@ -942,11 +991,9 @@ foperator_ordered::fold_range (irange &r, tree type,
 			       const frange &op1, const frange &op2,
 			       relation_kind) const
 {
-  // ORDERED is TRUE if neither operand is a NAN.
-  if (op1.get_nan ().no_p () && op2.get_nan ().no_p ())
+  if (!op1.maybe_nan () && !op2.maybe_nan ())
     r = range_true (type);
-  // ORDERED is FALSE if either operand is a NAN.
-  else if (op1.get_nan ().yes_p () || op2.get_nan ().yes_p ())
+  else if (op1.known_nan () || op2.known_nan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);

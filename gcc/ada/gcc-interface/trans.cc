@@ -234,7 +234,7 @@ static inline bool stmt_group_may_fallthru (void);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
-static void process_decls (List_Id, List_Id, Node_Id, bool, bool);
+static void process_decls (List_Id, List_Id, bool, bool);
 static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
@@ -1088,6 +1088,28 @@ Gigi_Types_Compatible (Entity_Id type, Entity_Id def_type)
   return false;
 }
 
+/* Return the full view of a private constant E, or of a renaming thereof, if
+   its type has discriminants, and Empty otherwise.  */
+
+static Entity_Id
+Full_View_Of_Private_Constant (Entity_Id E)
+{
+  while (Present (Renamed_Object (E)) && Is_Entity_Name (Renamed_Object (E)))
+    E = Entity (Renamed_Object (E));
+
+  if (Ekind (E) != E_Constant || No (Full_View (E)))
+    return Empty;
+
+  const Entity_Id T = Etype (E);
+
+  if (Is_Private_Type (T)
+      && (Has_Unknown_Discriminants (T)
+	  || (Present (Full_View (T)) && Has_Discriminants (Full_View (T)))))
+    return Full_View (E);
+
+  return Empty;
+}
+
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Identifier, to a GCC
    tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to where we should
    place the result type.  */
@@ -1095,21 +1117,19 @@ Gigi_Types_Compatible (Entity_Id type, Entity_Id def_type)
 static tree
 Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 {
-  /* The entity of GNAT_NODE and its type.  */
-  Node_Id gnat_entity = (Nkind (gnat_node) == N_Defining_Identifier
-			 || Nkind (gnat_node) == N_Defining_Operator_Symbol)
-			? gnat_node : Entity (gnat_node);
-  Node_Id gnat_entity_type = Etype (gnat_entity);
+  Entity_Id gnat_entity = (Nkind (gnat_node) == N_Defining_Identifier
+			   || Nkind (gnat_node) == N_Defining_Operator_Symbol)
+			  ? gnat_node : Entity (gnat_node);
+  Entity_Id gnat_result_type;
+  tree gnu_result, gnu_result_type;
   /* If GNAT_NODE is a constant, whether we should use the initialization
      value instead of the constant entity, typically for scalars with an
      address clause when the parent doesn't require an lvalue.  */
-  bool use_constant_initializer = false;
+  bool use_constant_initializer;
   /* Whether we should require an lvalue for GNAT_NODE.  Needed in
      specific circumstances only, so evaluated lazily.  < 0 means
      unknown, > 0 means known true, 0 means known false.  */
-  int require_lvalue = -1;
-  Entity_Id gnat_result_type;
-  tree gnu_result, gnu_result_type;
+  int require_lvalue;
 
   /* If the Etype of this node is not the same as that of the Entity, then
      something went wrong, probably in generic instantiation.  However, this
@@ -1118,25 +1138,17 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      may have been changed to a subtype by Exp_Ch3.Adjust_Discriminants.  */
   gcc_assert (!Is_Object (gnat_entity)
 	      || Ekind (gnat_entity) == E_Discriminant
-	      || Etype (gnat_node) == gnat_entity_type
-	      || Gigi_Types_Compatible (Etype (gnat_node), gnat_entity_type));
+	      || Etype (gnat_node) == Etype (gnat_entity)
+	      || Gigi_Types_Compatible (Etype (gnat_node),
+					Etype (gnat_entity)));
 
-  /* If this is a reference to a deferred constant whose partial view is an
+  /* If this is a reference to a deferred constant whose partial view is of
      unconstrained private type, the proper type is on the full view of the
-     constant, not on the full view of the type, which may be unconstrained.
-
-     This may be a reference to a type, for example in the prefix of the
-     attribute Position, generated for dispatching code (see Make_DT in
-     exp_disp,adb). In that case we need the type itself, not is parent,
-     in particular if it is a derived type  */
-  if (Ekind (gnat_entity) == E_Constant
-      && Is_Private_Type (gnat_entity_type)
-      && (Has_Unknown_Discriminants (gnat_entity_type)
-	  || (Present (Full_View (gnat_entity_type))
- 	      && Has_Discriminants (Full_View (gnat_entity_type))))
-      && Present (Full_View (gnat_entity)))
+     constant, not on the full view of the type which may be unconstrained.  */
+  const Entity_Id gnat_full_view = Full_View_Of_Private_Constant (gnat_entity);
+  if (Present (gnat_full_view))
     {
-      gnat_entity = Full_View (gnat_entity);
+      gnat_entity = gnat_full_view;
       gnat_result_type = Etype (gnat_entity);
     }
   else
@@ -1184,7 +1196,13 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	= lvalue_required_p (gnat_node, gnu_result_type, true, false);
       use_constant_initializer = !require_lvalue;
     }
+  else
+    {
+      require_lvalue = -1;
+      use_constant_initializer = false;
+    }
 
+  /* Fetch the initialization value of a constant if requested.  */
   if (use_constant_initializer)
     {
       /* If this is a deferred constant, the initializer is attached to
@@ -3778,6 +3796,39 @@ build_return_expr (tree ret_obj, tree ret_val)
   return build1 (RETURN_EXPR, void_type_node, result_expr);
 }
 
+/* Subroutine of gnat_to_gnu to translate the At_End_Proc of GNAT_NODE, an
+   N_Block_Statement or N_Handled_Sequence_Of_Statements or N_*_Body node.
+
+   To invoked the GCC mechanism, we call add_cleanup and when we leave the
+   group, end_stmt_group will create the TRY_FINALLY_EXPR construct.  */
+
+static void
+At_End_Proc_to_gnu (Node_Id gnat_node)
+{
+  tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
+  Node_Id gnat_end_label;
+
+  /* When not optimizing, disable inlining of finalizers as this can
+     create a more complex CFG in the parent function.  */
+  if (!optimize || optimize_debug)
+    DECL_DECLARED_INLINE_P (proc_decl) = 0;
+
+  /* Retrieve the end label attached to the node, if any.  */
+  if (Nkind (gnat_node) == N_Handled_Sequence_Of_Statements)
+    gnat_end_label = End_Label (gnat_node);
+  else if (Present (Handled_Statement_Sequence (gnat_node)))
+    gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+  else
+    gnat_end_label = Empty;
+
+  /* If there is no end label attached, we use the location of the At_End
+     procedure because Expand_Cleanup_Actions might reset the location of
+     the enclosing construct to that of an inner statement.  */
+  add_cleanup (build_call_n_expr (proc_decl, 0),
+	       Present (gnat_end_label)
+	       ? gnat_end_label : At_End_Proc (gnat_node));
+}
+
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Subprogram_Body.  */
 
 static void
@@ -3928,11 +3979,15 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_pushlevel ();
 
   /* First translate the declarations of the subprogram.  */
-  process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+  process_decls (Declarations (gnat_node), Empty, true, true);
 
   /* Then generate the code of the subprogram itself.  A return statement will
      be present and any Out parameters will be handled there.  */
   add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
+
+  /* Process the At_End_Proc, if any.  */
+  if (Present (At_End_Proc (gnat_node)))
+    At_End_Proc_to_gnu (gnat_node);
 
   gnat_poplevel ();
   tree gnu_result = end_stmt_group ();
@@ -5305,76 +5360,39 @@ static tree
 Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 {
   /* If just annotating, ignore all EH and cleanups.  */
-  const bool gcc_eh
+  const bool eh
     = !type_annotate_only && Present (Exception_Handlers (gnat_node));
   const bool at_end = !type_annotate_only && Present (At_End_Proc (gnat_node));
-  const bool binding_for_block = (at_end || gcc_eh);
-  tree gnu_inner_block; /* The statement(s) for the block itself.  */
   tree gnu_result;
   Node_Id gnat_temp;
 
-  /* The GCC exception handling mechanism can handle both ZCX and SJLJ schemes.
-     To call the GCC mechanism, we call add_cleanup, and when we leave the
-     binding, end_stmt_group will create the TRY_FINALLY_EXPR construct.
+  /* The exception handling mechanism can handle both ZCX and SJLJ schemes, and
+     is exposed through the TRY_CATCH_EXPR construct that we build manually.
 
      ??? The region level calls down there have been specifically put in place
      for a ZCX context and currently the order in which things are emitted
      (region/handlers) is different from the SJLJ case.  Instead of putting
      other calls with different conditions at other places for the SJLJ case,
      it seems cleaner to reorder things for the SJLJ case and generalize the
-     condition to make it not ZCX specific.
+     condition to make it not ZCX specific.  */
 
-     If there are any exceptions or cleanup processing involved, we need an
-     outer statement group and binding level.  */
-  if (binding_for_block)
-    {
-      start_stmt_group ();
-      gnat_pushlevel ();
-    }
-
-  /* If we are to call a function when exiting this block, add a cleanup
-     to the binding level we made above.  Note that add_cleanup is FIFO
-     so we must register this cleanup after the EH cleanup just above.  */
-  if (at_end)
-    {
-      tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
-
-      /* When not optimizing, disable inlining of finalizers as this can
-	 create a more complex CFG in the parent function.  */
-      if (!optimize || optimize_debug)
-	DECL_DECLARED_INLINE_P (proc_decl) = 0;
-
-      /* If there is no end label attached, we use the location of the At_End
-	 procedure because Expand_Cleanup_Actions might reset the location of
-	 the enclosing construct to that of an inner statement.  */
-      add_cleanup (build_call_n_expr (proc_decl, 0),
-		   Present (End_Label (gnat_node))
-		   ? End_Label (gnat_node) : At_End_Proc (gnat_node));
-    }
-
-  /* Now build the tree for the declarations and statements inside this
-     block.  */
+  /* First build the tree for the statements inside the sequence.  */
   start_stmt_group ();
 
-  if (Present (First_Real_Statement (gnat_node)))
-    process_decls (Statements (gnat_node), Empty,
-		   First_Real_Statement (gnat_node), true, true);
-
-  /* Generate code for each statement in the block.  */
-  for (gnat_temp = (Present (First_Real_Statement (gnat_node))
-		    ? First_Real_Statement (gnat_node)
-		    : First (Statements (gnat_node)));
-       Present (gnat_temp); gnat_temp = Next (gnat_temp))
+  for (gnat_temp = First (Statements (gnat_node));
+       Present (gnat_temp);
+       gnat_temp = Next (gnat_temp))
     add_stmt (gnat_to_gnu (gnat_temp));
 
-  gnu_inner_block = end_stmt_group ();
+  gnu_result = end_stmt_group ();
 
-  if (gcc_eh)
+  /* Then process the exception handlers, if any.  */
+  if (eh)
     {
       tree gnu_handlers;
       location_t locus;
 
-      /* First make a block containing the handlers.  */
+      /* First make a group containing the handlers.  */
       start_stmt_group ();
       for (gnat_temp = First_Non_Pragma (Exception_Handlers (gnat_node));
 	   Present (gnat_temp);
@@ -5382,9 +5400,10 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	add_stmt (gnat_to_gnu (gnat_temp));
       gnu_handlers = end_stmt_group ();
 
-      /* Now make the TRY_CATCH_EXPR for the block.  */
-      gnu_result = build2 (TRY_CATCH_EXPR, void_type_node,
-			   gnu_inner_block, gnu_handlers);
+      /* Now make the TRY_CATCH_EXPR for the group.  */
+      gnu_result
+	= build2 (TRY_CATCH_EXPR, void_type_node, gnu_result, gnu_handlers);
+
       /* Set a location.  We need to find a unique location for the dispatching
 	 code, otherwise we can get coverage or debugging issues.  Try with
 	 the location of the end label.  */
@@ -5398,14 +5417,13 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
            coverage analysis tools.  */
 	set_expr_location_from_node (gnu_result, gnat_node, true);
     }
-  else
-    gnu_result = gnu_inner_block;
 
-  /* Now close our outer block, if we had to make one.  */
-  if (binding_for_block)
+  /* Process the At_End_Proc, if any.  */
+  if (at_end)
     {
+      start_stmt_group ();
       add_stmt (gnu_result);
-      gnat_poplevel ();
+      At_End_Proc_to_gnu (gnat_node);
       gnu_result = end_stmt_group ();
     }
 
@@ -5493,7 +5511,6 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
     }
 
   start_stmt_group ();
-  gnat_pushlevel ();
 
   /* Expand a call to the begin_handler hook at the beginning of the
      handler, and arrange for a call to the end_handler hook to occur
@@ -5584,7 +5601,7 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
   else
     {
       start_stmt_group ();
-      gnat_pushlevel ();
+
       /* CODE: void *EXPRP = __builtin_eh_handler (0); */
       tree prop_ptr
 	= create_var_decl (get_identifier ("EXPRP"), NULL_TREE,
@@ -5604,13 +5621,10 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
       add_stmt_with_node (ecall, gnat_node);
 
       /* CODE: } */
-      gnat_poplevel ();
       tree eblk = end_stmt_group ();
       tree ehls = build2 (EH_ELSE_EXPR, void_type_node, call, eblk);
       add_cleanup (ehls, gnat_node);
     }
-
-  gnat_poplevel ();
 
   gnu_incoming_exc_ptr = prev_gnu_incoming_exc_ptr;
 
@@ -5677,7 +5691,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
        gnat_pragma = Next (gnat_pragma))
     if (Nkind (gnat_pragma) == N_Pragma)
       add_stmt (gnat_to_gnu (gnat_pragma));
-  process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty, Empty,
+  process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty,
 		 true, true);
 
   /* Process the unit itself.  */
@@ -6877,6 +6891,11 @@ gnat_to_gnu (Node_Id gnat_node)
 				    : (Rounded_Result (gnat_node)
 				       ? ROUND_DIV_EXPR : TRUNC_DIV_EXPR),
 				    gnu_result_type, gnu_lhs, gnu_rhs);
+      /* If the result type is larger than a word, then declare the dependence
+	 on the libgcc routine.  */
+      if (INTEGRAL_TYPE_P (gnu_result_type)
+	  && TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
       break;
 
     case N_Op_Eq:
@@ -6936,6 +6955,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_rhs = convert (gnu_count_type, gnu_rhs);
 	    gnu_max_shift
 	      = convert (TREE_TYPE (gnu_rhs), TYPE_SIZE (gnu_type));
+	    /* If the result type is larger than a word, then declare the dependence
+	       on the libgcc routine.  */
+	    if (TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	      Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 	  }
 
 	/* If this is a comparison between (potentially) large aggregates, then
@@ -6947,6 +6970,12 @@ gnat_to_gnu (Node_Id gnat_node)
 					  2 * BITS_PER_WORD) > 0))
 	  Check_Restriction_No_Dependence_On_System (Name_Memory_Compare,
 						     gnat_node);
+
+	/* If this is a modulo/remainder and the result type is larger than a
+	   word, then declare the dependence on the libgcc routine.  */
+	else if ((kind == N_Op_Mod ||kind == N_Op_Rem)
+		 && TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	  Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 
 	/* Pending generic support for efficient vector logical operations in
 	   GCC, convert vectors to their representative array type view.  */
@@ -7365,8 +7394,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  start_stmt_group ();
 	  gnat_pushlevel ();
-	  process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+	  process_decls (Declarations (gnat_node), Empty, true, true);
 	  add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
+	  if (Present (At_End_Proc (gnat_node)))
+	    At_End_Proc_to_gnu (gnat_node);
 	  gnat_poplevel ();
 	  gnu_result = end_stmt_group ();
 	}
@@ -7606,15 +7637,14 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Package_Specification:
-
       start_stmt_group ();
       process_decls (Visible_Declarations (gnat_node),
-		     Private_Declarations (gnat_node), Empty, true, true);
+		     Private_Declarations (gnat_node),
+		     true, true);
       gnu_result = end_stmt_group ();
       break;
 
     case N_Package_Body:
-
       /* If this is the body of a generic package - do nothing.  */
       if (Ekind (Corresponding_Spec (gnat_node)) == E_Generic_Package)
 	{
@@ -7623,11 +7653,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	}
 
       start_stmt_group ();
-      process_decls (Declarations (gnat_node), Empty, Empty, true, true);
-
+      process_decls (Declarations (gnat_node), Empty, true, true);
       if (Present (Handled_Statement_Sequence (gnat_node)))
 	add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
-
+      if (Present (At_End_Proc (gnat_node)))
+	At_End_Proc_to_gnu (gnat_node);
       gnu_result = end_stmt_group ();
       break;
 
@@ -7673,7 +7703,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Task_Body:
       /* These nodes should only be present when annotating types.  */
       gcc_assert (type_annotate_only);
-      process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+      process_decls (Declarations (gnat_node), Empty, true, true);
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -7975,7 +8005,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Freeze_Entity:
       start_stmt_group ();
       process_freeze_entity (gnat_node);
-      process_decls (Actions (gnat_node), Empty, Empty, true, true);
+      process_decls (Actions (gnat_node), Empty, true, true);
       gnu_result = end_stmt_group ();
       break;
 
@@ -9203,17 +9233,13 @@ process_freeze_entity (Node_Id gnat_node)
    we declare a function if there was no spec).  The second pass
    elaborates the bodies.
 
-   GNAT_END_LIST gives the element in the list past the end.  Normally,
-   this is Empty, but can be First_Real_Statement for a
-   Handled_Sequence_Of_Statements.
-
    We make a complete pass through both lists if PASS1P is true, then make
    the second pass over both lists if PASS2P is true.  The lists usually
    correspond to the public and private parts of a package.  */
 
 static void
 process_decls (List_Id gnat_decls, List_Id gnat_decls2,
-	       Node_Id gnat_end_list, bool pass1p, bool pass2p)
+	       bool pass1p, bool pass2p)
 {
   List_Id gnat_decl_array[2];
   Node_Id gnat_decl;
@@ -9225,7 +9251,8 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
     for (i = 0; i <= 1; i++)
       if (Present (gnat_decl_array[i]))
 	for (gnat_decl = First (gnat_decl_array[i]);
-	     gnat_decl != gnat_end_list; gnat_decl = Next (gnat_decl))
+	     Present (gnat_decl);
+	     gnat_decl = Next (gnat_decl))
 	  {
 	    /* For package specs, we recurse inside the declarations,
 	       thus taking the two pass approach inside the boundary.  */
@@ -9234,14 +9261,14 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 			   == N_Package_Specification)))
 	      process_decls (Visible_Declarations (Specification (gnat_decl)),
 			     Private_Declarations (Specification (gnat_decl)),
-			     Empty, true, false);
+			     true, false);
 
 	    /* Similarly for any declarations in the actions of a
 	       freeze node.  */
 	    else if (Nkind (gnat_decl) == N_Freeze_Entity)
 	      {
 		process_freeze_entity (gnat_decl);
-		process_decls (Actions (gnat_decl), Empty, Empty, true, false);
+		process_decls (Actions (gnat_decl), Empty, true, false);
 	      }
 
 	    /* Package bodies with freeze nodes get their elaboration deferred
@@ -9308,7 +9335,8 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
     for (i = 0; i <= 1; i++)
       if (Present (gnat_decl_array[i]))
 	for (gnat_decl = First (gnat_decl_array[i]);
-	     gnat_decl != gnat_end_list; gnat_decl = Next (gnat_decl))
+	     Present (gnat_decl);
+	     gnat_decl = Next (gnat_decl))
 	  {
 	    if (Nkind (gnat_decl) == N_Subprogram_Body
 		|| Nkind (gnat_decl) == N_Subprogram_Body_Stub
@@ -9321,10 +9349,10 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 				== N_Package_Specification)))
 	      process_decls (Visible_Declarations (Specification (gnat_decl)),
 			     Private_Declarations (Specification (gnat_decl)),
-			     Empty, false, true);
+			     false, true);
 
 	    else if (Nkind (gnat_decl) == N_Freeze_Entity)
-	      process_decls (Actions (gnat_decl), Empty, Empty, false, true);
+	      process_decls (Actions (gnat_decl), Empty, false, true);
 
 	    else if (Nkind (gnat_decl) == N_Subprogram_Renaming_Declaration)
 	      add_stmt (gnat_to_gnu (gnat_decl));
@@ -9762,6 +9790,16 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
     gnu_result = unchecked_convert (gnu_base_type, gnu_result, false);
   else
     gnu_result = convert (gnu_base_type, gnu_result);
+
+  /* If this is a conversion between an integer type larger than a word and a
+     floating-point type, then declare the dependence on the libgcc routine.  */
+  if ((INTEGRAL_TYPE_P (gnu_in_base_type)
+       && TYPE_PRECISION (gnu_in_base_type) > BITS_PER_WORD
+       && FLOAT_TYPE_P (gnu_base_type))
+      || (FLOAT_TYPE_P (gnu_in_base_type)
+	  && INTEGRAL_TYPE_P (gnu_base_type)
+	  && TYPE_PRECISION (gnu_base_type) > BITS_PER_WORD))
+    Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 
   return convert (gnu_type, gnu_result);
 }
@@ -10389,7 +10427,6 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
 	gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
       else
 	gnat_end_label = Empty;
-
       break;
 
     case N_Package_Declaration:
@@ -10410,7 +10447,7 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
      transient block does not receive the sloc of a source condition.  */
   if (!Sloc_to_locus (Sloc (gnat_node), &end_locus,
                       No (gnat_end_label)
-                      && (Nkind (gnat_node) == N_Block_Statement)))
+                      && Nkind (gnat_node) == N_Block_Statement))
     return false;
 
   switch (TREE_CODE (gnu_node))

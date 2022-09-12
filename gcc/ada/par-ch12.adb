@@ -114,10 +114,7 @@ package body Ch12 is
 
       --  Check for generic renaming declaration case
 
-      if Token = Tok_Package
-        or else Token = Tok_Function
-        or else Token = Tok_Procedure
-      then
+      if Token in Tok_Package | Tok_Function | Tok_Procedure then
          Ren_Token := Token;
          Scan; -- scan past PACKAGE, FUNCTION or PROCEDURE
 

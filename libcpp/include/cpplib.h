@@ -526,6 +526,9 @@ struct cpp_options
   /* Nonzero for C++23 delimited escape sequences.  */
   unsigned char delimited_escape_seqs;
 
+  /* Nonzero for 'true' and 'false' in #if expressions.  */
+  unsigned char true_false;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -564,6 +567,10 @@ struct cpp_options
   /* True if libcpp should warn about invalid UTF-8 characters in comments.
      2 if it should be a pedwarn.  */
   unsigned char cpp_warn_invalid_utf8;
+
+  /* True if libcpp should warn about invalid forms of delimited or named
+     escape sequences.  */
+  bool cpp_warn_unicode;
 
   /* True if -finput-charset= option has been used explicitly.  */
   bool cpp_input_charset_explicit;
@@ -675,7 +682,8 @@ enum cpp_warning_reason {
   CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL,
-  CPP_W_INVALID_UTF8
+  CPP_W_INVALID_UTF8,
+  CPP_W_UNICODE
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

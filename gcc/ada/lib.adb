@@ -992,6 +992,15 @@ package body Lib is
       return Is_Predefined_Renaming (Unit);
    end In_Predefined_Renaming;
 
+   ---------
+   -- ipu --
+   ---------
+
+   function ipu (N : Node_Or_Entity_Id) return Boolean is
+   begin
+      return In_Predefined_Unit (N);
+   end ipu;
+
    ------------------------
    -- In_Predefined_Unit --
    ------------------------

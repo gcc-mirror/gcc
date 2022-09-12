@@ -1,3 +1,120 @@
+2022-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::__compare_exchange):
+	Rename __weak to __is_weak.
+	* testsuite/17_intro/names.cc: Add __weak and __strong.
+
+2022-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106803
+	* include/std/ranges (views::_ZipTransform::operator()): Correct
+	return type in the empty case.
+	(views::_AdjacentTransform::operator()): Likewise.
+
+2022-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106798
+	* include/std/ranges (adjacent_view::_Iterator::_Iterator): Fix
+	typo.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc (test04): New test.
+
+2022-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106766
+	* include/std/ranges (zip_view::_Iterator::operator-): Use
+	__to_unsigned_like instead of make_unsigned_t.
+	(zip_view::_Sentinel::operator-): Likewise.
+	* testsuite/std/ranges/zip/1.cc (test04): New test.
+
+2022-09-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_performance.h (__gnu_test::MallocInfo): New.
+	(__gnu_test::malloc_info): New, replace mallinfo on current platform
+	supporting it and use mallinfo2 when glibc >= 2.33.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106838
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc:
+	Prune additional errors from front-end.
+	* testsuite/20_util/is_move_constructible/incomplete_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/incomplete_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/incomplete_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable_with/incomplete_neg.cc:
+	Likewise.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef (byte): Add always_inline attribute
+	to all operator overloads.
+	(to_integer): Add always_inline attribute.
+
+2022-09-08  Thomas Rodgers  <trodgers@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::__maybe_has_padding):
+	New function.
+	(__atomic_impl::clear_padding): Likewise.
+	(__atomic_impl::__compare_exchange): Likewise.
+	(__atomic_impl::compare_exchange_weak): Delegate to
+	__compare_exchange.
+	(__atomic_impl::compare_exchange_strong): Likewise.
+	* include/std/atomic (atomic<T>::atomic(T)): Clear padding when
+	possible in a constexpr function.
+	(atomic::store): Clear padding.
+	(atomic::exchange): Likewise.
+	(atomic::compare_exchange_weak): Use __compare_exchange.
+	(atomic::compare_exchange_strong): Likewise.
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc: New
+	test.
+	* testsuite/29_atomics/atomic_ref/compare_exchange_padding.cc:
+	New test.
+
+2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error (__adl_only::make_error_code): Add
+	deleted function.
+	(__adl_only::make_error_condition): Likewise.
+	(error_code::error_code(ErrorCodeEnum)): Add using-declaration
+	for deleted function.
+	(error_condition::error_condition(ErrorConditionEnum)):
+	Likewise.
+	* testsuite/19_diagnostics/error_code/cons/lwg3629.cc: New test.
+	* testsuite/19_diagnostics/error_condition/cons/lwg3629.cc: New test.
+
+2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier: Add missing runtime exception.
+
+2022-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (is_reference): Make the primary
+	template derive from false_type.  Define two partial
+	specializations that derive from true_type.
+
+2022-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (__is_void_helper): Remove.
+	(is_void): Make the primary template derive from false_type,
+	and define four explicit specializations that derive from
+	true_type.
+	(__is_null_pointer_helper, is_null_pointer): Likewise.
+
+2022-09-07  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/dyncast.cc (__dynamic_cast): Avoid virtual function
+	call in simple success case.
+
+2022-09-06  Philipp Fent  <fent@in.tum.de>
+
+	* testsuite/libstdc++-prettyprinters/48362.cc: Fix expected
+	tuple indices.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Likewise.
+
 2022-09-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (__success_type, __failure_type): Move

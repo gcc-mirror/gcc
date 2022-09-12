@@ -926,31 +926,35 @@ simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
     {
       basic_block dest = src;
       src = get_immediate_dominator (CDI_DOMINATORS, src);
-      edge pred_e;
-      if (single_pred_p (dest)
-	  && (pred_e = find_edge (src, dest)))
-	chain.safe_push (pred_e);
+      if (single_pred_p (dest))
+	{
+	  edge pred_e = single_pred_edge (dest);
+	  gcc_assert (pred_e->src == src);
+	  if (!(pred_e->flags & ((EDGE_FAKE | EDGE_ABNORMAL | EDGE_DFS_BACK)))
+	      && !single_succ_p (src))
+	    chain.safe_push (pred_e);
+	}
     }
 }
 
 /* Perform a DFS walk on predecessor edges to mark the region denoted
-   by the EXIT edge and DOM which dominates EXIT->src, including DOM.
+   by the EXIT_SRC block and DOM which dominates EXIT_SRC, including DOM.
    Blocks in the region are marked with FLAG and added to BBS.  BBS is
    filled up to its capacity only after which the walk is terminated
    and false is returned.  If the whole region was marked, true is returned.  */
 
 static bool
-dfs_mark_dominating_region (edge exit, basic_block dom, int flag,
+dfs_mark_dominating_region (basic_block exit_src, basic_block dom, int flag,
 			    vec<basic_block> &bbs)
 {
-  if (exit->src == dom || exit->src->flags & flag)
+  if (exit_src == dom || exit_src->flags & flag)
     return true;
   if (!bbs.space (1))
     return false;
-  bbs.quick_push (exit->src);
-  exit->src->flags |= flag;
+  bbs.quick_push (exit_src);
+  exit_src->flags |= flag;
   auto_vec<edge_iterator, 20> stack (bbs.allocated () - bbs.length () + 1);
-  stack.quick_push (ei_start (exit->src->preds));
+  stack.quick_push (ei_start (exit_src->preds));
   while (!stack.is_empty ())
     {
       /* Look at the edge on the top of the stack.  */
@@ -981,6 +985,97 @@ dfs_mark_dominating_region (edge exit, basic_block dom, int flag,
   return true;
 }
 
+static bool
+compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
+			   vec<edge> cd_chains[], unsigned *num_chains,
+			   vec<edge> &cur_cd_chain, unsigned *num_calls,
+			   unsigned in_region, unsigned depth,
+			   bool *complete_p);
+
+/* Helper for compute_control_dep_chain that walks the post-dominator
+   chain from CD_BB up unto TARGET_BB looking for paths to DEP_BB.  */
+
+static bool
+compute_control_dep_chain_pdom (basic_block cd_bb, const_basic_block dep_bb,
+				basic_block target_bb,
+				vec<edge> cd_chains[], unsigned *num_chains,
+				vec<edge> &cur_cd_chain, unsigned *num_calls,
+				unsigned in_region, unsigned depth,
+				bool *complete_p)
+{
+  bool found_cd_chain = false;
+  while (cd_bb != target_bb)
+    {
+      if (cd_bb == dep_bb)
+	{
+	  /* Found a direct control dependence.  */
+	  if (*num_chains < MAX_NUM_CHAINS)
+	    {
+	      if (DEBUG_PREDICATE_ANALYZER && dump_file)
+		fprintf (dump_file, "%*s pushing { %s }\n",
+			 depth, "", format_edge_vec (cur_cd_chain).c_str ());
+	      cd_chains[*num_chains] = cur_cd_chain.copy ();
+	      (*num_chains)++;
+	    }
+	  found_cd_chain = true;
+	  /* Check path from next edge.  */
+	  break;
+	}
+
+      /* If the dominating region has been marked avoid walking outside.  */
+      if (in_region != 0 && !(cd_bb->flags & in_region))
+	break;
+
+      /* Count the number of steps we perform to limit compile-time.
+	 This should cover both recursion and the post-dominator walk.  */
+      if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "param_uninit_control_dep_attempts "
+		     "exceeded: %u\n", *num_calls);
+	  *complete_p = false;
+	  break;
+	}
+      ++*num_calls;
+
+      /* Check if DEP_BB is indirectly control-dependent on DOM_BB.  */
+      if (!single_succ_p (cd_bb)
+	  && compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
+					num_chains, cur_cd_chain,
+					num_calls, in_region, depth + 1,
+					complete_p))
+	{
+	  found_cd_chain = true;
+	  break;
+	}
+
+      /* The post-dominator walk will reach a backedge only
+	 from a forwarder, otherwise it should choose to exit
+	 the SCC.  */
+      if (single_succ_p (cd_bb)
+	  && single_succ_edge (cd_bb)->flags & EDGE_DFS_BACK)
+	break;
+      basic_block prev_cd_bb = cd_bb;
+      cd_bb = get_immediate_dominator (CDI_POST_DOMINATORS, cd_bb);
+      if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	break;
+      /* Pick up conditions toward the post dominator such like
+	 loop exit conditions.  See gcc.dg/uninit-pred-11.c and
+	 gcc.dg/unninit-pred-12.c and PR106754.  */
+      if (single_pred_p (cd_bb))
+	{
+	  edge e2 = single_pred_edge (cd_bb);
+	  gcc_assert (e2->src == prev_cd_bb);
+	  /* But avoid adding fallthru or abnormal edges.  */
+	  if (!(e2->flags & (EDGE_FAKE | EDGE_ABNORMAL | EDGE_DFS_BACK))
+	      && !single_succ_p (prev_cd_bb))
+	    cur_cd_chain.safe_push (e2);
+	}
+    }
+  return found_cd_chain;
+}
+
+
 /* Recursively compute the control dependence chains (paths of edges)
    from the dependent basic block, DEP_BB, up to the dominating basic
    block, DOM_BB (the head node of a chain should be dominated by it),
@@ -990,13 +1085,16 @@ dfs_mark_dominating_region (edge exit, basic_block dom, int flag,
    *NUM_CALLS is the number of recursive calls to control unbounded
    recursion.
    Return true if the information is successfully computed, false if
-   there is no control dependence or not computed.  */
+   there is no control dependence or not computed.
+   *COMPLETE_P is set to false if we stopped walking due to limits.
+   In this case there might be missing chains.  */
 
 static bool
 compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
 			   vec<edge> &cur_cd_chain, unsigned *num_calls,
-			   unsigned in_region = 0, unsigned depth = 0)
+			   unsigned in_region, unsigned depth,
+			   bool *complete_p)
 {
   /* In our recursive calls this doesn't happen.  */
   if (single_succ_p (dom_bb))
@@ -1009,6 +1107,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
       if (dump_file)
 	fprintf (dump_file, "MAX_CHAIN_LEN exceeded: %u\n", cur_chain_len);
 
+      *complete_p = false;
       return false;
     }
 
@@ -1020,9 +1119,10 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
   if (DEBUG_PREDICATE_ANALYZER && dump_file)
     fprintf (dump_file,
-	     "%*s%s (dom_bb = %u, dep_bb = %u, cd_chains = { %s }, ...)\n",
+	     "%*s%s (dom_bb = %u, dep_bb = %u, ..., "
+	     "cur_cd_chain = { %s }, ...)\n",
 	     depth, "", __func__, dom_bb->index, dep_bb->index,
-	     format_edge_vecs (cd_chains, *num_chains).c_str ());
+	     format_edge_vec (cur_cd_chain).c_str ());
 
   bool found_cd_chain = false;
 
@@ -1035,79 +1135,26 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	continue;
 
       basic_block cd_bb = e->dest;
+      unsigned pop_mark = cur_cd_chain.length ();
       cur_cd_chain.safe_push (e);
-      while (!dominated_by_p (CDI_POST_DOMINATORS, dom_bb, cd_bb)
-	     /* We want to stop when the CFG merges back from the
-		branch in dom_bb.  The post-dominance check alone
-		falls foul of the case of a loop exit test branch
-		where the path on the loop exit post-dominates
-		the branch block.
-		The following catches this but will not allow
-		exploring the post-dom path further.  For the
-		outermost recursion this means we will fail to
-		reach dep_bb while for others it means at least
-		dropping the loop exit predicate from the path
-		which is problematic as it increases the domain
-		spanned by the resulting predicate.
-		See gcc.dg/uninit-pred-11.c for the first case
-		and PR106754 for the second.  */
-	     || single_pred_p (cd_bb))
-	{
-	  if (cd_bb == dep_bb)
-	    {
-	      /* Found a direct control dependence.  */
-	      if (*num_chains < MAX_NUM_CHAINS)
-		{
-		  cd_chains[*num_chains] = cur_cd_chain.copy ();
-		  (*num_chains)++;
-		}
-	      found_cd_chain = true;
-	      /* Check path from next edge.  */
-	      break;
-	    }
-
-	  /* If the dominating region has been marked avoid walking outside.  */
-	  if (in_region != 0 && !(cd_bb->flags & in_region))
-	    break;
-
-	  /* Count the number of steps we perform to limit compile-time.
-	     This should cover both recursion and the post-dominator walk.  */
-	  if (*num_calls > (unsigned)param_uninit_control_dep_attempts)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "param_uninit_control_dep_attempts "
-			 "exceeded: %u\n", *num_calls);
-	      return false;
-	    }
-	  ++*num_calls;
-
-	  /* Check if DEP_BB is indirectly control-dependent on DOM_BB.  */
-	  if (!single_succ_p (cd_bb)
-	      && compute_control_dep_chain (cd_bb, dep_bb, cd_chains,
-					    num_chains, cur_cd_chain,
-					    num_calls, in_region, depth + 1))
-	    {
-	      found_cd_chain = true;
-	      break;
-	    }
-
-	  /* The post-dominator walk will reach a backedge only
-	     from a forwarder, otherwise it should choose to exit
-	     the SCC.  */
-	  if (single_succ_p (cd_bb)
-	      && single_succ_edge (cd_bb)->flags & EDGE_DFS_BACK)
-	    break;
-	  cd_bb = get_immediate_dominator (CDI_POST_DOMINATORS, cd_bb);
-	  if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
-	    break;
-	}
-      cur_cd_chain.pop ();
+      basic_block target_bb
+	= get_immediate_dominator (CDI_POST_DOMINATORS, dom_bb);
+      /* Walk the post-dominator chain up to the CFG merge.  */
+      found_cd_chain
+	  |= compute_control_dep_chain_pdom (cd_bb, dep_bb, target_bb,
+					     cd_chains, num_chains,
+					     cur_cd_chain, num_calls,
+					     in_region, depth, complete_p);
+      cur_cd_chain.truncate (pop_mark);
       gcc_assert (cur_cd_chain.length () == cur_chain_len);
     }
 
   gcc_assert (cur_cd_chain.length () == cur_chain_len);
   return found_cd_chain;
 }
+
+/* Wrapper around the compute_control_dep_chain worker above.  Returns
+   true when the collected set of chains in CD_CHAINS is complete.  */
 
 static bool
 compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
@@ -1117,8 +1164,12 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_cd_chain;
   unsigned num_calls = 0;
   unsigned depth = 0;
-  return compute_control_dep_chain (dom_bb, dep_bb, cd_chains, num_chains,
-				    cur_cd_chain, &num_calls, in_region, depth);
+  bool complete_p = true;
+  /* Walk the post-dominator chain.  */
+  compute_control_dep_chain_pdom (dom_bb, dep_bb, NULL, cd_chains,
+				  num_chains, cur_cd_chain, &num_calls,
+				  in_region, depth, &complete_p);
+  return complete_p;
 }
 
 /* Implemented simplifications:
@@ -1888,6 +1939,10 @@ bool
 uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
 				 basic_block use_bb)
 {
+  if (DEBUG_PREDICATE_ANALYZER && dump_file)
+    fprintf (dump_file, "init_use_preds (def_bb = %u, use_bb = %u)\n",
+	     def_bb->index, use_bb->index);
+
   gcc_assert (use_preds.is_empty ()
 	      && dominated_by_p (CDI_DOMINATORS, use_bb, def_bb));
 
@@ -1912,6 +1967,10 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
     }
   while (1);
 
+  auto_bb_flag in_region (cfun);
+  auto_vec<basic_block, 20> region (MIN (n_basic_blocks_for_fn (cfun),
+					 param_uninit_control_dep_attempts));
+
   /* Set DEP_CHAINS to the set of edges between CD_ROOT and USE_BB.
      Each DEP_CHAINS element is a series of edges whose conditions
      are logical conjunctions.  Together, the DEP_CHAINS vector is
@@ -1919,16 +1978,23 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
   unsigned num_chains = 0;
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
 
-  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains))
+  if (!dfs_mark_dominating_region (use_bb, cd_root, in_region, region)
+      || !compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
+				     in_region))
     {
-      gcc_assert (num_chains == 0);
+      /* If the info in dep_chains is not complete we need to use a
+	 conservative approximation for the use predicate.  */
+      if (DEBUG_PREDICATE_ANALYZER && dump_file)
+	fprintf (dump_file, "init_use_preds: dep_chain incomplete, using "
+		 "conservative approximation\n");
+      num_chains = 1;
+      dep_chains[0].truncate (0);
       simple_control_dep_chain (dep_chains[0], cd_root, use_bb);
-      num_chains++;
     }
 
-  if (DEBUG_PREDICATE_ANALYZER && dump_file)
-    fprintf (dump_file, "init_use_preds (def_bb = %u, use_bb = %u)\n",
-	     def_bb->index, use_bb->index);
+  /* Unmark the region.  */
+  for (auto bb : region)
+    bb->flags &= ~in_region;
 
   /* From the set of edges computed above initialize *THIS as the OR
      condition under which the definition in DEF_BB is used in USE_BB.
@@ -2012,7 +2078,8 @@ uninit_analysis::init_from_phi_def (gphi *phi)
 	}
     }
   for (unsigned i = 0; i < nedges; i++)
-    if (!dfs_mark_dominating_region (def_edges[i], cd_root, in_region, region))
+    if (!dfs_mark_dominating_region (def_edges[i]->src, cd_root,
+				     in_region, region))
       break;
 
   unsigned num_chains = 0;
@@ -2021,13 +2088,18 @@ uninit_analysis::init_from_phi_def (gphi *phi)
     {
       edge e = def_edges[i];
       unsigned prev_nc = num_chains;
-      compute_control_dep_chain (cd_root, e->src, dep_chains,
-				 &num_chains, in_region);
+      bool complete_p = compute_control_dep_chain (cd_root, e->src, dep_chains,
+						   &num_chains, in_region);
 
       /* Update the newly added chains with the phi operand edge.  */
       if (EDGE_COUNT (e->src->succs) > 1)
 	{
-	  if (prev_nc == num_chains && num_chains < MAX_NUM_CHAINS)
+	  if (complete_p
+	      && prev_nc == num_chains
+	      && num_chains < MAX_NUM_CHAINS)
+	    /* We can only add a chain for the PHI operand edge when the
+	       collected info was complete, otherwise the predicate may
+	       not be conservative.  */
 	    dep_chains[num_chains++] = vNULL;
 	  for (unsigned j = prev_nc; j < num_chains; j++)
 	    dep_chains[j].safe_push (e);
@@ -2074,10 +2146,6 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 
   /* The basic block where the PHI is defined.  */
   basic_block def_bb = gimple_bb (phi);
-
-  if (dominated_by_p (CDI_POST_DOMINATORS, def_bb, use_bb))
-    /* The use is not guarded.  */
-    return false;
 
   /* Try to build the predicate expression under which the PHI flows
      into its use.  This will be empty if the PHI is defined and used

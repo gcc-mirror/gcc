@@ -605,19 +605,7 @@ package body Impunit is
    -- GNAT Defined Additions to Ada 2012 --
    ----------------------------------------
 
-    ("a-cfidll", F),  -- Ada.Containers.Formal_Indefinite_Doubly_Linked_Lists
-    ("a-cfinse", F),  -- Ada.Containers.Functional_Infinite_Sequences
-    ("a-cfinve", F),  -- Ada.Containers.Formal_Indefinite_Vectors
     ("a-coboho", F),  -- Ada.Containers.Bounded_Holders
-    ("a-cofove", F),  -- Ada.Containers.Formal_Vectors
-    ("a-cofuma", F),  -- Ada.Containers.Functional_Maps
-    ("a-cofuse", F),  -- Ada.Containers.Functional_Sets
-    ("a-cofuve", F),  -- Ada.Containers.Functional_Vectors
-    ("a-cfdlli", F),  -- Ada.Containers.Formal_Doubly_Linked_Lists
-    ("a-cforse", F),  -- Ada.Containers.Formal_Ordered_Sets
-    ("a-cforma", F),  -- Ada.Containers.Formal_Ordered_Maps
-    ("a-cfhase", F),  -- Ada.Containers.Formal_Hashed_Sets
-    ("a-cfhama", F),  -- Ada.Containers.Formal_Hashed_Maps
     ("a-cvgpso", F)   -- Ada.Containers.Vectors.Generic_Parallel_Sorting from
    );                 -- GNATCOLL.OMP
 

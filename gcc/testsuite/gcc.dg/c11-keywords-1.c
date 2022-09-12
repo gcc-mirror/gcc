@@ -1,0 +1,11 @@
+/* Test new C2x keywords not keywords in C11.  */
+/* { dg-do compile } */
+/* { dg-options "-std=c11 -pedantic-errors" } */
+
+int alignas;
+int alignof;
+int bool;
+int false;
+int true;
+int static_assert;
+int thread_local;
