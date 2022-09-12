@@ -8140,6 +8140,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
 						      tf_warning_or_error);
 	  d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
+	  /* Force auto deduction now.  Use tf_none to avoid redundant warnings
+	     on deprecated-14.C.  */
+	  mark_single_function (d_init, tf_none);
 	}
       enum auto_deduction_context adc = adc_variable_type;
       if (DECL_DECOMPOSITION_P (decl))
