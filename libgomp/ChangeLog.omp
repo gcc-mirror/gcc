@@ -1,6 +1,17 @@
 2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106894
+	* testsuite/libgomp.c-c++-common/icv-6.c: Include string.h.
+	(main): Avoid tests for which corresponding non-_ALL suffixed variable
+	is in the environment, or for OMP_NUM_TEAMS on the device
+	OMP_NUM_TEAMS_DEV_?.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-09-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* env.c (initialize_env): Include libiberty environ.h.
