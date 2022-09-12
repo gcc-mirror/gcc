@@ -16727,6 +16727,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case CALL_EXPR:
     case ARRAY_REF:
     case SCOPE_REF:
+    case OMP_ARRAY_SECTION:
       /* We should use one of the expression tsubsts for these codes.  */
       gcc_unreachable ();
 
@@ -17745,6 +17746,17 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	return build_nt (ARRAY_REF, op0, op1, NULL_TREE, NULL_TREE);
       }
 
+    case OMP_ARRAY_SECTION:
+      {
+	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	tree op1 = NULL_TREE, op2 = NULL_TREE;
+	if (TREE_OPERAND (t, 1))
+	  op1 = tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl);
+	if (TREE_OPERAND (t, 2))
+	  op2 = tsubst_copy (TREE_OPERAND (t, 2), args, complain, in_decl);
+	return build_nt (OMP_ARRAY_SECTION, op0, op1, op2);
+      }
+
     case CALL_EXPR:
       {
 	int n = VL_EXP_OPERAND_LENGTH (t);
@@ -18011,6 +18023,22 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
       tree ret = tree_cons (low_bound, length, chain);
       OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (ret)
 	= OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (decl);
+      return ret;
+    }
+  else if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+    {
+      tree low_bound
+	= tsubst_expr (TREE_OPERAND (decl, 1), args, complain, in_decl);
+      tree length = tsubst_expr (TREE_OPERAND (decl, 2), args, complain,
+				 in_decl);
+      tree base = tsubst_omp_clause_decl (TREE_OPERAND (decl, 0), args,
+					   complain, in_decl, NULL);
+      if (TREE_OPERAND (decl, 0) == base
+	  && TREE_OPERAND (decl, 1) == low_bound
+	  && TREE_OPERAND (decl, 2) == length)
+	return decl;
+      tree ret = build3 (OMP_ARRAY_SECTION, TREE_TYPE (base), base, low_bound,
+			 length);
       return ret;
     }
   tree ret = tsubst_expr (decl, args, complain, in_decl);
@@ -20794,6 +20822,27 @@ tsubst_copy_and_build (tree t,
       RETURN (build_x_array_ref (EXPR_LOCATION (t), op1,
 				 RECUR (TREE_OPERAND (t, 1)),
 				 complain|decltype_flag));
+
+    case OMP_ARRAY_SECTION:
+      {
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	tree op1 = NULL_TREE, op2 = NULL_TREE;
+	if (op0 == error_mark_node)
+	  RETURN (error_mark_node);
+	if (TREE_OPERAND (t, 1))
+	  {
+	    op1 = RECUR (TREE_OPERAND (t, 1));
+	    if (op1 == error_mark_node)
+	      RETURN (error_mark_node);
+	  }
+	if (TREE_OPERAND (t, 2))
+	  {
+	    op2 = RECUR (TREE_OPERAND (t, 2));
+	    if (op2 == error_mark_node)
+	      RETURN (error_mark_node);
+	  }
+	RETURN (build_omp_array_section (EXPR_LOCATION (t), op0, op1, op2));
+      }
 
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0))

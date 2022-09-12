@@ -407,6 +407,9 @@ struct GTY(()) cp_parser {
   /* TRUE if omp::directive or omp::sequence attributes may not appear.  */
   bool omp_attrs_forbidden_p;
 
+  /* TRUE if an OpenMP array section is allowed.  */
+  bool omp_array_section_p;
+
   /* Tracks the function's template parameter list when declaring a function
      using generic type parameters.  This is either a new chain in the case of a
      fully implicit function template or an extension of the function's existing

@@ -2497,6 +2497,15 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_bracket (pp);
       break;
 
+    case OMP_ARRAY_SECTION:
+      dump_expr (pp, TREE_OPERAND (t, 0), flags);
+      pp_cxx_left_bracket (pp);
+      dump_expr (pp, TREE_OPERAND (t, 1), flags);
+      pp_colon (pp);
+      dump_expr (pp, TREE_OPERAND (t, 2), flags);
+      pp_cxx_right_bracket (pp);
+      break;
+
     case UNARY_PLUS_EXPR:
       dump_unary_op (pp, "+", t, flags);
       break;

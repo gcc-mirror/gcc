@@ -1,5 +1,21 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.c++/baseptrs-4.C: Remove commented-out cases that
+	now work.
+	* testsuite/libgomp.c++/baseptrs-6.C: New test.
+	* testsuite/libgomp.c++/ind-base-1.C: New test.
+	* testsuite/libgomp.c++/ind-base-2.C: New test.
+	* testsuite/libgomp.c++/lvalue-tofrom-1.C: New test.
+	* testsuite/libgomp.c++/lvalue-tofrom-2.C: New test.
+	* testsuite/libgomp.c++/map-comma-1.C: New test.
+	* testsuite/libgomp.c++/map-rvalue-ref-1.C: New test.
+	* testsuite/libgomp.c++/struct-ref-1.C: New test.
+	* testsuite/libgomp.c-c++-common/array-field-1.c: New test.
+	* testsuite/libgomp.c-c++-common/array-of-struct-1.c: New test.
+	* testsuite/libgomp.c-c++-common/array-of-struct-2.c: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* target.c (gomp_map_pointer): Modify zero-length array section
 	pointer handling.
 	(gomp_attach_pointer): Likewise.

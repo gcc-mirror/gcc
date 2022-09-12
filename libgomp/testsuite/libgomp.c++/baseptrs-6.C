@@ -1,5 +1,7 @@
 // { dg-do run }
 
+// This is essentially baseptrs-4.C with templates.
+
 #include <cstring>
 #include <cassert>
 
@@ -61,13 +63,14 @@
 #define REF2PTR_COMPONENT_MEMBER_SLICE_BASEPTR
 
 #ifdef MAP_DECLS
+template<int N>
 void
 map_decls (void)
 {
   int x = 0;
   int &y = x;
   int arr[4];
-  int (&arrref)[4] = arr;
+  int (&arrref)[N] = arr;
   int *z = &arr[0];
   int *&t = z;
 
@@ -122,15 +125,16 @@ map_decls (void)
 }
 #endif
 
+template<typename T>
 struct S {
-  int a;
-  int &b;
-  int *c;
-  int *&d;
-  int e[4];
-  int (&f)[4];
+  T a;
+  T &b;
+  T *c;
+  T *&d;
+  T e[4];
+  T (&f)[4];
 
-  S(int a1, int &b1, int *c1, int *&d1) :
+  S(T a1, T &b1, T *c1, T *&d1) :
     a(a1), b(b1), c(c1), d(d1), f(e)
   {
     memset (e, 0, sizeof e);
@@ -138,11 +142,12 @@ struct S {
 };
 
 #ifdef NONREF_DECL_BASE
+template<typename T>
 void
 nonref_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys(a, b, &c, d);
+  T a = 0, b = 0, c, *d = &c;
+  S<T> mys(a, b, &c, d);
 
   #pragma omp target map(mys.a)
   {
@@ -186,12 +191,13 @@ nonref_decl_base (void)
 #endif
 
 #ifdef REF_DECL_BASE
+template<typename T>
 void
 ref_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys_orig(a, b, &c, d);
-  S &mys = mys_orig;
+  T a = 0, b = 0, c, *d = &c;
+  S<T> mys_orig(a, b, &c, d);
+  S<T> &mys = mys_orig;
 
   #pragma omp target map(mys.a)
   {
@@ -235,12 +241,13 @@ ref_decl_base (void)
 #endif
 
 #ifdef PTR_DECL_BASE
+template<typename A>
 void
 ptr_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys_orig(a, b, &c, d);
-  S *mys = &mys_orig;
+  A a = 0, b = 0, c, *d = &c;
+  S<A> mys_orig(a, b, &c, d);
+  S<A> *mys = &mys_orig;
 
   #pragma omp target map(mys->a)
   {
@@ -284,13 +291,14 @@ ptr_decl_base (void)
 #endif
 
 #ifdef REF2PTR_DECL_BASE
+template<typename A>
 void
 ref2ptr_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys_orig(a, b, &c, d);
-  S *mysp = &mys_orig;
-  S *&mys = mysp;
+  A a = 0, b = 0, c, *d = &c;
+  S<A> mys_orig(a, b, &c, d);
+  S<A> *mysp = &mys_orig;
+  S<A> *&mys = mysp;
 
   #pragma omp target map(mys->a)
   {
@@ -334,16 +342,17 @@ ref2ptr_decl_base (void)
 #endif
 
 #ifdef ARRAY_DECL_BASE
+template<typename A>
 void
 array_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys[4] =
+  A a = 0, b = 0, c, *d = &c;
+  S<A> mys[4] =
     {
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d)
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d)
     };
 
   #pragma omp target map(mys[2].a)
@@ -388,18 +397,19 @@ array_decl_base (void)
 #endif
 
 #ifdef REF2ARRAY_DECL_BASE
+template<typename A>
 void
 ref2array_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys_orig[4] =
+  A a = 0, b = 0, c, *d = &c;
+  S<A> mys_orig[4] =
     {
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d)
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d)
     };
-  S (&mys)[4] = mys_orig;
+  S<A> (&mys)[4] = mys_orig;
 
   #pragma omp target map(mys[2].a)
   {
@@ -443,18 +453,19 @@ ref2array_decl_base (void)
 #endif
 
 #ifdef PTR_OFFSET_DECL_BASE
+template<typename A>
 void
 ptr_offset_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys_orig[4] =
+  A a = 0, b = 0, c, *d = &c;
+  S<A> mys_orig[4] =
     {
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d)
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d)
     };
-  S *mys = &mys_orig[0];
+  S<A> *mys = &mys_orig[0];
 
   #pragma omp target map(mys[2].a)
   {
@@ -498,19 +509,20 @@ ptr_offset_decl_base (void)
 #endif
 
 #ifdef REF2PTR_OFFSET_DECL_BASE
+template<typename A>
 void
 ref2ptr_offset_decl_base (void)
 {
-  int a = 0, b = 0, c, *d = &c;
-  S mys_orig[4] =
+  A a = 0, b = 0, c, *d = &c;
+  S<A> mys_orig[4] =
     {
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d),
-      S(a, b, &c, d)
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d),
+      S<A>(a, b, &c, d)
     };
-  S *mys_ptr = &mys_orig[0];
-  S *&mys = mys_ptr;
+  S<A> *mys_ptr = &mys_orig[0];
+  S<A> *&mys = mys_ptr;
 
   #pragma omp target map(mys[2].a)
   {
@@ -554,34 +566,35 @@ ref2ptr_offset_decl_base (void)
 #endif
 
 #ifdef MAP_SECTIONS
+template<typename A, int B>
 void
 map_sections (void)
 {
-  int arr[10];
-  int *ptr;
-  int (&arrref)[10] = arr;
-  int *&ptrref = ptr;
+  A arr[B];
+  A *ptr;
+  A (&arrref)[B] = arr;
+  A *&ptrref = ptr;
 
-  ptr = new int[10];
-  memset (ptr, 0, sizeof (int) * 10);
-  memset (arr, 0, sizeof (int) * 10);
+  ptr = new int[B];
+  memset (ptr, 0, sizeof (int) * B);
+  memset (arr, 0, sizeof (int) * B);
 
-  #pragma omp target map(arr[0:10])
+  #pragma omp target map(arr[0:B])
   {
     arr[2]++;
   }
 
-  #pragma omp target map(ptr[0:10])
+  #pragma omp target map(ptr[0:B])
   {
     ptr[2]++;
   }
 
-  #pragma omp target map(arrref[0:10])
+  #pragma omp target map(arrref[0:B])
   {
     arrref[2]++;
   }
 
-  #pragma omp target map(ptrref[0:10])
+  #pragma omp target map(ptrref[0:B])
   {
     ptrref[2]++;
   }
@@ -593,41 +606,43 @@ map_sections (void)
 }
 #endif
 
+template<typename A>
 struct T {
-  int a[10];
-  int (&b)[10];
-  int *c;
-  int *&d;
+  A a[10];
+  A (&b)[10];
+  A *c;
+  A *&d;
 
-  T(int (&b1)[10], int *c1, int *&d1) : b(b1), c(c1), d(d1)
+  T(A (&b1)[10], A *c1, A *&d1) : b(b1), c(c1), d(d1)
   {
     memset (a, 0, sizeof a);
   }
 };
 
 #ifdef NONREF_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 nonref_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt(c, &c[0], d);
+  A c[B];
+  A *d = &c[0];
+  T<A> myt(c, &c[0], d);
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(myt.a[0:10])
+  #pragma omp target map(myt.a[0:B])
   {
     myt.a[2]++;
   }
 
-  #pragma omp target map(myt.b[0:10])
+  #pragma omp target map(myt.b[0:B])
   {
     myt.b[2]++;
   }
 
   #pragma omp target enter data map(to: myt.c)
 
-  #pragma omp target map(myt.c[0:10])
+  #pragma omp target map(myt.c[0:B])
   {
     myt.c[2]++;
   }
@@ -636,7 +651,7 @@ nonref_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt.d)
 
-  #pragma omp target map(myt.d[0:10])
+  #pragma omp target map(myt.d[0:B])
   {
     myt.d[2]++;
   }
@@ -651,21 +666,22 @@ nonref_decl_member_slice (void)
 #endif
 
 #ifdef NONREF_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 nonref_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt(c, &c[0], d);
+  A c[B];
+  A *d = &c[0];
+  T<A> myt(c, &c[0], d);
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt.c) map(myt.c[0:10])
+  #pragma omp target map(to:myt.c) map(myt.c[0:B])
   {
     myt.c[2]++;
   }
 
-  #pragma omp target map(to:myt.d) map(myt.d[0:10])
+  #pragma omp target map(to:myt.d) map(myt.d[0:B])
   {
     myt.d[2]++;
   }
@@ -676,29 +692,30 @@ nonref_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef REF_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ref_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T &myt = myt_real;
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> &myt = myt_real;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(myt.a[0:10])
+  #pragma omp target map(myt.a[0:B])
   {
     myt.a[2]++;
   }
 
-  #pragma omp target map(myt.b[0:10])
+  #pragma omp target map(myt.b[0:B])
   {
     myt.b[2]++;
   }
 
   #pragma omp target enter data map(to: myt.c)
 
-  #pragma omp target map(myt.c[0:10])
+  #pragma omp target map(myt.c[0:B])
   {
     myt.c[2]++;
   }
@@ -707,7 +724,7 @@ ref_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt.d)
 
-  #pragma omp target map(myt.d[0:10])
+  #pragma omp target map(myt.d[0:B])
   {
     myt.d[2]++;
   }
@@ -722,22 +739,23 @@ ref_decl_member_slice (void)
 #endif
 
 #ifdef REF_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ref_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T &myt = myt_real;
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> &myt = myt_real;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt.c) map(myt.c[0:10])
+  #pragma omp target map(to:myt.c) map(myt.c[0:B])
   {
     myt.c[2]++;
   }
 
-  #pragma omp target map(to:myt.d) map(myt.d[0:10])
+  #pragma omp target map(to:myt.d) map(myt.d[0:B])
   {
     myt.d[2]++;
   }
@@ -748,31 +766,32 @@ ref_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef PTR_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ptr_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt = &myt_real;
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt = &myt_real;
 
   memset (c, 0, sizeof c);
 
   #pragma omp target enter data map(to: myt)
 
-  #pragma omp target map(myt->a[0:10])
+  #pragma omp target map(myt->a[0:B])
   {
     myt->a[2]++;
   }
 
-  #pragma omp target map(myt->b[0:10])
+  #pragma omp target map(myt->b[0:B])
   {
     myt->b[2]++;
   }
 
   #pragma omp target enter data map(to: myt->c)
 
-  #pragma omp target map(myt->c[0:10])
+  #pragma omp target map(myt->c[0:B])
   {
     myt->c[2]++;
   }
@@ -781,7 +800,7 @@ ptr_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt->d)
 
-  #pragma omp target map(myt->d[0:10])
+  #pragma omp target map(myt->d[0:B])
   {
     myt->d[2]++;
   }
@@ -796,34 +815,35 @@ ptr_decl_member_slice (void)
 #endif
 
 #ifdef PTR_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ptr_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt = &myt_real;
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt = &myt_real;
 
   memset (c, 0, sizeof c);
 
   // These ones have an implicit firstprivate for 'myt'.
-  #pragma omp target map(to:myt->c) map(myt->c[0:10])
+  #pragma omp target map(to:myt->c) map(myt->c[0:B])
   {
     myt->c[2]++;
   }
 
-  #pragma omp target map(to:myt->d) map(myt->d[0:10])
+  #pragma omp target map(to:myt->d) map(myt->d[0:B])
   {
     myt->d[2]++;
   }
 
   // These ones have an explicit "TO" mapping for 'myt'.
-  #pragma omp target map(to:myt) map(to:myt->c) map(myt->c[0:10])
+  #pragma omp target map(to:myt) map(to:myt->c) map(myt->c[0:B])
   {
     myt->c[2]++;
   }
 
-  #pragma omp target map(to:myt) map(to:myt->d) map(myt->d[0:10])
+  #pragma omp target map(to:myt) map(to:myt->d) map(myt->d[0:B])
   {
     myt->d[2]++;
   }
@@ -834,32 +854,33 @@ ptr_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef REF2PTR_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ref2ptr_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptr = &myt_real;
-  T *&myt = myt_ptr;
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptr = &myt_real;
+  T<A> *&myt = myt_ptr;
 
   memset (c, 0, sizeof c);
 
   #pragma omp target enter data map(to: myt)
 
-  #pragma omp target map(myt->a[0:10])
+  #pragma omp target map(myt->a[0:B])
   {
     myt->a[2]++;
   }
 
-  #pragma omp target map(myt->b[0:10])
+  #pragma omp target map(myt->b[0:B])
   {
     myt->b[2]++;
   }
 
   #pragma omp target enter data map(to: myt->c)
 
-  #pragma omp target map(myt->c[0:10])
+  #pragma omp target map(myt->c[0:B])
   {
     myt->c[2]++;
   }
@@ -868,7 +889,7 @@ ref2ptr_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt->d)
 
-  #pragma omp target map(myt->d[0:10])
+  #pragma omp target map(myt->d[0:B])
   {
     myt->d[2]++;
   }
@@ -883,35 +904,36 @@ ref2ptr_decl_member_slice (void)
 #endif
 
 #ifdef REF2PTR_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ref2ptr_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptr = &myt_real;
-  T *&myt = myt_ptr;
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptr = &myt_real;
+  T<A> *&myt = myt_ptr;
 
   memset (c, 0, sizeof c);
 
   // These ones have an implicit firstprivate for 'myt'.
-  #pragma omp target map(to:myt->c) map(myt->c[0:10])
+  #pragma omp target map(to:myt->c) map(myt->c[0:B])
   {
     myt->c[2]++;
   }
 
-  #pragma omp target map(to:myt->d) map(myt->d[0:10])
+  #pragma omp target map(to:myt->d) map(myt->d[0:B])
   {
     myt->d[2]++;
   }
 
   // These ones have an explicit "TO" mapping for 'myt'.
-  #pragma omp target map(to:myt) map(to:myt->c) map(myt->c[0:10])
+  #pragma omp target map(to:myt) map(to:myt->c) map(myt->c[0:B])
   {
     myt->c[2]++;
   }
 
-  #pragma omp target map(to:myt) map(to:myt->d) map(myt->d[0:10])
+  #pragma omp target map(to:myt) map(to:myt->d) map(myt->d[0:B])
   {
     myt->d[2]++;
   }
@@ -922,34 +944,35 @@ ref2ptr_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef ARRAY_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 array_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(myt[2].a[0:10])
+  #pragma omp target map(myt[2].a[0:B])
   {
     myt[2].a[2]++;
   }
 
-  #pragma omp target map(myt[2].b[0:10])
+  #pragma omp target map(myt[2].b[0:B])
   {
     myt[2].b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2].c)
 
-  #pragma omp target map(myt[2].c[0:10])
+  #pragma omp target map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
@@ -958,7 +981,7 @@ array_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2].d)
 
-  #pragma omp target map(myt[2].d[0:10])
+  #pragma omp target map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -973,27 +996,28 @@ array_decl_member_slice (void)
 #endif
 
 #ifdef ARRAY_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 array_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt[4] =
+  A c[10];
+  A *d = &c[0];
+  T<A> myt[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:10])
+  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
 
-  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:10])
+  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1004,35 +1028,36 @@ array_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef REF2ARRAY_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ref2array_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
-  T (&myt)[4] = myt_real;
+  T<A> (&myt)[4] = myt_real;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(myt[2].a[0:10])
+  #pragma omp target map(myt[2].a[0:B])
   {
     myt[2].a[2]++;
   }
 
-  #pragma omp target map(myt[2].b[0:10])
+  #pragma omp target map(myt[2].b[0:B])
   {
     myt[2].b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2].c)
 
-  #pragma omp target map(myt[2].c[0:10])
+  #pragma omp target map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
@@ -1041,7 +1066,7 @@ ref2array_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2].d)
 
-  #pragma omp target map(myt[2].d[0:10])
+  #pragma omp target map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1056,28 +1081,29 @@ ref2array_decl_member_slice (void)
 #endif
 
 #ifdef REF2ARRAY_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ref2array_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
-  T (&myt)[4] = myt_real;
+  T<A> (&myt)[4] = myt_real;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:10])
+  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
 
-  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:10])
+  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1088,35 +1114,36 @@ ref2array_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef PTR_OFFSET_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ptr_offset_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
-  T *myt = &myt_real[0];
+  T<A> *myt = &myt_real[0];
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(myt[2].a[0:10])
+  #pragma omp target map(myt[2].a[0:B])
   {
     myt[2].a[2]++;
   }
 
-  #pragma omp target map(myt[2].b[0:10])
+  #pragma omp target map(myt[2].b[0:B])
   {
     myt[2].b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2].c)
 
-  #pragma omp target map(myt[2].c[0:10])
+  #pragma omp target map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
@@ -1125,7 +1152,7 @@ ptr_offset_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2].d)
 
-  #pragma omp target map(myt[2].d[0:10])
+  #pragma omp target map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1140,40 +1167,41 @@ ptr_offset_decl_member_slice (void)
 #endif
 
 #ifdef PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ptr_offset_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real[4] =
     {
       T (c, &c[0], d),
       T (c, &c[0], d),
       T (c, &c[0], d),
       T (c, &c[0], d)
     };
-  T *myt = &myt_real[0];
+  T<A> *myt = &myt_real[0];
 
   memset (c, 0, sizeof c);
 
   /* Implicit 'myt'.  */
-  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:10])
+  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
 
-  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:10])
+  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
 
   /* Explicit 'to'-mapped 'myt'.  */
-  #pragma omp target map(to:myt) map(to:myt[2].c) map(myt[2].c[0:10])
+  #pragma omp target map(to:myt) map(to:myt[2].c) map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
 
-  #pragma omp target map(to:myt) map(to:myt[2].d) map(myt[2].d[0:10])
+  #pragma omp target map(to:myt) map(to:myt[2].d) map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1184,36 +1212,37 @@ ptr_offset_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef REF2PTR_OFFSET_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ref2ptr_offset_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
-  T *myt_ptr = &myt_real[0];
-  T *&myt = myt_ptr;
+  T<A> *myt_ptr = &myt_real[0];
+  T<A> *&myt = myt_ptr;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(myt[2].a[0:10])
+  #pragma omp target map(myt[2].a[0:B])
   {
     myt[2].a[2]++;
   }
 
-  #pragma omp target map(myt[2].b[0:10])
+  #pragma omp target map(myt[2].b[0:B])
   {
     myt[2].b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2].c)
 
-  #pragma omp target map(myt[2].c[0:10])
+  #pragma omp target map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
@@ -1222,7 +1251,7 @@ ref2ptr_offset_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2].d)
 
-  #pragma omp target map(myt[2].d[0:10])
+  #pragma omp target map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1237,41 +1266,42 @@ ref2ptr_offset_decl_member_slice (void)
 #endif
 
 #ifdef REF2PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ref2ptr_offset_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real[4] =
     {
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d),
-      T (c, &c[0], d)
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d),
+      T<A> (c, &c[0], d)
     };
-  T *myt_ptr = &myt_real[0];
-  T *&myt = myt_ptr;
+  T<A> *myt_ptr = &myt_real[0];
+  T<A> *&myt = myt_ptr;
 
   memset (c, 0, sizeof c);
 
   /* Implicit 'myt'.  */
-  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:10])
+  #pragma omp target map(to:myt[2].c) map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
 
-  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:10])
+  #pragma omp target map(to:myt[2].d) map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
 
   /* Explicit 'to'-mapped 'myt'.  */
-  #pragma omp target map(to:myt) map(to:myt[2].c) map(myt[2].c[0:10])
+  #pragma omp target map(to:myt) map(to:myt[2].c) map(myt[2].c[0:B])
   {
     myt[2].c[2]++;
   }
 
-  #pragma omp target map(to:myt) map(to:myt[2].d) map(myt[2].d[0:10])
+  #pragma omp target map(to:myt) map(to:myt[2].d) map(myt[2].d[0:B])
   {
     myt[2].d[2]++;
   }
@@ -1282,13 +1312,14 @@ ref2ptr_offset_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef PTRARRAY_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ptrarray_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt[4] =
     {
       &myt_real,
       &myt_real,
@@ -1300,19 +1331,19 @@ ptrarray_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2])
 
-  #pragma omp target map(myt[2]->a[0:10])
+  #pragma omp target map(myt[2]->a[0:B])
   {
     myt[2]->a[2]++;
   }
 
-  #pragma omp target map(myt[2]->b[0:10])
+  #pragma omp target map(myt[2]->b[0:B])
   {
     myt[2]->b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2]->c)
 
-  #pragma omp target map(myt[2]->c[0:10])
+  #pragma omp target map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
@@ -1321,7 +1352,7 @@ ptrarray_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2]->d)
 
-  #pragma omp target map(myt[2]->d[0:10])
+  #pragma omp target map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1338,13 +1369,14 @@ ptrarray_decl_member_slice (void)
 #endif
 
 #ifdef PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ptrarray_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt[4] =
     {
       &myt_real,
       &myt_real,
@@ -1355,45 +1387,45 @@ ptrarray_decl_member_slice_baseptr (void)
   memset (c, 0, sizeof c);
 
   // Implicit 'myt'
-  #pragma omp target map(to: myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to: myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to: myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to: myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
 
   // One element of 'myt'
-  #pragma omp target map(to:myt[2], myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt[2], myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt[2], myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt[2], myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
 
   // Explicit map of all of 'myt'
-  #pragma omp target map(to:myt, myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt, myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt, myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
 
   // Explicit map slice of 'myt'
-  #pragma omp target map(to:myt[1:3], myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt[1:3], myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt[1:3], myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt[1:3], myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1404,38 +1436,39 @@ ptrarray_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef REF2PTRARRAY_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ref2ptrarray_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptrarr[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptrarr[4] =
     {
       &myt_real,
       &myt_real,
       &myt_real,
       &myt_real
     };
-  T *(&myt)[4] = myt_ptrarr;
+  T<A> *(&myt)[4] = myt_ptrarr;
 
   memset (c, 0, sizeof c);
 
   #pragma omp target enter data map(to: myt[2])
 
-  #pragma omp target map(myt[2]->a[0:10])
+  #pragma omp target map(myt[2]->a[0:B])
   {
     myt[2]->a[2]++;
   }
 
-  #pragma omp target map(myt[2]->b[0:10])
+  #pragma omp target map(myt[2]->b[0:B])
   {
     myt[2]->b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2]->c)
 
-  #pragma omp target map(myt[2]->c[0:10])
+  #pragma omp target map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
@@ -1444,7 +1477,7 @@ ref2ptrarray_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2]->d)
 
-  #pragma omp target map(myt[2]->d[0:10])
+  #pragma omp target map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1461,39 +1494,40 @@ ref2ptrarray_decl_member_slice (void)
 #endif
 
 #ifdef REF2PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ref2ptrarray_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptrarr[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptrarr[4] =
     {
       &myt_real,
       &myt_real,
       &myt_real,
       &myt_real
     };
-  T *(&myt)[4] = myt_ptrarr;
+  T<A> *(&myt)[4] = myt_ptrarr;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt[2], myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt[2], myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt[2], myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt[2], myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt, myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt, myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1504,20 +1538,21 @@ ref2ptrarray_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef PTRPTR_OFFSET_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ptrptr_offset_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptrarr[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptrarr[4] =
     {
       &myt_real,
       &myt_real,
       &myt_real,
       &myt_real
     };
-  T **myt = &myt_ptrarr[0];
+  T<A> **myt = &myt_ptrarr[0];
 
   memset (c, 0, sizeof c);
 
@@ -1526,19 +1561,19 @@ ptrptr_offset_decl_member_slice (void)
   /* NOTE: For the implicit firstprivate 'myt' to work, the zeroth element of
      myt[] must be mapped above -- otherwise the zero-length array section
      lookup fails.  */
-  #pragma omp target map(myt[2]->a[0:10])
+  #pragma omp target map(myt[2]->a[0:B])
   {
     myt[2]->a[2]++;
   }
 
-  #pragma omp target map(myt[2]->b[0:10])
+  #pragma omp target map(myt[2]->b[0:B])
   {
     myt[2]->b[2]++;
   }
 
   #pragma omp target enter data map(to: myt[2]->c)
 
-  #pragma omp target map(myt[2]->c[0:10])
+  #pragma omp target map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
@@ -1547,7 +1582,7 @@ ptrptr_offset_decl_member_slice (void)
 
   #pragma omp target enter data map(to: myt[2]->d)
 
-  #pragma omp target map(myt[2]->d[0:10])
+  #pragma omp target map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1562,39 +1597,40 @@ ptrptr_offset_decl_member_slice (void)
 #endif
 
 #ifdef PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ptrptr_offset_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptrarr[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptrarr[4] =
     {
       0,
       0,
       0,
       &myt_real
     };
-  T **myt = &myt_ptrarr[0];
+  T<A> **myt = &myt_ptrarr[0];
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt[3], myt[3]->c) map(myt[3]->c[0:10])
+  #pragma omp target map(to:myt[3], myt[3]->c) map(myt[3]->c[0:B])
   {
     myt[3]->c[2]++;
   }
 
-  #pragma omp target map(to:myt[3], myt[3]->d) map(myt[3]->d[0:10])
+  #pragma omp target map(to:myt[3], myt[3]->d) map(myt[3]->d[0:B])
   {
     myt[3]->d[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[3], myt[3]->c) map(myt[3]->c[0:10])
+  #pragma omp target map(to:myt, myt[3], myt[3]->c) map(myt[3]->c[0:B])
   {
     myt[3]->c[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[3], myt[3]->d) map(myt[3]->d[0:10])
+  #pragma omp target map(to:myt, myt[3], myt[3]->d) map(myt[3]->d[0:B])
   {
     myt[3]->d[2]++;
   }
@@ -1605,39 +1641,40 @@ ptrptr_offset_decl_member_slice_baseptr (void)
 #endif
 
 #ifdef REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE
+template<typename A, int B>
 void
 ref2ptrptr_offset_decl_member_slice (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptrarr[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptrarr[4] =
     {
       0,
       0,
       &myt_real,
       0
     };
-  T **myt_ptrptr = &myt_ptrarr[0];
-  T **&myt = myt_ptrptr;
+  T<A> **myt_ptrptr = &myt_ptrarr[0];
+  T<A> **&myt = myt_ptrptr;
 
   memset (c, 0, sizeof c);
 
   #pragma omp target enter data map(to: myt[0:3])
 
-  #pragma omp target map(myt[2]->a[0:10])
+  #pragma omp target map(myt[2]->a[0:B])
   {
     myt[2]->a[2]++;
   }
 
-  #pragma omp target map(myt[2]->b[0:10])
+  #pragma omp target map(myt[2]->b[0:B])
   {
     myt[2]->b[2]++;
   }
 
   #pragma omp target enter data map(to:myt[2]->c)
 
-  #pragma omp target map(myt[2]->c[0:10])
+  #pragma omp target map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
@@ -1646,7 +1683,7 @@ ref2ptrptr_offset_decl_member_slice (void)
 
   #pragma omp target enter data map(to:myt[2]->d)
 
-  #pragma omp target map(myt[2]->d[0:10])
+  #pragma omp target map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1661,40 +1698,41 @@ ref2ptrptr_offset_decl_member_slice (void)
 #endif
 
 #ifdef REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
+template<typename A, int B>
 void
 ref2ptrptr_offset_decl_member_slice_baseptr (void)
 {
-  int c[10];
-  int *d = &c[0];
-  T myt_real(c, &c[0], d);
-  T *myt_ptrarr[4] =
+  A c[B];
+  A *d = &c[0];
+  T<A> myt_real(c, &c[0], d);
+  T<A> *myt_ptrarr[4] =
     {
       0,
       0,
       &myt_real,
       0
     };
-  T **myt_ptrptr = &myt_ptrarr[0];
-  T **&myt = myt_ptrptr;
+  T<A> **myt_ptrptr = &myt_ptrarr[0];
+  T<A> **&myt = myt_ptrptr;
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target map(to:myt[2], myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt[2], myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt[2], myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt[2], myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[2], myt[2]->c) map(myt[2]->c[0:10])
+  #pragma omp target map(to:myt, myt[2], myt[2]->c) map(myt[2]->c[0:B])
   {
     myt[2]->c[2]++;
   }
 
-  #pragma omp target map(to:myt, myt[2], myt[2]->d) map(myt[2]->d[0:10])
+  #pragma omp target map(to:myt, myt[2], myt[2]->d) map(myt[2]->d[0:B])
   {
     myt[2]->d[2]++;
   }
@@ -1704,19 +1742,20 @@ ref2ptrptr_offset_decl_member_slice_baseptr (void)
 }
 #endif
 
+template<typename A>
 struct U
 {
-  S s1;
-  T t1;
-  S &s2;
-  T &t2;
-  S *s3;
-  T *t3;
-  S *&s4;
-  T *&t4;
+  S<A> s1;
+  T<A> t1;
+  S<A> &s2;
+  T<A> &t2;
+  S<A> *s3;
+  T<A> *t3;
+  S<A> *&s4;
+  T<A> *&t4;
 
-  U(S &sptr1, T &tptr1, S &sptr2, T &tptr2, S *sptr3, T *tptr3,
-    S *&sptr4, T *&tptr4)
+  U(S<A> &sptr1, T<A> &tptr1, S<A> &sptr2, T<A> &tptr2,
+    S<A> *sptr3, T<A> *tptr3, S<A> *&sptr4, T<A> *&tptr4)
     : s1(sptr1), t1(tptr1), s2(sptr2), t2(tptr2), s3(sptr3), t3(tptr3),
       s4(sptr4), t4(tptr4)
   {
@@ -1724,37 +1763,38 @@ struct U
 };
 
 #define INIT_S(N)				\
-  int a##N = 0, b##N = 0, c##N = 0, d##N = 0;	\
-  int *d##N##ptr = &d##N;			\
-  S s##N(a##N, b##N, &c##N, d##N##ptr)
+  A a##N = 0, b##N = 0, c##N = 0, d##N = 0;	\
+  A *d##N##ptr = &d##N;				\
+  S<A> s##N(a##N, b##N, &c##N, d##N##ptr)
 
 #define INIT_T(N)				\
-  int arr##N[10];				\
-  int *ptr##N = &arr##N[0];			\
-  T t##N(arr##N, &arr##N[0], ptr##N);		\
+  A arr##N[10];					\
+  A *ptr##N = &arr##N[0];			\
+  T<A> t##N(arr##N, &arr##N[0], ptr##N);	\
   memset (arr##N, 0, sizeof arr##N)
 
-#define INIT_ST				\
-  INIT_S(1);				\
-  INIT_T(1);				\
-  INIT_S(2);				\
-  INIT_T(2);				\
-  INIT_S(3);				\
-  INIT_T(3);				\
-  int a4 = 0, b4 = 0, c4 = 0, d4 = 0;	\
-  int *d4ptr = &d4;			\
-  S *s4 = new S(a4, b4, &c4, d4ptr);	\
-  int arr4[10];				\
-  int *ptr4 = &arr4[0];			\
-  T *t4 = new T(arr4, &arr4[0], ptr4);	\
+#define INIT_ST					\
+  INIT_S(1);					\
+  INIT_T(1);					\
+  INIT_S(2);					\
+  INIT_T(2);					\
+  INIT_S(3);					\
+  INIT_T(3);					\
+  A a4 = 0, b4 = 0, c4 = 0, d4 = 0;		\
+  A *d4ptr = &d4;				\
+  S<A> *s4 = new S<A>(a4, b4, &c4, d4ptr);	\
+  A arr4[10];					\
+  A *ptr4 = &arr4[0];				\
+  T<A> *t4 = new T<A>(arr4, &arr4[0], ptr4);	\
   memset (arr4, 0, sizeof arr4)
 
 #ifdef NONREF_COMPONENT_BASE
+template<typename A>
 void
 nonref_component_base (void)
 {
   INIT_ST;
-  U myu(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> myu(s1, t1, s2, t2, &s3, &t3, s4, t4);
 
   #pragma omp target map(myu.s1.a, myu.s1.b, myu.s1.c, myu.s1.d)
   {
@@ -1816,11 +1856,12 @@ nonref_component_base (void)
 #endif
 
 #ifdef NONREF_COMPONENT_MEMBER_SLICE
+template<typename A>
 void
 nonref_component_member_slice (void)
 {
   INIT_ST;
-  U myu(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> myu(s1, t1, s2, t2, &s3, &t3, s4, t4);
 
   #pragma omp target map(myu.t1.a[2:5])
   {
@@ -1964,11 +2005,12 @@ nonref_component_member_slice (void)
 #endif
 
 #ifdef NONREF_COMPONENT_MEMBER_SLICE_BASEPTR
+template<typename A>
 void
 nonref_component_member_slice_baseptr (void)
 {
   INIT_ST;
-  U myu(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> myu(s1, t1, s2, t2, &s3, &t3, s4, t4);
 
   #pragma omp target map(to: myu.t1.c) map(myu.t1.c[2:5])
   {
@@ -2028,12 +2070,13 @@ nonref_component_member_slice_baseptr (void)
 #endif
 
 #ifdef REF_COMPONENT_BASE
+template<typename A>
 void
 ref_component_base (void)
 {
   INIT_ST;
-  U myu_real(s1, t1, s2, t2, &s3, &t3, s4, t4);
-  U &myu = myu_real;
+  U<A> myu_real(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> &myu = myu_real;
 
   #pragma omp target map(myu.s1.a, myu.s1.b, myu.s1.c, myu.s1.d)
   {
@@ -2095,12 +2138,13 @@ ref_component_base (void)
 #endif
 
 #ifdef REF_COMPONENT_MEMBER_SLICE
+template<typename A>
 void
 ref_component_member_slice (void)
 {
   INIT_ST;
-  U myu_real(s1, t1, s2, t2, &s3, &t3, s4, t4);
-  U &myu = myu_real;
+  U<A> myu_real(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> &myu = myu_real;
 
   #pragma omp target map(myu.t1.a[2:5])
   {
@@ -2244,12 +2288,13 @@ ref_component_member_slice (void)
 #endif
 
 #ifdef REF_COMPONENT_MEMBER_SLICE_BASEPTR
+template<typename A>
 void
 ref_component_member_slice_baseptr (void)
 {
   INIT_ST;
-  U myu_real(s1, t1, s2, t2, &s3, &t3, s4, t4);
-  U &myu = myu_real;
+  U<A> myu_real(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> &myu = myu_real;
 
   #pragma omp target map(to: myu.t1.c) map(myu.t1.c[2:5])
   {
@@ -2309,11 +2354,12 @@ ref_component_member_slice_baseptr (void)
 #endif
 
 #ifdef PTR_COMPONENT_BASE
+template<typename A>
 void
 ptr_component_base (void)
 {
   INIT_ST;
-  U *myu = new U(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> *myu = new U<A>(s1, t1, s2, t2, &s3, &t3, s4, t4);
 
   #pragma omp target map(myu->s1.a, myu->s1.b, myu->s1.c, myu->s1.d)
   {
@@ -2376,11 +2422,12 @@ ptr_component_base (void)
 #endif
 
 #ifdef PTR_COMPONENT_MEMBER_SLICE
+template<typename A>
 void
 ptr_component_member_slice (void)
 {
   INIT_ST;
-  U *myu = new U(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> *myu = new U<A>(s1, t1, s2, t2, &s3, &t3, s4, t4);
 
   #pragma omp target map(myu->t1.a[2:5])
   {
@@ -2525,11 +2572,12 @@ ptr_component_member_slice (void)
 #endif
 
 #ifdef PTR_COMPONENT_MEMBER_SLICE_BASEPTR
+template<typename A>
 void
 ptr_component_member_slice_baseptr (void)
 {
   INIT_ST;
-  U *myu = new U(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> *myu = new U<A>(s1, t1, s2, t2, &s3, &t3, s4, t4);
 
   /* Implicit firstprivate 'myu'.  */
   #pragma omp target map(to: myu->t1.c) map(myu->t1.c[2:5])
@@ -2650,12 +2698,13 @@ ptr_component_member_slice_baseptr (void)
 #endif
 
 #ifdef REF2PTR_COMPONENT_BASE
+template<typename A>
 void
 ref2ptr_component_base (void)
 {
   INIT_ST;
-  U *myu_ptr = new U(s1, t1, s2, t2, &s3, &t3, s4, t4);
-  U *&myu = myu_ptr;
+  U<A> *myu_ptr = new U<A>(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> *&myu = myu_ptr;
 
   #pragma omp target map(myu->s1.a, myu->s1.b, myu->s1.c, myu->s1.d)
   {
@@ -2718,12 +2767,13 @@ ref2ptr_component_base (void)
 #endif
 
 #ifdef REF2PTR_COMPONENT_MEMBER_SLICE
+template<typename A>
 void
 ref2ptr_component_member_slice (void)
 {
   INIT_ST;
-  U *myu_ptr = new U(s1, t1, s2, t2, &s3, &t3, s4, t4);
-  U *&myu = myu_ptr;
+  U<A> *myu_ptr = new U<A>(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> *&myu = myu_ptr;
 
   #pragma omp target map(myu->t1.a[2:5])
   {
@@ -2868,12 +2918,13 @@ ref2ptr_component_member_slice (void)
 #endif
 
 #ifdef REF2PTR_COMPONENT_MEMBER_SLICE_BASEPTR
+template<typename A>
 void
 ref2ptr_component_member_slice_baseptr (void)
 {
   INIT_ST;
-  U *myu_ptr = new U(s1, t1, s2, t2, &s3, &t3, s4, t4);
-  U *&myu = myu_ptr;
+  U<A> *myu_ptr = new U<A>(s1, t1, s2, t2, &s3, &t3, s4, t4);
+  U<A> *&myu = myu_ptr;
 
   /* Implicit firstprivate 'myu'.  */
   #pragma omp target map(to: myu->t1.c) map(myu->t1.c[2:5])
@@ -2996,152 +3047,152 @@ ref2ptr_component_member_slice_baseptr (void)
 int main (int argc, char *argv[])
 {
 #ifdef MAP_DECLS
-  map_decls ();
+  map_decls<4> ();
 #endif
 
 #ifdef NONREF_DECL_BASE
-  nonref_decl_base ();
+  nonref_decl_base<int> ();
 #endif
 #ifdef REF_DECL_BASE
-  ref_decl_base ();
+  ref_decl_base<int> ();
 #endif
 #ifdef PTR_DECL_BASE
-  ptr_decl_base ();
+  ptr_decl_base<int> ();
 #endif
 #ifdef REF2PTR_DECL_BASE
-  ref2ptr_decl_base ();
+  ref2ptr_decl_base<int> ();
 #endif
 
 #ifdef ARRAY_DECL_BASE
-  array_decl_base ();
+  array_decl_base<int> ();
 #endif
 #ifdef REF2ARRAY_DECL_BASE
-  ref2array_decl_base ();
+  ref2array_decl_base<int> ();
 #endif
 #ifdef PTR_OFFSET_DECL_BASE
-  ptr_offset_decl_base ();
+  ptr_offset_decl_base<int> ();
 #endif
 #ifdef REF2PTR_OFFSET_DECL_BASE
-  ref2ptr_offset_decl_base ();
+  ref2ptr_offset_decl_base<int> ();
 #endif
 
 #ifdef MAP_SECTIONS
-  map_sections ();
+  map_sections<int, 10> ();
 #endif
 
 #ifdef NONREF_DECL_MEMBER_SLICE
-  nonref_decl_member_slice ();
+  nonref_decl_member_slice<int, 10> ();
 #endif
 #ifdef NONREF_DECL_MEMBER_SLICE_BASEPTR
-  nonref_decl_member_slice_baseptr ();
+  nonref_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef REF_DECL_MEMBER_SLICE
-  ref_decl_member_slice ();
+  ref_decl_member_slice<int, 10> ();
 #endif
 #ifdef REF_DECL_MEMBER_SLICE_BASEPTR
-  ref_decl_member_slice_baseptr ();
+  ref_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef PTR_DECL_MEMBER_SLICE
-  ptr_decl_member_slice ();
+  ptr_decl_member_slice<int, 10> ();
 #endif
 #ifdef PTR_DECL_MEMBER_SLICE_BASEPTR
-  ptr_decl_member_slice_baseptr ();
+  ptr_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef REF2PTR_DECL_MEMBER_SLICE
-  ref2ptr_decl_member_slice ();
+  ref2ptr_decl_member_slice<int, 10> ();
 #endif
 #ifdef REF2PTR_DECL_MEMBER_SLICE_BASEPTR
-  ref2ptr_decl_member_slice_baseptr ();
+  ref2ptr_decl_member_slice_baseptr<int, 10> ();
 #endif
 
 #ifdef ARRAY_DECL_MEMBER_SLICE
-  array_decl_member_slice ();
+  array_decl_member_slice<int, 10> ();
 #endif
 #ifdef ARRAY_DECL_MEMBER_SLICE_BASEPTR
-  array_decl_member_slice_baseptr ();
+  array_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef REF2ARRAY_DECL_MEMBER_SLICE
-  ref2array_decl_member_slice ();
+  ref2array_decl_member_slice<int, 10> ();
 #endif
 #ifdef REF2ARRAY_DECL_MEMBER_SLICE_BASEPTR
-  ref2array_decl_member_slice_baseptr ();
+  ref2array_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef PTR_OFFSET_DECL_MEMBER_SLICE
-  ptr_offset_decl_member_slice ();
+  ptr_offset_decl_member_slice<int, 10> ();
 #endif
 #ifdef PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
-  ptr_offset_decl_member_slice_baseptr ();
+  ptr_offset_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef REF2PTR_OFFSET_DECL_MEMBER_SLICE
-  ref2ptr_offset_decl_member_slice ();
+  ref2ptr_offset_decl_member_slice<int, 10> ();
 #endif
 #ifdef REF2PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
-  ref2ptr_offset_decl_member_slice_baseptr ();
+  ref2ptr_offset_decl_member_slice_baseptr<int, 10> ();
 #endif
 
 #ifdef PTRARRAY_DECL_MEMBER_SLICE
-  ptrarray_decl_member_slice ();
+  ptrarray_decl_member_slice<int, 10> ();
 #endif
 #ifdef PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
-  ptrarray_decl_member_slice_baseptr ();
+  ptrarray_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef REF2PTRARRAY_DECL_MEMBER_SLICE
-  ref2ptrarray_decl_member_slice ();
+  ref2ptrarray_decl_member_slice<int, 10> ();
 #endif
 #ifdef REF2PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
-  ref2ptrarray_decl_member_slice_baseptr ();
+  ref2ptrarray_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef PTRPTR_OFFSET_DECL_MEMBER_SLICE
-  ptrptr_offset_decl_member_slice ();
+  ptrptr_offset_decl_member_slice<int, 10> ();
 #endif
 #ifdef PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
-  ptrptr_offset_decl_member_slice_baseptr ();
+  ptrptr_offset_decl_member_slice_baseptr<int, 10> ();
 #endif
 #ifdef REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE
-  ref2ptrptr_offset_decl_member_slice ();
+  ref2ptrptr_offset_decl_member_slice<int, 10> ();
 #endif
 #ifdef REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
-  ref2ptrptr_offset_decl_member_slice_baseptr ();
+  ref2ptrptr_offset_decl_member_slice_baseptr<int, 10> ();
 #endif
 
 #ifdef NONREF_COMPONENT_BASE
-  nonref_component_base ();
+  nonref_component_base<int> ();
 #endif
 #ifdef NONREF_COMPONENT_MEMBER_SLICE
-  nonref_component_member_slice ();
+  nonref_component_member_slice<int> ();
 #endif
 #ifdef NONREF_COMPONENT_MEMBER_SLICE_BASEPTR
-  nonref_component_member_slice_baseptr ();
+  nonref_component_member_slice_baseptr<int> ();
 #endif
 
 #ifdef REF_COMPONENT_BASE
-  ref_component_base ();
+  ref_component_base<int> ();
 #endif
 #ifdef REF_COMPONENT_MEMBER_SLICE
-  ref_component_member_slice ();
+  ref_component_member_slice<int> ();
 #endif
 #ifdef REF_COMPONENT_MEMBER_SLICE_BASEPTR
-  ref_component_member_slice_baseptr ();
+  ref_component_member_slice_baseptr<int> ();
 #endif
 
 #ifdef PTR_COMPONENT_BASE
-  ptr_component_base ();
+  ptr_component_base<int> ();
 #endif
 #ifdef PTR_COMPONENT_MEMBER_SLICE
-  ptr_component_member_slice ();
+  ptr_component_member_slice<int> ();
 #endif
 #ifdef PTR_COMPONENT_MEMBER_SLICE_BASEPTR
-  ptr_component_member_slice_baseptr ();
+  ptr_component_member_slice_baseptr<int> ();
 #endif
 
 #ifdef REF2PTR_COMPONENT_BASE
-  ref2ptr_component_base ();
+  ref2ptr_component_base<int> ();
 #endif
 #ifdef REF2PTR_COMPONENT_MEMBER_SLICE
-  ref2ptr_component_member_slice ();
+  ref2ptr_component_member_slice<int> ();
 #endif
 #ifdef REF2PTR_COMPONENT_MEMBER_SLICE_BASEPTR
-  ref2ptr_component_member_slice_baseptr ();
+  ref2ptr_component_member_slice_baseptr<int> ();
 #endif
 
   return 0;

@@ -2710,6 +2710,20 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	}
       break;
 
+    case OMP_ARRAY_SECTION:
+      op0 = TREE_OPERAND (node, 0);
+      if (op_prio (op0) < op_prio (node))
+	pp_left_paren (pp);
+      dump_generic_node (pp, op0, spc, flags, false);
+      if (op_prio (op0) < op_prio (node))
+	pp_right_paren (pp);
+      pp_left_bracket (pp);
+      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_colon (pp);
+      dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_right_bracket (pp);
+      break;
+
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT ix;

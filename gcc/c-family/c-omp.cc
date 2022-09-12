@@ -2825,9 +2825,23 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    }
 		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST)
 		    {
+		      /* TODO: This can go away once we transition all uses of
+			 TREE_LIST for representing OMP array sections to
+			 OMP_ARRAY_SECTION.  */
 		      tree t;
 		      for (t = OMP_CLAUSE_DECL (c);
 			   TREE_CODE (t) == TREE_LIST; t = TREE_CHAIN (t))
+			;
+		      if (DECL_P (t))
+			bitmap_clear_bit (&allocate_head, DECL_UID (t));
+		      break;
+		    }
+		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == OMP_ARRAY_SECTION)
+		    {
+		      tree t;
+		      for (t = OMP_CLAUSE_DECL (c);
+			   TREE_CODE (t) == OMP_ARRAY_SECTION;
+			   t = TREE_OPERAND (t, 0))
 			;
 		      if (DECL_P (t))
 			bitmap_clear_bit (&allocate_head, DECL_UID (t));
@@ -4027,6 +4041,7 @@ c_omp_address_inspector::map_supported_p ()
 	 || TREE_CODE (t) == SAVE_EXPR
 	 || TREE_CODE (t) == POINTER_PLUS_EXPR
 	 || TREE_CODE (t) == NON_LVALUE_EXPR
+	 || TREE_CODE (t) == OMP_ARRAY_SECTION
 	 || TREE_CODE (t) == NOP_EXPR)
     if (TREE_CODE (t) == COMPOUND_EXPR)
       t = TREE_OPERAND (t, 1);
@@ -4056,7 +4071,8 @@ c_omp_address_inspector::get_origin (tree t)
       else if (TREE_CODE (t) == POINTER_PLUS_EXPR
 	       || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
-      else if (TREE_CODE (t) == INDIRECT_REF
+      else if (!processing_template_decl_p ()
+	       && TREE_CODE (t) == INDIRECT_REF
 	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == REFERENCE_TYPE)
 	t = TREE_OPERAND (t, 0);
       else
@@ -4073,7 +4089,10 @@ c_omp_address_inspector::get_origin (tree t)
 tree
 c_omp_address_inspector::maybe_unconvert_ref (tree t)
 {
-  if (TREE_CODE (t) == INDIRECT_REF
+  /* Be careful not to dereference the type if we're processing a
+     template decl, else it might be NULL.  */
+  if (!processing_template_decl_p ()
+      && TREE_CODE (t) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == REFERENCE_TYPE)
     return TREE_OPERAND (t, 0);
 

@@ -9593,6 +9593,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OACC_ENTER_DATA:
     case OACC_EXIT_DATA:
     case OACC_UPDATE:
+    case OMP_ARRAY_SECTION:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case TRANSACTION_EXPR:

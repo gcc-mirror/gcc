@@ -615,6 +615,51 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   return expr;
 }
 
+/* Build an OMP_ARRAY_SECTION expression, handling usage in template
+   definitions, etc.  */
+
+tree
+grok_omp_array_section (location_t loc, tree array_expr, tree index,
+			tree length)
+{
+  tree orig_array_expr = array_expr;
+  tree orig_index = index;
+  tree orig_length = length;
+
+  if (error_operand_p (array_expr)
+      || error_operand_p (index)
+      || error_operand_p (length))
+    return error_mark_node;
+
+  if (processing_template_decl)
+    {
+      if (type_dependent_expression_p (array_expr)
+	  || type_dependent_expression_p (index)
+	  || type_dependent_expression_p (length))
+	return build_min_nt_loc (loc, OMP_ARRAY_SECTION, array_expr, index,
+				 length);
+      array_expr = build_non_dependent_expr (array_expr);
+      if (index)
+	index = build_non_dependent_expr (index);
+      if (length)
+	length = build_non_dependent_expr (length);
+    }
+
+  index = fold_non_dependent_expr (index);
+  length = fold_non_dependent_expr (length);
+
+  /* NOTE: We can pass through invalidly-typed index/length fields
+     here (e.g. if the user tries to use a floating-point index/length).
+     This is diagnosed later in semantics.cc:handle_omp_array_sections_1.  */
+
+  tree expr = build_omp_array_section (loc, array_expr, index, length);
+
+  if (processing_template_decl)
+    expr = build_min_non_dep (OMP_ARRAY_SECTION, expr, orig_array_expr,
+			      orig_index, orig_length);
+  return expr;
+}
+
 /* Given the cast expression EXP, checking out its validity.   Either return
    an error_mark_node if there was an unavoidable error, return a cast to
    void for trying to delete a pointer w/ the value 0, or return the

@@ -1,3 +1,31 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: Update expected output.
+	* g++.dg/gomp/array-section-1.C: New test.
+	* g++.dg/gomp/array-section-2.C: New test.
+	* g++.dg/gomp/bad-array-section-1.C: New test.
+	* g++.dg/gomp/bad-array-section-2.C: New test.
+	* g++.dg/gomp/bad-array-section-3.C: New test.
+	* g++.dg/gomp/bad-array-section-4.C: New test.
+	* g++.dg/gomp/bad-array-section-5.C: New test.
+	* g++.dg/gomp/bad-array-section-6.C: New test.
+	* g++.dg/gomp/bad-array-section-7.C: New test.
+	* g++.dg/gomp/bad-array-section-8.C: New test.
+	* g++.dg/gomp/bad-array-section-9.C: New test.
+	* g++.dg/gomp/bad-array-section-10.C: New test.
+	* g++.dg/gomp/bad-array-section-11.C: New test.
+	* g++.dg/gomp/has_device_addr-non-lvalue-1.C: New test.
+	* g++.dg/gomp/pr67522.C: Update expected output.
+	* g++.dg/gomp/ind-base-3.C: New test.
+	* g++.dg/gomp/map-assignment-1.C: New test.
+	* g++.dg/gomp/map-inc-1.C: New test.
+	* g++.dg/gomp/map-lvalue-ref-1.C: New test.
+	* g++.dg/gomp/map-ptrmem-1.C: New test.
+	* g++.dg/gomp/map-ptrmem-2.C: New test.
+	* g++.dg/gomp/map-static-cast-lvalue-1.C: New test.
+	* g++.dg/gomp/map-ternary-1.C: New test.
+	* g++.dg/gomp/member-array-2.C: New test.
+
 2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

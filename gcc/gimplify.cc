@@ -18067,6 +18067,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case TREE_LIST:
 	  gcc_unreachable ();
 
+	case OMP_ARRAY_SECTION:
+	  gcc_unreachable ();
+
 	case COMPOUND_EXPR:
 	  ret = gimplify_compound_expr (expr_p, pre_p, fallback != fb_none);
 	  break;

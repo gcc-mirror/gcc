@@ -1,3 +1,13 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_address_inspector): Remove static from get_origin
+	and maybe_unconvert_ref methods.
+	* c-omp.cc (c_omp_split_clauses): Support OMP_ARRAY_SECTION.
+	(c_omp_address_inspector::map_supported_p): Handle OMP_ARRAY_SECTION.
+	(c_omp_address_inspector::get_origin): Avoid crash when processing
+	template decl.
+	(c_omp_address_inspector::maybe_unconvert_ref): Likewise.
+
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	* c-omp.cc (c_omp_address_inspector::expand_array_base): Don't omit

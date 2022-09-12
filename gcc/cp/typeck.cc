@@ -4786,6 +4786,56 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
   return expr;
 }
 
+/* Build an OpenMP array section reference, creating an exact type for the
+   resulting expression based on the element type and bounds if possible.  If
+   we have variable bounds, create an incomplete array type for the result
+   instead.  */
+
+tree
+build_omp_array_section (location_t loc, tree array_expr, tree index,
+			 tree length)
+{
+  tree idxtype;
+
+  /* If we know the integer bounds, create an index type with exact
+     low/high (or zero/length) bounds.  Otherwise, create an incomplete
+     array type.  (This mostly only affects diagnostics.)  */
+  if (index != NULL_TREE
+      && length != NULL_TREE
+      && TREE_CODE (index) == INTEGER_CST
+      && TREE_CODE (length) == INTEGER_CST)
+    {
+      tree low = fold_convert (sizetype, index);
+      tree high = fold_convert (sizetype, length);
+      high = size_binop (PLUS_EXPR, low, high);
+      high = size_binop (MINUS_EXPR, high, size_one_node);
+      idxtype = build_range_type (sizetype, low, high);
+    }
+  else if ((index == NULL_TREE || integer_zerop (index))
+	   && length != NULL_TREE
+	   && TREE_CODE (length) == INTEGER_CST)
+    idxtype = build_index_type (length);
+  else
+    idxtype = NULL_TREE;
+
+  tree type = TREE_TYPE (array_expr);
+  gcc_assert (type);
+  type = non_reference (type);
+
+  tree sectype, eltype = TREE_TYPE (type);
+
+  /* It's not an array or pointer type.  Just reuse the type of the
+     original expression as the type of the array section (an error will be
+     raised anyway, later).  */
+  if (eltype == NULL_TREE)
+    sectype = TREE_TYPE (array_expr);
+  else
+    sectype = build_array_type (eltype, idxtype);
+
+  return build3_loc (loc, OMP_ARRAY_SECTION, sectype, array_expr, index,
+		     length);
+}
+
 /* Return whether OP is an expression of enum type cast to integer
    type.  In C++ even unsigned enum types are cast to signed integer
    types.  We do not want to issue warnings about comparisons between

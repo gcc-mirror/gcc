@@ -1,3 +1,35 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* constexpr.cc (potential_consant_expression_1): Handle
+	OMP_ARRAY_SECTION.
+	* cp-tree.h (grok_omp_array_section, build_omp_array_section): Add
+	prototypes.
+	* decl2.cc (grok_omp_array_section): New function.
+	* error.cc (dump_expr): Handle OMP_ARRAY_SECTION.
+	* parser.cc (cp_parser_new): Initialize parser->omp_array_section_p.
+	(cp_parser_statement_expr): Disallow array sections.
+	(cp_parser_postfix_open_square_expression): Support OMP_ARRAY_SECTION
+	parsing.
+	(cp_parser_parenthesized_expression_list, cp_parser_lambda_expression,
+	cp_parser_braced_list): Disallow array sections.
+	(cp_parser_omp_var_list_no_open): Remove ALLOW_DEREF parameter, add
+	MAP_LVALUE in its place.  Support generalised lvalue parsing for
+	OpenMP map, to and from clauses.  Use OMP_ARRAY_SECTION
+	code instead of TREE_LIST to represent OpenMP array sections.
+	(cp_parser_omp_var_list): Remove ALLOW_DEREF parameter, add MAP_LVALUE.
+	Pass to cp_parser_omp_var_list_no_open.
+	(cp_parser_oacc_data_clause): Update call to cp_parser_omp_var_list.
+	(cp_parser_omp_clause_map): Add sk_omp scope around
+	cp_parser_omp_var_list_no_open call.
+	* parser.h (cp_parser): Add omp_array_section_p field.
+	* pt.cc (tsubst, tsubst_copy, tsubst_omp_clause_decl,
+	tsubst_copy_and_build): Add OMP_ARRAY_SECTION support.
+	* semantics.cc (handle_omp_array_sections_1, handle_omp_array_sections,
+	cp_oacc_check_attachments, finish_omp_clauses): Use OMP_ARRAY_SECTION
+	instead of TREE_LIST where appropriate.  Handle more types of map
+	expression.
+	* typeck.cc (build_omp_array_section): New function.
+
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	* parser.cc (cp_parser_oacc_all_clauses): Add TARGET parameter. Use

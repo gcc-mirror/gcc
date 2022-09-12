@@ -1367,8 +1367,8 @@ public:
 
   bool map_supported_p ();
 
-  static tree get_origin (tree);
-  static tree maybe_unconvert_ref (tree);
+  tree get_origin (tree);
+  tree maybe_unconvert_ref (tree);
 
   bool maybe_zero_length_array_section (tree);
 

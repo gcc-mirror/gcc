@@ -1,5 +1,12 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (gimplify_expr): Ensure OMP_ARRAY_SECTION has been
+	processed out before gimplification.
+	* tree-pretty-print.cc (dump_generic_node): Support OMP_ARRAY_SECTION.
+	* tree.def (OMP_ARRAY_SECTION): New tree code.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (gimplify_scan_omp_clauses): Add note about
 	DECL_VALUE_EXPR handling for struct mapping nodes.
 	(gimplify_adjust_omp_clauses): Perform DECL_VALUE_EXPR substitution
