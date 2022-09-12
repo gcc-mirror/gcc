@@ -5976,7 +5976,7 @@ build_conditional_expr (const op_location_t &loc,
 	 but now we sometimes wrap them in NOP_EXPRs so the test would
 	 fail.  */
       if (CLASS_TYPE_P (TREE_TYPE (result)))
-	result = get_target_expr_sfinae (result, complain);
+	result = get_target_expr (result, complain);
       /* If this expression is an rvalue, but might be mistaken for an
 	 lvalue, we must add a NON_LVALUE_EXPR.  */
       result = rvalue (result);
@@ -7672,7 +7672,7 @@ build_temp (tree expr, tree type, int flags,
   if ((lvalue_kind (expr) & clk_packed)
       && CLASS_TYPE_P (TREE_TYPE (expr))
       && !type_has_nontrivial_copy_init (TREE_TYPE (expr)))
-    return get_target_expr_sfinae (expr, complain);
+    return get_target_expr (expr, complain);
 
   /* In decltype, we might have decided not to wrap this call in a TARGET_EXPR.
      But it turns out to be a subexpression, so perform temporary
@@ -8008,10 +8008,10 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    && !processing_template_decl)
 	  {
 	    bool direct = CONSTRUCTOR_IS_DIRECT_INIT (expr);
-	    if (abstract_virtuals_error_sfinae (NULL_TREE, totype, complain))
+	    if (abstract_virtuals_error (NULL_TREE, totype, complain))
 	      return error_mark_node;
 	    expr = build_value_init (totype, complain);
-	    expr = get_target_expr_sfinae (expr, complain);
+	    expr = get_target_expr (expr, complain);
 	    if (expr != error_mark_node)
 	      {
 		TARGET_EXPR_LIST_INIT_P (expr) = true;
@@ -8137,7 +8137,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	field = next_aggregate_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
 	tree new_ctor = build_constructor (totype, vec);
-	return get_target_expr_sfinae (new_ctor, complain);
+	return get_target_expr (new_ctor, complain);
       }
 
     case ck_aggr:
@@ -8153,7 +8153,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  return expr;
 	}
       expr = reshape_init (totype, expr, complain);
-      expr = get_target_expr_sfinae (digest_init (totype, expr, complain),
+      expr = get_target_expr (digest_init (totype, expr, complain),
 				     complain);
       if (expr != error_mark_node)
 	TARGET_EXPR_LIST_INIT_P (expr) = true;
@@ -8580,12 +8580,12 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
        standard conversions are performed.  */
     arg = decay_conversion (arg, complain);
 
-  arg = require_complete_type_sfinae (arg, complain);
+  arg = require_complete_type (arg, complain);
   arg_type = TREE_TYPE (arg);
 
   if (arg != error_mark_node
       /* In a template (or ill-formed code), we can have an incomplete type
-	 even after require_complete_type_sfinae, in which case we don't know
+	 even after require_complete_type, in which case we don't know
 	 whether it has trivial copy or not.  */
       && COMPLETE_TYPE_P (arg_type)
       && !cp_unevaluated_operand)
@@ -10000,7 +10000,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		    obj_arg = TREE_OPERAND (addr, 0);
 		}
 	    }
-	  call = cxx_constant_value_sfinae (call, obj_arg, complain);
+	  call = cxx_constant_value (call, obj_arg, complain);
 	  if (obj_arg && !error_operand_p (call))
 	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
 	  call = convert_from_reference (call);
@@ -10505,7 +10505,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
      prvalue. The type of the prvalue may be incomplete.  */
   if (!(complain & tf_decltype))
     {
-      fn = require_complete_type_sfinae (fn, complain);
+      fn = require_complete_type (fn, complain);
       if (fn == error_mark_node)
 	return error_mark_node;
 
@@ -11084,7 +11084,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
       if (init)
 	{
 	  if (is_dummy_object (instance))
-	    return get_target_expr_sfinae (init, complain);
+	    return get_target_expr (init, complain);
 	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
 	  TREE_SIDE_EFFECTS (init) = true;
 	  return init;

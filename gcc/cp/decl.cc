@@ -18556,7 +18556,7 @@ build_explicit_specifier (tree expr, tsubst_flags_t complain)
     return expr;
 
   expr = build_converted_constant_bool_expr (expr, complain);
-  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+  expr = instantiate_non_dependent_expr (expr, complain);
   expr = cxx_constant_value (expr);
   return expr;
 }

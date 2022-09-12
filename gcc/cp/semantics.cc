@@ -3318,7 +3318,7 @@ finish_compound_literal (tree type, tree compound_literal,
       /* The CONSTRUCTOR is now an initializer, not a compound literal.  */
       if (TREE_CODE (compound_literal) == CONSTRUCTOR)
 	TREE_HAS_CONSTRUCTOR (compound_literal) = false;
-      compound_literal = get_target_expr_sfinae (compound_literal, complain);
+      compound_literal = get_target_expr (compound_literal, complain);
     }
   else
     /* For e.g. int{42} just make sure it's a prvalue.  */
@@ -11329,7 +11329,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else if (processing_template_decl)
     {
-      expr = instantiate_non_dependent_expr_sfinae (expr, complain|tf_decltype);
+      expr = instantiate_non_dependent_expr (expr, complain|tf_decltype);
       if (expr == error_mark_node)
 	return error_mark_node;
       /* Keep processing_template_decl cleared for the rest of the function
@@ -12500,7 +12500,7 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
   SET_EXPR_LOCATION (ret, loc);
 
   if (!processing_template_decl && CLASS_TYPE_P (type))
-    ret = get_target_expr_sfinae (ret, complain);
+    ret = get_target_expr (ret, complain);
 
   return ret;
 }

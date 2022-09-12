@@ -3868,7 +3868,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     }
   else
     {
-      hi = instantiate_non_dependent_expr_sfinae (hi, complain);
+      hi = instantiate_non_dependent_expr (hi, complain);
       hi = cxx_constant_value (hi);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
 
@@ -6428,7 +6428,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
     return true;
 }
 
-/* The actual substitution part of instantiate_non_dependent_expr_sfinae,
+/* The actual substitution part of instantiate_non_dependent_expr,
    to be used when the caller has already checked
     !instantiation_dependent_uneval_expression_p (expr)
    and cleared processing_template_decl.  */
@@ -6447,7 +6447,8 @@ instantiate_non_dependent_expr_internal (tree expr, tsubst_flags_t complain)
 /* Instantiate the non-dependent expression EXPR.  */
 
 tree
-instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
+instantiate_non_dependent_expr (tree expr,
+				tsubst_flags_t complain /* = tf_error */)
 {
   if (expr == NULL_TREE)
     return NULL_TREE;
@@ -6460,12 +6461,6 @@ instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
       expr = instantiate_non_dependent_expr_internal (expr, complain);
     }
   return expr;
-}
-
-tree
-instantiate_non_dependent_expr (tree expr)
-{
-  return instantiate_non_dependent_expr_sfinae (expr, tf_error);
 }
 
 /* Like instantiate_non_dependent_expr, but return NULL_TREE if the
@@ -16970,7 +16965,7 @@ tsubst_init (tree init, tree decl, tree args,
 	     zero.  */
 	  init = build_value_init (type, complain);
 	  if (TREE_CODE (init) == AGGR_INIT_EXPR)
-	    init = get_target_expr_sfinae (init, complain);
+	    init = get_target_expr (init, complain);
 	  if (TREE_CODE (init) == TARGET_EXPR)
 	    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 	}
@@ -20124,7 +20119,7 @@ fold_targs_r (tree targs, tsubst_flags_t complain)
 	       && !glvalue_p (elt)
 	       && !TREE_CONSTANT (elt))
 	{
-	  elt = cxx_constant_value_sfinae (elt, NULL_TREE, complain);
+	  elt = cxx_constant_value (elt, NULL_TREE, complain);
 	  if (elt == error_mark_node)
 	    return false;
 	}

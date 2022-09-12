@@ -8068,7 +8068,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	r = get_target_expr (r);
       else
 	{
-	  r = get_target_expr_sfinae (r, tf_warning_or_error | tf_no_cleanup);
+	  r = get_target_expr (r, tf_warning_or_error | tf_no_cleanup);
 	  TREE_CONSTANT (r) = true;
 	}
     }
@@ -8081,19 +8081,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 }
 
 /* If T represents a constant expression returns its reduced value.
-   Otherwise return error_mark_node.  If T is dependent, then
-   return NULL.  */
+   Otherwise return error_mark_node.  */
 
 tree
-cxx_constant_value (tree t, tree decl)
-{
-  return cxx_eval_outermost_constant_expr (t, false, true, true, false, decl);
-}
-
-/* As above, but respect SFINAE.  */
-
-tree
-cxx_constant_value_sfinae (tree t, tree decl, tsubst_flags_t complain)
+cxx_constant_value (tree t, tree decl /* = NULL_TREE */,
+		    tsubst_flags_t complain /* = tf_error */)
 {
   bool sfinae = !(complain & tf_error);
   tree r = cxx_eval_outermost_constant_expr (t, sfinae, true, true, false, decl);
@@ -8316,8 +8308,8 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 
 /* Like maybe_constant_value but first fully instantiate the argument.
 
-   Note: this is equivalent to instantiate_non_dependent_expr_sfinae
-   (t, complain) followed by maybe_constant_value but is more efficient,
+   Note: this is equivalent to instantiate_non_dependent_expr (t, complain)
+   followed by maybe_constant_value but is more efficient,
    because it calls instantiation_dependent_expression_p and
    potential_constant_expression at most once.
    The manifestly_const_eval argument is passed to maybe_constant_value.
