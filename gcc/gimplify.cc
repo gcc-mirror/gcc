@@ -13502,7 +13502,11 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       if (TREE_CODE (dtype) == REFERENCE_TYPE)
 	dtype = TREE_TYPE (dtype);
       /* FIRSTPRIVATE_POINTER doesn't work well if we have a
-	 multiply-indirected pointer.  */
+	 multiply-indirected pointer.  If we have a reference to a pointer to
+	 a pointer, it's possible that this should really be
+	 GOMP_MAP_FIRSTPRIVATE_REFERENCE -- but that also doesn't work at the
+	 moment, so stick with this.  (See PR113279 and testcases
+	 baseptrs-{4,6}.C:ref2ptrptr_offset_decl_member_slice).  */
       if (TREE_CODE (dtype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (dtype)) == POINTER_TYPE)
 	OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_POINTER);
@@ -17757,6 +17761,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case TREE_LIST:
+	  gcc_unreachable ();
+
+	case OMP_ARRAY_SECTION:
 	  gcc_unreachable ();
 
 	case COMPOUND_EXPR:

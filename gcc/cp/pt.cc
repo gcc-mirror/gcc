@@ -16838,6 +16838,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case CALL_EXPR:
     case ARRAY_REF:
     case SCOPE_REF:
+    case OMP_ARRAY_SECTION:
       /* We should use one of the expression tsubsts for these codes.  */
       gcc_unreachable ();
 
@@ -17431,6 +17432,21 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
       OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (ret)
 	= OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (decl);
       return ret;
+    }
+  else if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+    {
+      tree low_bound
+	= tsubst_stmt (TREE_OPERAND (decl, 1), args, complain, in_decl);
+      tree length = tsubst_stmt (TREE_OPERAND (decl, 2), args, complain,
+				 in_decl);
+      tree base = tsubst_omp_clause_decl (TREE_OPERAND (decl, 0), args,
+					   complain, in_decl, NULL);
+      if (TREE_OPERAND (decl, 0) == base
+	  && TREE_OPERAND (decl, 1) == low_bound
+	  && TREE_OPERAND (decl, 2) == length)
+	return decl;
+      return build3 (OMP_ARRAY_SECTION, TREE_TYPE (base), base, low_bound,
+		     length);
     }
   tree ret = tsubst_stmt (decl, args, complain, in_decl);
   /* Undo convert_from_reference tsubst_expr could have called.  */
@@ -20229,6 +20245,27 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       RETURN (build_x_array_ref (EXPR_LOCATION (t), op1,
 				 RECUR (TREE_OPERAND (t, 1)),
 				 complain|decltype_flag));
+
+    case OMP_ARRAY_SECTION:
+      {
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	tree op1 = NULL_TREE, op2 = NULL_TREE;
+	if (op0 == error_mark_node)
+	  RETURN (error_mark_node);
+	if (TREE_OPERAND (t, 1))
+	  {
+	    op1 = RECUR (TREE_OPERAND (t, 1));
+	    if (op1 == error_mark_node)
+	      RETURN (error_mark_node);
+	  }
+	if (TREE_OPERAND (t, 2))
+	  {
+	    op2 = RECUR (TREE_OPERAND (t, 2));
+	    if (op2 == error_mark_node)
+	      RETURN (error_mark_node);
+	  }
+	RETURN (build_omp_array_section (EXPR_LOCATION (t), op0, op1, op2));
+      }
 
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0))

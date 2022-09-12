@@ -30,12 +30,12 @@ foo (void)
 
 
   #pragma omp target map (close a) /* { dg-error "'close' undeclared" "" { target c } } */ 
-  /* { dg-error "'close' has not been declared" "" { target c++ } .-1 } */ 
+  /* { dg-error "'close' was not declared in this scope" "" { target c++ } .-1 } */ 
   /* { dg-error "expected '\\)' before 'a'" "" { target *-*-* } .-2 } */
   ;
 
   #pragma omp target map (always a) /* { dg-error "'always' undeclared" "" { target c } } */
-  /* { dg-error "'always' has not been declared" "" { target c++ } .-1 } */ 
+  /* { dg-error "'always' was not declared in this scope" "" { target c++ } .-1 } */ 
   /* { dg-error "expected '\\)' before 'a'" "" { target *-*-* } .-2 } */
   ;
 

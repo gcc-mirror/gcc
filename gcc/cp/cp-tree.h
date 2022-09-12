@@ -7069,6 +7069,7 @@ extern void grokclassfn				(tree, tree,
 						 enum overload_flags);
 extern tree grok_array_decl			(location_t, tree, tree,
 						 vec<tree, va_gc> **, tsubst_flags_t);
+extern tree grok_omp_array_section		(location_t, tree, tree, tree);
 extern tree delete_sanity			(location_t, tree, tree, bool,
 						 int, tsubst_flags_t);
 extern tree check_classfn			(tree, tree, tree);
@@ -8172,6 +8173,7 @@ inline tree build_x_binary_op (const op_location_t &loc,
 }
 extern tree build_x_array_ref			(location_t, tree, tree,
 						 tsubst_flags_t);
+extern tree build_omp_array_section		(location_t, tree, tree, tree);
 extern tree build_x_unary_op			(location_t,
 						 enum tree_code, cp_expr,
 						 tree, tsubst_flags_t);
