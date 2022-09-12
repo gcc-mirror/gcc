@@ -1,6 +1,14 @@
 2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl. Status): Add two new minor items.
+	(OpenMP 5.2 Impl. Status): Improve omp/omx/ompx wording.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/106894

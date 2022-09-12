@@ -348,6 +348,9 @@ The OpenMP 4.5 specification is fully supported.
 @item Support @code{begin/end declare target} syntax in C/C++ @tab N @tab
 @item Pointer predetermined firstprivate getting initialized
 to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
+@item @code{begin declare target} directive @tab N @tab
+@item For Fortran, diagnose placing declarative before/between @code{USE},
+      @code{IMPORT}, and @code{IMPLICIT} as invalid @tab N @tab
 @end multitable
 
 
@@ -362,12 +365,13 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @tab N @tab
 @item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
       namespaces @tab N/A
-      @tab warning for @code{omp/ompx} sentinels@footnote{@code{omp/ompx}
-      sentinels as C/C++ pragma and C++ attributes are warned for with
+      @tab warning for @code{ompx/omx} sentinels@footnote{The @code{ompx}
+      sentinel as C/C++ pragma and C++ attributes are warned for with
       @code{-Wunknown-pragmas} (implied by @code{-Wall}) and @code{-Wattributes}
       (enabled by default), respectively; for Fortran free-source code, there is
-      a warning enabled by default and for fixed-source code with
-      @code{-Wsurprising} (enabled by @code{-Wall})}
+      a warning enabled by default and, for fixed-source code, the @code{omx}
+      sentinel is warned for with with @code{-Wsurprising} (enabled by
+      @code{-Wall}).  Unknown clauses are always rejected with an error.}
 @item Clauses on @code{end} directive can be on directive @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
