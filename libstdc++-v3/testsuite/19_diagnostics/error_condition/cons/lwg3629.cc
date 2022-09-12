@@ -39,10 +39,10 @@ template<> struct std::is_error_condition_enum<user::E3> : std::true_type { };
 // ::make_error_condition(E1) should not be found by name lookup.
 std::error_condition e1( user::E1{} ); // { dg-error "here" }
 
-// std::make_error_condition(errc) should not be found by name lookup.
+// std::make_error_condition(future_errc) should not be found by name lookup.
 std::error_condition e2( user::E2{} ); // { dg-error "here" }
 
-// std::make_error_condition(future_errc) should not be found by name lookup.
+// std::make_error_condition(errc) should not be found by name lookup.
 std::error_condition e3( user::E3{} ); // { dg-error "here" }
 
 // { dg-error "use of deleted function" "" { target *-*-* } 0 }
