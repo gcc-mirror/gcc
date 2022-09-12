@@ -5838,7 +5838,6 @@ public:
   };
 
   record_layout (tree record_type)
-  : m_record_type (record_type)
   {
     gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
 
@@ -5918,7 +5917,6 @@ private:
       }
   }
 
-  tree m_record_type;
   auto_vec<item> m_items;
 };
 
@@ -5932,12 +5930,10 @@ class exposure_through_uninit_copy
 public:
   exposure_through_uninit_copy (const region *src_region,
 				const region *dest_region,
-				const svalue *copied_sval,
-				region_model_manager *mgr)
+				const svalue *copied_sval)
   : m_src_region (src_region),
     m_dest_region (dest_region),
-    m_copied_sval (copied_sval),
-    m_mgr (mgr)
+    m_copied_sval (copied_sval)
   {
     gcc_assert (m_copied_sval->get_kind () == SK_POISONED
 		|| m_copied_sval->get_kind () == SK_COMPOUND);
@@ -6305,7 +6301,6 @@ private:
   const region *m_src_region;
   const region *m_dest_region;
   const svalue *m_copied_sval;
-  region_model_manager *m_mgr;
 };
 
 /* Return true if any part of SVAL is uninitialized.  */
@@ -6351,8 +6346,7 @@ region_model::maybe_complain_about_infoleak (const region *dst_reg,
   if (contains_uninit_p (copied_sval))
     ctxt->warn (new exposure_through_uninit_copy (src_reg,
 						  dst_reg,
-						  copied_sval,
-						  m_mgr));
+						  copied_sval));
 }
 
 /* class noop_region_model_context : public region_model_context.  */
