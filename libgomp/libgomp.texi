@@ -4386,6 +4386,9 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
+@item Compilation OpenMP code that contains @code{requires reverse_offload}
+      requires at least @code{-march=sm_35}, compiling for @code{-march=sm_30}
+      is not supported.
 @end itemize
 
 

@@ -324,9 +324,19 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	{
 	  if (sm_ver && sm_ver[0] == '3' && sm_ver[1] == '0'
 	      && sm_ver[2] == '\n')
-	    fatal_error (input_location,
-			 "%<omp requires reverse_offload%> requires at least "
-			 "%<sm_35%> for %<-misa=%>");
+	    {
+	      warning_at (input_location, 0,
+			  "%<omp requires reverse_offload%> requires at "
+			  "least %<sm_35%> for "
+			  "%<-foffload-options=nvptx-none=-march=%> - disabling"
+			  " offload-code generation for this device type");
+	      /* As now an empty file is compiled and there is no call to
+		 GOMP_offload_register_ver, this device type is effectively
+		 disabled.  */
+	      fflush (out);
+	      ftruncate (fileno (out), 0);
+	      return;
+	    }
 	  sm_ver2 = sm_ver;
 	  version2 = version;
 	}
@@ -526,7 +536,7 @@ main (int argc, char **argv)
   FILE *out = stdout;
   const char *outname = 0;
 
-  progname = "mkoffload";
+  progname = tool_name;
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (mkoffload_cleanup) != 0)

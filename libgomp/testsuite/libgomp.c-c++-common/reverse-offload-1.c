@@ -1,4 +1,5 @@
 /* { dg-do run }  */
+/* { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } } */
 /* { dg-additional-sources reverse-offload-1-aux.c } */
 
 /* Check that reverse offload works in particular:
