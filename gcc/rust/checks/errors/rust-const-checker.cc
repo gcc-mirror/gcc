@@ -52,6 +52,67 @@ ConstChecker::is_const_extern_fn (HIR::ExternalFunctionItem &fn)
     });
 }
 
+const char *
+ConstChecker::ctx_to_str (ConstGenericCtx ctx)
+{
+  switch (ctx)
+    {
+    case ConstGenericCtx::Function:
+      return "function";
+    case ConstGenericCtx::TypeAlias:
+      return "type alias";
+    case ConstGenericCtx::Struct:
+      return "struct";
+    case ConstGenericCtx::Enum:
+      return "enum";
+    case ConstGenericCtx::Union:
+      return "union";
+    case ConstGenericCtx::Trait:
+      return "trait";
+    case ConstGenericCtx::Impl:
+      return "impl";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+bool
+ConstChecker::ctx_allows_default (ConstGenericCtx ctx)
+{
+  switch (ctx)
+    {
+    case ConstGenericCtx::TypeAlias:
+    case ConstGenericCtx::Struct:
+    case ConstGenericCtx::Enum:
+    case ConstGenericCtx::Trait:
+      return true;
+    default:
+      return false;
+    }
+}
+
+void
+ConstChecker::check_default_const_generics (
+  std::vector<std::unique_ptr<GenericParam>> &params, ConstGenericCtx context)
+{
+  if (ctx_allows_default (context))
+    return;
+
+  for (auto &param : params)
+    {
+      if (param->get_kind () == GenericParam::GenericKind::CONST)
+	{
+	  auto const_param = static_cast<ConstGenericParam *> (param.get ());
+	  if (const_param->has_default_expression ())
+	    rust_error_at (
+	      param->get_locus (),
+	      "default values for const generic parameters are not "
+	      "allowed in %qs items",
+	      ctx_to_str (context));
+	}
+    }
+}
+
 void
 ConstChecker::visit (Lifetime &lifetime)
 {}
@@ -560,6 +621,9 @@ ConstChecker::visit (Function &function)
   if (const_fn)
     const_context.enter (function.get_mappings ().get_hirid ());
 
+  check_default_const_generics (function.get_generic_params (),
+				ConstGenericCtx::Function);
+
   for (auto &param : function.get_function_params ())
     param.get_type ()->accept_vis (*this);
 
@@ -571,18 +635,27 @@ ConstChecker::visit (Function &function)
 
 void
 ConstChecker::visit (TypeAlias &type_alias)
-{}
+{
+  check_default_const_generics (type_alias.get_generic_params (),
+				ConstGenericCtx::TypeAlias);
+}
 
 void
 ConstChecker::visit (StructStruct &struct_item)
-{}
+{
+  check_default_const_generics (struct_item.get_generic_params (),
+				ConstGenericCtx::Struct);
+}
 
 void
 ConstChecker::visit (TupleStruct &tuple_struct)
-{}
+{
+  check_default_const_generics (tuple_struct.get_generic_params (),
+				ConstGenericCtx::Struct);
+}
 
 void
-ConstChecker::visit (EnumItem &item)
+ConstChecker::visit (EnumItem &enum_item)
 {}
 
 void
@@ -605,11 +678,17 @@ ConstChecker::visit (EnumItemDiscriminant &item)
 
 void
 ConstChecker::visit (Enum &enum_item)
-{}
+{
+  check_default_const_generics (enum_item.get_generic_params (),
+				ConstGenericCtx::Enum);
+}
 
 void
 ConstChecker::visit (Union &union_item)
-{}
+{
+  check_default_const_generics (union_item.get_generic_params (),
+				ConstGenericCtx::Union);
+}
 
 void
 ConstChecker::visit (ConstantItem &const_item)
@@ -652,6 +731,9 @@ ConstChecker::visit (TraitItemType &item)
 void
 ConstChecker::visit (Trait &trait)
 {
+  check_default_const_generics (trait.get_generic_params (),
+				ConstGenericCtx::Trait);
+
   for (auto &item : trait.get_trait_items ())
     item->accept_vis (*this);
 }
@@ -659,6 +741,9 @@ ConstChecker::visit (Trait &trait)
 void
 ConstChecker::visit (ImplBlock &impl)
 {
+  check_default_const_generics (impl.get_generic_params (),
+				ConstGenericCtx::Impl);
+
   for (auto &item : impl.get_impl_items ())
     item->accept_vis (*this);
 }
