@@ -1,3 +1,11 @@
+2022-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (gcn): Move misplaced -march=sm_30 remark to ...
+	(nvptx): ... here.
+
 2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
