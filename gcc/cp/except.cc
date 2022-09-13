@@ -1257,7 +1257,7 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
     {
       expr = build_converted_constant_bool_expr (expr, complain);
       expr = instantiate_non_dependent_expr (expr, complain);
-      expr = cxx_constant_value (expr);
+      expr = cxx_constant_value (expr, NULL_TREE, complain);
     }
   if (TREE_CODE (expr) == INTEGER_CST)
     {

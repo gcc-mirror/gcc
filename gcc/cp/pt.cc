@@ -3869,7 +3869,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
   else
     {
       hi = instantiate_non_dependent_expr (hi, complain);
-      hi = cxx_constant_value (hi);
+      hi = cxx_constant_value (hi, NULL_TREE, complain);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
 
       /* Calculate the largest value of len that won't make the size of the vec
@@ -14312,6 +14312,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 				    /*function_p=*/false,
 				    /*i_c_e_p=*/true);
       spec = build_explicit_specifier (spec, complain);
+      if (spec == error_mark_node)
+	return error_mark_node;
       if (instantiation_dependent_expression_p (spec))
 	store_explicit_specifier (r, spec);
       else
