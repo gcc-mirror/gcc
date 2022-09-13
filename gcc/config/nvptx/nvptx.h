@@ -98,6 +98,9 @@
 
 #define TARGET_SM35 (ptx_isa_option >= PTX_ISA_SM35)
 
+/* 'TARGET_PTX_*' not applicable before GCC 12.  */
+#define TARGET_PTX_6_0 false
+
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.
    We have to have some available hard registers, to keep gcc setup
