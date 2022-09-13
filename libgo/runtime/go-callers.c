@@ -107,7 +107,7 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
       p = function;
       if (__builtin_strncmp (p, "___", 3) == 0)
 	++p;
-      if (__builtin_strncmp (p, "__morestack_", 12) == 0)
+      if (__builtin_strncmp (p, "__morestack", 11) == 0)
 	return 0;
     }
   else if (filename != NULL)
