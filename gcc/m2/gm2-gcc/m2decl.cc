@@ -76,7 +76,7 @@ m2decl_DeclareM2linkGlobals (location_t location,
 /* DeclareKnownVariable declares a variable to GCC.  */
 
 tree
-m2decl_DeclareKnownVariable (location_t location, char *name, tree type,
+m2decl_DeclareKnownVariable (location_t location, const char *name, tree type,
                              int exported, int imported, int istemporary,
                              int isglobal, tree scope)
 {
