@@ -1,3 +1,97 @@
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (build_conditional_expr): Adjust calls to
+	'_sfinae'-suffixed functions.
+	(build_temp): Likewise.
+	(convert_like_internal): Likewise.
+	(convert_arg_to_ellipsis): Likewise.
+	(build_over_call): Likewise.
+	(build_cxx_call): Likewise.
+	(build_new_method_call): Likewise.
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Likewise.
+	(cxx_constant_value_sfinae): Rename to ...
+	(cxx_constant_value): ... this.  Document its default arguments.
+	(fold_non_dependent_expr): Adjust function comment.
+	* cp-tree.h (instantiate_non_dependent_expr_sfinae): Rename to ...
+	(instantiate_non_dependent_expr): ... this.  Give its 'complain'
+	parameter a default argument.
+	(get_target_expr_sfinae, get_target_expr): Likewise.
+	(require_complete_type_sfinae, require_complete_type): Likewise.
+	(abstract_virtuals_error_sfinae, abstract_virtuals_error):
+	Likewise.
+	(cxx_constant_value_sfinae, cxx_constant_value): Likewise.
+	* cvt.cc (build_up_reference): Adjust calls to '_sfinae'-suffixed
+	functions.
+	(ocp_convert): Likewise.
+	* decl.cc (build_explicit_specifier): Likewise.
+	* except.cc (build_noexcept_spec): Likewise.
+	* init.cc (build_new_1): Likewise.
+	* pt.cc (expand_integer_pack): Likewise.
+	(instantiate_non_dependent_expr_internal): Adjust function
+	comment.
+	(instantiate_non_dependent_expr): Rename to ...
+	(instantiate_non_dependent_expr_sfinae): ... this.  Document its
+	default argument.
+	(tsubst_init): Adjust calls to '_sfinae'-suffixed functions.
+	(fold_targs_r): Likewise.
+	* semantics.cc (finish_compound_literal): Likewise.
+	(finish_decltype_type): Likewise.
+	(cp_build_bit_cast): Likewise.
+	* tree.cc (build_cplus_new): Likewise.
+	(get_target_expr): Rename to ...
+	(get_target_expr_sfinae): ... this.  Document its default
+	argument.
+	* typeck.cc (require_complete_type): Rename to ...
+	(require_complete_type_sfinae): ... this.  Document its default
+	argument.
+	(cp_build_array_ref): Adjust calls to '_sfinae'-suffixed
+	functions.
+	(convert_arguments): Likewise.
+	(cp_build_binary_op): Likewise.
+	(build_static_cast_1): Likewise.
+	(cp_build_modify_expr): Likewise.
+	(convert_for_initialization): Likewise.
+	* typeck2.cc (abstract_virtuals_error): Rename to ...
+	(abstract_virtuals_error_sfinae): ... this. Document its default
+	argument.
+	(build_functional_cast_1): Adjust calls to '_sfinae'-suffixed
+	functions.
+
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101906
+	* pt.cc (tsubst_template_args): Set cp_evaluated here.
+	(tsubst_aggr_type): Not here.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106893
+	PR c++/90451
+	* decl.cc (cp_finish_decl): Call mark_single_function.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93259
+	* pt.cc (type_dependent_expression_p): Treat a compound
+	literal of array-of-unknown-bound type like a variable.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106567
+	* lambda.cc (type_deducible_expression_p): Check
+	array_of_unknown_bound_p.
+
+2022-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/86491
+	* decl2.cc (constrain_class_visibility): Adjust wording of
+	-Wsubobject-linkage for cases where anonymous
+	namespaces aren't used.
+	* tree.cc (decl_anon_ns_mem_p): Now only true for actual anonymous
+	namespace members, rename old semantics to...
+	(decl_internal_context_p): ...this.
+	* cp-tree.h, name-lookup.cc, pt.cc: Adjust.
+
 2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/106838

@@ -1,3 +1,28 @@
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics: nvptx): Document
+	that reverse offload requires >= -march=sm_35.
+	* testsuite/libgomp.c-c++-common/requires-4.c: Build for nvptx
+	with -misa=sm_35.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-6.c: Likewise.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1.c: Likewise.
+	* testsuite/libgomp.fortran/reverse-offload-1.f90: Likewise.
+	* testsuite/libgomp.c/reverse-offload-sm30.c: New test.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl. Status): Add two new minor items.
+	(OpenMP 5.2 Impl. Status): Improve omp/omx/ompx wording.
+
+2022-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106894
+	* testsuite/libgomp.c-c++-common/icv-6.c: Include string.h.
+	(main): Avoid tests for which corresponding non-_ALL suffixed variable
+	is in the environment, or for OMP_NUM_TEAMS on the device
+	OMP_NUM_TEAMS_DEV_?.
+
 2022-09-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* env.c (initialize_env): Include libiberty environ.h.

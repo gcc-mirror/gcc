@@ -1,3 +1,56 @@
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101906
+	* g++.dg/template/evaluated1.C: New test.
+	* g++.dg/template/evaluated1a.C: New test.
+	* g++.dg/template/evaluated1b.C: New test.
+	* g++.dg/template/evaluated1c.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106893
+	PR c++/90451
+	* g++.dg/cpp1y/auto-fn65.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93259
+	* g++.dg/cpp0x/initlist-array17.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106567
+	* g++.dg/cpp0x/lambda/lambda-array4.C: New test.
+
+2022-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/86491
+	* g++.dg/warn/anonymous-namespace-3.C: Use separate dg-warning
+	directives for C++98 and everything else.
+	* g++.dg/warn/Wsubobject-linkage-5.C: New test.
+
+2022-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/c2x-stdatomic-var-init-1.c: New test.
+
+2022-09-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/gcov/gcov.exp: Respect triplet when looking for gcov.
+	* gcc.misc-tests/gcov.exp: Likewise.
+
+2022-09-12  Joffrey Huguet  <huguet@adacore.com>
+
+	* gnat.dg/aspect2.adb: Removed.
+	* gnat.dg/aspect2.ads: Removed.
+	* gnat.dg/config_pragma1.adb: Removed.
+	* gnat.dg/config_pragma1_pkg.ads: Removed.
+	* gnat.dg/equal8.adb: Removed.
+	* gnat.dg/equal8.ads: Removed.
+	* gnat.dg/equal8_pkg.ads: Removed.
+	* gnat.dg/formal_containers.adb: Removed.
+	* gnat.dg/iter1.adb: Removed.
+	* gnat.dg/iter1.ads: Removed.
+
 2022-09-11  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106845

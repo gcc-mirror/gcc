@@ -1,3 +1,39 @@
+2022-09-12  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (TARGET_CONSTANT_OK_FOR_CPROP_P):
+	New macro definition.
+	(xtensa_constant_ok_for_cprop_p):
+	Implement the hook as mentioned above.
+
+2022-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stdatomic.h [defined __STDC_VERSION__ &&
+	__STDC_VERSION__ > 201710L] (ATOMIC_VAR_INIT): Do not define.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/mkoffload.cc (process): Replace a fatal_error by
+	a warning + not enabling offloading if -misa=sm_30 prevents
+	reverse offload.
+	(main): Use tool_name as progname for diagnostic.
+	* config/gcn/mkoffload.cc (main): Likewise.
+
+2022-09-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set_signbit): Avoid changing sign when
+	already in the correct sign.
+
+2022-09-12  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (xtensa_function_value_regno_p):
+	Recognize all 4 return registers.
+	* config/xtensa/xtensa.h (GP_RETURN_REG_COUNT): New definition.
+	* config/xtensa/xtensa.md (untyped_call): New pattern.
+
+2022-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Floating Types): Fix "_float128" typo.
+
 2022-09-10  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.cc (xtensa_constantsynth):

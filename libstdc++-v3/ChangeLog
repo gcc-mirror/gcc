@@ -1,3 +1,32 @@
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106320
+	* testsuite/std/ranges/adaptors/join.cc (test13): New test.
+
+2022-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/error_code/cons/lwg3629.cc: Fix
+	comments.
+	* testsuite/19_diagnostics/error_condition/cons/lwg3629.cc:
+	Likewise.
+
+2022-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105329
+	* acinclude.m4 (libtool_VERSION): Change to 6:31:0.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Don't export
+	std::basic_string methods with name length of 15.
+	(GLIBCXX_3.4.31): Export std::basic_string::_M_replace_cold.
+	* testsuite/util/testsuite_abi.cc (check_version): Handle
+	GLIBCXX_3.4.31.
+	* include/bits/basic_string.h (std::basic_string::_M_replace_cold):
+	Declare.
+	* include/bits/basic_string.tcc (std::basic_string::_M_replace_cold):
+	Define and export even for C++20.
+	(std::basic_string::_M_replace): Use __builtin_expect, outline
+	the overlapping case to _M_replace_cold.
+	* configure: Regenerated.
+
 2022-09-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_base.h (__atomic_impl::__compare_exchange):
