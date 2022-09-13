@@ -2746,7 +2746,7 @@ namespace views::__adaptor
 	      }
 
 	    if constexpr (_S_ref_is_glvalue)
-	      _M_inner = _Inner_iter();
+	      _M_inner.reset();
 	  }
 
 	  static constexpr auto
@@ -2769,7 +2769,7 @@ namespace views::__adaptor
 	  using _Inner_iter = join_view::_Inner_iter<_Const>;
 
 	  _Outer_iter _M_outer = _Outer_iter();
-	  _Inner_iter _M_inner = _Inner_iter();
+	  optional<_Inner_iter> _M_inner;
 	  _Parent* _M_parent = nullptr;
 
 	public:
@@ -2780,9 +2780,7 @@ namespace views::__adaptor
 	    = common_type_t<range_difference_t<_Base>,
 			    range_difference_t<range_reference_t<_Base>>>;
 
-	  _Iterator() requires (default_initializable<_Outer_iter>
-				&& default_initializable<_Inner_iter>)
-	    = default;
+	  _Iterator() requires default_initializable<_Outer_iter> = default;
 
 	  constexpr
 	  _Iterator(_Parent* __parent, _Outer_iter __outer)
@@ -2801,7 +2799,7 @@ namespace views::__adaptor
 
 	  constexpr decltype(auto)
 	  operator*() const
-	  { return *_M_inner; }
+	  { return **_M_inner; }
 
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 3500. join_view::iterator::operator->() is bogus
@@ -2809,7 +2807,7 @@ namespace views::__adaptor
 	  operator->() const
 	    requires __detail::__has_arrow<_Inner_iter>
 	      && copyable<_Inner_iter>
-	  { return _M_inner; }
+	  { return *_M_inner; }
 
 	  constexpr _Iterator&
 	  operator++()
@@ -2820,7 +2818,7 @@ namespace views::__adaptor
 	      else
 		return *_M_parent->_M_inner;
 	    }();
-	    if (++_M_inner == ranges::end(__inner_range))
+	    if (++*_M_inner == ranges::end(__inner_range))
 	      {
 		++_M_outer;
 		_M_satisfy();
@@ -2850,9 +2848,9 @@ namespace views::__adaptor
 	  {
 	    if (_M_outer == ranges::end(_M_parent->_M_base))
 	      _M_inner = ranges::end(*--_M_outer);
-	    while (_M_inner == ranges::begin(*_M_outer))
-	      _M_inner = ranges::end(*--_M_outer);
-	    --_M_inner;
+	    while (*_M_inner == ranges::begin(*_M_outer))
+	      *_M_inner = ranges::end(*--_M_outer);
+	    --*_M_inner;
 	    return *this;
 	  }
 
@@ -2879,14 +2877,14 @@ namespace views::__adaptor
 
 	  friend constexpr decltype(auto)
 	  iter_move(const _Iterator& __i)
-	  noexcept(noexcept(ranges::iter_move(__i._M_inner)))
-	  { return ranges::iter_move(__i._M_inner); }
+	  noexcept(noexcept(ranges::iter_move(*__i._M_inner)))
+	  { return ranges::iter_move(*__i._M_inner); }
 
 	  friend constexpr void
 	  iter_swap(const _Iterator& __x, const _Iterator& __y)
-	    noexcept(noexcept(ranges::iter_swap(__x._M_inner, __y._M_inner)))
+	    noexcept(noexcept(ranges::iter_swap(*__x._M_inner, *__y._M_inner)))
 	    requires indirectly_swappable<_Inner_iter>
-	  { return ranges::iter_swap(__x._M_inner, __y._M_inner); }
+	  { return ranges::iter_swap(*__x._M_inner, *__y._M_inner); }
 
 	  friend _Iterator<!_Const>;
 	  template<bool> friend struct _Sentinel;

@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <array>
 #include <ranges>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -217,6 +218,21 @@ test13()
   std::vector<std::vector<int>> v{{5, 6, 7}};
   v | l | std::views::join;
 }
+
+void
+test14()
+{
+  // LWG 3569: join_view fails to support ranges of ranges with
+  // non-default_initializable iterators
+  auto ss = std::istringstream{"1 2 3"};
+  auto v = views::single(views::istream<int>(ss));
+  using inner = ranges::range_reference_t<decltype(v)>;
+  static_assert(ranges::input_range<inner>
+		&& !ranges::forward_range<inner>
+		&& !std::default_initializable<ranges::iterator_t<inner>>);
+  VERIFY( ranges::equal(v | views::join, (int[]){1, 2, 3}) );
+}
+
 int
 main()
 {
@@ -233,4 +249,5 @@ main()
   test11();
   test12();
   test13();
+  test14();
 }
