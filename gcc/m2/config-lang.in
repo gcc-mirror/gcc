@@ -32,8 +32,7 @@ stagestuff="gm2\$(exeext) cc1gm2\$(exeext) cc1gm2-cross\$(exeext)"
 
 target_libs="target-libstdc++-v3 target-libgm2"
 
-# The Modula-2 frontend needs C++ (is this still true --fixme--)?
-# compiler during stage 1.
+# The Modula-2 frontend needs C++ compiler during stage 1.
 lang_requires_boot_languages=c++
 
 # Do not build by default.

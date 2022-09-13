@@ -72,7 +72,7 @@ struct GTY (()) binding_level
      same constants can be used in any scope.  */
   tree constants;
 
-  /* A list of inner module initialisation functions.  */
+  /* A list of inner module initialization functions.  */
   tree init_functions;
 
   /* A list of types created by M2GCCDeclare prior to code generation
@@ -114,7 +114,7 @@ typedef struct stmt_tree_s *stmt_tree_t;
 static location_t pending_location;
 static int pending_statement = FALSE;
 
-/* assert_global_names - asserts that the global_binding_level->names
+/* assert_global_names asserts that the global_binding_level->names
    can be chained.  */
 
 static void
@@ -126,7 +126,7 @@ assert_global_names (void)
     p = TREE_CHAIN (p);
 }
 
-/* lookupLabel - return label tree in current scope, otherwise
+/* lookupLabel return label tree in current scope, otherwise
    NULL_TREE.  */
 
 static tree
@@ -144,7 +144,7 @@ lookupLabel (tree id)
   return NULL_TREE;
 }
 
-/* getLabel - return the label, name, or create a label, name in the
+/* getLabel return the label name or create a label name in the
    current scope.  */
 
 tree
@@ -215,7 +215,7 @@ m2block_cur_stmt_list (void)
   return *t;
 }
 
-/* is_building_stmt_list - returns TRUE if we are building a
+/* is_building_stmt_list returns TRUE if we are building a
    statement list.  TRUE is returned if we are in a binding level and
    a statement list is under construction.  */
 
@@ -226,7 +226,7 @@ m2block_is_building_stmt_list (void)
   return !vec_safe_is_empty (current_binding_level->m2_statements);
 }
 
-/* push_statement_list - pushes the statement list, t, onto the
+/* push_statement_list pushes the statement list t onto the
    current binding level.  */
 
 tree
@@ -237,7 +237,7 @@ m2block_push_statement_list (tree t)
   return t;
 }
 
-/* pop_statement_list - pops and returns a statement list from the
+/* pop_statement_list pops and returns a statement list from the
    current binding level.  */
 
 tree
@@ -251,7 +251,7 @@ m2block_pop_statement_list (void)
   }
 }
 
-/* begin_statement_list - starts a tree statement.  It pushes the
+/* begin_statement_list starts a tree statement.  It pushes the
    statement list and returns the list node.  */
 
 tree
@@ -260,19 +260,7 @@ m2block_begin_statement_list (void)
   return alloc_stmt_list ();
 }
 
-/* end_statement_list - returns the current statement tree.  The
-   current statement tree is popped from the statement stack and the
-   list node is returned.  */
-
-tree
-m2block_end_statement_list (tree t)
-{
-  /* Should we do anything with, t?  Specifically we may need to test
-     for the presence of a label --fixme-- check this.  */
-  return t;
-}
-
-/* findLevel - returns the binding level associated with, fndecl, one
+/* findLevel returns the binding level associated with fndecl one
    is created if there is no existing one on head_binding_level.  */
 
 static struct binding_level *
@@ -299,7 +287,7 @@ findLevel (tree fndecl)
   return b;
 }
 
-/* pushFunctionScope - push a binding level.  */
+/* pushFunctionScope push a binding level.  */
 
 void
 m2block_pushFunctionScope (tree fndecl)
@@ -369,7 +357,7 @@ m2block_popFunctionScope (void)
   return fndecl;
 }
 
-/* pushGlobalScope - push the global scope onto the binding level
+/* pushGlobalScope push the global scope onto the binding level
    stack.  There can only ever be one instance of the global binding
    level on the stack.  */
 
@@ -382,14 +370,14 @@ m2block_pushGlobalScope (void)
   m2block_pushFunctionScope (NULL_TREE);
 }
 
-/* popGlobalScope - pops the current binding level, it expects this
+/* popGlobalScope pops the current binding level, it expects this
    binding level to be the global binding level.  */
 
 void
 m2block_popGlobalScope (void)
 {
   ASSERT_CONDITION (
-      current_binding_level->is_global); /* Expecting global scope.  */
+      current_binding_level->is_global);  /* Expecting global scope.  */
   ASSERT_CONDITION (current_binding_level == global_binding_level);
 
   if (current_binding_level->count > 0)
@@ -406,7 +394,7 @@ m2block_popGlobalScope (void)
   assert_global_names ();
 }
 
-/* finishFunctionDecl - removes declarations from the current binding
+/* finishFunctionDecl removes declarations from the current binding
    level and places them inside fndecl.  The current binding level is
    then able to be destroyed by a call to popFunctionScope.
 
@@ -466,7 +454,7 @@ m2block_finishFunctionDecl (location_t location, tree fndecl)
   current_binding_level->decl = NULL_TREE;
 }
 
-/* finishFunctionCode - adds cur_stmt_list to fndecl.  The current
+/* finishFunctionCode adds cur_stmt_list to fndecl.  The current
    binding level is then able to be destroyed by a call to
    popFunctionScope.  The cur_stmt_list is appended to the
    STATEMENT_LIST.  */
@@ -479,7 +467,6 @@ m2block_finishFunctionCode (tree fndecl)
   tree statements = m2block_pop_statement_list ();
   tree_stmt_iterator i;
 
-  statements = m2block_end_statement_list (statements);
   ASSERT_CONDITION (DECL_SAVED_TREE (fndecl) != NULL_TREE);
 
   bind_expr = DECL_SAVED_TREE (fndecl);
@@ -539,7 +526,7 @@ m2block_finishGlobals (void)
   BLOCK_SUPERCONTEXT (block) = context;
 }
 
-/* pushDecl - pushes a declaration onto the current binding level.  */
+/* pushDecl pushes a declaration onto the current binding level.  */
 
 tree
 m2block_pushDecl (tree decl)
@@ -561,7 +548,7 @@ m2block_pushDecl (tree decl)
   return decl;
 }
 
-/* includeDecl - pushes a declaration onto the current binding level
+/* includeDecl pushes a declaration onto the current binding level
    providing it is not already present.  */
 
 void
@@ -575,7 +562,7 @@ m2block_includeDecl (tree decl)
     m2block_pushDecl (decl);
 }
 
-/* addDeclExpr - adds the DECL_EXPR node, t, to the statement list
+/* addDeclExpr adds the DECL_EXPR node t to the statement list
    current_binding_level->decl.  This allows us to order all
    declarations at the beginning of the function.  */
 
@@ -585,7 +572,7 @@ m2block_addDeclExpr (tree t)
   append_to_statement_list_force (t, &current_binding_level->decl);
 }
 
-/* RememberType - remember the type, t, in the ggc marked list.  */
+/* RememberType remember the type t in the ggc marked list.  */
 
 tree
 m2block_RememberType (tree t)
@@ -595,7 +582,7 @@ m2block_RememberType (tree t)
   return t;
 }
 
-/* global_constant - returns t.  It chains, t, onto the
+/* global_constant returns t.  It chains t onto the
    global_binding_level list of constants, if it is not already
    present.  */
 
@@ -619,9 +606,9 @@ m2block_global_constant (tree t)
   return t;
 }
 
-/* RememberConstant - adds a tree, t, onto the list of constants to
+/* RememberConstant adds a tree t onto the list of constants to
    be marked whenever the ggc re-marks all used storage.  Constants
-   live throughout the whole compilation - and they can be used by
+   live throughout the whole compilation and they can be used by
    many different functions if necessary.  */
 
 tree
@@ -632,7 +619,7 @@ m2block_RememberConstant (tree t)
   return t;
 }
 
-/* DumpGlobalConstants - displays all global constants and checks
+/* DumpGlobalConstants displays all global constants and checks
    none are poisoned.  */
 
 tree
@@ -647,7 +634,7 @@ m2block_DumpGlobalConstants (void)
   return NULL_TREE;
 }
 
-/* RememberInitModuleFunction - records tree, t, in the global
+/* RememberInitModuleFunction records tree t in the global
    binding level.  So that it will not be garbage collected.  In
    theory the inner modules could be placed inside the
    current_binding_level I suspect.  */
@@ -660,7 +647,7 @@ m2block_RememberInitModuleFunction (tree t)
   return t;
 }
 
-/* toplevel - return TRUE if we are in the global scope.  */
+/* toplevel return TRUE if we are in the global scope.  */
 
 int
 m2block_toplevel (void)
@@ -672,7 +659,7 @@ m2block_toplevel (void)
   return FALSE;
 }
 
-/* GetErrorNode - returns the gcc error_mark_node.  */
+/* GetErrorNode returns the gcc error_mark_node.  */
 
 tree
 m2block_GetErrorNode (void)
@@ -734,7 +721,7 @@ flush_pending_note (void)
     }
 }
 
-/* add_stmt - t is a statement.  Add it to the statement-tree.  */
+/* add_stmt t is a statement.  Add it to the statement-tree.  */
 
 tree
 m2block_add_stmt (location_t location, tree t)
@@ -749,7 +736,7 @@ m2block_add_stmt (location_t location, tree t)
   return do_add_stmt (t);
 }
 
-/* addStmtNote - remember this location represents the start of a
+/* addStmtNote remember this location represents the start of a
    Modula-2 statement.  It is flushed if another different location
    is generated or another tree is given to add_stmt.  */
 
@@ -769,7 +756,7 @@ m2block_removeStmtNote (void)
   pending_statement = FALSE;
 }
 
-/* init - initialise the data structures in this module.  */
+/* init - initialize the data structures in this module.  */
 
 void
 m2block_init (void)

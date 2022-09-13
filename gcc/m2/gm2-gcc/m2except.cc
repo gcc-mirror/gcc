@@ -475,8 +475,6 @@ void
 m2except_BuildTryEnd (tree try_block)
 {
   TRY_STMTS (try_block) = m2block_pop_statement_list ();
-  TRY_STMTS (try_block) = m2block_end_statement_list (TRY_STMTS (try_block));
-
   TRY_HANDLERS (try_block) = m2block_begin_statement_list ();
 
   /* Now ensure that all successive add_stmts adds to this statement
@@ -540,7 +538,6 @@ finish_handler (location_t location, tree handler)
 
   m2assert_AssertLocation (location);
   HANDLER_BODY (handler) = body;
-  m2block_end_statement_list (HANDLER_BODY (handler));
   HANDLER_BODY (handler) = build2 (TRY_FINALLY_EXPR, void_type_node, body,
                                    do_end_catch (location));
 }
@@ -566,7 +563,6 @@ static void
 finish_handler_sequence (tree try_block)
 {
   TRY_HANDLERS (try_block) = m2block_pop_statement_list ();
-  m2block_end_statement_list (TRY_HANDLERS (try_block));
 }
 
 /* Begin a try-block.  Returns a newly-created TRY_BLOCK if

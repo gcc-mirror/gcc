@@ -934,7 +934,7 @@ m2statement_DoJump (location_t location, tree exp, char *falselabel,
 
       m2statement_BuildGoto (location, falselabel);
       c = build3 (COND_EXPR, void_type_node, exp,
-                  m2block_end_statement_list (m2block_pop_statement_list ()),
+                  m2block_pop_statement_list (),
                   alloc_stmt_list ());
     }
   else if ((falselabel == NULL) && (truelabel != NULL))
@@ -943,7 +943,7 @@ m2statement_DoJump (location_t location, tree exp, char *falselabel,
 
       m2statement_BuildGoto (location, truelabel);
       c = build3 (COND_EXPR, void_type_node, exp,
-                  m2block_end_statement_list (m2block_pop_statement_list ()),
+                  m2block_pop_statement_list (),
                   alloc_stmt_list ());
     }
   else

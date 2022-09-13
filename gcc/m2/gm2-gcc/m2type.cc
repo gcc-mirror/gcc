@@ -118,8 +118,8 @@ static GTY (()) tree m2_complex128_type_node;
 static GTY (()) tree m2_packed_boolean_type_node;
 static GTY (()) tree m2_cardinal_address_type_node;
 
-/* gm2_canonicalize_array - returns a unique array node based on,
-   index_type, and, type.  */
+/* gm2_canonicalize_array - returns a unique array node based on
+   index_type and type.  */
 
 static tree
 gm2_canonicalize_array (tree index_type, int type)
@@ -145,7 +145,7 @@ gm2_canonicalize_array (tree index_type, int type)
 }
 
 /* BuildStartArrayType - creates an array with an indextype and
-   elttype.  The front end symbol, type, is also passed to allow the
+   elttype.  The front end symbol type is also passed to allow the
    gccgm2 to return the canonical edition of the array type even if
    the GCC elttype is NULL_TREE.  */
 
@@ -171,7 +171,7 @@ m2type_BuildStartArrayType (tree index_type, tree elt_type, int type)
   return t;
 }
 
-/* PutArrayType - */
+/* PutArrayType assignes TREE_TYPE (array) to the skipped type.  */
 
 void
 m2type_PutArrayType (tree array, tree type)
@@ -179,7 +179,7 @@ m2type_PutArrayType (tree array, tree type)
   TREE_TYPE (array) = m2tree_skip_type_decl (type);
 }
 
-/* gccgm2_GetArrayNoOfElements - returns the number of elements in,
+/* gccgm2_GetArrayNoOfElements returns the number of elements in
    arraytype.  */
 
 tree
@@ -193,11 +193,11 @@ m2type_GetArrayNoOfElements (location_t location, tree arraytype)
   return m2expr_FoldAndStrip (m2expr_BuildSub (location, max, min, FALSE));
 }
 
-/* gm2_finish_build_array_type - complete building the partially
+/* gm2_finish_build_array_type complete building the partially
    created array type, arrayType.  The arrayType is now known to be
    declared as: ARRAY index_type OF elt_type.  There will only ever
    be one gcc tree type for this array definition.  The third
-   parameter, type, is a front end type and this is necessary so that
+   parameter type is a front end type and this is necessary so that
    the canonicalization creates unique array types for each type.  */
 
 static tree
@@ -226,7 +226,7 @@ gm2_finish_build_array_type (tree arrayType, tree elt_type, tree index_type,
   return arrayType;
 }
 
-/* BuildEndArrayType - returns a type which is an array indexed by
+/* BuildEndArrayType returns a type which is an array indexed by
    IndexType and which has ElementType elements.  */
 
 tree
@@ -244,7 +244,7 @@ m2type_BuildEndArrayType (tree arraytype, tree elementtype, tree indextype,
         arraytype, m2tree_skip_type_decl (elementtype), indextype, type);
 }
 
-/* gm2_build_array_type - returns a type which is an array indexed by
+/* gm2_build_array_type returns a type which is an array indexed by
    IndexType and which has ElementType elements.  */
 
 static tree
@@ -255,7 +255,7 @@ gm2_build_array_type (tree elementtype, tree indextype, int fetype)
 }
 
 /* ValueInTypeRange returns TRUE if the constant, value, lies within
-   the range of, type.  */
+   the range of type.  */
 
 int
 m2type_ValueInTypeRange (tree type, tree value)
@@ -270,7 +270,7 @@ m2type_ValueInTypeRange (tree type, tree value)
 }
 
 /* ValueOutOfTypeRange returns TRUE if the constant, value, exceeds
-   the range of, type.  */
+   the range of type.  */
 
 int
 m2type_ValueOutOfTypeRange (tree type, tree value)
@@ -278,7 +278,8 @@ m2type_ValueOutOfTypeRange (tree type, tree value)
   return (!m2type_ValueInTypeRange (type, value));
 }
 
-/* ExceedsTypeRange return TRUE if low or high exceed the range of, type.  */
+/* ExceedsTypeRange return TRUE if low or high exceed the range of
+   type.  */
 
 int
 m2type_ExceedsTypeRange (tree type, tree low, tree high)
@@ -287,8 +288,8 @@ m2type_ExceedsTypeRange (tree type, tree low, tree high)
           || m2type_ValueOutOfTypeRange (type, high));
 }
 
-/* WithinTypeRange return TRUE if low and high are within the range of, type.
- */
+/* WithinTypeRange return TRUE if low and high are within the range
+   of type.  */
 
 int
 m2type_WithinTypeRange (tree type, tree low, tree high)
@@ -297,7 +298,7 @@ m2type_WithinTypeRange (tree type, tree low, tree high)
           && m2type_ValueInTypeRange (type, high));
 }
 
-/* BuildArrayIndexType - creates an integer index which accesses an
+/* BuildArrayIndexType creates an integer index which accesses an
    array.  low and high are the min, max elements of the array.  GCC
    insists we access an array with an integer indice.  */
 
@@ -318,9 +319,9 @@ m2type_BuildArrayIndexType (tree low, tree high)
                            m2expr_FoldAndStrip (sizehigh));
 }
 
-/* build_m2_type_node_by_array - builds a ISO Modula-2 word type from
-   ARRAY [low..high] OF arrayType.  this matches the front end data
-   type, fetype, which is only used during canonicalization.  */
+/* build_m2_type_node_by_array builds a ISO Modula-2 word type from
+   ARRAY [low..high] OF arrayType.  This matches the front end data
+   type fetype which is only used during canonicalization.  */
 
 static tree
 build_m2_type_node_by_array (tree arrayType, tree low, tree high, int fetype)
@@ -329,7 +330,7 @@ build_m2_type_node_by_array (tree arrayType, tree low, tree high, int fetype)
                                m2type_BuildArrayIndexType (low, high), fetype);
 }
 
-/* build_m2_word16_type_node - build an ISO 16 bit word as an ARRAY
+/* build_m2_word16_type_node build an ISO 16 bit word as an ARRAY
    [0..1] OF loc.  */
 
 static tree
@@ -340,7 +341,7 @@ build_m2_word16_type_node (location_t location, int loc)
                                       m2expr_GetIntegerOne (location), loc);
 }
 
-/* build_m2_word32_type_node - build an ISO 32 bit word as an ARRAY
+/* build_m2_word32_type_node build an ISO 32 bit word as an ARRAY
    [0..3] OF loc.  */
 
 static tree
@@ -351,7 +352,7 @@ build_m2_word32_type_node (location_t location, int loc)
                                       m2decl_BuildIntegerConstant (3), loc);
 }
 
-/* build_m2_word64_type_node - build an ISO 32 bit word as an ARRAY
+/* build_m2_word64_type_node build an ISO 32 bit word as an ARRAY
    [0..7] OF loc.  */
 
 static tree
@@ -362,7 +363,7 @@ build_m2_word64_type_node (location_t location, int loc)
                                       m2decl_BuildIntegerConstant (7), loc);
 }
 
-/* GetM2Complex32 - return the fixed size complex type.  */
+/* GetM2Complex32 return the fixed size complex type.  */
 
 tree
 m2type_GetM2Complex32 (void)
@@ -370,7 +371,7 @@ m2type_GetM2Complex32 (void)
   return m2_complex32_type_node;
 }
 
-/* GetM2Complex64 - return the fixed size complex type.  */
+/* GetM2Complex64 return the fixed size complex type.  */
 
 tree
 m2type_GetM2Complex64 (void)
@@ -378,7 +379,7 @@ m2type_GetM2Complex64 (void)
   return m2_complex64_type_node;
 }
 
-/* GetM2Complex96 - return the fixed size complex type.  */
+/* GetM2Complex96 return the fixed size complex type.  */
 
 tree
 m2type_GetM2Complex96 (void)
@@ -386,7 +387,7 @@ m2type_GetM2Complex96 (void)
   return m2_complex96_type_node;
 }
 
-/* GetM2Complex128 - return the fixed size complex type.  */
+/* GetM2Complex128 return the fixed size complex type.  */
 
 tree
 m2type_GetM2Complex128 (void)
@@ -394,7 +395,7 @@ m2type_GetM2Complex128 (void)
   return m2_complex128_type_node;
 }
 
-/* GetM2CType - a test function.  */
+/* GetM2CType a test function.  */
 
 tree
 m2type_GetM2CType (void)
@@ -402,7 +403,7 @@ m2type_GetM2CType (void)
   return m2_c_type_node;
 }
 
-/* GetM2ShortComplexType - return the short complex type.  */
+/* GetM2ShortComplexType return the short complex type.  */
 
 tree
 m2type_GetM2ShortComplexType (void)
@@ -410,7 +411,7 @@ m2type_GetM2ShortComplexType (void)
   return m2_short_complex_type_node;
 }
 
-/* GetM2LongComplexType - return the long complex type.  */
+/* GetM2LongComplexType return the long complex type.  */
 
 tree
 m2type_GetM2LongComplexType (void)
@@ -418,7 +419,7 @@ m2type_GetM2LongComplexType (void)
   return m2_long_complex_type_node;
 }
 
-/* GetM2ComplexType - return the complex type.  */
+/* GetM2ComplexType return the complex type.  */
 
 tree
 m2type_GetM2ComplexType (void)
@@ -426,7 +427,7 @@ m2type_GetM2ComplexType (void)
   return m2_complex_type_node;
 }
 
-/* GetM2Real128 - return the real 128 bit type.  */
+/* GetM2Real128 return the real 128 bit type.  */
 
 tree
 m2type_GetM2Real128 (void)
@@ -434,7 +435,7 @@ m2type_GetM2Real128 (void)
   return m2_real128_type_node;
 }
 
-/* GetM2Real96 - return the real 96 bit type.  */
+/* GetM2Real96 return the real 96 bit type.  */
 
 tree
 m2type_GetM2Real96 (void)
@@ -442,7 +443,7 @@ m2type_GetM2Real96 (void)
   return m2_real96_type_node;
 }
 
-/* GetM2Real64 - return the real 64 bit type.  */
+/* GetM2Real64 return the real 64 bit type.  */
 
 tree
 m2type_GetM2Real64 (void)
@@ -450,7 +451,7 @@ m2type_GetM2Real64 (void)
   return m2_real64_type_node;
 }
 
-/* GetM2Real32 - return the real 32 bit type.  */
+/* GetM2Real32 return the real 32 bit type.  */
 
 tree
 m2type_GetM2Real32 (void)
@@ -458,7 +459,7 @@ m2type_GetM2Real32 (void)
   return m2_real32_type_node;
 }
 
-/* GetM2Bitset32 - return the bitset 32 bit type.  */
+/* GetM2Bitset32 return the bitset 32 bit type.  */
 
 tree
 m2type_GetM2Bitset32 (void)
@@ -466,7 +467,7 @@ m2type_GetM2Bitset32 (void)
   return m2_bitset32_type_node;
 }
 
-/* GetM2Bitset16 - return the bitset 16 bit type.  */
+/* GetM2Bitset16 return the bitset 16 bit type.  */
 
 tree
 m2type_GetM2Bitset16 (void)
@@ -474,7 +475,7 @@ m2type_GetM2Bitset16 (void)
   return m2_bitset16_type_node;
 }
 
-/* GetM2Bitset8 - return the bitset 8 bit type.  */
+/* GetM2Bitset8 return the bitset 8 bit type.  */
 
 tree
 m2type_GetM2Bitset8 (void)
@@ -482,7 +483,7 @@ m2type_GetM2Bitset8 (void)
   return m2_bitset8_type_node;
 }
 
-/* GetM2Word64 - return the word 64 bit type.  */
+/* GetM2Word64 return the word 64 bit type.  */
 
 tree
 m2type_GetM2Word64 (void)
@@ -490,7 +491,7 @@ m2type_GetM2Word64 (void)
   return m2_word64_type_node;
 }
 
-/* GetM2Word32 - return the word 32 bit type.  */
+/* GetM2Word32 return the word 32 bit type.  */
 
 tree
 m2type_GetM2Word32 (void)
@@ -498,7 +499,7 @@ m2type_GetM2Word32 (void)
   return m2_word32_type_node;
 }
 
-/* GetM2Word16 - return the word 16 bit type.  */
+/* GetM2Word16 return the word 16 bit type.  */
 
 tree
 m2type_GetM2Word16 (void)
@@ -506,7 +507,7 @@ m2type_GetM2Word16 (void)
   return m2_word16_type_node;
 }
 
-/* GetM2Cardinal64 - return the cardinal 64 bit type.  */
+/* GetM2Cardinal64 return the cardinal 64 bit type.  */
 
 tree
 m2type_GetM2Cardinal64 (void)
@@ -514,7 +515,7 @@ m2type_GetM2Cardinal64 (void)
   return m2_cardinal64_type_node;
 }
 
-/* GetM2Cardinal32 - return the cardinal 32 bit type.  */
+/* GetM2Cardinal32 return the cardinal 32 bit type.  */
 
 tree
 m2type_GetM2Cardinal32 (void)
@@ -522,7 +523,7 @@ m2type_GetM2Cardinal32 (void)
   return m2_cardinal32_type_node;
 }
 
-/* GetM2Cardinal16 - return the cardinal 16 bit type.  */
+/* GetM2Cardinal16 return the cardinal 16 bit type.  */
 
 tree
 m2type_GetM2Cardinal16 (void)
@@ -530,7 +531,7 @@ m2type_GetM2Cardinal16 (void)
   return m2_cardinal16_type_node;
 }
 
-/* GetM2Cardinal8 - return the cardinal 8 bit type.  */
+/* GetM2Cardinal8 return the cardinal 8 bit type.  */
 
 tree
 m2type_GetM2Cardinal8 (void)
@@ -538,7 +539,7 @@ m2type_GetM2Cardinal8 (void)
   return m2_cardinal8_type_node;
 }
 
-/* GetM2Integer64 - return the integer 64 bit type.  */
+/* GetM2Integer64 return the integer 64 bit type.  */
 
 tree
 m2type_GetM2Integer64 (void)
@@ -546,7 +547,7 @@ m2type_GetM2Integer64 (void)
   return m2_integer64_type_node;
 }
 
-/* GetM2Integer32 - return the integer 32 bit type.  */
+/* GetM2Integer32 return the integer 32 bit type.  */
 
 tree
 m2type_GetM2Integer32 (void)
@@ -554,7 +555,7 @@ m2type_GetM2Integer32 (void)
   return m2_integer32_type_node;
 }
 
-/* GetM2Integer16 - return the integer 16 bit type.  */
+/* GetM2Integer16 return the integer 16 bit type.  */
 
 tree
 m2type_GetM2Integer16 (void)
@@ -562,7 +563,7 @@ m2type_GetM2Integer16 (void)
   return m2_integer16_type_node;
 }
 
-/* GetM2Integer8 - return the integer 8 bit type.  */
+/* GetM2Integer8 return the integer 8 bit type.  */
 
 tree
 m2type_GetM2Integer8 (void)
@@ -570,7 +571,7 @@ m2type_GetM2Integer8 (void)
   return m2_integer8_type_node;
 }
 
-/* GetM2RType - return the ISO R data type, the longest real
+/* GetM2RType return the ISO R data type, the longest real
    datatype.  */
 
 tree
@@ -579,7 +580,7 @@ m2type_GetM2RType (void)
   return long_double_type_node;
 }
 
-/* GetM2ZType - return the ISO Z data type, the longest int datatype.  */
+/* GetM2ZType return the ISO Z data type, the longest int datatype.  */
 
 tree
 m2type_GetM2ZType (void)
@@ -587,7 +588,7 @@ m2type_GetM2ZType (void)
   return m2_z_type_node;
 }
 
-/* GetShortCardType - return the C short unsigned data type.  */
+/* GetShortCardType return the C short unsigned data type.  */
 
 tree
 m2type_GetShortCardType (void)
@@ -595,7 +596,7 @@ m2type_GetShortCardType (void)
   return short_unsigned_type_node;
 }
 
-/* GetM2ShortCardType - return the m2 short cardinal data type.  */
+/* GetM2ShortCardType return the m2 short cardinal data type.  */
 
 tree
 m2type_GetM2ShortCardType (void)
@@ -603,7 +604,7 @@ m2type_GetM2ShortCardType (void)
   return m2_short_card_type_node;
 }
 
-/* GetShortIntType - return the C short int data type.  */
+/* GetShortIntType return the C short int data type.  */
 
 tree
 m2type_GetShortIntType (void)
@@ -611,7 +612,7 @@ m2type_GetShortIntType (void)
   return short_integer_type_node;
 }
 
-/* GetM2ShortIntType - return the m2 short integer data type.  */
+/* GetM2ShortIntType return the m2 short integer data type.  */
 
 tree
 m2type_GetM2ShortIntType (void)
@@ -619,7 +620,7 @@ m2type_GetM2ShortIntType (void)
   return m2_short_int_type_node;
 }
 
-/* GetM2LongCardType - return the m2 long cardinal data type.  */
+/* GetM2LongCardType return the m2 long cardinal data type.  */
 
 tree
 m2type_GetM2LongCardType (void)
@@ -627,7 +628,7 @@ m2type_GetM2LongCardType (void)
   return m2_long_card_type_node;
 }
 
-/* GetM2LongIntType - return the m2 long integer data type.  */
+/* GetM2LongIntType return the m2 long integer data type.  */
 
 tree
 m2type_GetM2LongIntType (void)
@@ -635,7 +636,7 @@ m2type_GetM2LongIntType (void)
   return m2_long_int_type_node;
 }
 
-/* GetM2LongRealType - return the m2 long real data type.  */
+/* GetM2LongRealType return the m2 long real data type.  */
 
 tree
 m2type_GetM2LongRealType (void)
@@ -643,7 +644,7 @@ m2type_GetM2LongRealType (void)
   return m2_long_real_type_node;
 }
 
-/* GetM2RealType - return the m2 real data type.  */
+/* GetM2RealType return the m2 real data type.  */
 
 tree
 m2type_GetM2RealType (void)
@@ -651,7 +652,7 @@ m2type_GetM2RealType (void)
   return m2_real_type_node;
 }
 
-/* GetM2ShortRealType - return the m2 short real data type.  */
+/* GetM2ShortRealType return the m2 short real data type.  */
 
 tree
 m2type_GetM2ShortRealType (void)
@@ -659,7 +660,7 @@ m2type_GetM2ShortRealType (void)
   return m2_short_real_type_node;
 }
 
-/* GetM2CardinalType - return the m2 cardinal data type.  */
+/* GetM2CardinalType return the m2 cardinal data type.  */
 
 tree
 m2type_GetM2CardinalType (void)
@@ -667,7 +668,7 @@ m2type_GetM2CardinalType (void)
   return m2_cardinal_type_node;
 }
 
-/* GetM2IntegerType - return the m2 integer data type.  */
+/* GetM2IntegerType return the m2 integer data type.  */
 
 tree
 m2type_GetM2IntegerType (void)
@@ -675,7 +676,7 @@ m2type_GetM2IntegerType (void)
   return m2_integer_type_node;
 }
 
-/* GetM2CharType - return the m2 char data type.  */
+/* GetM2CharType return the m2 char data type.  */
 
 tree
 m2type_GetM2CharType (void)
@@ -683,7 +684,7 @@ m2type_GetM2CharType (void)
   return m2_char_type_node;
 }
 
-/* GetProcType - return the m2 proc data type.  */
+/* GetProcType return the m2 proc data type.  */
 
 tree
 m2type_GetProcType (void)
@@ -691,7 +692,7 @@ m2type_GetProcType (void)
   return proc_type_node;
 }
 
-/* GetISOWordType - return the m2 iso word data type.  */
+/* GetISOWordType return the m2 iso word data type.  */
 
 tree
 m2type_GetISOWordType (void)
@@ -699,7 +700,7 @@ m2type_GetISOWordType (void)
   return m2_iso_word_type_node;
 }
 
-/* GetISOByteType - return the m2 iso byte data type.  */
+/* GetISOByteType return the m2 iso byte data type.  */
 
 tree
 m2type_GetISOByteType (void)
@@ -707,7 +708,7 @@ m2type_GetISOByteType (void)
   return m2_iso_byte_type_node;
 }
 
-/* GetISOLocType - return the m2 loc word data type.  */
+/* GetISOLocType return the m2 loc word data type.  */
 
 tree
 m2type_GetISOLocType (void)
@@ -715,7 +716,7 @@ m2type_GetISOLocType (void)
   return m2_iso_loc_type_node;
 }
 
-/* GetWordType - return the C unsigned data type.  */
+/* GetWordType return the C unsigned data type.  */
 
 tree
 m2type_GetWordType (void)
@@ -723,7 +724,7 @@ m2type_GetWordType (void)
   return unsigned_type_node;
 }
 
-/* GetLongIntType - return the C long int data type.  */
+/* GetLongIntType return the C long int data type.  */
 
 tree
 m2type_GetLongIntType (void)
@@ -731,7 +732,7 @@ m2type_GetLongIntType (void)
   return long_integer_type_node;
 }
 
-/* GetShortRealType - return the C float data type.  */
+/* GetShortRealType return the C float data type.  */
 
 tree
 m2type_GetShortRealType (void)
@@ -739,7 +740,7 @@ m2type_GetShortRealType (void)
   return float_type_node;
 }
 
-/* GetLongRealType - return the C long double data type.  */
+/* GetLongRealType return the C long double data type.  */
 
 tree
 m2type_GetLongRealType (void)
@@ -747,7 +748,7 @@ m2type_GetLongRealType (void)
   return long_double_type_node;
 }
 
-/* GetRealType - returns the C double_type_node.  */
+/* GetRealType returns the C double_type_node.  */
 
 tree
 m2type_GetRealType (void)
@@ -755,7 +756,7 @@ m2type_GetRealType (void)
   return double_type_node;
 }
 
-/* GetBitnumType - return the ISO bitnum type.  */
+/* GetBitnumType return the ISO bitnum type.  */
 
 tree
 m2type_GetBitnumType (void)
@@ -763,7 +764,7 @@ m2type_GetBitnumType (void)
   return bitnum_type_node;
 }
 
-/* GetBitsetType - return the bitset type.  */
+/* GetBitsetType return the bitset type.  */
 
 tree
 m2type_GetBitsetType (void)
@@ -771,7 +772,7 @@ m2type_GetBitsetType (void)
   return bitset_type_node;
 }
 
-/* GetCardinalType - return the cardinal type.  */
+/* GetCardinalType return the cardinal type.  */
 
 tree
 m2type_GetCardinalType (void)
@@ -779,7 +780,7 @@ m2type_GetCardinalType (void)
   return unsigned_type_node;
 }
 
-/* GetPointerType - return the GCC ptr type node.  Equivalent to
+/* GetPointerType return the GCC ptr type node.  Equivalent to
    (void *).  */
 
 tree
@@ -788,7 +789,7 @@ m2type_GetPointerType (void)
   return ptr_type_node;
 }
 
-/* GetVoidType - return the C void type.  */
+/* GetVoidType return the C void type.  */
 
 tree
 m2type_GetVoidType (void)
@@ -796,7 +797,7 @@ m2type_GetVoidType (void)
   return void_type_node;
 }
 
-/* GetByteType - return the byte type node.  */
+/* GetByteType return the byte type node.  */
 
 tree
 m2type_GetByteType (void)
@@ -804,7 +805,7 @@ m2type_GetByteType (void)
   return unsigned_char_type_node;
 }
 
-/* GetCharType - return the char type node.  */
+/* GetCharType return the char type node.  */
 
 tree
 m2type_GetCharType (void)
@@ -812,7 +813,7 @@ m2type_GetCharType (void)
   return char_type_node;
 }
 
-/* GetIntegerType - return the integer type node.  */
+/* GetIntegerType return the integer type node.  */
 
 tree
 m2type_GetIntegerType (void)
@@ -820,7 +821,7 @@ m2type_GetIntegerType (void)
   return integer_type_node;
 }
 
-/* GetCSizeTType - return a type representing, size_t on this system.  */
+/* GetCSizeTType return a type representing, size_t on this system.  */
 
 tree
 m2type_GetCSizeTType (void)
@@ -828,7 +829,7 @@ m2type_GetCSizeTType (void)
   return sizetype;
 }
 
-/* GetCSSizeTType - return a type representing, size_t on this
+/* GetCSSizeTType return a type representing, size_t on this
    system.  */
 
 tree
@@ -837,7 +838,7 @@ m2type_GetCSSizeTType (void)
   return ssizetype;
 }
 
-/* GetPackedBooleanType - return the packed boolean data type node.  */
+/* GetPackedBooleanType return the packed boolean data type node.  */
 
 tree
 m2type_GetPackedBooleanType (void)
@@ -845,7 +846,7 @@ m2type_GetPackedBooleanType (void)
   return m2_packed_boolean_type_node;
 }
 
-/* GetBooleanTrue - */
+/* GetBooleanTrue return modula-2 TRUE.  */
 
 tree
 m2type_GetBooleanTrue (void)
@@ -857,7 +858,7 @@ m2type_GetBooleanTrue (void)
 #endif /* !USE_BOOLEAN  */
 }
 
-/* GetBooleanFalse - */
+/* GetBooleanFalse return modula-2 FALSE.  */
 
 tree
 m2type_GetBooleanFalse (void)
@@ -869,7 +870,7 @@ m2type_GetBooleanFalse (void)
 #endif /* !USE_BOOLEAN  */
 }
 
-/* GetBooleanType - */
+/* GetBooleanType return the modula-2 BOOLEAN type.  */
 
 tree
 m2type_GetBooleanType (void)
@@ -881,7 +882,7 @@ m2type_GetBooleanType (void)
 #endif /* !USE_BOOLEAN  */
 }
 
-/* GetCardinalAddressType - returns the internal data type for
+/* GetCardinalAddressType returns the internal data type for
    computing binary arithmetic upon the ADDRESS datatype.  */
 
 tree
@@ -890,7 +891,7 @@ m2type_GetCardinalAddressType (void)
   return m2_cardinal_address_type_node;
 }
 
-/* noBitsRequired - returns the number of bits required to contain,
+/* noBitsRequired returns the number of bits required to contain,
    values.  How many bits are required to represent all numbers
    between: 0..values-1 */
 
@@ -907,7 +908,7 @@ noBitsRequired (tree values)
 }
 
 #if 0
-/* build_set_type - creates a set type from the, domain, [low..high].
+/* build_set_type creates a set type from the, domain, [low..high].
    The values low..high all have type, range_type.  */
 
 static tree
@@ -937,7 +938,7 @@ build_set_type (tree domain, tree range_type, int allow_void, int ispacked)
 }
 
 
-/* convert_type_to_range - does the conversion and copies the range
+/* convert_type_to_range does the conversion and copies the range
    type */
 
 static tree
@@ -979,7 +980,7 @@ convert_type_to_range (tree type)
 }
 #endif
 
-/* build_bitset_type - builds the type BITSET which is exported from
+/* build_bitset_type builds the type BITSET which is exported from
    SYSTEM.  It also builds BITNUM (the subrange from which BITSET is
    created).  */
 
@@ -1039,8 +1040,8 @@ m2type_BuildSetTypeFromSubrange (location_t location,
     return unsigned_type_node;
 }
 
-/* build_m2_size_set_type - build and return a set type with,
-   precision, bits.  */
+/* build_m2_size_set_type build and return a set type with
+   precision bits.  */
 
 static tree
 build_m2_size_set_type (location_t location, int precision)
@@ -1062,8 +1063,8 @@ build_m2_size_set_type (location_t location, int precision)
       m2decl_BuildIntegerConstant (precision - 1), FALSE);
 }
 
-/* build_m2_specific_size_type - build a specific data type matching
-   number of bits, precision, whether it, is_signed.  It creates a
+/* build_m2_specific_size_type build a specific data type matching
+   number of bits precision whether it is_signed.  It creates a
    set type if base == SET_TYPE or returns the already created real,
    if REAL_TYPE is specified.  */
 
@@ -1105,7 +1106,7 @@ build_m2_specific_size_type (location_t location, enum tree_code base,
   return c;
 }
 
-/* BuildSmallestTypeRange - returns the smallest INTEGER_TYPE which
+/* BuildSmallestTypeRange returns the smallest INTEGER_TYPE which
    is sufficient to contain values: low..high.  */
 
 tree
@@ -1124,7 +1125,7 @@ m2type_BuildSmallestTypeRange (location_t location, tree low, tree high)
                                       tree_int_cst_sgn (low) < 0);
 }
 
-/* GetTreeType - returns TREE_TYPE (t).  */
+/* GetTreeType returns TREE_TYPE (t).  */
 
 tree
 m2type_GetTreeType (tree t)
@@ -1132,7 +1133,7 @@ m2type_GetTreeType (tree t)
   return TREE_TYPE (t);
 }
 
-/* finish_build_pointer_type - finish building a POINTER_TYPE node.
+/* finish_build_pointer_type finish building a POINTER_TYPE node.
    necessary to solve self references in procedure types.  */
 
 /* Code taken from tree.cc:build_pointer_type_for_mode.  */
@@ -1154,7 +1155,7 @@ finish_build_pointer_type (tree t, tree to_type, enum machine_mode mode,
   return t;
 }
 
-/* BuildParameterDeclaration - creates and returns one parameter
+/* BuildParameterDeclaration creates and returns one parameter
    from, name, and, type.  It appends this parameter to the internal
    param_type_list.  */
 
@@ -1172,7 +1173,7 @@ m2type_BuildProcTypeParameterDeclaration (location_t location, tree type,
   return type;
 }
 
-/* BuildEndFunctionType - build a function type which would return a,
+/* BuildEndFunctionType build a function type which would return a,
    value.  The arguments have been created by
    BuildParameterDeclaration.  */
 
@@ -1213,7 +1214,7 @@ m2type_BuildEndFunctionType (tree func, tree return_type, int uses_varargs)
   return func;
 }
 
-/* BuildStartFunctionType - creates a pointer type, necessary to
+/* BuildStartFunctionType creates a pointer type, necessary to
    create a function type.  */
 
 tree
@@ -1226,7 +1227,7 @@ m2type_BuildStartFunctionType (location_t location ATTRIBUTE_UNUSED,
   return n;
 }
 
-/* InitFunctionTypeParameters - resets the current function type
+/* InitFunctionTypeParameters resets the current function type
    parameter list.  */
 
 void
@@ -1235,7 +1236,7 @@ m2type_InitFunctionTypeParameters (void)
   param_type_list = NULL_TREE;
 }
 
-/* gm2_finish_decl - */
+/* gm2_finish_decl finishes VAR, TYPE and FUNCTION declarations.  */
 
 static void
 gm2_finish_decl (location_t location, tree decl)
@@ -1314,7 +1315,7 @@ gm2_finish_decl (location_t location, tree decl)
     }
 }
 
-/* BuildVariableArrayAndDeclare - creates a variable length array.
+/* BuildVariableArrayAndDeclare creates a variable length array.
    high is the maximum legal elements (which is a runtime variable).
    This creates and array index, array type and local variable.  */
 
@@ -1391,7 +1392,7 @@ build_m2_iso_byte_node (location_t location, int loc)
   return c;
 }
 
-/* m2type_InitSystemTypes - initialise loc and word derivatives.  */
+/* m2type_InitSystemTypes initialise loc and word derivatives.  */
 
 void
 m2type_InitSystemTypes (location_t location, int loc)
@@ -1786,7 +1787,7 @@ m2type_InitBaseTypes (location_t location)
   m2expr_init (location);
 }
 
-/* BuildStartType - given a, type, with a, name, return a GCC
+/* BuildStartType given a, type, with a, name, return a GCC
    declaration of this type.  TYPE name = foo ;
 
    the type, foo, maybe a partially created type (which has
@@ -1810,7 +1811,7 @@ m2type_BuildStartType (location_t location, char *name, tree type)
   return tem;
 }
 
-/* BuildEndType - finish declaring, type, and return, type.  */
+/* BuildEndType finish declaring, type, and return, type.  */
 
 tree
 m2type_BuildEndType (location_t location, tree type)
@@ -1821,7 +1822,7 @@ m2type_BuildEndType (location_t location, tree type)
   return type;
 }
 
-/* DeclareKnownType - given a, type, with a, name, return a GCC
+/* DeclareKnownType given a, type, with a, name, return a GCC
    declaration of this type.  TYPE name = foo ; */
 
 tree
@@ -1832,7 +1833,7 @@ m2type_DeclareKnownType (location_t location, char *name, tree type)
                               m2type_BuildStartType (location, name, type));
 }
 
-/* GetDefaultType - given a, type, with a, name, return a GCC
+/* GetDefaultType given a, type, with a, name, return a GCC
    declaration of this type.  Checks to see whether the type name has
    already been declared as a default type and if so it returns this
    declaration.  Otherwise it declares the type.  In Modula-2 this is
@@ -1879,7 +1880,7 @@ do_min_real (tree type)
   return build1 (NEGATE_EXPR, type, build_real (type, r));
 }
 
-/* GetMinFrom - given a, type, return a constant representing the
+/* GetMinFrom given a, type, return a constant representing the
    minimum legal value.  */
 
 tree
@@ -1911,7 +1912,7 @@ do_max_real (tree type)
   return build_real (type, r);
 }
 
-/* GetMaxFrom - given a, type, return a constant representing the
+/* GetMaxFrom given a, type, return a constant representing the
    maximum legal value.  */
 
 tree
@@ -1932,7 +1933,7 @@ m2type_GetMaxFrom (location_t location, tree type)
   return TYPE_MAX_VALUE (m2tree_skip_type_decl (type));
 }
 
-/* BuildTypeDeclaration - adds the, type, to the current statement
+/* BuildTypeDeclaration adds the, type, to the current statement
    list.  */
 
 void
@@ -2025,8 +2026,8 @@ gm2_finish_enum (location_t location, tree enumtype, tree values)
     }
 
   /* Construct the final type of this enumeration.  It is the same as
-     one of the integral types - the narrowest one that fits, except that
-     normally we only go as narrow as int - and signed iff any of the
+     one of the integral types the narrowest one that fits, except that
+     normally we only go as narrow as int and signed iff any of the
      values are negative.  */
   sign = (tree_int_cst_sgn (minnode) >= 0) ? UNSIGNED : SIGNED;
   precision = MAX (tree_int_cst_min_precision (minnode, sign),
@@ -2110,7 +2111,7 @@ gm2_finish_enum (location_t location, tree enumtype, tree values)
   return enumtype;
 }
 
-/* BuildStartEnumeration - create an enumerated type in gcc.  */
+/* BuildStartEnumeration create an enumerated type in gcc.  */
 
 tree
 m2type_BuildStartEnumeration (location_t location, char *name, int ispacked)
@@ -2126,7 +2127,7 @@ m2type_BuildStartEnumeration (location_t location, char *name, int ispacked)
   return gm2_start_enum (location, id, ispacked);
 }
 
-/* BuildEndEnumeration - finish building the enumeration, it uses the
+/* BuildEndEnumeration finish building the enumeration, it uses the
    enum list, enumvalues, and returns a enumeration type tree.  */
 
 tree
@@ -2164,9 +2165,8 @@ gm2_build_enumerator (location_t location, tree name, tree value)
   return tree_cons (decl, value, NULL_TREE);
 }
 
-/* BuildEnumerator - build an enumerator and add it to the,
-   enumvalues, list.  It returns a copy of the value.  --fixme-- why
-   do this?  */
+/* BuildEnumerator build an enumerator and add it to the,
+   enumvalues, list.  It returns a copy of the value.  */
 
 tree
 m2type_BuildEnumerator (location_t location, char *name, tree value,
@@ -2182,7 +2182,7 @@ m2type_BuildEnumerator (location_t location, char *name, tree value,
   return copy_of_value;
 }
 
-/* BuildPointerType - returns a type which is a pointer to, totype.  */
+/* BuildPointerType returns a type which is a pointer to, totype.  */
 
 tree
 m2type_BuildPointerType (tree totype)
@@ -2190,7 +2190,7 @@ m2type_BuildPointerType (tree totype)
   return build_pointer_type (m2tree_skip_type_decl (totype));
 }
 
-/* BuildConstPointerType - returns a type which is a const pointer
+/* BuildConstPointerType returns a type which is a const pointer
    to, totype.  */
 
 tree
@@ -2201,7 +2201,7 @@ m2type_BuildConstPointerType (tree totype)
   return t;
 }
 
-/* BuildSetType - creates a SET OF [lowval..highval].  */
+/* BuildSetType creates a SET OF [lowval..highval].  */
 
 tree
 m2type_BuildSetType (location_t location, char *name, tree type, tree lowval,
@@ -2219,7 +2219,7 @@ m2type_BuildSetType (location_t location, char *name, tree type, tree lowval,
 					  ispacked);
 }
 
-/* push_constructor - returns a new compound constructor frame.  */
+/* push_constructor returns a new compound constructor frame.  */
 
 static struct struct_constructor *
 push_constructor (void)
@@ -2231,7 +2231,7 @@ push_constructor (void)
   return p;
 }
 
-/* pop_constructor - throws away the top constructor frame on the
+/* pop_constructor throws away the top constructor frame on the
    stack.  */
 
 static void
@@ -2242,7 +2242,7 @@ pop_constructor (struct struct_constructor *p)
   top_constructor = top_constructor->level;
 }
 
-/* BuildStartSetConstructor - starts to create a set constant.
+/* BuildStartSetConstructor starts to create a set constant.
    Remember that type is really a record type.  */
 
 void *
@@ -2259,7 +2259,7 @@ m2type_BuildStartSetConstructor (tree type)
   return (void *)p;
 }
 
-/* BuildSetConstructorElement - adds, value, to the
+/* BuildSetConstructorElement adds, value, to the
    constructor_element_list.  */
 
 void
@@ -2285,7 +2285,7 @@ m2type_BuildSetConstructorElement (void *p, tree value)
   c->constructor_fields = TREE_CHAIN (c->constructor_fields);
 }
 
-/* BuildEndSetConstructor - finishes building a set constant.  */
+/* BuildEndSetConstructor finishes building a set constant.  */
 
 tree
 m2type_BuildEndSetConstructor (void *p)
@@ -2311,7 +2311,7 @@ m2type_BuildEndSetConstructor (void *p)
   return constructor;
 }
 
-/* BuildStartRecordConstructor - initializes a record compound
+/* BuildStartRecordConstructor initializes a record compound
    constructor frame.  */
 
 void *
@@ -2328,7 +2328,7 @@ m2type_BuildStartRecordConstructor (tree type)
   return (void *)p;
 }
 
-/* BuildEndRecordConstructor - returns a tree containing the record
+/* BuildEndRecordConstructor returns a tree containing the record
    compound literal.  */
 
 tree
@@ -2345,7 +2345,7 @@ m2type_BuildEndRecordConstructor (void *p)
   return constructor;
 }
 
-/* BuildRecordConstructorElement - adds, value, to the
+/* BuildRecordConstructorElement adds, value, to the
    constructor_element_list.  */
 
 void
@@ -2354,7 +2354,7 @@ m2type_BuildRecordConstructorElement (void *p, tree value)
   m2type_BuildSetConstructorElement (p, value);
 }
 
-/* BuildStartArrayConstructor - initializes an array compound
+/* BuildStartArrayConstructor initializes an array compound
    constructor frame.  */
 
 void *
@@ -2371,7 +2371,7 @@ m2type_BuildStartArrayConstructor (tree type)
   return (void *)p;
 }
 
-/* BuildEndArrayConstructor - returns a tree containing the array
+/* BuildEndArrayConstructor returns a tree containing the array
    compound literal.  */
 
 tree
@@ -2390,7 +2390,7 @@ m2type_BuildEndArrayConstructor (void *p)
   return constructor;
 }
 
-/* BuildArrayConstructorElement - adds, value, to the
+/* BuildArrayConstructorElement adds, value, to the
    constructor_element_list.  */
 
 void
@@ -2423,7 +2423,7 @@ m2type_BuildArrayConstructorElement (void *p, tree value, tree indice)
   vec_safe_push (c->constructor_elements, celt);
 }
 
-/* BuildArrayStringConstructor - creates an array constructor for,
+/* BuildArrayStringConstructor creates an array constructor for,
    arrayType, consisting of the character elements defined by, str,
    of, length, characters.  */
 
@@ -2461,7 +2461,7 @@ m2type_BuildArrayStringConstructor (location_t location, tree arrayType,
   return m2type_BuildEndArrayConstructor (c);
 }
 
-/* BuildSubrangeType - creates a subrange of, type, with, lowval,
+/* BuildSubrangeType creates a subrange of, type, with, lowval,
    highval.  */
 
 tree
@@ -2502,7 +2502,7 @@ m2type_BuildSubrangeType (location_t location, char *name, tree type,
   return range_type;
 }
 
-/* BuildCharConstantChar - creates a character constant given a character, ch.  */
+/* BuildCharConstantChar creates a character constant given a character, ch.  */
 
 tree
 m2type_BuildCharConstantChar (location_t location, char ch)
@@ -2512,7 +2512,7 @@ m2type_BuildCharConstantChar (location_t location, char ch)
   return m2block_RememberConstant (id);
 }
 
-/* BuildCharConstant - creates a character constant given a, string.  */
+/* BuildCharConstant creates a character constant given a, string.  */
 
 tree
 m2type_BuildCharConstant (location_t location, const char *string)
@@ -2520,7 +2520,7 @@ m2type_BuildCharConstant (location_t location, const char *string)
   return m2type_BuildCharConstantChar (location, string[0]);
 }
 
-/* RealToTree - convert a real number into a Tree.  */
+/* RealToTree convert a real number into a Tree.  */
 
 tree
 m2type_RealToTree (char *name)
@@ -2530,7 +2530,7 @@ m2type_RealToTree (char *name)
       REAL_VALUE_ATOF (name, TYPE_MODE (m2type_GetLongRealType ())));
 }
 
-/* gm2_start_struct - start to create a struct.  */
+/* gm2_start_struct start to create a struct.  */
 
 static tree
 gm2_start_struct (location_t location, enum tree_code code, char *name)
@@ -2550,7 +2550,7 @@ gm2_start_struct (location_t location, enum tree_code code, char *name)
   return s;
 }
 
-/* BuildStartRecord - return a RECORD tree.  */
+/* BuildStartRecord return a RECORD tree.  */
 
 tree
 m2type_BuildStartRecord (location_t location, char *name)
@@ -2559,7 +2559,7 @@ m2type_BuildStartRecord (location_t location, char *name)
   return gm2_start_struct (location, RECORD_TYPE, name);
 }
 
-/* BuildStartUnion - return a union tree.  */
+/* BuildStartUnion return a union tree.  */
 
 tree
 m2type_BuildStartUnion (location_t location, char *name)
@@ -2568,7 +2568,7 @@ m2type_BuildStartUnion (location_t location, char *name)
   return gm2_start_struct (location, UNION_TYPE, name);
 }
 
-/* m2type_BuildStartVarient - builds a varient record.  It creates a
+/* m2type_BuildStartVarient builds a varient record.  It creates a
    record field which has a, name, and whose type is a union.  */
 
 tree
@@ -2580,7 +2580,7 @@ m2type_BuildStartVarient (location_t location, char *name)
   return field;
 }
 
-/* m2type_BuildEndVarient - finish the varientField by calling
+/* m2type_BuildEndVarient finish the varientField by calling
    decl_finish and also finish the type of varientField (which is a
    union).  */
 
@@ -2595,7 +2595,7 @@ m2type_BuildEndVarient (location_t location, tree varientField,
   return varientField;
 }
 
-/* m2type_BuildStartFieldVarient - builds a field varient record.  It
+/* m2type_BuildStartFieldVarient builds a field varient record.  It
    creates a record field which has a, name, and whose type is a
    record.  */
 
@@ -2608,7 +2608,7 @@ m2type_BuildStartFieldVarient (location_t location, char *name)
   return field;
 }
 
-/* BuildEndRecord - a heavily pruned finish_struct from c-decl.cc.  It
+/* BuildEndRecord a heavily pruned finish_struct from c-decl.cc.  It
    sets the context for each field to, t, propagates isPacked
    throughout the fields in the structure.  */
 
@@ -2672,7 +2672,7 @@ m2type_BuildEndRecord (location_t location, tree record, tree fieldlist,
   return record;
 }
 
-/* m2type_BuildEndFieldVarient - finish the varientField by calling
+/* m2type_BuildEndFieldVarient finish the varientField by calling
    decl_finish and also finish the type of varientField (which is a
    record).  */
 
@@ -2688,7 +2688,7 @@ m2type_BuildEndFieldVarient (location_t location, tree varientField,
   return varientField;
 }
 
-/* m2type_BuildStartFieldRecord - starts building a field record.  It
+/* m2type_BuildStartFieldRecord starts building a field record.  It
    returns the field which must be completed by calling
    gm2_finish_decl.  */
 
@@ -2725,7 +2725,7 @@ m2type_BuildFieldRecord (location_t location, char *name, tree type)
   return field;
 }
 
-/* ChainOn - interface so that Modula-2 can also create chains of
+/* ChainOn interface so that Modula-2 can also create chains of
    declarations.  */
 
 tree
@@ -2734,7 +2734,7 @@ m2type_ChainOn (tree t1, tree t2)
   return chainon (t1, t2);
 }
 
-/* ChainOnParamValue - adds a list node {{name, str}, value} into the
+/* ChainOnParamValue adds a list node {{name, str}, value} into the
    tree list.  */
 
 tree
@@ -2743,7 +2743,7 @@ m2type_ChainOnParamValue (tree list, tree name, tree str, tree value)
   return chainon (list, build_tree_list (build_tree_list (name, str), value));
 }
 
-/* AddStringToTreeList - adds, string, to list.  */
+/* AddStringToTreeList adds, string, to list.  */
 
 tree
 m2type_AddStringToTreeList (tree list, tree string)
@@ -2751,7 +2751,7 @@ m2type_AddStringToTreeList (tree list, tree string)
   return tree_cons (NULL_TREE, string, list);
 }
 
-/* SetAlignment - sets the alignment of a, node, to, align.  It
+/* SetAlignment sets the alignment of a, node, to, align.  It
    duplicates the, node, and sets the alignment to prevent alignment
    effecting behaviour elsewhere.  */
 
@@ -2816,7 +2816,7 @@ m2type_SetAlignment (tree node, tree align)
   return node;
 }
 
-/* SetDeclPacked - sets the packed bit in decl TREE, node.  It
+/* SetDeclPacked sets the packed bit in decl TREE, node.  It
    returns the node.  */
 
 tree
@@ -2826,7 +2826,7 @@ m2type_SetDeclPacked (tree node)
   return node;
 }
 
-/* SetTypePacked - sets the packed bit in type TREE, node.  It
+/* SetTypePacked sets the packed bit in type TREE, node.  It
    returns the node.  */
 
 tree
@@ -2836,7 +2836,7 @@ m2type_SetTypePacked (tree node)
   return node;
 }
 
-/* SetRecordFieldOffset - returns field after the byteOffset and
+/* SetRecordFieldOffset returns field after the byteOffset and
    bitOffset has been applied to it.  */
 
 tree
@@ -2850,7 +2850,7 @@ m2type_SetRecordFieldOffset (tree field, tree byteOffset, tree bitOffset,
   return field;
 }
 
-/* BuildPackedFieldRecord - builds a packed field record of, name,
+/* BuildPackedFieldRecord builds a packed field record of, name,
    and, fieldtype.  */
 
 tree
@@ -2860,7 +2860,7 @@ m2type_BuildPackedFieldRecord (location_t location, char *name, tree fieldtype)
   return m2type_BuildFieldRecord (location, name, fieldtype);
 }
 
-/* BuildNumberOfArrayElements - returns the number of elements in an
+/* BuildNumberOfArrayElements returns the number of elements in an
    arrayType.  */
 
 tree
@@ -2876,7 +2876,7 @@ m2type_BuildNumberOfArrayElements (location_t location, tree arrayType)
   return elements;
 }
 
-/* AddStatement - maps onto add_stmt.  */
+/* AddStatement maps onto add_stmt.  */
 
 void
 m2type_AddStatement (location_t location, tree t)
@@ -2885,7 +2885,7 @@ m2type_AddStatement (location_t location, tree t)
     add_stmt (location, t);
 }
 
-/* MarkFunctionReferenced - marks a function as referenced.  */
+/* MarkFunctionReferenced marks a function as referenced.  */
 
 void
 m2type_MarkFunctionReferenced (tree f)
@@ -2895,7 +2895,7 @@ m2type_MarkFunctionReferenced (tree f)
       mark_decl_referenced (f);
 }
 
-/* GarbageCollect - force gcc to garbage collect.  */
+/* GarbageCollect force gcc to garbage collect.  */
 
 void
 m2type_GarbageCollect (void)
@@ -2903,7 +2903,7 @@ m2type_GarbageCollect (void)
   ggc_collect ();
 }
 
-/* gm2_type_for_size - return an integer type with BITS bits of
+/* gm2_type_for_size return an integer type with BITS bits of
    precision, that is unsigned if UNSIGNEDP is nonzero, otherwise
    signed.  */
 
@@ -2941,7 +2941,7 @@ m2type_gm2_type_for_size (unsigned int bits, int unsignedp)
   return 0;
 }
 
-/* gm2_unsigned_type - return an unsigned type the same as TYPE in
+/* gm2_unsigned_type return an unsigned type the same as TYPE in
    other respects.  */
 
 tree
@@ -2975,7 +2975,7 @@ m2type_gm2_unsigned_type (tree type)
   return m2type_gm2_signed_or_unsigned_type (TRUE, type);
 }
 
-/* gm2_signed_type - return a signed type the same as TYPE in other
+/* gm2_signed_type return a signed type the same as TYPE in other
    respects.  */
 
 tree
@@ -3009,7 +3009,7 @@ m2type_gm2_signed_type (tree type)
   return m2type_gm2_signed_or_unsigned_type (FALSE, type);
 }
 
-/* check_type - if the precision of baseType and type are the same
+/* check_type if the precision of baseType and type are the same
    then return true and set the signed or unsigned type in result
    else return false.  */
 
@@ -3028,7 +3028,7 @@ check_type (tree baseType, tree type, int unsignedp, tree baseu, tree bases,
   return FALSE;
 }
 
-/* gm2_signed_or_unsigned_type - return a type the same as TYPE
+/* gm2_signed_or_unsigned_type return a type the same as TYPE
    except unsigned or signed according to UNSIGNEDP.  */
 
 tree
@@ -3081,7 +3081,7 @@ m2type_gm2_signed_or_unsigned_type (int unsignedp, tree type)
   return type;
 }
 
-/* IsAddress - returns TRUE if the type is an ADDRESS.  */
+/* IsAddress returns TRUE if the type is an ADDRESS.  */
 
 int
 m2type_IsAddress (tree type)
