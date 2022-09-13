@@ -7087,7 +7087,7 @@
 (define_expand "movv8di"
   [(set (match_operand:V8DI 0 "nonimmediate_operand")
 	(match_operand:V8DI 1 "general_operand"))]
-  "TARGET_SIMD"
+  ""
 {
   if (can_create_pseudo_p () && MEM_P (operands[0]))
     operands[1] = force_reg (V8DImode, operands[1]);
@@ -7479,7 +7479,7 @@
 (define_split
   [(set (match_operand:V8DI 0 "nonimmediate_operand")
         (match_operand:V8DI 1 "general_operand"))]
-  "TARGET_SIMD && reload_completed"
+  "reload_completed"
   [(const_int 0)]
 {
   if (register_operand (operands[0], V8DImode)
@@ -7489,15 +7489,15 @@
       DONE;
     }
   else if ((register_operand (operands[0], V8DImode)
-            && memory_operand (operands[1], V8DImode))
-           || (memory_operand (operands[0], V8DImode)
-            && register_operand (operands[1], V8DImode)))
+	    && memory_operand (operands[1], V8DImode))
+	   || (memory_operand (operands[0], V8DImode)
+	       && register_operand (operands[1], V8DImode)))
     {
       for (int offset = 0; offset < 64; offset += 16)
-        emit_move_insn (simplify_gen_subreg (TImode, operands[0],
-                                             V8DImode, offset),
-                        simplify_gen_subreg (TImode, operands[1],
-                                             V8DImode, offset));
+	emit_move_insn (simplify_gen_subreg (TImode, operands[0],
+					     V8DImode, offset),
+			simplify_gen_subreg (TImode, operands[1],
+					     V8DImode, offset));
       DONE;
     }
   else
