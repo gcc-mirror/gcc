@@ -1,3 +1,11 @@
+2022-09-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* g++.target/powerpc/pr101322.C: New test.
+
 2022-09-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:
