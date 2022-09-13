@@ -3869,7 +3869,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
   else
     {
       hi = instantiate_non_dependent_expr (hi, complain);
-      hi = cxx_constant_value (hi, NULL_TREE, complain);
+      hi = cxx_constant_value (hi, complain);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
 
       /* Calculate the largest value of len that won't make the size of the vec
@@ -20121,7 +20121,7 @@ fold_targs_r (tree targs, tsubst_flags_t complain)
 	       && !glvalue_p (elt)
 	       && !TREE_CONSTANT (elt))
 	{
-	  elt = cxx_constant_value (elt, NULL_TREE, complain);
+	  elt = cxx_constant_value (elt, complain);
 	  if (elt == error_mark_node)
 	    return false;
 	}

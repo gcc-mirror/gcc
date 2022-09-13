@@ -1042,7 +1042,7 @@ finish_if_stmt_cond (tree orig_cond, tree if_stmt)
     {
       maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/true);
       cond = instantiate_non_dependent_expr (cond);
-      cond = cxx_constant_value (cond, NULL_TREE);
+      cond = cxx_constant_value (cond);
     }
   else
     {

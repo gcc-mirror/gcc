@@ -8414,6 +8414,8 @@ extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE,
 						 tsubst_flags_t = tf_error);
+inline tree cxx_constant_value (tree t, tsubst_flags_t complain)
+{ return cxx_constant_value (t, NULL_TREE, complain); }
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
