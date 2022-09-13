@@ -1013,11 +1013,9 @@ warn_uninitialized_vars (bool wmaybe_uninit)
       if (ee)
 	bb = ee->dest;
       else
-	{
-	  bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
-	  if (!bb || bb->index == EXIT_BLOCK)
-	    break;
-	}
+	bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+      if (!bb || bb->index == EXIT_BLOCK)
+	break;
     }
 
   FOR_EACH_BB_FN (bb, cfun)
