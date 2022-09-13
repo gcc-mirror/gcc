@@ -6313,6 +6313,369 @@ namespace views::__adaptor
 
     inline constexpr _Chunk chunk;
   }
+
+  namespace __detail
+  {
+    template<typename _Vp>
+      concept __slide_caches_nothing = random_access_range<_Vp> && sized_range<_Vp>;
+
+    template<typename _Vp>
+      concept __slide_caches_last
+      = !__slide_caches_nothing<_Vp> && bidirectional_range<_Vp> && common_range<_Vp>;
+
+    template<typename _Vp>
+      concept __slide_caches_first
+      = !__slide_caches_nothing<_Vp> && !__slide_caches_last<_Vp>;
+  }
+
+  template<forward_range _Vp>
+    requires view<_Vp>
+  class slide_view : public view_interface<slide_view<_Vp>>
+  {
+    _Vp _M_base;
+    range_difference_t<_Vp> _M_n;
+    [[no_unique_address]]
+      __detail::__maybe_present_t<__detail::__slide_caches_first<_Vp>,
+				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
+    [[no_unique_address]]
+      __detail::__maybe_present_t<__detail::__slide_caches_last<_Vp>,
+				  __detail::_CachedPosition<_Vp>> _M_cached_end;
+
+    template<bool> class _Iterator;
+    class _Sentinel;
+
+  public:
+    constexpr explicit
+    slide_view(_Vp __base, range_difference_t<_Vp> __n)
+    : _M_base(std::move(__base)), _M_n(__n)
+    { __glibcxx_assert(__n > 0); }
+
+    constexpr auto
+    begin() requires (!(__detail::__simple_view<_Vp>
+			&& __detail::__slide_caches_nothing<const _Vp>))
+    {
+      if constexpr (__detail::__slide_caches_first<_Vp>)
+	{
+	  iterator_t<_Vp> __it;
+	  if (_M_cached_begin._M_has_value())
+	    __it = _M_cached_begin._M_get(_M_base);
+	  else
+	    {
+	      __it = ranges::next(ranges::begin(_M_base), _M_n - 1, ranges::end(_M_base));
+	      _M_cached_begin._M_set(_M_base, __it);
+	    }
+	  return _Iterator<false>(ranges::begin(_M_base), std::move(__it), _M_n);
+	}
+      else
+	return _Iterator<false>(ranges::begin(_M_base), _M_n);
+    }
+
+    constexpr auto
+    begin() const requires __detail::__slide_caches_nothing<const _Vp>
+    { return _Iterator<true>(ranges::begin(_M_base), _M_n); }
+
+    constexpr auto
+    end() requires (!(__detail::__simple_view<_Vp>
+		      && __detail::__slide_caches_nothing<const _Vp>))
+    {
+      if constexpr (__detail::__slide_caches_nothing<_Vp>)
+	return _Iterator<false>(ranges::begin(_M_base) + range_difference_t<_Vp>(size()),
+				_M_n);
+      else if constexpr (__detail::__slide_caches_last<_Vp>)
+	{
+	  iterator_t<_Vp> __it;
+	  if (_M_cached_end._M_has_value())
+	    __it = _M_cached_end._M_get(_M_base);
+	  else
+	    {
+	      __it = ranges::prev(ranges::end(_M_base), _M_n - 1, ranges::begin(_M_base));
+	      _M_cached_end._M_set(_M_base, __it);
+	    }
+	  return _Iterator<false>(std::move(__it), _M_n);
+	}
+      else if constexpr (common_range<_Vp>)
+	return _Iterator<false>(ranges::end(_M_base), ranges::end(_M_base), _M_n);
+      else
+	return _Sentinel(ranges::end(_M_base));
+    }
+
+    constexpr auto
+    end() const requires __detail::__slide_caches_nothing<const _Vp>
+    { return begin() + range_difference_t<const _Vp>(size()); }
+
+    constexpr auto
+    size() requires sized_range<_Vp>
+    {
+      auto __sz = ranges::distance(_M_base) - _M_n + 1;
+      if (__sz < 0)
+	__sz = 0;
+      return __detail::__to_unsigned_like(__sz);
+    }
+
+    constexpr auto
+    size() const requires sized_range<const _Vp>
+    {
+      auto __sz = ranges::distance(_M_base) - _M_n + 1;
+      if (__sz < 0)
+	__sz = 0;
+      return __detail::__to_unsigned_like(__sz);
+    }
+  };
+
+  template<typename _Range>
+    slide_view(_Range&&, range_difference_t<_Range>) -> slide_view<views::all_t<_Range>>;
+
+  template<typename _Vp>
+    inline constexpr bool enable_borrowed_range<slide_view<_Vp>>
+      = enable_borrowed_range<_Vp>;
+
+  template<forward_range _Vp>
+    requires view<_Vp>
+  template<bool _Const>
+  class slide_view<_Vp>::_Iterator
+  {
+    using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+    static constexpr bool _S_last_elt_present
+      = __detail::__slide_caches_first<_Base>;
+
+    iterator_t<_Base> _M_current = iterator_t<_Base>();
+    [[no_unique_address]]
+      __detail::__maybe_present_t<_S_last_elt_present, iterator_t<_Base>>
+	_M_last_elt = decltype(_M_last_elt)();
+    range_difference_t<_Base> _M_n = 0;
+
+    constexpr
+    _Iterator(iterator_t<_Base> __current, range_difference_t<_Base> __n)
+      requires (!_S_last_elt_present)
+    : _M_current(__current), _M_n(__n)
+    { }
+
+    constexpr
+    _Iterator(iterator_t<_Base> __current, iterator_t<_Base> __last_elt,
+	      range_difference_t<_Base> __n)
+      requires _S_last_elt_present
+    : _M_current(__current), _M_last_elt(__last_elt), _M_n(__n)
+    { }
+
+    static auto
+    _S_iter_concept()
+    {
+      if constexpr (random_access_range<_Base>)
+	return random_access_iterator_tag{};
+      else if constexpr (bidirectional_range<_Base>)
+	return bidirectional_iterator_tag{};
+      else
+	return forward_iterator_tag{};
+    }
+
+    friend slide_view;
+    friend slide_view::_Sentinel;
+
+  public:
+    using iterator_category = input_iterator_tag;
+    using iterator_concept = decltype(_S_iter_concept());
+    using value_type = decltype(views::counted(_M_current, _M_n));
+    using difference_type = range_difference_t<_Base>;
+
+    _Iterator() = default;
+
+    constexpr
+    _Iterator(_Iterator<!_Const> __i)
+      requires _Const && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
+    : _M_current(std::move(__i._M_current)), _M_n(__i._M_n)
+    { }
+
+    constexpr auto
+    operator*() const
+    { return views::counted(_M_current, _M_n); }
+
+    constexpr _Iterator&
+    operator++()
+    {
+      ++_M_current;
+      if constexpr (_S_last_elt_present)
+	++_M_last_elt;
+      return *this;
+    }
+
+    constexpr _Iterator
+    operator++(int)
+    {
+      auto __tmp = *this;
+      ++*this;
+      return __tmp;
+    }
+
+    constexpr _Iterator&
+    operator--() requires bidirectional_range<_Base>
+    {
+      --_M_current;
+      if constexpr (_S_last_elt_present)
+	--_M_last_elt;
+      return *this;
+    }
+
+    constexpr _Iterator
+    operator--(int) requires bidirectional_range<_Base>
+    {
+      auto __tmp = *this;
+      --*this;
+      return __tmp;
+    }
+
+    constexpr _Iterator&
+    operator+=(difference_type __x)
+      requires random_access_range<_Base>
+    {
+      _M_current += __x;
+      if constexpr (_S_last_elt_present)
+	_M_last_elt += __x;
+      return *this;
+    }
+
+    constexpr _Iterator&
+    operator-=(difference_type __x)
+      requires random_access_range<_Base>
+    {
+      _M_current -= __x;
+      if constexpr (_S_last_elt_present)
+	_M_last_elt -= __x;
+      return *this;
+    }
+
+    constexpr auto
+    operator[](difference_type __n) const
+      requires random_access_range<_Base>
+    { return views::counted(_M_current + __n, _M_n); }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, const _Iterator& __y)
+    {
+      if constexpr (_S_last_elt_present)
+	return __x._M_last_elt == __y._M_last_elt;
+      else
+	return __x._M_current == __y._M_current;
+    }
+
+    friend constexpr bool
+    operator<(const _Iterator& __x, const _Iterator& __y)
+      requires random_access_range<_Base>
+    { return __x._M_current < __y._M_current; }
+
+    friend constexpr bool
+    operator>(const _Iterator& __x, const _Iterator& __y)
+      requires random_access_range<_Base>
+    { return __y < __x; }
+
+    friend constexpr bool
+    operator<=(const _Iterator& __x, const _Iterator& __y)
+      requires random_access_range<_Base>
+    { return !(__y < __x); }
+
+    friend constexpr bool
+    operator>=(const _Iterator& __x, const _Iterator& __y)
+      requires random_access_range<_Base>
+    { return !(__x < __y); }
+
+    friend constexpr auto
+    operator<=>(const _Iterator& __x, const _Iterator& __y)
+      requires random_access_range<_Base>
+	&& three_way_comparable<iterator_t<_Base>>
+     { return __x._M_current <=> __y._M_current; }
+
+    friend constexpr _Iterator
+    operator+(const _Iterator& __i, difference_type __n)
+      requires random_access_range<_Base>
+    {
+      auto __r = __i;
+      __r += __n;
+      return __r;
+    }
+
+    friend constexpr _Iterator
+    operator+(difference_type __n, const _Iterator& __i)
+      requires random_access_range<_Base>
+    {
+      auto __r = __i;
+      __r += __n;
+      return __r;
+    }
+
+    friend constexpr _Iterator
+    operator-(const _Iterator& __i, difference_type __n)
+      requires random_access_range<_Base>
+    {
+      auto __r = __i;
+      __r -= __n;
+      return __r;
+    }
+
+    friend constexpr difference_type
+    operator-(const _Iterator& __x, const _Iterator& __y)
+      requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>
+    {
+      if constexpr (_S_last_elt_present)
+	return __x._M_last_elt - __y._M_last_elt;
+      else
+	return __x._M_current - __y._M_current;
+    }
+  };
+
+  template<forward_range _Vp>
+    requires view<_Vp>
+  class slide_view<_Vp>::_Sentinel
+  {
+    sentinel_t<_Vp> _M_end = sentinel_t<_Vp>();
+
+    constexpr explicit
+    _Sentinel(sentinel_t<_Vp> __end)
+    : _M_end(__end)
+    { }
+
+    friend slide_view;
+
+  public:
+    _Sentinel() = default;
+
+    friend constexpr bool
+    operator==(const _Iterator<false>& __x, const _Sentinel& __y)
+    { return __x._M_last_elt == __y._M_end; }
+
+    friend constexpr range_difference_t<_Vp>
+    operator-(const _Iterator<false>& __x, const _Sentinel& __y)
+      requires sized_sentinel_for<sentinel_t<_Vp>, iterator_t<_Vp>>
+    { return __x._M_last_elt - __y._M_end; }
+
+    friend constexpr range_difference_t<_Vp>
+    operator-(const _Sentinel& __y, const _Iterator<false>& __x)
+      requires sized_sentinel_for<sentinel_t<_Vp>, iterator_t<_Vp>>
+    { return __y._M_end -__x._M_last_elt; }
+  };
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Range, typename _Dp>
+	concept __can_slide_view
+	  = requires { slide_view(std::declval<_Range>(), std::declval<_Dp>()); };
+    }
+
+    struct _Slide : __adaptor::_RangeAdaptor<_Slide>
+    {
+      template<viewable_range _Range, typename _Dp = range_difference_t<_Range>>
+	requires __detail::__can_slide_view<_Range, _Dp>
+	constexpr auto
+	operator() [[nodiscard]] (_Range&& __r, type_identity_t<_Dp> __n) const
+	{ return slide_view(std::forward<_Range>(__r), __n); }
+
+      using __adaptor::_RangeAdaptor<_Slide>::operator();
+      static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
+    };
+
+    inline constexpr _Slide slide;
+  }
 #endif // C++23
 } // namespace ranges
 
