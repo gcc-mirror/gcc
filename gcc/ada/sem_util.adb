@@ -26559,6 +26559,14 @@ package body Sem_Util is
          Item_Nam :=
            Chars (Original_Node (Pragma_Identifier (Original_Node (Item))));
 
+         if Item_Nam = Name_Check then
+            --  Pragma "Check" preserves the original pragma name as its first
+            --  argument.
+            Item_Nam :=
+              Chars (Expression (First (Pragma_Argument_Associations
+                (Original_Node (Item)))));
+         end if;
+
       else
          pragma Assert (Nkind (Item) = N_Aspect_Specification);
          Item_Nam := Chars (Identifier (Item));
