@@ -1,3 +1,11 @@
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106320
+	* testsuite/std/ranges/adaptors/join.cc (test13): New test.
+
 2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

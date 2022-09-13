@@ -1,3 +1,15 @@
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93259
+	* pt.cc (type_dependent_expression_p): Treat a compound
+	literal of array-of-unknown-bound type like a variable.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106893
+	PR c++/90451
+	* decl.cc (cp_finish_decl): Call mark_single_function.
+
 2022-08-30  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
