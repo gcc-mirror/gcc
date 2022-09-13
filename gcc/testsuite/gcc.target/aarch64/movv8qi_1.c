@@ -53,3 +53,18 @@ fpr_to_gpr (v8qi q0)
   x0 = q0;
   asm volatile ("" :: "r" (x0));
 }
+
+/*
+** gpr_to_gpr:
+**	mov	x0, x1
+**	ret
+*/
+void
+gpr_to_gpr ()
+{
+  register v8qi x0 asm ("x0");
+  register v8qi x1 asm ("x1");
+  asm volatile ("" : "=r" (x1));
+  x0 = x1;
+  asm volatile ("" :: "r" (x0));
+}

@@ -4,7 +4,7 @@
 
 #pragma GCC target "+nothing+nosimd+fp"
 
-typedef unsigned char v16qi __attribute__((vector_size(16)));
+typedef long long v2di __attribute__((vector_size(16)));
 
 /*
 ** fpr_to_fpr:
@@ -14,8 +14,8 @@ typedef unsigned char v16qi __attribute__((vector_size(16)));
 **	add	sp, sp, #?16
 **	ret
 */
-v16qi
-fpr_to_fpr (v16qi q0, v16qi q1)
+v2di
+fpr_to_fpr (v2di q0, v2di q1)
 {
   return q1;
 }
@@ -32,10 +32,10 @@ fpr_to_fpr (v16qi q0, v16qi q1)
 **	fmov	v0.d\[1\], x0
 **	ret
 */
-v16qi
+v2di
 gpr_to_fpr ()
 {
-  register v16qi x0 asm ("x0");
+  register v2di x0 asm ("x0");
   asm volatile ("" : "=r" (x0));
   return x0;
 }
@@ -45,10 +45,10 @@ gpr_to_fpr ()
 **	fmov	d0, xzr
 **	ret
 */
-v16qi
+v2di
 zero_to_fpr ()
 {
-  return (v16qi) {};
+  return (v2di) {};
 }
 
 /*
@@ -74,9 +74,9 @@ zero_to_fpr ()
 **	ret
 */
 void
-fpr_to_gpr (v16qi q0)
+fpr_to_gpr (v2di q0)
 {
-  register v16qi x0 asm ("x0");
+  register v2di x0 asm ("x0");
   x0 = q0;
   asm volatile ("" :: "r" (x0));
 }
@@ -95,8 +95,8 @@ fpr_to_gpr (v16qi q0)
 void
 gpr_to_gpr ()
 {
-  register v16qi x0 asm ("x0");
-  register v16qi x2 asm ("x2");
+  register v2di x0 asm ("x0");
+  register v2di x2 asm ("x2");
   asm volatile ("" : "=r" (x2));
   x0 = x2;
   asm volatile ("" :: "r" (x0));
