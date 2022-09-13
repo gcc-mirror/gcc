@@ -40,6 +40,7 @@ static const BuiltinAttrDefinition __definitions[]
      {"no_mangle", CODE_GENERATION},
      {"repr", CODE_GENERATION},
      {"path", EXPANSION},
+     {"macro_use", NAME_RESOLUTION},
      // From now on, these are reserved by the compiler and gated through
      // #![feature(rustc_attrs)]
      {"rustc_inherit_overflow_checks", CODE_GENERATION}};
