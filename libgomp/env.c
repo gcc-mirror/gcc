@@ -1892,14 +1892,14 @@ get_icv_member_addr (struct gomp_initial_icvs *icvs, int icv_code,
     {
     case GOMP_ICV_NTEAMS:
       icv_addr[0] = &icvs->nteams_var;
-      icv_addr[1] = false;
+      /* icv_addr[1] = (void *) false; */
       break;
     case GOMP_ICV_DYNAMIC:
       icv_addr[0] = &(*icvs).dyn_var;
       break;
     case GOMP_ICV_TEAMS_THREAD_LIMIT:
       icv_addr[0] = &icvs->teams_thread_limit_var;
-      icv_addr[1] = false;
+      /* icv_addr[1] = (void *) false; */
       break;
     case GOMP_ICV_SCHEDULE:
       icv_addr[0] = &icvs->run_sched_var;
@@ -1907,7 +1907,7 @@ get_icv_member_addr (struct gomp_initial_icvs *icvs, int icv_code,
       break;
     case GOMP_ICV_THREAD_LIMIT:
       icv_addr[0] = &icvs->thread_limit_var;
-      icv_addr[1] = false;
+      /* icv_addr[1] = (void *) false; */
       icv_addr[2] = (void *) UINT_MAX;
       break;
     case GOMP_ICV_NTHREADS:
