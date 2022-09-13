@@ -1719,6 +1719,7 @@ Alphabetical List of All Switches
     Float_Words_BE             : Nat; -- Float words stored big-endian?
     Int_Size                   : Pos; -- Standard.Integer'Size
     Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+    Long_Long_Long_Size        : Pos; -- Standard.Long_Long_Long_Integer'Size
     Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
     Long_Size                  : Pos; -- Standard.Long_Integer'Size
     Maximum_Alignment          : Pos; -- Maximum permitted alignment
@@ -1816,6 +1817,7 @@ Alphabetical List of All Switches
     Float_Words_BE                0
     Int_Size                     64
     Long_Double_Size            128
+    Long_Long_Long_Size         128
     Long_Long_Size               64
     Long_Size                    64
     Maximum_Alignment            16

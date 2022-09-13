@@ -9220,6 +9220,7 @@ Float_Size                 : Pos; -- Standard.Float'Size
 Float_Words_BE             : Nat; -- Float words stored big-endian?
 Int_Size                   : Pos; -- Standard.Integer'Size
 Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+Long_Long_Long_Size        : Pos; -- Standard.Long_Long_Long_Integer'Size
 Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
 Long_Size                  : Pos; -- Standard.Long_Integer'Size
 Maximum_Alignment          : Pos; -- Maximum permitted alignment
@@ -9307,6 +9308,7 @@ Float_Size                   32
 Float_Words_BE                0
 Int_Size                     64
 Long_Double_Size            128
+Long_Long_Long_Size         128
 Long_Long_Size               64
 Long_Size                    64
 Maximum_Alignment            16
@@ -29317,8 +29319,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{cf}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye
