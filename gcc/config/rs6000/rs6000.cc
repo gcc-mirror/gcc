@@ -5141,16 +5141,23 @@ protected:
 				    vect_cost_model_location, unsigned int);
   void density_test (loop_vec_info);
   void adjust_vect_cost_per_loop (loop_vec_info);
+  unsigned int determine_suggested_unroll_factor (loop_vec_info);
 
   /* Total number of vectorized stmts (loop only).  */
   unsigned m_nstmts = 0;
   /* Total number of loads (loop only).  */
   unsigned m_nloads = 0;
+  /* Total number of stores (loop only).  */
+  unsigned m_nstores = 0;
+  /* Reduction factor for suggesting unroll factor (loop only).  */
+  unsigned m_reduc_factor = 0;
   /* Possible extra penalized cost on vector construction (loop only).  */
   unsigned m_extra_ctor_cost = 0;
   /* For each vectorized loop, this var holds TRUE iff a non-memory vector
      instruction is needed by the vectorization.  */
   bool m_vect_nonmem = false;
+  /* If this loop gets vectorized with emulated gather load.  */
+  bool m_gather_load = false;
 };
 
 /* Test for likely overcommitment of vector hardware resources.  If a
@@ -5301,9 +5308,34 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
     {
       m_nstmts += orig_count;
 
-      if (kind == scalar_load || kind == vector_load
-	  || kind == unaligned_load || kind == vector_gather_load)
-	m_nloads += orig_count;
+      if (kind == scalar_load
+	  || kind == vector_load
+	  || kind == unaligned_load
+	  || kind == vector_gather_load)
+	{
+	  m_nloads += orig_count;
+	  if (stmt_info && STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	    m_gather_load = true;
+	}
+      else if (kind == scalar_store
+	       || kind == vector_store
+	       || kind == unaligned_store
+	       || kind == vector_scatter_store)
+	m_nstores += orig_count;
+      else if ((kind == scalar_stmt
+		|| kind == vector_stmt
+		|| kind == vec_to_scalar)
+	       && stmt_info
+	       && vect_is_reduction (stmt_info))
+	{
+	  /* Loop body contains normal int or fp operations and epilogue
+	     contains vector reduction.  For simplicity, we assume int
+	     operation takes one cycle and fp operation takes one more.  */
+	  tree lhs = gimple_get_lhs (stmt_info->stmt);
+	  bool is_float = FLOAT_TYPE_P (TREE_TYPE (lhs));
+	  unsigned int basic_cost = is_float ? 2 : 1;
+	  m_reduc_factor = MAX (basic_cost * orig_count, m_reduc_factor);
+	}
 
       /* Power processors do not currently have instructions for strided
 	 and elementwise loads, and instead we must generate multiple
@@ -5395,6 +5427,90 @@ rs6000_cost_data::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
     }
 }
 
+/* Determine suggested unroll factor by considering some below factors:
+
+    - unroll option/pragma which can disable unrolling for this loop;
+    - simple hardware resource model for non memory vector insns;
+    - aggressive heuristics when iteration count is unknown:
+      - reduction case to break cross iteration dependency;
+      - emulated gather load;
+    - estimated iteration count when iteration count is unknown;
+*/
+
+
+unsigned int
+rs6000_cost_data::determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
+{
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+
+  /* Don't unroll if it's specified explicitly not to be unrolled.  */
+  if (loop->unroll == 1
+      || (OPTION_SET_P (flag_unroll_loops) && !flag_unroll_loops)
+      || (OPTION_SET_P (flag_unroll_all_loops) && !flag_unroll_all_loops))
+    return 1;
+
+  unsigned int nstmts_nonldst = m_nstmts - m_nloads - m_nstores;
+  /* Don't unroll if no vector instructions excepting for memory access.  */
+  if (nstmts_nonldst == 0)
+    return 1;
+
+  /* Consider breaking cross iteration dependency for reduction.  */
+  unsigned int reduc_factor = m_reduc_factor > 1 ? m_reduc_factor : 1;
+
+  /* Use this simple hardware resource model that how many non ld/st
+     vector instructions can be issued per cycle.  */
+  unsigned int issue_width = rs6000_vect_unroll_issue;
+  unsigned int uf = CEIL (reduc_factor * issue_width, nstmts_nonldst);
+  uf = MIN ((unsigned int) rs6000_vect_unroll_limit, uf);
+  /* Make sure it is power of 2.  */
+  uf = 1 << ceil_log2 (uf);
+
+  /* If the iteration count is known, the costing would be exact enough,
+     don't worry it could be worse.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    return uf;
+
+  /* Inspired by SPEC2017 parest_r, we want to aggressively unroll the
+     loop if either condition is satisfied:
+       - reduction factor exceeds the threshold;
+       - emulated gather load adopted.  */
+  if (reduc_factor > (unsigned int) rs6000_vect_unroll_reduc_threshold
+      || m_gather_load)
+    return uf;
+
+  /* Check if we can conclude it's good to unroll from the estimated
+     iteration count.  */
+  HOST_WIDE_INT est_niter = get_estimated_loop_iterations_int (loop);
+  unsigned int vf = vect_vf_for_cost (loop_vinfo);
+  unsigned int unrolled_vf = vf * uf;
+  if (est_niter == -1 || est_niter < unrolled_vf)
+    /* When the estimated iteration of this loop is unknown, it's possible
+       that we are able to vectorize this loop with the original VF but fail
+       to vectorize it with the unrolled VF any more if the actual iteration
+       count is in between.  */
+    return 1;
+  else
+    {
+      unsigned int epil_niter_unr = est_niter % unrolled_vf;
+      unsigned int epil_niter = est_niter % vf;
+      /* Even if we have partial vector support, it can be still inefficent
+	 to calculate the length when the iteration count is unknown, so
+	 only expect it's good to unroll when the epilogue iteration count
+	 is not bigger than VF (only one time length calculation).  */
+      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	  && epil_niter_unr <= vf)
+	return uf;
+      /* Without partial vector support, conservatively unroll this when
+	 the epilogue iteration count is less than the original one
+	 (epilogue execution time wouldn't be longer than before).  */
+      else if (!LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	       && epil_niter_unr <= epil_niter)
+	return uf;
+    }
+
+  return 1;
+}
+
 void
 rs6000_cost_data::finish_cost (const vector_costs *scalar_costs)
 {
@@ -5411,6 +5527,9 @@ rs6000_cost_data::finish_cost (const vector_costs *scalar_costs)
 	  && LOOP_VINFO_VECT_FACTOR (loop_vinfo) == 2
 	  && LOOP_REQUIRES_VERSIONING (loop_vinfo))
 	m_costs[vect_body] += 10000;
+
+      m_suggested_unroll_factor
+	= determine_suggested_unroll_factor (loop_vinfo);
     }
 
   vector_costs::finish_cost (scalar_costs);

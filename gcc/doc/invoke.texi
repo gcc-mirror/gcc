@@ -29882,6 +29882,13 @@ Generate (do not generate) code that will run in privileged state.
 @opindex no-block-ops-unaligned-vsx
 Generate (do not generate) unaligned vsx loads and stores for
 inline expansion of @code{memcpy} and @code{memmove}.
+
+@item --param rs6000-vect-unroll-limit=
+The vectorizer will check with target information to determine whether it
+would be beneficial to unroll the main vectorized loop and by how much.  This
+parameter sets the upper bound of how much the vectorizer will unroll the main
+loop.  The default value is four.
+
 @end table
 
 @node RX Options
