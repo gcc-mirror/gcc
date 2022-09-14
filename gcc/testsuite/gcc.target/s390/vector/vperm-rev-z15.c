@@ -1,12 +1,12 @@
 /* Make sure that the reverse permute patterns are optimized
    correctly.  */
 /* { dg-do run { target { s390*-*-* } } } */
-/* { dg-options "-O2 -march=z15 -mzarch -fno-unroll-loops" } */
+/* { dg-options "-O2 -march=z15 -mzarch -fno-unroll-loops -save-temps" } */
 
 /* { dg-final { scan-assembler-times "vsterg\t" 2 } } */
-/* { dg-final { scan-assembler-times "vsterf" 2 } } */
+/* { dg-final { scan-assembler-times "vsterf\t" 2 } } */
 /* { dg-final { scan-assembler-times "vstbrq\t" 1 } } */
-/* { dg-final { scan-assembler-times "vperm" 0 } } */
+/* { dg-final { scan-assembler-times "vperm\t" 0 } } */
 
 #include <assert.h>
 

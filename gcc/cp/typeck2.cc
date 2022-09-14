@@ -130,8 +130,8 @@ cxx_readonly_error (location_t loc, tree arg, enum lvalue_use errstring)
    all was well.  */
 
 static int
-abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
-				tsubst_flags_t complain)
+abstract_virtuals_error (tree decl, tree type, abstract_class_use use,
+			 tsubst_flags_t complain)
 {
   vec<tree, va_gc> *pure;
 
@@ -251,32 +251,19 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 }
 
 int
-abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
+abstract_virtuals_error (tree decl, tree type,
+			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
-  return abstract_virtuals_error_sfinae (decl, type, ACU_UNKNOWN, complain);
+  return abstract_virtuals_error (decl, type, ACU_UNKNOWN, complain);
 }
 
 int
-abstract_virtuals_error_sfinae (abstract_class_use use, tree type,
-				tsubst_flags_t complain)
+abstract_virtuals_error (abstract_class_use use, tree type,
+			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
-  return abstract_virtuals_error_sfinae (NULL_TREE, type, use, complain);
+  return abstract_virtuals_error (NULL_TREE, type, use, complain);
 }
 
-
-/* Wrapper for the above function in the common case of wanting errors.  */
-
-int
-abstract_virtuals_error (tree decl, tree type)
-{
-  return abstract_virtuals_error_sfinae (decl, type, tf_warning_or_error);
-}
-
-int
-abstract_virtuals_error (abstract_class_use use, tree type)
-{
-  return abstract_virtuals_error_sfinae (use, type, tf_warning_or_error);
-}
 
 /* Print an inform about the declaration of the incomplete type TYPE.  */
 
@@ -2502,7 +2489,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
 
   if (!complete_type_or_maybe_complain (type, NULL_TREE, complain))
     return error_mark_node;
-  if (abstract_virtuals_error_sfinae (ACU_CAST, type, complain))
+  if (abstract_virtuals_error (ACU_CAST, type, complain))
     return error_mark_node;
 
   /* [expr.type.conv]
@@ -2523,7 +2510,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
   if (parms == NULL_TREE)
     {
       exp = build_value_init (type, complain);
-      exp = get_target_expr_sfinae (exp, complain);
+      exp = get_target_expr (exp, complain);
       return exp;
     }
 

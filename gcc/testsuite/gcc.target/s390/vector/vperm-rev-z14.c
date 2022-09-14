@@ -1,7 +1,7 @@
 /* Make sure that the reverse permute patterns are optimized
    correctly.  */
 /* { dg-do run { target { s390*-*-* } } } */
-/* { dg-options "-O2 -march=z14 -mzarch -fno-unroll-loops" } */
+/* { dg-options "-O2 -march=z14 -mzarch -fno-unroll-loops -save-temps" } */
 
 /* { dg-final { scan-assembler-times "vpdi\t" 4 } } */
 /* { dg-final { scan-assembler-times "verllg\t" 2 } } */

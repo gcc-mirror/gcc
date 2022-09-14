@@ -1,3 +1,103 @@
+2022-09-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106877
+	* g++.dg/ext/pr106877.C: New test case.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp1z/noexcept-type26.C: New test.
+	* g++.dg/cpp2a/explicit19.C: New test.
+	* g++.dg/ext/integer-pack6.C: New test.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* gcc.target/powerpc/pr104482.c: New test.
+
+2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* g++.target/powerpc/pr105485.C: New test.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_20.c: New test.
+	* gcc.target/aarch64/ldp_stp_21.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_22.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_23.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_24.c: Likewise.
+	* gcc.target/aarch64/movv16qi_1.c (gpr_to_gpr): New function.
+	* gcc.target/aarch64/movv8qi_1.c (gpr_to_gpr): Likewise.
+	* gcc.target/aarch64/movv16qi_2.c: New test.
+	* gcc.target/aarch64/movv16qi_3.c: Likewise.
+	* gcc.target/aarch64/movv2di_1.c: Likewise.
+	* gcc.target/aarch64/movv2x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv2x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv3x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv3x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv4x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv4x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv8qi_2.c: Likewise.
+	* gcc.target/aarch64/movv8qi_3.c: Likewise.
+	* gcc.target/aarch64/vect_unary_2.c: Likewise.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/ls64_asm_2.c: New test.
+
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101906
+	* g++.dg/template/evaluated1.C: New test.
+	* g++.dg/template/evaluated1a.C: New test.
+	* g++.dg/template/evaluated1b.C: New test.
+	* g++.dg/template/evaluated1c.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106893
+	PR c++/90451
+	* g++.dg/cpp1y/auto-fn65.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93259
+	* g++.dg/cpp0x/initlist-array17.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106567
+	* g++.dg/cpp0x/lambda/lambda-array4.C: New test.
+
+2022-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/86491
+	* g++.dg/warn/anonymous-namespace-3.C: Use separate dg-warning
+	directives for C++98 and everything else.
+	* g++.dg/warn/Wsubobject-linkage-5.C: New test.
+
+2022-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/c2x-stdatomic-var-init-1.c: New test.
+
+2022-09-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/gcov/gcov.exp: Respect triplet when looking for gcov.
+	* gcc.misc-tests/gcov.exp: Likewise.
+
+2022-09-12  Joffrey Huguet  <huguet@adacore.com>
+
+	* gnat.dg/aspect2.adb: Removed.
+	* gnat.dg/aspect2.ads: Removed.
+	* gnat.dg/config_pragma1.adb: Removed.
+	* gnat.dg/config_pragma1_pkg.ads: Removed.
+	* gnat.dg/equal8.adb: Removed.
+	* gnat.dg/equal8.ads: Removed.
+	* gnat.dg/equal8_pkg.ads: Removed.
+	* gnat.dg/formal_containers.adb: Removed.
+	* gnat.dg/iter1.adb: Removed.
+	* gnat.dg/iter1.ads: Removed.
+
 2022-09-11  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106845

@@ -71,7 +71,8 @@ static bool is_std_forward_p (tree);
    complete type when this function returns.  */
 
 tree
-require_complete_type_sfinae (tree value, tsubst_flags_t complain)
+require_complete_type (tree value,
+		       tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   tree type;
 
@@ -94,12 +95,6 @@ require_complete_type_sfinae (tree value, tsubst_flags_t complain)
     return value;
   else
     return error_mark_node;
-}
-
-tree
-require_complete_type (tree value)
-{
-  return require_complete_type_sfinae (value, tf_warning_or_error);
 }
 
 /* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
@@ -3899,7 +3894,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
-      ret = require_complete_type_sfinae (rval, complain);
+      ret = require_complete_type (rval, complain);
       protected_set_expr_location (ret, loc);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
@@ -4464,7 +4459,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 	    /* Don't do ellipsis conversion for __built_in_constant_p
 	       as this will result in spurious errors for non-trivial
 	       types.  */
-	    val = require_complete_type_sfinae (val, complain);
+	    val = require_complete_type (val, complain);
 	  else
 	    val = convert_arg_to_ellipsis (val, complain);
 
@@ -6264,7 +6259,7 @@ cp_build_binary_op (const op_location_t &location,
 		     instrument_expr, result);
 
   if (resultcode == SPACESHIP_EXPR && !processing_template_decl)
-    result = get_target_expr_sfinae (result, complain);
+    result = get_target_expr (result, complain);
 
   if (!c_inhibit_evaluation_warnings)
     {
@@ -8016,7 +8011,7 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
   /* [class.abstract]
      An abstract class shall not be used ... as the type of an explicit
      conversion.  */
-  if (abstract_virtuals_error_sfinae (ACU_CAST, type, complain))
+  if (abstract_virtuals_error (ACU_CAST, type, complain))
     return error_mark_node;
 
   /* [expr.static.cast]
@@ -9144,7 +9139,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     }
   else
     {
-      lhs = require_complete_type_sfinae (lhs, complain);
+      lhs = require_complete_type (lhs, complain);
       if (lhs == error_mark_node)
 	return error_mark_node;
 
@@ -10123,7 +10118,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
     }
 
   if (exp != 0)
-    exp = require_complete_type_sfinae (exp, complain);
+    exp = require_complete_type (exp, complain);
   if (exp == error_mark_node)
     return error_mark_node;
 

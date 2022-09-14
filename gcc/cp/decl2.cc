@@ -5575,7 +5575,7 @@ mark_single_function (tree expr, tsubst_flags_t complain)
    wrong, true otherwise.  */
 
 bool
-mark_used (tree decl, tsubst_flags_t complain)
+mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   /* If we're just testing conversions or resolving overloads, we
      don't want any permanent effects like forcing functions to be
@@ -5815,12 +5815,6 @@ mark_used (tree decl, tsubst_flags_t complain)
     }
 
   return true;
-}
-
-bool
-mark_used (tree decl)
-{
-  return mark_used (decl, tf_warning_or_error);
 }
 
 tree

@@ -8646,8 +8646,10 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
   /* Also doens't support peel for neg when niter is variable.
      ??? generate something like niter_expr & 1 ? init_expr : -init_expr?  */
   niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
-  if (niters_skip != NULL_TREE
-      && TREE_CODE (niters_skip) != INTEGER_CST)
+  if ((niters_skip != NULL_TREE
+       && TREE_CODE (niters_skip) != INTEGER_CST)
+      || (!vect_use_loop_mask_for_alignment_p (loop_vinfo)
+	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

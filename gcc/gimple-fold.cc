@@ -5512,6 +5512,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		{
 		  location_t loc = gimple_location (stmt);
 		  gimple *new_stmt = gimple_build_builtin_unreachable (loc);
+		  gimple_call_set_ctrl_altering (new_stmt, false);
 		  /* If the call had a SSA name as lhs morph that into
 		     an uninitialized value.  */
 		  if (lhs && TREE_CODE (lhs) == SSA_NAME)

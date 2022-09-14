@@ -620,6 +620,14 @@ mieee128-constant
 Target Var(TARGET_IEEE128_CONSTANT) Init(1) Save
 Generate (do not generate) code that uses the LXVKQ instruction.
 
+; Documented parameters
+
+-param=rs6000-vect-unroll-limit=
+Target Joined UInteger Var(rs6000_vect_unroll_limit) Init(4) IntegerRange(1, 64) Param
+Used to limit unroll factor which indicates how much the autovectorizer may
+unroll a loop.  The default value is 4.
+
+; Undocumented parameters
 -param=rs6000-density-pct-threshold=
 Target Undocumented Joined UInteger Var(rs6000_density_pct_threshold) Init(85) IntegerRange(0, 100) Param
 When costing for loop vectorization, we probably need to penalize the loop body
@@ -657,3 +665,13 @@ Like parameter rs6000-density-load-pct-threshold, we also check if the total
 number of load statements exceeds the threshold specified by this parameter,
 and penalize only if it's satisfied.  The default value is 20.
 
+-param=rs6000-vect-unroll-issue=
+Target Undocumented Joined UInteger Var(rs6000_vect_unroll_issue) Init(4) IntegerRange(1, 128) Param
+Indicate how many non memory access vector instructions can be issued per
+cycle, it's used in unroll factor determination for autovectorizer.  The
+default value is 4.
+
+-param=rs6000-vect-unroll-reduc-threshold=
+Target Undocumented Joined UInteger Var(rs6000_vect_unroll_reduc_threshold) Init(1) Param
+When reduction factor computed for a loop exceeds the threshold specified by
+this parameter, prefer to unroll this loop.  The default value is 1.

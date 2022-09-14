@@ -80,3 +80,24 @@ fpr_to_gpr (v16qi q0)
   x0 = q0;
   asm volatile ("" :: "r" (x0));
 }
+
+/*
+** gpr_to_gpr:
+** (
+**	mov	x0, x2
+**	mov	x1, x3
+** |
+**	mov	x1, x3
+**	mov	x0, x2
+** )
+**	ret
+*/
+void
+gpr_to_gpr ()
+{
+  register v16qi x0 asm ("x0");
+  register v16qi x2 asm ("x2");
+  asm volatile ("" : "=r" (x2));
+  x0 = x2;
+  asm volatile ("" :: "r" (x0));
+}

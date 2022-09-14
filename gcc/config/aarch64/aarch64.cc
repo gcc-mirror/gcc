@@ -3492,7 +3492,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_OImode:
     case E_CImode:
     case E_XImode:
-      return TARGET_SIMD ? VEC_ADVSIMD | VEC_STRUCT : 0;
+      return TARGET_FLOAT ? VEC_ADVSIMD | VEC_STRUCT : 0;
 
     /* Structures of 64-bit Advanced SIMD vectors.  */
     case E_V2x8QImode:
@@ -3519,7 +3519,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V4x4HFmode:
     case E_V4x2SFmode:
     case E_V4x1DFmode:
-      return TARGET_SIMD ? VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL : 0;
+      return TARGET_FLOAT ? VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL : 0;
 
     /* Structures of 128-bit Advanced SIMD vectors.  */
     case E_V2x16QImode:
@@ -3546,7 +3546,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V4x8HFmode:
     case E_V4x4SFmode:
     case E_V4x2DFmode:
-      return TARGET_SIMD ? VEC_ADVSIMD | VEC_STRUCT : 0;
+      return TARGET_FLOAT ? VEC_ADVSIMD | VEC_STRUCT : 0;
 
     /* 64-bit Advanced SIMD vectors.  */
     case E_V8QImode:
@@ -3566,7 +3566,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
-      return TARGET_SIMD ? VEC_ADVSIMD : 0;
+      return TARGET_FLOAT ? VEC_ADVSIMD : 0;
 
     default:
       return 0;
@@ -3854,7 +3854,8 @@ aarch64_vectorize_related_mode (machine_mode vector_mode,
     }
 
   /* Prefer to use 1 128-bit vector instead of 2 64-bit vectors.  */
-  if ((vec_flags & VEC_ADVSIMD)
+  if (TARGET_SIMD
+      && (vec_flags & VEC_ADVSIMD)
       && known_eq (nunits, 0U)
       && known_eq (GET_MODE_BITSIZE (vector_mode), 64U)
       && maybe_ge (GET_MODE_BITSIZE (element_mode)
@@ -3952,7 +3953,7 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 
   if (GP_REGNUM_P (regno))
     {
-      if (vec_flags & VEC_ANY_SVE)
+      if (vec_flags & (VEC_ANY_SVE | VEC_STRUCT))
 	return false;
       if (known_le (GET_MODE_SIZE (mode), 8))
 	return true;
@@ -10602,7 +10603,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 			    || mode == TImode
 			    || mode == TFmode
 			    || mode == TDmode
-			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
+			    || ((!TARGET_SIMD || BYTES_BIG_ENDIAN)
+				&& advsimd_struct_p));
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
@@ -10632,6 +10634,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
   /* On LE, for AdvSIMD, don't support anything other than POST_INC or
      REG addressing.  */
   if (advsimd_struct_p
+      && TARGET_SIMD
       && !BYTES_BIG_ENDIAN
       && (code != POST_INC && code != REG))
     return false;
@@ -10694,7 +10697,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	            && aarch64_offset_7bit_signed_scaled_p (DImode, offset + 48));
 
 	  /* A 7bit offset check because OImode will emit a ldp/stp
-	     instruction (only big endian will get here).
+	     instruction (only !TARGET_SIMD or big endian will get here).
 	     For ldp/stp instructions, the offset is scaled for the size of a
 	     single element of the pair.  */
 	  if (aarch64_advsimd_partial_struct_mode_p (mode)
@@ -10705,7 +10708,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	    return aarch64_offset_7bit_signed_scaled_p (TImode, offset);
 
 	  /* Three 9/12 bit offsets checks because CImode will emit three
-	     ldr/str instructions (only big endian will get here).  */
+	     ldr/str instructions (only !TARGET_SIMD or big endian will
+	     get here).  */
 	  if (aarch64_advsimd_partial_struct_mode_p (mode)
 	      && known_eq (GET_MODE_SIZE (mode), 24))
 	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
@@ -12428,18 +12432,16 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   /* Use aarch64_sve_reload_mem for SVE memory reloads that cannot use
      LDR and STR.  See the comment at the head of aarch64-sve.md for
      more details about the big-endian handling.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   if (reg_class_subset_p (rclass, FP_REGS)
       && !((REG_P (x) && HARD_REGISTER_P (x))
 	   || aarch64_simd_valid_immediate (x, NULL))
-      && mode != VNx16QImode)
+      && mode != VNx16QImode
+      && (vec_flags & VEC_SVE_DATA)
+      && ((vec_flags & VEC_PARTIAL) || BYTES_BIG_ENDIAN))
     {
-      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-      if ((vec_flags & VEC_SVE_DATA)
-	  && ((vec_flags & VEC_PARTIAL) || BYTES_BIG_ENDIAN))
-	{
-	  sri->icode = CODE_FOR_aarch64_sve_reload_mem;
-	  return NO_REGS;
-	}
+      sri->icode = CODE_FOR_aarch64_sve_reload_mem;
+      return NO_REGS;
     }
 
   /* If we have to disable direct literal pool loads and stores because the
@@ -12456,9 +12458,13 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   /* Without the TARGET_SIMD instructions we cannot move a Q register
      to a Q register directly.  We need a scratch.  */
   if (REG_P (x)
-      && (mode == TFmode || mode == TImode || mode == TDmode)
+      && (mode == TFmode
+	  || mode == TImode
+	  || mode == TDmode
+	  || (vec_flags == VEC_ADVSIMD && known_eq (GET_MODE_SIZE (mode), 16)))
       && mode == GET_MODE (x)
-      && FP_REGNUM_P (REGNO (x)) && !TARGET_SIMD
+      && !TARGET_SIMD
+      && FP_REGNUM_P (REGNO (x))
       && reg_class_subset_p (rclass, FP_REGS))
     {
       sri->icode = code_for_aarch64_reload_mov (mode);
@@ -12478,6 +12484,28 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
       return GENERAL_REGS;
 
   return NO_REGS;
+}
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.  */
+
+static bool
+aarch64_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+				 reg_class_t class2)
+{
+  if (!TARGET_SIMD
+      && reg_classes_intersect_p (class1, FP_REGS)
+      && reg_classes_intersect_p (class2, FP_REGS))
+    {
+      /* We can't do a 128-bit FPR-to-FPR move without TARGET_SIMD,
+	 so we can't easily split a move involving tuples of 128-bit
+	 vectors.  Force the copy through memory instead.
+
+	 (Tuples of 64-bit vectors are fine.)  */
+      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+      if (vec_flags == (VEC_ADVSIMD | VEC_STRUCT))
+	return true;
+    }
+  return false;
 }
 
 static bool
@@ -13023,7 +13051,7 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
   if (VECTOR_MODE_P (mode))
     {
       unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-      if (vec_flags & VEC_ADVSIMD)
+      if (TARGET_SIMD && (vec_flags & VEC_ADVSIMD))
 	{
 	  /* The select-operand-high-half versions of the instruction have the
 	     same cost as the three vector version - don't add the costs of the
@@ -13969,7 +13997,7 @@ cost_minus:
 	  {
 	    /* SUBL2 and SUBW2.  */
 	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-	    if (vec_flags & VEC_ADVSIMD)
+	    if (TARGET_SIMD && (vec_flags & VEC_ADVSIMD))
 	      {
 		/* The select-operand-high-half versions of the sub instruction
 		   have the same cost as the regular three vector version -
@@ -14056,7 +14084,7 @@ cost_plus:
 	  {
 	    /* ADDL2 and ADDW2.  */
 	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-	    if (vec_flags & VEC_ADVSIMD)
+	    if (TARGET_SIMD && (vec_flags & VEC_ADVSIMD))
 	      {
 		/* The select-operand-high-half versions of the add instruction
 		   have the same cost as the regular three vector version -
@@ -14981,7 +15009,9 @@ aarch64_register_move_cost (machine_mode mode,
     return aarch64_register_move_cost (mode, from, GENERAL_REGS)
             + aarch64_register_move_cost (mode, GENERAL_REGS, to);
 
-  if (known_eq (GET_MODE_SIZE (mode), 16))
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if (vec_flags != (VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL)
+      && known_eq (GET_MODE_SIZE (mode), 16))
     {
       /* 128-bit operations on general registers require 2 instructions.  */
       if (from == GENERAL_REGS && to == GENERAL_REGS)
@@ -15008,6 +15038,16 @@ aarch64_register_move_cost (machine_mode mode,
     return regmove_cost->GP2FP;
   else if (to == GENERAL_REGS)
     return regmove_cost->FP2GP;
+
+  if (!TARGET_SIMD && vec_flags == (VEC_ADVSIMD | VEC_STRUCT))
+    {
+      /* Needs a round-trip through memory, which can use LDP/STP for pairs.
+	 The cost must be greater than 2 units to indicate that direct
+	 moves aren't possible.  */
+      auto per_vector = (aarch64_tune_params.memmov_cost.load_fp
+			 + aarch64_tune_params.memmov_cost.store_fp);
+      return MIN (CEIL (per_vector, 2), 4);
+    }
 
   return regmove_cost->FP2FP;
 }
@@ -21115,6 +21155,9 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
   if (vec_flags == 0 || vec_flags == (VEC_ADVSIMD | VEC_STRUCT))
     return false;
 
+  if ((vec_flags & VEC_ADVSIMD) && !TARGET_SIMD)
+    return false;
+
   if (vec_flags & VEC_SVE_PRED)
     return aarch64_sve_pred_valid_immediate (op, info);
 
@@ -24048,7 +24091,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       std::swap (d->op0, d->op1);
     }
 
-  if ((d->vec_flags == VEC_ADVSIMD
+  if (((d->vec_flags == VEC_ADVSIMD && TARGET_SIMD)
        || d->vec_flags == VEC_SVE_DATA
        || d->vec_flags == (VEC_SVE_DATA | VEC_PARTIAL)
        || d->vec_flags == VEC_SVE_PRED)
@@ -27481,6 +27524,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD aarch64_secondary_reload
+
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED aarch64_secondary_memory_needed
 
 #undef TARGET_SHIFT_TRUNCATION_MASK
 #define TARGET_SHIFT_TRUNCATION_MASK aarch64_shift_truncation_mask
