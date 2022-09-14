@@ -32,6 +32,30 @@
 
 #include <bits/atomic_base.h>
 
+#if defined _GLIBCXX_TSAN && __has_include(<sanitizer/tsan_interface.h>)
+#include <sanitizer/tsan_interface.h>
+#define _GLIBCXX_TSAN_MUTEX_DESTROY(X) \
+  __tsan_mutex_destroy(X, __tsan_mutex_not_static)
+#define _GLIBCXX_TSAN_MUTEX_PRE_LOCK(X) \
+  __tsan_mutex_pre_lock(X, __tsan_mutex_not_static)
+#define _GLIBCXX_TSAN_MUTEX_POST_LOCK(X) \
+  __tsan_mutex_post_lock(X, __tsan_mutex_not_static, 0)
+#define _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(X) \
+  __tsan_mutex_pre_unlock(X, __tsan_mutex_not_static)
+#define _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(X) \
+  __tsan_mutex_post_unlock(X, __tsan_mutex_not_static)
+#define _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(X) __tsan_mutex_pre_signal(X, 0)
+#define _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(X) __tsan_mutex_post_signal(X, 0)
+#else
+#define _GLIBCXX_TSAN_MUTEX_DESTROY(X)
+#define _GLIBCXX_TSAN_MUTEX_PRE_LOCK(X)
+#define _GLIBCXX_TSAN_MUTEX_POST_LOCK(X)
+#define _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(X)
+#define _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(X)
+#define _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(X)
+#define _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(X)
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -369,6 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	~_Atomic_count()
 	{
 	  auto __val = _M_val.load(memory_order_relaxed);
+	  _GLIBCXX_TSAN_MUTEX_DESTROY(&_M_val);
 	  __glibcxx_assert(!(__val & _S_lock_bit));
 	  if (auto __pi = reinterpret_cast<pointer>(__val))
 	    {
@@ -398,6 +423,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __current = _M_val.load(memory_order_relaxed);
 	    }
 
+	  _GLIBCXX_TSAN_MUTEX_PRE_LOCK(&_M_val);
+
 	  while (!_M_val.compare_exchange_strong(__current,
 						 __current | _S_lock_bit,
 						 __o,
@@ -408,6 +435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	      __current = __current & ~_S_lock_bit;
 	    }
+	  _GLIBCXX_TSAN_MUTEX_POST_LOCK(&_M_val);
 	  return reinterpret_cast<pointer>(__current);
 	}
 
@@ -415,7 +443,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	unlock(memory_order __o) const noexcept
 	{
+	  _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(&_M_val);
 	  _M_val.fetch_sub(1, __o);
+	  _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(&_M_val);
 	}
 
 	// Swaps the values of *this and __c, and unlocks *this.
@@ -426,7 +456,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__o != memory_order_seq_cst)
 	    __o = memory_order_release;
 	  auto __x = reinterpret_cast<uintptr_t>(__c._M_pi);
+	  _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(&_M_val);
 	  __x = _M_val.exchange(__x, __o);
+	  _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(&_M_val);
 	  __c._M_pi = reinterpret_cast<pointer>(__x & ~_S_lock_bit);
 	}
 
@@ -435,20 +467,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_wait_unlock(memory_order __o) const noexcept
 	{
+	  _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(&_M_val);
 	  auto __v = _M_val.fetch_sub(1, memory_order_relaxed);
+	  _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(&_M_val);
 	  _M_val.wait(__v & ~_S_lock_bit, __o);
 	}
 
 	void
 	notify_one() noexcept
 	{
+	  _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(&_M_val);
 	  _M_val.notify_one();
+	  _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(&_M_val);
 	}
 
 	void
 	notify_all() noexcept
 	{
+	  _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(&_M_val);
 	  _M_val.notify_all();
+	  _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(&_M_val);
 	}
 #endif
 
