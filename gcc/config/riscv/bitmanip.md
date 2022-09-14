@@ -56,6 +56,55 @@
    [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
     (set (match_dup 0) (sign_extend:DI (div:SI (subreg:SI (match_dup 5) 0) (subreg:SI (match_dup 4) 0))))])
 
+; Zba does not provide W-forms of sh[123]add(.uw)?, which leads to an
+; interesting irregularity: we can generate a signed 32-bit result
+; using slli(.uw)?+ addw, but a unsigned 32-bit result can be more
+; efficiently be generated as sh[123]add+zext.w (the .uw can be
+; dropped, if we zero-extend the output anyway).
+;
+; To enable this optimization, we split [ slli(.uw)?, addw, zext.w ]
+; into [ sh[123]add, zext.w ] for use during combine.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
+						       (match_operand:QI 2 "imm123_operand"))
+				 (subreg:SI (match_operand:DI 3 "register_operand") 0))))]
+  "TARGET_64BIT && TARGET_ZBA"
+  [(set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 0) 0)))])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI (plus:SI (subreg:SI (and:DI (ashift:DI (match_operand:DI 1 "register_operand")
+							       (match_operand:QI 2 "imm123_operand"))
+						    (match_operand:DI 3 "consecutive_bits_operand")) 0)
+				 (subreg:SI (match_operand:DI 4 "register_operand") 0))))]
+  "TARGET_64BIT && TARGET_ZBA
+   && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))"
+  [(set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 4)))
+   (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 0) 0)))])
+
+; Make sure that an andi followed by a sh[123]add remains a two instruction
+; sequence--and is not torn apart into slli, slri, add.
+(define_insn_and_split "*andi_add.uw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+				    (match_operand:QI 2 "imm123_operand" "Ds3"))
+			 (match_operand:DI 3 "consecutive_bits_operand" ""))
+		 (match_operand:DI 4 "register_operand" "r")))
+   (clobber (match_scratch:DI 5 "=&r"))]
+  "TARGET_64BIT && TARGET_ZBA
+   && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))
+   && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 5) (and:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (plus:DI (ashift:DI (match_dup 5) (match_dup 2))
+			       (match_dup 4)))]
+{
+	operands[3] = GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2]));
+})
+
 (define_insn "*shNadduw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI

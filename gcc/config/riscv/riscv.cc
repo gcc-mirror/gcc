@@ -6772,6 +6772,15 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
   return RISCV_DWARF_VLENB;
 }
 
+/* Return true if a shift-amount matches the trailing cleared bits on
+   a bitmask.  */
+
+bool
+riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
+{
+  return shamt == ctz_hwi (mask);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
