@@ -208,6 +208,19 @@ frange_drop_ninf (frange &r, tree type)
   r.intersect (tmp);
 }
 
+// If zero is in R, make sure both -0.0 and +0.0 are in the range.
+
+static inline void
+frange_add_zeros (frange &r, tree type)
+{
+  if (r.undefined_p () || r.known_nan ())
+    return;
+
+  if (HONOR_SIGNED_ZEROS (type)
+      && (real_iszero (&r.lower_bound ()) || real_iszero (&r.upper_bound ())))
+    r.set_signbit (fp_prop::VARYING);
+}
+
 // Build a range that is <= VAL and store it in R.
 
 static bool
@@ -219,6 +232,10 @@ build_le (frange &r, tree type, const frange &val)
       return false;
     }
   r.set (type, dconstninf, val.upper_bound ());
+
+  // Add both zeros if there's the possibility of zero equality.
+  frange_add_zeros (r, type);
+
   return true;
 }
 
@@ -257,6 +274,10 @@ build_ge (frange &r, tree type, const frange &val)
       return false;
     }
   r.set (type, val.lower_bound (), dconstinf);
+
+  // Add both zeros if there's the possibility of zero equality.
+  frange_add_zeros (r, type);
+
   return true;
 }
 
@@ -376,9 +397,8 @@ foperator_equal::op1_range (frange &r, tree type,
     case BRS_TRUE:
       // If it's true, the result is the same as OP2.
       r = op2;
-      // Make sure we don't copy the sign bit if we may have a zero.
-      if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
-	r.set_signbit (fp_prop::VARYING);
+      // Add both zeros if there's the possibility of zero equality.
+      frange_add_zeros (r, type);
       // The TRUE side of op1 == op2 implies op1 is !NAN.
       r.clear_nan ();
       break;
@@ -480,9 +500,8 @@ foperator_not_equal::op1_range (frange &r, tree type,
     case BRS_FALSE:
       // If it's false, the result is the same as OP2.
       r = op2;
-      // Make sure we don't copy the sign bit if we may have a zero.
-      if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
-	r.set_signbit (fp_prop::VARYING);
+      // Add both zeros if there's the possibility of zero equality.
+      frange_add_zeros (r, type);
       // The FALSE side of op1 != op2 implies op1 is !NAN.
       r.clear_nan ();
       break;
