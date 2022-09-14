@@ -208,32 +208,32 @@ frange_drop_ninf (frange &r, tree type)
   r.intersect (tmp);
 }
 
-// (X <= VAL) produces the range of [-INF, VAL].
+// Build a range that is <= VAL and store it in R.
 
 static bool
-build_le (frange &r, tree type, const REAL_VALUE_TYPE &val)
+build_le (frange &r, tree type, const frange &val)
 {
-  if (real_isnan (&val))
+  if (val.known_nan ())
     {
       r.set_undefined ();
       return false;
     }
-  r.set (type, dconstninf, val);
+  r.set (type, dconstninf, val.upper_bound ());
   return true;
 }
 
-// (X < VAL) produces the range of [-INF, VAL).
+// Build a range that is < VAL and store it in R.
 
 static bool
-build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
+build_lt (frange &r, tree type, const frange &val)
 {
-  if (real_isnan (&val))
+  if (val.known_nan ())
     {
       r.set_undefined ();
       return false;
     }
   // < -INF is outside the range.
-  if (real_isinf (&val, 1))
+  if (real_isinf (&val.upper_bound (), 1))
     {
       if (HONOR_NANS (type))
 	r.set_nan (type);
@@ -241,37 +241,37 @@ build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
 	r.set_undefined ();
       return false;
     }
-  // Hijack LE because we only support closed intervals.
-  build_le (r, type, val);
+  // We only support closed intervals.
+  r.set (type, dconstninf, val.upper_bound ());
   return true;
 }
 
-// (X >= VAL) produces the range of [VAL, +INF].
+// Build a range that is >= VAL and store it in R.
 
 static bool
-build_ge (frange &r, tree type, const REAL_VALUE_TYPE &val)
+build_ge (frange &r, tree type, const frange &val)
 {
-  if (real_isnan (&val))
+  if (val.known_nan ())
     {
       r.set_undefined ();
       return false;
     }
-  r.set (type, val, dconstinf);
+  r.set (type, val.lower_bound (), dconstinf);
   return true;
 }
 
-// (X > VAL) produces the range of (VAL, +INF].
+// Build a range that is > VAL and store it in R.
 
 static bool
-build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)
+build_gt (frange &r, tree type, const frange &val)
 {
-  if (real_isnan (&val))
+  if (val.known_nan ())
     {
       r.set_undefined ();
       return false;
     }
   // > +INF is outside the range.
-  if (real_isinf (&val, 0))
+  if (real_isinf (&val.lower_bound (), 0))
     {
       if (HONOR_NANS (type))
 	r.set_nan (type);
@@ -280,8 +280,8 @@ build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)
       return false;
     }
 
-  // Hijack GE because we only support closed intervals.
-  build_ge (r, type, val);
+  // We only support closed intervals.
+  r.set (type, val.lower_bound (), dconstinf);
   return true;
 }
 
@@ -549,7 +549,7 @@ foperator_lt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_lt (r, type, op2.upper_bound ()))
+      if (build_lt (r, type, op2))
 	{
 	  r.clear_nan ();
 	  // x < y implies x is not +INF.
@@ -558,7 +558,7 @@ foperator_lt::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_ge (r, type, op2.lower_bound ());
+      build_ge (r, type, op2);
       break;
 
     default:
@@ -577,7 +577,7 @@ foperator_lt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_gt (r, type, op1.lower_bound ()))
+      if (build_gt (r, type, op1))
 	{
 	  r.clear_nan ();
 	  // x < y implies y is not -INF.
@@ -586,7 +586,7 @@ foperator_lt::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_le (r, type, op1.upper_bound ());
+      build_le (r, type, op1);
       break;
 
     default:
@@ -651,12 +651,12 @@ foperator_le::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_le (r, type, op2.upper_bound ()))
+      if (build_le (r, type, op2))
 	r.clear_nan ();
       break;
 
     case BRS_FALSE:
-      build_gt (r, type, op2.lower_bound ());
+      build_gt (r, type, op2);
       break;
 
     default:
@@ -675,12 +675,12 @@ foperator_le::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_ge (r, type, op1.lower_bound ()))
+      if (build_ge (r, type, op1))
 	r.clear_nan ();
       break;
 
     case BRS_FALSE:
-      build_lt (r, type, op1.upper_bound ());
+      build_lt (r, type, op1);
       break;
 
     default:
@@ -745,7 +745,7 @@ foperator_gt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_gt (r, type, op2.lower_bound ()))
+      if (build_gt (r, type, op2))
 	{
 	  r.clear_nan ();
 	  // x > y implies x is not -INF.
@@ -754,7 +754,7 @@ foperator_gt::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_le (r, type, op2.upper_bound ());
+      build_le (r, type, op2);
       break;
 
     default:
@@ -773,7 +773,7 @@ foperator_gt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_lt (r, type, op1.upper_bound ()))
+      if (build_lt (r, type, op1))
 	{
 	  r.clear_nan ();
 	  // x > y implies y is not +INF.
@@ -782,7 +782,7 @@ foperator_gt::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_ge (r, type, op1.lower_bound ());
+      build_ge (r, type, op1);
       break;
 
     default:
@@ -847,12 +847,12 @@ foperator_ge::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_ge (r, type, op2.lower_bound ());
+      build_ge (r, type, op2);
       r.clear_nan ();
       break;
 
     case BRS_FALSE:
-      build_lt (r, type, op2.upper_bound ());
+      build_lt (r, type, op2);
       break;
 
     default:
@@ -870,11 +870,11 @@ foperator_ge::op2_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_FALSE:
-      build_gt (r, type, op1.lower_bound ());
+      build_gt (r, type, op1);
       break;
 
     case BRS_TRUE:
-      build_le (r, type, op1.upper_bound ());
+      build_le (r, type, op1);
       r.clear_nan ();
       break;
 
