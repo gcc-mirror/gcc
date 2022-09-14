@@ -56,6 +56,7 @@
 #ifndef _STL_TEMPBUF_H
 #define _STL_TEMPBUF_H 1
 
+#include <new>
 #include <bits/stl_algobase.h>
 #include <bits/stl_construct.h>
 
