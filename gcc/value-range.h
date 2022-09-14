@@ -1141,6 +1141,7 @@ frange::frange (tree min, tree max, value_range_kind kind)
 inline tree
 frange::type () const
 {
+  gcc_checking_assert (!undefined_p ());
   return m_type;
 }
 
@@ -1160,8 +1161,6 @@ frange::set_undefined ()
   m_kind = VR_UNDEFINED;
   m_type = NULL;
   m_props.set_undefined ();
-  memset (&m_min, 0, sizeof (m_min));
-  memset (&m_max, 0, sizeof (m_max));
 }
 
 // Set R to maximum representable value for TYPE.

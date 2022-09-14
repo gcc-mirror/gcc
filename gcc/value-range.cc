@@ -357,15 +357,11 @@ frange::set_signbit (fp_prop::kind k)
 void
 frange::set (tree min, tree max, value_range_kind kind)
 {
-  gcc_checking_assert (TREE_CODE (min) == REAL_CST);
-  gcc_checking_assert (TREE_CODE (max) == REAL_CST);
-
   if (kind == VR_UNDEFINED)
     {
       set_undefined ();
       return;
     }
-
   // Treat VR_ANTI_RANGE and VR_VARYING as varying.
   if (kind != VR_RANGE)
     {
@@ -401,7 +397,6 @@ frange::set (tree min, tree max, value_range_kind kind)
   gcc_checking_assert (is_nan || tree_compare (LE_EXPR, min, max));
 
   normalize_kind ();
-
   if (flag_checking)
     verify_range ();
 }
@@ -612,17 +607,17 @@ frange::operator== (const frange &src) const
 bool
 frange::contains_p (tree cst) const
 {
+  gcc_checking_assert (m_kind != VR_ANTI_RANGE);
+  const REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (cst);
+
   if (undefined_p ())
     return false;
 
   if (varying_p ())
     return true;
 
-  gcc_checking_assert (m_kind == VR_RANGE);
 
-  const REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (cst);
-  if (real_compare (GE_EXPR, rv, &m_min)
-      && real_compare (LE_EXPR, rv, &m_max))
+  if (real_compare (GE_EXPR, rv, &m_min) && real_compare (LE_EXPR, rv, &m_max))
     {
       if (HONOR_SIGNED_ZEROS (m_type) && real_iszero (rv))
 	{
@@ -3652,7 +3647,7 @@ range_tests_nan ()
   ASSERT_FALSE (r0 == r0);
   ASSERT_TRUE (r0 != r0);
 
-  // [5,6] U NAN.
+  // [5,6] U NAN = [5,6] NAN.
   r0 = frange_float ("5", "6");
   r0.set_nan (fp_prop::NO);
   r1 = frange_nan (float_type_node);

@@ -122,14 +122,13 @@ vrange_printer::print_irange_bitmasks (const irange &r) const
 void
 vrange_printer::visit (const frange &r) const
 {
-  tree type = r.type ();
-
   pp_string (pp, "[frange] ");
   if (r.undefined_p ())
     {
       pp_string (pp, "UNDEFINED");
       return;
     }
+  tree type = r.type ();
   dump_generic_node (pp, type, 0, TDF_NONE, false);
   pp_string (pp, " ");
   if (r.varying_p ())

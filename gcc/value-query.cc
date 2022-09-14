@@ -217,9 +217,6 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
 
     case REAL_CST:
       {
-	if (TREE_OVERFLOW_P (expr))
-	  expr = drop_tree_overflow (expr);
-
 	frange &f = as_a <frange> (r);
 	f.set (expr, expr);
 
