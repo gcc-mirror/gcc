@@ -1,3 +1,14 @@
+2022-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106906
+	* env.c (get_icv_member_addr): Cast false to void * before assigning
+	it to icv_addr[1], and comment the whole assignment out.
+
+2022-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (gcn): Move misplaced -march=sm_30 remark to ...
+	(nvptx): ... here.
+
 2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (Offload-Target Specifics: nvptx): Document

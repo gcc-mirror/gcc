@@ -1,3 +1,29 @@
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (mark_used): Remove single-parameter overload.  Add
+	default argument to the two-parameter overload.
+	* decl2.cc (mark_used): Likewise.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (cxx_constant_value): Define two-parameter version
+	that omits the object parameter.
+	* decl.cc (build_explicit_specifier): Omit NULL_TREE object
+	argument to cxx_constant_value.
+	* except.cc (build_noexcept_spec): Likewise.
+	* pt.cc (expand_integer_pack): Likewise.
+	(fold_targs_r): Likewise.
+	* semantics.cc (finish_if_stmt_cond): Likewise.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (build_explicit_specifier): Pass complain to
+	cxx_constant_value.
+	* except.cc (build_noexcept_spec): Likewise.
+	* pt.cc (expand_integer_pack): Likewise.
+	(tsubst_function_decl): Propagate error_mark_node returned
+	from build_explicit_specifier.
+
 2022-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	* call.cc (build_conditional_expr): Adjust calls to

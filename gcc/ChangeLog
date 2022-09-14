@@ -1,3 +1,145 @@
+2022-09-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106877
+	* reg-stack.cc (move_for_stack_reg): Check for any_malformed_asm
+	in gcc_assert.
+
+2022-09-13  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Revert:
+	2022-09-12  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (TARGET_CONSTANT_OK_FOR_CPROP_P):
+	New macro definition.
+	(xtensa_constant_ok_for_cprop_p):
+	Implement the hook as mentioned above.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin): Fix
+	the equality check for argument number, and move this hunk ahead.
+
+2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin): Add
+	the handling for unresolved overloaded builtin function.
+	(rs6000_expand_builtin): Likewise.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (class rs6000_cost_data): Add new members
+	m_nstores, m_reduc_factor, m_gather_load and member function
+	determine_suggested_unroll_factor.
+	(rs6000_cost_data::update_target_cost_per_stmt): Update for m_nstores,
+	m_reduc_factor and m_gather_load.
+	(rs6000_cost_data::determine_suggested_unroll_factor): New function.
+	(rs6000_cost_data::finish_cost): Use determine_suggested_unroll_factor.
+	* config/rs6000/rs6000.opt (rs6000-vect-unroll-limit): New parameter.
+	(rs6000-vect-unroll-issue): Likewise.
+	(rs6000-vect-unroll-reduc-threshold): Likewise.
+	* doc/invoke.texi (rs6000-vect-unroll-limit): Document new parameter.
+
+2022-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106909
+	* gimple-fold.cc (gimple_fold_call): Clear the ctrl-altering
+	flag of a unreachable call.
+
+2022-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106913
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Do not set
+	ft_reachable on EXIT_BLOCK.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_classify_vector_mode): Use
+	TARGET_FLOAT instead of TARGET_SIMD.
+	(aarch64_vectorize_related_mode): Restrict ADVSIMD handling to
+	TARGET_SIMD.
+	(aarch64_hard_regno_mode_ok): Don't allow tuples of 2 64-bit vectors
+	in GPRs.
+	(aarch64_classify_address): Treat little-endian structure moves
+	like big-endian for TARGET_FLOAT && !TARGET_SIMD.
+	(aarch64_secondary_memory_needed): New function.
+	(aarch64_secondary_reload): Handle 128-bit Advanced SIMD vectors
+	in the same way as TF, TI and TD.
+	(aarch64_rtx_mult_cost): Restrict ADVSIMD handling to TARGET_SIMD.
+	(aarch64_rtx_costs): Likewise.
+	(aarch64_register_move_cost): Treat a pair of 64-bit vectors
+	separately from a single 128-bit vector.  Handle the cost implied
+	by aarch64_secondary_memory_needed.
+	(aarch64_simd_valid_immediate): Restrict ADVSIMD handling to
+	TARGET_SIMD.
+	(aarch64_expand_vec_perm_const_1): Likewise.
+	(TARGET_SECONDARY_MEMORY_NEEDED): New macro.
+	* config/aarch64/iterators.md (VTX): New iterator.
+	* config/aarch64/aarch64.md (arches): Add fp_q as a synonym of simd.
+	(arch_enabled): Adjust accordingly.
+	(@aarch64_reload_mov<TX:mode>): Extend to...
+	(@aarch64_reload_mov<VTX:mode>): ...this.
+	* config/aarch64/aarch64-simd.md (mov<mode>): Require TARGET_FLOAT
+	rather than TARGET_SIMD.
+	(movmisalign<mode>): Likewise.
+	(load_pair<DREG:mode><DREG2:mode>): Likewise.
+	(vec_store_pair<DREG:mode><DREG2:mode>): Likewise.
+	(load_pair<VQ:mode><VQ2:mode>): Likewise.
+	(vec_store_pair<VQ:mode><VQ2:mode>): Likewise.
+	(@aarch64_split_simd_mov<mode>): Likewise.
+	(aarch64_get_low<mode>): Likewise.
+	(aarch64_get_high<mode>): Likewise.
+	(aarch64_get_half<mode>): Likewise.  Canonicalize to a move for
+	lowpart extracts.
+	(*aarch64_simd_mov<VDMOV:mode>): Require TARGET_FLOAT rather than
+	TARGET_SIMD.  Use different w<-w and r<-w instructions for
+	!TARGET_SIMD.  Disable immediate moves for !TARGET_SIMD but
+	add an alternative specifically for w<-Z.
+	(*aarch64_simd_mov<VQMOV:mode>): Require TARGET_FLOAT rather than
+	TARGET_SIMD.  Likewise for the associated define_splits.  Disable
+	FPR moves and immediate moves for !TARGET_SIMD but add an alternative
+	specifically for w<-Z.
+	(aarch64_simd_mov_from_<mode>high): Require TARGET_FLOAT rather than
+	TARGET_SIMD.  Restrict the existing alternatives to TARGET_SIMD
+	but add a new r<-w one for !TARGET_SIMD.
+	(*aarch64_get_high<mode>): New pattern.
+	(load_pair_lanes<mode>): Require TARGET_FLOAT rather than TARGET_SIMD.
+	(store_pair_lanes<mode>): Likewise.
+	(*aarch64_combine_internal<mode>): Likewise.  Restrict existing
+	w<-w, w<-r and w<-m alternatives to TARGET_SIMD but add a new w<-r
+	alternative for !TARGET_SIMD.
+	(*aarch64_combine_internal_be<mode>): Likewise.
+	(aarch64_combinez<mode>): Require TARGET_FLOAT rather than TARGET_SIMD.
+	Remove bogus arch attribute.
+	(*aarch64_combinez_be<mode>): Likewise.
+	(@aarch64_vec_concat<mode>): Require TARGET_FLOAT rather than
+	TARGET_SIMD.
+	(aarch64_combine<mode>): Likewise.
+	(aarch64_rev_reglist<mode>): Likewise.
+	(mov<mode>): Likewise.
+	(*aarch64_be_mov<VSTRUCT_2D:mode>): Extend to TARGET_FLOAT &&
+	!TARGET_SIMD, regardless of endianness.  Extend associated
+	define_splits in the same way, both for this pattern and the
+	ones below.
+	(*aarch64_be_mov<VSTRUCT_2Qmode>): Likewise.  Restrict w<-w
+	alternative to TARGET_SIMD.
+	(*aarch64_be_movoi): Likewise.
+	(*aarch64_be_movci): Likewise.
+	(*aarch64_be_movxi): Likewise.
+	(*aarch64_be_mov<VSTRUCT_4QD:mode>): Extend to TARGET_FLOAT
+	&& !TARGET_SIMD, regardless of endianness.  Restrict w<-w alternative
+	to TARGET_SIMD for tuples of 128-bit vectors.
+	(*aarch64_be_mov<VSTRUCT_4QD:mode>): Likewise.
+	* config/aarch64/aarch64-ldpstp.md: Remove TARGET_SIMD condition
+	from DREG STP peephole.  Change TARGET_SIMD to TARGET_FLOAT in
+	the VQ and VP_2E LDP and STP peepholes.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (movv8di): Remove TARGET_SIMD
+	condition.  Likewise for the related define_split.  Tweak formatting.
+
 2022-09-12  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.cc (TARGET_CONSTANT_OK_FOR_CPROP_P):

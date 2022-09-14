@@ -1,3 +1,50 @@
+2022-09-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106877
+	* g++.dg/ext/pr106877.C: New test case.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp1z/noexcept-type26.C: New test.
+	* g++.dg/cpp2a/explicit19.C: New test.
+	* g++.dg/ext/integer-pack6.C: New test.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* gcc.target/powerpc/pr104482.c: New test.
+
+2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* g++.target/powerpc/pr105485.C: New test.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_20.c: New test.
+	* gcc.target/aarch64/ldp_stp_21.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_22.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_23.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_24.c: Likewise.
+	* gcc.target/aarch64/movv16qi_1.c (gpr_to_gpr): New function.
+	* gcc.target/aarch64/movv8qi_1.c (gpr_to_gpr): Likewise.
+	* gcc.target/aarch64/movv16qi_2.c: New test.
+	* gcc.target/aarch64/movv16qi_3.c: Likewise.
+	* gcc.target/aarch64/movv2di_1.c: Likewise.
+	* gcc.target/aarch64/movv2x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv2x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv3x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv3x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv4x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv4x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv8qi_2.c: Likewise.
+	* gcc.target/aarch64/movv8qi_3.c: Likewise.
+	* gcc.target/aarch64/vect_unary_2.c: Likewise.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/ls64_asm_2.c: New test.
+
 2022-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101906

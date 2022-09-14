@@ -1,3 +1,52 @@
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__slide_caches_nothing): Define.
+	(__detail::__slide_caches_last): Define.
+	(__detail::__slide_caches_first): Define.
+	(slide_view): Define.
+	(enable_borrowed_range<slide_view>): Define.
+	(slide_view::_Iterator): Define.
+	(slide_view::_Sentinel): Define.
+	(views::__detail::__can_slide_view): Define.
+	(views::_Slide, views::slide): Define.
+	* testsuite/std/ranges/adaptors/slide/1.cc: New test.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__div_ceil): Define.
+	(chunk_view): Define.
+	(chunk_view::_OuterIter): Define.
+	(chunk_view::_OuterIter::value_type): Define.
+	(chunk_view::_InnerIter): Define.
+	(chunk_view<_Vp>): Define partial specialization for forward
+	ranges.
+	(enable_borrowed_range<chunk_view>): Define.
+	(chunk_view<_Vp>::_Iterator): Define.
+	(views::__detail::__can_chunk_view): Define.
+	(views::_Chunk, views::chunk): Define.
+	* testsuite/std/ranges/adaptors/chunk/1.cc: New test.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::_Iterator::_M_satisfy):
+	Adjust resetting _M_inner as per LWG 3569.
+	(join_view::_Iterator::_M_inner): Wrap in std::optional
+	as per LWG 3569.
+	(join_view::_Iterator::_Iterator): Relax constraints as
+	per LWG 3569.
+	(join_view::_Iterator::operator*): Adjust as per LWG 3569.
+	(join_view::_Iterator::operator->): Likewise.
+	(join_view::_Iterator::operator++): Likewise.
+	(join_view::_Iterator::operator--): Likewise.
+	(join_view::_Iterator::iter_move): Likewise.
+	(join_view::_Iterator::iter_swap): Likewise.
+	* testsuite/std/ranges/adaptors/join.cc (test14): New test.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/debug/safe_iterator.h (_GLIBCXX_DEBUG_VERIFY_OPERANDS):
+	Add parentheses to avoid -Wparentheses warning.
+
 2022-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/106320
