@@ -3608,10 +3608,14 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	tree type2 = NULL_TREE;
 	bool strict_overflow_p = false;
 	candidates.truncate (0);
+	if (POINTER_TYPE_P (type1))
+	  type1 = pointer_sized_int_node;
 	for (j = i; j; j = chains[j - 1])
 	  {
 	    tree type = TREE_TYPE (ranges[j - 1].exp);
 	    strict_overflow_p |= ranges[j - 1].strict_overflow_p;
+	    if (POINTER_TYPE_P (type))
+	      type = pointer_sized_int_node;
 	    if ((b % 4) == 3)
 	      {
 		/* For the signed < 0 cases, the types should be
@@ -3642,6 +3646,8 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    tree type = TREE_TYPE (ranges[j - 1].exp);
 	    if (j == k)
 	      continue;
+	    if (POINTER_TYPE_P (type))
+	      type = pointer_sized_int_node;
 	    if ((b % 4) == 3)
 	      {
 		if (!useless_type_conversion_p (type1, type))
@@ -3671,7 +3677,7 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 		op = r->exp;
 		continue;
 	      }
-	    if (id == l)
+	    if (id == l || POINTER_TYPE_P (TREE_TYPE (op)))
 	      {
 		code = (b % 4) == 3 ? BIT_NOT_EXPR : NOP_EXPR;
 		g = gimple_build_assign (make_ssa_name (type1), code, op);
@@ -3692,6 +3698,14 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	      code = (b % 4) == 1 ? BIT_AND_EXPR : BIT_IOR_EXPR;
 	    g = gimple_build_assign (make_ssa_name (id >= l ? type1 : type2),
 				     code, op, exp);
+	    gimple_seq_add_stmt_without_update (&seq, g);
+	    op = gimple_assign_lhs (g);
+	  }
+	type1 = TREE_TYPE (ranges[k - 1].exp);
+	if (POINTER_TYPE_P (type1))
+	  {
+	    gimple *g
+	      = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, op);
 	    gimple_seq_add_stmt_without_update (&seq, g);
 	    op = gimple_assign_lhs (g);
 	  }
