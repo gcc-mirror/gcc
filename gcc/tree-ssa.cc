@@ -1459,6 +1459,8 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 	       && (! INTEGRAL_TYPE_P (TREE_TYPE (*tp)) 
 		   || (wi::to_offset (TYPE_SIZE (TREE_TYPE (*tp)))
 		       == TYPE_PRECISION (TREE_TYPE (*tp))))
+	       && (! INTEGRAL_TYPE_P (TREE_TYPE (sym))
+		   || type_has_mode_precision_p (TREE_TYPE (sym)))
 	       && wi::umod_trunc (wi::to_offset (TYPE_SIZE (TREE_TYPE (*tp))),
 				  BITS_PER_UNIT) == 0)
 	{
@@ -1531,6 +1533,10 @@ non_rewritable_mem_ref_base (tree ref)
 	  && (! INTEGRAL_TYPE_P (TREE_TYPE (base))
 	      || (wi::to_offset (TYPE_SIZE (TREE_TYPE (base)))
 		  == TYPE_PRECISION (TREE_TYPE (base))))
+	  /* ???  Likewise for extracts from bitfields, we'd have
+	     to pun the base object to a size precision mode first.  */
+	  && (! INTEGRAL_TYPE_P (TREE_TYPE (decl))
+	      || type_has_mode_precision_p (TREE_TYPE (decl)))
 	  && wi::umod_trunc (wi::to_offset (TYPE_SIZE (TREE_TYPE (base))),
 			     BITS_PER_UNIT) == 0)
 	return NULL_TREE;
