@@ -348,6 +348,7 @@ public:
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
 	    value_range_kind = VR_RANGE);
+  void set_nan (tree type);
   virtual void set_varying (tree type) override;
   virtual void set_undefined () override;
   virtual bool union_ (const vrange &) override;
@@ -376,7 +377,8 @@ public:
   bool known_signbit (bool &signbit) const;
 
   // Accessors for FP properties.
-  void set_nan (fp_prop::kind f);
+  void update_nan (fp_prop::kind f);
+  void clear_nan () { update_nan (fp_prop::NO); }
   void set_signbit (fp_prop::kind);
 private:
   fp_prop get_nan () const { return m_props.get_nan (); }
@@ -1186,13 +1188,12 @@ real_min_representable (REAL_VALUE_TYPE *r, tree type)
 
 // Build a NAN of type TYPE.
 
-inline frange
-frange_nan (tree type)
+inline void
+frange::set_nan (tree type)
 {
   REAL_VALUE_TYPE r;
-
   gcc_assert (real_nan (&r, "", 1, TYPE_MODE (type)));
-  return frange (type, r, r);
+  set (type, r, r);
 }
 
 // Return TRUE if range is known to be finite.

@@ -150,18 +150,6 @@ range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) cons
   return VREL_VARYING;
 }
 
-// Set R to [NAN, NAN].
-
-static inline void
-frange_set_nan (frange &r, tree type)
-{
-  REAL_VALUE_TYPE rv;
-  bool res = real_nan (&rv, "", 1, TYPE_MODE (type));
-  if (flag_checking)
-    gcc_assert (res);
-  r.set (type, rv, rv);
-}
-
 // Return TRUE if OP1 is known to be free of NANs.
 
 static inline bool
@@ -248,7 +236,7 @@ build_lt (frange &r, tree type, const REAL_VALUE_TYPE &val)
   if (real_isinf (&val, 1))
     {
       if (HONOR_NANS (type))
-	frange_set_nan (r, type);
+	r.set_nan (type);
       else
 	r.set_undefined ();
       return false;
@@ -286,7 +274,7 @@ build_gt (frange &r, tree type, const REAL_VALUE_TYPE &val)
   if (real_isinf (&val, 0))
     {
       if (HONOR_NANS (type))
-	frange_set_nan (r, type);
+	r.set_nan (type);
       else
 	r.set_undefined ();
       return false;
@@ -392,14 +380,14 @@ foperator_equal::op1_range (frange &r, tree type,
       if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
 	r.set_signbit (fp_prop::VARYING);
       // The TRUE side of op1 == op2 implies op1 is !NAN.
-      r.set_nan (fp_prop::NO);
+      r.clear_nan ();
       break;
 
     case BRS_FALSE:
       r.set_varying (type);
       // The FALSE side of op1 == op1 implies op1 is a NAN.
       if (rel == VREL_EQ)
-	frange_set_nan (r, type);
+	r.set_nan (type);
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
       else if (op2.singleton_p ()
@@ -496,7 +484,7 @@ foperator_not_equal::op1_range (frange &r, tree type,
       if (HONOR_SIGNED_ZEROS (type) && r.contains_p (build_zero_cst (type)))
 	r.set_signbit (fp_prop::VARYING);
       // The FALSE side of op1 != op2 implies op1 is !NAN.
-      r.set_nan (fp_prop::NO);
+      r.clear_nan ();
       break;
 
     default:
@@ -563,7 +551,7 @@ foperator_lt::op1_range (frange &r,
     case BRS_TRUE:
       if (build_lt (r, type, op2.upper_bound ()))
 	{
-	  r.set_nan (fp_prop::NO);
+	  r.clear_nan ();
 	  // x < y implies x is not +INF.
 	  frange_drop_inf (r, type);
 	}
@@ -591,7 +579,7 @@ foperator_lt::op2_range (frange &r,
     case BRS_TRUE:
       if (build_gt (r, type, op1.lower_bound ()))
 	{
-	  r.set_nan (fp_prop::NO);
+	  r.clear_nan ();
 	  // x < y implies y is not -INF.
 	  frange_drop_ninf (r, type);
 	}
@@ -664,7 +652,7 @@ foperator_le::op1_range (frange &r,
     {
     case BRS_TRUE:
       if (build_le (r, type, op2.upper_bound ()))
-	r.set_nan (fp_prop::NO);
+	r.clear_nan ();
       break;
 
     case BRS_FALSE:
@@ -688,7 +676,7 @@ foperator_le::op2_range (frange &r,
     {
     case BRS_TRUE:
       if (build_ge (r, type, op1.lower_bound ()))
-	r.set_nan (fp_prop::NO);
+	r.clear_nan ();
       break;
 
     case BRS_FALSE:
@@ -759,7 +747,7 @@ foperator_gt::op1_range (frange &r,
     case BRS_TRUE:
       if (build_gt (r, type, op2.lower_bound ()))
 	{
-	  r.set_nan (fp_prop::NO);
+	  r.clear_nan ();
 	  // x > y implies x is not -INF.
 	  frange_drop_ninf (r, type);
 	}
@@ -787,7 +775,7 @@ foperator_gt::op2_range (frange &r,
     case BRS_TRUE:
       if (build_lt (r, type, op1.upper_bound ()))
 	{
-	  r.set_nan (fp_prop::NO);
+	  r.clear_nan ();
 	  // x > y implies y is not +INF.
 	  frange_drop_inf (r, type);
 	}
@@ -860,7 +848,7 @@ foperator_ge::op1_range (frange &r,
     {
     case BRS_TRUE:
       build_ge (r, type, op2.lower_bound ());
-      r.set_nan (fp_prop::NO);
+      r.clear_nan ();
       break;
 
     case BRS_FALSE:
@@ -887,7 +875,7 @@ foperator_ge::op2_range (frange &r, tree type,
 
     case BRS_TRUE:
       build_le (r, type, op1.upper_bound ());
-      r.set_nan (fp_prop::NO);
+      r.clear_nan ();
       break;
 
     default:
@@ -948,13 +936,13 @@ foperator_unordered::op1_range (frange &r, tree type,
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
       if (!op2.maybe_nan ())
-	frange_set_nan (r, type);
+	r.set_nan (type);
       break;
 
     case BRS_FALSE:
       r.set_varying (type);
       // A false UNORDERED means both operands are !NAN.
-      r.set_nan (fp_prop::NO);
+      r.clear_nan ();
       break;
 
     default:
@@ -1011,14 +999,14 @@ foperator_ordered::op1_range (frange &r, tree type,
     case BRS_TRUE:
       r.set_varying (type);
       // The TRUE side of op1 ORDERED op2 implies op1 is !NAN.
-      r.set_nan (fp_prop::NO);
+      r.clear_nan ();
       break;
 
     case BRS_FALSE:
       r.set_varying (type);
       // The FALSE side of op1 ORDERED op1 implies op1 is !NAN.
       if (rel == VREL_EQ)
-	r.set_nan (fp_prop::NO);
+	r.clear_nan ();
       break;
 
     default:

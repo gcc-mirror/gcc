@@ -223,9 +223,9 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
 	// Singletons from the tree world have known properties.
 	REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (expr);
 	if (real_isnan (rv))
-	  f.set_nan (fp_prop::YES);
+	  f.update_nan (fp_prop::YES);
 	else
-	  f.set_nan (fp_prop::NO);
+	  f.clear_nan ();
 	if (real_isneg (rv))
 	  f.set_signbit (fp_prop::YES);
 	else
