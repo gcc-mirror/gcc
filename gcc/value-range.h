@@ -1193,7 +1193,14 @@ frange::set_nan (tree type)
 {
   REAL_VALUE_TYPE r;
   gcc_assert (real_nan (&r, "", 1, TYPE_MODE (type)));
-  set (type, r, r);
+  m_kind = VR_RANGE;
+  m_type = type;
+  m_min = r;
+  m_max = r;
+  m_props.set_varying ();
+  m_props.nan_set_yes ();
+  if (flag_checking)
+    verify_range ();
 }
 
 // Return TRUE if range is known to be finite.

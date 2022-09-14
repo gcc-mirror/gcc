@@ -369,23 +369,21 @@ frange::set (tree min, tree max, value_range_kind kind)
       return;
     }
 
+  // Handle NANs.
+  if (real_isnan (TREE_REAL_CST_PTR (min)) || real_isnan (TREE_REAL_CST_PTR (max)))
+    {
+      gcc_checking_assert (real_identical (TREE_REAL_CST_PTR (min),
+					   TREE_REAL_CST_PTR (max)));
+      tree type = TREE_TYPE (min);
+      set_nan (type);
+      return;
+    }
+
   m_kind = kind;
   m_type = TREE_TYPE (min);
   m_props.set_varying ();
   m_min = *TREE_REAL_CST_PTR (min);
   m_max = *TREE_REAL_CST_PTR (max);
-
-  bool is_nan = (real_isnan (TREE_REAL_CST_PTR (min))
-		 || real_isnan (TREE_REAL_CST_PTR (max)));
-
-  // Ranges with a NAN and a non-NAN endpoint are nonsensical.
-  gcc_checking_assert (!is_nan || operand_equal_p (min, max));
-
-  // Set NAN property if we're absolutely sure.
-  if (is_nan && operand_equal_p (min, max))
-    m_props.nan_set_yes ();
-  else if (!HONOR_NANS (m_type))
-    m_props.nan_set_no ();
 
   // Set SIGNBIT property for positive and negative ranges.
   if (real_less (&m_max, &dconst0))
@@ -393,8 +391,11 @@ frange::set (tree min, tree max, value_range_kind kind)
   else if (real_less (&dconst0, &m_min))
     m_props.signbit_set_no ();
 
+  if (!HONOR_NANS (m_type))
+    m_props.nan_set_no ();
+
   // Check for swapped ranges.
-  gcc_checking_assert (is_nan || tree_compare (LE_EXPR, min, max));
+  gcc_checking_assert (tree_compare (LE_EXPR, min, max));
 
   normalize_kind ();
   if (flag_checking)
