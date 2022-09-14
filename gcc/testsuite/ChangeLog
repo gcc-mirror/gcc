@@ -1,3 +1,28 @@
+2022-09-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101322
+	* g++.target/powerpc/pr101322.C: New test.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106345
+	* lib/target-supports.exp (check_effective_target_has_arch_pwr5): Add
+	a function definition to avoid pedwarn about empty translation unit.
+	(check_effective_target_has_arch_pwr6): Likewise.
+	(check_effective_target_has_arch_pwr7): Likewise.
+	(check_effective_target_has_arch_pwr8): Likewise.
+	(check_effective_target_has_arch_pwr9): Likewise.
+	(check_effective_target_has_arch_ppc64): Likewise.
+	(check_effective_target_ppc_float128): Likewise.
+	(check_effective_target_ppc_float128_insns): Likewise.
+	(check_effective_target_powerpc_vsx): Likewise.
+
 2022-08-30  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
