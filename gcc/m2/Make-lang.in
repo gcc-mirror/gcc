@@ -32,6 +32,8 @@ M2_MAINTAINER = no
 CPP_GM2=-fpermissive -DIN_GCC -g
 GM2_1 = ./gm2 -B./stage1/m2 -g -fm2-g
 
+GM2_FOR_TARGET = $(STAGE_CC_WRAPPER) ./gm2 -B./ -B$(build_tooldir)/bin/ -L$(objdir)/../ld $(TFLAGS)
+
 TEXISRC = $(objdir)/m2/images/gnu.eps \
           $(srcdir)/doc/gm2.texi \
           m2/gm2-libs.texi \
