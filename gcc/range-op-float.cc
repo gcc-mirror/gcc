@@ -155,7 +155,7 @@ range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) cons
 static inline bool
 finite_operand_p (const frange &op1)
 {
-  return flag_finite_math_only || !op1.maybe_nan ();
+  return flag_finite_math_only || !op1.maybe_isnan ();
 }
 
 // Return TRUE if OP1 and OP2 are known to be free of NANs.
@@ -163,7 +163,7 @@ finite_operand_p (const frange &op1)
 static inline bool
 finite_operands_p (const frange &op1, const frange &op2)
 {
-  return flag_finite_math_only || (!op1.maybe_nan () && !op2.maybe_nan ());
+  return flag_finite_math_only || (!op1.maybe_isnan () && !op2.maybe_isnan ());
 }
 
 // Floating version of relop_early_resolve that takes into account NAN
@@ -213,12 +213,16 @@ frange_drop_ninf (frange &r, tree type)
 static inline void
 frange_add_zeros (frange &r, tree type)
 {
-  if (r.undefined_p () || r.known_nan ())
+  if (r.undefined_p () || r.known_isnan ())
     return;
 
   if (HONOR_SIGNED_ZEROS (type)
       && (real_iszero (&r.lower_bound ()) || real_iszero (&r.upper_bound ())))
-    r.set_signbit (fp_prop::VARYING);
+    {
+      frange zero;
+      zero.set_zero (type);
+      r.union_ (zero);
+    }
 }
 
 // Build a range that is <= VAL and store it in R.
@@ -226,7 +230,7 @@ frange_add_zeros (frange &r, tree type)
 static bool
 build_le (frange &r, tree type, const frange &val)
 {
-  if (val.known_nan ())
+  if (val.known_isnan ())
     {
       r.set_undefined ();
       return false;
@@ -244,7 +248,7 @@ build_le (frange &r, tree type, const frange &val)
 static bool
 build_lt (frange &r, tree type, const frange &val)
 {
-  if (val.known_nan ())
+  if (val.known_isnan ())
     {
       r.set_undefined ();
       return false;
@@ -268,7 +272,7 @@ build_lt (frange &r, tree type, const frange &val)
 static bool
 build_ge (frange &r, tree type, const frange &val)
 {
-  if (val.known_nan ())
+  if (val.known_isnan ())
     {
       r.set_undefined ();
       return false;
@@ -286,7 +290,7 @@ build_ge (frange &r, tree type, const frange &val)
 static bool
 build_gt (frange &r, tree type, const frange &val)
 {
-  if (val.known_nan ())
+  if (val.known_isnan ())
     {
       r.set_undefined ();
       return false;
@@ -551,7 +555,7 @@ foperator_lt::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_nan () || op2.known_nan ())
+  else if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -653,7 +657,7 @@ foperator_le::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_nan () || op2.known_nan ())
+  else if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -747,7 +751,7 @@ foperator_gt::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_nan () || op2.known_nan ())
+  else if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -849,7 +853,7 @@ foperator_ge::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_nan () || op2.known_nan ())
+  else if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -932,10 +936,10 @@ foperator_unordered::fold_range (irange &r, tree type,
 				 relation_kind) const
 {
   // UNORDERED is TRUE if either operand is a NAN.
-  if (op1.known_nan () || op2.known_nan ())
+  if (op1.known_isnan () || op2.known_isnan ())
     r = range_true (type);
   // UNORDERED is FALSE if neither operand is a NAN.
-  else if (!op1.maybe_nan () && !op2.maybe_nan ())
+  else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);
@@ -954,7 +958,7 @@ foperator_unordered::op1_range (frange &r, tree type,
       r.set_varying (type);
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
-      if (!op2.maybe_nan ())
+      if (!op2.maybe_isnan ())
 	r.set_nan (type);
       break;
 
@@ -998,9 +1002,9 @@ foperator_ordered::fold_range (irange &r, tree type,
 			       const frange &op1, const frange &op2,
 			       relation_kind) const
 {
-  if (!op1.maybe_nan () && !op2.maybe_nan ())
+  if (!op1.maybe_isnan () && !op2.maybe_isnan ())
     r = range_true (type);
-  else if (op1.known_nan () || op2.known_nan ())
+  else if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
   else
     r = range_true_and_false (type);

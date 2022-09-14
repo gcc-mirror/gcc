@@ -134,34 +134,39 @@ vrange_printer::visit (const frange &r) const
   if (r.varying_p ())
     {
       pp_string (pp, "VARYING");
+      print_frange_nan (r);
       return;
     }
   pp_character (pp, '[');
-  dump_generic_node (pp,
-		     build_real (type, r.lower_bound ()), 0, TDF_NONE, false);
-  pp_string (pp, ", ");
-  dump_generic_node (pp,
-		     build_real (type, r.upper_bound ()), 0, TDF_NONE, false);
-  pp_string (pp, "] ");
-
-  print_frange_prop ("NAN", r.get_nan ());
-  print_frange_prop ("SIGN", r.get_signbit ());
+  bool has_endpoints = !r.known_isnan ();
+  if (has_endpoints)
+    {
+      dump_generic_node (pp,
+			 build_real (type, r.lower_bound ()), 0, TDF_NONE, false);
+      pp_string (pp, ", ");
+      dump_generic_node (pp,
+			 build_real (type, r.upper_bound ()), 0, TDF_NONE, false);
+    }
+  pp_character (pp, ']');
+  print_frange_nan (r);
 }
 
-// Print the FP properties in an frange.
+// Print the NAN info for an frange.
 
 void
-vrange_printer::print_frange_prop (const char *str, const fp_prop &prop) const
+vrange_printer::print_frange_nan (const frange &r) const
 {
-  if (prop.varying_p ())
-    return;
-
-  if (prop.yes_p ())
-    pp_string (pp, str);
-  else if (prop.no_p ())
+  if (r.maybe_isnan ())
     {
-      pp_character (pp, '!');
-      pp_string (pp, str);
+      if (r.m_pos_nan && r.m_neg_nan)
+	{
+	  pp_string (pp, " +-NAN");
+	  return;
+	}
+      bool nan_sign = r.m_neg_nan;
+      if (nan_sign)
+	pp_string (pp, " -NAN");
+      else
+	pp_string (pp, " +NAN");
     }
-  pp_character (pp, ' ');
 }
