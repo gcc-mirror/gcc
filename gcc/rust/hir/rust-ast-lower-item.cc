@@ -59,7 +59,10 @@ ASTLoweringItem::visit (AST::Module &module)
   for (auto &item : module.get_items ())
     {
       auto transitem = translate (item.get ());
-      items.push_back (std::unique_ptr<Item> (transitem));
+      // The item may be null if it doesn't need to live in the HIR - for
+      // example, macro rules definitions
+      if (transitem)
+	items.push_back (std::unique_ptr<Item> (transitem));
     }
 
   // should be lowered/copied from module.get_in/outer_attrs()
