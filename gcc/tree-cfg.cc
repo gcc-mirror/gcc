@@ -9836,16 +9836,12 @@ execute_fixup_cfg (void)
 	      int flags = gimple_call_flags (stmt);
 	      if (flags & (ECF_CONST | ECF_PURE | ECF_LOOPING_CONST_OR_PURE))
 		{
-		  if (gimple_purge_dead_abnormal_call_edges (bb))
-		    todo |= TODO_cleanup_cfg;
-
 		  if (gimple_in_ssa_p (cfun))
 		    {
 		      todo |= TODO_update_ssa | TODO_cleanup_cfg;
 		      update_stmt (stmt);
 		    }
 		}
-
 	      if (flags & ECF_NORETURN
 		  && fixup_noreturn_call (stmt))
 		todo |= TODO_cleanup_cfg;
@@ -9875,10 +9871,15 @@ execute_fixup_cfg (void)
 		}
 	    }
 
-	  if (maybe_clean_eh_stmt (stmt)
+	  gsi_next (&gsi);
+	}
+      if (gimple *last = last_stmt (bb))
+	{
+	  if (maybe_clean_eh_stmt (last)
 	      && gimple_purge_dead_eh_edges (bb))
 	    todo |= TODO_cleanup_cfg;
-	  gsi_next (&gsi);
+	  if (gimple_purge_dead_abnormal_call_edges (bb))
+	    todo |= TODO_cleanup_cfg;
 	}
 
       /* If we have a basic block with no successors that does not
