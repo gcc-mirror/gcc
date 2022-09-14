@@ -98,9 +98,6 @@ go_langhook_init (void)
 {
   build_common_tree_nodes (false);
 
-  /* I don't know why this has to be done explicitly.  */
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
-
   /* We must create the gogo IR after calling build_common_tree_nodes
      (because Gogo::define_builtin_function_trees refers indirectly
      to, e.g., unsigned_char_type_node) but before calling
