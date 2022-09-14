@@ -300,6 +300,10 @@ fi
 CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
 AC_SUBST(CC_FOR_BUILD)
 
+# Propagate GM2_FOR_TARGET into Makefiles
+GM2_FOR_TARGET=${GM2_FOR_TARGET:-gcc}
+AC_SUBST(GM2_FOR_TARGET)
+
 # Now we check the target as long as it is a supported host.
 # For some embedded targets we choose minimal runtime system which is
 # just enough to satisfy the linker targetting raw metal.

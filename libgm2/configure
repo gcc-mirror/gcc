@@ -642,6 +642,7 @@ BUILD_ISOLIB_FALSE
 BUILD_ISOLIB_TRUE
 BUILD_PIMLIB_FALSE
 BUILD_PIMLIB_TRUE
+GM2_FOR_TARGET
 CC_FOR_BUILD
 enable_static
 enable_shared
@@ -12673,7 +12674,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12676 "configure"
+#line 12677 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12779,7 +12780,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12782 "configure"
+#line 12783 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19496,6 +19497,10 @@ $as_echo "$as_me: m2 library will be built on ${M2_HOST_OS}" >&6;}
 fi
 
 CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
+
+
+# Propagate GM2_FOR_TARGET into Makefiles
+GM2_FOR_TARGET=${GM2_FOR_TARGET:-gcc}
 
 
 # Now we check the target as long as it is a supported host.

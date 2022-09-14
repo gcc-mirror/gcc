@@ -40,6 +40,7 @@ GM2_SRC = $(GCC_DIR)/m2
 
 toolexeclibdir=@toolexeclibdir@
 toolexecdir=@toolexecdir@
+GM2_FOR_TARGET=@GM2_FOR_TARGET@
 
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)

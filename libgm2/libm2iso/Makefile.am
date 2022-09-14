@@ -34,6 +34,7 @@ slibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 
 toolexeclibdir=@toolexeclibdir@
 toolexecdir=@toolexecdir@
+GM2_FOR_TARGET=@GM2_FOR_TARGET@
 
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
