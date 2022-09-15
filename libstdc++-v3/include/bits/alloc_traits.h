@@ -33,9 +33,11 @@
 #include <bits/stl_construct.h>
 #include <bits/memoryfwd.h>
 #if __cplusplus >= 201103L
-# include <bits/allocator.h>
 # include <bits/ptr_traits.h>
 # include <ext/numeric_traits.h>
+# if _GLIBCXX_HOSTED
+#  include <bits/allocator.h>
+# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -402,6 +404,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _S_select(__rhs, 0); }
     };
 
+#if _GLIBCXX_HOSTED
+
 #if __cplusplus > 201703L
 # define __cpp_lib_constexpr_dynamic_alloc 201907L
 #endif
@@ -660,6 +664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       select_on_container_copy_construction(const allocator_type& __rhs)
       { return __rhs; }
     };
+#endif
 
   /// @cond undocumented
 #if __cplusplus < 201703L
@@ -774,11 +779,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 typename _Alloc::value_type const&>::type
     { };
 
+#if _GLIBCXX_HOSTED
   // std::allocator<_Tp> just requires CopyConstructible
   template<typename _Tp>
     struct __is_copy_insertable<allocator<_Tp>>
     : is_copy_constructible<_Tp>
     { };
+#endif
 
   // true if _Alloc::value_type is MoveInsertable into containers using _Alloc
   // (might be wrong if _Alloc::construct exists but is not constrained,
@@ -788,11 +795,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __is_alloc_insertable_impl<_Alloc, typename _Alloc::value_type>::type
     { };
 
+#if _GLIBCXX_HOSTED
   // std::allocator<_Tp> just requires MoveConstructible
   template<typename _Tp>
     struct __is_move_insertable<allocator<_Tp>>
     : is_move_constructible<_Tp>
     { };
+#endif
 
   // Trait to detect Allocator-like types.
   template<typename _Alloc, typename = void>
@@ -893,6 +902,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
+#if _GLIBCXX_HOSTED
   template<typename _ForwardIterator, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline void
@@ -901,6 +911,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Destroy(__first, __last);
     }
+#endif
   /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION

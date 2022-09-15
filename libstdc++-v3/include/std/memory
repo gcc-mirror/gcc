@@ -60,7 +60,10 @@
  * Smart pointers, etc.
  */
 
-#include <bits/allocator.h>
+#include <bits/memoryfwd.h>
+#if _GLIBCXX_HOSTED
+# include <bits/allocator.h>
+#endif
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_tempbuf.h>
@@ -73,8 +76,10 @@
 #  include <bits/alloc_traits.h>
 #  include <debug/debug.h>
 #  include <bits/unique_ptr.h>
+# if _GLIBCXX_HOSTED
 #  include <bits/shared_ptr.h>
 #  include <bits/shared_ptr_atomic.h>
+# endif
 #endif
 
 #if __cplusplus < 201103L || _GLIBCXX_USE_DEPRECATED
@@ -86,7 +91,7 @@
 #  include <bits/uses_allocator_args.h>
 #endif
 
-#if __cplusplus >= 201103L && __cplusplus <= 202002L
+#if __cplusplus >= 201103L && __cplusplus <= 202002L && _GLIBCXX_HOSTED
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -133,7 +138,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // C++11 to C++20
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && _GLIBCXX_HOSTED
 // Parallel STL algorithms
 # if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations

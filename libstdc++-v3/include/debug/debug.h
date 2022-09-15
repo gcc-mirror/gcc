@@ -61,7 +61,7 @@ namespace __gnu_debug
     struct _Safe_iterator;
 }
 
-#ifndef _GLIBCXX_DEBUG
+#if ! defined _GLIBCXX_DEBUG || ! _GLIBCXX_HOSTED
 
 # define __glibcxx_requires_cond(_Cond,_Msg)
 # define __glibcxx_requires_valid_range(_First,_Last)
