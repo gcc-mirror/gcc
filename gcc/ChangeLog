@@ -1,3 +1,27 @@
+2022-09-14  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_single): Use nvptx_uniform_warp_check.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_UNIFORM_WARP_CHECK.
+	(define_insn "nvptx_uniform_warp_check"): New define_insn.
+
+2022-09-14  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_single): Use nvptx_warpsync.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_WARPSYNC.
+	(define_insn "nvptx_warpsync"): New define_insn.
+
+2022-09-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (TARGET_PTX_6_0): '#define' to 'false'.
+
 2022-09-13  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
