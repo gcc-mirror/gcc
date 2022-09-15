@@ -146,6 +146,9 @@
     case CONST_INT:
       return !splittable_const_int_operand (op, mode);
 
+    case CONST_POLY_INT:
+      return known_eq (rtx_to_poly_int64 (op), BYTES_PER_RISCV_VECTOR);
+
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
