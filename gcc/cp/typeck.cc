@@ -2196,7 +2196,8 @@ invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
     return false;
   if (is_overloaded_fn (expr) && !really_overloaded_fn (expr))
     expr = get_first_fn (expr);
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
+  if (TREE_TYPE (expr)
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
     {
       if (complain & tf_error)
 	{

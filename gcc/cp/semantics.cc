@@ -8119,6 +8119,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      t = TREE_OPERAND (t, 1);
 	      STRIP_NOPS (t);
 	    }
+	  if (TREE_CODE (t) == COMPONENT_REF
+	      && invalid_nonstatic_memfn_p (EXPR_LOCATION (t), t,
+					    tf_warning_or_error))
+	    remove = true;
 	  indir_component_ref_p = false;
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
