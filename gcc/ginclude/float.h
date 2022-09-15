@@ -257,9 +257,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DBL_IS_IEC_60559	__DBL_IS_IEC_60559__
 #define LDBL_IS_IEC_60559	__LDBL_IS_IEC_60559__
 
-/* Infinity in type float, or overflow if infinity not supported.  */
+/* Infinity in type float; not defined if infinity not supported.  */
+#if __FLT_HAS_INFINITY__
 #undef INFINITY
 #define INFINITY	(__builtin_inff ())
+#endif
 
 /* Quiet NaN, if supported for float.  */
 #if __FLT_HAS_QUIET_NAN__
