@@ -6676,6 +6676,199 @@ namespace views::__adaptor
 
     inline constexpr _Slide slide;
   }
+
+  template<forward_range _Vp,
+	   indirect_binary_predicate<iterator_t<_Vp>, iterator_t<_Vp>> _Pred>
+    requires view<_Vp> && is_object_v<_Pred>
+  class chunk_by_view : public view_interface<chunk_by_view<_Vp, _Pred>>
+  {
+    _Vp _M_base = _Vp();
+    __detail::__box<_Pred> _M_pred = _Pred();
+    __detail::_CachedPosition<_Vp> _M_cached_begin;
+
+    constexpr iterator_t<_Vp>
+    _M_find_next(iterator_t<_Vp> __current)
+    {
+      __glibcxx_assert(_M_pred.has_value());
+      auto __pred = [this]<typename _Tp>(_Tp&& __x, _Tp&& __y) {
+	return !bool((*_M_pred)(std::forward<_Tp>(__x), std::forward<_Tp>(__y)));
+      };
+      auto __it = ranges::adjacent_find(__current, ranges::end(_M_base), __pred);
+      return ranges::next(__it, 1, ranges::end(_M_base));
+    }
+
+    constexpr iterator_t<_Vp>
+    _M_find_prev(iterator_t<_Vp> __current) requires bidirectional_range<_Vp>
+    {
+      __glibcxx_assert(_M_pred.has_value());
+      auto __pred = [this]<typename _Tp>(_Tp&& __x, _Tp&& __y) {
+	return !bool((*_M_pred)(std::forward<_Tp>(__y), std::forward<_Tp>(__x)));
+      };
+      auto __rbegin = std::make_reverse_iterator(__current);
+      auto __rend = std::make_reverse_iterator(ranges::begin(_M_base));
+      __glibcxx_assert(__rbegin != __rend);
+      auto __it = ranges::adjacent_find(__rbegin, __rend, __pred).base();
+      return ranges::prev(__it, 1, ranges::begin(_M_base));
+    }
+
+    class _Iterator;
+
+  public:
+    chunk_by_view() requires (default_initializable<_Vp>
+			      && default_initializable<_Pred>)
+      = default;
+
+    constexpr explicit
+    chunk_by_view(_Vp __base, _Pred __pred)
+    : _M_base(std::move(__base)), _M_pred(std::move(__pred))
+    { }
+
+    constexpr _Vp
+    base() const & requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
+
+    constexpr const _Pred&
+    pred() const
+    { return *_M_pred; }
+
+    constexpr _Iterator
+    begin()
+    {
+      __glibcxx_assert(_M_pred.has_value());
+      iterator_t<_Vp> __it;
+      if (_M_cached_begin._M_has_value())
+	__it = _M_cached_begin._M_get(_M_base);
+      else
+	{
+	  __it = _M_find_next(ranges::begin(_M_base));
+	  _M_cached_begin._M_set(_M_base, __it);
+	}
+      return _Iterator(*this, ranges::begin(_M_base), __it);
+    }
+
+    constexpr auto
+    end()
+    {
+      if constexpr (common_range<_Vp>)
+	return _Iterator(*this, ranges::end(_M_base), ranges::end(_M_base));
+      else
+	return default_sentinel;
+    }
+  };
+
+  template<typename _Range, typename _Pred>
+    chunk_by_view(_Range&&, _Pred) -> chunk_by_view<views::all_t<_Range>, _Pred>;
+
+  template<forward_range _Vp,
+	   indirect_binary_predicate<iterator_t<_Vp>, iterator_t<_Vp>> _Pred>
+    requires view<_Vp> && is_object_v<_Pred>
+  class chunk_by_view<_Vp, _Pred>::_Iterator
+  {
+    chunk_by_view* _M_parent = nullptr;
+    iterator_t<_Vp> _M_current = iterator_t<_Vp>();
+    iterator_t<_Vp> _M_next = iterator_t<_Vp>();
+
+    constexpr
+    _Iterator(chunk_by_view& __parent, iterator_t<_Vp> __current, iterator_t<_Vp> __next)
+    : _M_parent(std::__addressof(__parent)), _M_current(__current), _M_next(__next)
+    { }
+
+    static auto
+    _S_iter_concept()
+    {
+      if constexpr (bidirectional_range<_Vp>)
+	return bidirectional_iterator_tag{};
+      else
+	return forward_iterator_tag{};
+    }
+
+    friend chunk_by_view;
+
+  public:
+    using value_type = subrange<iterator_t<_Vp>>;
+    using difference_type = range_difference_t<_Vp>;
+    using iterator_category = input_iterator_tag;
+    using iterator_concept = decltype(_S_iter_concept());
+
+    _Iterator() = default;
+
+    constexpr value_type
+    operator*() const
+    {
+      __glibcxx_assert(_M_current != _M_next);
+      return ranges::subrange(_M_current, _M_next);
+    }
+
+    constexpr _Iterator&
+    operator++()
+    {
+      __glibcxx_assert(_M_current != _M_next);
+      _M_current = _M_next;
+      _M_next = _M_parent->_M_find_next(_M_current);
+      return *this;
+    }
+
+    constexpr _Iterator
+    operator++(int)
+    {
+      auto __tmp = *this;
+      ++*this;
+      return __tmp;
+    }
+
+    constexpr _Iterator&
+    operator--() requires bidirectional_range<_Vp>
+    {
+      _M_next = _M_current;
+      _M_current = _M_parent->_M_find_prev(_M_next);
+      return *this;
+    }
+
+    constexpr _Iterator
+    operator--(int) requires bidirectional_range<_Vp>
+    {
+      auto __tmp = *this;
+      --*this;
+      return __tmp;
+    }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, const _Iterator& __y)
+    { return __x._M_current == __y._M_current; }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, default_sentinel_t)
+    { return __x._M_current == __x._M_next; }
+  };
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Range, typename _Pred>
+	concept __can_chunk_by_view
+	  = requires { chunk_by_view(std::declval<_Range>(), std::declval<_Pred>()); };
+    }
+
+    struct _ChunkBy : __adaptor::_RangeAdaptor<_ChunkBy>
+    {
+      template<viewable_range _Range, typename _Pred>
+	requires __detail::__can_chunk_by_view<_Range, _Pred>
+	constexpr auto
+	operator() [[nodiscard]] (_Range&& __r, _Pred&& __pred) const
+	{ return chunk_by_view(std::forward<_Range>(__r), std::forward<_Pred>(__pred)); }
+
+      using __adaptor::_RangeAdaptor<_ChunkBy>::operator();
+      static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
+    };
+
+    inline constexpr _ChunkBy chunk_by;
+  }
 #endif // C++23
 } // namespace ranges
 
