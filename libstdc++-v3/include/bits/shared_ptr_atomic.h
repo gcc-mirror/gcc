@@ -32,24 +32,26 @@
 
 #include <bits/atomic_base.h>
 
+// Annotations for the custom locking in atomic<shared_ptr<T>>.
 #if defined _GLIBCXX_TSAN && __has_include(<sanitizer/tsan_interface.h>)
 #include <sanitizer/tsan_interface.h>
 #define _GLIBCXX_TSAN_MUTEX_DESTROY(X) \
   __tsan_mutex_destroy(X, __tsan_mutex_not_static)
-#define _GLIBCXX_TSAN_MUTEX_PRE_LOCK(X) \
-  __tsan_mutex_pre_lock(X, __tsan_mutex_not_static)
-#define _GLIBCXX_TSAN_MUTEX_POST_LOCK(X) \
+#define _GLIBCXX_TSAN_MUTEX_TRY_LOCK(X) \
+  __tsan_mutex_pre_lock(X, __tsan_mutex_not_static|__tsan_mutex_try_lock)
+#define _GLIBCXX_TSAN_MUTEX_TRY_LOCK_FAILED(X) __tsan_mutex_post_lock(X, \
+    __tsan_mutex_not_static|__tsan_mutex_try_lock_failed, 0)
+#define _GLIBCXX_TSAN_MUTEX_LOCKED(X) \
   __tsan_mutex_post_lock(X, __tsan_mutex_not_static, 0)
-#define _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(X) \
-  __tsan_mutex_pre_unlock(X, __tsan_mutex_not_static)
-#define _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(X) \
-  __tsan_mutex_post_unlock(X, __tsan_mutex_not_static)
+#define _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(X) __tsan_mutex_pre_unlock(X, 0)
+#define _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(X) __tsan_mutex_post_unlock(X, 0)
 #define _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(X) __tsan_mutex_pre_signal(X, 0)
 #define _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(X) __tsan_mutex_post_signal(X, 0)
 #else
 #define _GLIBCXX_TSAN_MUTEX_DESTROY(X)
-#define _GLIBCXX_TSAN_MUTEX_PRE_LOCK(X)
-#define _GLIBCXX_TSAN_MUTEX_POST_LOCK(X)
+#define _GLIBCXX_TSAN_MUTEX_TRY_LOCK(X)
+#define _GLIBCXX_TSAN_MUTEX_TRY_LOCK_FAILED(X)
+#define _GLIBCXX_TSAN_MUTEX_LOCKED(X)
 #define _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(X)
 #define _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(X)
 #define _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(X)
@@ -431,19 +433,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __current = _M_val.load(memory_order_relaxed);
 	    }
 
-	  _GLIBCXX_TSAN_MUTEX_PRE_LOCK(&_M_val);
+	  _GLIBCXX_TSAN_MUTEX_TRY_LOCK(&_M_val);
 
 	  while (!_M_val.compare_exchange_strong(__current,
 						 __current | _S_lock_bit,
 						 __o,
 						 memory_order_relaxed))
 	    {
+	      _GLIBCXX_TSAN_MUTEX_TRY_LOCK_FAILED(&_M_val);
 #if __cpp_lib_atomic_wait
 	      __detail::__thread_relax();
 #endif
 	      __current = __current & ~_S_lock_bit;
+	      _GLIBCXX_TSAN_MUTEX_TRY_LOCK(&_M_val);
 	    }
-	  _GLIBCXX_TSAN_MUTEX_POST_LOCK(&_M_val);
+	  _GLIBCXX_TSAN_MUTEX_LOCKED(&_M_val);
 	  return reinterpret_cast<pointer>(__current);
 	}
 
