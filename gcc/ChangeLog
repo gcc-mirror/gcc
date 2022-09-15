@@ -1,3 +1,182 @@
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frange_add_zeros): New.
+	(build_le): Call frange_add_zeros.
+	(build_ge): Same.
+	(foperator_equal::op1_range): Same.
+	(foperator_not_equal::op1_range): Same.
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_le): Accept frange instead of number.
+	(build_lt): Same.
+	(build_ge): Same.
+	(build_gt): Same.
+	(foperator_lt::op1_range): Pass full range to build_*.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_ge::op1_range): Same.
+	(foperator_ge::op2_range): Same.
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Use set_nan.
+	* value-range.h (frange::set_nan): Inline code originally in
+	set().
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frange_set_nan): Remove.
+	(build_lt): Use set_nan, update_nan, clear_nan.
+	(build_gt): Same.
+	(foperator_equal::op1_range): Same.
+	(foperator_not_equal::op1_range): Same.
+	(foperator_lt::op1_range): Same.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_ge::op1_range): Same.
+	(foperator_ge::op2_range): Same.
+	(foperator_unordered::op1_range): Same.
+	(foperator_ordered::op1_range): Same.
+	* value-query.cc (range_query::get_tree_range): Same.
+	* value-range.cc (frange::set_nan): Same.
+	(frange::update_nan): Same.
+	(frange::union_): Same.
+	(frange::intersect): Same.
+	(range_tests_nan): Same.
+	(range_tests_signed_zeros): Same.
+	(range_tests_signbit): Same.
+	(range_tests_floats): Same.
+	* value-range.h (class frange): Add update_nan and clear_nan.
+	(frange::set_nan): New.
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-query.cc (range_query::get_tree_range): Remove check for overflow.
+	* value-range-pretty-print.cc (vrange_printer::visit): Move read
+	of type until after undefined_p is checked.
+	* value-range.cc (frange::set): Remove asserts for REAL_CST.
+	(frange::contains_p): Tidy up.
+	(range_tests_nan):  Add comment.
+	* value-range.h (frange::type): Check for undefined_p.
+	(frange::set_undefined): Remove set of endpoints.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_group_last): Allow GOMP_MAP_ATTACH_DETACH after
+	GOMP_MAP_STRUCT (for reindexing).
+	(omp_gather_mapping_groups): Reimplement using...
+	(omp_gather_mapping_groups_1): This new function.  Stop processing at
+	GATHER_SENTINEL.
+	(omp_group_base): Allow GOMP_MAP_TO_PSET without any following node.
+	(omp_index_mapping_groups): Reimplement using...
+	(omp_index_mapping_groups_1): This new function.  Handle
+	REINDEX_SENTINEL.
+	(omp_reindex_mapping_groups, omp_mapped_by_containing_struct): New
+	functions.
+	(omp_tsort_mapping_groups_1): Adjust handling of base group being the
+	same as current group.  Use omp_mapped_by_containing_struct.
+	(omp_build_struct_sibling_lists): Use omp_mapped_by_containing_struct
+	and omp_reindex_mapping_groups.  Robustify group deletion for reordered
+	lists.
+	(gimplify_scan_omp_clauses): Update calls to
+	omp_build_struct_sibling_lists.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_var_data): Remove GOVD_MAP_HAS_ATTACHMENTS.
+	(GOMP_FIRSTPRIVATE_IMPLICIT): Renumber.
+	(insert_struct_comp_map): Refactor function into...
+	(build_omp_struct_comp_nodes): This new function.  Remove list handling
+	and improve self-documentation.
+	(extract_base_bit_offset): Remove BASE_REF, OFFSETP parameters.  Move
+	code to strip outer parts of address out of function, but strip no-op
+	conversions.
+	(omp_mapping_group): Add DELETED field for use during reindexing.
+	(omp_strip_components_and_deref, omp_strip_indirections): New functions.
+	(omp_group_last, omp_group_base): Add GOMP_MAP_STRUCT handling.
+	(omp_gather_mapping_groups): Initialise DELETED field for new groups.
+	(omp_index_mapping_groups): Notice DELETED groups when (re)indexing.
+	(omp_siblist_insert_node_after, omp_siblist_move_node_after,
+	omp_siblist_move_nodes_after, omp_siblist_move_concat_nodes_after): New
+	helper functions.
+	(omp_accumulate_sibling_list): New function to build up GOMP_MAP_STRUCT
+	node groups for sibling lists. Outlined from gimplify_scan_omp_clauses.
+	(omp_build_struct_sibling_lists): New function.
+	(gimplify_scan_omp_clauses): Remove struct_map_to_clause,
+	struct_seen_clause, struct_deref_set.  Call
+	omp_build_struct_sibling_lists as pre-pass instead of handling sibling
+	lists in the function's main processing loop.
+	(gimplify_adjust_omp_clauses_1): Remove GOVD_MAP_HAS_ATTACHMENTS
+	handling, unused now.
+	* omp-low.cc (scan_sharing_clauses): Handle pointer-type indirect
+	struct references, and references to pointers to structs also.
+
+2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106938
+	* tree-cfg.cc (execute_fixup_cfg): Purge dead abnormal
+	edges for all last stmts in a block.  Do EH cleanup
+	only on the last stmt in a block.
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106936
+	* value-query.cc (range_query::get_value_range): Remove assert.
+
+2022-09-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/mips/mips.cc (mips_option_override): Drop unused variable.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (is_or_contains_p, omp_target_reorder_clauses): Delete
+	functions.
+	(omp_tsort_mark): Add enum.
+	(omp_mapping_group): Add struct.
+	(debug_mapping_group, omp_get_base_pointer, omp_get_attachment,
+	omp_group_last, omp_gather_mapping_groups, omp_group_base,
+	omp_index_mapping_groups, omp_containing_struct,
+	omp_tsort_mapping_groups_1, omp_tsort_mapping_groups,
+	omp_segregate_mapping_groups, omp_reorder_mapping_groups): New
+	functions.
+	(gimplify_scan_omp_clauses): Call above functions instead of
+	omp_target_reorder_clauses, unless we've seen an error.
+	* omp-low.cc (scan_sharing_clauses): Avoid strict test if we haven't
+	sorted mapping groups.
+
+2022-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106878
+	* tree-cfg.cc (verify_gimple_assign_binary): Disallow pointer,
+	reference or OFFSET_TYPE BIT_IOR_EXPR, BIT_XOR_EXPR or, unless
+	the second argument is INTEGER_CST, BIT_AND_EXPR.
+	* match.pd ((type) X op CST -> (type) (X op ((type-x) CST)),
+	(type) (((type2) X) op Y) -> (X op (type) Y)): Punt for
+	POINTER_TYPE_P or OFFSET_TYPE.
+	* tree-ssa-reassoc.cc (optimize_range_tests_cmp_bitwise): For
+	pointers cast them to pointer sized integers first.
+
+2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* tree-ssa.cc (non_rewritable_mem_ref_base): Avoid BIT_FIELD_REFs
+	of bitfields.
+	(maybe_rewrite_mem_ref_base): Likewise.
+
+2022-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/106905
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Return
+	false when !vect_use_loop_mask_for_alignment_p (loop_vinfo) &&
+	LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0.
+
 2022-09-13  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/106877

@@ -1,3 +1,7 @@
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.cc (finish_omp_clauses): Likewise.
+
 2022-09-13  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (mark_used): Remove single-parameter overload.  Add

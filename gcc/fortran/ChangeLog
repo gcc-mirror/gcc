@@ -1,3 +1,9 @@
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Don't create
+	GOMP_MAP_TO_PSET mappings for class metadata, nor GOMP_MAP_POINTER
+	mappings for POINTER_TYPE_P decls.
+
 2022-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/95644

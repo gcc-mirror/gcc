@@ -1,3 +1,67 @@
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/goacc/member-array-acc.C: New test.
+	* g++.dg/gomp/member-array-omp.C: New test.
+	* g++.dg/gomp/target-3.C: Update expected output.
+	* g++.dg/gomp/target-lambda-1.C: Likewise.
+	* g++.dg/gomp/target-this-2.C: Likewise.
+	* c-c++-common/goacc/deep-copy-arrayofstruct.c: Move test from here.
+	* c-c++-common/gomp/target-50.c: New test.
+
+2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106938
+	* gcc.dg/pr106938.c: New testcase.
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106936
+	* g++.dg/tree-ssa/pr106936.C: New test.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/target-lambda-1.C: Adjust expected output.
+	* g++.dg/gomp/target-this-3.C: Likewise.
+	* g++.dg/gomp/target-this-4.C: Likewise.
+
+2022-09-14  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-one-insn-bool.c: Add -mzarch.
+	* gcc.target/s390/ifcvt-one-insn-char.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-bool.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-int.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Add -mzarch and change
+	long into long long.
+
+2022-09-14  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vperm-rev-z14.c: Add -save-temps.
+	* gcc.target/s390/vector/vperm-rev-z15.c: Likewise.
+
+2022-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106878
+	* gcc.c-torture/compile/pr106878.c: New test.
+
+2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* gfortran.dg/pr106934.f90: New testcase.
+
+2022-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106905.c: New test.
+	* gcc.target/ia64/pr106905.c: New test.
+
+2022-09-14  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	PR target/95720
+	* lib/g++.exp: Moved gluefile block to after flags have been
+	  prefixed for the target_compile call.
+	* lib/gcc.exp: Likewise.
+	* lib/wrapper.exp: Reset adjusted state flag.
+
 2022-09-13  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/106877

@@ -1,3 +1,45 @@
+2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_GLIBCXX_TSAN_MUTEX_DESTROY)
+	(_GLIBCXX_TSAN_MUTEX_PRE_LOCK, _GLIBCXX_TSAN_MUTEX_POST_LOCK)
+	(_GLIBCXX_TSAN_MUTEX_PRE_UNLOCK, _GLIBCXX_TSAN_MUTEX_POST_UNLOCK)
+	(_GLIBCXX_TSAN_MUTEX_PRE_SIGNAL, _GLIBCXX_TSAN_MUTEX_POST_SIGNAL):
+	Define macros for TSan annotation functions.
+	(_Sp_atomic::_Atomic_count): Add annotations.
+
+2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h: Include <new>.
+
+2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Explain why poison pragma can't
+	be used.
+
+2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future
+	(_State_baseV2::__setter(exception_ptr&, promise&)): Add
+	assertion for LWG 2276 precondition.
+	* testsuite/30_threads/promise/members/set_exception_neg.cc:
+	New test.
+
+2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 1203.
+	* doc/html/*: Regenerate.
+
+2022-09-14  Philipp Fent  <fent@in.tum.de>
+
+	* python/libstdcxx/v6/printers.py (access_streambuf_ptrs):
+	New helper function.
+	(StdStringBufPrinter, StdStringStreamPrinter): New printers.
+	(build_libstdcxx_dictionary): Register stringstream printers.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Check string
+	streams.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
 2022-09-13  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (__detail::__slide_caches_nothing): Define.

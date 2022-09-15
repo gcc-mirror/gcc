@@ -1,3 +1,8 @@
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* c-typeck.cc (c_finish_omp_clauses): Remove whole mapping node group
+	on error.
+
 2022-09-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.cc (c_parser_static_assert_declaration_no_semi)

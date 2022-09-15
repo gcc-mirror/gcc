@@ -1,3 +1,11 @@
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-15.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-16.c: New test.
+	* testsuite/libgomp.oacc-c++/deep-copy-17.C: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-arrayofstruct.c: Move
+	test to here, make "run" test.
+
 2022-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/106906
