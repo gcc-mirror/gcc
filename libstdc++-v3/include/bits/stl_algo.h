@@ -57,6 +57,7 @@
 #define _STL_ALGO_H 1
 
 #include <bits/algorithmfwd.h>
+#include <bits/stl_algobase.h>
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
 #include <bits/predefined_ops.h>
