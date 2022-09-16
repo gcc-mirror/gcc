@@ -298,23 +298,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  // Optimize for stateless allocators.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
-    struct __alloc_neq
-    {
-      static bool
-      _S_do_it(const _Alloc&, const _Alloc&)
-      { return false; }
-    };
-
-  template<typename _Alloc>
-    struct __alloc_neq<_Alloc, false>
-    {
-      static bool
-      _S_do_it(const _Alloc& __one, const _Alloc& __two)
-      { return __one != __two; }
-    };
-
 #if __cplusplus >= 201103L
   template<typename _Tp, bool
     = __or_<is_copy_constructible<typename _Tp::value_type>,
