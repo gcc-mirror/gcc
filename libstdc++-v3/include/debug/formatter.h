@@ -609,8 +609,7 @@ namespace __gnu_debug
     , _M_function(__function)
 #if _GLIBCXX_HAVE_STACKTRACE
 # ifdef _GLIBCXX_DEBUG_BACKTRACE
-    , _M_backtrace_state(
-      __glibcxx_backtrace_create_state(nullptr, 0, nullptr, nullptr))
+    , _M_backtrace_state(__glibcxx_backtrace_create_state(0, 0, 0, 0))
     , _M_backtrace_full(&__glibcxx_backtrace_full)
 # else
     , _M_backtrace_state()
