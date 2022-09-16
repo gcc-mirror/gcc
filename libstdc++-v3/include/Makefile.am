@@ -25,58 +25,70 @@ include $(top_srcdir)/fragment.am
 # Standard C++ includes.
 std_srcdir = ${glibcxx_srcdir}/include/std
 std_builddir = .
-std_headers = \
+std_freestanding = \
 	${std_srcdir}/algorithm \
-	${std_srcdir}/any \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
-	${std_srcdir}/barrier \
 	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
+	${std_srcdir}/concepts \
+	${std_srcdir}/coroutine \
+	${std_srcdir}/expected \
+	${std_srcdir}/functional \
+	${std_srcdir}/iterator \
+	${std_srcdir}/limits \
+	${std_srcdir}/memory \
+	${std_srcdir}/numbers \
+	${std_srcdir}/numeric \
+	${std_srcdir}/optional \
+	${std_srcdir}/ranges \
+	${std_srcdir}/ratio \
+	${std_srcdir}/scoped_allocator \
+	${std_srcdir}/source_location \
+	${std_srcdir}/span \
+	${std_srcdir}/tuple \
+	${std_srcdir}/type_traits \
+	${std_srcdir}/typeindex \
+	${std_srcdir}/utility \
+	${std_srcdir}/variant \
+	${std_srcdir}/version
+
+if !GLIBCXX_HOSTED
+std_headers = ${std_freestanding}
+else GLIBCXX_HOSTED
+std_headers = \
+	${std_freestanding} \
+	${std_srcdir}/any \
+	${std_srcdir}/barrier \
 	${std_srcdir}/charconv \
 	${std_srcdir}/chrono \
 	${std_srcdir}/codecvt \
 	${std_srcdir}/complex \
-	${std_srcdir}/concepts \
 	${std_srcdir}/condition_variable \
-	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
-	${std_srcdir}/expected \
 	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
-	${std_srcdir}/functional \
 	${std_srcdir}/future \
 	${std_srcdir}/iomanip \
 	${std_srcdir}/ios \
 	${std_srcdir}/iosfwd \
 	${std_srcdir}/iostream \
 	${std_srcdir}/istream \
-	${std_srcdir}/iterator \
 	${std_srcdir}/latch \
-	${std_srcdir}/limits \
 	${std_srcdir}/list \
 	${std_srcdir}/locale \
 	${std_srcdir}/map \
-	${std_srcdir}/memory \
 	${std_srcdir}/memory_resource \
 	${std_srcdir}/mutex \
-	${std_srcdir}/numbers \
-	${std_srcdir}/numeric \
-	${std_srcdir}/optional \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
-	${std_srcdir}/ranges \
-	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
-	${std_srcdir}/scoped_allocator \
 	${std_srcdir}/semaphore \
 	${std_srcdir}/set \
 	${std_srcdir}/shared_mutex \
-	${std_srcdir}/source_location \
-	${std_srcdir}/span \
 	${std_srcdir}/spanstream \
 	${std_srcdir}/sstream \
 	${std_srcdir}/syncstream \
@@ -89,26 +101,68 @@ std_headers = \
 	${std_srcdir}/string_view \
 	${std_srcdir}/system_error \
 	${std_srcdir}/thread \
-	${std_srcdir}/tuple \
-	${std_srcdir}/typeindex \
-	${std_srcdir}/type_traits \
 	${std_srcdir}/unordered_map \
 	${std_srcdir}/unordered_set \
-	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
-	${std_srcdir}/variant \
-	${std_srcdir}/vector \
-	${std_srcdir}/version
+	${std_srcdir}/vector
+endif GLIBCXX_HOSTED
 
 bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
-bits_headers = \
+bits_freestanding = \
 	${bits_srcdir}/algorithmfwd.h \
 	${bits_srcdir}/align.h \
-	${bits_srcdir}/alloc_traits.h \
-	${bits_srcdir}/allocated_ptr.h \
 	${bits_srcdir}/allocator.h \
+	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/atomic_base.h \
+	${bits_srcdir}/c++0x_warning.h \
+	${bits_srcdir}/boost_concept_check.h \
+	${bits_srcdir}/concept_check.h \
+	${bits_srcdir}/cpp_type_traits.h \
+	${bits_srcdir}/enable_special_members.h \
+	${bits_srcdir}/functexcept.h \
+	${bits_srcdir}/functional_hash.h \
+	${bits_srcdir}/invoke.h \
+	${bits_srcdir}/iterator_concepts.h \
+	${bits_srcdir}/max_size_type.h \
+	${bits_srcdir}/memoryfwd.h \
+	${bits_srcdir}/move.h \
+	${bits_srcdir}/predefined_ops.h \
+	${bits_srcdir}/parse_numbers.h \
+	${bits_srcdir}/ptr_traits.h \
+	${bits_srcdir}/range_access.h \
+	${bits_srcdir}/ranges_algo.h \
+	${bits_srcdir}/ranges_algobase.h \
+	${bits_srcdir}/ranges_base.h \
+	${bits_srcdir}/ranges_cmp.h \
+	${bits_srcdir}/ranges_uninitialized.h \
+	${bits_srcdir}/ranges_util.h \
+	${bits_srcdir}/refwrap.h \
+	${bits_srcdir}/stl_algo.h \
+	${bits_srcdir}/stl_algobase.h \
+	${bits_srcdir}/stl_construct.h \
+	${bits_srcdir}/stl_function.h \
+	${bits_srcdir}/stl_iterator.h \
+	${bits_srcdir}/stl_iterator_base_funcs.h \
+	${bits_srcdir}/stl_iterator_base_types.h \
+	${bits_srcdir}/stl_numeric.h \
+	${bits_srcdir}/stl_heap.h \
+	${bits_srcdir}/stl_pair.h \
+	${bits_srcdir}/stl_raw_storage_iter.h \
+	${bits_srcdir}/stl_relops.h \
+	${bits_srcdir}/stl_uninitialized.h \
+	${bits_srcdir}/uniform_int_dist.h \
+	${bits_srcdir}/unique_ptr.h \
+	${bits_srcdir}/uses_allocator.h \
+	${bits_srcdir}/uses_allocator_args.h \
+	${bits_srcdir}/utility.h
+
+if !GLIBCXX_HOSTED
+bits_headers = ${bits_freestanding}
+else GLIBCXX_HOSTED
+bits_headers = \
+	${bits_freestanding} \
+	${bits_srcdir}/allocated_ptr.h \
 	${bits_srcdir}/atomic_futex.h \
 	${bits_srcdir}/atomic_timed_wait.h \
 	${bits_srcdir}/atomic_wait.h \
@@ -116,17 +170,12 @@ bits_headers = \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
 	${bits_srcdir}/basic_string.tcc \
-	${bits_srcdir}/boost_concept_check.h \
-	${bits_srcdir}/c++0x_warning.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/charconv.h \
 	${bits_srcdir}/chrono.h \
 	${bits_srcdir}/codecvt.h \
-	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/cow_string.h \
-	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/deque.tcc \
-	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/erase_if.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
@@ -135,17 +184,13 @@ bits_headers = \
 	${bits_srcdir}/fs_ops.h \
 	${bits_srcdir}/fs_path.h \
 	${bits_srcdir}/fstream.tcc \
-	${bits_srcdir}/functexcept.h \
-	${bits_srcdir}/functional_hash.h \
 	${bits_srcdir}/gslice.h \
 	${bits_srcdir}/gslice_array.h \
 	${bits_srcdir}/hashtable.h \
 	${bits_srcdir}/hashtable_policy.h \
 	${bits_srcdir}/indirect_array.h \
-	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
-	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/list.tcc \
 	${bits_srcdir}/locale_classes.h \
 	${bits_srcdir}/locale_classes.tcc \
@@ -156,31 +201,17 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
-	${bits_srcdir}/max_size_type.h \
 	${bits_srcdir}/memory_resource.h \
-	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/mofunc_impl.h \
-	${bits_srcdir}/move.h \
 	${bits_srcdir}/move_only_function.h \
 	${bits_srcdir}/new_allocator.h \
 	${bits_srcdir}/node_handle.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
-	${bits_srcdir}/parse_numbers.h \
 	${bits_srcdir}/postypes.h \
-	${bits_srcdir}/predefined_ops.h \
-	${bits_srcdir}/ptr_traits.h \
 	${bits_srcdir}/quoted_string.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
-	${bits_srcdir}/range_access.h \
-	${bits_srcdir}/ranges_algobase.h \
-	${bits_srcdir}/ranges_algo.h \
-	${bits_srcdir}/ranges_base.h \
-	${bits_srcdir}/ranges_cmp.h \
-	${bits_srcdir}/ranges_uninitialized.h \
-	${bits_srcdir}/ranges_util.h \
-	${bits_srcdir}/refwrap.h \
 	${bits_srcdir}/regex.h \
 	${bits_srcdir}/regex.tcc \
 	${bits_srcdir}/regex_constants.h \
@@ -205,30 +236,18 @@ bits_headers = \
 	${bits_srcdir}/std_function.h \
 	${bits_srcdir}/std_mutex.h \
 	${bits_srcdir}/std_thread.h \
-	${bits_srcdir}/stl_algo.h \
-	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_bvector.h \
-	${bits_srcdir}/stl_construct.h \
 	${bits_srcdir}/stl_deque.h \
-	${bits_srcdir}/stl_function.h \
-	${bits_srcdir}/stl_heap.h \
-	${bits_srcdir}/stl_iterator.h \
-	${bits_srcdir}/stl_iterator_base_funcs.h \
-	${bits_srcdir}/stl_iterator_base_types.h \
 	${bits_srcdir}/stl_list.h \
 	${bits_srcdir}/stl_map.h \
 	${bits_srcdir}/stl_multimap.h \
 	${bits_srcdir}/stl_multiset.h \
-	${bits_srcdir}/stl_numeric.h \
-	${bits_srcdir}/stl_pair.h \
 	${bits_srcdir}/stl_queue.h \
-	${bits_srcdir}/stl_raw_storage_iter.h \
 	${bits_srcdir}/stl_relops.h \
 	${bits_srcdir}/stl_set.h \
 	${bits_srcdir}/stl_stack.h \
 	${bits_srcdir}/stl_tempbuf.h \
 	${bits_srcdir}/stl_tree.h \
-	${bits_srcdir}/stl_uninitialized.h \
 	${bits_srcdir}/stl_vector.h \
 	${bits_srcdir}/stream_iterator.h \
 	${bits_srcdir}/streambuf_iterator.h \
@@ -236,19 +255,15 @@ bits_headers = \
 	${bits_srcdir}/stringfwd.h \
 	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/this_thread_sleep.h \
-	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_lock.h \
-	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
 	${bits_srcdir}/unordered_set.h \
-	${bits_srcdir}/uses_allocator.h \
-	${bits_srcdir}/uses_allocator_args.h \
-	${bits_srcdir}/utility.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
 	${bits_srcdir}/valarray_after.h \
 	${bits_srcdir}/vector.tcc
+endif GLIBCXX_HOSTED
 
 bits_host_headers = \
 	${glibcxx_srcdir}/${CPU_OPT_BITS_RANDOM}
@@ -293,15 +308,22 @@ pstl_headers = \
 
 backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
-backward_headers = \
+backward_freestanding = \
 	${backward_srcdir}/auto_ptr.h \
+	${backward_srcdir}/binders.h
+
+if !GLIBCXX_HOSTED
+backward_headers = ${backward_freestanding}
+else GLIBCXX_HOSTED
+backward_headers = \
+	${backward_freestanding} \
 	${backward_srcdir}/backward_warning.h \
-	${backward_srcdir}/binders.h \
 	${backward_srcdir}/hash_map \
 	${backward_srcdir}/hash_set \
 	${backward_srcdir}/hash_fun.h \
 	${backward_srcdir}/hashtable.h \
 	${backward_srcdir}/strstream
+endif GLIBCXX_HOSTED
 
 pb_srcdir = ${glibcxx_srcdir}/include/ext/pb_ds
 pb_builddir = ./ext/pb_ds
@@ -597,49 +619,56 @@ pb_headers7 = \
 
 ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
-ext_headers = \
-	${ext_srcdir}/algorithm \
+ext_freestanding = \
 	${ext_srcdir}/aligned_buffer.h \
 	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
-	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/cast.h \
+	${ext_srcdir}/concurrence.h \
+	${ext_srcdir}/numeric_traits.h \
+	${ext_srcdir}/iterator \
+	${ext_srcdir}/pointer.h \
+	${ext_srcdir}/type_traits.h \
+	${ext_srcdir}/typelist.h
+
+if !GLIBCXX_HOSTED
+ext_headers = ${ext_freestanding}
+else GLIBCXX_HOSTED
+ext_headers = \
+	${ext_freestanding} \
+	${ext_srcdir}/algorithm \
+	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/cmath \
 	${ext_srcdir}/codecvt_specializations.h \
-	${ext_srcdir}/concurrence.h \
 	${ext_srcdir}/debug_allocator.h \
 	${ext_srcdir}/enc_filebuf.h \
 	${ext_srcdir}/extptr_allocator.h \
-	${ext_srcdir}/stdio_filebuf.h \
-	${ext_srcdir}/stdio_sync_filebuf.h \
 	${ext_srcdir}/functional \
-	${ext_srcdir}/iterator \
 	${ext_srcdir}/malloc_allocator.h \
 	${ext_srcdir}/memory \
 	${ext_srcdir}/mt_allocator.h \
 	${ext_srcdir}/new_allocator.h \
 	${ext_srcdir}/numeric \
-	${ext_srcdir}/numeric_traits.h \
 	${ext_srcdir}/pod_char_traits.h \
-	${ext_srcdir}/pointer.h \
 	${ext_srcdir}/pool_allocator.h \
-	${ext_srcdir}/rb_tree \
 	${ext_srcdir}/random \
 	${ext_srcdir}/random.tcc \
+	${ext_srcdir}/rb_tree \
+	${ext_srcdir}/rc_string_base.h \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
+	${ext_srcdir}/sso_string_base.h \
+	${ext_srcdir}/stdio_filebuf.h \
+	${ext_srcdir}/stdio_sync_filebuf.h \
 	${ext_srcdir}/string_conversions.h \
 	${ext_srcdir}/throw_allocator.h \
-	${ext_srcdir}/typelist.h \
-	${ext_srcdir}/type_traits.h \
-	${ext_srcdir}/rc_string_base.h \
-	${ext_srcdir}/sso_string_base.h \
+	${ext_srcdir}/vstring_fwd.h \
 	${ext_srcdir}/vstring.h \
 	${ext_srcdir}/vstring.tcc \
-	${ext_srcdir}/vstring_fwd.h \
 	${ext_srcdir}/vstring_util.h \
 	${ext_compat_headers}
+endif GLIBCXX_HOSTED
 
 ext_compat_headers = \
 	${backward_srcdir}/hash_set \
@@ -812,16 +841,25 @@ endif
 # This is the common subset of C++ files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)
 c_base_builddir = .
+c_base_freestanding = \
+	${c_base_srcdir}/cfloat \
+	${c_base_srcdir}/climits \
+	${c_base_srcdir}/cstddef \
+	${c_base_srcdir}/cstdint \
+	${c_base_srcdir}/cstdlib
+
+if !GLIBCXX_HOSTED
+c_base_headers = ${c_base_freestanding}
+else GLIBCXX_HOSTED
 c_base_headers = \
+	${c_base_freestanding} \
 	${c_base_srcdir}/cassert \
 	${c_base_srcdir}/ccomplex \
 	${c_base_srcdir}/cctype \
 	${c_base_srcdir}/cerrno \
 	${c_base_srcdir}/cfenv \
-	${c_base_srcdir}/cfloat \
 	${c_base_srcdir}/cinttypes \
 	${c_base_srcdir}/ciso646 \
-	${c_base_srcdir}/climits \
 	${c_base_srcdir}/clocale \
 	${c_base_srcdir}/cmath \
 	${c_base_srcdir}/csetjmp \
@@ -829,16 +867,14 @@ c_base_headers = \
 	${c_base_srcdir}/cstdalign \
 	${c_base_srcdir}/cstdarg \
 	${c_base_srcdir}/cstdbool \
-	${c_base_srcdir}/cstddef \
-	${c_base_srcdir}/cstdint \
 	${c_base_srcdir}/cstdio \
-	${c_base_srcdir}/cstdlib \
 	${c_base_srcdir}/cstring \
 	${c_base_srcdir}/ctgmath \
 	${c_base_srcdir}/ctime \
 	${c_base_srcdir}/cuchar \
 	${c_base_srcdir}/cwchar \
 	${c_base_srcdir}/cwctype
+endif GLIBCXX_HOSTED
 
 # "C" compatibility headers.
 c_compatibility_srcdir = ${glibcxx_srcdir}/include/c_compatibility
@@ -890,10 +926,16 @@ endif
 # Debug mode headers
 debug_srcdir = ${glibcxx_srcdir}/include/debug
 debug_builddir = ./debug
-debug_headers = \
+debug_freestanding = \
 	${debug_srcdir}/assertions.h \
+	${debug_srcdir}/debug.h
+
+if !GLIBCXX_HOSTED
+debug_headers = ${debug_freestanding}
+else GLIBCXX_HOSTED
+debug_headers = \
+	${debug_freestanding} \
 	${debug_srcdir}/bitset \
-	${debug_srcdir}/debug.h \
 	${debug_srcdir}/deque \
 	${debug_srcdir}/formatter.h \
 	${debug_srcdir}/forward_list \
@@ -923,6 +965,7 @@ debug_headers = \
 	${debug_srcdir}/unordered_map \
 	${debug_srcdir}/unordered_set \
 	${debug_srcdir}/vector
+endif GLIBCXX_HOSTED
 
 # Parallel mode headers
 parallel_srcdir = ${glibcxx_srcdir}/include/parallel
@@ -1415,48 +1458,8 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 	-mkdir -p ${pch3_output_builddir}
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch3_source} -o $@
 
-# For robustness sake (in light of junk files or in-source
-# configuration), copy from the build or source tree to the install
-# tree using only the human-maintained file lists and directory
-# components.  Yes, with minor differences, this is sheer duplication
-# of the staging rules above using $(INSTALL_DATA) instead of LN_S and
-# `$(mkinstalldirs)' instead of `mkdir -p'.  In particular,
-# host_headers_extra are taken out of the build tree staging area;
-# the rest are taken from the original source tree.
-
-if GLIBCXX_HOSTED
-install-data-local: install-headers
-else
-install-data-local: install-freestanding-headers
-endif
-
-# This is a subset of the full install-headers rule.  We only need <ciso646>,
-# <cstddef>, <cfloat>, <limits>, <climits>, <version>, <cstdint>, <cstdlib>,
-# <new>, <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
-# <concepts>, <coroutine>, <cstdbool>, <type_traits>, <bit>, <atomic>,
-# <source_location> and any files which they include (and which we provide).
-# <new>, <typeinfo>, <exception>, <initializer_list> and <compare>
-# are installed by libsupc++, so only the others and the sub-includes
-# are copied here.
-install-freestanding-headers:
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
-	for file in c++0x_warning.h atomic_base.h concept_check.h move.h; do \
-	  $(INSTALL_DATA) ${glibcxx_srcdir}/include/bits/$${file} $(DESTDIR)${gxx_include_dir}/bits; done
-	$(mkinstalldirs) $(DESTDIR)${host_installdir}
-	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h \
-	  ${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
-	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
-	for file in limits type_traits atomic bit concepts coroutine \
-	  source_location version; do \
-	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
-	for file in ciso646 cstddef cfloat climits cstdint cstdlib \
-	  cstdalign cstdarg cstdbool; do \
-	  $(INSTALL_DATA) ${c_base_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
-
 # The real deal.
+install-data-local: install-headers
 install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${bits_builddir}
@@ -1465,10 +1468,24 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${backward_builddir}
 	for file in ${backward_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${backward_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
+	for file in ${std_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
+	for file in ${debug_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${pb_builddir}
+	$(mkinstalldirs) $(DESTDIR)${host_installdir}
+	for file in ${host_headers} ${bits_host_headers} ${host_headers_extra} \
+	 ${thread_host_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
+	for file in ${c_base_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${ext_builddir}
 	for file in ${ext_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${ext_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${pb_builddir}
+if GLIBCXX_HOSTED
 	for dir in ${pb_subdirs}; do \
 	  $(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/$${dir} ; done
 	for file in ${pb_headers1}; do \
@@ -1514,34 +1531,23 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${experimental_bits_builddir}
 	for file in ${experimental_bits_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${experimental_bits_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
-	for file in ${c_base_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
 	c_base_headers_extra_install='$(c_base_headers_extra)';\
 	for file in $$c_base_headers_extra_install; do \
 	  $(INSTALL_DATA) $$file $(DESTDIR)${gxx_include_dir}/${bits_builddir}; done
 	c_compatibility_headers_install='$(c_compatibility_headers_extra)';\
 	for file in $$c_compatibility_headers_install; do \
 	  $(INSTALL_DATA) $$file $(DESTDIR)${gxx_include_dir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
-	for file in ${std_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
-	for file in ${debug_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir}
 	for file in ${parallel_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${parallel_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${host_installdir}
-	for file in ${host_headers} ${bits_host_headers} ${host_headers_extra} \
-	 ${thread_host_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}/../ext
 	for file in ${ext_host_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}/../ext; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${pstl_builddir}
 	for file in ${pstl_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${pstl_builddir}; done
+endif GLIBCXX_HOSTED
+
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = ${pch_output} ${pch_output_anchors} stamp-host
 
