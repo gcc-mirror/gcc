@@ -2868,6 +2868,9 @@ Vector alignment is reachable for types of 32 bits or less.
 @item vector_alignment_reachable_for_64bit
 Vector alignment is reachable for types of 64 bits or less.
 
+@item vma_equals_lma
+Target generates executable with VMA equal to LMA for .data section.
+
 @item wchar_t_char16_t_compatible
 Target supports @code{wchar_t} that is compatible with @code{char16_t}.
 
