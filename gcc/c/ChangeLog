@@ -1,3 +1,7 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.cc (build_void_list_node): Remove.
+
 2022-09-14  Julian Brown  <julian@codesourcery.com>
 
 	* c-typeck.cc (c_finish_omp_clauses): Remove whole mapping node group

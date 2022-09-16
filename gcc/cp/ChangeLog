@@ -1,3 +1,9 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* decl.cc (cxx_init_decl_processing): Inline last
+	build_void_list_node call.
+	(build_void_list_node): Remove.
+
 2022-09-14  Julian Brown  <julian@codesourcery.com>
 
 	* semantics.cc (finish_omp_clauses): Likewise.

@@ -1,3 +1,26 @@
+2022-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h (INFINITY): Define only if
+	[__FLT_HAS_INFINITY__].
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* tree-ssa-pre.cc (translate_vuse_through_block): Only
+	keep the VUSE if its def dominates PHIBLOCK.
+	(prune_clobbered_mems): Rewrite logic so we check whether
+	a value dies in a block when the VUSE def doesn't dominate it.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* tree.cc (build_common_tree_nodes): Initialize void_list_node
+	here.
+
+2022-09-15  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106550
+	* config/rs6000/rs6000.cc (rs6000_emit_set_long_const): Use pli.
+
 2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op-float.cc (frange_add_zeros): New.

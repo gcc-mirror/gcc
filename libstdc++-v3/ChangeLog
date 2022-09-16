@@ -1,3 +1,41 @@
+2022-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory: Do not include <bits/stl_algobase.h>.
+
+2022-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_GLIBCXX_TSAN_MUTEX_PRE_LOCK):
+	Replace with ...
+	(_GLIBCXX_TSAN_MUTEX_TRY_LOCK): ... this, add try_lock flag.
+	(_GLIBCXX_TSAN_MUTEX_TRY_LOCK_FAILED): New macro using
+	try_lock_failed flag
+	(_GLIBCXX_TSAN_MUTEX_POST_LOCK): Rename to ...
+	(_GLIBCXX_TSAN_MUTEX_LOCKED): ... this.
+	(_GLIBCXX_TSAN_MUTEX_PRE_UNLOCK): Remove invalid flag.
+	(_GLIBCXX_TSAN_MUTEX_POST_UNLOCK): Remove invalid flag.
+	(_Sp_atomic::_Atomic_count::lock): Use new macros.
+
+2022-09-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__adjacent_find_fn, adjacent_find):
+	Move to ...
+	* include/bits/ranges_util.h: ... here.
+	* include/std/ranges (chunk_by_view): Define.
+	(chunk_by_view::_Iterator): Define.
+	(__detail::__can_chunk_by_view): Define.
+	(_ChunkBy, chunk_by): Define.
+	* testsuite/std/ranges/adaptors/chunk_by/1.cc: New test.
+
+2022-09-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc:
+	Adapt dg-prune-output to _GLIBCXX_INLINE_VERSION mode.
+
+2022-09-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Remove obsolete std::__detail::__8
+	symbols.
+
 2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_atomic.h (_GLIBCXX_TSAN_MUTEX_DESTROY)

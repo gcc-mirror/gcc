@@ -1,3 +1,21 @@
+2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106857
+	* simplify.cc (gfc_simplify_pack): Check for NULL pointer dereferences
+	while walking through constructors (error recovery).
+
+2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104314
+	* resolve.cc (deferred_op_assign): Do not try to generate temporary
+	for deferred character length assignment if types do not agree.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* f95-lang.cc (gfc_init_decl_processing): Do not initialize
+	void_list_node.
+
 2022-09-14  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Don't create
