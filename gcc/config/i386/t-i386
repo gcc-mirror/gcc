@@ -61,7 +61,12 @@ i386-features.o: $(srcdir)/config/i386/i386-features.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+# i386-builtin-types.inc is included into i386-builtins.h.
+# Below are direct users of i386-builtins.h:
 i386.o: i386-builtin-types.inc
+i386-builtins.o: i386-builtin-types.inc
+i386-expand.o: i386-builtin-types.inc
+i386-features.o: i386-builtin-types.inc
 
 i386-builtin-types.inc: s-i386-bt ; @true
 s-i386-bt: $(srcdir)/config/i386/i386-builtin-types.awk \
