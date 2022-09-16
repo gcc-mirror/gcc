@@ -265,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp value_type;
       template<typename _Up> allocator(const allocator<_Up>&) { }
     };
+  /// @endcond
 
   /// @} group allocator
 
@@ -277,6 +278,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Undefine.
 #undef __allocator_base
+
+  /// @cond undocumented
 
   // To implement Option 3 of DR 431.
   template<typename _Alloc, bool = __is_empty(_Alloc)>
