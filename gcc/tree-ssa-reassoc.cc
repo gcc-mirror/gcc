@@ -3680,15 +3680,18 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    if (id == l || POINTER_TYPE_P (TREE_TYPE (op)))
 	      {
 		code = (b % 4) == 3 ? BIT_NOT_EXPR : NOP_EXPR;
-		g = gimple_build_assign (make_ssa_name (type1), code, op);
+		tree type3 = id >= l ? type1 : pointer_sized_int_node;
+		g = gimple_build_assign (make_ssa_name (type3), code, op);
 		gimple_seq_add_stmt_without_update (&seq, g);
 		op = gimple_assign_lhs (g);
 	      }
 	    tree type = TREE_TYPE (r->exp);
 	    tree exp = r->exp;
-	    if (id >= l && !useless_type_conversion_p (type1, type))
+	    if (POINTER_TYPE_P (type)
+		|| (id >= l && !useless_type_conversion_p (type1, type)))
 	      {
-		g = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, exp);
+		tree type3 = id >= l ? type1 : pointer_sized_int_node;
+		g = gimple_build_assign (make_ssa_name (type3), NOP_EXPR, exp);
 		gimple_seq_add_stmt_without_update (&seq, g);
 		exp = gimple_assign_lhs (g);
 	      }
