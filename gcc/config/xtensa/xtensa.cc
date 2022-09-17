@@ -366,6 +366,9 @@ static rtx xtensa_delegitimize_address (rtx);
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK xtensa_output_mi_thunk
 
+#undef TARGET_MAX_ANCHOR_OFFSET
+#define TARGET_MAX_ANCHOR_OFFSET 1020
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
