@@ -43,12 +43,17 @@ CompileItem::visit (HIR::StaticItem &var)
   rust_assert (ok);
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-  tree value = CompileExpr::Compile (var.get_expr (), ctx);
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
   ok = ctx->get_mappings ()->lookup_canonical_path (
     var.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
+
+  HIR::Expr *const_value_expr = var.get_expr ();
+  ctx->push_const_context ();
+  tree value = compile_constant_item (ctx, resolved_type, canonical_path,
+				      const_value_expr, var.get_locus ());
+  ctx->pop_const_context ();
 
   std::string name = canonical_path->get ();
   std::string asm_name = ctx->mangle_item (resolved_type, *canonical_path);
