@@ -327,6 +327,7 @@ private:
   bool union_nans (const frange &);
   bool intersect_nans (const frange &);
   bool combine_zeros (const frange &, bool union_p);
+  void flush_denormals_to_zero ();
 
   tree m_type;
   REAL_VALUE_TYPE m_min;

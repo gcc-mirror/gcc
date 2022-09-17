@@ -267,6 +267,26 @@ tree_compare (tree_code code, tree op1, tree op2)
   return !integer_zerop (fold_build2 (code, integer_type_node, op1, op2));
 }
 
+// Flush denormal endpoints to the appropriate 0.0.
+
+void
+frange::flush_denormals_to_zero ()
+{
+  if (undefined_p () || known_isnan ())
+    return;
+
+  // Flush [x, -DENORMAL] to [x, -0.0].
+  if (real_isdenormal (&m_max) && real_isneg (&m_max))
+    {
+      m_max = dconst0;
+      if (HONOR_SIGNED_ZEROS (m_type))
+	m_max.sign = 1;
+    }
+  // Flush [+DENORMAL, x] to [+0.0, x].
+  if (real_isdenormal (&m_min) && !real_isneg (&m_min))
+    m_min = dconst0;
+}
+
 // Setter for franges.
 
 void
@@ -317,6 +337,9 @@ frange::set (tree min, tree max, value_range_kind kind)
   gcc_checking_assert (tree_compare (LE_EXPR, min, max));
 
   normalize_kind ();
+
+  flush_denormals_to_zero ();
+
   if (flag_checking)
     verify_range ();
 }
