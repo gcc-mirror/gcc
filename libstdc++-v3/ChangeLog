@@ -1,3 +1,105 @@
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106953
+	* include/backward/auto_ptr.h [!_GLIBCXX_HOSTED]: Do not define
+	shared_ptr members.
+	* include/bits/alloc_traits.h [!_GLIBCXX_HOSTED]: Do not declare
+	std::allocator_traits<std::allocator<T>> specializations for
+	freestanding.
+	* include/bits/memoryfwd.h [!_GLIBCXX_HOSTED] (allocator): Do
+	not declare for freestanding.
+	* include/bits/stl_algo.h [!_GLIBCXX_HOSTED] (stable_partition):
+	Do not define for freestanding.
+	[!_GLIBCXX_HOSTED] (merge, stable_sort): Do not use temporary
+	buffers for freestanding.
+	* include/bits/stl_algobase.h [!_GLIBCXX_HOSTED]: Do not declare
+	streambuf iterators and overloaded algorithms using them.
+	* include/bits/stl_uninitialized.h [!_GLIBCXX_HOSTED]: Do not
+	define specialized overloads for std::allocator.
+	* include/bits/unique_ptr.h [!_GLIBCXX_HOSTED] (make_unique)
+	(make_unique_for_overwrite, operator<<): Do not define for
+	freestanding.
+	* include/c_global/cstdlib [!_GLIBCXX_HOSTED] (_Exit): Declare.
+	Use _GLIBCXX_NOTHROW instead of throw().
+	* include/debug/assertions.h [!_GLIBCXX_HOSTED]: Ignore
+	_GLIBCXX_DEBUG for freestanding.
+	* include/debug/debug.h [!_GLIBCXX_DEBUG]: Likewise.
+	* include/std/bit [!_GLIBCXX_HOSTED]: Do not use the custom
+	__int_traits if <ext/numeric_traits.h> is available.
+	* include/std/functional [!_GLIBCXX_HOSTED]: Do not include
+	headers that aren't valid for freestanding.
+	(boyer_moore_searcher, boyer_moore_horspool_searcher): Do not
+	define for freestanding.
+	* include/std/iterator [!_GLIBCXX_HOSTED]: Do not include
+	headers that aren't valid for freestanding.
+	* include/std/memory [!_GLIBCXX_HOSTED]: Likewise.
+	* include/std/ranges [!_GLIBCXX_HOSTED] (istream_view): Do not
+	define for freestanding.
+	(views::__detail::__is_basic_string_view) [!_GLIBCXX_HOSTED]:
+	Do not define partial specialization for freestanding.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__alloc_swap)
+	(__shrink_to_fit_aux): Move here, from ...
+	* include/bits/allocator.h: ... here.
+	* include/ext/alloc_traits.h: Do not include allocator.h.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h: Include <bits/stl_algobase.h>.
+	* include/bits/stl_tempbuf.h: Include headers for __try and
+	__catch macros, std::pair, and __gnu_cxx::__numeric_traits.
+	* include/bits/stream_iterator.h: Include <iosfwd> and headers
+	for std::addressof and std::iterator.
+	* include/bits/streambuf_iterator.h: Include header for
+	std::iterator.
+	* include/std/iterator: Do not include <iosfwd>.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_ref/compare_exchange_padding.cc:
+	Store value with non-zero padding bits after construction.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr1/random.h (__detail::_Adaptor::_BEngine): Remove.
+	(__detail::_Adaptor::_M_g): Make public.
+	(__detail::_Adaptor<_Engine*, _Dist>): Remove partial
+	specialization.
+	(variate_generate::_Value): New helper to simplify handling of
+	_Engine* and _Engine& template arguments.
+	(variate_generate::engine_value_type): Define to underlying
+	engine type, not adapted type.
+	(variate_generate::engine()): Return underlying engine instead
+	of adaptor.
+	* testsuite/tr1/5_numerical_facilities/random/variate_generator/37986.cc:
+	Fix comment.
+	* testsuite/tr1/5_numerical_facilities/random/variate_generator/requirements/typedefs.cc:
+	Check member typedefs have the correct types.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/formatter.h [_GLIBCXX_DEBUG_BACKTRACE]
+	(_Error_formatter): Use 0 as null pointer constant.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (__alloc_neq): Remove.
+	* include/bits/stl_list.h (list::_M_check_equal_allocators):
+	Compare allocators directly, without __alloc_neq.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Remove __allocator_base.
+	* include/bits/allocator.h: Fix nesting of Doxygen commands.
+
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document GLIBCXX_3.4.30 and
+	GLIBCXX_3.4.31 versions.
+	* doc/html/manual/abi.html: Regenerate.
+
 2022-09-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/memory: Do not include <bits/stl_algobase.h>.

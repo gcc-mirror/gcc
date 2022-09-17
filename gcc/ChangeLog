@@ -1,3 +1,19 @@
+2022-09-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/106910
+	* config/i386/i386-builtins.cc
+	(ix86_builtin_vectorized_function): Modernized with
+	corresponding expanders.
+	* config/i386/sse.md (lrint<mode><sseintvecmodelower>2): New
+	expander.
+	(floor<mode>2): Ditto.
+	(lfloor<mode><sseintvecmodelower>2): Ditto.
+	(ceil<mode>2): Ditto.
+	(lceil<mode><sseintvecmodelower>2): Ditto.
+	(btrunc<mode>2): Ditto.
+	(lround<mode><sseintvecmodelower>2): Ditto.
+	(exp2<mode>2): Ditto.
+
 2022-09-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* ginclude/float.h (INFINITY): Define only if

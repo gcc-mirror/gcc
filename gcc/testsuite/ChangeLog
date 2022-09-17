@@ -1,3 +1,18 @@
+2022-09-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Fix dg-final-use-autofdo.
+
+2022-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92505
+	* g++.dg/cpp0x/constexpr-mutable3.C: New test.
+	* g++.dg/cpp1y/constexpr-mutable1.C: New test.
+
+2022-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106858
+	* g++.dg/gomp/map-3.C: New test.
+
 2022-09-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106857

@@ -1,3 +1,15 @@
+2022-09-16  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c (release_registered_frames): Cleanup at shutdown.
+	(__register_frame_info_table_bases): Use btree in atomic fast path.
+	(__deregister_frame_info_bases): Likewise.
+	(_Unwind_Find_FDE): Likewise.
+	(base_from_object): Make parameter const.
+	(classify_object_over_fdes): Add query-only mode.
+	(get_pc_range): Compute PC range for lookup.
+	* unwind-dw2-fde.h (last_fde): Make parameter const.
+	* unwind-dw2-btree.h: New file.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* config.host: Remove hppa.
