@@ -974,9 +974,10 @@ rs_type_quals (const_tree type)
     return TYPE_UNQUALIFIED;
   quals = TYPE_QUALS (type);
   /* METHOD and REFERENCE_TYPEs should never have quals.  */
-  gcc_assert (
-    (TREE_CODE (type) != METHOD_TYPE && !TYPE_REF_P (type))
-    || ((quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)) == TYPE_UNQUALIFIED));
+  // gcc_assert (
+  //   (TREE_CODE (type) != METHOD_TYPE && !TYPE_REF_P (type))
+  //   || ((quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)) ==
+  //   TYPE_UNQUALIFIED));
   return quals;
 }
 
