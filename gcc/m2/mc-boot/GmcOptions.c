@@ -1011,7 +1011,7 @@ extern "C" void mcOptions_writeGPLheader (FIO_File f)
   issueGPL (f);
 }
 
-extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   langC = TRUE;
   langCPP = FALSE;
@@ -1041,6 +1041,6 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribut
   projectContents = DynamicStrings_InitString ((const char *) "GNU Modula-2", 12);
 }
 
-extern "C" void _M2_mcOptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcOptions_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -459,10 +459,10 @@ extern "C" void mcPretty_raw (mcPretty_pretty p, DynamicStrings_String s)
     }
 }
 
-extern "C" void _M2_mcPretty_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcPretty_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcPretty_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcPretty_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

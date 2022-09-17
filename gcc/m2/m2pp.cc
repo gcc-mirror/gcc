@@ -180,7 +180,7 @@ do_pf (tree t, int bits)
   killPretty (state);
 }
 
-/* pf - print function.  Expected to be printed interactively from
+/* pf print function.  Expected to be printed interactively from
    the debugger: print pf(func), or to be called from code.  */
 
 void
@@ -189,7 +189,7 @@ pf (tree t)
   do_pf (t, FALSE);
 }
 
-/* pe - print expression.  Expected to be printed interactively from
+/* pe print expression.  Expected to be printed interactively from
    the debugger: print pe(expr), or to be called from code.  */
 
 void
@@ -203,7 +203,7 @@ pe (tree t)
   killPretty (state);
 }
 
-/* pet - print expression and its type.  Expected to be printed
+/* pet print expression and its type.  Expected to be printed
    interactively from the debugger: print pet(expr), or to be called
    from code.  */
 
@@ -220,7 +220,7 @@ pet (tree t)
   killPretty (state);
 }
 
-/* pt - print type.  Expected to be printed interactively from the
+/* pt print type.  Expected to be printed interactively from the
    debugger: print pt(expr), or to be called from code.  */
 
 void
@@ -233,7 +233,7 @@ pt (tree t)
   killPretty (state);
 }
 
-/* ptl - print type low level.  Expected to be printed interactively
+/* ptl print type low level.  Expected to be printed interactively
    from the debugger: print ptl(type), or to be called from code.  */
 
 void
@@ -246,7 +246,7 @@ ptl (tree t)
   killPretty (state);
 }
 
-/* ptcl - print TREE_CHAINed list.  */
+/* ptcl print TREE_CHAINed list.  */
 
 void
 ptcl (tree t)
@@ -258,7 +258,7 @@ ptcl (tree t)
   killPretty (state);
 }
 
-/* loc - if tree has a location then display it within a comment.  */
+/* loc if tree has a location then display it within a comment.  */
 
 static void
 m2pp_loc (pretty *s, tree t)
@@ -288,7 +288,7 @@ m2pp_loc (pretty *s, tree t)
     }
 }
 
-/* m2pp_decl_list - prints a TREE_CHAINed list for a decl node.  */
+/* m2pp_decl_list prints a TREE_CHAINed list for a decl node.  */
 
 static void
 m2pp_decl_list (pretty *s, tree t)
@@ -368,9 +368,9 @@ pv (tree t)
     }
 }
 
-/* */
-
 #if defined(GM2_MAINTAINER)
+
+/* remember an internal debugging hook. */
 static tree rememberF = NULL;
 
 static void
@@ -382,7 +382,7 @@ remember (tree t)
 }
 #endif
 
-/* push - pushes tree, t, onto stack.  */
+/* push pushes tree t onto stack.  */
 
 static void
 push (tree t)
@@ -394,7 +394,7 @@ push (tree t)
   stackPtr = s;
 }
 
-/* pop - pops a tree, from the stack.  */
+/* pop pops a tree, from the stack.  */
 
 static void
 pop (void)
@@ -405,7 +405,7 @@ pop (void)
   free (s);
 }
 
-/* being_printed - returns TRUE if, t, is held on the stack.  */
+/* being_printed returns TRUE if t is held on the stack.  */
 
 static int
 begin_printed (tree t)
@@ -422,7 +422,7 @@ begin_printed (tree t)
   return FALSE;
 }
 
-/* dupPretty - duplicate and return a copy of state, s.  */
+/* dupPretty duplicate and return a copy of state s.  */
 
 static pretty *
 dupPretty (pretty *s)
@@ -432,7 +432,7 @@ dupPretty (pretty *s)
   return p;
 }
 
-/* initPretty - initialise the state of the pretty printer.  */
+/* initPretty initialise the state of the pretty printer.  */
 
 static pretty *
 initPretty (int bits)
@@ -450,7 +450,7 @@ initPretty (int bits)
   return state;
 }
 
-/* killPretty - cleans up the state.  */
+/* killPretty cleans up the state.  */
 
 static void
 killPretty (pretty *s)
@@ -459,7 +459,7 @@ killPretty (pretty *s)
   fflush (stdout);
 }
 
-/* getindent - returns the current indent value.  */
+/* getindent returns the current indent value.  */
 
 static int
 getindent (pretty *s)
@@ -467,7 +467,7 @@ getindent (pretty *s)
   return s->indent;
 }
 
-/* setindent - sets the current indent to, n.  */
+/* setindent sets the current indent to, n.  */
 
 static void
 setindent (pretty *s, int n)
@@ -475,7 +475,7 @@ setindent (pretty *s, int n)
   s->indent = n;
 }
 
-/* getcurpos - returns the current cursor position.  */
+/* getcurpos returns the current cursor position.  */
 
 static int
 getcurpos (pretty *s)
@@ -486,7 +486,7 @@ getcurpos (pretty *s)
     return s->curpos;
 }
 
-/* m2pp_type_lowlevel - prints out the low level details of a
+/* m2pp_type_lowlevel prints out the low level details of a
    fundamental type.  */
 
 static void
@@ -519,7 +519,7 @@ m2pp_type_lowlevel (pretty *s, tree t)
     }
 }
 
-/* m2pp_var - emit a VAR if necessary.  */
+/* m2pp_var emit a VAR if necessary.  */
 
 static void
 m2pp_var (pretty *s)
@@ -532,7 +532,7 @@ m2pp_var (pretty *s)
     }
 }
 
-/* m2pp_types - emit a TYPE if necessary.  */
+/* m2pp_types emit a TYPE if necessary.  */
 
 static void
 m2pp_types (pretty *s)
@@ -545,7 +545,7 @@ m2pp_types (pretty *s)
     }
 }
 
-/* hextree - displays the critical fields for function, block and
+/* hextree displays the critical fields for function, block and
    bind_expr trees in raw hex.  */
 
 static void
@@ -697,7 +697,7 @@ m2pp_module_block (pretty *s, tree t)
       }
 }
 
-/* m2pp_begin - emit a BEGIN if necessary.  */
+/* m2pp_begin emit a BEGIN if necessary.  */
 
 static void
 m2pp_begin (pretty *s)
@@ -721,7 +721,7 @@ m2pp_begin (pretty *s)
     }
 }
 
-/* m2pp_function - walk over the function.  */
+/* m2pp_function walk over the function.  */
 
 static void
 m2pp_function (pretty *s, tree t)
@@ -741,7 +741,7 @@ m2pp_function (pretty *s, tree t)
     }
 }
 
-/* m2pp_bind_expr - displays the bind expr tree node.  */
+/* m2pp_bind_expr displays the bind expr tree node.  */
 
 static void
 m2pp_bind_expr (pretty *s, tree t)
@@ -765,7 +765,7 @@ m2pp_bind_expr (pretty *s, tree t)
     }
 }
 
-/* m2pp_block_list - iterates over the list of blocks.  */
+/* m2pp_block_list iterates over the list of blocks.  */
 
 static void
 m2pp_block_list (pretty *s, tree t)
@@ -774,7 +774,7 @@ m2pp_block_list (pretty *s, tree t)
     m2pp_block (s, t);
 }
 
-/* m2pp_block - prints the VARiables and the TYPEs inside a block.  */
+/* m2pp_block prints the VARiables and the TYPEs inside a block.  */
 
 static void
 m2pp_block (pretty *s, tree t)
@@ -788,7 +788,7 @@ m2pp_block (pretty *s, tree t)
     }
 }
 
-/* m2pp_var_type_decl - displays the variable and type declaration.  */
+/* m2pp_var_type_decl displays the variable and type declaration.  */
 
 static void
 m2pp_var_type_decl (pretty *s, tree t)
@@ -802,7 +802,7 @@ m2pp_var_type_decl (pretty *s, tree t)
   m2pp_print (s, ";\n");
 }
 
-/* m2pp_var_list - print a variable list.  */
+/* m2pp_var_list print a variable list.  */
 
 static void
 m2pp_var_list (pretty *s, tree t)
@@ -834,7 +834,7 @@ m2pp_var_list (pretty *s, tree t)
 }
 
 #if 0
-/* m2pp_type_list - print a variable list.  */
+/* m2pp_type_list print a variable list.  */
 
 static void
 m2pp_type_list (pretty *s, tree t)
@@ -853,7 +853,7 @@ m2pp_type_list (pretty *s, tree t)
 }
 #endif
 
-/* m2pp_needspace - sets appropriate flag to TRUE.  */
+/* m2pp_needspace sets appropriate flag to TRUE.  */
 
 static void
 m2pp_needspace (pretty *s)
@@ -861,7 +861,7 @@ m2pp_needspace (pretty *s)
   s->needs_space = TRUE;
 }
 
-/* m2pp_identifer - prints an identifier.  */
+/* m2pp_identifer prints an identifier.  */
 
 static void
 m2pp_identifier (pretty *s, tree t)
@@ -885,7 +885,7 @@ m2pp_identifier (pretty *s, tree t)
     }
 }
 
-/* m2pp_ident_pointer - displays an ident pointer.  */
+/* m2pp_ident_pointer displays an ident pointer.  */
 
 static void
 m2pp_ident_pointer (pretty *s, tree t)
@@ -894,7 +894,7 @@ m2pp_ident_pointer (pretty *s, tree t)
     m2pp_print (s, IDENTIFIER_POINTER (t));
 }
 
-/* m2pp_parameter - prints out a param decl tree.  */
+/* m2pp_parameter prints out a param decl tree.  */
 
 static void
 m2pp_parameter (pretty *s, tree t)
@@ -920,7 +920,7 @@ m2pp_parameter (pretty *s, tree t)
     }
 }
 
-/* m2pp_param_type - prints out the type of parameter.  */
+/* m2pp_param_type prints out the type of parameter.  */
 
 static void
 m2pp_param_type (pretty *s, tree t)
@@ -935,7 +935,7 @@ m2pp_param_type (pretty *s, tree t)
     m2pp_simple_type (s, t);
 }
 
-/* m2pp_procedure_type - displays a procedure type.  */
+/* m2pp_procedure_type displays a procedure type.  */
 
 static void
 m2pp_procedure_type (pretty *s, tree t)
@@ -963,7 +963,7 @@ m2pp_procedure_type (pretty *s, tree t)
               if (TREE_CHAIN (i) == NULL_TREE)
                 {
                   if (TREE_VALUE (i) == void_type_node)
-                    /* ignore void_type_node at the end.  */
+                    /* Ignore void_type_node at the end.  */
                     ;
                   else
                     {
@@ -1002,7 +1002,7 @@ m2pp_procedure_type (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_comment_header - displays a simple header with some critical
+/* m2pp_comment_header displays a simple header with some critical
    tree info.  */
 
 static void
@@ -1036,7 +1036,7 @@ m2pp_comment_header (pretty *s, tree t)
   m2pp_print (s, "*)\n\n");
 }
 
-/* m2pp_function_header - displays the function header.  */
+/* m2pp_function_header displays the function header.  */
 
 static void
 m2pp_function_header (pretty *s, tree t)
@@ -1088,7 +1088,7 @@ m2pp_function_header (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_add_var - adds a variable into a list as defined by, data.  */
+/* m2pp_add_var adds a variable into a list as defined by, data.  */
 
 static tree
 m2pp_add_var (tree *tp, int *walk_subtrees, void *data)
@@ -1125,7 +1125,7 @@ m2pp_add_var (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
-/* m2pp_function_vars - displays variables as defined by the function
+/* m2pp_function_vars displays variables as defined by the function
    tree.  */
 
 static void
@@ -1141,8 +1141,8 @@ m2pp_function_vars (pretty *s, tree t)
     }
 }
 
-/* m2pp_print - print out a string, p, interpreting '\n' and
-   adjusting the fields within, state, s.  */
+/* m2pp_print print out a string p interpreting '\n' and
+   adjusting the fields within state s.  */
 
 static void
 m2pp_print (pretty *s, const char *p)
@@ -1184,7 +1184,7 @@ m2pp_print (pretty *s, const char *p)
     }
 }
 
-/* m2pp_print_char - prints out a character, ch, obeying needs_space
+/* m2pp_print_char prints out a character ch obeying needs_space
    and needs_indent.  */
 
 static void
@@ -1214,7 +1214,7 @@ m2pp_print_char (pretty *s, char ch)
   s->curpos++;
 }
 
-/* m2pp_integer - display the appropriate integer type.  */
+/* m2pp_integer display the appropriate integer type.  */
 
 #if defined(GM2)
 void
@@ -1269,7 +1269,7 @@ m2pp_integer (pretty *s, tree t ATTRIBUTE_UNUSED)
 }
 #endif
 
-/* m2pp_complex - display the actual complex type.  */
+/* m2pp_complex display the actual complex type.  */
 
 #if defined(GM2)
 static void
@@ -1304,7 +1304,7 @@ m2pp_complex (pretty *s, tree t ATTRIBUTE_UNUSED)
 }
 #endif
 
-/* m2pp_type - prints a full type.  */
+/* m2pp_type prints a full type.  */
 
 void
 m2pp_type (pretty *s, tree t)
@@ -1363,7 +1363,7 @@ m2pp_type (pretty *s, tree t)
     }
 }
 
-/* m2pp_set_type - prints out the set type.  */
+/* m2pp_set_type prints out the set type.  */
 
 static void
 m2pp_set_type (pretty *s, tree t)
@@ -1375,7 +1375,7 @@ m2pp_set_type (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_enum - print out the enumeration type.  */
+/* m2pp_enum print out the enumeration type.  */
 
 static void
 m2pp_enum (pretty *s, tree t)
@@ -1395,7 +1395,7 @@ m2pp_enum (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_array - prints out the array type.  */
+/* m2pp_array prints out the array type.  */
 
 static void
 m2pp_array (pretty *s, tree t)
@@ -1411,7 +1411,7 @@ m2pp_array (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_subrange - prints out the subrange, but probably the lower
+/* m2pp_subrange prints out the subrange, but probably the lower
    bound will always be zero.  */
 
 static void
@@ -1427,7 +1427,7 @@ m2pp_subrange (pretty *s, tree t)
   m2pp_print (s, "]");
 }
 
-/* m2pp_gimplified - print out a gimplified comment.  */
+/* m2pp_gimplified print out a gimplified comment.  */
 
 static void
 m2pp_gimpified (pretty *s, tree t)
@@ -1439,7 +1439,7 @@ m2pp_gimpified (pretty *s, tree t)
     }
 }
 
-/* m2pp_printer_type - display the pointer type.  */
+/* m2pp_printer_type display the pointer type.  */
 
 static void
 m2pp_pointer_type (pretty *s, tree t)
@@ -1461,7 +1461,7 @@ m2pp_pointer_type (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_record_alignment - prints out whether this record is aligned
+/* m2pp_record_alignment prints out whether this record is aligned
    (packed).  */
 
 static void
@@ -1528,7 +1528,7 @@ m2pp_recordfield_bitfield (pretty *s, tree t)
     }
 }
 
-/* m2pp_record_type - displays the record type.  */
+/* m2pp_record_type displays the record type.  */
 
 static void
 m2pp_record_type (pretty *s, tree t)
@@ -1559,7 +1559,7 @@ m2pp_record_type (pretty *s, tree t)
   pop ();
 }
 
-/* m2pp_record_type - displays the record type.  */
+/* m2pp_record_type displays the record type.  */
 
 static void
 m2pp_union_type (pretty *s, tree t)
@@ -1638,7 +1638,7 @@ m2pp_simple_type (pretty *s, tree t)
     }
 }
 
-/* m2pp_expression - */
+/* m2pp_expression display an expression.  */
 
 static void
 m2pp_expression (pretty *s, tree t)
@@ -1670,7 +1670,7 @@ m2pp_expression (pretty *s, tree t)
     }
 }
 
-/* m2pp_relop - displays the lhs relop rhs.  */
+/* m2pp_relop displays the lhs relop rhs.  */
 
 static void
 m2pp_relop (pretty *s, tree t, const char *p)
@@ -1682,7 +1682,7 @@ m2pp_relop (pretty *s, tree t, const char *p)
   m2pp_expression (s, TREE_OPERAND (t, 1));
 }
 
-/* m2pp_compound_expression - handle compound expression tree.  */
+/* m2pp_compound_expression handle compound expression tree.  */
 
 static void
 m2pp_compound_expression (pretty *s, tree t)
@@ -1695,7 +1695,7 @@ m2pp_compound_expression (pretty *s, tree t)
   m2pp_needspace (s);
 }
 
-/* m2pp_target_expression - handle target expression tree.  */
+/* m2pp_target_expression handle target expression tree.  */
 
 static void
 m2pp_target_expression (pretty *s, tree t)
@@ -1734,7 +1734,7 @@ m2pp_target_expression (pretty *s, tree t)
   m2pp_needspace (s);
 }
 
-/* m2pp_constructor - print out a constructor.  */
+/* m2pp_constructor print out a constructor.  */
 
 static void
 m2pp_constructor (pretty *s, tree t)
@@ -1759,7 +1759,7 @@ m2pp_constructor (pretty *s, tree t)
   m2pp_print (s, " *)\n");
 }
 
-/* m2pp_complex_expr - handle GCC complex_expr tree.  */
+/* m2pp_complex_expr handle GCC complex_expr tree.  */
 
 static void
 m2pp_complex_expr (pretty *s, tree t)
@@ -1786,7 +1786,7 @@ m2pp_complex_expr (pretty *s, tree t)
     }
 }
 
-/* m2pp_imagpart_expr - handle imagpart_expr tree.  */
+/* m2pp_imagpart_expr handle imagpart_expr tree.  */
 
 static void
 m2pp_imagpart_expr (pretty *s, tree t)
@@ -1801,7 +1801,7 @@ m2pp_imagpart_expr (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_realpart_expr - handle imagpart_expr tree.  */
+/* m2pp_realpart_expr handle imagpart_expr tree.  */
 
 static void
 m2pp_realpart_expr (pretty *s, tree t)
@@ -1816,7 +1816,7 @@ m2pp_realpart_expr (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_bit_ior_expr - */
+/* m2pp_bit_ior_expr generate a C style bit or.  */
 
 static void
 m2pp_bit_ior_expr (pretty *s, tree t)
@@ -1840,7 +1840,7 @@ m2pp_truth_expr (pretty *s, tree t, const char *op)
   m2pp_print (s, ")");
 }
 
-/* m2pp_simple_expression - handle GCC expression tree.  */
+/* m2pp_simple_expression handle GCC expression tree.  */
 
 static void
 m2pp_simple_expression (pretty *s, tree t)
@@ -1998,7 +1998,7 @@ m2pp_simple_expression (pretty *s, tree t)
     }
 }
 
-/* non_lvalue_expr - indicates that operand 0 is not an lvalue.  */
+/* non_lvalue_expr indicates that operand 0 is not an lvalue.  */
 
 static void
 m2pp_non_lvalue_expr (pretty *s, tree t)
@@ -2011,7 +2011,7 @@ m2pp_non_lvalue_expr (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_array_ref - prints out the array reference.  */
+/* m2pp_array_ref prints out the array reference.  */
 
 static void
 m2pp_array_ref (pretty *s, tree t)
@@ -2022,7 +2022,7 @@ m2pp_array_ref (pretty *s, tree t)
   m2pp_print (s, "]");
 }
 
-/* m2pp_ssa - prints out the ssa variable name.  */
+/* m2pp_ssa prints out the ssa variable name.  */
 
 static void
 m2pp_ssa (pretty *s, tree t)
@@ -2030,7 +2030,7 @@ m2pp_ssa (pretty *s, tree t)
   m2pp_identifier (s, SSA_NAME_VAR (t));
 }
 
-/* m2pp_binary - print the binary operator, p, and lhs, rhs.  */
+/* m2pp_binary print the binary operator, p, and lhs, rhs.  */
 
 static void
 m2pp_binary (pretty *s, tree t, const char *p)
@@ -2045,7 +2045,7 @@ m2pp_binary (pretty *s, tree t, const char *p)
   m2pp_expression (s, right);
 }
 
-/* m2pp_unary - print the unary operator, p, and expression.  */
+/* m2pp_unary print the unary operator, p, and expression.  */
 
 static void
 m2pp_unary (pretty *s, tree t, const char *p)
@@ -2057,7 +2057,7 @@ m2pp_unary (pretty *s, tree t, const char *p)
   m2pp_expression (s, expr);
 }
 
-/* m2pp_integer_cst - displays the integer constant.  */
+/* m2pp_integer_cst displays the integer constant.  */
 
 static void
 m2pp_integer_cst (pretty *s, tree t)
@@ -2068,7 +2068,7 @@ m2pp_integer_cst (pretty *s, tree t)
   m2pp_print (s, val);
 }
 
-/* m2pp_real_cst - displays the real constant.  */
+/* m2pp_real_cst displays the real constant.  */
 
 static void
 m2pp_real_cst (pretty *s, tree t ATTRIBUTE_UNUSED)
@@ -2076,7 +2076,7 @@ m2pp_real_cst (pretty *s, tree t ATTRIBUTE_UNUSED)
   m2pp_print (s, "<unknown real>");
 }
 
-/* m2pp_string_cst - displays the real constant.  */
+/* m2pp_string_cst displays the real constant.  */
 
 static void
 m2pp_string_cst (pretty *s, tree t)
@@ -2093,7 +2093,7 @@ m2pp_string_cst (pretty *s, tree t)
   m2pp_print (s, "\"");
 }
 
-/* m2pp_statement_sequence - iterates over a statement list
+/* m2pp_statement_sequence iterates over a statement list
    displaying each statement in turn.  */
 
 static void
@@ -2114,7 +2114,7 @@ m2pp_statement_sequence (pretty *s, tree t)
     }
 }
 
-/* m2pp_unknown - displays an error message.  */
+/* m2pp_unknown displays an error message.  */
 
 static void
 m2pp_unknown (pretty *s, const char *s1, const char *s2)
@@ -2126,7 +2126,7 @@ m2pp_unknown (pretty *s, const char *s1, const char *s2)
   m2pp_needspace (s);
 }
 
-/* m2pp_throw - displays a throw statement.  */
+/* m2pp_throw displays a throw statement.  */
 
 static void
 m2pp_throw (pretty *s, tree t)
@@ -2144,7 +2144,7 @@ m2pp_throw (pretty *s, tree t)
     }
 }
 
-/* m2pp_catch_expr - attempts to reconstruct a catch expr.  */
+/* m2pp_catch_expr attempts to reconstruct a catch expr.  */
 
 static void
 m2pp_catch_expr (pretty *s, tree t)
@@ -2165,7 +2165,7 @@ m2pp_catch_expr (pretty *s, tree t)
   m2pp_print (s, "(* end catch body *)\n");
 }
 
-/* m2pp_try_finally_expr - attemts to reconstruct a try finally expr.  */
+/* m2pp_try_finally_expr attemts to reconstruct a try finally expr.  */
 
 static void
 m2pp_try_finally_expr (pretty *s, tree t)
@@ -2184,7 +2184,7 @@ m2pp_try_finally_expr (pretty *s, tree t)
 }
 
 #if !defined(GM2)
-/* m2pp_if_stmt - pretty print a C++ if_stmt.  */
+/* m2pp_if_stmt pretty print a C++ if_stmt.  */
 
 static void
 m2pp_if_stmt (pretty *s, tree t)
@@ -2205,7 +2205,7 @@ m2pp_if_stmt (pretty *s, tree t)
 }
 #endif
 
-/* m2pp_statement - attempts to reconstruct a statement.  */
+/* m2pp_statement attempts to reconstruct a statement.  */
 
 static void
 m2pp_statement (pretty *s, tree t)
@@ -2280,7 +2280,7 @@ m2pp_statement (pretty *s, tree t)
     }
 }
 
-/* m2pp_try_catch_expr - is used after gimplification.  */
+/* m2pp_try_catch_expr is used after gimplification.  */
 
 static void
 m2pp_try_catch_expr (pretty *s, tree t)
@@ -2294,7 +2294,7 @@ m2pp_try_catch_expr (pretty *s, tree t)
   m2pp_print (s, "(* try_catch_expr ends *)\n");
 }
 
-/* m2pp_cleanup_point_expr - emits a comment indicating a GCC
+/* m2pp_cleanup_point_expr emits a comment indicating a GCC
    cleanup_point_expr is present.  */
 
 static void
@@ -2306,7 +2306,7 @@ m2pp_cleanup_point_expr (pretty *s, tree t)
   m2pp_print (s, "(* cleanup point ends *)\n");
 }
 
-/* m2pp_decl_expr - displays a local declaration.  */
+/* m2pp_decl_expr displays a local declaration.  */
 
 static void
 m2pp_decl_expr (pretty *s, tree t)
@@ -2316,7 +2316,7 @@ m2pp_decl_expr (pretty *s, tree t)
   m2pp_var_type_decl (s, DECL_EXPR_DECL (t));
 }
 
-/* m2pp_procedure_call - print a call to a procedure.  */
+/* m2pp_procedure_call print a call to a procedure.  */
 
 static void
 m2pp_procedure_call (pretty *s, tree t)
@@ -2349,7 +2349,7 @@ m2pp_args (pretty *s, tree e)
   m2pp_print (s, ")");
 }
 
-/* m2pp_call_expr - print a call to a procedure or function.  */
+/* m2pp_call_expr print a call to a procedure or function.  */
 
 static void
 m2pp_call_expr (pretty *s, tree t)
@@ -2368,12 +2368,12 @@ m2pp_call_expr (pretty *s, tree t)
   else
     proc = call;
 
-  m2pp_expression (s, proc); /* m2pp_identifier (s, proc);  */
+  m2pp_expression (s, proc);
   if (args || has_return_type)
     m2pp_args (s, t);
 }
 
-/* m2pp_return_expr - displays the return statement.  */
+/* m2pp_return_expr displays the return statement.  */
 
 static void
 m2pp_return_expr (pretty *s, tree t)
@@ -2402,7 +2402,7 @@ m2pp_return_expr (pretty *s, tree t)
   m2pp_print (s, ";\n");
 }
 
-/* m2pp_try_block - displays the try block.  */
+/* m2pp_try_block displays the try block.  */
 
 static void
 m2pp_try_block (pretty *s, tree t)
@@ -2420,7 +2420,7 @@ m2pp_try_block (pretty *s, tree t)
   m2pp_print (s, "(* END TRY *)\n");
 }
 
-/* m2pp_try_block - displays the handler block.  */
+/* m2pp_try_block displays the handler block.  */
 
 static void
 m2pp_handler (pretty *s, tree t)
@@ -2443,7 +2443,7 @@ m2pp_handler (pretty *s, tree t)
   m2pp_statement_sequence (s, body);
 }
 
-/* m2pp_assignment - prints out the assignment statement.  */
+/* m2pp_assignment prints out the assignment statement.  */
 
 static void
 m2pp_assignment (pretty *s, tree t)
@@ -2463,7 +2463,7 @@ m2pp_assignment (pretty *s, tree t)
   setindent (s, o);
 }
 
-/* m2pp_designator - displays the lhs of an assignment.  */
+/* m2pp_designator displays the lhs of an assignment.  */
 
 static void
 m2pp_designator (pretty *s, tree t)
@@ -2471,7 +2471,7 @@ m2pp_designator (pretty *s, tree t)
   m2pp_expression (s, t);
 }
 
-/* m2pp_indirect_ref - displays the indirect operator.  */
+/* m2pp_indirect_ref displays the indirect operator.  */
 
 static void
 m2pp_indirect_ref (pretty *s, tree t)
@@ -2481,7 +2481,7 @@ m2pp_indirect_ref (pretty *s, tree t)
   m2pp_print (s, ")^");
 }
 
-/* m2pp_conditional - builds an IF THEN ELSE END.  With more work
+/* m2pp_conditional builds an IF THEN ELSE END.  With more work
    this should be moved into statement sequence which could look for
    repeat and while loops.  */
 
@@ -2509,7 +2509,7 @@ m2pp_conditional (pretty *s, tree t)
   m2pp_print (s, "END ;\n");
 }
 
-/* m2pp_label_decl - displays a label.  Again should be moved into
+/* m2pp_label_decl displays a label.  Again should be moved into
    statement sequence to determine proper loop constructs.  */
 
 static void
@@ -2521,7 +2521,7 @@ m2pp_label_decl (pretty *s, tree t)
   m2pp_print (s, ": *)\n");
 }
 
-/* m2pp_label_expr - skips the LABEL_EXPR to find the LABEL_DECL.  */
+/* m2pp_label_expr skips the LABEL_EXPR to find the LABEL_DECL.  */
 
 static void
 m2pp_label_expr (pretty *s, tree t)
@@ -2530,7 +2530,7 @@ m2pp_label_expr (pretty *s, tree t)
   m2pp_statement (s, TREE_OPERAND (t, 0));
 }
 
-/* m2pp_goto - displays a goto statement.  Again should be moved into
+/* m2pp_goto displays a goto statement.  Again should be moved into
    statement sequence to determine proper loop constructs.  */
 
 static void
@@ -2542,7 +2542,7 @@ m2pp_goto (pretty *s, tree t)
   m2pp_print (s, " *)\n");
 }
 
-/* m2pp_list - prints a TREE_CHAINed list.  */
+/* m2pp_list prints a TREE_CHAINed list.  */
 
 static void
 m2pp_list (pretty *s, tree t)
@@ -2564,7 +2564,7 @@ m2pp_list (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_offset - displays the offset operator.  */
+/* m2pp_offset displays the offset operator.  */
 
 static void
 m2pp_offset (pretty *s, tree t)
@@ -2579,7 +2579,7 @@ m2pp_offset (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_addr_expr - */
+/* m2pp_addr_expr create an ADR expression.  */
 
 static void
 m2pp_addr_expr (pretty *s, tree t)
@@ -2590,7 +2590,7 @@ m2pp_addr_expr (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_nop - */
+/* m2pp_nop generate a CAST expression.  */
 
 static void
 m2pp_nop (pretty *s, tree t)
@@ -2603,7 +2603,7 @@ m2pp_nop (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_convert - */
+/* m2pp_convert generate a CONVERT expression.  */
 
 static void
 m2pp_convert (pretty *s, tree t)
@@ -2616,7 +2616,7 @@ m2pp_convert (pretty *s, tree t)
   m2pp_print (s, ")");
 }
 
-/* m2pp_var_decl - */
+/* m2pp_var_decl generate a variable.  */
 
 static void
 m2pp_var_decl (pretty *s, tree t)
@@ -2624,7 +2624,7 @@ m2pp_var_decl (pretty *s, tree t)
   m2pp_identifier (s, t);
 }
 
-/* m2pp_result_decl - */
+/* m2pp_result_decl generate a result declaration (variable).  */
 
 static void
 m2pp_result_decl (pretty *s, tree t)
@@ -2632,7 +2632,7 @@ m2pp_result_decl (pretty *s, tree t)
   m2pp_identifier (s, t);
 }
 
-/* m2pp_component_ref - */
+/* m2pp_component_ref generate a record field access.  */
 
 static void
 m2pp_component_ref (pretty *s, tree t)

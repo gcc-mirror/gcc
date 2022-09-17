@@ -53,12 +53,12 @@ CONST
 
 VAR
    Barg,
+   SaveTempsDir,
    GenModuleListFilename,
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
    UselistFlag,
-   GenModuleListFlag,
    CC1Quiet,
    SeenSources          : BOOLEAN ;
    ForcedLocationValue  : location_t ;
@@ -1075,8 +1075,18 @@ END SetSaveTemps ;
 
 PROCEDURE SetSaveTempsDir (arg: ADDRESS) ;
 BEGIN
-   (* printf1 ("SetSaveTempsDir: arg = %s\n", arg);  *)
+   SaveTempsDir := InitStringCharStar (arg)
 END SetSaveTempsDir ;
+
+
+(*
+   GetSaveTempsDir - return SaveTempsDir or NIL if -save-temps was not used.
+*)
+
+PROCEDURE GetSaveTempsDir () : String ;
+BEGIN
+   RETURN SaveTempsDir
+END GetSaveTempsDir ;
 
 
 (*
@@ -1261,5 +1271,6 @@ BEGIN
    GenModuleList                := FALSE ;
    GenModuleListFilename        := NIL ;
    SharedFlag                   := FALSE ;
-   Barg                         := NIL
+   Barg                         := NIL ;
+   SaveTempsDir                 := NIL
 END M2Options.

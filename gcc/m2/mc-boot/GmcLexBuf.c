@@ -1839,11 +1839,11 @@ extern "C" void mcLexBuf_popFile (void * filename)
   /* source file list is empty, cannot pop an include..  */
 }
 
-extern "C" void _M2_mcLexBuf_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcLexBuf_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_mcLexBuf_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcLexBuf_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

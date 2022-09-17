@@ -183,7 +183,7 @@ PROCEDURE BuildConstLiteralNumber (location: location_t;
                           and, length.
 *)
 
-PROCEDURE BuildStringConstant (location: location_t; string: ADDRESS; length: INTEGER) : Tree ;
+PROCEDURE BuildStringConstant (string: ADDRESS; length: INTEGER) : Tree ;
 
 
 (*

@@ -354,7 +354,7 @@ GenerateInitCalls (functList *p)
 {
   while (p != NULL)
     {
-      printf ("   _M2_%s_init(argc, argv);\n", p->functname);
+      printf ("   _M2_%s_init (argc, argv, envp);\n", p->functname);
       p = p->next;
     }
 }
@@ -364,7 +364,7 @@ GenerateFinishCalls (functList *p)
 {
   if (p->next != NULL)
     GenerateFinishCalls (p->next);
-  printf ("   _M2_%s_finish(argc, argv);\n", p->functname);
+  printf ("   _M2_%s_finish (argc, argv, envp);\n", p->functname);
 }
 
 static void
@@ -374,16 +374,16 @@ GeneratePrototypes (functList *p)
     {
       if (langC)
         {
-          printf ("extern void _M2_%s_init(int argc, char *argv[]);\n",
+          printf ("extern void _M2_%s_init (int argc, char *argv[], char *envp[]);\n",
                   p->functname);
-          printf ("extern void _M2_%s_finish(int argc, char *argv[]);\n",
+          printf ("extern void _M2_%s_finish (int argc, char *argv[], char *envp[]);\n",
                   p->functname);
         }
       else
         {
-          printf ("extern \"C\" void _M2_%s_init(int argc, char *argv[]);\n",
+          printf ("extern \"C\" void _M2_%s_init (int argc, char *argv[], char *envp[]);\n",
                   p->functname);
-          printf ("extern \"C\" void _M2_%s_finish(int argc, char *argv[]);\n",
+          printf ("extern \"C\" void _M2_%s_finish (int argc, char *argv[], char *envp[]);\n",
                   p->functname);
         }
       p = p->next;
@@ -411,7 +411,7 @@ ParseFileStartup (void)
     printf (" \"C\"");
   printf (" void _exit(int);\n");
 
-  printf ("\n\nint %s(int argc, char *argv[])\n", NameOfMain);
+  printf ("\n\nint %s(int argc, char *argv[], char *envp[])\n", NameOfMain);
   printf ("{\n");
   GenerateInitCalls (head);
   GenerateFinishCalls (head);

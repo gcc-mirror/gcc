@@ -120,10 +120,10 @@ extern "C" void mcQuiet_qprintf4 (const char *a_, unsigned int _a_high, const un
     }
 }
 
-extern "C" void _M2_mcQuiet_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcQuiet_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcQuiet_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcQuiet_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

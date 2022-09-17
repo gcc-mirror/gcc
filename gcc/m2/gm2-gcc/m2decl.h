@@ -41,7 +41,7 @@ EXTERN void m2decl_DeclareM2linkGlobals (location_t location,
 EXTERN void m2decl_BuildModuleCtor (tree module_ctor);
 EXTERN tree m2decl_DeclareModuleCtor (tree decl);
 EXTERN tree m2decl_GetDeclContext (tree t);
-EXTERN tree m2decl_BuildStringConstant (location_t location, const char *string, int length);
+EXTERN tree m2decl_BuildStringConstant (const char *string, int length);
 EXTERN tree m2decl_BuildCStringConstant (const char *string, int length);
 EXTERN tree m2decl_BuildConstLiteralNumber (location_t location,
 					    const char *str,

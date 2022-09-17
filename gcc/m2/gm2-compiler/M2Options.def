@@ -81,8 +81,9 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  DumpSystemExports, GenerateSwig, Exceptions,
                  OverrideLocation, FinaliseOptions,
                  DebugBuiltins, setdefextension, setmodextension,
-                 SetStatistics, SetWall, SetSaveTemps, SetSaveTempsDir,
-                 SaveTemps, GenModuleList,
+                 SetStatistics, SetWall,
+                 SetSaveTemps, SetSaveTempsDir, SaveTemps, GetSaveTempsDir,
+                 GenModuleList,
                  CppArg, CppCommandLine, CppRemember,
 		 SetDebugFunctionLineNumbers, DebugFunctionLineNumbers,
 		 SetGenerateStatementNote, GenerateStatementNote,
@@ -782,6 +783,13 @@ PROCEDURE SetSaveTemps (value: BOOLEAN) ;
 *)
 
 PROCEDURE SetSaveTempsDir (arg: ADDRESS) ;
+
+
+(*
+   GetSaveTempsDir - return SaveTempsDir or NIL if -save-temps was not used.
+*)
+
+PROCEDURE GetSaveTempsDir () : String ;
 
 
 (*

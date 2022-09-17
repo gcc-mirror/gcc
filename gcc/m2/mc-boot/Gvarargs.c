@@ -422,10 +422,10 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_varargs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_varargs_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_varargs_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_varargs_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

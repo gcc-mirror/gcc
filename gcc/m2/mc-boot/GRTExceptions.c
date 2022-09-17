@@ -1210,12 +1210,12 @@ extern "C" void * RTExceptions_GetExceptionSource (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_RTExceptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_RTExceptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_RTExceptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_RTExceptions_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   TidyUp ();
 }

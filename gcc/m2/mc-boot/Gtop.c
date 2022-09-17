@@ -59,11 +59,11 @@ static void init (void)
   mcComp_compile (mcOptions_handleOptions ());
 }
 
-extern "C" void _M2_top_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_top_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_top_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_top_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

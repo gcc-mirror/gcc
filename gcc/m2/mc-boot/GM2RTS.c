@@ -734,11 +734,11 @@ extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned 
   RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), filename, line, column, scope, message);
 }
 
-extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   CheckInitialized ();
 }
 
-extern "C" void _M2_M2RTS_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2RTS_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

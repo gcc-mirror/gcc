@@ -503,6 +503,7 @@ struct varparamT_r {
                      decl_node scope;
                      unsigned int isUnbounded;
                      unsigned int isForC;
+                     unsigned int isUsed;
                    };
 
 struct paramT_r {
@@ -511,6 +512,7 @@ struct paramT_r {
                   decl_node scope;
                   unsigned int isUnbounded;
                   unsigned int isForC;
+                  unsigned int isUsed;
                 };
 
 struct varargsT_r {
@@ -699,6 +701,7 @@ struct varT_r {
                 unsigned int isInitialised;
                 unsigned int isParameter;
                 unsigned int isVarParameter;
+                unsigned int isUsed;
                 cnameT cname;
               };
 
@@ -1680,13 +1683,13 @@ extern "C" void decl_putOptReturn (decl_node proc);
    makeVarParameter - returns a var parameter node with, name: type.
 */
 
-extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc);
+extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused);
 
 /*
    makeNonVarParameter - returns a non var parameter node with, name: type.
 */
 
-extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc);
+extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused);
 
 /*
    paramEnter - reset the parameter count.
@@ -1718,14 +1721,14 @@ extern "C" unsigned int decl_putIdent (decl_node n, nameKey_Name i);
                       in procedure, n.
 */
 
-extern "C" void decl_addVarParameters (decl_node n, decl_node i, decl_node type);
+extern "C" void decl_addVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused);
 
 /*
    addNonVarParameters - adds the identlist, i, of, type, to be parameters
                          in procedure, n.
 */
 
-extern "C" void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type);
+extern "C" void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused);
 
 /*
    makeVarargs - returns a varargs node.
@@ -3523,10 +3526,10 @@ static void completedEnum (decl_node n);
 static void setUnary (decl_node u, nodeT k, decl_node a, decl_node t);
 
 /*
-   putVarBool - assigns the three booleans associated with a variable.
+   putVarBool - assigns the four booleans associated with a variable.
 */
 
-static void putVarBool (decl_node v, unsigned int init, unsigned int param, unsigned int isvar);
+static void putVarBool (decl_node v, unsigned int init, unsigned int param, unsigned int isvar, unsigned int isused);
 
 /*
    checkPtr - in C++ we need to create a typedef for a pointer
@@ -3545,7 +3548,7 @@ static unsigned int isVarDecl (decl_node n);
    makeVariablesFromParameters - creates variables which are really parameters.
 */
 
-static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node type, unsigned int isvar);
+static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node type, unsigned int isvar, unsigned int isused);
 
 /*
    addProcedureToScope - add a procedure name n and node d to the
@@ -3600,7 +3603,7 @@ static unsigned int identListLen (decl_node n);
    checkParameters - placeholder for future parameter checking.
 */
 
-static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned int var);
+static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned int isvar, unsigned int isused);
 
 /*
    checkMakeVariables - create shadow local variables for parameters providing that
@@ -3608,7 +3611,7 @@ static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned 
                         a module or an implementation module.
 */
 
-static void checkMakeVariables (decl_node n, decl_node i, decl_node type, unsigned int isvar);
+static void checkMakeVariables (decl_node n, decl_node i, decl_node type, unsigned int isvar, unsigned int isused);
 
 /*
    makeVarientField - create a varient field within varient, v,
@@ -4407,10 +4410,16 @@ static void doFQNameC (mcPretty_pretty p, decl_node n);
 static void doNameM2 (mcPretty_pretty p, decl_node n);
 
 /*
+   doUsed -
+*/
+
+static void doUsed (mcPretty_pretty p, unsigned int used);
+
+/*
    doHighC -
 */
 
-static void doHighC (mcPretty_pretty p, decl_node a, nameKey_Name n);
+static void doHighC (mcPretty_pretty p, decl_node a, nameKey_Name n, unsigned int isused);
 
 /*
    doParamConstCast -
@@ -7106,15 +7115,16 @@ static void setUnary (decl_node u, nodeT k, decl_node a, decl_node t)
 
 
 /*
-   putVarBool - assigns the three booleans associated with a variable.
+   putVarBool - assigns the four booleans associated with a variable.
 */
 
-static void putVarBool (decl_node v, unsigned int init, unsigned int param, unsigned int isvar)
+static void putVarBool (decl_node v, unsigned int init, unsigned int param, unsigned int isvar, unsigned int isused)
 {
   mcDebug_assert (decl_isVar (v));
   v->varF.isInitialised = init;
   v->varF.isParameter = param;
   v->varF.isVarParameter = isvar;
+  v->varF.isUsed = isused;
 }
 
 
@@ -7161,7 +7171,7 @@ static unsigned int isVarDecl (decl_node n)
    makeVariablesFromParameters - creates variables which are really parameters.
 */
 
-static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node type, unsigned int isvar)
+static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node type, unsigned int isvar, unsigned int isused)
 {
   decl_node v;
   unsigned int i;
@@ -7178,7 +7188,7 @@ static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node
       m = static_cast<nameKey_Name> (wlists_getItemFromList (id->identlistF.names, i));
       v = decl_makeVar (m);
       decl_putVar (v, type, NULL);
-      putVarBool (v, TRUE, TRUE, isvar);
+      putVarBool (v, TRUE, TRUE, isvar, isused);
       if (debugScopes)
         {
           libc_printf ((const char *) "adding parameter variable into top scope\\n", 42);
@@ -7319,7 +7329,7 @@ static unsigned int identListLen (decl_node n)
    checkParameters - placeholder for future parameter checking.
 */
 
-static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned int var)
+static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned int isvar, unsigned int isused)
 {
   /* do check.  */
   disposeNode (&i);
@@ -7332,11 +7342,11 @@ static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned 
                         a module or an implementation module.
 */
 
-static void checkMakeVariables (decl_node n, decl_node i, decl_node type, unsigned int isvar)
+static void checkMakeVariables (decl_node n, decl_node i, decl_node type, unsigned int isvar, unsigned int isused)
 {
   if (((decl_isImp (currentModule)) || (decl_isModule (currentModule))) && ! n->procedureF.built)
     {
-      makeVariablesFromParameters (n, i, type, isvar);
+      makeVariablesFromParameters (n, i, type, isvar, isused);
     }
 }
 
@@ -11590,10 +11600,24 @@ static void doNameM2 (mcPretty_pretty p, decl_node n)
 
 
 /*
+   doUsed -
+*/
+
+static void doUsed (mcPretty_pretty p, unsigned int used)
+{
+  if (! used)
+    {
+      mcPretty_setNeedSpace (p);
+      outText (p, (const char *) "__attribute__((unused))", 23);
+    }
+}
+
+
+/*
    doHighC -
 */
 
-static void doHighC (mcPretty_pretty p, decl_node a, nameKey_Name n)
+static void doHighC (mcPretty_pretty p, decl_node a, nameKey_Name n, unsigned int isused)
 {
   if ((decl_isArray (a)) && (decl_isUnbounded (a)))
     {
@@ -11605,6 +11629,7 @@ static void doHighC (mcPretty_pretty p, decl_node a, nameKey_Name n)
       mcPretty_print (p, (const char *) "_", 1);
       outTextN (p, n);
       mcPretty_print (p, (const char *) "_high", 5);
+      doUsed (p, isused);
     }
 }
 
@@ -11694,6 +11719,7 @@ static void doParamC (mcPretty_pretty p, decl_node n)
       /* avoid dangling else.  */
       doParamConstCast (p, n);
       doTypeNameC (p, ptype);
+      doUsed (p, n->paramF.isUsed);
       if ((decl_isArray (ptype)) && (decl_isUnbounded (ptype)))
         {
           outText (p, (const char *) ",", 1);
@@ -11712,6 +11738,7 @@ static void doParamC (mcPretty_pretty p, decl_node n)
           doParamTypeEmit (p, n, ptype);
           if ((decl_isArray (ptype)) && (decl_isUnbounded (ptype)))
             {
+              doUsed (p, n->paramF.isUsed);
               outText (p, (const char *) ",", 1);
               mcPretty_setNeedSpace (p);
               outText (p, (const char *) "unsigned int", 12);
@@ -11747,7 +11774,8 @@ static void doParamC (mcPretty_pretty p, decl_node n)
                 {
                   outText (p, (const char *) "_", 1);
                 }
-              doHighC (p, ptype, i);
+              doUsed (p, n->paramF.isUsed);
+              doHighC (p, ptype, i, n->paramF.isUsed);
               if (c < t)
                 {
                   outText (p, (const char *) ",", 1);
@@ -11785,6 +11813,7 @@ static void doVarParamC (mcPretty_pretty p, decl_node n)
           mcPretty_setNeedSpace (p);
           outText (p, (const char *) "*", 1);
         }
+      doUsed (p, n->varparamF.isUsed);
       if ((decl_isArray (ptype)) && (decl_isUnbounded (ptype)))
         {
           outText (p, (const char *) ",", 1);
@@ -11799,6 +11828,7 @@ static void doVarParamC (mcPretty_pretty p, decl_node n)
       if (l == NULL)
         {
           doParamTypeEmit (p, n, ptype);
+          doUsed (p, n->varparamF.isUsed);
         }
       else
         {
@@ -11822,7 +11852,8 @@ static void doVarParamC (mcPretty_pretty p, decl_node n)
                 {
                   doFQDNameC (p, v, TRUE);
                 }
-              doHighC (p, ptype, i);
+              doUsed (p, n->varparamF.isUsed);
+              doHighC (p, ptype, i, n->varparamF.isUsed);
               if (c < t)
                 {
                   outText (p, (const char *) ",", 1);
@@ -20047,7 +20078,9 @@ static void scaffoldStatic (mcPretty_pretty p, decl_node n)
   doFQNameC (p, n);
   outText (p, (const char *) "_init", 5);
   mcPretty_setNeedSpace (p);
-  outText (p, (const char *) "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\\n", 74);
+  outText (p, (const char *) "(__attribute__((unused)) int argc", 33);
+  outText (p, (const char *) ",__attribute__((unused)) char *argv[]", 37);
+  outText (p, (const char *) ",__attribute__((unused)) char *envp[])\\n", 40);
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->impF.beginStatements);
   p = outKc (p, (const char *) "}\\n", 3);
@@ -20059,7 +20092,9 @@ static void scaffoldStatic (mcPretty_pretty p, decl_node n)
   doFQNameC (p, n);
   outText (p, (const char *) "_finish", 7);
   mcPretty_setNeedSpace (p);
-  outText (p, (const char *) "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\\n", 74);
+  outText (p, (const char *) "(__attribute__((unused)) int argc", 33);
+  outText (p, (const char *) ",__attribute__((unused)) char *argv[]", 37);
+  outText (p, (const char *) ",__attribute__((unused)) char *envp[])\\n", 40);
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->impF.finallyStatements);
   p = outKc (p, (const char *) "}\\n", 3);
@@ -20129,7 +20164,7 @@ static void scaffoldDynamic (mcPretty_pretty p, decl_node n)
   outText (p, (const char *) "_init", 5);
   mcPretty_setNeedSpace (p);
   outText (p, (const char *) "(__attribute__((unused)) int argc,", 34);
-  outText (p, (const char *) " __attribute__((unused)) char *argv[],", 38);
+  outText (p, (const char *) " __attribute__((unused)) char *argv[]", 37);
   outText (p, (const char *) " __attribute__((unused)) char *envp[])\\n", 40);
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->impF.beginStatements);
@@ -20143,7 +20178,7 @@ static void scaffoldDynamic (mcPretty_pretty p, decl_node n)
   outText (p, (const char *) "_fini", 5);
   mcPretty_setNeedSpace (p);
   outText (p, (const char *) "(__attribute__((unused)) int argc,", 34);
-  outText (p, (const char *) " __attribute__((unused)) char *argv[],", 38);
+  outText (p, (const char *) " __attribute__((unused)) char *argv[]", 37);
   outText (p, (const char *) " __attribute__((unused)) char *envp[])\\n", 40);
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->impF.finallyStatements);
@@ -20396,7 +20431,9 @@ static void outModuleInitC (mcPretty_pretty p, decl_node n)
   doFQNameC (p, n);
   outText (p, (const char *) "_init", 5);
   mcPretty_setNeedSpace (p);
-  outText (p, (const char *) "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\\n", 74);
+  outText (p, (const char *) "(__attribute__((unused)) int argc", 33);
+  outText (p, (const char *) ",__attribute__((unused)) char *argv[]", 37);
+  outText (p, (const char *) ",__attribute__((unused)) char *envp[])\\n", 40);
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->moduleF.beginStatements);
   p = outKc (p, (const char *) "}\\n", 3);
@@ -20408,7 +20445,9 @@ static void outModuleInitC (mcPretty_pretty p, decl_node n)
   doFQNameC (p, n);
   outText (p, (const char *) "_finish", 7);
   mcPretty_setNeedSpace (p);
-  outText (p, (const char *) "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\\n", 74);
+  outText (p, (const char *) "(__attribute__((unused)) int argc", 33);
+  outText (p, (const char *) ",__attribute__((unused)) char *argv[]", 37);
+  outText (p, (const char *) ",__attribute__((unused)) char *envp[])\\n", 40);
   p = outKc (p, (const char *) "{\\n", 3);
   doStatementsC (p, n->moduleF.finallyStatements);
   p = outKc (p, (const char *) "}\\n", 3);
@@ -23619,7 +23658,7 @@ extern "C" decl_node decl_addOptParameter (decl_node proc, nameKey_Name id, decl
   mcDebug_assert (decl_isProcedure (proc));
   l = decl_makeIdentList ();
   mcDebug_assert (decl_putIdent (l, id));
-  checkMakeVariables (proc, l, type, FALSE);
+  checkMakeVariables (proc, l, type, FALSE, TRUE);
   if (! proc->procedureF.checking)
     {
       p = makeOptParameter (l, type, init);
@@ -25021,7 +25060,7 @@ extern "C" void decl_putOptReturn (decl_node proc)
    makeVarParameter - returns a var parameter node with, name: type.
 */
 
-extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc)
+extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused)
 {
   decl_node d;
 
@@ -25032,6 +25071,7 @@ extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_no
   d->varparamF.scope = proc;
   d->varparamF.isUnbounded = FALSE;
   d->varparamF.isForC = isDefForCNode (proc);
+  d->varparamF.isUsed = isused;
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -25042,7 +25082,7 @@ extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_no
    makeNonVarParameter - returns a non var parameter node with, name: type.
 */
 
-extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc)
+extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused)
 {
   decl_node d;
 
@@ -25053,6 +25093,7 @@ extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl
   d->paramF.scope = proc;
   d->paramF.isUnbounded = FALSE;
   d->paramF.isForC = isDefForCNode (proc);
+  d->paramF.isUsed = isused;
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -25129,20 +25170,20 @@ extern "C" unsigned int decl_putIdent (decl_node n, nameKey_Name i)
                       in procedure, n.
 */
 
-extern "C" void decl_addVarParameters (decl_node n, decl_node i, decl_node type)
+extern "C" void decl_addVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused)
 {
   decl_node p;
 
   mcDebug_assert (isIdentList (i));
   mcDebug_assert (decl_isProcedure (n));
-  checkMakeVariables (n, i, type, TRUE);
+  checkMakeVariables (n, i, type, TRUE, isused);
   if (n->procedureF.checking)
     {
-      checkParameters (n, i, type, TRUE);  /* will destroy, i.  */
+      checkParameters (n, i, type, TRUE, isused);  /* will destroy, i.  */
     }
   else
     {
-      p = decl_makeVarParameter (i, type, n);
+      p = decl_makeVarParameter (i, type, n, isused);
       Indexing_IncludeIndiceIntoIndex (n->procedureF.parameters, reinterpret_cast<void *> (p));
     }
 }
@@ -25153,20 +25194,20 @@ extern "C" void decl_addVarParameters (decl_node n, decl_node i, decl_node type)
                          in procedure, n.
 */
 
-extern "C" void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type)
+extern "C" void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused)
 {
   decl_node p;
 
   mcDebug_assert (isIdentList (i));
   mcDebug_assert (decl_isProcedure (n));
-  checkMakeVariables (n, i, type, FALSE);
+  checkMakeVariables (n, i, type, FALSE, isused);
   if (n->procedureF.checking)
     {
-      checkParameters (n, i, type, FALSE);  /* will destroy, i.  */
+      checkParameters (n, i, type, FALSE, isused);  /* will destroy, i.  */
     }
   else
     {
-      p = decl_makeNonVarParameter (i, type, n);
+      p = decl_makeNonVarParameter (i, type, n, isused);
       Indexing_IncludeIndiceIntoIndex (n->procedureF.parameters, reinterpret_cast<void *> (p));
     }
 }
@@ -26824,11 +26865,11 @@ extern "C" void decl_out (void)
   closeOutput ();
 }
 
-extern "C" void _M2_decl_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_decl_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_decl_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_decl_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

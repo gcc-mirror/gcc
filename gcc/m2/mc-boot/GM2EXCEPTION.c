@@ -79,11 +79,11 @@ extern "C" unsigned int M2EXCEPTION_IsM2Exception (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   RTExceptions_SetExceptionBlock (RTExceptions_InitExceptionBlock ());
 }
 
-extern "C" void _M2_M2EXCEPTION_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2EXCEPTION_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

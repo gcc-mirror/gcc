@@ -398,11 +398,11 @@ extern "C" void mcSearch_setModExtension (DynamicStrings_String ext)
   Mod = DynamicStrings_Dup (ext);
 }
 
-extern "C" void _M2_mcSearch_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcSearch_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_mcSearch_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcSearch_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

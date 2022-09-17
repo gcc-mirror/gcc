@@ -2675,12 +2675,12 @@ extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_DynamicStrings_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_DynamicStrings_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   Initialized = FALSE;
   Init ();
 }
 
-extern "C" void _M2_DynamicStrings_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_DynamicStrings_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

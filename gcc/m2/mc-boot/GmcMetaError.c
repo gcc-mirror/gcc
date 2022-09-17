@@ -1871,10 +1871,10 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
   varargs_end (&sym);
 }
 
-extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcMetaError_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcMetaError_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

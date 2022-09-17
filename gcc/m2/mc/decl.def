@@ -745,7 +745,7 @@ PROCEDURE putOptReturn (proc: node) ;
                       Where the parameters are declared as l: type.
 *)
 
-PROCEDURE makeVarParameter (l: node; type, proc: node) : node ;
+PROCEDURE makeVarParameter (l: node; type, proc: node; isused: BOOLEAN) : node ;
 
 
 (*
@@ -753,7 +753,7 @@ PROCEDURE makeVarParameter (l: node; type, proc: node) : node ;
                          Where the parameters are declared as l: type.
 *)
 
-PROCEDURE makeNonVarParameter (l: node; type, proc: node) : node ;
+PROCEDURE makeNonVarParameter (l: node; type, proc: node; isused: BOOLEAN) : node ;
 
 
 (*
@@ -789,7 +789,7 @@ PROCEDURE putIdent (n: node; i: Name) : BOOLEAN ;
                       in procedure, n.
 *)
 
-PROCEDURE addVarParameters (n: node; i: node; type: node) ;
+PROCEDURE addVarParameters (n: node; i: node; type: node; isused: BOOLEAN) ;
 
 
 (*
@@ -797,7 +797,7 @@ PROCEDURE addVarParameters (n: node; i: node; type: node) ;
                          in procedure, n.
 *)
 
-PROCEDURE addNonVarParameters (n: node; i: node; type: node) ;
+PROCEDURE addNonVarParameters (n: node; i: node; type: node; isused: BOOLEAN) ;
 
 
 (*

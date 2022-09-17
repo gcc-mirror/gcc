@@ -674,14 +674,14 @@ EXTERN void decl_putOptReturn (decl_node proc);
                       Where the parameters are declared as l: type.
 */
 
-EXTERN decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc);
+EXTERN decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused);
 
 /*
    makeNonVarParameter - returns a non var parameter node with namelist and type.
                          Where the parameters are declared as l: type.
 */
 
-EXTERN decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc);
+EXTERN decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused);
 
 /*
    paramEnter - reset the parameter count.
@@ -712,14 +712,14 @@ EXTERN unsigned int decl_putIdent (decl_node n, nameKey_Name i);
                       in procedure, n.
 */
 
-EXTERN void decl_addVarParameters (decl_node n, decl_node i, decl_node type);
+EXTERN void decl_addVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused);
 
 /*
    addNonVarParameters - adds the identlist, i, of, type, to be parameters
                          in procedure, n.
 */
 
-EXTERN void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type);
+EXTERN void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused);
 
 /*
    makeVarargs - returns a varargs node.

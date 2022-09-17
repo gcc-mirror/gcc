@@ -1129,6 +1129,8 @@ DefProcedureHeading := "PROCEDURE"                                         % M2E
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
 
+AttributeUnused := [ "<*" Ident "*>" ] =:
+
 -- introduced procedure block so we can produce more informative
 -- error messages
 
@@ -1169,9 +1171,9 @@ DefExtendedFP := DefOptArg | "..." =:
 
 ExtendedFP := OptArg | "..." =:
 
-VarFPSection := "VAR" IdentList ":" FormalType =:
+VarFPSection := "VAR" IdentList ":" FormalType [ AttributeUnused ] =:
 
-NonVarFPSection := IdentList ":" FormalType =:
+NonVarFPSection := IdentList ":" FormalType [ AttributeUnused ] =:
 
 OptArg := "[" Ident ":" FormalType [ "=" SilentConstExpression ] "]" =:
 

@@ -166,7 +166,7 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   listOfFiles = alists_initList ();
   if (! (M2RTS_InstallTerminationProcedure ((PROC ) {(PROC_t) removeFiles})))
@@ -176,6 +176,6 @@ extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc, __attri
     }
 }
 
-extern "C" void _M2_mcPreprocess_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcPreprocess_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

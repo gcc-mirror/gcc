@@ -327,10 +327,10 @@ extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigne
   s = DynamicStrings_KillString (s);
 }
 
-extern "C" void _M2_FpuIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_FpuIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_FpuIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_FpuIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

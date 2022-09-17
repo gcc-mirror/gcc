@@ -571,7 +571,7 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   lastIndice = 0;
   keyIndex = Indexing_InitIndex (1);
@@ -579,6 +579,6 @@ extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc, __attribute_
   binaryTree->left = NULL;
 }
 
-extern "C" void _M2_nameKey_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_nameKey_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

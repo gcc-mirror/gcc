@@ -397,10 +397,10 @@ extern "C" void symbolKey_foreachNodeDo (symbolKey_symbolTree t, symbolKey_perfo
   searchAndDo (t->left, p);
 }
 
-extern "C" void _M2_symbolKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_symbolKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_symbolKey_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_symbolKey_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

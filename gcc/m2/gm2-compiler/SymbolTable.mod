@@ -3335,26 +3335,6 @@ END IsDefLink ;
 
 
 (*
-   GetOuterModule - returns the outer module or NulSym if there
-                    is no module being compiled.
-*)
-
-PROCEDURE GetOuterModule () : CARDINAL ;
-VAR
-   OuterModule: CARDINAL ;
-BEGIN
-   OuterModule := GetCurrentModule () ;
-   IF OuterModule # NulSym
-   THEN
-      WHILE GetScope (OuterModule) # NulSym DO
-         OuterModule := GetScope (OuterModule)
-      END
-   END ;
-   RETURN OuterModule
-END GetOuterModule ;
-
-
-(*
    GetLink - returns TRUE if the current module is only used for linkage.
 *)
 

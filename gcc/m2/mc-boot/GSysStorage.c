@@ -223,7 +223,7 @@ extern "C" void SysStorage_Init (void)
 {
 }
 
-extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   callno = 0;
   if (enableTrace)
@@ -244,6 +244,6 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribu
     }
 }
 
-extern "C" void _M2_SysStorage_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SysStorage_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -266,12 +266,12 @@ extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high)
     }
 }
 
-extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   /* IsATTY := isatty()  */
   IsATTY = FALSE;
 }
 
-extern "C" void _M2_StrIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

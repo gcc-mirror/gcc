@@ -77,10 +77,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   define ASCII_del (char) 0177
 #   define ASCII_EOL ASCII_nl
 
-extern "C" void _M2_ASCII_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_ASCII_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_ASCII_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_ASCII_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

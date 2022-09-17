@@ -680,24 +680,6 @@ IdentList := Ident                                                         % VAR
                                                                              END %
              =:
 
-IdentScopeList := IdentScope                                               % VAR
-                                                                                on: BOOLEAN ;
-                                                                                n : CARDINAL ; %
-                                                                           % on := IsAutoPushOn() ;
-                                                                             IF on
-                                                                             THEN
-                                                                                n := 1
-                                                                             END %
-             { "," IdentScope                                              % IF on
-                                                                             THEN
-                                                                                INC(n)
-                                                                             END %
-             }                                                             % IF on
-                                                                             THEN
-                                                                                PushT(n)
-                                                                             END %
-             =:
-
 PossiblyExportIdentList := PossiblyExportIdent                             % VAR
                                                                                 on: BOOLEAN ;
                                                                                 n : CARDINAL ; %
@@ -735,6 +717,10 @@ FieldPragmaExpression :=                                                   % Pus
 AttributeExpression :=                                                     % PushAutoOff %
                        Ident '(' ConstExpression ')'                       % PopAuto %
                                                      =:
+
+AttributeUnused := [ "<*"                                                  % PushAutoOff %
+                          Ident                                            % PopAuto %
+                                "*>" ] =:
 
 FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
 
@@ -962,9 +948,9 @@ DefExtendedFP := DefOptArg | "..." =:
 
 ExtendedFP := OptArg | "..." =:
 
-VarFPSection := "VAR" IdentScopeList ":" FormalType =:
+VarFPSection := "VAR" IdentList ":" FormalType [ AttributeUnused ] =:
 
-NonVarFPSection := IdentScopeList ":" FormalType =:
+NonVarFPSection := IdentList ":" FormalType [ AttributeUnused ] =:
 
 OptArg := "[" IdentScope ":" FormalType [ "=" ConstExpression ] "]" =:
 

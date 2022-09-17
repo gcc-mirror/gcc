@@ -176,19 +176,4 @@ BEGIN
 END GetFullScopePrefix ;
 
 
-(*
-   UnderScoreString - emits a string with a leading underscore if the C compiler
-                      uses _ prefixes. The string without the underscore is returned.
-*)
-
-PROCEDURE UnderScoreString (s: String) : String ;
-BEGIN
-   IF UseUnderscoreForC
-   THEN
-      Write('_')
-   END ;
-   RETURN( WriteS(StdOut, s) )
-END UnderScoreString ;
-
-
 END M2AsmUtil.

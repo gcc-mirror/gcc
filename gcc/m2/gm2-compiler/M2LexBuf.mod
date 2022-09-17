@@ -1022,9 +1022,6 @@ BEGIN
 END GetFileName ;
 
 
-PROCEDURE stop ; BEGIN END stop ;
-
-
 (*
    AddTokToList - adds a token to a dynamic list.
 *)

@@ -345,7 +345,8 @@ TYPE
 		 scope         :  node ;
 		 isInitialised,
 		 isParameter,
-		 isVarParameter:  BOOLEAN ;
+		 isVarParameter,
+                 isUsed        :  BOOLEAN ;
                  cname         :  cnameT ;
               END ;
 
@@ -403,6 +404,7 @@ TYPE
 		      scope      :  node ;
                       isUnbounded:  BOOLEAN ;
                       isForC     :  BOOLEAN ;
+                      isUsed     :  BOOLEAN ;
                    END ;
 
        paramT = RECORD
@@ -411,6 +413,7 @@ TYPE
                    scope      :  node ;
                    isUnbounded:  BOOLEAN ;
                    isForC     :  BOOLEAN ;
+                   isUsed     :  BOOLEAN ;
                 END ;
 
        varargsT = RECORD
@@ -1993,15 +1996,16 @@ END putVar ;
 
 
 (*
-   putVarBool - assigns the three booleans associated with a variable.
+   putVarBool - assigns the four booleans associated with a variable.
 *)
 
-PROCEDURE putVarBool (v: node; init, param, isvar: BOOLEAN) ;
+PROCEDURE putVarBool (v: node; init, param, isvar, isused: BOOLEAN) ;
 BEGIN
    assert (isVar (v)) ;
    v^.varF.isInitialised := init ;
    v^.varF.isParameter := param ;
-   v^.varF.isVarParameter := isvar
+   v^.varF.isVarParameter := isvar ;
+   v^.varF.isUsed := isused
 END putVarBool ;
 
 
@@ -2073,7 +2077,7 @@ END isVarDecl ;
    makeVariablesFromParameters - creates variables which are really parameters.
 *)
 
-PROCEDURE makeVariablesFromParameters (proc, id, type: node; isvar: BOOLEAN) ;
+PROCEDURE makeVariablesFromParameters (proc, id, type: node; isvar, isused: BOOLEAN) ;
 VAR
    v   : node ;
    i, n: CARDINAL ;
@@ -2088,7 +2092,7 @@ BEGIN
       m := wlists.getItemFromList (id^.identlistF.names, i) ;
       v := makeVar (m) ;
       putVar (v, type, NIL) ;
-      putVarBool (v, TRUE, TRUE, isvar) ;
+      putVarBool (v, TRUE, TRUE, isvar, isused) ;
       IF debugScopes
       THEN
          printf ("adding parameter variable into top scope\n") ;
@@ -2302,7 +2306,7 @@ END putProcTypeOptReturn ;
    makeNonVarParameter - returns a non var parameter node with, name: type.
 *)
 
-PROCEDURE makeNonVarParameter (l: node; type, proc: node) : node ;
+PROCEDURE makeNonVarParameter (l: node; type, proc: node; isused: BOOLEAN) : node ;
 VAR
    d: node ;
 BEGIN
@@ -2313,6 +2317,7 @@ BEGIN
    d^.paramF.scope := proc ;
    d^.paramF.isUnbounded := FALSE ;
    d^.paramF.isForC := isDefForCNode (proc) ;
+   d^.paramF.isUsed := isused ;
    RETURN d
 END makeNonVarParameter ;
 
@@ -2321,7 +2326,7 @@ END makeNonVarParameter ;
    makeVarParameter - returns a var parameter node with, name: type.
 *)
 
-PROCEDURE makeVarParameter (l: node; type, proc: node) : node ;
+PROCEDURE makeVarParameter (l: node; type, proc: node; isused: BOOLEAN) : node ;
 VAR
    d: node ;
 BEGIN
@@ -2332,6 +2337,7 @@ BEGIN
    d^.varparamF.scope := proc ;
    d^.varparamF.isUnbounded := FALSE ;
    d^.varparamF.isForC := isDefForCNode (proc) ;
+   d^.varparamF.isUsed := isused ;
    RETURN d
 END makeVarParameter ;
 
@@ -2432,7 +2438,7 @@ BEGIN
    assert (isProcedure (proc)) ;
    l := makeIdentList () ;
    assert (putIdent (l, id)) ;
-   checkMakeVariables (proc, l, type, FALSE) ;
+   checkMakeVariables (proc, l, type, FALSE, TRUE) ;
    IF NOT proc^.procedureF.checking
    THEN
       p := makeOptParameter (l, type, init) ;
@@ -2530,7 +2536,7 @@ END identListLen ;
    checkParameters - placeholder for future parameter checking.
 *)
 
-PROCEDURE checkParameters (p: node; i: node; type: node; var: BOOLEAN) ;
+PROCEDURE checkParameters (p: node; i: node; type: node; isvar, isused: BOOLEAN) ;
 BEGIN
    (* do check.  *)
    disposeNode (i)
@@ -2569,12 +2575,12 @@ END avoidCnames ;
                         a module or an implementation module.
 *)
 
-PROCEDURE checkMakeVariables (n, i, type: node; isvar: BOOLEAN) ;
+PROCEDURE checkMakeVariables (n, i, type: node; isvar, isused: BOOLEAN) ;
 BEGIN
    IF (isImp (currentModule) OR isModule (currentModule)) AND
       (NOT n^.procedureF.built)
    THEN
-      makeVariablesFromParameters (n, i, type, isvar)
+      makeVariablesFromParameters (n, i, type, isvar, isused)
    END ;
 END checkMakeVariables ;
 
@@ -2584,18 +2590,18 @@ END checkMakeVariables ;
                       in procedure, n.
 *)
 
-PROCEDURE addVarParameters (n: node; i: node; type: node) ;
+PROCEDURE addVarParameters (n: node; i: node; type: node; isused: BOOLEAN) ;
 VAR
    p: node ;
 BEGIN
    assert (isIdentList (i)) ;
    assert (isProcedure (n)) ;
-   checkMakeVariables (n, i, type, TRUE) ;
+   checkMakeVariables (n, i, type, TRUE, isused) ;
    IF n^.procedureF.checking
    THEN
-      checkParameters (n, i, type, TRUE)  (* will destroy, i.  *)
+      checkParameters (n, i, type, TRUE, isused)  (* will destroy, i.  *)
    ELSE
-      p := makeVarParameter (i, type, n) ;
+      p := makeVarParameter (i, type, n, isused) ;
       IncludeIndiceIntoIndex (n^.procedureF.parameters, p) ;
    END ;
 END addVarParameters ;
@@ -2606,18 +2612,18 @@ END addVarParameters ;
                          in procedure, n.
 *)
 
-PROCEDURE addNonVarParameters (n: node; i: node; type: node) ;
+PROCEDURE addNonVarParameters (n: node; i: node; type: node; isused: BOOLEAN) ;
 VAR
    p: node ;
 BEGIN
    assert (isIdentList (i)) ;
    assert (isProcedure (n)) ;
-   checkMakeVariables (n, i, type, FALSE) ;
+   checkMakeVariables (n, i, type, FALSE, isused) ;
    IF n^.procedureF.checking
    THEN
-      checkParameters (n, i, type, FALSE)  (* will destroy, i.  *)
+      checkParameters (n, i, type, FALSE, isused)  (* will destroy, i.  *)
    ELSE
-      p := makeNonVarParameter (i, type, n) ;
+      p := makeNonVarParameter (i, type, n, isused) ;
       IncludeIndiceIntoIndex (n^.procedureF.parameters, p)
    END ;
 END addNonVarParameters ;
@@ -7079,17 +7085,32 @@ END doNameM2 ;
 
 
 (*
+   doUsed -
+*)
+
+PROCEDURE doUsed (p: pretty; used: BOOLEAN) ;
+BEGIN
+   IF NOT used
+   THEN
+      setNeedSpace (p) ;
+      outText (p, "__attribute__((unused))")
+   END
+END doUsed ;
+
+
+(*
    doHighC -
 *)
 
-PROCEDURE doHighC (p: pretty; a: node; n: Name) ;
+PROCEDURE doHighC (p: pretty; a: node; n: Name; isused: BOOLEAN) ;
 BEGIN
    IF isArray (a) AND isUnbounded (a)
    THEN
       (* need to display high.  *)
       print (p, ",") ; setNeedSpace (p) ;
       doTypeNameC (p, cardinalN) ; setNeedSpace (p) ;
-      print (p, "_") ; outTextN (p, n) ; print (p, "_high")
+      print (p, "_") ; outTextN (p, n) ; print (p, "_high") ;
+      doUsed (p, isused)
    END
 END doHighC ;
 
@@ -7171,6 +7192,7 @@ BEGIN
    THEN
       doParamConstCast (p, n) ;
       doTypeNameC (p, ptype) ;
+      doUsed (p, n^.paramF.isUsed) ;
       IF isArray (ptype) AND isUnbounded (ptype)
       THEN
          outText (p, ',') ; setNeedSpace (p) ;
@@ -7185,6 +7207,7 @@ BEGIN
          doParamTypeEmit (p, n, ptype) ;
          IF isArray (ptype) AND isUnbounded (ptype)
          THEN
+            doUsed (p, n^.paramF.isUsed) ;
             outText (p, ',') ; setNeedSpace (p) ;
             outText (p, 'unsigned int')
          END
@@ -7212,7 +7235,8 @@ BEGIN
             THEN
                outText (p, '_')
             END ;
-            doHighC (p, ptype, i) ;
+            doUsed (p, n^.paramF.isUsed) ;
+            doHighC (p, ptype, i, n^.paramF.isUsed) ;
             IF c<t
             THEN
                outText (p, ',') ; setNeedSpace (p)
@@ -7247,6 +7271,7 @@ BEGIN
          setNeedSpace (p) ;
          outText (p, "*")
       END ;
+      doUsed (p, n^.varparamF.isUsed) ;
       IF isArray (ptype) AND isUnbounded (ptype)
       THEN
          outText (p, ',') ; setNeedSpace (p) ;
@@ -7257,7 +7282,8 @@ BEGIN
       l := n^.varparamF.namelist^.identlistF.names ;
       IF l=NIL
       THEN
-         doParamTypeEmit (p, n, ptype)
+         doParamTypeEmit (p, n, ptype) ;
+         doUsed (p, n^.varparamF.isUsed)
       ELSE
          t := wlists.noOfItemsInList (l) ;
          c := 1 ;
@@ -7276,7 +7302,8 @@ BEGIN
             ELSE
                doFQDNameC (p, v, TRUE)
             END ;
-            doHighC (p, ptype, i) ;
+            doUsed (p, n^.varparamF.isUsed) ;
+            doHighC (p, ptype, i, n^.varparamF.isUsed) ;
             IF c<t
             THEN
                outText (p, ',') ; setNeedSpace (p)
@@ -14062,7 +14089,9 @@ BEGIN
    doFQNameC (p, n) ;
    outText (p, "_init") ;
    setNeedSpace (p) ;
-   outText (p, "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\n") ;
+   outText (p, "(__attribute__((unused)) int argc") ;
+   outText (p, ",__attribute__((unused)) char *argv[]") ;
+   outText (p, ",__attribute__((unused)) char *envp[])\n");
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.beginStatements) ;
    p := outKc (p, "}\n") ;
@@ -14074,7 +14103,9 @@ BEGIN
    doFQNameC (p, n) ;
    outText (p, "_finish") ;
    setNeedSpace (p) ;
-   outText (p, "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\n") ;
+   outText (p, "(__attribute__((unused)) int argc") ;
+   outText (p, ",__attribute__((unused)) char *argv[]") ;
+   outText (p, ",__attribute__((unused)) char *envp[])\n");
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.finallyStatements) ;
    p := outKc (p, "}\n")
@@ -14144,7 +14175,7 @@ BEGIN
    outText (p, "_init") ;
    setNeedSpace (p) ;
    outText (p, "(__attribute__((unused)) int argc,") ;
-   outText (p, " __attribute__((unused)) char *argv[],") ;
+   outText (p, " __attribute__((unused)) char *argv[]") ;
    outText (p, " __attribute__((unused)) char *envp[])\n") ;
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.beginStatements) ;
@@ -14158,7 +14189,7 @@ BEGIN
    outText (p, "_fini") ;
    setNeedSpace (p) ;
    outText (p, "(__attribute__((unused)) int argc,") ;
-   outText (p, " __attribute__((unused)) char *argv[],") ;
+   outText (p, " __attribute__((unused)) char *argv[]") ;
    outText (p, " __attribute__((unused)) char *envp[])\n") ;
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.finallyStatements) ;
@@ -14416,7 +14447,9 @@ BEGIN
    doFQNameC (p, n) ;
    outText (p, "_init") ;
    setNeedSpace (p) ;
-   outText (p, "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\n") ;
+   outText (p, "(__attribute__((unused)) int argc") ;
+   outText (p, ",__attribute__((unused)) char *argv[]") ;
+   outText (p, ",__attribute__((unused)) char *envp[])\n");
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.moduleF.beginStatements) ;
    p := outKc (p, "}\n") ;
@@ -14428,7 +14461,9 @@ BEGIN
    doFQNameC (p, n) ;
    outText (p, "_finish") ;
    setNeedSpace (p) ;
-   outText (p, "(__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])\n") ;
+   outText (p, "(__attribute__((unused)) int argc") ;
+   outText (p, ",__attribute__((unused)) char *argv[]") ;
+   outText (p, ",__attribute__((unused)) char *envp[])\n");
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.moduleF.finallyStatements) ;
    p := outKc (p, "}\n")

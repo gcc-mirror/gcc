@@ -482,10 +482,10 @@ extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_Inde
     }
 }
 
-extern "C" void _M2_Indexing_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Indexing_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Indexing_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Indexing_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

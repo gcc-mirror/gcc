@@ -458,9 +458,9 @@ BEGIN
    StartModFileOp     : CodeStartModFile (op3) |
    ModuleScopeOp      : CodeModuleScope (op3) |
    EndFileOp          : CodeEndFile |
-   InitStartOp        : CodeInitStart (op2, op3, IsCompilingMainModule (op3)) |
+   InitStartOp        : CodeInitStart (op3, IsCompilingMainModule (op3)) |
    InitEndOp          : CodeInitEnd (op3, IsCompilingMainModule (op3)) |
-   FinallyStartOp     : CodeFinallyStart (op2, op3, IsCompilingMainModule (op3)) |
+   FinallyStartOp     : CodeFinallyStart (op3, IsCompilingMainModule (op3)) |
    FinallyEndOp       : CodeFinallyEnd (op3, IsCompilingMainModule (op3)) |
    NewLocalVarOp      : CodeNewLocalVar (op1, op3) |
    KillLocalVarOp     : CodeKillLocalVar (op3) |
@@ -701,12 +701,10 @@ VAR
    obj     : CARDINAL ;
    gccName,
    tree    : Tree ;
-   location: location_t;
 BEGIN
    tree := Tree (NIL) ;
    IF sym#NulSym
    THEN
-      location := TokenToLocation (tokenno) ;
       i := 1 ;
       REPEAT
          GetRegInterface (sym, i, name, str, obj) ;
@@ -719,7 +717,7 @@ BEGIN
                THEN
                   gccName := NIL
                ELSE
-                  gccName := BuildStringConstant (location, KeyToCharStar (name), LengthKey (name))
+                  gccName := BuildStringConstant (KeyToCharStar (name), LengthKey (name))
                END ;
                tree := ChainOnParamValue (tree, gccName, PromoteToString (tokenno, str), Mod2Gcc (obj))
             ELSE
@@ -1067,7 +1065,7 @@ END CallInnerFinally ;
                    current module.
 *)
 
-PROCEDURE CodeInitStart (currentScope, moduleSym: CARDINAL;
+PROCEDURE CodeInitStart (moduleSym: CARDINAL;
                          CompilingMainModule: BOOLEAN) ;
 VAR
    location  : location_t;
@@ -1119,7 +1117,7 @@ END CodeInitEnd ;
                       current module.
 *)
 
-PROCEDURE CodeFinallyStart (outerModule, moduleSym: CARDINAL;
+PROCEDURE CodeFinallyStart (moduleSym: CARDINAL;
                             CompilingMainModule: BOOLEAN) ;
 VAR
    location  : location_t;
@@ -2593,7 +2591,7 @@ BEGIN
       DeclareConstructor (CurrentQuadToken, quad, op3) ;
       IF (IsConst (op3) AND (type=Char)) OR IsConstString (op3)
       THEN
-         value := BuildStringConstant (location, KeyToCharStar (GetString (op3)), GetStringLength (op3))
+         value := BuildStringConstant (KeyToCharStar (GetString (op3)), GetStringLength (op3))
       ELSE
          value := Mod2Gcc (op3)
       END ;
@@ -2910,7 +2908,7 @@ BEGIN
        *  create string from char and add nul to the end, nul is
        *  added by BuildStringConstant
        *)
-      op3t := BuildStringConstant (location, KeyToCharStar (GetString (op3)), 1)
+      op3t := BuildStringConstant (KeyToCharStar (GetString (op3)), 1)
    ELSE
       op3t := Mod2Gcc (op3)
    END ;

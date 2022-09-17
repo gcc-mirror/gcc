@@ -350,7 +350,7 @@ m2decl_BuildCStringConstant (const char *string, int length)
    and, length.  */
 
 tree
-m2decl_BuildStringConstant (location_t location, const char *string, int length)
+m2decl_BuildStringConstant (const char *string, int length)
 {
   tree elem, index, type;
 

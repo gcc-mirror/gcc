@@ -576,9 +576,9 @@ gm2_langhook_pushdecl (tree decl ATTRIBUTE_UNUSED)
   gcc_unreachable ();
 }
 
-/* This hook is used to get the current list of declarations as
-   trees.  We don't support that; instead we use write_globals.  This
-   can't simply crash because it is called by -gstabs.  */
+/* This hook is used to get the current list of declarations as trees.
+   We don't support that; instead we use write_globals.  This can't
+   simply crash because it is called by -gstabs.  */
 
 static tree
 gm2_langhook_getdecls (void)
@@ -586,6 +586,8 @@ gm2_langhook_getdecls (void)
   return NULL;
 }
 
+/* m2_write_global_declarations writes out globals by coping into a vec
+   and calling wrapup_global_declarations.  */
 
 static void
 m2_write_global_declarations (tree globals)
@@ -632,7 +634,7 @@ write_globals (void)
 }
 
 
-/*  Gimplify an EXPR_STMT node.  */
+/* Gimplify an EXPR_STMT node.  */
 
 static void
 gimplify_expr_stmt (tree *stmt_p)
@@ -685,8 +687,8 @@ gm2_genericize (tree fndecl)
       {
 
         /* If a function's arguments are copied to create a thunk, then
-        DECL_BY_REFERENCE will be set -- but the type of the argument will be
-        a pointer type, so we will never get here.  */
+	   DECL_BY_REFERENCE will be set -- but the type of the argument will be
+	   a pointer type, so we will never get here.  */
         gcc_assert (!DECL_BY_REFERENCE (t));
         gcc_assert (DECL_ARG_TYPE (t) != TREE_TYPE (t));
         TREE_TYPE (t) = DECL_ARG_TYPE (t);
@@ -847,7 +849,7 @@ gm2_mark_addressable (tree exp)
       default:
         return true;
       }
-  /* never reach here.  */
+  /* Never reach here.  */
   gcc_unreachable ();
 }
 

@@ -646,10 +646,10 @@ extern "C" void mcPrintf_fprintf4 (FIO_File file, const char *a_, unsigned int _
     {}  /* empty.  */
 }
 
-extern "C" void _M2_mcPrintf_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcPrintf_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcPrintf_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcPrintf_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

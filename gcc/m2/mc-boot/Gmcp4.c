@@ -1648,6 +1648,16 @@ static void FormalParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
 static void AttributeNoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
+   AttributeUnused := [ ''  ] 
+
+   first  symbols:ldirectivetok
+   
+   reachend
+*/
+
+static void AttributeUnused (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
+
+/*
    MultiFPSection := ExtendedFP  | FPSection [ ';' 
                                                MultiFPSection  ] 
 
@@ -1691,6 +1701,7 @@ static void ExtendedFP (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 
 /*
    VarFPSection := 'VAR' PushIdentList ':' FormalType 
+                   [ AttributeUnused  ] 
 
    first  symbols:vartok
    
@@ -1701,6 +1712,7 @@ static void VarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
 
 /*
    NonVarFPSection := PushIdentList ':' FormalType 
+                      [ AttributeUnused  ] 
 
    first  symbols:identtok
    
@@ -6502,6 +6514,25 @@ static void AttributeNoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 
 
 /*
+   AttributeUnused := [ ''  ] 
+
+   first  symbols:ldirectivetok
+   
+   reachend
+*/
+
+static void AttributeUnused (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
+{
+  if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
+    {
+      Expect (mcReserved_ldirectivetok, stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
+      Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_rdirectivetok-mcReserved_eoftok))), stopset1, stopset2);
+      Expect (mcReserved_rdirectivetok, stopset0, stopset1, stopset2);
+    }
+}
+
+
+/*
    MultiFPSection := ExtendedFP  | FPSection [ ';' 
                                                MultiFPSection  ] 
 
@@ -6618,6 +6649,7 @@ static void ExtendedFP (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
 
 /*
    VarFPSection := 'VAR' PushIdentList ':' FormalType 
+                   [ AttributeUnused  ] 
 
    first  symbols:vartok
    
@@ -6629,12 +6661,17 @@ static void VarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
   Expect (mcReserved_vartok, stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   PushIdentList (stopset0|(SetOfStop0) ((1 << (mcReserved_colontok-mcReserved_eoftok))), stopset1, stopset2);
   Expect (mcReserved_colontok, stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_arraytok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
-  FormalType (stopset0, stopset1, stopset2);
+  FormalType (stopset0|(SetOfStop0) ((1 << (mcReserved_ldirectivetok-mcReserved_eoftok))), stopset1, stopset2);
+  if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
+    {
+      AttributeUnused (stopset0, stopset1, stopset2);
+    }
 }
 
 
 /*
    NonVarFPSection := PushIdentList ':' FormalType 
+                      [ AttributeUnused  ] 
 
    first  symbols:identtok
    
@@ -6645,7 +6682,11 @@ static void NonVarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 {
   PushIdentList (stopset0|(SetOfStop0) ((1 << (mcReserved_colontok-mcReserved_eoftok))), stopset1, stopset2);
   Expect (mcReserved_colontok, stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_arraytok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
-  FormalType (stopset0, stopset1, stopset2);
+  FormalType (stopset0|(SetOfStop0) ((1 << (mcReserved_ldirectivetok-mcReserved_eoftok))), stopset1, stopset2);
+  if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
+    {
+      AttributeUnused (stopset0, stopset1, stopset2);
+    }
 }
 
 
@@ -7667,10 +7708,10 @@ extern "C" unsigned int mcp4_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp4_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcp4_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp4_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcp4_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

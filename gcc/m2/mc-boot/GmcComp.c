@@ -650,11 +650,11 @@ extern "C" unsigned int mcComp_getPassNo (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcComp_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcComp_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_mcComp_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcComp_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -1117,6 +1117,8 @@ FormalParameters := "("                                               % paramEnt
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
 
+AttributeUnused := [ "<*" Ident "*>" ] =:
+
 MultiFPSection := ExtendedFP | FPSection [ ";" MultiFPSection ] =:
 
 FPSection := NonVarFPSection | VarFPSection =:
@@ -1125,9 +1127,9 @@ DefExtendedFP := DefOptArg | "..." =:
 
 ExtendedFP := OptArg | "..." =:
 
-VarFPSection := "VAR" PushIdentList ":" FormalType =:
+VarFPSection := "VAR" PushIdentList ":" FormalType [ AttributeUnused ] =:
 
-NonVarFPSection := PushIdentList ":" FormalType =:
+NonVarFPSection := PushIdentList ":" FormalType [ AttributeUnused ] =:
 
 OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
 

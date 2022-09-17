@@ -47,7 +47,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, Mark,
                            ConCat, ConCatChar ;
 
 FROM mcError IMPORT errorStringAt ;
-FROM nameKey IMPORT NulName, Name, makekey ;
+FROM nameKey IMPORT NulName, Name, makekey, makeKey ;
 FROM mcPrintf IMPORT printf0, printf1 ;
 FROM mcDebug IMPORT assert ;
 FROM mcReserved IMPORT toktype ;
@@ -85,6 +85,7 @@ CONST
 
 VAR
    WasNoError : BOOLEAN ;
+   curisused  : BOOLEAN ;
    curstring,
    curident   : Name ;
    curproc,
@@ -166,6 +167,32 @@ PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
 BEGIN
    ErrorString (InitString (a))
 END ErrorArray ;
+
+
+(*
+   checkParameterAttribute -
+*)
+
+PROCEDURE checkParameterAttribute ;
+BEGIN
+   IF makeKey ("unused") # curident
+   THEN
+      metaError1 ('attribute {%1k} is not allowed in the formal parameter section, currently only unused is allowed', curident)
+   END
+END checkParameterAttribute ;
+
+
+(*
+   checkReturnAttribute -
+*)
+
+PROCEDURE checkReturnAttribute ;
+BEGIN
+   IF makeKey ("noreturn") # curident
+   THEN
+      metaError1 ('attribute {%1k} is not allowed in the procedure return type, only noreturn is allowed', curident)
+   END
+END checkReturnAttribute ;
 
 
 (*
@@ -899,8 +926,8 @@ ProcedureParameters := ProcedureParameter                              % addPara
 
 ProcedureParameter := "..."                                            % VAR n: node ; %
                                                                        % n := push (makeVarargs ()) %
-                            | "VAR" FormalType                         % n := push (makeVarParameter (NIL, pop (), curproc)) %
-			                       | FormalType            % n := push (makeNonVarParameter (NIL, pop (), curproc)) %
+                            | "VAR" FormalType                         % n := push (makeVarParameter (NIL, pop (), curproc, TRUE)) %
+			                       | FormalType            % n := push (makeNonVarParameter (NIL, pop (), curproc, TRUE)) %
 					                    =:
 
 
@@ -1118,11 +1145,18 @@ FormalParameters := "("                                               % paramEnt
                         [ MultiFPSection ] ")"                        % paramLeave (curproc) %
 			                       FormalReturn =:
 
-AttributeNoReturn := [ NoReturn |                          % setNoReturn (curproc, FALSE) %
+AttributeNoReturn := [ NoReturn |                                     % setNoReturn (curproc, FALSE) %
                                   ] =:
 
-NoReturn := "<*" Ident                                     % setNoReturn (curproc, TRUE) %
+NoReturn := "<*" Ident                                                % setNoReturn (curproc, TRUE) %
+                                                                      % checkReturnAttribute %
                        "*>" =:
+
+AttributeUnused := [ Unused ] =:
+
+Unused := "<*" Ident                                                  % curisused := FALSE %
+                                                                      % checkParameterAttribute %
+                     "*>" =:
 
 MultiFPSection := ExtendedFP | FPSection [ ";" MultiFPSection ] =:
 
@@ -1137,13 +1171,17 @@ ExtendedFP := OptArg | "..."
 VarFPSection := "VAR" PushIdentList                                   % VAR l, t: node ; %
                                     ":" FormalType                    % t := pop () %
 				                                      % l := pop () %
-                                                                      % addVarParameters (curproc, l, t) %
+                                                                      % curisused := TRUE %
+                                                  [ AttributeUnused ]
+                                                                      % addVarParameters (curproc, l, t, curisused) %
               =:
 
 NonVarFPSection := PushIdentList                                      % VAR l, t: node ; %
                                  ":" FormalType                       % t := pop () %
 				                                      % l := pop () %
-								      % addNonVarParameters (curproc, l, t) %
+                                                                      % curisused := TRUE %
+                                                [ AttributeUnused ]
+								      % addNonVarParameters (curproc, l, t, curisused) %
                  =:
 
 OptArg :=                                                             % VAR p, init, type: node ; id: Name ; %

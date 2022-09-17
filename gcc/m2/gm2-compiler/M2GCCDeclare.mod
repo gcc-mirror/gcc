@@ -1523,12 +1523,10 @@ END DeclareCharConstant ;
    DeclareStringConstant - declares a string constant.
 *)
 
-PROCEDURE DeclareStringConstant (tokenno: CARDINAL; sym: CARDINAL) ;
+PROCEDURE DeclareStringConstant (sym: CARDINAL) ;
 VAR
    symtree : Tree ;
-   location: location_t ;
 BEGIN
-   location := TokenToLocation (tokenno) ;
    IF IsConstStringM2nul (sym) OR IsConstStringCnul (sym)
    THEN
       (* in either case the string needs a nul terminator.  If the string
@@ -1537,8 +1535,7 @@ BEGIN
       symtree := BuildCStringConstant (KeyToCharStar (GetString (sym)),
                                        GetStringLength (sym))
    ELSE
-      symtree := BuildStringConstant (location,
-                                      KeyToCharStar (GetString (sym)),
+      symtree := BuildStringConstant (KeyToCharStar (GetString (sym)),
                                       GetStringLength (sym))
    END ;
    PreAddModGcc (sym, symtree) ;
@@ -1557,10 +1554,8 @@ END DeclareStringConstant ;
 
 PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 VAR
-   size    : CARDINAL ;
-   location: location_t ;
+   size: CARDINAL ;
 BEGIN
-   location := TokenToLocation (tokenno) ;
    DeclareConstant (tokenno, sym) ;
    size := GetStringLength (sym) ;
    IF size > 1
@@ -1568,8 +1563,7 @@ BEGIN
       (* will be a string anyway *)
       RETURN Tree (Mod2Gcc (sym))
    ELSE
-      RETURN BuildStringConstant (location,
-                                  KeyToCharStar (GetString (sym)),
+      RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
                                   GetStringLength (sym))
    END
 END PromoteToString ;
@@ -1811,7 +1805,7 @@ BEGIN
          THEN
             DeclareCharConstant(sym)
          ELSE
-            DeclareStringConstant (tokenno, sym)
+            DeclareStringConstant (sym)
          END
       ELSIF IsValueSolved(sym)
       THEN
@@ -1870,7 +1864,7 @@ BEGIN
       THEN
          DeclareCharConstant(sym)
       ELSE
-         DeclareStringConstant (tokenno, sym)
+         DeclareStringConstant (sym)
       END
    ELSIF IsValueSolved(sym)
    THEN
@@ -1926,11 +1920,11 @@ VAR
    WalkFamilyOfUnbounded -
 *)
 
-PROCEDURE WalkFamilyOfUnbounded (oaf: CARDINAL; dim: CARDINAL; unbounded: CARDINAL) ;
+PROCEDURE WalkFamilyOfUnbounded (oaf: CARDINAL <* unused *> ; dim: CARDINAL <* unused *> ; unbounded: CARDINAL) ;
 BEGIN
-   IF unbounded#NulSym
+   IF unbounded # NulSym
    THEN
-      unboundedp(unbounded)
+      unboundedp (unbounded)
    END
 END WalkFamilyOfUnbounded ;
 

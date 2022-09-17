@@ -46,7 +46,7 @@ see <https://www.gnu.org/licenses/>.  *)
 IMPLEMENTATION MODULE P2Build ;
 
 FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken, InsertTokenAndRewind, GetTokenNo ;
-FROM M2MetaError IMPORT MetaErrorStringT0 ;
+FROM M2MetaError IMPORT MetaErrorStringT0, MetaErrorT1 ;
 FROM NameKey IMPORT NulName, Name, makekey, MakeKey ;
 FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok ;
 FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatChar ;
@@ -148,18 +148,51 @@ VAR
 
 PROCEDURE ErrorString (s: String) ;
 BEGIN
-   MetaErrorStringT0(GetTokenNo(), s) ;
+   MetaErrorStringT0 (GetTokenNo (), s) ;
    WasNoError := FALSE
 END ErrorString ;
 
 
 PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
 BEGIN
-   ErrorString(InitString(a))
+   ErrorString (InitString (a))
 END ErrorArray ;
 
 
 % declaration P2Build begin
+
+(*
+   checkReturnAttribute -
+*)
+
+PROCEDURE checkReturnAttribute ;
+VAR
+   ident: Name ;
+   tok  : CARDINAL ;
+BEGIN
+   PopTtok (ident, tok) ;
+   IF ident # MakeKey ('noreturn')
+   THEN
+      MetaErrorT1 (tok, 'attribute {%1k} is not allowed in the procedure return type, only noreturn is allowed', ident)
+   END
+END checkReturnAttribute ;
+
+
+(*
+   checkParameterAttribute -
+*)
+
+PROCEDURE checkParameterAttribute ;
+VAR
+   ident: Name ;
+   tok  : CARDINAL ;
+BEGIN
+   PopTtok (ident, tok) ;
+   IF ident # MakeKey ('noreturn')
+   THEN
+      MetaErrorT1 (tok, 'attribute {%1k} is not allowed in the parameter formal type section, only unused is allowed', ident)
+   END
+END checkParameterAttribute ;
 
 
 (*
@@ -218,19 +251,19 @@ BEGIN
    s0 := SetOfStop0{} ;
    s1 := SetOfStop1{} ;
    s2 := SetOfStop2{} ;
-   IF ORD(t)<32
+   IF ORD (t) <32
    THEN
-      INCL(s0, t)
-   ELSIF ORD(t)<64
+      INCL (s0, t)
+   ELSIF ORD (t) <64
    THEN
-      INCL(s1, t)
+      INCL (s1, t)
    ELSE
-      INCL(s2, t)
+      INCL (s2, t)
    END ;
-   str := DescribeStop(s0, s1, s2) ;
+   str := DescribeStop (s0, s1, s2) ;
 
-   str := ConCat(InitString('syntax error,'), Mark(str)) ;
-   MetaErrorStringT0(GetTokenNo(), str)
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   MetaErrorStringT0 (GetTokenNo (), str)
 END WarnMissingToken ;
 
 
@@ -1012,9 +1045,15 @@ DefProcedureHeading := "PROCEDURE"                                         % M2E
                         )                                                  % M2Error.LeaveErrorScope %
                     =:
 
-AttributeNoReturn := [ "<*"                                                % PushAutoOff %
+AttributeNoReturn := [ "<*"                                                % PushAutoOn %
                             Ident                                          % PopAuto %
+                                                                           % checkReturnAttribute %
                                    "*>" ] =:
+
+AttributeUnused := [ "<*"                                                  % PushAutoOn %
+                          Ident                                            % PopAuto %
+                                                                           % checkParameterAttribute %
+                                "*>" ] =:
 
 -- introduced procedure block so we can produce more informative
 -- error messages
@@ -1105,6 +1144,7 @@ VarFPSection := "VAR"                                                      % VAR
                                                                            % PopT(n) ; %
                                                                            % PushT(VarTok) ; %
                 IdentList ":" FormalType                                   % PushT(n) %
+                [ AttributeUnused ]
                                                                            % BuildFPSection %
              =:
 
@@ -1112,6 +1152,7 @@ NonVarFPSection :=                                                         % VAR
                                                                            % PopT(n) %
                                                                            % PushT(NulTok) %
                    IdentList ":" FormalType                                % PushT(n) %
+                   [ AttributeUnused ]
                                                                            % BuildFPSection %
                 =:
 

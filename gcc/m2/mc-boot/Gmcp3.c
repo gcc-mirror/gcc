@@ -69,6 +69,7 @@ typedef unsigned int stop2;
 typedef unsigned int SetOfStop2;
 
 static unsigned int WasNoError;
+static unsigned int curisused;
 static nameKey_Name curstring;
 static nameKey_Name curident;
 static decl_node curproc;
@@ -132,6 +133,18 @@ static void ErrorString (DynamicStrings_String s);
 */
 
 static void ErrorArray (const char *a_, unsigned int _a_high);
+
+/*
+   checkParameterAttribute -
+*/
+
+static void checkParameterAttribute (void);
+
+/*
+   checkReturnAttribute -
+*/
+
+static void checkReturnAttribute (void);
 
 /*
    pushNunbounded -
@@ -1070,9 +1083,9 @@ static void ProcedureParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
                          
                          % n := push (makeVarargs ())  %
                           | 'VAR' FormalType 
-                         % n := push (makeVarParameter (NIL, pop (), curproc))  %
+                         % n := push (makeVarParameter (NIL, pop (), curproc, TRUE))  %
                           | FormalType 
-                         % n := push (makeNonVarParameter (NIL, pop (), curproc))  %
+                         % n := push (makeNonVarParameter (NIL, pop (), curproc, TRUE))  %
                          
 
    first  symbols:identtok, arraytok, vartok, periodperiodperiodtok
@@ -1706,6 +1719,26 @@ static void AttributeNoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSt
 static void NoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
 
 /*
+   AttributeUnused := [ Unused  ] 
+
+   first  symbols:ldirectivetok
+   
+   reachend
+*/
+
+static void AttributeUnused (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
+
+/*
+   Unused := '' 
+
+   first  symbols:ldirectivetok
+   
+   cannot reachend
+*/
+
+static void Unused (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
+
+/*
    MultiFPSection := ExtendedFP  | FPSection [ ';' 
                                                MultiFPSection  ] 
 
@@ -1757,7 +1790,9 @@ static void ExtendedFP (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
                    
                    % l := pop ()  %
                    
-                   % addVarParameters (curproc, l, t)  %
+                   % curisused := TRUE  %
+                   [ AttributeUnused  ] 
+                   % addVarParameters (curproc, l, t, curisused)  %
                    
 
    first  symbols:vartok
@@ -1775,7 +1810,9 @@ static void VarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
                       
                       % l := pop ()  %
                       
-                      % addNonVarParameters (curproc, l, t)  %
+                      % curisused := TRUE  %
+                      [ AttributeUnused  ] 
+                      % addNonVarParameters (curproc, l, t, curisused)  %
                       
 
    first  symbols:identtok
@@ -2279,6 +2316,32 @@ static void ErrorArray (const char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   ErrorString (DynamicStrings_InitString ((const char *) a, _a_high));
+}
+
+
+/*
+   checkParameterAttribute -
+*/
+
+static void checkParameterAttribute (void)
+{
+  if ((nameKey_makeKey ((const char *) "unused", 6)) != curident)
+    {
+      mcMetaError_metaError1 ((const char *) "attribute {%1k} is not allowed in the formal parameter section, currently only unused is allowed", 96, (const unsigned char *) &curident, (sizeof (curident)-1));
+    }
+}
+
+
+/*
+   checkReturnAttribute -
+*/
+
+static void checkReturnAttribute (void)
+{
+  if ((nameKey_makeKey ((const char *) "noreturn", 8)) != curident)
+    {
+      mcMetaError_metaError1 ((const char *) "attribute {%1k} is not allowed in the procedure return type, only noreturn is allowed", 85, (const unsigned char *) &curident, (sizeof (curident)-1));
+    }
 }
 
 
@@ -5200,9 +5263,9 @@ static void ProcedureParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
                          
                          % n := push (makeVarargs ())  %
                           | 'VAR' FormalType 
-                         % n := push (makeVarParameter (NIL, pop (), curproc))  %
+                         % n := push (makeVarParameter (NIL, pop (), curproc, TRUE))  %
                           | FormalType 
-                         % n := push (makeNonVarParameter (NIL, pop (), curproc))  %
+                         % n := push (makeNonVarParameter (NIL, pop (), curproc, TRUE))  %
                          
 
    first  symbols:identtok, arraytok, vartok, periodperiodperiodtok
@@ -5224,13 +5287,13 @@ static void ProcedureParameter (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfS
       /* avoid dangling else.  */
       Expect (mcReserved_vartok, stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_arraytok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
       FormalType (stopset0, stopset1, stopset2);
-      n = push (decl_makeVarParameter (static_cast<decl_node> (NULL), pop (), curproc));
+      n = push (decl_makeVarParameter (static_cast<decl_node> (NULL), pop (), curproc, TRUE));
     }
   else if ((mcLexBuf_currenttoken == mcReserved_arraytok) || (mcLexBuf_currenttoken == mcReserved_identtok))
     {
       /* avoid dangling else.  */
       FormalType (stopset0, stopset1, stopset2);
-      n = push (decl_makeNonVarParameter (static_cast<decl_node> (NULL), pop (), curproc));
+      n = push (decl_makeNonVarParameter (static_cast<decl_node> (NULL), pop (), curproc, TRUE));
     }
   else
     {
@@ -6648,6 +6711,42 @@ static void NoReturn (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stops
   Expect (mcReserved_ldirectivetok, stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_rdirectivetok-mcReserved_eoftok))), stopset1, stopset2);
   decl_setNoReturn (curproc, TRUE);
+  checkReturnAttribute ();
+  Expect (mcReserved_rdirectivetok, stopset0, stopset1, stopset2);
+}
+
+
+/*
+   AttributeUnused := [ Unused  ] 
+
+   first  symbols:ldirectivetok
+   
+   reachend
+*/
+
+static void AttributeUnused (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
+{
+  if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
+    {
+      Unused (stopset0, stopset1, stopset2);
+    }
+}
+
+
+/*
+   Unused := '' 
+
+   first  symbols:ldirectivetok
+   
+   cannot reachend
+*/
+
+static void Unused (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
+{
+  Expect (mcReserved_ldirectivetok, stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
+  Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_rdirectivetok-mcReserved_eoftok))), stopset1, stopset2);
+  curisused = FALSE;
+  checkParameterAttribute ();
   Expect (mcReserved_rdirectivetok, stopset0, stopset1, stopset2);
 }
 
@@ -6778,7 +6877,9 @@ static void ExtendedFP (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 sto
                    
                    % l := pop ()  %
                    
-                   % addVarParameters (curproc, l, t)  %
+                   % curisused := TRUE  %
+                   [ AttributeUnused  ] 
+                   % addVarParameters (curproc, l, t, curisused)  %
                    
 
    first  symbols:vartok
@@ -6794,10 +6895,15 @@ static void VarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
   Expect (mcReserved_vartok, stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   PushIdentList (stopset0|(SetOfStop0) ((1 << (mcReserved_colontok-mcReserved_eoftok))), stopset1, stopset2);
   Expect (mcReserved_colontok, stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_arraytok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
-  FormalType (stopset0, stopset1, stopset2);
+  FormalType (stopset0|(SetOfStop0) ((1 << (mcReserved_ldirectivetok-mcReserved_eoftok))), stopset1, stopset2);
   t = pop ();
   l = pop ();
-  decl_addVarParameters (curproc, l, t);
+  curisused = TRUE;
+  if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
+    {
+      AttributeUnused (stopset0, stopset1, stopset2);
+    }
+  decl_addVarParameters (curproc, l, t, curisused);
 }
 
 
@@ -6809,7 +6915,9 @@ static void VarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
                       
                       % l := pop ()  %
                       
-                      % addNonVarParameters (curproc, l, t)  %
+                      % curisused := TRUE  %
+                      [ AttributeUnused  ] 
+                      % addNonVarParameters (curproc, l, t, curisused)  %
                       
 
    first  symbols:identtok
@@ -6824,10 +6932,15 @@ static void NonVarFPSection (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 
   PushIdentList (stopset0|(SetOfStop0) ((1 << (mcReserved_colontok-mcReserved_eoftok))), stopset1, stopset2);
   Expect (mcReserved_colontok, stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_arraytok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
-  FormalType (stopset0, stopset1, stopset2);
+  FormalType (stopset0|(SetOfStop0) ((1 << (mcReserved_ldirectivetok-mcReserved_eoftok))), stopset1, stopset2);
   t = pop ();
   l = pop ();
-  decl_addNonVarParameters (curproc, l, t);
+  curisused = TRUE;
+  if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
+    {
+      AttributeUnused (stopset0, stopset1, stopset2);
+    }
+  decl_addNonVarParameters (curproc, l, t, curisused);
 }
 
 
@@ -7732,10 +7845,10 @@ extern "C" unsigned int mcp3_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp3_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcp3_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp3_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcp3_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

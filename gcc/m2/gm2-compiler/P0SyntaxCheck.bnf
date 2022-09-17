@@ -800,6 +800,8 @@ ProcedureHeading := "PROCEDURE"                                           % M2Er
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
 
+AttributeUnused := [ "<*" Ident "*>" ] =:
+
 -- note that we do need to know whether builtins are used as they
 -- determine whether we need to parse the implementation module
 -- the same is true for hidden types
@@ -852,9 +854,9 @@ DefExtendedFP := DefOptArg | "..." =:
 
 ExtendedFP := OptArg | "..." =:
 
-VarFPSection := "VAR" IdentList ":" FormalType =:
+VarFPSection := "VAR" IdentList ":" FormalType [ AttributeUnused ] =:
 
-NonVarFPSection := IdentList ":" FormalType =:
+NonVarFPSection := IdentList ":" FormalType [ AttributeUnused ] =:
 
 OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
 

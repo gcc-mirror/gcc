@@ -1011,6 +1011,8 @@ FormalParameters := "(" [ MultiFPSection ] ")" FormalReturn =:
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
 
+AttributeUnused := [ "<*" Ident "*>" ] =:
+
 MultiFPSection := ExtendedFP | FPSection [ ";" MultiFPSection ] =:
 
 FPSection := NonVarFPSection | VarFPSection =:
@@ -1019,9 +1021,9 @@ DefExtendedFP := DefOptArg | "..." =:
 
 ExtendedFP := OptArg | "..." =:
 
-VarFPSection := "VAR" IdentList ":" FormalType =:
+VarFPSection := "VAR" IdentList ":" FormalType [ AttributeUnused ] =:
 
-NonVarFPSection := IdentList ":" FormalType =:
+NonVarFPSection := IdentList ":" FormalType [ AttributeUnused ] =:
 
 OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
 

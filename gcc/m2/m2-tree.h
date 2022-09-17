@@ -56,7 +56,7 @@ enum m2_tree_code {
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)	TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
 
-/* EXPR_STMT accessor. This gives the expression associated with an
+/* EXPR_STMT accessor.  This gives the expression associated with an
    expression statement.  */
 #define EXPR_STMT_EXPR(NODE)	TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
 

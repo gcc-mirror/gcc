@@ -2196,7 +2196,7 @@ PROCEDURE BuildStringParamLoc (location: location_t; s: String) ;
 BEGIN
    BuildParam (location,
                BuildConvert (location, Mod2Gcc (Address),
-                             BuildAddr (location, BuildStringConstant (location, string(s), Length(s)),
+                             BuildAddr (location, BuildStringConstant (string(s), Length(s)),
                                         FALSE), FALSE))
 END BuildStringParamLoc ;
 
