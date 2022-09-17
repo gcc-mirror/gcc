@@ -261,11 +261,11 @@ TypeCheckTopLevel::visit (HIR::StaticItem &var)
   TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
 
   TyTy::BaseType *unified
-    = unify_site (var.get_mappings ().get_hirid (),
-		  TyTy::TyWithLocation (type, var.get_type ()->get_locus ()),
-		  TyTy::TyWithLocation (expr_type,
-					var.get_expr ()->get_locus ()),
-		  var.get_locus ());
+    = coercion_site (var.get_mappings ().get_hirid (),
+		     TyTy::TyWithLocation (type, var.get_type ()->get_locus ()),
+		     TyTy::TyWithLocation (expr_type,
+					   var.get_expr ()->get_locus ()),
+		     var.get_locus ());
   context->insert_type (var.get_mappings (), unified);
 }
 
