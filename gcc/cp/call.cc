@@ -9144,7 +9144,7 @@ init_by_return_slot_p (tree exp)
    Places that use this function (or _opt) to decide to elide a copy should
    probably use make_safe_copy_elision instead.  */
 
-static bool
+bool
 unsafe_copy_elision_p (tree target, tree exp)
 {
   return unsafe_return_slot_p (target) && init_by_return_slot_p (exp);
@@ -9941,7 +9941,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	       && !unsafe)
 	{
 	  tree to = cp_build_fold_indirect_ref (fa);
-	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
+	  val = cp_build_init_expr (to, arg);
 	  return val;
 	}
     }
@@ -10100,7 +10100,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    }
 	  call = cxx_constant_value (call, obj_arg, complain);
 	  if (obj_arg && !error_operand_p (call))
-	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
+	    call = cp_build_init_expr (obj_arg, call);
 	  call = convert_from_reference (call);
 	}
     }
@@ -10765,7 +10765,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	    check_self_delegation (arg);
 	  /* Avoid change of behavior on Wunused-var-2.C.  */
 	  instance = mark_lvalue_use (instance);
-	  return build2 (INIT_EXPR, class_type, instance, arg);
+	  return cp_build_init_expr (instance, arg);
 	}
     }
 
@@ -11183,9 +11183,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	{
 	  if (is_dummy_object (instance))
 	    return get_target_expr (init, complain);
-	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
-	  TREE_SIDE_EFFECTS (init) = true;
-	  return init;
+	  return cp_build_init_expr (instance, init);
 	}
 
       /* Otherwise go ahead with overload resolution.  */
@@ -11232,9 +11230,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	      ctor = digest_init (basetype, ctor, complain);
 	      if (ctor == error_mark_node)
 		return error_mark_node;
-	      ctor = build2 (INIT_EXPR, TREE_TYPE (instance), instance, ctor);
-	      TREE_SIDE_EFFECTS (ctor) = true;
-	      return ctor;
+	      return cp_build_init_expr (instance, ctor);
 	    }
 	}
       if (complain & tf_error)

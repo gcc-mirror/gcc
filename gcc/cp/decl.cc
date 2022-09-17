@@ -7500,7 +7500,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
     }
 
   if (init && init != error_mark_node)
-    init_code = build2 (INIT_EXPR, type, decl, init);
+    init_code = cp_build_init_expr (decl, init);
 
   if (init_code && !TREE_SIDE_EFFECTS (init_code)
       && init_code != error_mark_node)

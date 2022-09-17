@@ -505,6 +505,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_MODULE_EXPORT_P (in _DECL)
       PACK_EXPANSION_FORCE_EXTRA_ARGS_P (in *_PACK_EXPANSION)
       LAMBDA_EXPR_STATIC_P (in LAMBDA_EXPR)
+      TARGET_EXPR_ELIDING_P (in TARGET_EXPR)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -5370,6 +5371,11 @@ get_vec_init_expr (tree t)
 #define TARGET_EXPR_DIRECT_INIT_P(NODE) \
   TREE_LANG_FLAG_2 (TARGET_EXPR_CHECK (NODE))
 
+/* True if we expect this TARGET_EXPR to be used as an initializer, not to
+   materialize as a temporary.  */
+#define TARGET_EXPR_ELIDING_P(NODE) \
+  TREE_LANG_FLAG_3 (TARGET_EXPR_CHECK (NODE))
+
 /* True if NODE is a TARGET_EXPR that just expresses a copy of its INITIAL; if
    the initializer has void type, it's doing something more complicated.  */
 #define SIMPLE_TARGET_EXPR_P(NODE)				\
@@ -6657,6 +6663,7 @@ extern bool is_list_ctor			(tree);
 extern void validate_conversion_obstack		(void);
 extern void mark_versions_used			(tree);
 extern int unsafe_return_slot_p			(tree);
+extern bool unsafe_copy_elision_p		(tree, tree);
 extern bool make_safe_copy_elision		(tree, tree);
 extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
@@ -8182,6 +8189,10 @@ extern tree build_functional_cast		(location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, tsubst_flags_t);
 extern tree merge_exception_specifiers		(tree, tree);
+extern void set_target_expr_eliding		(tree);
+extern tree cp_build_init_expr			(location_t, tree, tree);
+inline tree cp_build_init_expr (tree t, tree i)
+{ return cp_build_init_expr (input_location, t, i); }
 
 /* in mangle.cc */
 extern void init_mangle				(void);

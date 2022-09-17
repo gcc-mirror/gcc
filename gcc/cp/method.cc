@@ -680,7 +680,7 @@ do_build_copy_constructor (tree fndecl)
       else if (tree_int_cst_equal (TYPE_SIZE (current_class_type),
 				   CLASSTYPE_SIZE (current_class_type)))
 	{
-	  tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
+	  tree t = cp_build_init_expr (current_class_ref, parm);
 	  finish_expr_stmt (t);
 	}
       else
@@ -695,7 +695,7 @@ do_build_copy_constructor (tree fndecl)
 			     current_class_ptr, alias_set);
 	  tree rhs = build2 (MEM_REF, array_type,
 			     TREE_OPERAND (parm, 0), alias_set);
-	  tree t = build2 (INIT_EXPR, void_type_node, lhs, rhs);
+	  tree t = cp_build_init_expr (lhs, rhs);
 	  finish_expr_stmt (t);
 	}
     }

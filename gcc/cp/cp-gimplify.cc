@@ -250,6 +250,7 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
+	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from));
 	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
@@ -745,6 +746,11 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       /* A TARGET_EXPR that expresses direct-initialization should have been
 	 elided by cp_gimplify_init_expr.  */
       gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (*expr_p));
+      /* Likewise, but allow extra temps of trivial type so that
+	 gimplify_init_ctor_preeval can materialize subobjects of a CONSTRUCTOR
+	 on the rhs of an assignment, as in constexpr-aggr1.C.  */
+      gcc_checking_assert (!TARGET_EXPR_ELIDING_P (*expr_p)
+			   || !TREE_ADDRESSABLE (TREE_TYPE (*expr_p)));
       ret = GS_UNHANDLED;
       break;
 
@@ -1110,7 +1116,10 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  cp_walk_tree (&init, cp_fold_r, data, NULL);
 	  *walk_subtrees = 0;
 	  if (TREE_CODE (init) == TARGET_EXPR)
-	    *stmt_p = init;
+	    {
+	      TARGET_EXPR_ELIDING_P (init) = TARGET_EXPR_ELIDING_P (stmt);
+	      *stmt_p = init;
+	    }
 	}
       break;
 
@@ -2902,7 +2911,7 @@ cp_fold (tree x)
 		loc = EXPR_LOCATION (x);
 		tree s = build_fold_indirect_ref_loc (loc,
 						      CALL_EXPR_ARG (x, 0));
-		r = build2_loc (loc, INIT_EXPR, TREE_TYPE (s), s, r);
+		r = cp_build_init_expr (s, r);
 	      }
 	    x = r;
 	    break;

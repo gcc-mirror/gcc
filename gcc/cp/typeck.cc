@@ -9294,7 +9294,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	  if (! same_type_p (TREE_TYPE (rhs), lhstype))
 	    /* Call convert to generate an error; see PR 11063.  */
 	    rhs = convert (lhstype, rhs);
-	  result = build2 (INIT_EXPR, lhstype, lhs, rhs);
+	  result = cp_build_init_expr (lhs, rhs);
 	  TREE_SIDE_EFFECTS (result) = 1;
 	  goto ret;
 	}
@@ -9542,6 +9542,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 
   result = build2_loc (loc, modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
 		       lhstype, lhs, newrhs);
+  if (modifycode == INIT_EXPR)
+    set_target_expr_eliding (newrhs);
 
   TREE_SIDE_EFFECTS (result) = 1;
   if (!plain_assign)
@@ -11105,7 +11107,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
+    retval = cp_build_init_expr (result, retval);
 
   if (tree set = maybe_set_retval_sentinel ())
     retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);

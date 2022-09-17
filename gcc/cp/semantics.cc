@@ -2519,6 +2519,10 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 	  /* Update for array-to-pointer decay.  */
 	  type = TREE_TYPE (expr);
 
+	  /* This TARGET_EXPR will initialize the outer one added by
+	     finish_stmt_expr.  */
+	  set_target_expr_eliding (expr);
+
 	  /* Wrap it in a CLEANUP_POINT_EXPR and add it to the list like a
 	     normal statement, but don't convert to void or actually add
 	     the EXPR_STMT.  */
@@ -4668,7 +4672,7 @@ simplify_aggr_init_expr (tree *tp)
 	 expand_call{,_inline}.  */
       cxx_mark_addressable (slot);
       CALL_EXPR_RETURN_SLOT_OPT (call_expr) = true;
-      call_expr = build2 (INIT_EXPR, TREE_TYPE (call_expr), slot, call_expr);
+      call_expr = cp_build_init_expr (slot, call_expr);
     }
   else if (style == pcc)
     {
@@ -4687,7 +4691,7 @@ simplify_aggr_init_expr (tree *tp)
     {
       tree init = build_zero_init (type, NULL_TREE,
 				   /*static_storage_p=*/false);
-      init = build2 (INIT_EXPR, void_type_node, slot, init);
+      init = cp_build_init_expr (slot, init);
       call_expr = build2 (COMPOUND_EXPR, TREE_TYPE (call_expr),
 			  init, call_expr);
     }
@@ -4882,7 +4886,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       tree init;
       if (DECL_INITIAL (dp->var)
 	  && DECL_INITIAL (dp->var) != error_mark_node)
-	init = build2 (INIT_EXPR, void_type_node, dp->result,
+	init = cp_build_init_expr (dp->result,
 		       DECL_INITIAL (dp->var));
       else
 	init = build_empty_stmt (EXPR_LOCATION (*tp));
@@ -6426,7 +6430,7 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 		  else
 		    init = fold_convert (TREE_TYPE (v), integer_zero_node);
 		  OMP_CLAUSE_REDUCTION_INIT (c)
-		    = build2 (INIT_EXPR, TREE_TYPE (v), v, init);
+		    = cp_build_init_expr (v, init);
 		}
 	    }
 	}
