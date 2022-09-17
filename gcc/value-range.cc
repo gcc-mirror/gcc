@@ -639,6 +639,21 @@ frange::singleton_p (tree *result) const
       if (HONOR_NANS (m_type) && maybe_isnan ())
 	return false;
 
+      if (MODE_COMPOSITE_P (TYPE_MODE (m_type)))
+	{
+	  // For IBM long doubles, if the value is +-Inf or is exactly
+	  // representable in double, the other double could be +0.0
+	  // or -0.0.  Since this means there is more than one way to
+	  // represent a value, return false to avoid propagating it.
+	  // See libgcc/config/rs6000/ibm-ldouble-format for details.
+	  if (real_isinf (&m_min))
+	    return false;
+	  REAL_VALUE_TYPE r;
+	  real_convert (&r, DFmode, &m_min);
+	  if (real_identical (&r, &m_min))
+	    return false;
+	}
+
       if (result)
 	*result = build_real (m_type, m_min);
       return true;
