@@ -59,22 +59,22 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   define nameKey_NulName 0
 typedef unsigned int nameKey_Name;
 
-typedef struct _T1_r _T1;
+typedef struct nameKey__T1_r nameKey__T1;
 
-typedef char *ptrToChar;
+typedef char *nameKey_ptrToChar;
 
-typedef _T1 *nameNode;
+typedef nameKey__T1 *nameKey_nameNode;
 
-typedef enum {less, equal, greater} comparison;
+typedef enum {nameKey_less, nameKey_equal, nameKey_greater} nameKey_comparison;
 
-struct _T1_r {
-               ptrToChar data;
-               nameKey_Name key;
-               nameNode left;
-               nameNode right;
-             };
+struct nameKey__T1_r {
+                       nameKey_ptrToChar data;
+                       nameKey_Name key;
+                       nameKey_nameNode left;
+                       nameKey_nameNode right;
+                     };
 
-static nameNode binaryTree;
+static nameKey_nameNode binaryTree;
 static Indexing_Index keyIndex;
 static unsigned int lastIndice;
 
@@ -142,13 +142,13 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key);
                If a name is found then the string, n, is deallocated.
 */
 
-static nameKey_Name doMakeKey (ptrToChar n, unsigned int higha);
+static nameKey_Name doMakeKey (nameKey_ptrToChar n, unsigned int higha);
 
 /*
    compare - return the result of Names[i] with Names[j]
 */
 
-static comparison compare (ptrToChar pi, nameKey_Name j);
+static nameKey_comparison compare (nameKey_ptrToChar pi, nameKey_Name j);
 
 /*
    findNodeAndParentInTree - search BinaryTree for a name.
@@ -157,7 +157,7 @@ static comparison compare (ptrToChar pi, nameKey_Name j);
                              A comparison is returned to assist adding entries into this tree.
 */
 
-static comparison findNodeAndParentInTree (ptrToChar n, nameNode *child, nameNode *father);
+static nameKey_comparison findNodeAndParentInTree (nameKey_ptrToChar n, nameKey_nameNode *child, nameKey_nameNode *father);
 
 
 /*
@@ -165,25 +165,25 @@ static comparison findNodeAndParentInTree (ptrToChar n, nameNode *child, nameNod
                If a name is found then the string, n, is deallocated.
 */
 
-static nameKey_Name doMakeKey (ptrToChar n, unsigned int higha)
+static nameKey_Name doMakeKey (nameKey_ptrToChar n, unsigned int higha)
 {
-  comparison result;
-  nameNode father;
-  nameNode child;
+  nameKey_comparison result;
+  nameKey_nameNode father;
+  nameKey_nameNode child;
   nameKey_Name k;
 
   result = findNodeAndParentInTree (n, &child, &father);
   if (child == NULL)
     {
-      if (result == less)
+      if (result == nameKey_less)
         {
-          Storage_ALLOCATE ((void **) &child, sizeof (_T1));
+          Storage_ALLOCATE ((void **) &child, sizeof (nameKey__T1));
           father->left = child;
         }
-      else if (result == greater)
+      else if (result == nameKey_greater)
         {
           /* avoid dangling else.  */
-          Storage_ALLOCATE ((void **) &child, sizeof (_T1));
+          Storage_ALLOCATE ((void **) &child, sizeof (nameKey__T1));
           father->right = child;
         }
       child->right = NULL;
@@ -209,25 +209,25 @@ static nameKey_Name doMakeKey (ptrToChar n, unsigned int higha)
    compare - return the result of Names[i] with Names[j]
 */
 
-static comparison compare (ptrToChar pi, nameKey_Name j)
+static nameKey_comparison compare (nameKey_ptrToChar pi, nameKey_Name j)
 {
-  ptrToChar pj;
+  nameKey_ptrToChar pj;
   char c1;
   char c2;
 
-  pj = static_cast<ptrToChar> (nameKey_keyToCharStar (j));
+  pj = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (j));
   c1 = (*pi);
   c2 = (*pj);
   while ((c1 != ASCII_nul) || (c2 != ASCII_nul))
     {
       if (c1 < c2)
         {
-          return less;
+          return nameKey_less;
         }
       else if (c1 > c2)
         {
           /* avoid dangling else.  */
-          return greater;
+          return nameKey_greater;
         }
       else
         {
@@ -238,7 +238,7 @@ static comparison compare (ptrToChar pi, nameKey_Name j)
           c2 = (*pj);
         }
     }
-  return equal;
+  return nameKey_equal;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -251,33 +251,33 @@ static comparison compare (ptrToChar pi, nameKey_Name j)
                              A comparison is returned to assist adding entries into this tree.
 */
 
-static comparison findNodeAndParentInTree (ptrToChar n, nameNode *child, nameNode *father)
+static nameKey_comparison findNodeAndParentInTree (nameKey_ptrToChar n, nameKey_nameNode *child, nameKey_nameNode *father)
 {
-  comparison result;
+  nameKey_comparison result;
 
   /* firstly set up the initial values of child and father, using sentinal node  */
   (*father) = binaryTree;
   (*child) = binaryTree->left;
   if ((*child) == NULL)
     {
-      return less;
+      return nameKey_less;
     }
   else
     {
       do {
         result = compare (n, (*child)->key);
-        if (result == less)
+        if (result == nameKey_less)
           {
             (*father) = (*child);
             (*child) = (*child)->left;
           }
-        else if (result == greater)
+        else if (result == nameKey_greater)
           {
             /* avoid dangling else.  */
             (*father) = (*child);
             (*child) = (*child)->right;
           }
-      } while (! (((*child) == NULL) || (result == equal)));
+      } while (! (((*child) == NULL) || (result == nameKey_equal)));
       return result;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -294,8 +294,8 @@ static comparison findNodeAndParentInTree (ptrToChar n, nameNode *child, nameNod
 
 extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
 {
-  ptrToChar n;
-  ptrToChar p;
+  nameKey_ptrToChar n;
+  nameKey_ptrToChar p;
   unsigned int i;
   unsigned int higha;
   char a[_a_high+1];
@@ -338,9 +338,9 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
 
 extern "C" nameKey_Name nameKey_makekey (void * a)
 {
-  ptrToChar n;
-  ptrToChar p;
-  ptrToChar pa;
+  nameKey_ptrToChar n;
+  nameKey_ptrToChar p;
+  nameKey_ptrToChar pa;
   unsigned int i;
   unsigned int higha;
 
@@ -360,7 +360,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
       else
         {
           n = p;
-          pa = static_cast<ptrToChar> (a);
+          pa = static_cast<nameKey_ptrToChar> (a);
           i = 0;
           while (i < higha)
             {
@@ -384,11 +384,11 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
 
 extern "C" void nameKey_getKey (nameKey_Name key, char *a, unsigned int _a_high)
 {
-  ptrToChar p;
+  nameKey_ptrToChar p;
   unsigned int i;
   unsigned int higha;
 
-  p = static_cast<ptrToChar> (nameKey_keyToCharStar (key));
+  p = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (key));
   i = 0;
   higha = _a_high;
   while (((p != NULL) && (i <= higha)) && ((*p) != ASCII_nul))
@@ -411,9 +411,9 @@ extern "C" void nameKey_getKey (nameKey_Name key, char *a, unsigned int _a_high)
 extern "C" unsigned int nameKey_lengthKey (nameKey_Name key)
 {
   unsigned int i;
-  ptrToChar p;
+  nameKey_ptrToChar p;
 
-  p = static_cast<ptrToChar> (nameKey_keyToCharStar (key));
+  p = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (key));
   i = 0;
   while ((*p) != ASCII_nul)
     {
@@ -434,8 +434,8 @@ extern "C" unsigned int nameKey_lengthKey (nameKey_Name key)
 
 extern "C" unsigned int nameKey_isKey (const char *a_, unsigned int _a_high)
 {
-  nameNode child;
-  ptrToChar p;
+  nameKey_nameNode child;
+  nameKey_ptrToChar p;
   unsigned int i;
   unsigned int higha;
   char a[_a_high+1];
@@ -450,7 +450,7 @@ extern "C" unsigned int nameKey_isKey (const char *a_, unsigned int _a_high)
       do {
         i = 0;
         higha = _a_high;
-        p = static_cast<ptrToChar> (nameKey_keyToCharStar (child->key));
+        p = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (child->key));
         while ((i <= higha) && (a[i] != ASCII_nul))
           {
             if (a[i] < (*p))
@@ -497,9 +497,9 @@ extern "C" unsigned int nameKey_isKey (const char *a_, unsigned int _a_high)
 
 extern "C" void nameKey_writeKey (nameKey_Name key)
 {
-  ptrToChar s;
+  nameKey_ptrToChar s;
 
-  s = static_cast<ptrToChar> (nameKey_keyToCharStar (key));
+  s = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (key));
   while ((s != NULL) && ((*s) != ASCII_nul))
     {
       StdIO_Write ((*s));
@@ -516,8 +516,8 @@ extern "C" void nameKey_writeKey (nameKey_Name key)
 
 extern "C" unsigned int nameKey_isSameExcludingCase (nameKey_Name key1, nameKey_Name key2)
 {
-  ptrToChar pi;
-  ptrToChar pj;
+  nameKey_ptrToChar pi;
+  nameKey_ptrToChar pj;
   char c1;
   char c2;
 
@@ -527,8 +527,8 @@ extern "C" unsigned int nameKey_isSameExcludingCase (nameKey_Name key1, nameKey_
     }
   else
     {
-      pi = static_cast<ptrToChar> (nameKey_keyToCharStar (key1));
-      pj = static_cast<ptrToChar> (nameKey_keyToCharStar (key2));
+      pi = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (key1));
+      pj = static_cast<nameKey_ptrToChar> (nameKey_keyToCharStar (key2));
       c1 = (*pi);
       c2 = (*pj);
       while ((c1 != ASCII_nul) && (c2 != ASCII_nul))
@@ -575,7 +575,7 @@ extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__
 {
   lastIndice = 0;
   keyIndex = Indexing_InitIndex (1);
-  Storage_ALLOCATE ((void **) &binaryTree, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &binaryTree, sizeof (nameKey__T1));
   binaryTree->left = NULL;
 }
 

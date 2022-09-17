@@ -56,7 +56,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GM2RTS.h"
 
 #   define maxBuffer 4096
-typedef FIO_File *ptrToFile;
+typedef FIO_File *mcStream_ptrToFile;
 
 static alists_alist listOfFiles;
 static Indexing_Index frag;
@@ -113,7 +113,7 @@ static FIO_File createTemporaryFile (unsigned int id);
    copy - copies contents of f to the destination file.
 */
 
-static void copy (ptrToFile p);
+static void copy (mcStream_ptrToFile p);
 
 
 /*
@@ -174,12 +174,12 @@ static FIO_File createTemporaryFile (unsigned int id)
    copy - copies contents of f to the destination file.
 */
 
-static void copy (ptrToFile p)
+static void copy (mcStream_ptrToFile p)
 {
-  typedef struct _T1_a _T1;
+  typedef struct copy__T1_a copy__T1;
 
-  struct _T1_a { char array[maxBuffer+1]; };
-  _T1 buffer;
+  struct copy__T1_a { char array[maxBuffer+1]; };
+  copy__T1 buffer;
   unsigned int b;
   DynamicStrings_String s;
   FIO_File f;
@@ -208,7 +208,7 @@ static void copy (ptrToFile p)
 extern "C" FIO_File mcStream_openFrag (unsigned int id)
 {
   FIO_File f;
-  ptrToFile p;
+  mcStream_ptrToFile p;
 
   f = createTemporaryFile (id);
   Storage_ALLOCATE ((void **) &p, sizeof (FIO_File));

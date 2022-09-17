@@ -80,10 +80,10 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
 
 extern "C" void NumberIO_ReadCard (unsigned int *x)
 {
-  typedef struct _T1_a _T1;
+  typedef struct ReadCard__T1_a ReadCard__T1;
 
-  struct _T1_a { char array[MaxLineLength+1]; };
-  _T1 a;
+  struct ReadCard__T1_a { char array[MaxLineLength+1]; };
+  ReadCard__T1 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   NumberIO_StrToCard ((const char *) &a.array[0], MaxLineLength, x);
@@ -91,10 +91,10 @@ extern "C" void NumberIO_ReadCard (unsigned int *x)
 
 extern "C" void NumberIO_WriteCard (unsigned int x, unsigned int n)
 {
-  typedef struct _T2_a _T2;
+  typedef struct WriteCard__T2_a WriteCard__T2;
 
-  struct _T2_a { char array[MaxLineLength+1]; };
-  _T2 a;
+  struct WriteCard__T2_a { char array[MaxLineLength+1]; };
+  WriteCard__T2 a;
 
   NumberIO_CardToStr (x, n, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -102,10 +102,10 @@ extern "C" void NumberIO_WriteCard (unsigned int x, unsigned int n)
 
 extern "C" void NumberIO_ReadHex (unsigned int *x)
 {
-  typedef struct _T3_a _T3;
+  typedef struct ReadHex__T3_a ReadHex__T3;
 
-  struct _T3_a { char array[MaxLineLength+1]; };
-  _T3 a;
+  struct ReadHex__T3_a { char array[MaxLineLength+1]; };
+  ReadHex__T3 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   NumberIO_StrToHex ((const char *) &a.array[0], MaxLineLength, x);
@@ -113,10 +113,10 @@ extern "C" void NumberIO_ReadHex (unsigned int *x)
 
 extern "C" void NumberIO_WriteHex (unsigned int x, unsigned int n)
 {
-  typedef struct _T4_a _T4;
+  typedef struct WriteHex__T4_a WriteHex__T4;
 
-  struct _T4_a { char array[MaxLineLength+1]; };
-  _T4 a;
+  struct WriteHex__T4_a { char array[MaxLineLength+1]; };
+  WriteHex__T4 a;
 
   NumberIO_HexToStr (x, n, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -124,10 +124,10 @@ extern "C" void NumberIO_WriteHex (unsigned int x, unsigned int n)
 
 extern "C" void NumberIO_ReadInt (int *x)
 {
-  typedef struct _T5_a _T5;
+  typedef struct ReadInt__T5_a ReadInt__T5;
 
-  struct _T5_a { char array[MaxLineLength+1]; };
-  _T5 a;
+  struct ReadInt__T5_a { char array[MaxLineLength+1]; };
+  ReadInt__T5 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   NumberIO_StrToInt ((const char *) &a.array[0], MaxLineLength, x);
@@ -135,10 +135,10 @@ extern "C" void NumberIO_ReadInt (int *x)
 
 extern "C" void NumberIO_WriteInt (int x, unsigned int n)
 {
-  typedef struct _T6_a _T6;
+  typedef struct WriteInt__T6_a WriteInt__T6;
 
-  struct _T6_a { char array[MaxLineLength+1]; };
-  _T6 a;
+  struct WriteInt__T6_a { char array[MaxLineLength+1]; };
+  WriteInt__T6 a;
 
   NumberIO_IntToStr (x, n, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -146,13 +146,13 @@ extern "C" void NumberIO_WriteInt (int x, unsigned int n)
 
 extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
-  typedef struct _T7_a _T7;
+  typedef struct CardToStr__T7_a CardToStr__T7;
 
-  struct _T7_a { unsigned int array[MaxDigits-1+1]; };
+  struct CardToStr__T7_a { unsigned int array[MaxDigits-1+1]; };
   unsigned int i;
   unsigned int j;
   unsigned int Higha;
-  _T7 buf;
+  CardToStr__T7 buf;
 
   i = 0;
   do {
@@ -244,13 +244,13 @@ extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsign
 
 extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
-  typedef struct _T8_a _T8;
+  typedef struct HexToStr__T8_a HexToStr__T8;
 
-  struct _T8_a { unsigned int array[MaxHexDigits-1+1]; };
+  struct HexToStr__T8_a { unsigned int array[MaxHexDigits-1+1]; };
   unsigned int i;
   unsigned int j;
   unsigned int Higha;
-  _T8 buf;
+  HexToStr__T8 buf;
 
   i = 0;
   do {
@@ -306,14 +306,14 @@ extern "C" void NumberIO_StrToHex (const char *a_, unsigned int _a_high, unsigne
 
 extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high)
 {
-  typedef struct _T9_a _T9;
+  typedef struct IntToStr__T9_a IntToStr__T9;
 
-  struct _T9_a { unsigned int array[MaxDigits-1+1]; };
+  struct IntToStr__T9_a { unsigned int array[MaxDigits-1+1]; };
   unsigned int i;
   unsigned int j;
   unsigned int c;
   unsigned int Higha;
-  _T9 buf;
+  IntToStr__T9 buf;
   unsigned int Negative;
 
   if (x < 0)
@@ -442,10 +442,10 @@ extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
 
 extern "C" void NumberIO_ReadOct (unsigned int *x)
 {
-  typedef struct _T10_a _T10;
+  typedef struct ReadOct__T10_a ReadOct__T10;
 
-  struct _T10_a { char array[MaxLineLength+1]; };
-  _T10 a;
+  struct ReadOct__T10_a { char array[MaxLineLength+1]; };
+  ReadOct__T10 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   NumberIO_StrToOct ((const char *) &a.array[0], MaxLineLength, x);
@@ -453,10 +453,10 @@ extern "C" void NumberIO_ReadOct (unsigned int *x)
 
 extern "C" void NumberIO_WriteOct (unsigned int x, unsigned int n)
 {
-  typedef struct _T11_a _T11;
+  typedef struct WriteOct__T11_a WriteOct__T11;
 
-  struct _T11_a { char array[MaxLineLength+1]; };
-  _T11 a;
+  struct WriteOct__T11_a { char array[MaxLineLength+1]; };
+  WriteOct__T11 a;
 
   NumberIO_OctToStr (x, n, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -464,13 +464,13 @@ extern "C" void NumberIO_WriteOct (unsigned int x, unsigned int n)
 
 extern "C" void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
-  typedef struct _T12_a _T12;
+  typedef struct OctToStr__T12_a OctToStr__T12;
 
-  struct _T12_a { unsigned int array[MaxOctDigits-1+1]; };
+  struct OctToStr__T12_a { unsigned int array[MaxOctDigits-1+1]; };
   unsigned int i;
   unsigned int j;
   unsigned int Higha;
-  _T12 buf;
+  OctToStr__T12 buf;
 
   i = 0;
   do {
@@ -519,10 +519,10 @@ extern "C" void NumberIO_StrToOct (const char *a_, unsigned int _a_high, unsigne
 
 extern "C" void NumberIO_ReadBin (unsigned int *x)
 {
-  typedef struct _T13_a _T13;
+  typedef struct ReadBin__T13_a ReadBin__T13;
 
-  struct _T13_a { char array[MaxLineLength+1]; };
-  _T13 a;
+  struct ReadBin__T13_a { char array[MaxLineLength+1]; };
+  ReadBin__T13 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   NumberIO_StrToBin ((const char *) &a.array[0], MaxLineLength, x);
@@ -530,10 +530,10 @@ extern "C" void NumberIO_ReadBin (unsigned int *x)
 
 extern "C" void NumberIO_WriteBin (unsigned int x, unsigned int n)
 {
-  typedef struct _T14_a _T14;
+  typedef struct WriteBin__T14_a WriteBin__T14;
 
-  struct _T14_a { char array[MaxLineLength+1]; };
-  _T14 a;
+  struct WriteBin__T14_a { char array[MaxLineLength+1]; };
+  WriteBin__T14 a;
 
   NumberIO_BinToStr (x, n, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -541,13 +541,13 @@ extern "C" void NumberIO_WriteBin (unsigned int x, unsigned int n)
 
 extern "C" void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
-  typedef struct _T15_a _T15;
+  typedef struct BinToStr__T15_a BinToStr__T15;
 
-  struct _T15_a { unsigned int array[MaxBits-1+1]; };
+  struct BinToStr__T15_a { unsigned int array[MaxBits-1+1]; };
   unsigned int i;
   unsigned int j;
   unsigned int Higha;
-  _T15 buf;
+  BinToStr__T15 buf;
 
   i = 0;
   do {

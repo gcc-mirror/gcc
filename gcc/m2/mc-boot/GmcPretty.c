@@ -47,9 +47,9 @@ typedef struct mcPretty_writeProc_p mcPretty_writeProc;
 
 typedef struct mcPretty_writeLnProc_p mcPretty_writeLnProc;
 
-typedef struct _T1_r _T1;
+typedef struct mcPretty__T1_r mcPretty__T1;
 
-typedef _T1 *mcPretty_pretty;
+typedef mcPretty__T1 *mcPretty_pretty;
 
 typedef void (*mcPretty_writeProc_t) (char);
 struct mcPretty_writeProc_p { mcPretty_writeProc_t proc; };
@@ -57,17 +57,17 @@ struct mcPretty_writeProc_p { mcPretty_writeProc_t proc; };
 typedef void (*mcPretty_writeLnProc_t) (void);
 struct mcPretty_writeLnProc_p { mcPretty_writeLnProc_t proc; };
 
-struct _T1_r {
-               mcPretty_writeProc write_;
-               mcPretty_writeLnProc writeln;
-               unsigned int needsSpace;
-               unsigned int needsIndent;
-               unsigned int seekPos;
-               unsigned int curLine;
-               unsigned int curPos;
-               unsigned int indent;
-               mcPretty_pretty stacked;
-             };
+struct mcPretty__T1_r {
+                        mcPretty_writeProc write_;
+                        mcPretty_writeLnProc writeln;
+                        unsigned int needsSpace;
+                        unsigned int needsIndent;
+                        unsigned int seekPos;
+                        unsigned int curLine;
+                        unsigned int curPos;
+                        unsigned int indent;
+                        mcPretty_pretty stacked;
+                      };
 
 
 /*
@@ -216,7 +216,7 @@ extern "C" mcPretty_pretty mcPretty_initPretty (mcPretty_writeProc w, mcPretty_w
 {
   mcPretty_pretty p;
 
-  Storage_ALLOCATE ((void **) &p, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &p, sizeof (mcPretty__T1));
   p->write_ = w;
   p->writeln = l;
   p->needsSpace = FALSE;
@@ -240,7 +240,7 @@ extern "C" mcPretty_pretty mcPretty_dupPretty (mcPretty_pretty p)
 {
   mcPretty_pretty q;
 
-  Storage_ALLOCATE ((void **) &q, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &q, sizeof (mcPretty__T1));
   (*q) = (*p);
   return q;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -257,7 +257,7 @@ extern "C" void mcPretty_killPretty (mcPretty_pretty *p)
 {
   (*p) = NULL;
   return ;
-  Storage_DEALLOCATE ((void **) &(*p), sizeof (_T1));
+  Storage_DEALLOCATE ((void **) &(*p), sizeof (mcPretty__T1));
   (*p) = NULL;
 }
 

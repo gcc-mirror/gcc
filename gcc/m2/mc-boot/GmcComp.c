@@ -66,15 +66,15 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   include "GmcOptions.h"
 
 #   define Debugging FALSE
-typedef struct parserFunction_p parserFunction;
+typedef struct mcComp_parserFunction_p mcComp_parserFunction;
 
-typedef struct openFunction_p openFunction;
+typedef struct mcComp_openFunction_p mcComp_openFunction;
 
-typedef unsigned int (*parserFunction_t) (void);
-struct parserFunction_p { parserFunction_t proc; };
+typedef unsigned int (*mcComp_parserFunction_t) (void);
+struct mcComp_parserFunction_p { mcComp_parserFunction_t proc; };
 
-typedef unsigned int (*openFunction_t) (decl_node, unsigned int);
-struct openFunction_p { openFunction_t proc; };
+typedef unsigned int (*mcComp_openFunction_t) (decl_node, unsigned int);
+struct mcComp_openFunction_p { mcComp_openFunction_t proc; };
 
 static unsigned int currentPass;
 
@@ -171,7 +171,7 @@ static unsigned int openMod (decl_node n, unsigned int exitOnFailure);
    pass -
 */
 
-static void pass (unsigned int no, decl_node n, parserFunction f, decl_isNodeF isnode, openFunction open);
+static void pass (unsigned int no, decl_node n, mcComp_parserFunction f, decl_isNodeF isnode, mcComp_openFunction open);
 
 /*
    doPass -
@@ -351,15 +351,15 @@ static void p1 (decl_node n)
   if (decl_isDef (n))
     {
       /* avoid dangling else.  */
-      pass (1, n, (parserFunction) {(parserFunction_t) mcp1_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (openFunction) {(openFunction_t) openDef});
+      pass (1, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp1_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (mcComp_openFunction) {(mcComp_openFunction_t) openDef});
       if ((decl_hasHidden (n)) && (mcOptions_getExtendedOpaque ()))
         {
-          pass (1, decl_lookupImp (decl_getSymName (n)), (parserFunction) {(parserFunction_t) mcp1_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (openFunction) {(openFunction_t) openMod});
+          pass (1, decl_lookupImp (decl_getSymName (n)), (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp1_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
         }
     }
   else
     {
-      pass (1, n, (parserFunction) {(parserFunction_t) mcp1_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (openFunction) {(openFunction_t) openMod});
+      pass (1, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp1_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
     }
 }
 
@@ -373,15 +373,15 @@ static void p2 (decl_node n)
   if (decl_isDef (n))
     {
       /* avoid dangling else.  */
-      pass (2, n, (parserFunction) {(parserFunction_t) mcp2_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (openFunction) {(openFunction_t) openDef});
+      pass (2, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp2_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (mcComp_openFunction) {(mcComp_openFunction_t) openDef});
       if ((decl_hasHidden (n)) && (mcOptions_getExtendedOpaque ()))
         {
-          pass (2, decl_lookupImp (decl_getSymName (n)), (parserFunction) {(parserFunction_t) mcp2_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (openFunction) {(openFunction_t) openMod});
+          pass (2, decl_lookupImp (decl_getSymName (n)), (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp2_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
         }
     }
   else
     {
-      pass (2, n, (parserFunction) {(parserFunction_t) mcp2_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (openFunction) {(openFunction_t) openMod});
+      pass (2, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp2_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
     }
 }
 
@@ -395,15 +395,15 @@ static void p3 (decl_node n)
   if (decl_isDef (n))
     {
       /* avoid dangling else.  */
-      pass (3, n, (parserFunction) {(parserFunction_t) mcp3_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (openFunction) {(openFunction_t) openDef});
+      pass (3, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp3_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (mcComp_openFunction) {(mcComp_openFunction_t) openDef});
       if ((decl_hasHidden (n)) && (mcOptions_getExtendedOpaque ()))
         {
-          pass (3, decl_lookupImp (decl_getSymName (n)), (parserFunction) {(parserFunction_t) mcp3_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (openFunction) {(openFunction_t) openMod});
+          pass (3, decl_lookupImp (decl_getSymName (n)), (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp3_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
         }
     }
   else
     {
-      pass (3, n, (parserFunction) {(parserFunction_t) mcp3_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (openFunction) {(openFunction_t) openMod});
+      pass (3, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp3_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
     }
 }
 
@@ -417,15 +417,15 @@ static void p4 (decl_node n)
   if (decl_isDef (n))
     {
       /* avoid dangling else.  */
-      pass (4, n, (parserFunction) {(parserFunction_t) mcp4_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (openFunction) {(openFunction_t) openDef});
+      pass (4, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp4_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isDef}, (mcComp_openFunction) {(mcComp_openFunction_t) openDef});
       if ((decl_hasHidden (n)) && (mcOptions_getExtendedOpaque ()))
         {
-          pass (4, decl_lookupImp (decl_getSymName (n)), (parserFunction) {(parserFunction_t) mcp4_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (openFunction) {(openFunction_t) openMod});
+          pass (4, decl_lookupImp (decl_getSymName (n)), (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp4_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImp}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
         }
     }
   else
     {
-      pass (4, n, (parserFunction) {(parserFunction_t) mcp4_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (openFunction) {(openFunction_t) openMod});
+      pass (4, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp4_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
     }
 }
 
@@ -436,7 +436,7 @@ static void p4 (decl_node n)
 
 static void p5 (decl_node n)
 {
-  pass (5, n, (parserFunction) {(parserFunction_t) mcp5_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (openFunction) {(openFunction_t) openMod});
+  pass (5, n, (mcComp_parserFunction) {(mcComp_parserFunction_t) mcp5_CompilationUnit}, (decl_isNodeF) {(decl_isNodeF_t) decl_isImpOrModule}, (mcComp_openFunction) {(mcComp_openFunction_t) openMod});
 }
 
 
@@ -550,7 +550,7 @@ static unsigned int openMod (decl_node n, unsigned int exitOnFailure)
    pass -
 */
 
-static void pass (unsigned int no, decl_node n, parserFunction f, decl_isNodeF isnode, openFunction open)
+static void pass (unsigned int no, decl_node n, mcComp_parserFunction f, decl_isNodeF isnode, mcComp_openFunction open)
 {
   if (((*isnode.proc) (n)) && (! (decl_isVisited (n))))
     {

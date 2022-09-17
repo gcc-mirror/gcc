@@ -41,15 +41,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #   define MaxArgs 255
 #   define MaxString 4096
-typedef struct _T2_a _T2;
+typedef struct Args__T2_a Args__T2;
 
-typedef _T2 *_T1;
+typedef Args__T2 *Args__T1;
 
-typedef struct _T3_a _T3;
+typedef struct Args__T3_a Args__T3;
 
-struct _T2_a { _T3 * array[MaxArgs+1]; };
-struct _T3_a { char array[MaxString+1]; };
-static _T1 Source;
+struct Args__T2_a { Args__T3 * array[MaxArgs+1]; };
+struct Args__T3_a { char array[MaxString+1]; };
+static Args__T1 Source;
 
 /*
    GetArg - returns the nth argument from the command line.
@@ -82,7 +82,7 @@ extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int
   High = _a_high;
   if (i < (UnixArgs_GetArgC ()))
     {
-      Source = static_cast<_T1> (UnixArgs_GetArgV ());
+      Source = static_cast<Args__T1> (UnixArgs_GetArgV ());
       while (((*(*Source).array[i]).array[j] != ASCII_nul) && (j < High))
         {
           a[j] = (*(*Source).array[i]).array[j];

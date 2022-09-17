@@ -49,21 +49,21 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 typedef struct wlists_performOperation_p wlists_performOperation;
 
 #   define maxNoOfElements 5
-typedef struct _T1_r _T1;
+typedef struct wlists__T1_r wlists__T1;
 
-typedef struct _T2_a _T2;
+typedef struct wlists__T2_a wlists__T2;
 
-typedef _T1 *wlists_wlist;
+typedef wlists__T1 *wlists_wlist;
 
 typedef void (*wlists_performOperation_t) (unsigned int);
 struct wlists_performOperation_p { wlists_performOperation_t proc; };
 
-struct _T2_a { unsigned int array[maxNoOfElements-1+1]; };
-struct _T1_r {
-               unsigned int noOfElements;
-               _T2 elements;
-               wlists_wlist next;
-             };
+struct wlists__T2_a { unsigned int array[maxNoOfElements-1+1]; };
+struct wlists__T1_r {
+                      unsigned int noOfElements;
+                      wlists__T2 elements;
+                      wlists_wlist next;
+                    };
 
 
 /*
@@ -166,7 +166,7 @@ static void removeItem (wlists_wlist p, wlists_wlist l, unsigned int i)
   if ((l->noOfElements == 0) && (p != NULL))
     {
       p->next = l->next;
-      Storage_DEALLOCATE ((void **) &l, sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &l, sizeof (wlists__T1));
     }
 }
 
@@ -179,7 +179,7 @@ extern "C" wlists_wlist wlists_initList (void)
 {
   wlists_wlist l;
 
-  Storage_ALLOCATE ((void **) &l, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &l, sizeof (wlists__T1));
   l->noOfElements = 0;
   l->next = NULL;
   return l;
@@ -200,7 +200,7 @@ extern "C" void wlists_killList (wlists_wlist *l)
         {
           wlists_killList (&(*l)->next);
         }
-      Storage_DEALLOCATE ((void **) &(*l), sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &(*l), sizeof (wlists__T1));
     }
 }
 

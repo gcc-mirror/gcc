@@ -57,18 +57,18 @@ Boston, MA 02110-1301, USA.  */
    typedef void *decl_node;
 #endif
 
-typedef struct _T1_r _T1;
+typedef struct keyc__T1_r keyc__T1;
 
-typedef _T1 *scope;
+typedef keyc__T1 *keyc_scope;
 
-struct _T1_r {
-               decl_node scoped;
-               symbolKey_symbolTree symbols;
-               scope next;
-             };
+struct keyc__T1_r {
+                    decl_node scoped;
+                    symbolKey_symbolTree symbols;
+                    keyc_scope next;
+                  };
 
-static scope stack;
-static scope freeList;
+static keyc_scope stack;
+static keyc_scope freeList;
 static symbolKey_symbolTree keywords;
 static symbolKey_symbolTree macros;
 static unsigned int initializedCP;
@@ -475,7 +475,7 @@ static void fixNullPointerConst (mcPretty_pretty p);
    new -
 */
 
-static scope new_ (decl_node n);
+static keyc_scope new_ (decl_node n);
 
 /*
    mangle1 - returns TRUE if name is unique if we add _
@@ -840,13 +840,13 @@ static void fixNullPointerConst (mcPretty_pretty p)
    new -
 */
 
-static scope new_ (decl_node n)
+static keyc_scope new_ (decl_node n)
 {
-  scope s;
+  keyc_scope s;
 
   if (freeList == NULL)
     {
-      Storage_ALLOCATE ((void **) &s, sizeof (_T1));
+      Storage_ALLOCATE ((void **) &s, sizeof (keyc__T1));
     }
   else
     {
@@ -1471,7 +1471,7 @@ extern "C" void keyc_genConfigSystem (mcPretty_pretty p)
 
 extern "C" void keyc_enterScope (decl_node n)
 {
-  scope s;
+  keyc_scope s;
 
   s = new_ (n);
   s->scoped = n;
@@ -1487,7 +1487,7 @@ extern "C" void keyc_enterScope (decl_node n)
 
 extern "C" void keyc_leaveScope (decl_node n)
 {
-  scope s;
+  keyc_scope s;
 
   if (n == stack->scoped)
     {

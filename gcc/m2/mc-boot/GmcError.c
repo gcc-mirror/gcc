@@ -60,18 +60,18 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   define Debugging TRUE
 #   define DebugTrace FALSE
 #   define Xcode TRUE
-typedef struct _T2_r _T2;
+typedef struct mcError__T2_r mcError__T2;
 
-typedef _T2 *mcError_error;
+typedef mcError__T2 *mcError_error;
 
-struct _T2_r {
-               mcError_error parent;
-               mcError_error child;
-               mcError_error next;
-               unsigned int fatal;
-               DynamicStrings_String s;
-               unsigned int token;
-             };
+struct mcError__T2_r {
+                       mcError_error parent;
+                       mcError_error child;
+                       mcError_error next;
+                       unsigned int fatal;
+                       DynamicStrings_String s;
+                       unsigned int token;
+                     };
 
 static mcError_error head;
 static unsigned int inInternal;
@@ -350,11 +350,11 @@ static unsigned int translateNameToCharStar (char *a, unsigned int _a_high, unsi
 
 static void outString (DynamicStrings_String file, unsigned int line, unsigned int col, DynamicStrings_String s)
 {
-  typedef char *_T1;
+  typedef char *outString__T1;
 
   DynamicStrings_String leader;
-  _T1 p;
-  _T1 q;
+  outString__T1 p;
+  outString__T1 q;
   unsigned int space;
   unsigned int newline;
 
@@ -367,14 +367,14 @@ static void outString (DynamicStrings_String file, unsigned int line, unsigned i
     {
       leader = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%s:%d:%d:", 9)), (const unsigned char *) &file, (sizeof (file)-1), (const unsigned char *) &line, (sizeof (line)-1), (const unsigned char *) &col, (sizeof (col)-1));
     }
-  p = static_cast<_T1> (DynamicStrings_string (s));
+  p = static_cast<outString__T1> (DynamicStrings_string (s));
   newline = TRUE;
   space = FALSE;
   while ((p != NULL) && ((*p) != ASCII_nul))
     {
       if (newline)
         {
-          q = static_cast<_T1> (DynamicStrings_string (leader));
+          q = static_cast<outString__T1> (DynamicStrings_string (leader));
           while ((q != NULL) && ((*q) != ASCII_nul))
             {
               StdIO_Write ((*q));
@@ -686,7 +686,7 @@ static unsigned int flushAll (mcError_error e, unsigned int FatalStatus)
         if (! Debugging)
           {
             f->s = DynamicStrings_KillString (f->s);
-            Storage_DEALLOCATE ((void **) &f, sizeof (_T2));
+            Storage_DEALLOCATE ((void **) &f, sizeof (mcError__T2));
           }
       } while (! (e == NULL));
     }
@@ -822,7 +822,7 @@ extern "C" mcError_error mcError_newError (unsigned int atTokenNo)
   mcError_error e;
   mcError_error f;
 
-  Storage_ALLOCATE ((void **) &e, sizeof (_T2));
+  Storage_ALLOCATE ((void **) &e, sizeof (mcError__T2));
   e->s = static_cast<DynamicStrings_String> (NULL);
   e->token = atTokenNo;
   e->next = NULL;
@@ -883,7 +883,7 @@ extern "C" mcError_error mcError_chainError (unsigned int atTokenNo, mcError_err
     }
   else
     {
-      Storage_ALLOCATE ((void **) &f, sizeof (_T2));
+      Storage_ALLOCATE ((void **) &f, sizeof (mcError__T2));
       f->s = static_cast<DynamicStrings_String> (NULL);
       f->token = atTokenNo;
       f->next = e->child;

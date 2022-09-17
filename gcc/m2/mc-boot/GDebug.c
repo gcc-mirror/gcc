@@ -90,10 +90,10 @@ static void WriteLn (void)
 
 extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high)
 {
-  typedef struct _T1_a _T1;
+  typedef struct Halt__T1_a Halt__T1;
 
-  struct _T1_a { char array[MaxNoOfDigits+1]; };
-  _T1 No;
+  struct Halt__T1_a { char array[MaxNoOfDigits+1]; };
+  Halt__T1 No;
   char Message[_Message_high+1];
   char Module[_Module_high+1];
 

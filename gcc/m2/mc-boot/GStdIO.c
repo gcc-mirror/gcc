@@ -45,9 +45,9 @@ typedef struct StdIO_ProcWrite_p StdIO_ProcWrite;
 typedef struct StdIO_ProcRead_p StdIO_ProcRead;
 
 #   define MaxStack 40
-typedef struct _T1_a _T1;
+typedef struct StdIO__T1_a StdIO__T1;
 
-typedef struct _T2_a _T2;
+typedef struct StdIO__T2_a StdIO__T2;
 
 typedef void (*StdIO_ProcWrite_t) (char);
 struct StdIO_ProcWrite_p { StdIO_ProcWrite_t proc; };
@@ -55,11 +55,11 @@ struct StdIO_ProcWrite_p { StdIO_ProcWrite_t proc; };
 typedef void (*StdIO_ProcRead_t) (char *);
 struct StdIO_ProcRead_p { StdIO_ProcRead_t proc; };
 
-struct _T1_a { StdIO_ProcWrite array[MaxStack+1]; };
-struct _T2_a { StdIO_ProcRead array[MaxStack+1]; };
-static _T1 StackW;
+struct StdIO__T1_a { StdIO_ProcWrite array[MaxStack+1]; };
+struct StdIO__T2_a { StdIO_ProcRead array[MaxStack+1]; };
+static StdIO__T1 StackW;
 static unsigned int StackWPtr;
-static _T2 StackR;
+static StdIO__T2 StackR;
 static unsigned int StackRPtr;
 
 /*

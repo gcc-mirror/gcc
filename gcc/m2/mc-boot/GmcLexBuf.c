@@ -65,58 +65,58 @@ void * mcLexBuf_currentstring;
 mcReserved_toktype mcLexBuf_currenttoken;
 #   define MaxBucketSize 100
 #   define Debugging FALSE
-typedef struct tokenDesc_r tokenDesc;
+typedef struct mcLexBuf_tokenDesc_r mcLexBuf_tokenDesc;
 
-typedef struct listDesc_r listDesc;
+typedef struct mcLexBuf_listDesc_r mcLexBuf_listDesc;
 
-typedef struct _T1_r _T1;
+typedef struct mcLexBuf__T1_r mcLexBuf__T1;
 
-typedef _T1 *sourceList;
+typedef mcLexBuf__T1 *mcLexBuf_sourceList;
 
-typedef struct _T2_r _T2;
+typedef struct mcLexBuf__T2_r mcLexBuf__T2;
 
-typedef _T2 *tokenBucket;
+typedef mcLexBuf__T2 *mcLexBuf_tokenBucket;
 
-typedef struct _T3_a _T3;
+typedef struct mcLexBuf__T3_a mcLexBuf__T3;
 
-struct tokenDesc_r {
-                     mcReserved_toktype token;
-                     nameKey_Name str;
-                     int int_;
-                     mcComment_commentDesc com;
-                     unsigned int line;
-                     unsigned int col;
-                     sourceList file;
-                   };
+struct mcLexBuf_tokenDesc_r {
+                              mcReserved_toktype token;
+                              nameKey_Name str;
+                              int int_;
+                              mcComment_commentDesc com;
+                              unsigned int line;
+                              unsigned int col;
+                              mcLexBuf_sourceList file;
+                            };
 
-struct listDesc_r {
-                    tokenBucket head;
-                    tokenBucket tail;
-                    unsigned int lastBucketOffset;
-                  };
+struct mcLexBuf_listDesc_r {
+                             mcLexBuf_tokenBucket head;
+                             mcLexBuf_tokenBucket tail;
+                             unsigned int lastBucketOffset;
+                           };
 
-struct _T1_r {
-               sourceList left;
-               sourceList right;
-               DynamicStrings_String name;
-               unsigned int line;
-               unsigned int col;
-             };
+struct mcLexBuf__T1_r {
+                        mcLexBuf_sourceList left;
+                        mcLexBuf_sourceList right;
+                        DynamicStrings_String name;
+                        unsigned int line;
+                        unsigned int col;
+                      };
 
-struct _T3_a { tokenDesc array[MaxBucketSize+1]; };
-struct _T2_r {
-               _T3 buf;
-               unsigned int len;
-               tokenBucket next;
-             };
+struct mcLexBuf__T3_a { mcLexBuf_tokenDesc array[MaxBucketSize+1]; };
+struct mcLexBuf__T2_r {
+                        mcLexBuf__T3 buf;
+                        unsigned int len;
+                        mcLexBuf_tokenBucket next;
+                      };
 
 static mcComment_commentDesc procedureComment;
 static mcComment_commentDesc bodyComment;
 static mcComment_commentDesc afterComment;
-static sourceList currentSource;
+static mcLexBuf_sourceList currentSource;
 static unsigned int useBufferedTokens;
 static unsigned int currentUsed;
-static listDesc listOfTokens;
+static mcLexBuf_listDesc listOfTokens;
 static unsigned int nextTokNo;
 
 /*
@@ -310,7 +310,7 @@ static void seekTo (unsigned int t);
    peeptokenBucket -
 */
 
-static tokenBucket peeptokenBucket (unsigned int *t);
+static mcLexBuf_tokenBucket peeptokenBucket (unsigned int *t);
 
 /*
    peepAfterComment - peeps ahead looking for an after statement comment.  It stops at an END token
@@ -329,25 +329,25 @@ static void init (void);
    addTo - adds a new element to the end of sourceList, currentSource.
 */
 
-static void addTo (sourceList l);
+static void addTo (mcLexBuf_sourceList l);
 
 /*
    subFrom - subtracts, l, from the source list.
 */
 
-static void subFrom (sourceList l);
+static void subFrom (mcLexBuf_sourceList l);
 
 /*
    newElement - returns a new sourceList
 */
 
-static sourceList newElement (void * s);
+static mcLexBuf_sourceList newElement (void * s);
 
 /*
    newList - initializes an empty list with the classic dummy header element.
 */
 
-static sourceList newList (void);
+static mcLexBuf_sourceList newList (void);
 
 /*
    checkIfNeedToDuplicate - checks to see whether the currentSource has
@@ -374,7 +374,7 @@ static void displayToken (mcReserved_toktype t);
                       from tokenBucket, b, and, offset.
 */
 
-static void updateFromBucket (tokenBucket b, unsigned int offset);
+static void updateFromBucket (mcLexBuf_tokenBucket b, unsigned int offset);
 
 /*
    doGetToken - fetch the next token into currenttoken.
@@ -393,7 +393,7 @@ static void syncOpenWithBuffer (void);
    findtokenBucket - returns the tokenBucket corresponding to the tokenNo.
 */
 
-static tokenBucket findtokenBucket (unsigned int *tokenNo);
+static mcLexBuf_tokenBucket findtokenBucket (unsigned int *tokenNo);
 
 /*
    getFileName - returns a String defining the current file.
@@ -405,7 +405,7 @@ static void stop (void);
    addTokToList - adds a token to a dynamic list.
 */
 
-static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment_commentDesc comment, unsigned int l, unsigned int c, sourceList f);
+static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment_commentDesc comment, unsigned int l, unsigned int c, mcLexBuf_sourceList f);
 
 /*
    isLastTokenEof - returns TRUE if the last token was an eoftok
@@ -424,7 +424,7 @@ static void debugLex (unsigned int n)
   unsigned int i;
   unsigned int o;
   unsigned int t;
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
 
   if (nextTokNo > n)
     {
@@ -465,7 +465,7 @@ static void debugLex (unsigned int n)
 
 static void seekTo (unsigned int t)
 {
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
 
   nextTokNo = t;
   if (t > 0)
@@ -484,13 +484,13 @@ static void seekTo (unsigned int t)
    peeptokenBucket -
 */
 
-static tokenBucket peeptokenBucket (unsigned int *t)
+static mcLexBuf_tokenBucket peeptokenBucket (unsigned int *t)
 {
   mcReserved_toktype ct;
   unsigned int old;
   unsigned int n;
-  tokenBucket b;
-  tokenBucket c;
+  mcLexBuf_tokenBucket b;
+  mcLexBuf_tokenBucket c;
 
   ct = mcLexBuf_currenttoken;
   if (Debugging)
@@ -555,7 +555,7 @@ static void peepAfterComment (void)
   unsigned int cno;
   unsigned int nextline;
   unsigned int curline;
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
   unsigned int finished;
 
   oldTokNo = nextTokNo;
@@ -629,7 +629,7 @@ static void init (void)
    addTo - adds a new element to the end of sourceList, currentSource.
 */
 
-static void addTo (sourceList l)
+static void addTo (mcLexBuf_sourceList l)
 {
   l->right = currentSource;
   l->left = currentSource->left;
@@ -644,7 +644,7 @@ static void addTo (sourceList l)
    subFrom - subtracts, l, from the source list.
 */
 
-static void subFrom (sourceList l)
+static void subFrom (mcLexBuf_sourceList l)
 {
   l->left->right = l->right;
   l->right->left = l->left;
@@ -655,11 +655,11 @@ static void subFrom (sourceList l)
    newElement - returns a new sourceList
 */
 
-static sourceList newElement (void * s)
+static mcLexBuf_sourceList newElement (void * s)
 {
-  sourceList l;
+  mcLexBuf_sourceList l;
 
-  Storage_ALLOCATE ((void **) &l, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &l, sizeof (mcLexBuf__T1));
   if (l == NULL)
     {
       M2RTS_HALT (-1);
@@ -681,11 +681,11 @@ static sourceList newElement (void * s)
    newList - initializes an empty list with the classic dummy header element.
 */
 
-static sourceList newList (void)
+static mcLexBuf_sourceList newList (void)
 {
-  sourceList l;
+  mcLexBuf_sourceList l;
 
-  Storage_ALLOCATE ((void **) &l, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &l, sizeof (mcLexBuf__T1));
   l->left = l;
   l->right = l;
   l->name = static_cast<DynamicStrings_String> (NULL);
@@ -702,8 +702,8 @@ static sourceList newList (void)
 
 static void checkIfNeedToDuplicate (void)
 {
-  sourceList l;
-  sourceList h;
+  mcLexBuf_sourceList l;
+  mcLexBuf_sourceList h;
 
   if (currentUsed)
     {
@@ -725,8 +725,8 @@ static void checkIfNeedToDuplicate (void)
 
 static void killList (void)
 {
-  sourceList l;
-  sourceList k;
+  mcLexBuf_sourceList l;
+  mcLexBuf_sourceList k;
 
   if (! currentUsed && (currentSource != NULL))
     {
@@ -734,7 +734,7 @@ static void killList (void)
       do {
         k = l;
         l = l->right;
-        Storage_DEALLOCATE ((void **) &k, sizeof (_T1));
+        Storage_DEALLOCATE ((void **) &k, sizeof (mcLexBuf__T1));
       } while (! (l == currentSource));
     }
 }
@@ -1086,7 +1086,7 @@ static void displayToken (mcReserved_toktype t)
                       from tokenBucket, b, and, offset.
 */
 
-static void updateFromBucket (tokenBucket b, unsigned int offset)
+static void updateFromBucket (mcLexBuf_tokenBucket b, unsigned int offset)
 {
   mcLexBuf_currenttoken = b->buf.array[offset].token;
   mcLexBuf_currentstring = nameKey_keyToCharStar (b->buf.array[offset].str);
@@ -1112,7 +1112,7 @@ static void doGetToken (void)
 {
   void * a;
   unsigned int t;
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
 
   if (useBufferedTokens)
     {
@@ -1191,9 +1191,9 @@ static void syncOpenWithBuffer (void)
    findtokenBucket - returns the tokenBucket corresponding to the tokenNo.
 */
 
-static tokenBucket findtokenBucket (unsigned int *tokenNo)
+static mcLexBuf_tokenBucket findtokenBucket (unsigned int *tokenNo)
 {
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
 
   b = listOfTokens.head;
   while (b != NULL)
@@ -1227,13 +1227,13 @@ static void stop (void)
    addTokToList - adds a token to a dynamic list.
 */
 
-static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment_commentDesc comment, unsigned int l, unsigned int c, sourceList f)
+static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment_commentDesc comment, unsigned int l, unsigned int c, mcLexBuf_sourceList f)
 {
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
 
   if (listOfTokens.head == NULL)
     {
-      Storage_ALLOCATE ((void **) &listOfTokens.head, sizeof (_T2));
+      Storage_ALLOCATE ((void **) &listOfTokens.head, sizeof (mcLexBuf__T2));
       if (listOfTokens.head == NULL)
         {}  /* empty.  */
       /* list error  */
@@ -1244,7 +1244,7 @@ static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment
     {
       /* avoid dangling else.  */
       mcDebug_assert (listOfTokens.tail->next == NULL);
-      Storage_ALLOCATE ((void **) &listOfTokens.tail->next, sizeof (_T2));
+      Storage_ALLOCATE ((void **) &listOfTokens.tail->next, sizeof (mcLexBuf__T2));
       if (listOfTokens.tail->next == NULL)
         {}  /* empty.  */
       else
@@ -1275,7 +1275,7 @@ static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment
 static unsigned int isLastTokenEof (void)
 {
   unsigned int t;
-  tokenBucket b;
+  mcLexBuf_tokenBucket b;
 
   if (listOfTokens.tail != NULL)
     {
@@ -1408,8 +1408,8 @@ extern "C" void mcLexBuf_closeSource (void)
 
 extern "C" void mcLexBuf_reInitialize (void)
 {
-  tokenBucket s;
-  tokenBucket t;
+  mcLexBuf_tokenBucket s;
+  mcLexBuf_tokenBucket t;
 
   if (listOfTokens.head != NULL)
     {
@@ -1417,7 +1417,7 @@ extern "C" void mcLexBuf_reInitialize (void)
       do {
         s = t;
         t = t->next;
-        Storage_DEALLOCATE ((void **) &s, sizeof (_T2));
+        Storage_DEALLOCATE ((void **) &s, sizeof (mcLexBuf__T2));
       } while (! (t == NULL));
       currentUsed = FALSE;
       killList ();
@@ -1572,8 +1572,8 @@ extern "C" unsigned int mcLexBuf_getTokenNo (void)
 
 extern "C" unsigned int mcLexBuf_tokenToLineNo (unsigned int tokenNo, unsigned int depth)
 {
-  tokenBucket b;
-  sourceList l;
+  mcLexBuf_tokenBucket b;
+  mcLexBuf_sourceList l;
 
   b = findtokenBucket (&tokenNo);
   if (b == NULL)
@@ -1636,8 +1636,8 @@ extern "C" unsigned int mcLexBuf_getColumnNo (void)
 
 extern "C" unsigned int mcLexBuf_tokenToColumnNo (unsigned int tokenNo, unsigned int depth)
 {
-  tokenBucket b;
-  sourceList l;
+  mcLexBuf_tokenBucket b;
+  mcLexBuf_sourceList l;
 
   b = findtokenBucket (&tokenNo);
   if (b == NULL)
@@ -1680,8 +1680,8 @@ extern "C" unsigned int mcLexBuf_tokenToColumnNo (unsigned int tokenNo, unsigned
 
 extern "C" DynamicStrings_String mcLexBuf_findFileNameFromToken (unsigned int tokenNo, unsigned int depth)
 {
-  tokenBucket b;
-  sourceList l;
+  mcLexBuf_tokenBucket b;
+  mcLexBuf_sourceList l;
 
   b = findtokenBucket (&tokenNo);
   if (b == NULL)
@@ -1798,7 +1798,7 @@ extern "C" void mcLexBuf_setFile (void * filename)
 
 extern "C" void mcLexBuf_pushFile (void * filename)
 {
-  sourceList l;
+  mcLexBuf_sourceList l;
 
   checkIfNeedToDuplicate ();
   addTo (newElement (filename));
@@ -1823,7 +1823,7 @@ extern "C" void mcLexBuf_pushFile (void * filename)
 
 extern "C" void mcLexBuf_popFile (void * filename)
 {
-  sourceList l;
+  mcLexBuf_sourceList l;
 
   checkIfNeedToDuplicate ();
   if ((currentSource != NULL) && (currentSource->left != currentSource))
@@ -1831,7 +1831,7 @@ extern "C" void mcLexBuf_popFile (void * filename)
       /* avoid dangling else.  */
       l = currentSource->left;  /* last element  */
       subFrom (l);  /* last element  */
-      Storage_DEALLOCATE ((void **) &l, sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &l, sizeof (mcLexBuf__T1));
       if ((currentSource->left != currentSource) && (! (DynamicStrings_Equal (currentSource->name, DynamicStrings_Mark (DynamicStrings_InitStringCharStar (filename))))))
         {}  /* empty.  */
       /* mismatch in source file names after preprocessing files  */

@@ -73,11 +73,11 @@ extern "C" unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigne
 
 extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high)
 {
-  typedef char *_T1;
+  typedef char *GetEnvironment__T1;
 
   unsigned int High;
   unsigned int i;
-  _T1 Addr;
+  GetEnvironment__T1 Addr;
   char Env[_Env_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -85,7 +85,7 @@ extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned i
 
   i = 0;
   High = _dest_high;
-  Addr = static_cast<_T1> (libc_getenv (&Env));
+  Addr = static_cast<GetEnvironment__T1> (libc_getenv (&Env));
   while (((i < High) && (Addr != NULL)) && ((*Addr) != ASCII_nul))
     {
       dest[i] = (*Addr);

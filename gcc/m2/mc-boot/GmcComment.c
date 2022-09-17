@@ -52,18 +52,18 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GASCII.h"
 #   include "Glibc.h"
 
-typedef struct _T1_r _T1;
+typedef struct mcComment__T1_r mcComment__T1;
 
-typedef enum {unknown, procedureHeading, inBody, afterStatement} commentType;
+typedef enum {mcComment_unknown, mcComment_procedureHeading, mcComment_inBody, mcComment_afterStatement} mcComment_commentType;
 
-typedef _T1 *mcComment_commentDesc;
+typedef mcComment__T1 *mcComment_commentDesc;
 
-struct _T1_r {
-               commentType type;
-               DynamicStrings_String content;
-               nameKey_Name procName;
-               unsigned int used;
-             };
+struct mcComment__T1_r {
+                         mcComment_commentType type;
+                         DynamicStrings_String content;
+                         nameKey_Name procName;
+                         unsigned int used;
+                       };
 
 
 /*
@@ -239,19 +239,19 @@ static void dumpComment (mcComment_commentDesc cd)
   libc_printf ((const char *) "comment : ", 10);
   switch (cd->type)
     {
-      case unknown:
+      case mcComment_unknown:
         libc_printf ((const char *) "unknown", 7);
         break;
 
-      case procedureHeading:
+      case mcComment_procedureHeading:
         libc_printf ((const char *) "procedureheading", 16);
         break;
 
-      case inBody:
+      case mcComment_inBody:
         libc_printf ((const char *) "inbody", 6);
         break;
 
-      case afterStatement:
+      case mcComment_afterStatement:
         libc_printf ((const char *) "afterstatement", 14);
         break;
 
@@ -283,15 +283,15 @@ extern "C" mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces)
 {
   mcComment_commentDesc cd;
 
-  Storage_ALLOCATE ((void **) &cd, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &cd, sizeof (mcComment__T1));
   mcDebug_assert (cd != NULL);
   if (onlySpaces)
     {
-      cd->type = inBody;
+      cd->type = mcComment_inBody;
     }
   else
     {
-      cd->type = afterStatement;
+      cd->type = mcComment_afterStatement;
     }
   cd->content = DynamicStrings_InitString ((const char *) "", 0);
   cd->procName = nameKey_NulName;
@@ -366,7 +366,7 @@ extern "C" void mcComment_setProcedureComment (mcComment_commentDesc cd, nameKey
     {
       if (seenProcedure (cd, procname))
         {
-          cd->type = procedureHeading;
+          cd->type = mcComment_procedureHeading;
           cd->procName = procname;
         }
     }
@@ -379,7 +379,7 @@ extern "C" void mcComment_setProcedureComment (mcComment_commentDesc cd, nameKey
 
 extern "C" DynamicStrings_String mcComment_getProcedureComment (mcComment_commentDesc cd)
 {
-  if ((cd->type == procedureHeading) && ! cd->used)
+  if ((cd->type == mcComment_procedureHeading) && ! cd->used)
     {
       cd->used = TRUE;
       return cd->content;
@@ -396,7 +396,7 @@ extern "C" DynamicStrings_String mcComment_getProcedureComment (mcComment_commen
 
 extern "C" DynamicStrings_String mcComment_getAfterStatementComment (mcComment_commentDesc cd)
 {
-  if ((cd->type == afterStatement) && ! cd->used)
+  if ((cd->type == mcComment_afterStatement) && ! cd->used)
     {
       cd->used = TRUE;
       return cd->content;
@@ -413,7 +413,7 @@ extern "C" DynamicStrings_String mcComment_getAfterStatementComment (mcComment_c
 
 extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_commentDesc cd)
 {
-  if ((cd->type == inBody) && ! cd->used)
+  if ((cd->type == mcComment_inBody) && ! cd->used)
     {
       cd->used = TRUE;
       return cd->content;
@@ -430,7 +430,7 @@ extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_
 
 extern "C" unsigned int mcComment_isProcedureComment (mcComment_commentDesc cd)
 {
-  return (cd != NULL) && (cd->type == procedureHeading);
+  return (cd != NULL) && (cd->type == mcComment_procedureHeading);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -442,7 +442,7 @@ extern "C" unsigned int mcComment_isProcedureComment (mcComment_commentDesc cd)
 
 extern "C" unsigned int mcComment_isBodyComment (mcComment_commentDesc cd)
 {
-  return (cd != NULL) && (cd->type == inBody);
+  return (cd != NULL) && (cd->type == mcComment_inBody);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -454,7 +454,7 @@ extern "C" unsigned int mcComment_isBodyComment (mcComment_commentDesc cd)
 
 extern "C" unsigned int mcComment_isAfterComment (mcComment_commentDesc cd)
 {
-  return (cd != NULL) && (cd->type == afterStatement);
+  return (cd != NULL) && (cd->type == mcComment_afterStatement);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

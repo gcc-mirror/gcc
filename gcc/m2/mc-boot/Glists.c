@@ -48,21 +48,21 @@ Boston, MA 02110-1301, USA.  */
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
 #   define MaxnoOfelements 5
-typedef struct _T1_r _T1;
+typedef struct lists__T1_r lists__T1;
 
-typedef struct _T2_a _T2;
+typedef struct lists__T2_a lists__T2;
 
-typedef _T1 *lists_list;
+typedef lists__T1 *lists_list;
 
 typedef void (*symbolKey_performOperation_t) (void *);
 struct symbolKey_performOperation_p { symbolKey_performOperation_t proc; };
 
-struct _T2_a { void * array[MaxnoOfelements-1+1]; };
-struct _T1_r {
-               unsigned int noOfelements;
-               _T2 elements;
-               lists_list next;
-             };
+struct lists__T2_a { void * array[MaxnoOfelements-1+1]; };
+struct lists__T1_r {
+                     unsigned int noOfelements;
+                     lists__T2 elements;
+                     lists_list next;
+                   };
 
 
 /*
@@ -157,7 +157,7 @@ static void removeItem (lists_list p, lists_list l, unsigned int i)
   if ((l->noOfelements == 0) && (p != NULL))
     {
       p->next = l->next;
-      Storage_DEALLOCATE ((void **) &l, sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &l, sizeof (lists__T1));
     }
 }
 
@@ -170,7 +170,7 @@ extern "C" lists_list lists_initList (void)
 {
   lists_list l;
 
-  Storage_ALLOCATE ((void **) &l, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &l, sizeof (lists__T1));
   l->noOfelements = 0;
   l->next = NULL;
   return l;
@@ -191,7 +191,7 @@ extern "C" void lists_killList (lists_list *l)
         {
           lists_killList (&(*l)->next);
         }
-      Storage_DEALLOCATE ((void **) &(*l), sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &(*l), sizeof (lists__T1));
     }
 }
 

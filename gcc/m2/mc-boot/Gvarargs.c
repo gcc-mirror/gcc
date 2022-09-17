@@ -42,29 +42,29 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GM2RTS.h"
 
 #   define MaxArg 4
-typedef struct argDesc_r argDesc;
+typedef struct varargs_argDesc_r varargs_argDesc;
 
-typedef struct _T6_r _T6;
+typedef struct varargs__T6_r varargs__T6;
 
-typedef unsigned char *ptrToByte;
+typedef unsigned char *varargs_ptrToByte;
 
-typedef struct _T7_a _T7;
+typedef struct varargs__T7_a varargs__T7;
 
-typedef _T6 *varargs_vararg;
+typedef varargs__T6 *varargs_vararg;
 
-struct argDesc_r {
-                   void *ptr;
-                   unsigned int len;
-                 };
+struct varargs_argDesc_r {
+                           void *ptr;
+                           unsigned int len;
+                         };
 
-struct _T7_a { argDesc array[MaxArg+1]; };
-struct _T6_r {
-               unsigned int nArgs;
-               unsigned int i;
-               void *contents;
-               unsigned int size;
-               _T7 arg;
-             };
+struct varargs__T7_a { varargs_argDesc array[MaxArg+1]; };
+struct varargs__T6_r {
+                       unsigned int nArgs;
+                       unsigned int i;
+                       void *contents;
+                       unsigned int size;
+                       varargs__T7 arg;
+                     };
 
 
 /*
@@ -150,9 +150,9 @@ extern "C" unsigned int varargs_nargs (varargs_vararg v)
 
 extern "C" void varargs_arg (varargs_vararg v, unsigned char *a, unsigned int _a_high)
 {
-  typedef unsigned char *_T1;
+  typedef unsigned char *arg__T1;
 
-  _T1 p;
+  arg__T1 p;
   unsigned int j;
 
   if (v->i == v->nArgs)
@@ -164,7 +164,7 @@ extern "C" void varargs_arg (varargs_vararg v, unsigned char *a, unsigned int _a
     {
       if ((_a_high+1) == v->arg.array[v->i].len)
         {
-          p = static_cast<_T1> (v->arg.array[v->i].ptr);
+          p = static_cast<arg__T1> (v->arg.array[v->i].ptr);
           j = 0;
           while (j <= _a_high)
             {
@@ -203,7 +203,7 @@ extern "C" varargs_vararg varargs_copy (varargs_vararg v)
   unsigned int j;
   unsigned int offset;
 
-  Storage_ALLOCATE ((void **) &c, sizeof (_T6));
+  Storage_ALLOCATE ((void **) &c, sizeof (varargs__T6));
   c->i = v->i;
   c->nArgs = v->nArgs;
   c->size = v->size;
@@ -211,8 +211,8 @@ extern "C" varargs_vararg varargs_copy (varargs_vararg v)
   c->contents = libc_memcpy (c->contents, v->contents, static_cast<size_t> (c->size));
   for (j=0; j<=c->nArgs; j++)
     {
-      offset = (unsigned int ) (((ptrToByte) (v->contents))-((ptrToByte) (v->arg.array[j].ptr)));
-      c->arg.array[j].ptr = reinterpret_cast<void *> ((ptrToByte) (((ptrToByte) (c->contents))+offset));
+      offset = (unsigned int ) (((varargs_ptrToByte) (v->contents))-((varargs_ptrToByte) (v->arg.array[j].ptr)));
+      c->arg.array[j].ptr = reinterpret_cast<void *> ((varargs_ptrToByte) (((varargs_ptrToByte) (c->contents))+offset));
       c->arg.array[j].len = v->arg.array[j].len;
     }
   return c;
@@ -229,9 +229,9 @@ extern "C" varargs_vararg varargs_copy (varargs_vararg v)
 
 extern "C" void varargs_replace (varargs_vararg v, unsigned char *a, unsigned int _a_high)
 {
-  typedef unsigned char *_T2;
+  typedef unsigned char *replace__T2;
 
-  _T2 p;
+  replace__T2 p;
   unsigned int j;
 
   if (v->i == v->nArgs)
@@ -243,7 +243,7 @@ extern "C" void varargs_replace (varargs_vararg v, unsigned char *a, unsigned in
     {
       if ((_a_high+1) == v->arg.array[v->i].len)
         {
-          p = static_cast<_T2> (v->arg.array[v->i].ptr);
+          p = static_cast<replace__T2> (v->arg.array[v->i].ptr);
           j = 0;
           while (j <= _a_high)
             {
@@ -270,7 +270,7 @@ extern "C" void varargs_end (varargs_vararg *v)
   if ((*v) != NULL)
     {
       Storage_DEALLOCATE (&(*v)->contents, sizeof (varargs_vararg));
-      Storage_DEALLOCATE ((void **) &(*v), sizeof (_T6));
+      Storage_DEALLOCATE ((void **) &(*v), sizeof (varargs__T6));
     }
 }
 
@@ -287,7 +287,7 @@ extern "C" varargs_vararg varargs_start1 (const unsigned char *a_, unsigned int 
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  Storage_ALLOCATE ((void **) &v, sizeof (_T6));
+  Storage_ALLOCATE ((void **) &v, sizeof (varargs__T6));
   v->i = 0;
   v->nArgs = 1;
   v->size = _a_high+1;
@@ -307,10 +307,10 @@ extern "C" varargs_vararg varargs_start1 (const unsigned char *a_, unsigned int 
 
 extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int _a_high, const unsigned char *b_, unsigned int _b_high)
 {
-  typedef unsigned char *_T3;
+  typedef unsigned char *start2__T3;
 
   varargs_vararg v;
-  _T3 p;
+  start2__T3 p;
   unsigned char a[_a_high+1];
   unsigned char b[_b_high+1];
 
@@ -318,16 +318,16 @@ extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int 
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  Storage_ALLOCATE ((void **) &v, sizeof (_T6));
+  Storage_ALLOCATE ((void **) &v, sizeof (varargs__T6));
   v->i = 0;
   v->nArgs = 2;
   v->size = (_a_high+_b_high)+2;
   Storage_ALLOCATE (&v->contents, v->size);
-  p = static_cast<_T3> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
+  p = static_cast<start2__T3> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
   v->arg.array[0].ptr = reinterpret_cast<void *> (p);
   v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
-  p = static_cast<_T3> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
+  p = static_cast<start2__T3> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
   v->arg.array[1].ptr = reinterpret_cast<void *> (p);
   v->arg.array[1].len = _b_high+1;
   return v;
@@ -342,10 +342,10 @@ extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int 
 
 extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int _a_high, const unsigned char *b_, unsigned int _b_high, const unsigned char *c_, unsigned int _c_high)
 {
-  typedef unsigned char *_T4;
+  typedef unsigned char *start3__T4;
 
   varargs_vararg v;
-  _T4 p;
+  start3__T4 p;
   unsigned char a[_a_high+1];
   unsigned char b[_b_high+1];
   unsigned char c[_c_high+1];
@@ -355,20 +355,20 @@ extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int 
   memcpy (b, b_, _b_high+1);
   memcpy (c, c_, _c_high+1);
 
-  Storage_ALLOCATE ((void **) &v, sizeof (_T6));
+  Storage_ALLOCATE ((void **) &v, sizeof (varargs__T6));
   v->i = 0;
   v->nArgs = 3;
   v->size = ((_a_high+_b_high)+_c_high)+3;
   Storage_ALLOCATE (&v->contents, v->size);
-  p = static_cast<_T4> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
+  p = static_cast<start3__T4> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
   v->arg.array[0].ptr = reinterpret_cast<void *> (p);
   v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
-  p = static_cast<_T4> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
+  p = static_cast<start3__T4> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
   v->arg.array[1].ptr = reinterpret_cast<void *> (p);
   v->arg.array[1].len = _b_high+1;
   p += v->arg.array[1].len;
-  p = static_cast<_T4> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
+  p = static_cast<start3__T4> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
   v->arg.array[2].ptr = reinterpret_cast<void *> (p);
   v->arg.array[2].len = _c_high+1;
   return v;
@@ -383,10 +383,10 @@ extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int 
 
 extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int _a_high, const unsigned char *b_, unsigned int _b_high, const unsigned char *c_, unsigned int _c_high, const unsigned char *d_, unsigned int _d_high)
 {
-  typedef unsigned char *_T5;
+  typedef unsigned char *start4__T5;
 
   varargs_vararg v;
-  _T5 p;
+  start4__T5 p;
   unsigned char a[_a_high+1];
   unsigned char b[_b_high+1];
   unsigned char c[_c_high+1];
@@ -398,23 +398,23 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
   memcpy (c, c_, _c_high+1);
   memcpy (d, d_, _d_high+1);
 
-  Storage_ALLOCATE ((void **) &v, sizeof (_T6));
+  Storage_ALLOCATE ((void **) &v, sizeof (varargs__T6));
   v->i = 0;
   v->nArgs = 4;
   v->size = (((_a_high+_b_high)+_c_high)+_d_high)+4;
   Storage_ALLOCATE (&v->contents, v->size);
-  p = static_cast<_T5> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
+  p = static_cast<start4__T5> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
   v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
-  p = static_cast<_T5> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
+  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
   v->arg.array[1].ptr = reinterpret_cast<void *> (p);
   v->arg.array[1].len = _b_high+1;
   p += v->arg.array[1].len;
-  p = static_cast<_T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
+  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
   v->arg.array[2].ptr = reinterpret_cast<void *> (p);
   v->arg.array[2].len = _c_high+1;
   p += v->arg.array[2].len;
-  p = static_cast<_T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
+  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
   v->arg.array[3].ptr = reinterpret_cast<void *> (p);
   v->arg.array[3].len = _c_high+1;
   return v;

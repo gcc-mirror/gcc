@@ -58,19 +58,19 @@ extern "C" void MemUtils_MemZero (void * a, unsigned int length);
 
 extern "C" void MemUtils_MemCopy (void * from, unsigned int length, void * to)
 {
-  typedef unsigned int *_T1;
+  typedef unsigned int *MemCopy__T1;
 
-  typedef unsigned char *_T2;
+  typedef unsigned char *MemCopy__T2;
 
-  _T1 pwb;
-  _T1 pwa;
-  _T2 pbb;
-  _T2 pba;
+  MemCopy__T1 pwb;
+  MemCopy__T1 pwa;
+  MemCopy__T2 pbb;
+  MemCopy__T2 pba;
 
   while (length >= sizeof (unsigned int ))
     {
-      pwa = static_cast<_T1> (from);
-      pwb = static_cast<_T1> (to);
+      pwa = static_cast<MemCopy__T1> (from);
+      pwb = static_cast<MemCopy__T1> (to);
       (*pwb) = (*pwa);
       from = reinterpret_cast<void *> (reinterpret_cast<char *> (from)+sizeof (unsigned int ));
       to = reinterpret_cast<void *> (reinterpret_cast<char *> (to)+sizeof (unsigned int ));
@@ -78,8 +78,8 @@ extern "C" void MemUtils_MemCopy (void * from, unsigned int length, void * to)
     }
   while (length > 0)
     {
-      pba = static_cast<_T2> (from);
-      pbb = static_cast<_T2> (to);
+      pba = static_cast<MemCopy__T2> (from);
+      pbb = static_cast<MemCopy__T2> (to);
       (*pbb) = (*pba);
       from = reinterpret_cast<void *> (reinterpret_cast<char *> (from)+sizeof (unsigned char ));
       to = reinterpret_cast<void *> (reinterpret_cast<char *> (to)+sizeof (unsigned char ));
@@ -94,21 +94,21 @@ extern "C" void MemUtils_MemCopy (void * from, unsigned int length, void * to)
 
 extern "C" void MemUtils_MemZero (void * a, unsigned int length)
 {
-  typedef unsigned int *_T3;
+  typedef unsigned int *MemZero__T3;
 
-  typedef unsigned char *_T4;
+  typedef unsigned char *MemZero__T4;
 
-  _T3 pwa;
-  _T4 pba;
+  MemZero__T3 pwa;
+  MemZero__T4 pba;
 
-  pwa = static_cast<_T3> (a);
+  pwa = static_cast<MemZero__T3> (a);
   while (length >= sizeof (unsigned int ))
     {
       (*pwa) = (unsigned int ) (0);
       pwa += sizeof (unsigned int );
       length -= sizeof (unsigned int );
     }
-  pba = static_cast<_T4> ((void *) (pwa));
+  pba = static_cast<MemZero__T4> ((void *) (pwa));
   while (length >= sizeof (unsigned char ))
     {
       (*pba) = (unsigned char ) (0);

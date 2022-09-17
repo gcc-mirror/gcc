@@ -51,9 +51,9 @@ typedef struct symbolKey_isSymbol_p symbolKey_isSymbol;
 
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
-typedef struct _T1_r _T1;
+typedef struct symbolKey__T1_r symbolKey__T1;
 
-typedef _T1 *symbolKey_symbolTree;
+typedef symbolKey__T1 *symbolKey_symbolTree;
 
 typedef unsigned int (*symbolKey_isSymbol_t) (void *);
 struct symbolKey_isSymbol_p { symbolKey_isSymbol_t proc; };
@@ -61,12 +61,12 @@ struct symbolKey_isSymbol_p { symbolKey_isSymbol_t proc; };
 typedef void (*symbolKey_performOperation_t) (void *);
 struct symbolKey_performOperation_p { symbolKey_performOperation_t proc; };
 
-struct _T1_r {
-               nameKey_Name name;
-               void *key;
-               symbolKey_symbolTree left;
-               symbolKey_symbolTree right;
-             };
+struct symbolKey__T1_r {
+                         nameKey_Name name;
+                         void *key;
+                         symbolKey_symbolTree left;
+                         symbolKey_symbolTree right;
+                       };
 
 extern "C" symbolKey_symbolTree symbolKey_initTree (void);
 extern "C" void symbolKey_killTree (symbolKey_symbolTree *t);
@@ -205,7 +205,7 @@ extern "C" symbolKey_symbolTree symbolKey_initTree (void)
 {
   symbolKey_symbolTree t;
 
-  Storage_ALLOCATE ((void **) &t, sizeof (_T1));  /* The value entity  */
+  Storage_ALLOCATE ((void **) &t, sizeof (symbolKey__T1));  /* The value entity  */
   t->left = NULL;
   t->right = NULL;
   return t;
@@ -219,7 +219,7 @@ extern "C" void symbolKey_killTree (symbolKey_symbolTree *t)
     {
       symbolKey_killTree (&(*t)->left);
       symbolKey_killTree (&(*t)->right);
-      Storage_DEALLOCATE ((void **) &(*t), sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &(*t), sizeof (symbolKey__T1));
       (*t) = NULL;
     }
 }
@@ -261,20 +261,20 @@ extern "C" void symbolKey_putSymKey (symbolKey_symbolTree t, nameKey_Name name, 
       if (father == t)
         {
           /* empty tree, add it to the left branch of t  */
-          Storage_ALLOCATE ((void **) &child, sizeof (_T1));
+          Storage_ALLOCATE ((void **) &child, sizeof (symbolKey__T1));
           father->left = child;
         }
       else
         {
           if (name < father->name)
             {
-              Storage_ALLOCATE ((void **) &child, sizeof (_T1));
+              Storage_ALLOCATE ((void **) &child, sizeof (symbolKey__T1));
               father->left = child;
             }
           else if (name > father->name)
             {
               /* avoid dangling else.  */
-              Storage_ALLOCATE ((void **) &child, sizeof (_T1));
+              Storage_ALLOCATE ((void **) &child, sizeof (symbolKey__T1));
               father->right = child;
             }
         }
@@ -326,7 +326,7 @@ extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name)
               /* (as in a single linked list) to child^.right  */
               father->right = child->right;
             }
-          Storage_DEALLOCATE ((void **) &child, sizeof (_T1));
+          Storage_DEALLOCATE ((void **) &child, sizeof (symbolKey__T1));
         }
       else
         {
@@ -347,7 +347,7 @@ extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name)
               /* (as in a single linked list) to child^.left.  */
               father->left = child->left;
             }
-          Storage_DEALLOCATE ((void **) &child, sizeof (_T1));
+          Storage_DEALLOCATE ((void **) &child, sizeof (symbolKey__T1));
         }
     }
   else

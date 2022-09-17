@@ -37,14 +37,14 @@ Boston, MA 02110-1301, USA.  */
 #   include "GIndexing.h"
 #   include "GM2RTS.h"
 
-typedef struct _T1_r _T1;
+typedef struct mcStack__T1_r mcStack__T1;
 
-typedef _T1 *mcStack_stack;
+typedef mcStack__T1 *mcStack_stack;
 
-struct _T1_r {
-               Indexing_Index list;
-               unsigned int count;
-             };
+struct mcStack__T1_r {
+                       Indexing_Index list;
+                       unsigned int count;
+                     };
 
 
 /*
@@ -102,7 +102,7 @@ extern "C" mcStack_stack mcStack_init (void)
 {
   mcStack_stack s;
 
-  Storage_ALLOCATE ((void **) &s, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &s, sizeof (mcStack__T1));
   s->list = Indexing_InitIndex (1);
   s->count = 0;
   return s;
@@ -118,7 +118,7 @@ extern "C" mcStack_stack mcStack_init (void)
 extern "C" void mcStack_kill (mcStack_stack *s)
 {
   (*s)->list = Indexing_KillIndex ((*s)->list);
-  Storage_DEALLOCATE ((void **) &(*s), sizeof (_T1));
+  Storage_DEALLOCATE ((void **) &(*s), sizeof (mcStack__T1));
   (*s) = NULL;
 }
 

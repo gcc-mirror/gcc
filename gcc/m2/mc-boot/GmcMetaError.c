@@ -49,7 +49,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   include "GDynamicStrings.h"
 #   include "Gdecl.h"
 
-typedef enum {newerror, newwarning, chained} errorType;
+typedef enum {mcMetaError_newerror, mcMetaError_newwarning, mcMetaError_chained} mcMetaError_errorType;
 
 
 /*
@@ -218,7 +218,7 @@ static unsigned int isWhite (char ch);
    then := [ ':' ebnf ] =:
 */
 
-static void then (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, unsigned int positive);
+static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, unsigned int positive);
 
 /*
    doNumber -
@@ -276,25 +276,25 @@ static DynamicStrings_String doKey (unsigned int bol, varargs_vararg sym, Dynami
    doError - creates and returns an error note.
 */
 
-static mcError_error doError (mcError_error e, errorType t, unsigned int tok);
+static mcError_error doError (mcError_error e, mcMetaError_errorType t, unsigned int tok);
 
 /*
    doDeclaredDef - creates an error note where sym[bol] was declared.
 */
 
-static mcError_error doDeclaredDef (mcError_error e, errorType t, unsigned int bol, varargs_vararg sym);
+static mcError_error doDeclaredDef (mcError_error e, mcMetaError_errorType t, unsigned int bol, varargs_vararg sym);
 
 /*
    doDeclaredMod - creates an error note where sym[bol] was declared.
 */
 
-static mcError_error doDeclaredMod (mcError_error e, errorType t, unsigned int bol, varargs_vararg sym);
+static mcError_error doDeclaredMod (mcError_error e, mcMetaError_errorType t, unsigned int bol, varargs_vararg sym);
 
 /*
    doUsed - creates an error note where sym[bol] was first used.
 */
 
-static mcError_error doUsed (mcError_error e, errorType t, unsigned int bol, varargs_vararg sym);
+static mcError_error doUsed (mcError_error e, mcMetaError_errorType t, unsigned int bol, varargs_vararg sym);
 
 /*
    ConCatWord - joins sentances, a, b, together.
@@ -324,7 +324,7 @@ static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_
    op := {'a'|'q'|'t'|'d'|'k'|'n'|'s'|'D'|'I'|'U'|'E'|'W'} then =:
 */
 
-static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, unsigned int positive);
+static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, unsigned int positive);
 
 /*
    percenttoken := '%' (
@@ -340,7 +340,7 @@ static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, Dynami
                        } =:
 */
 
-static void percenttoken (mcError_error *e, errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int positive);
+static void percenttoken (mcError_error *e, mcMetaError_errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int positive);
 
 /*
    percent := '%' anych           % copy anych %
@@ -353,7 +353,7 @@ static void percent (DynamicStrings_String *r, DynamicStrings_String s, varargs_
    lbra := '{' [ '!' ] percenttoken '}' =:
 */
 
-static void lbra (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l);
+static void lbra (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l);
 
 /*
    lbra := '{' [ '!' ] percenttoken '}' =:
@@ -369,13 +369,13 @@ static void stop (void);
          =:
 */
 
-static void ebnf (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l);
+static void ebnf (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l);
 
 /*
    doFormat -
 */
 
-static DynamicStrings_String doFormat (mcError_error *e, errorType *t, DynamicStrings_String s, varargs_vararg sym);
+static DynamicStrings_String doFormat (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String s, varargs_vararg sym);
 
 /*
    wrapErrors -
@@ -444,7 +444,7 @@ static unsigned int isWhite (char ch)
    then := [ ':' ebnf ] =:
 */
 
-static void then (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, unsigned int positive)
+static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, unsigned int positive)
 {
   if ((DynamicStrings_char (s, (*i))) == ':')
     {
@@ -727,11 +727,11 @@ static DynamicStrings_String doKey (unsigned int bol, varargs_vararg sym, Dynami
    doError - creates and returns an error note.
 */
 
-static mcError_error doError (mcError_error e, errorType t, unsigned int tok)
+static mcError_error doError (mcError_error e, mcMetaError_errorType t, unsigned int tok)
 {
   switch (t)
     {
-      case chained:
+      case mcMetaError_chained:
         if (e == NULL)
           {
             mcError_internalError ((const char *) "should not be chaining an error onto an empty error note", 56, (const char *) "../../gcc-git-devel-modula2/gcc/m2/mc/mcMetaError.mod", 53, 355);
@@ -742,14 +742,14 @@ static mcError_error doError (mcError_error e, errorType t, unsigned int tok)
           }
         break;
 
-      case newerror:
+      case mcMetaError_newerror:
         if (e == NULL)
           {
             e = mcError_newError (tok);
           }
         break;
 
-      case newwarning:
+      case mcMetaError_newwarning:
         if (e == NULL)
           {
             e = mcError_newWarning (tok);
@@ -771,7 +771,7 @@ static mcError_error doError (mcError_error e, errorType t, unsigned int tok)
    doDeclaredDef - creates an error note where sym[bol] was declared.
 */
 
-static mcError_error doDeclaredDef (mcError_error e, errorType t, unsigned int bol, varargs_vararg sym)
+static mcError_error doDeclaredDef (mcError_error e, mcMetaError_errorType t, unsigned int bol, varargs_vararg sym)
 {
   decl_node n;
 
@@ -791,7 +791,7 @@ static mcError_error doDeclaredDef (mcError_error e, errorType t, unsigned int b
    doDeclaredMod - creates an error note where sym[bol] was declared.
 */
 
-static mcError_error doDeclaredMod (mcError_error e, errorType t, unsigned int bol, varargs_vararg sym)
+static mcError_error doDeclaredMod (mcError_error e, mcMetaError_errorType t, unsigned int bol, varargs_vararg sym)
 {
   decl_node n;
 
@@ -811,7 +811,7 @@ static mcError_error doDeclaredMod (mcError_error e, errorType t, unsigned int b
    doUsed - creates an error note where sym[bol] was first used.
 */
 
-static mcError_error doUsed (mcError_error e, errorType t, unsigned int bol, varargs_vararg sym)
+static mcError_error doUsed (mcError_error e, mcMetaError_errorType t, unsigned int bol, varargs_vararg sym)
 {
   decl_node n;
 
@@ -1040,7 +1040,7 @@ static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_
    op := {'a'|'q'|'t'|'d'|'k'|'n'|'s'|'D'|'I'|'U'|'E'|'W'} then =:
 */
 
-static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, unsigned int positive)
+static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, unsigned int positive)
 {
   DynamicStrings_String o;
   varargs_vararg c;
@@ -1098,11 +1098,11 @@ static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, Dynami
             break;
 
           case 'E':
-            (*t) = newerror;
+            (*t) = mcMetaError_newerror;
             break;
 
           case 'W':
-            (*t) = newwarning;
+            (*t) = mcMetaError_newwarning;
             break;
 
           case ':':
@@ -1144,7 +1144,7 @@ static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, Dynami
                        } =:
 */
 
-static void percenttoken (mcError_error *e, errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int positive)
+static void percenttoken (mcError_error *e, mcMetaError_errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int positive)
 {
   if ((DynamicStrings_char (s, (*i))) == '%')
     {
@@ -1207,7 +1207,7 @@ static void percent (DynamicStrings_String *r, DynamicStrings_String s, varargs_
    lbra := '{' [ '!' ] percenttoken '}' =:
 */
 
-static void lbra (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l)
+static void lbra (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l)
 {
   unsigned int positive;
 
@@ -1250,7 +1250,7 @@ static void stop (void)
          =:
 */
 
-static void ebnf (mcError_error *e, errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l)
+static void ebnf (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l)
 {
   while ((*i) < l)
     {
@@ -1289,7 +1289,7 @@ static void ebnf (mcError_error *e, errorType *t, DynamicStrings_String *r, Dyna
    doFormat -
 */
 
-static DynamicStrings_String doFormat (mcError_error *e, errorType *t, DynamicStrings_String s, varargs_vararg sym)
+static DynamicStrings_String doFormat (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String s, varargs_vararg sym)
 {
   DynamicStrings_String r;
   int i;
@@ -1315,7 +1315,7 @@ static void wrapErrors (unsigned int tok, const char *m1_, unsigned int _m1_high
   mcError_error e;
   mcError_error f;
   DynamicStrings_String str;
-  errorType t;
+  mcMetaError_errorType t;
   char m1[_m1_high+1];
   char m2[_m2_high+1];
 
@@ -1324,16 +1324,16 @@ static void wrapErrors (unsigned int tok, const char *m1_, unsigned int _m1_high
   memcpy (m2, m2_, _m2_high+1);
 
   e = static_cast<mcError_error> (NULL);
-  t = newerror;
+  t = mcMetaError_newerror;
   str = doFormat (&e, &t, DynamicStrings_InitString ((const char *) m1, _m1_high), sym);
   e = doError (e, t, tok);
   mcError_errorString (e, str);
   f = e;
-  t = chained;
+  t = mcMetaError_chained;
   str = doFormat (&f, &t, DynamicStrings_InitString ((const char *) m2, _m2_high), sym);
   if (e == f)
     {
-      t = chained;
+      t = mcMetaError_chained;
       f = doError (e, t, tok);
     }
   mcError_errorString (f, str);
@@ -1769,7 +1769,7 @@ extern "C" void mcMetaError_metaErrorStringT1 (unsigned int tok, DynamicStrings_
   DynamicStrings_String str;
   mcError_error e;
   varargs_vararg sym;
-  errorType t;
+  mcMetaError_errorType t;
   unsigned char s[_s_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -1777,7 +1777,7 @@ extern "C" void mcMetaError_metaErrorStringT1 (unsigned int tok, DynamicStrings_
 
   e = static_cast<mcError_error> (NULL);
   sym = varargs_start1 ((const unsigned char *) s, _s_high);
-  t = newerror;
+  t = mcMetaError_newerror;
   str = doFormat (&e, &t, m, sym);
   e = doError (e, t, tok);
   mcError_errorString (e, str);
@@ -1794,7 +1794,7 @@ extern "C" void mcMetaError_metaErrorStringT2 (unsigned int tok, DynamicStrings_
   DynamicStrings_String str;
   mcError_error e;
   varargs_vararg sym;
-  errorType t;
+  mcMetaError_errorType t;
   unsigned char s1[_s1_high+1];
   unsigned char s2[_s2_high+1];
 
@@ -1804,7 +1804,7 @@ extern "C" void mcMetaError_metaErrorStringT2 (unsigned int tok, DynamicStrings_
 
   e = static_cast<mcError_error> (NULL);
   sym = varargs_start2 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high);
-  t = newerror;
+  t = mcMetaError_newerror;
   str = doFormat (&e, &t, m, sym);
   e = doError (e, t, tok);
   mcError_errorString (e, str);
@@ -1821,7 +1821,7 @@ extern "C" void mcMetaError_metaErrorStringT3 (unsigned int tok, DynamicStrings_
   DynamicStrings_String str;
   mcError_error e;
   varargs_vararg sym;
-  errorType t;
+  mcMetaError_errorType t;
   unsigned char s1[_s1_high+1];
   unsigned char s2[_s2_high+1];
   unsigned char s3[_s3_high+1];
@@ -1833,7 +1833,7 @@ extern "C" void mcMetaError_metaErrorStringT3 (unsigned int tok, DynamicStrings_
 
   e = static_cast<mcError_error> (NULL);
   sym = varargs_start3 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high);
-  t = newerror;
+  t = mcMetaError_newerror;
   str = doFormat (&e, &t, m, sym);
   e = doError (e, t, tok);
   mcError_errorString (e, str);
@@ -1850,7 +1850,7 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
   DynamicStrings_String str;
   mcError_error e;
   varargs_vararg sym;
-  errorType t;
+  mcMetaError_errorType t;
   unsigned char s1[_s1_high+1];
   unsigned char s2[_s2_high+1];
   unsigned char s3[_s3_high+1];
@@ -1864,7 +1864,7 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
 
   e = static_cast<mcError_error> (NULL);
   sym = varargs_start4 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high, (const unsigned char *) s4, _s4_high);
-  t = newerror;
+  t = mcMetaError_newerror;
   str = doFormat (&e, &t, m, sym);
   e = doError (e, t, tok);
   mcError_errorString (e, str);

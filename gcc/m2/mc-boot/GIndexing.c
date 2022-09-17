@@ -53,26 +53,26 @@ Boston, MA 02110-1301, USA.  */
 typedef struct Indexing_IndexProcedure_p Indexing_IndexProcedure;
 
 #   define MinSize 128
-typedef struct _T2_r _T2;
+typedef struct Indexing__T2_r Indexing__T2;
 
-typedef void * *PtrToAddress;
+typedef void * *Indexing_PtrToAddress;
 
-typedef _T2 *Indexing_Index;
+typedef Indexing__T2 *Indexing_Index;
 
-typedef unsigned char *PtrToByte;
+typedef unsigned char *Indexing_PtrToByte;
 
 typedef void (*Indexing_IndexProcedure_t) (void *);
 struct Indexing_IndexProcedure_p { Indexing_IndexProcedure_t proc; };
 
-struct _T2_r {
-               void *ArrayStart;
-               unsigned int ArraySize;
-               unsigned int Used;
-               unsigned int Low;
-               unsigned int High;
-               unsigned int Debug;
-               unsigned int Map;
-             };
+struct Indexing__T2_r {
+                        void *ArrayStart;
+                        unsigned int ArraySize;
+                        unsigned int Used;
+                        unsigned int Low;
+                        unsigned int High;
+                        unsigned int Debug;
+                        unsigned int Map;
+                      };
 
 
 /*
@@ -164,7 +164,7 @@ extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
 {
   Indexing_Index i;
 
-  Storage_ALLOCATE ((void **) &i, sizeof (_T2));
+  Storage_ALLOCATE ((void **) &i, sizeof (Indexing__T2));
   i->Low = low;
   i->High = 0;
   i->ArraySize = MinSize;
@@ -186,7 +186,7 @@ extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
 extern "C" Indexing_Index Indexing_KillIndex (Indexing_Index i)
 {
   Storage_DEALLOCATE (&i->ArrayStart, i->ArraySize);
-  Storage_DEALLOCATE ((void **) &i, sizeof (_T2));
+  Storage_DEALLOCATE ((void **) &i, sizeof (Indexing__T2));
   return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -273,11 +273,11 @@ extern "C" unsigned int Indexing_LowIndice (Indexing_Index i)
 
 extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
 {
-  typedef unsigned int * *_T1;
+  typedef unsigned int * *PutIndice__T1;
 
   unsigned int oldSize;
   void * b;
-  _T1 p;
+  PutIndice__T1 p;
 
   if (! (Indexing_InBounds (i, n)))
     {
@@ -315,7 +315,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
     }
   b = i->ArrayStart;
   b = reinterpret_cast<void *> (reinterpret_cast<char *> (b)+(n-i->Low)*sizeof (void *));
-  p = static_cast<_T1> (b);
+  p = static_cast<PutIndice__T1> (b);
   (*p) = reinterpret_cast<unsigned int *> (a);
   i->Used += 1;
   if (i->Debug)
@@ -334,17 +334,17 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
 
 extern "C" void * Indexing_GetIndice (Indexing_Index i, unsigned int n)
 {
-  PtrToByte b;
-  PtrToAddress p;
+  Indexing_PtrToByte b;
+  Indexing_PtrToAddress p;
 
   if (! (Indexing_InBounds (i, n)))
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  b = static_cast<PtrToByte> (i->ArrayStart);
+  b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
   b += (n-i->Low)*sizeof (void *);
-  p = (PtrToAddress) (b);
+  p = (Indexing_PtrToAddress) (b);
   if (i->Debug)
     {
       if (((n < 32) && (! ((((1 << (n)) & (i->Map)) != 0)))) && ((*p) != NULL))
@@ -366,14 +366,14 @@ extern "C" void * Indexing_GetIndice (Indexing_Index i, unsigned int n)
 extern "C" unsigned int Indexing_IsIndiceInIndex (Indexing_Index i, void * a)
 {
   unsigned int j;
-  PtrToByte b;
-  PtrToAddress p;
+  Indexing_PtrToByte b;
+  Indexing_PtrToAddress p;
 
   j = i->Low;
-  b = static_cast<PtrToByte> (i->ArrayStart);
+  b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
   while (j <= i->High)
     {
-      p = (PtrToAddress) (b);
+      p = (Indexing_PtrToAddress) (b);
       if ((*p) == a)
         {
           return TRUE;
@@ -396,14 +396,14 @@ extern "C" void Indexing_RemoveIndiceFromIndex (Indexing_Index i, void * a)
 {
   unsigned int j;
   unsigned int k;
-  PtrToAddress p;
-  PtrToByte b;
+  Indexing_PtrToAddress p;
+  Indexing_PtrToByte b;
 
   j = i->Low;
-  b = static_cast<PtrToByte> (i->ArrayStart);
+  b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
   while (j <= i->High)
     {
-      p = (PtrToAddress) (b);
+      p = (Indexing_PtrToAddress) (b);
       b += sizeof (void *);
       if ((*p) == a)
         {
@@ -420,16 +420,16 @@ extern "C" void Indexing_RemoveIndiceFromIndex (Indexing_Index i, void * a)
 
 extern "C" void Indexing_DeleteIndice (Indexing_Index i, unsigned int j)
 {
-  PtrToAddress p;
-  PtrToByte b;
+  Indexing_PtrToAddress p;
+  Indexing_PtrToByte b;
 
   if (Indexing_InBounds (i, j))
     {
-      b = static_cast<PtrToByte> (i->ArrayStart);
+      b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
       b += sizeof (void *)*(j-i->Low);
-      p = (PtrToAddress) (b);
+      p = (Indexing_PtrToAddress) (b);
       b += sizeof (void *);
-      p = static_cast<PtrToAddress> (libc_memmove (reinterpret_cast<void *> (p), reinterpret_cast<void *> (b), static_cast<size_t> ((i->High-j)*sizeof (void *))));
+      p = static_cast<Indexing_PtrToAddress> (libc_memmove (reinterpret_cast<void *> (p), reinterpret_cast<void *> (b), static_cast<size_t> ((i->High-j)*sizeof (void *))));
       i->High -= 1;
       i->Used -= 1;
     }

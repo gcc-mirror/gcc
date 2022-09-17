@@ -287,10 +287,10 @@ extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdL
 
 extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLine_high)
 {
-  typedef struct _T1_a _T1;
+  typedef struct Narg__T1_a Narg__T1;
 
-  struct _T1_a { char array[1000+1]; };
-  _T1 a;
+  struct Narg__T1_a { char array[1000+1]; };
+  Narg__T1 a;
   unsigned int ArgNo;
   char CmdLine[_CmdLine_high+1];
 

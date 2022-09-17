@@ -53,17 +53,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "Gtermios.h"
 
 #   define MaxDefaultFd 2
-typedef struct BasicFds_r BasicFds;
+typedef struct IO_BasicFds_r IO_BasicFds;
 
-typedef struct _T1_a _T1;
+typedef struct IO__T1_a IO__T1;
 
-struct BasicFds_r {
-                    unsigned int IsEof;
-                    unsigned int IsRaw;
-                  };
+struct IO_BasicFds_r {
+                       unsigned int IsEof;
+                       unsigned int IsRaw;
+                     };
 
-struct _T1_a { BasicFds array[MaxDefaultFd+1]; };
-static _T1 fdState;
+struct IO__T1_a { IO_BasicFds array[MaxDefaultFd+1]; };
+static IO__T1 fdState;
 
 /*
    IsDefaultFd - returns TRUE if, fd, is 0, 1 or 2.

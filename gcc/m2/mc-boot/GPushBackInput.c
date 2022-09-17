@@ -56,14 +56,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #   define MaxPushBackStack 8192
 #   define MaxFileName 4096
-typedef struct _T2_a _T2;
+typedef struct PushBackInput__T2_a PushBackInput__T2;
 
-typedef struct _T3_a _T3;
+typedef struct PushBackInput__T3_a PushBackInput__T3;
 
-struct _T2_a { char array[MaxFileName+1]; };
-struct _T3_a { char array[MaxPushBackStack+1]; };
-static _T2 FileName;
-static _T3 CharStack;
+struct PushBackInput__T2_a { char array[MaxFileName+1]; };
+struct PushBackInput__T3_a { char array[MaxPushBackStack+1]; };
+static PushBackInput__T2 FileName;
+static PushBackInput__T3 CharStack;
 static unsigned int ExitStatus;
 static unsigned int Column;
 static unsigned int StackPtr;
@@ -384,11 +384,11 @@ extern "C" void PushBackInput_WarnError (const char *a_, unsigned int _a_high)
 
 extern "C" void PushBackInput_WarnString (DynamicStrings_String s)
 {
-  typedef char *_T1;
+  typedef char *WarnString__T1;
 
-  _T1 p;
+  WarnString__T1 p;
 
-  p = static_cast<_T1> (DynamicStrings_string (s));
+  p = static_cast<WarnString__T1> (DynamicStrings_string (s));
   StrIO_WriteString ((const char *) &FileName.array[0], MaxFileName);
   StdIO_Write (':');
   NumberIO_WriteCard (LineNo, 0);

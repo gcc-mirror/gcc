@@ -74,6 +74,7 @@ CONST
    forceCompoundStatement = TRUE ;    (* TRUE will avoid dangling else, by always using {}.  *)
    enableDefForCStrings   = FALSE ;   (* currently disabled.  *)
    enableMemsetOnAllocation = TRUE ;  (* Should we memset (..., 0, ...) the allocated mem?  *)
+   forceQualified  = TRUE ;
 
 TYPE
    language = (ansiC, ansiCP, pim4) ;
@@ -5535,6 +5536,17 @@ END getSymScope ;
 
 
 (*
+   isQualifiedForced - should the node be written with a module prefix?
+*)
+
+PROCEDURE isQualifiedForced (n: node) : BOOLEAN ;
+BEGIN
+   RETURN (forceQualified AND
+           (isType (n) OR isRecord (n) OR isArray (n) OR isEnumeration (n) OR isEnumerationField (n)))
+END isQualifiedForced ;
+
+
+(*
    getFQstring -
 *)
 
@@ -5542,7 +5554,15 @@ PROCEDURE getFQstring (n: node) : String ;
 VAR
    i, s: String ;
 BEGIN
-   IF (NOT isExported (n)) OR getIgnoreFQ () (* OR isDefForC (getScope (n)) *)
+   IF getScope (n) = NIL
+   THEN
+      RETURN InitStringCharStar (keyToCharStar (getSymName (n)))
+   ELSIF isQualifiedForced (n)
+   THEN
+      i := InitStringCharStar (keyToCharStar (getSymName (n))) ;
+      s := InitStringCharStar (keyToCharStar (getSymName (getScope (n)))) ;
+      RETURN Sprintf2 (InitString ("%s_%s"), s, i)
+   ELSIF (NOT isExported (n)) OR getIgnoreFQ ()
    THEN
       RETURN InitStringCharStar (keyToCharStar (getSymName (n)))
    ELSE
@@ -5561,8 +5581,16 @@ PROCEDURE getFQDstring (n: node; scopes: BOOLEAN) : String ;
 VAR
    i, s: String ;
 BEGIN
-   IF (NOT isExported (n)) OR
-      getIgnoreFQ ()
+   IF getScope (n) = NIL
+   THEN
+      RETURN InitStringCharStar (keyToCharStar (getDName (n, scopes)))
+   ELSIF isQualifiedForced (n)
+   THEN
+      (* we assume a qualified name will never conflict.  *)
+      i := InitStringCharStar (keyToCharStar (getSymName (n))) ;
+      s := InitStringCharStar (keyToCharStar (getSymName (getScope (n)))) ;
+      RETURN Sprintf2 (InitString ("%s_%s"), s, i)
+   ELSIF (NOT isExported (n)) OR getIgnoreFQ ()
    THEN
       RETURN InitStringCharStar (keyToCharStar (getDName (n, scopes)))
    ELSE

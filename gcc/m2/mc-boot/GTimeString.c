@@ -60,12 +60,12 @@ extern "C" void TimeString_GetTimeString (char *a, unsigned int _a_high);
 
 extern "C" void TimeString_GetTimeString (char *a, unsigned int _a_high)
 {
-  typedef char *_T1;
+  typedef char *GetTimeString__T1;
 
-  _T1 Addr;
+  GetTimeString__T1 Addr;
   unsigned int i;
 
-  Addr = static_cast<_T1> (wrapc_strtime ());
+  Addr = static_cast<GetTimeString__T1> (wrapc_strtime ());
   i = 0;
   if (Addr != NULL)
     {

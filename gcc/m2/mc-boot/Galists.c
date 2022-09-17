@@ -49,21 +49,21 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 typedef struct alists_performOperation_p alists_performOperation;
 
 #   define MaxnoOfelements 5
-typedef struct _T1_r _T1;
+typedef struct alists__T1_r alists__T1;
 
-typedef struct _T2_a _T2;
+typedef struct alists__T2_a alists__T2;
 
-typedef _T1 *alists_alist;
+typedef alists__T1 *alists_alist;
 
 typedef void (*alists_performOperation_t) (void *);
 struct alists_performOperation_p { alists_performOperation_t proc; };
 
-struct _T2_a { void * array[MaxnoOfelements-1+1]; };
-struct _T1_r {
-               unsigned int noOfelements;
-               _T2 elements;
-               alists_alist next;
-             };
+struct alists__T2_a { void * array[MaxnoOfelements-1+1]; };
+struct alists__T1_r {
+                      unsigned int noOfelements;
+                      alists__T2 elements;
+                      alists_alist next;
+                    };
 
 
 /*
@@ -158,7 +158,7 @@ static void removeItem (alists_alist p, alists_alist l, unsigned int i)
   if ((l->noOfelements == 0) && (p != NULL))
     {
       p->next = l->next;
-      Storage_DEALLOCATE ((void **) &l, sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &l, sizeof (alists__T1));
     }
 }
 
@@ -171,7 +171,7 @@ extern "C" alists_alist alists_initList (void)
 {
   alists_alist l;
 
-  Storage_ALLOCATE ((void **) &l, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &l, sizeof (alists__T1));
   l->noOfelements = 0;
   l->next = NULL;
   return l;
@@ -192,7 +192,7 @@ extern "C" void alists_killList (alists_alist *l)
         {
           alists_killList (&(*l)->next);
         }
-      Storage_DEALLOCATE ((void **) &(*l), sizeof (_T1));
+      Storage_DEALLOCATE ((void **) &(*l), sizeof (alists__T1));
     }
 }
 

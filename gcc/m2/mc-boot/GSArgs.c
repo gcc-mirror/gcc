@@ -52,9 +52,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GUnixArgs.h"
 #   include "GDynamicStrings.h"
 
-typedef char *PtrToChar;
+typedef char *SArgs_PtrToChar;
 
-typedef PtrToChar *PtrToPtrToChar;
+typedef SArgs_PtrToChar *SArgs_PtrToPtrToChar;
 
 
 /*
@@ -84,13 +84,13 @@ extern "C" unsigned int SArgs_Narg (void);
 extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
 {
   int i;
-  PtrToPtrToChar ppc;
+  SArgs_PtrToPtrToChar ppc;
 
   i = (int ) (n);
   if (i < (UnixArgs_GetArgC ()))
     {
       /* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ;  */
-      ppc = static_cast<PtrToPtrToChar> ((void *) (((PtrToChar) (UnixArgs_GetArgV ()))+(n*sizeof (PtrToChar))));
+      ppc = static_cast<SArgs_PtrToPtrToChar> ((void *) (((SArgs_PtrToChar) (UnixArgs_GetArgV ()))+(n*sizeof (SArgs_PtrToChar))));
       (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc)));
       return TRUE;
     }

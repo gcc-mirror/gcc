@@ -126,10 +126,10 @@ extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigne
 
 extern "C" void FpuIO_ReadReal (double *x)
 {
-  typedef struct _T1_a _T1;
+  typedef struct ReadReal__T1_a ReadReal__T1;
 
-  struct _T1_a { char array[MaxLineLength+1]; };
-  _T1 a;
+  struct ReadReal__T1_a { char array[MaxLineLength+1]; };
+  ReadReal__T1 a;
 
   /* 
 #undef GM2_DEBUG_FPUIO
@@ -154,10 +154,10 @@ if defined(GM2_DEBUG_FPUIO)
 
 extern "C" void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWidth)
 {
-  typedef struct _T2_a _T2;
+  typedef struct WriteReal__T2_a WriteReal__T2;
 
-  struct _T2_a { char array[MaxLineLength+1]; };
-  _T2 a;
+  struct WriteReal__T2_a { char array[MaxLineLength+1]; };
+  WriteReal__T2 a;
 
   FpuIO_RealToStr (x, TotalWidth, FractionWidth, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -197,10 +197,10 @@ extern "C" void FpuIO_RealToStr (double x, unsigned int TotalWidth, unsigned int
 
 extern "C" void FpuIO_ReadLongReal (long double *x)
 {
-  typedef struct _T3_a _T3;
+  typedef struct ReadLongReal__T3_a ReadLongReal__T3;
 
-  struct _T3_a { char array[MaxLineLength+1]; };
-  _T3 a;
+  struct ReadLongReal__T3_a { char array[MaxLineLength+1]; };
+  ReadLongReal__T3 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   FpuIO_StrToLongReal ((const char *) &a.array[0], MaxLineLength, x);
@@ -214,10 +214,10 @@ extern "C" void FpuIO_ReadLongReal (long double *x)
 
 extern "C" void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int FractionWidth)
 {
-  typedef struct _T4_a _T4;
+  typedef struct WriteLongReal__T4_a WriteLongReal__T4;
 
-  struct _T4_a { char array[MaxLineLength+1]; };
-  _T4 a;
+  struct WriteLongReal__T4_a { char array[MaxLineLength+1]; };
+  WriteLongReal__T4 a;
 
   FpuIO_LongRealToStr (x, TotalWidth, FractionWidth, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
@@ -266,10 +266,10 @@ extern "C" void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, uns
 
 extern "C" void FpuIO_ReadLongInt (long int *x)
 {
-  typedef struct _T5_a _T5;
+  typedef struct ReadLongInt__T5_a ReadLongInt__T5;
 
-  struct _T5_a { char array[MaxLineLength+1]; };
-  _T5 a;
+  struct ReadLongInt__T5_a { char array[MaxLineLength+1]; };
+  ReadLongInt__T5 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
   FpuIO_StrToLongInt ((const char *) &a.array[0], MaxLineLength, x);
@@ -283,10 +283,10 @@ extern "C" void FpuIO_ReadLongInt (long int *x)
 
 extern "C" void FpuIO_WriteLongInt (long int x, unsigned int n)
 {
-  typedef struct _T6_a _T6;
+  typedef struct WriteLongInt__T6_a WriteLongInt__T6;
 
-  struct _T6_a { char array[MaxLineLength+1]; };
-  _T6 a;
+  struct WriteLongInt__T6_a { char array[MaxLineLength+1]; };
+  WriteLongInt__T6 a;
 
   FpuIO_LongIntToStr (x, n, (char *) &a.array[0], MaxLineLength);
   StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
