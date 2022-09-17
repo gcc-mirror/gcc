@@ -14086,7 +14086,7 @@ package body Sem_Ch12 is
             --  a full view, then we'll retrieve that.
 
             if Ekind (A_Gen_T) = E_Incomplete_Type
-              and then not Present (Full_View (Act_T))
+              and then No (Full_View (Act_T))
             then
                null;
 

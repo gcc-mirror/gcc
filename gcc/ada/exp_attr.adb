@@ -6575,7 +6575,7 @@ package body Exp_Attr is
                --  If Storage_Size wasn't found (can only occur in the simple
                --  storage pool case), then simply use zero for the result.
 
-               if not Present (Alloc_Op) then
+               if No (Alloc_Op) then
                   Rewrite (N, Make_Integer_Literal (Loc, 0));
 
                --  Otherwise, rewrite the allocator as a call to pool type's

@@ -1042,8 +1042,7 @@ package body Sem_Ch5 is
                         if Ekind (Comp_Id) = E_Component
                           and then Nkind (Parent (Comp_Id))
                                      = N_Component_Declaration
-                          and then
-                            not Present (Expression (Parent (Comp_Id)))
+                          and then No (Expression (Parent (Comp_Id)))
                         then
                            return True;
                         end if;

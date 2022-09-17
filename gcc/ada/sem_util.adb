@@ -651,7 +651,7 @@ package body Sem_Util is
             --  been generated when one should have ???
 
             elsif Is_Formal (E)
-              and then not Present (Get_Dynamic_Accessibility (E))
+              and then No (Get_Dynamic_Accessibility (E))
               and then Ekind (Etype (E)) = E_Anonymous_Access_Type
             then
                return Make_Level_Literal (Scope_Depth (Standard_Standard));
@@ -1335,7 +1335,7 @@ package body Sem_Util is
             end if;
 
             return
-              not Present (Etype (Constr)) -- previous error
+              No (Etype (Constr)) -- previous error
                 or else not Is_Discrete_Type (Etype (Constr))
                 or else Is_OK_Static_Expression (Constr);
 
@@ -4449,7 +4449,7 @@ package body Sem_Util is
             pragma Assert (Present (Ifc_Ancestors (Idx)));
             Ifc := Next (Ifc);
          end loop;
-         pragma Assert (not Present (Ifc));
+         pragma Assert (No (Ifc));
          if Present (Parent_Type) then
             return Parent_Type & Ifc_Ancestors;
          else
@@ -11573,7 +11573,7 @@ package body Sem_Util is
       --  entry families with no Max_Queue_Length aspect or pragma default to
       --  it.
 
-      if not Present (Prag) then
+      if No (Prag) then
          return Uint_0;
       end if;
 
@@ -13092,7 +13092,7 @@ package body Sem_Util is
          Typ := Corresponding_Record_Type (Typ);
       end if;
 
-      if not Present (Typ)
+      if No (Typ)
         or else not Is_Record_Type (Typ)
         or else not Is_Tagged_Type (Typ)
       then
@@ -19458,7 +19458,7 @@ package body Sem_Util is
          return True;
       elsif Present (Variant_Part (Component_List (Record_Def))) then
          return False;
-      elsif not Present (Component_List (Record_Def)) then
+      elsif No (Component_List (Record_Def)) then
          return True;
       end if;
 
@@ -31575,7 +31575,7 @@ package body Sem_Util is
                   Next (Range_Or_Expr);
                end loop;
 
-               pragma Assert (not Present (Range_Or_Expr));
+               pragma Assert (No (Range_Or_Expr));
                Check_Consistency (Result);
                return Result;
             end;
@@ -31825,7 +31825,7 @@ package body Sem_Util is
                        and then Is_Non_Empty_List (Alternatives (Par))
                        and then Trailer /= First (Alternatives (Par))
                      then
-                        pragma Assert (not Present (Right_Opnd (Par)));
+                        pragma Assert (No (Right_Opnd (Par)));
                         pragma Assert
                           (Is_List_Member (Trailer)
                            and then List_Containing (Trailer)

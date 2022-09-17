@@ -1271,7 +1271,7 @@ package body Sem_Ch13 is
                                   | Aspect_Full_Access_Only
                                   | Aspect_Import
                        and then (A_Id /= Aspect_Preelaborable_Initialization
-                                  or else not Present (Expression (ASN)))
+                                  or else No (Expression (ASN)))
                      then
                         Make_Pragma_From_Boolean_Aspect (ASN);
                      end if;
@@ -1327,7 +1327,7 @@ package body Sem_Ch13 is
                      if not Is_Entity_Name (Expression (ASN))
                        or else not Is_Object (Entity (Expression (ASN)))
                        or else
-                         not Present (Find_Aspect (Etype (Expression (ASN)),
+                         No (Find_Aspect (Etype (Expression (ASN)),
                                                    Aspect_Storage_Model_Type))
                      then
                         Error_Msg_N
@@ -1915,7 +1915,7 @@ package body Sem_Ch13 is
                --  aspects are replaced with pragmas at the freeze point in
                --  Make_Pragma_From_Boolean_Aspect.
 
-               if not Present (Expr)
+               if No (Expr)
                  or else Is_True (Static_Boolean (Expr))
                then
                   if A_Id = Aspect_Import then
@@ -7547,7 +7547,7 @@ package body Sem_Ch13 is
             else
                Analyze_And_Resolve (Expr);
 
-               if not Present (Get_Rep_Pragma
+               if No (Get_Rep_Pragma
                                  (Etype (Expr), Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_N
@@ -16511,7 +16511,7 @@ package body Sem_Ch13 is
 
       begin
          for FP of Profiles loop
-            if not Present (Formal) then
+            if No (Formal) then
                Is_Error := True;
                Report_Argument_Error ("missing formal of }", Subt => FP.Subt);
                exit;
@@ -16582,7 +16582,7 @@ package body Sem_Ch13 is
       --  If Addr_Type is not present as the first association, then we default
       --  it to System.Address.
 
-      elsif not Present (Addr_Type) then
+      elsif No (Addr_Type) then
          Addr_Type := RTE (RE_Address);
       end if;
 
@@ -17251,7 +17251,7 @@ package body Sem_Ch13 is
          Param_Type := Standard_String;
       end if;
 
-      if not Overloaded and then not Present (Entity (Func_Name)) then
+      if not Overloaded and then No (Entity (Func_Name)) then
          --  The aspect is specified by a subprogram name, which
          --  may be an operator name given originally by a string.
 

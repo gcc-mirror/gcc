@@ -1611,7 +1611,7 @@ package body Sem_Case is
                   begin
                      while Present (Comp) loop
                         if Chars (First (Choices (Comp))) = Orig_Name then
-                           pragma Assert (not Present (Matching_Comp));
+                           pragma Assert (No (Matching_Comp));
                            Matching_Comp := Comp;
                         end if;
 

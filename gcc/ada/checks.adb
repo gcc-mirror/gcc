@@ -593,7 +593,7 @@ package body Checks is
       pragma Assert (not No_Dynamic_Accessibility_Checks_Enabled (N));
 
       if Ada_Version >= Ada_2012
-         and then not Present (Param_Ent)
+         and then No (Param_Ent)
          and then Is_Entity_Name (N)
          and then Ekind (Entity (N)) in E_Constant | E_Variable
          and then Present (Effective_Extra_Accessibility (Entity (N)))
@@ -778,7 +778,7 @@ package body Checks is
          --  Note: Expr is empty if the address-clause is applied to in-mode
          --  actuals (allowed by 13.1(22)).
 
-         if not Present (Expr)
+         if No (Expr)
            or else
              (Is_Entity_Name (Expression (AC))
                and then Ekind (Entity (Expression (AC))) = E_Constant

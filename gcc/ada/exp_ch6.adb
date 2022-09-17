@@ -376,7 +376,7 @@ package body Exp_Ch6 is
 
       --  If no return object is provided, then pass null
 
-      if not Present (Return_Object) then
+      if No (Return_Object) then
          Obj_Address := Make_Null (Loc);
          Set_Parent (Obj_Address, Function_Call);
 
@@ -3223,7 +3223,7 @@ package body Exp_Ch6 is
             loop
                Aspect_Bearer := Nearest_Ancestor (Aspect_Bearer);
 
-               if not Present (Aspect_Bearer) then
+               if No (Aspect_Bearer) then
                   return False;
                end if;
 

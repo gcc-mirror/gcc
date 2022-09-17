@@ -4282,7 +4282,7 @@ package body Sem_Warn is
          if Ekind (Form) = E_Out_Parameter
            and then Never_Set_In_Source_Check_Spec (Form)
            and then Is_Scalar_Type (Etype (Form))
-           and then not Present (Unset_Reference (Form))
+           and then No (Unset_Reference (Form))
          then
             --  Here all conditions are met, record possible unset reference
 

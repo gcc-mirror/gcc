@@ -312,7 +312,7 @@ package body Exp_Atag is
 
          if not Is_Predefined_Dispatching_Operation (Prim)
            and then not Is_Predefined_Dispatching_Operation (E)
-           and then not Present (Interface_Alias (Prim))
+           and then No (Interface_Alias (Prim))
            and then not Is_Abstract_Subprogram (E)
            and then not Is_Eliminated (E)
            and then Prim_Pos <= CPP_Nb_Prims

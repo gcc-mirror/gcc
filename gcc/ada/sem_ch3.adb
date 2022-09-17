@@ -2668,7 +2668,7 @@ package body Sem_Ch3 is
                   --  Is_Conjunction_Of_Formal_Preelab_Init_Attributes goes to
                   --  Original_Node if needed, hence test for Standard_False.)
 
-                  if not Present (Expr)
+                  if No (Expr)
                     or else (Is_Entity_Name (Expr)
                               and then Entity (Expr) = Standard_True)
                     or else
@@ -11050,7 +11050,7 @@ package body Sem_Ch3 is
             --  with the aliased entity (otherwise we generate a duplicated
             --  error message).
 
-           and then not Present (Interface_Alias (Subp))
+           and then No (Interface_Alias (Subp))
          then
             if Present (Alias_Subp) then
 
@@ -14541,7 +14541,7 @@ package body Sem_Ch3 is
          --  in various places for an Empty upper bound, and in any case it
          --  accurately characterizes the index's range of values.
 
-         if Nkind (S) = N_Range and then not Present (High_Bound (S)) then
+         if Nkind (S) = N_Range and then No (High_Bound (S)) then
             Is_FLB_Index := True;
             Set_High_Bound (S, Type_High_Bound (T));
          end if;
@@ -16784,7 +16784,7 @@ package body Sem_Ch3 is
             --   have such primitives.
 
             if Present (Generic_Actual)
-              and then not Present (Act_Subp)
+              and then No (Act_Subp)
               and then Is_Limited_Interface (Parent_Base)
               and then Is_Predefined_Interface_Primitive (Subp)
             then

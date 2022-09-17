@@ -960,7 +960,7 @@ package body Sem_Ch8 is
             Set_Etype (Nam, T);
          end if;
       elsif Present (Subtype_Mark (N))
-        or else not Present (Access_Definition (N))
+        or else No (Access_Definition (N))
       then
          if Present (Subtype_Mark (N)) then
             Find_Type (Subtype_Mark (N));
@@ -4702,7 +4702,7 @@ package body Sem_Ch8 is
       --  want to deal with AST_Handler in ZFP mode.
 
       if not Configurable_Run_Time_Mode
-        and then not Present (Corresponding_Formal_Spec (N))
+        and then No (Corresponding_Formal_Spec (N))
         and then not Is_RTE (Etype (Nam), RE_AST_Handler)
       then
          declare
@@ -9272,9 +9272,9 @@ package body Sem_Ch8 is
          Scope1 := Scope (Scope1);
          Scope2 := Scope (Scope2);
 
-         if not Present (Scope1) then
+         if No (Scope1) then
             return Clause1;
-         elsif not Present (Scope2) then
+         elsif No (Scope2) then
             return Clause2;
          end if;
       end loop;

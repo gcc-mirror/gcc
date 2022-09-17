@@ -114,7 +114,7 @@ package body Pprint is
             Num       : Natural := 1) return String
          is
          begin
-            if not Present (List) then
+            if No (List) then
                if First or else not Add_Paren then
                   return "";
                else
@@ -229,7 +229,7 @@ package body Pprint is
                --  is not prepared to deal with a zero-length result.
 
                elsif Null_Record_Present (Expr)
-                 or else not Present (First (Component_Associations (Expr)))
+                 or else No (First (Component_Associations (Expr)))
                then
                   return ("(null record)");
 

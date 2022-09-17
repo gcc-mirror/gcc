@@ -6733,7 +6733,7 @@ package body Exp_Ch4 is
         --  Skip this for predicated types, where such expressions are a
         --  reasonable way of testing if something meets the predicate.
 
-        and then not Present (Predicate_Function (Ltyp))
+        and then No (Predicate_Function (Ltyp))
       then
          Substitute_Valid_Check;
          return;
@@ -7148,7 +7148,7 @@ package body Exp_Ch4 is
                   if Is_Entity_Name (Lop) then
                      Expr_Entity := Param_Entity (Lop);
 
-                     if not Present (Expr_Entity) then
+                     if No (Expr_Entity) then
                         Expr_Entity := Entity (Lop);
                      end if;
                   end if;
