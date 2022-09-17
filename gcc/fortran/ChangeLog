@@ -1,3 +1,21 @@
+2022-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106857
+	* simplify.cc (gfc_simplify_pack): Check for NULL pointer dereferences
+	while walking through constructors (error recovery).
+
+2022-09-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100245
+	* trans-expr.cc (trans_class_assignment): Add if clause to handle
+	derived type in the LHS.
+
 2022-09-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:

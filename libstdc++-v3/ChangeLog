@@ -1,3 +1,8 @@
+2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document GLIBCXX_3.4.30 version.
+	* doc/html/manual/abi.html: Regenerate.
+
 2022-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
