@@ -1,3 +1,16 @@
+2022-09-17  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/csky/csky.h (FUNCTION_ARG_REGNO_P): Cast REGNO to (int)
+	to prevent warning.
+
+2022-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106958
+	* tree-ssa-reassoc.cc (optimize_range_tests_cmp_bitwise): If
+	id >= l, cast op to type1, otherwise to pointer_sized_int_node.
+	If type has pointer type, cast exp to pointer_sized_int_node
+	even when id < l.
+
 2022-09-16  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/106910

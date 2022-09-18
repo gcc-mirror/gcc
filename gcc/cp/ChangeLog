@@ -1,3 +1,10 @@
+2022-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (friend_from_decl_list): Don't consider
+	CLASSTYPE_TEMPLATE_INFO for a TYPENAME_TYPE friend.
+	(trees_in::read_class_def): Don't add to
+	CLASSTYPE_BEFRIENDING_CLASSES for a TYPENAME_TYPE friend.
+
 2022-09-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/92505

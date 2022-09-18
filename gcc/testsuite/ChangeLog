@@ -1,3 +1,13 @@
+2022-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/typename-friend_a.C: New test.
+	* g++.dg/modules/typename-friend_b.C: New test.
+
+2022-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106958
+	* gcc.c-torture/compile/pr106958.c: New test.
+
 2022-09-16  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* gcc.dg/tree-prof/indir-call-prof-2.c: Fix dg-final-use-autofdo.
