@@ -1309,6 +1309,186 @@
   operands[2] = XEXP (t, 1);
 })
 
+;; Expand the cbranchdi pattern in order to avoid the default
+;; expansion into word_mode operations, which is not efficient for PRU.
+;; In pseudocode this expansion outputs:
+;;
+;; /* EQ */
+;; if (OP1_hi {reverse_condition (cmp)} OP2_hi)
+;;     goto fallthrough
+;; if (OP1_lo {cmp} OP2_lo)
+;;     goto label3
+;; fallthrough:
+;;
+;; /* NE */
+;; if (OP1_hi {cmp} OP2_hi)
+;;     goto label3
+;; if (OP1_lo {cmp} OP2_lo)
+;;     goto label3
+;;
+;; The LT comparisons with zero take one machine instruction to simply
+;; check the sign bit.  The GT comparisons with zero take two - one
+;; to check the sign bit, and one to check for zero.  Hence arrange
+;; the expand such that only LT comparison is used for OP1_HI, because
+;; OP2_HI is const0_rtx.
+;;
+;; The LTU comparisons with zero will be removed by subsequent passes.
+;;
+;;  /* LT/LTU/LE/LEU */
+;;  if (OP1_hi {noteq_condition (cmp)} OP2_hi)
+;;     goto label3		/* DI comparison obviously true.  */
+;;  if (OP1_hi != OP2_hi)
+;;     goto fallthrough		/* DI comparison obviously not true.  */
+;;  if (OP1_lo {unsigned_condition (cmp)} OP2_lo)
+;;     goto label3		/* Comparison was deferred to lo parts.  */
+;;  fallthrough:
+
+;;  /* GT/GTU/GE/GEU */
+;;  if (OP1_hi {reverse_condition (noteq_condition (cmp))} OP2_hi)
+;;     goto fallthrough 	/* DI comparison obviously not true.  */
+;;  if (OP1_hi != OP2_hi)
+;;     goto label3		/* DI comparison obviously true.  */
+;;  if (OP1_lo {unsigned_condition (cmp)} OP2_lo)
+;;     goto label3		/* Comparison was deferred to lo parts.  */
+;;  fallthrough:
+
+(define_expand "cbranchdi4"
+  [(set (pc)
+     (if_then_else
+       (match_operator 0 "ordered_comparison_operator"
+	 [(match_operand:DI 1 "register_operand")
+	  (match_operand:DI 2 "reg_or_ubyte_operand")])
+       (label_ref (match_operand 3 ""))
+       (pc)))]
+  ""
+{
+  const enum rtx_code code = GET_CODE (operands[0]);
+  rtx label3 = operands[3];
+  rtx op1_lo = simplify_gen_subreg (SImode, operands[1], DImode, 0);
+  rtx op1_hi = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+  rtx op2_lo = simplify_gen_subreg (SImode, operands[2], DImode, 0);
+  rtx op2_hi = simplify_gen_subreg (SImode, operands[2], DImode, 4);
+  rtx j;
+
+  if (code == EQ)
+    {
+      rtx label_fallthrough = gen_label_rtx ();
+      rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
+
+      rtx cond_hi = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label_fallthrough_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label_fallthrough;
+      LABEL_NUSES (label_fallthrough)++;
+
+      rtx label3_ref = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (EQ, VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      emit_label (label_fallthrough);
+      DONE;
+    }
+  if (code == NE)
+    {
+      rtx label3_ref1 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_hi = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label3_ref1, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      rtx label3_ref2 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (NE, VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref2, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      DONE;
+    }
+
+  if (code == LT || code == LTU || code == LE || code == LEU)
+    {
+      /* Check for "DI comparison obviously true".  */
+      rtx label3_ref1 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_hi = gen_rtx_fmt_ee (pru_noteq_condition (code),
+				    VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label3_ref1, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      /* Check for "DI comparison obviously not true".  */
+      rtx label_fallthrough = gen_label_rtx ();
+      rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
+      rtx cond_hine = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hine = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hine,
+					     label_fallthrough_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hine));
+      JUMP_LABEL (j) = label_fallthrough;
+      LABEL_NUSES (label_fallthrough)++;
+
+      /* Comparison deferred to the lo parts.  */
+      rtx label3_ref2 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (unsigned_condition (code),
+				    VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref2, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      emit_label (label_fallthrough);
+      DONE;
+    }
+
+  if (code == GT || code == GTU || code == GE || code == GEU)
+    {
+      /* Check for "DI comparison obviously not true".  */
+      const enum rtx_code reversed_code = reverse_condition (code);
+      rtx label_fallthrough = gen_label_rtx ();
+      rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
+      rtx cond_hi = gen_rtx_fmt_ee (pru_noteq_condition (reversed_code),
+				    VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label_fallthrough_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label_fallthrough;
+      LABEL_NUSES (label_fallthrough)++;
+
+      /* Check for "DI comparison obviously true".  */
+      rtx label3_ref1 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_hine = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hine = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hine,
+					     label3_ref1, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hine));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      /* Comparison deferred to the lo parts.  */
+      rtx label3_ref2 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (unsigned_condition (code),
+				    VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref2, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      emit_label (label_fallthrough);
+      DONE;
+    }
+    gcc_unreachable ();
+})
+
 ;
 ; Bit test branch
 
