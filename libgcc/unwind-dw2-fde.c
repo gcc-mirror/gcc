@@ -42,6 +42,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+typedef __UINTPTR_TYPE__ uintptr_type;
+
 #ifdef ATOMIC_FDE_FAST_PATH
 #include "unwind-dw2-btree.h"
 
@@ -58,7 +60,7 @@ release_registered_frames (void)
 }
 
 static void
-get_pc_range (const struct object *ob, uintptr_t *range);
+get_pc_range (const struct object *ob, uintptr_type *range);
 static void
 init_object (struct object *ob);
 
@@ -124,7 +126,7 @@ __register_frame_info_bases (const void *begin, struct object *ob,
   init_object (ob);
 
   // And register the frame
-  uintptr_t range[2];
+  uintptr_type range[2];
   get_pc_range (ob, range);
   btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
 #else
@@ -178,7 +180,7 @@ __register_frame_info_table_bases (void *begin, struct object *ob,
   init_object (ob);
 
   // And register the frame
-  uintptr_t range[2];
+  uintptr_type range[2];
   get_pc_range (ob, range);
   btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
 #else
@@ -237,7 +239,7 @@ __deregister_frame_info_bases (const void *begin)
 #ifdef DWARF2_OBJECT_END_PTR_EXTENSION
   lookupob.fde_end = NULL;
 #endif
-  uintptr_t range[2];
+  uintptr_type range[2];
   get_pc_range (&lookupob, range);
 
   // And remove
@@ -677,7 +679,7 @@ end_fde_sort (struct object *ob, struct fde_accumulator *accu, size_t count)
 
 static size_t
 classify_object_over_fdes (struct object *ob, const fde *this_fde,
-			   uintptr_t *range)
+			   uintptr_type *range)
 {
   const struct dwarf_cie *last_cie = 0;
   size_t count = 0;
@@ -892,11 +894,11 @@ init_object (struct object* ob)
 #ifdef ATOMIC_FDE_FAST_PATH
 /* Get the PC range for lookup */
 static void
-get_pc_range (const struct object *ob, uintptr_t *range)
+get_pc_range (const struct object *ob, uintptr_type *range)
 {
   // It is safe to cast to non-const object* here as
   // classify_object_over_fdes does not modify ob in query mode.
-  struct object *ncob = (struct object *) (uintptr_t) ob;
+  struct object *ncob = (struct object *) (uintptr_type) ob;
   range[0] = range[1] = 0;
   if (ob->s.b.sorted)
     {
@@ -1131,7 +1133,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   const fde *f = NULL;
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  ob = btree_lookup (&registered_frames, (uintptr_t) pc);
+  ob = btree_lookup (&registered_frames, (uintptr_type) pc);
   if (!ob)
     return NULL;
 

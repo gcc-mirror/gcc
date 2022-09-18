@@ -39,7 +39,7 @@ struct version_lock
   // range. Even on 32 bit platforms that would require 1 billion
   // frame registrations within the time span of a few assembler
   // instructions.
-  uintptr_t version_lock;
+  uintptr_type version_lock;
 };
 
 #ifdef __GTHREAD_HAS_COND
@@ -60,7 +60,7 @@ version_lock_initialize_locked_exclusive (struct version_lock *vl)
 static inline bool
 version_lock_try_lock_exclusive (struct version_lock *vl)
 {
-  uintptr_t state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
+  uintptr_type state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
   if (state & 1)
     return false;
   return __atomic_compare_exchange_n (&(vl->version_lock), &state, state | 1,
@@ -78,7 +78,7 @@ restart:
 
   // We should virtually never get contention here, as frame
   // changes are rare.
-  uintptr_t state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
+  uintptr_type state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
   if (!(state & 1))
     {
       if (__atomic_compare_exchange_n (&(vl->version_lock), &state, state | 1,
@@ -134,8 +134,8 @@ static void
 version_lock_unlock_exclusive (struct version_lock *vl)
 {
   // increase version, reset exclusive lock bits
-  uintptr_t state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
-  uintptr_t ns = (state + 4) & (~((uintptr_t) 3));
+  uintptr_type state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
+  uintptr_type ns = (state + 4) & (~((uintptr_type) 3));
   state = __atomic_exchange_n (&(vl->version_lock), ns, __ATOMIC_SEQ_CST);
 
 #ifdef __GTHREAD_HAS_COND
@@ -152,9 +152,9 @@ version_lock_unlock_exclusive (struct version_lock *vl)
 // Acquire an optimistic "lock". Note that this does not lock at all, it
 // only allows for validation later.
 static inline bool
-version_lock_lock_optimistic (const struct version_lock *vl, uintptr_t *lock)
+version_lock_lock_optimistic (const struct version_lock *vl, uintptr_type *lock)
 {
-  uintptr_t state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
+  uintptr_type state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
   *lock = state;
 
   // Acquiring the lock fails when there is currently an exclusive lock.
@@ -163,7 +163,7 @@ version_lock_lock_optimistic (const struct version_lock *vl, uintptr_t *lock)
 
 // Validate a previously acquired "lock".
 static inline bool
-version_lock_validate (const struct version_lock *vl, uintptr_t lock)
+version_lock_validate (const struct version_lock *vl, uintptr_type lock)
 {
   // Prevent the reordering of non-atomic loads behind the atomic load.
   // Hans Boehm, Can Seqlocks Get Along with Programming Language Memory
@@ -171,26 +171,26 @@ version_lock_validate (const struct version_lock *vl, uintptr_t lock)
   __atomic_thread_fence (__ATOMIC_ACQUIRE);
 
   // Check that the node is still in the same state.
-  uintptr_t state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
+  uintptr_type state = __atomic_load_n (&(vl->version_lock), __ATOMIC_SEQ_CST);
   return (state == lock);
 }
 
 // The largest possible separator value.
-static const uintptr_t max_separator = ~((uintptr_t) (0));
+static const uintptr_type max_separator = ~((uintptr_type) (0));
 
 struct btree_node;
 
 // Inner entry. The child tree contains all entries <= separator.
 struct inner_entry
 {
-  uintptr_t separator;
+  uintptr_type separator;
   struct btree_node *child;
 };
 
 // Leaf entry. Stores an object entry.
 struct leaf_entry
 {
-  uintptr_t base, size;
+  uintptr_type base, size;
   struct object *ob;
 };
 
@@ -248,7 +248,7 @@ btree_node_needs_merge (const struct btree_node *n)
 }
 
 // Get the fence key for inner nodes.
-static inline uintptr_t
+static inline uintptr_type
 btree_node_get_fence_key (const struct btree_node *n)
 {
   // For inner nodes we just return our right-most entry.
@@ -257,7 +257,7 @@ btree_node_get_fence_key (const struct btree_node *n)
 
 // Find the position for a slot in an inner node.
 static unsigned
-btree_node_find_inner_slot (const struct btree_node *n, uintptr_t value)
+btree_node_find_inner_slot (const struct btree_node *n, uintptr_type value)
 {
   for (unsigned index = 0, ec = n->entry_count; index != ec; ++index)
     if (n->content.children[index].separator >= value)
@@ -267,7 +267,7 @@ btree_node_find_inner_slot (const struct btree_node *n, uintptr_t value)
 
 // Find the position for a slot in a leaf node.
 static unsigned
-btree_node_find_leaf_slot (const struct btree_node *n, uintptr_t value)
+btree_node_find_leaf_slot (const struct btree_node *n, uintptr_type value)
 {
   for (unsigned index = 0, ec = n->entry_count; index != ec; ++index)
     if (n->content.entries[index].base + n->content.entries[index].size > value)
@@ -299,14 +299,14 @@ btree_node_unlock_exclusive (struct btree_node *n)
 // Acquire an optimistic "lock". Note that this does not lock at all, it
 // only allows for validation later.
 static inline bool
-btree_node_lock_optimistic (const struct btree_node *n, uintptr_t *lock)
+btree_node_lock_optimistic (const struct btree_node *n, uintptr_type *lock)
 {
   return version_lock_lock_optimistic (&(n->version_lock), lock);
 }
 
 // Validate a previously acquire lock.
 static inline bool
-btree_node_validate (const struct btree_node *n, uintptr_t lock)
+btree_node_validate (const struct btree_node *n, uintptr_type lock)
 {
   return version_lock_validate (&(n->version_lock), lock);
 }
@@ -314,8 +314,8 @@ btree_node_validate (const struct btree_node *n, uintptr_t lock)
 // Insert a new separator after splitting.
 static void
 btree_node_update_separator_after_split (struct btree_node *n,
-					 uintptr_t old_separator,
-					 uintptr_t new_separator,
+					 uintptr_type old_separator,
+					 uintptr_type new_separator,
 					 struct btree_node *new_right)
 {
   unsigned slot = btree_node_find_inner_slot (n, old_separator);
@@ -474,13 +474,13 @@ btree_handle_root_split (struct btree *t, struct btree_node **node,
 // Split an inner node.
 static void
 btree_split_inner (struct btree *t, struct btree_node **inner,
-		   struct btree_node **parent, uintptr_t target)
+		   struct btree_node **parent, uintptr_type target)
 {
   // Check for the root.
   btree_handle_root_split (t, inner, parent);
 
   // Create two inner node.
-  uintptr_t right_fence = btree_node_get_fence_key (*inner);
+  uintptr_type right_fence = btree_node_get_fence_key (*inner);
   struct btree_node *left_inner = *inner;
   struct btree_node *right_inner = btree_allocate_node (t, true);
   unsigned split = left_inner->entry_count / 2;
@@ -489,7 +489,7 @@ btree_split_inner (struct btree *t, struct btree_node **inner,
     right_inner->content.children[index]
       = left_inner->content.children[split + index];
   left_inner->entry_count = split;
-  uintptr_t left_fence = btree_node_get_fence_key (left_inner);
+  uintptr_type left_fence = btree_node_get_fence_key (left_inner);
   btree_node_update_separator_after_split (*parent, right_fence, left_fence,
 					   right_inner);
   if (target <= left_fence)
@@ -507,13 +507,14 @@ btree_split_inner (struct btree *t, struct btree_node **inner,
 // Split a leaf node.
 static void
 btree_split_leaf (struct btree *t, struct btree_node **leaf,
-		  struct btree_node **parent, uintptr_t fence, uintptr_t target)
+		  struct btree_node **parent, uintptr_type fence,
+		  uintptr_type target)
 {
   // Check for the root.
   btree_handle_root_split (t, leaf, parent);
 
   // Create two leaf nodes.
-  uintptr_t right_fence = fence;
+  uintptr_type right_fence = fence;
   struct btree_node *left_leaf = *leaf;
   struct btree_node *right_leaf = btree_allocate_node (t, false);
   unsigned split = left_leaf->entry_count / 2;
@@ -522,7 +523,7 @@ btree_split_leaf (struct btree *t, struct btree_node **leaf,
     right_leaf->content.entries[index]
       = left_leaf->content.entries[split + index];
   left_leaf->entry_count = split;
-  uintptr_t left_fence = right_leaf->content.entries[0].base - 1;
+  uintptr_type left_fence = right_leaf->content.entries[0].base - 1;
   btree_node_update_separator_after_split (*parent, right_fence, left_fence,
 					   right_leaf);
   if (target <= left_fence)
@@ -540,7 +541,7 @@ btree_split_leaf (struct btree *t, struct btree_node **leaf,
 // Merge (or balance) child nodes.
 static struct btree_node *
 btree_merge_node (struct btree *t, unsigned child_slot,
-		  struct btree_node *parent, uintptr_t target)
+		  struct btree_node *parent, uintptr_type target)
 {
   // Choose the emptiest neighbor and lock both. The target child is already
   // locked.
@@ -693,7 +694,7 @@ btree_merge_node (struct btree *t, unsigned child_slot,
       left_node->entry_count += to_shift;
       right_node->entry_count -= to_shift;
     }
-  uintptr_t left_fence;
+  uintptr_type left_fence;
   if (btree_node_is_leaf (left_node))
     {
       left_fence = right_node->content.entries[0].base - 1;
@@ -718,7 +719,7 @@ btree_merge_node (struct btree *t, unsigned child_slot,
 
 // Insert an entry.
 static bool
-btree_insert (struct btree *t, uintptr_t base, uintptr_t size,
+btree_insert (struct btree *t, uintptr_type base, uintptr_type size,
 	      struct object *ob)
 {
   // Sanity check.
@@ -747,7 +748,7 @@ btree_insert (struct btree *t, uintptr_t base, uintptr_t size,
   // But that is more difficult to implement and frame registration is
   // rare anyway, we use simple locking for now.
 
-  uintptr_t fence = max_separator;
+  uintptr_type fence = max_separator;
   while (btree_node_is_inner (iter))
     {
       // Use eager splits to avoid lock coupling up.
@@ -790,7 +791,7 @@ btree_insert (struct btree *t, uintptr_t base, uintptr_t size,
 
 // Remove an entry.
 static struct object *
-btree_remove (struct btree *t, uintptr_t base)
+btree_remove (struct btree *t, uintptr_type base)
 {
   // Access the root.
   version_lock_lock_exclusive (&(t->root_lock));
@@ -838,7 +839,7 @@ btree_remove (struct btree *t, uintptr_t base)
 
 // Find the corresponding entry for the given address.
 static struct object *
-btree_lookup (const struct btree *t, uintptr_t target_addr)
+btree_lookup (const struct btree *t, uintptr_type target_addr)
 {
   // Within this function many loads are relaxed atomic loads.
   // Use a macro to keep the code reasonable.
@@ -867,7 +868,7 @@ btree_lookup (const struct btree *t, uintptr_t target_addr)
 
 restart:
   struct btree_node *iter;
-  uintptr_t lock;
+  uintptr_type lock;
   {
     // Accessing the root node requires defending against concurrent pointer
     // changes Thus we couple rootLock -> lock on root node -> validate rootLock
@@ -878,7 +879,7 @@ restart:
       goto restart;
     if (!iter)
       return NULL;
-    uintptr_t child_lock;
+    uintptr_type child_lock;
     if ((!btree_node_lock_optimistic (iter, &child_lock))
 	|| (!version_lock_validate (&(t->root_lock), lock)))
       goto restart;
@@ -910,7 +911,7 @@ restart:
 
 	  // The node content can change at any point in time, thus we must
 	  // interleave parent and child checks.
-	  uintptr_t child_lock;
+	  uintptr_type child_lock;
 	  if (!btree_node_lock_optimistic (child, &child_lock))
 	    goto restart;
 	  if (!btree_node_validate (iter, lock))
