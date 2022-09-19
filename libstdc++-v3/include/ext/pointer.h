@@ -38,7 +38,10 @@
 
 #pragma GCC system_header
 
-#include <iosfwd>
+#if _GLIBCXX_HOSTED
+#  include <iosfwd>
+#endif
+
 #include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
 #include <ext/type_traits.h>
@@ -559,11 +562,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                const _Pointer_adapter<_Tp>& __rhs)
     { return !(__lhs._Tp::operator<(__rhs)); }
 
+#if _GLIBCXX_HOSTED
   template<typename _CharT, typename _Traits, typename _StoreT>
     inline std::basic_ostream<_CharT, _Traits>&
     operator<<(std::basic_ostream<_CharT, _Traits>& __os, 
                const _Pointer_adapter<_StoreT>& __p)
     { return (__os << __p.get()); }
+#endif // HOSTED
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

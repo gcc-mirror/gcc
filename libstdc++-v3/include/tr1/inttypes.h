@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_INTTYPES_H
 #define _GLIBCXX_TR1_INTTYPES_H 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <tr1/cinttypes>
 
 #endif // _GLIBCXX_TR1_INTTYPES_H

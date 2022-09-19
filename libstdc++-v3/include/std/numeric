@@ -729,7 +729,7 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && _GLIBCXX_HOSTED
 // Parallel STL algorithms
 # if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations

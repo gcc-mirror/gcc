@@ -35,6 +35,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // iostreams
+
 #include <bits/c++config.h>
 #include <bits/stringfwd.h> 	// For string forward declarations.
 #include <bits/postypes.h>

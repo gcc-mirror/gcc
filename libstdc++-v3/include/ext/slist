@@ -44,6 +44,8 @@
 #ifndef _SLIST
 #define _SLIST 1
 
+#include <bits/requires_hosted.h> // std::allocator
+
 #include <algorithm>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>

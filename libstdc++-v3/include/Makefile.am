@@ -193,6 +193,7 @@ bits_headers = \
 	${bits_srcdir}/regex_compiler.tcc \
 	${bits_srcdir}/regex_executor.h \
 	${bits_srcdir}/regex_executor.tcc \
+	${bits_srcdir}/requires_hosted.h \
 	${bits_srcdir}/semaphore_base.h \
 	${bits_srcdir}/shared_ptr.h \
 	${bits_srcdir}/shared_ptr_atomic.h \

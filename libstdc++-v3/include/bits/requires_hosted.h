@@ -1,6 +1,4 @@
-// TR1 ctype.h -*- C++ -*-
-
-// Copyright (C) 2006-2022 Free Software Foundation, Inc.
+// Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,15 +20,18 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file tr1/ctype.h
- *  This is a TR1 C++ Library header. 
+/** @file bits/requires_hosted.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{version}
  */
 
-#ifndef _TR1_CTYPE_H
-#define _TR1_CTYPE_H 1
+#ifndef _REQUIRES_FREESTANDING_H
+#define _REQUIRES_FREESTANDING_H 1
 
-#include <bits/requires_hosted.h> // TR1
+#include <bits/c++config.h>
 
-#include <tr1/cctype>
+#if !_GLIBCXX_HOSTED
+#  error "This header is not available in freestanding mode."
+#endif
 
 #endif

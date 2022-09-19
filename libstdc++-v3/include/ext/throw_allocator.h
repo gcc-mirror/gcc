@@ -46,6 +46,8 @@
 #ifndef _THROW_ALLOCATOR_H
 #define _THROW_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <cmath>
 #include <ctime>
 #include <map>

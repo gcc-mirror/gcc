@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <ext/vstring_fwd.h>
 #include <debug/debug.h>
 #include <bits/stl_function.h>  // For less

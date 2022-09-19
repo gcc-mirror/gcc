@@ -29,6 +29,8 @@
 #ifndef _MT_ALLOCATOR_H
 #define _MT_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // getenv
+
 #include <new>
 #include <cstdlib>
 #include <bits/functexcept.h>

@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // threading primitive
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else

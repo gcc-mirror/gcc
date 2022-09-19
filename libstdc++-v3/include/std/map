@@ -57,6 +57,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // containers
+
 #include <bits/stl_tree.h>
 #include <bits/stl_map.h>
 #include <bits/stl_multimap.h>
