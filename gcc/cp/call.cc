@@ -6009,7 +6009,13 @@ build_conditional_expr (const op_location_t &loc,
 	 but now we sometimes wrap them in NOP_EXPRs so the test would
 	 fail.  */
       if (CLASS_TYPE_P (TREE_TYPE (result)))
-	result = get_target_expr (result, complain);
+	{
+	  result = get_target_expr (result, complain);
+	  /* Tell gimplify_modify_expr_rhs not to strip this in
+	     assignment context: we want both arms to initialize
+	     the same temporary.  */
+	  TARGET_EXPR_NO_ELIDE (result) = true;
+	}
       /* If this expression is an rvalue, but might be mistaken for an
 	 lvalue, we must add a NON_LVALUE_EXPR.  */
       result = rvalue (result);
