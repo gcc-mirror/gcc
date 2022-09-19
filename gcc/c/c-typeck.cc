@@ -11738,18 +11738,19 @@ maybe_warn_for_null_address (location_t loc, tree op, tree_code code)
       || from_macro_expansion_at (loc))
     return;
 
+  bool w;
   if (code == EQ_EXPR)
-    warning_at (loc, OPT_Waddress,
-		"the comparison will always evaluate as %<false%> "
-		"for the address of %qE will never be NULL",
-		op);
+    w = warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the address of %qE will never be NULL",
+		    op);
   else
-    warning_at (loc, OPT_Waddress,
-		"the comparison will always evaluate as %<true%> "
-		"for the address of %qE will never be NULL",
-		op);
+    w = warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the address of %qE will never be NULL",
+		    op);
 
-  if (DECL_P (op))
+  if (w && DECL_P (op))
     inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
 }
 
