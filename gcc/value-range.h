@@ -312,6 +312,7 @@ public:
   const REAL_VALUE_TYPE &lower_bound () const;
   const REAL_VALUE_TYPE &upper_bound () const;
   void update_nan ();
+  void update_nan (bool sign);
   void clear_nan ();
 
   // fpclassify like API
@@ -1094,6 +1095,19 @@ frange::update_nan ()
   gcc_checking_assert (!undefined_p ());
   m_pos_nan = true;
   m_neg_nan = true;
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+}
+
+// Like above, but set the sign of the NAN.
+
+inline void
+frange::update_nan (bool sign)
+{
+  gcc_checking_assert (!undefined_p ());
+  m_pos_nan = !sign;
+  m_neg_nan = sign;
   normalize_kind ();
   if (flag_checking)
     verify_range ();

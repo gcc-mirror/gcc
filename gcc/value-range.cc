@@ -775,6 +775,10 @@ void
 frange::set_nonnegative (tree type)
 {
   set (type, dconst0, dconstinf);
+
+  // Set +NAN as the only possibility.
+  if (HONOR_NANS (type))
+    update_nan (/*sign=*/0);
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -3823,6 +3827,11 @@ range_tests_signed_zeros ()
   r1.update_nan ();
   r0.intersect (r1);
   ASSERT_TRUE (r0.known_isnan ());
+
+  r0.set_nonnegative (float_type_node);
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.maybe_isnan ());
 }
 
 static void
