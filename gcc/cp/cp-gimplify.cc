@@ -892,13 +892,9 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 static void
 cp_genericize_init (tree *replace, tree from, tree to)
 {
+  tree init = NULL_TREE;
   if (TREE_CODE (from) == VEC_INIT_EXPR)
-    {
-      tree init = expand_vec_init_expr (to, from, tf_warning_or_error);
-
-      /* Make cp_gimplify_init_expr call replace_decl.  */
-      *replace = fold_convert (void_type_node, init);
-    }
+    init = expand_vec_init_expr (to, from, tf_warning_or_error);
   else if (flag_exceptions
 	   && TREE_CODE (from) == CONSTRUCTOR
 	   && TREE_SIDE_EFFECTS (from)
@@ -906,7 +902,16 @@ cp_genericize_init (tree *replace, tree from, tree to)
     {
       to = cp_stabilize_reference (to);
       replace_placeholders (from, to);
-      *replace = split_nonconstant_init (to, from);
+      init = split_nonconstant_init (to, from);
+    }
+
+  if (init)
+    {
+      if (*replace == from)
+	/* Make cp_gimplify_init_expr call replace_decl on this
+	   TARGET_EXPR_INITIAL.  */
+	init = fold_convert (void_type_node, init);
+      *replace = init;
     }
 }
 
