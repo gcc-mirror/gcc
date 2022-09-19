@@ -1,3 +1,9 @@
+2022-09-18  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Replace uintptr_t with typedef
+	for __UINTPTR_TYPE__.
+	* unwind-dw2-btree.h: Likewise.
+
 2022-09-16  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* unwind-dw2-fde.c (release_registered_frames): Cleanup at shutdown.

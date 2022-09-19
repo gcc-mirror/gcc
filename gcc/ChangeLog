@@ -1,3 +1,71 @@
+2022-09-18  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_segregate_mapping_groups): Update comment.
+	(gimplify_adjust_omp_clauses): Move ATTACH and
+	ATTACH_ZERO_LENGTH_ARRAY_SECTION nodes to the end of the clause list
+	for offloaded OpenMP regions.
+
+2022-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106831
+	* value-range.cc (frange::singleton_p): Avoid propagating long
+	doubles that may have multiple representations.
+
+2022-09-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frange_add_zeros): Replace set_signbit with
+	union of zero.
+	* value-query.cc (range_query::get_tree_range): Remove set_signbit
+	use.
+	* value-range-pretty-print.cc (vrange_printer::print_frange_prop):
+	Remove.
+	(vrange_printer::print_frange_nan): New.
+	* value-range-pretty-print.h (print_frange_prop): Remove.
+	(print_frange_nan): New.
+	* value-range-storage.cc (frange_storage_slot::set_frange): Set
+	kind and NAN fields.
+	(frange_storage_slot::get_frange): Restore kind and NAN fields.
+	* value-range-storage.h (class frange_storage_slot): Add kind and
+	NAN fields.
+	* value-range.cc (frange::update_nan): Remove.
+	(frange::set_signbit): Remove.
+	(frange::set): Adjust for NAN fields.
+	(frange::normalize_kind): Remove m_props.
+	(frange::combine_zeros): New.
+	(frange::union_nans): New.
+	(frange::union_): Handle new NAN fields.
+	(frange::intersect_nans): New.
+	(frange::intersect): Handle new NAN fields.
+	(frange::operator=): Same.
+	(frange::operator==): Same.
+	(frange::contains_p): Same.
+	(frange::singleton_p): Remove special case for signed zeros.
+	(frange::verify_range): Adjust for new NAN fields.
+	(frange::set_zero): Handle signed zeros.
+	(frange::set_nonnegative): Same.
+	(range_tests_nan): Adjust tests.
+	(range_tests_signed_zeros): Same.
+	(range_tests_signbit): Same.
+	(range_tests_floats): Same.
+	* value-range.h (class fp_prop): Remove.
+	(FP_PROP_ACCESSOR): Remove.
+	(class frange_props): Remove
+	(frange::lower_bound): NANs don't have endpoints.
+	(frange::upper_bound): Same.
+	(frange_props::operator==): Remove.
+	(frange_props::union_): Remove.
+	(frange_props::intersect): Remove.
+	(frange::update_nan): New.
+	(frange::clear_nan): New.
+	(frange::undefined_p): New.
+	(frange::set_nan): New.
+	(frange::known_finite): Adjust for new NAN representation.
+	(frange::maybe_isnan): Same.
+	(frange::known_isnan): Same.
+	(frange::signbit_p): Same.
+	* gimple-range-fold.cc (range_of_builtin_int_call): Rename
+	known_signbit_p into signbit_p.
+
 2022-09-17  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/csky/csky.h (FUNCTION_ARG_REGNO_P): Cast REGNO to (int)

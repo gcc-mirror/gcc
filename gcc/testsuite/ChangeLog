@@ -1,3 +1,11 @@
+2022-09-18  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/target-lambda-1.C: Adjust expected scan output.
+
+2022-09-18  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* gcc.dg/tree-ssa/gen-vect-34.c: Skip RISC-V targets.
+
 2022-09-17  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/modules/typename-friend_a.C: New test.
