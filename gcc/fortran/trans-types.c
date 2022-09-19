@@ -2954,12 +2954,23 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     if (spec_len < sizeof (spec))
       {
-	if (!f->sym || f->sym->attr.pointer || f->sym->attr.target
+	bool is_class = false;
+	bool is_pointer = false;
+
+	if (f->sym)
+	  {
+	    is_class = f->sym->ts.type == BT_CLASS && CLASS_DATA (f->sym)
+	      && f->sym->attr.class_ok;
+	    is_pointer = is_class ? CLASS_DATA (f->sym)->attr.class_pointer
+				  : f->sym->attr.pointer;
+	  }
+
+	if (f->sym == NULL || is_pointer || f->sym->attr.target
 	    || f->sym->attr.external || f->sym->attr.cray_pointer
 	    || (f->sym->ts.type == BT_DERIVED
 		&& (f->sym->ts.u.derived->attr.proc_pointer_comp
 		    || f->sym->ts.u.derived->attr.pointer_comp))
-	    || (f->sym->ts.type == BT_CLASS
+	    || (is_class
 		&& (CLASS_DATA (f->sym)->ts.u.derived->attr.proc_pointer_comp
 		    || CLASS_DATA (f->sym)->ts.u.derived->attr.pointer_comp))
 	    || (f->sym->ts.type == BT_INTEGER && f->sym->ts.is_c_interop))
