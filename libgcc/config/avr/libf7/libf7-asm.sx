@@ -601,9 +601,6 @@ DEFUN to_integer
     tst     C6
     brmi    .Lsaturate.T    ;   > INTxx_MAX  =>  saturate
 
-    rcall   .Lround
-    brmi    .Lsaturate.T    ;   > INTxx_MAX  =>  saturate
-
     brtc 9f                 ;   >= 0         =>  return
     sbrc    Mask,   5
     .global __negdi2
@@ -658,30 +655,6 @@ DEFUN to_integer
     .global __clr_8
     XJMP    __clr_8
 
-.Lround:
-    ;; C6.7 is known to be 0 here.
-    ;; Return N = 1 iff we have to saturate.
-    cpi     Mask,   0xf
-    breq .Lround16
-    cpi     Mask,   0x1f
-    breq .Lround32
-
-    ;; For now, no rounding in the 64-bit case.  This rounding
-    ;; would have to be integrated into the right-shift.
-    cln
-    ret
-
-.Lround32:
-    rol     C2
-    adc     C3,     ZERO
-    adc     C4,     ZERO
-    rjmp 2f
-
-.Lround16:
-    rol     C4
-2:  adc     C5,     ZERO
-    adc     C6,     ZERO
-    ret
 ENDF to_integer
 #endif /* F7MOD_to_integer_ */
 
@@ -725,29 +698,6 @@ DEFUN to_unsigned
     clr     CA
     F7call  lshrdi3
     POP     r16
-
-    ;; Rounding
-    ;; ??? C6.7 is known to be 0 here.
-    cpi     Mask,   0xf
-    breq .Lround16
-    cpi     Mask,   0x1f
-    breq .Lround32
-
-    ;; For now, no rounding in the 64-bit case.  This rounding
-    ;; would have to be integrated into the right-shift.
-    ret
-
-.Lround32:
-    rol     C2
-    adc     C3,     ZERO
-    adc     C4,     ZERO
-    rjmp 2f
-
-.Lround16:
-    rol     C4
-2:  adc     C5,     ZERO
-    adc     C6,     ZERO
-    brcs    .Lset_0xffff    ; Rounding overflow  =>  saturate
     ret
 
 .Lset_0xffff:
