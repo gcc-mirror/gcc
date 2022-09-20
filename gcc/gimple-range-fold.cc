@@ -922,28 +922,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 
   switch (func)
     {
-    CASE_CFN_FFS:
-    CASE_CFN_POPCOUNT:
-      // __builtin_ffs* and __builtin_popcount* return [0, prec].
-      arg = gimple_call_arg (call, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      mini = 0;
-      maxi = prec;
-      src.get_operand (r, arg);
-      // If arg is non-zero, then ffs or popcount are non-zero.
-      if (!range_includes_zero_p (&r))
-	mini = 1;
-      // If some high bits are known to be zero, decrease the maximum.
-      if (!r.undefined_p ())
-	{
-	  if (TYPE_SIGN (r.type ()) == SIGNED)
-	    range_cast (r, unsigned_type_for (r.type ()));
-	  wide_int max = r.upper_bound ();
-	  maxi = wi::floor_log2 (max) + 1;
-	}
-      r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
-      return true;
-
     CASE_CFN_PARITY:
       r.set (build_zero_cst (type), build_one_cst (type));
       return true;

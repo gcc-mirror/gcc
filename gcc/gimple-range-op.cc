@@ -387,6 +387,33 @@ cfn_toupper_tolower::fold_range (irange &r, tree type, const irange &lh,
   return true;
 }
 
+// Implement range operator for CFN_BUILT_IN_FFS and CFN_BUILT_IN_POPCOUNT.
+class cfn_popcount : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const
+  {
+    if (lh.undefined_p ())
+      return false;
+    // __builtin_ffs* and __builtin_popcount* return [0, prec].
+    int prec = TYPE_PRECISION (lh.type ());
+    // If arg is non-zero, then ffs or popcount are non-zero.
+    int mini = range_includes_zero_p (&lh) ? 0 : 1;
+    int maxi = prec;
+
+    // If some high bits are known to be zero, decrease the maximum.
+    int_range_max tmp = lh;
+    if (TYPE_SIGN (tmp.type ()) == SIGNED)
+      range_cast (tmp, unsigned_type_for (tmp.type ()));
+    wide_int max = tmp.upper_bound ();
+    maxi = wi::floor_log2 (max) + 1;
+    r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
+    return true;
+  }
+} op_cfn_popcount;
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -433,6 +460,13 @@ gimple_range_op_handler::maybe_builtin_call ()
 	  m_int = (func == CFN_BUILT_IN_TOLOWER) ? &op_cfn_tolower
 						 : &op_cfn_toupper;
 	}
+      break;
+
+    CASE_CFN_FFS:
+    CASE_CFN_POPCOUNT:
+      m_op1 = gimple_call_arg (call, 0);
+      m_int = &op_cfn_popcount;
+      m_valid = true;
       break;
 
     default:
