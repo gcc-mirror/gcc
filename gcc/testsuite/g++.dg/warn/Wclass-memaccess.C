@@ -1144,7 +1144,7 @@ void test (HasVolRefAssign *p, const HasVolRefAssign &x,
 
 /* HasVirtuals should only be manipulated by the special member functions
    and not by bzero, memcpy, or any other raw memory function. Doing
-   otherwse might corrupt the the vtable pointer.  */
+   otherwse might corrupt the vtable pointer.  */
 struct HasVirtuals { int i; virtual void foo (); };
 
 void test (HasVirtuals *p, const HasVirtuals &x,

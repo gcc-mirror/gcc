@@ -63,7 +63,7 @@ namespace std
   extern "C" int at_quick_exit(void (*)(void)) _GLIBCXX_NOTHROW;
 # endif
 # ifdef _GLIBCXX_HAVE_QUICK_EXIT
-  extern "C" void quick_exit(int) _GLIBCXX_NOTHROW_GLIBCXX_NORETURN;
+  extern "C" void quick_exit(int) _GLIBCXX_NOTHROW _GLIBCXX_NORETURN;
 # endif
 #if _GLIBCXX_USE_C99_STDLIB
   extern "C" void _Exit(int) _GLIBCXX_NOTHROW _GLIBCXX_NORETURN;

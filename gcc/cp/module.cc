@@ -8922,6 +8922,7 @@ trees_out::type_node (tree type)
       if (streaming_p ())
 	u (PACK_EXPANSION_LOCAL_P (type));
       tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
+      tree_node (PACK_EXPANSION_EXTRA_ARGS (type));
       break;
 
     case TYPENAME_TYPE:
@@ -9455,12 +9456,14 @@ trees_in::tree_node (bool is_use)
 	    {
 	      bool local = u ();
 	      tree param_packs = tree_node ();
+	      tree extra_args = tree_node ();
 	      if (!get_overrun ())
 		{
 		  tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
 		  SET_TYPE_STRUCTURAL_EQUALITY (expn);
 		  PACK_EXPANSION_PATTERN (expn) = res;
 		  PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
+		  PACK_EXPANSION_EXTRA_ARGS (expn) = extra_args;
 		  PACK_EXPANSION_LOCAL_P (expn) = local;
 		  res = expn;
 		}
