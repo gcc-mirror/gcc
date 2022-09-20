@@ -1210,6 +1210,8 @@ frange::known_isinf () const
 inline bool
 frange::maybe_isnan () const
 {
+  if (undefined_p ())
+    return false;
   return m_pos_nan || m_neg_nan;
 }
 
