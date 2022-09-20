@@ -1,5 +1,12 @@
 2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
 
+	Backport from mainline:
+	Richard Sandiford <richard.sandiford@arm.com>
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Restrict
+	early-out optimisation to SSA_NAMEs.
+
+2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (gather_load<mode><vndi>): New.
 	(scatter_store<mode><vndi>): New.
 	(mask_gather_load<mode><vndi>): New.
