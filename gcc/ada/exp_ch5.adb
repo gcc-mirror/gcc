@@ -1594,35 +1594,86 @@ package body Exp_Ch5 is
       Rev    : Boolean) return Node_Id
    is
 
+      function Volatile_Or_Independent
+        (Exp : Node_Id; Typ : Entity_Id) return Boolean;
+      --  Exp is an expression of type Typ, or if there is no expression
+      --  involved, Exp is Empty. True if there are any volatile or independent
+      --  objects that should disable the optimization. We check the object
+      --  itself, all subcomponents, and if Exp is a slice of a component or
+      --  slice, we check the prefix and its type.
+      --
+      --  We disable the optimization when there are relevant volatile or
+      --  independent objects, because Copy_Bitfield can read and write bits
+      --  that are not part of the objects being copied.
+
+      -----------------------------
+      -- Volatile_Or_Independent --
+      -----------------------------
+
+      function Volatile_Or_Independent
+        (Exp : Node_Id; Typ : Entity_Id) return Boolean
+      is
+      begin
+         --  Initially, Exp is the left- or right-hand side. In recursive
+         --  calls, Exp is Empty if we're just checking a component type, and
+         --  Exp is the prefix if we're checking the prefix of a slice.
+
+         if Present (Exp)
+           and then (Is_Volatile_Object_Ref (Exp)
+                       or else Is_Independent_Object (Exp))
+         then
+            return True;
+         end if;
+
+         if Has_Volatile_Components (Typ)
+           or else Has_Independent_Components (Typ)
+         then
+            return True;
+         end if;
+
+         if Is_Array_Type (Typ) then
+            return Volatile_Or_Independent (Empty, Component_Type (Typ));
+         elsif Is_Record_Type (Typ) then
+            declare
+               Comp : Entity_Id := First_Component (Typ);
+            begin
+               while Present (Comp) loop
+                  if Volatile_Or_Independent (Empty, Comp) then
+                     return True;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+
+         if Nkind (Exp) = N_Slice
+           and then Nkind (Prefix (Exp)) in
+                      N_Selected_Component | N_Indexed_Component | N_Slice
+         then
+            if Volatile_Or_Independent (Prefix (Exp), Etype (Prefix (Exp)))
+            then
+               return True;
+            end if;
+         end if;
+
+         return False;
+      end Volatile_Or_Independent;
+
       L : constant Node_Id := Name (N);
       R : constant Node_Id := Expression (N);
       --  Left- and right-hand sides of the assignment statement
 
       Slices : constant Boolean :=
         Nkind (L) = N_Slice or else Nkind (R) = N_Slice;
-      L_Prefix_Comp : constant Boolean :=
-        --  True if the left-hand side is a slice of a component or slice
-        Nkind (L) = N_Slice
-          and then Nkind (Prefix (L)) in
-                     N_Selected_Component | N_Indexed_Component | N_Slice;
-      R_Prefix_Comp : constant Boolean :=
-        --  Likewise for the right-hand side
-        Nkind (R) = N_Slice
-          and then Nkind (Prefix (R)) in
-                     N_Selected_Component | N_Indexed_Component | N_Slice;
+
+   --  Start of processing for Expand_Assign_Array_Loop_Or_Bitfield
 
    begin
       --  Determine whether Copy_Bitfield or Fast_Copy_Bitfield is appropriate
       --  (will work, and will be more efficient than component-by-component
       --  copy). Copy_Bitfield doesn't work for reversed storage orders. It is
-      --  efficient for slices of bit-packed arrays. Copy_Bitfield can read and
-      --  write bits that are not part of the objects being copied, so we don't
-      --  want to use it if there are volatile or independent components. If
-      --  the Prefix of the slice is a component or slice, then it might be a
-      --  part of an object with some other volatile or independent components,
-      --  so we disable the optimization in that case as well. We could
-      --  complicate this code by actually looking for such volatile and
-      --  independent components.
+      --  efficient for slices of bit-packed arrays.
 
       if Is_Bit_Packed_Array (L_Type)
         and then Is_Bit_Packed_Array (R_Type)
@@ -1630,12 +1681,8 @@ package body Exp_Ch5 is
         and then not Reverse_Storage_Order (R_Type)
         and then Ndim = 1
         and then Slices
-        and then not Has_Volatile_Component (L_Type)
-        and then not Has_Volatile_Component (R_Type)
-        and then not Has_Independent_Components (L_Type)
-        and then not Has_Independent_Components (R_Type)
-        and then not L_Prefix_Comp
-        and then not R_Prefix_Comp
+        and then not Volatile_Or_Independent (L, L_Type)
+        and then not Volatile_Or_Independent (R, R_Type)
       then
          --  Here if Copy_Bitfield can work (except for the Rev test below).
          --  Determine whether to call Fast_Copy_Bitfield instead. If we
