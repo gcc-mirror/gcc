@@ -322,6 +322,71 @@ public:
   }
 } op_cfn_signbit;
 
+// Implement range operator for CFN_BUILT_IN_TOUPPER and CFN_BUILT_IN_TOLOWER.
+class cfn_toupper_tolower : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  cfn_toupper_tolower (bool toupper)  { m_toupper = toupper; }
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const;
+private:
+  bool get_letter_range (tree type, irange &lowers, irange &uppers) const;
+  bool m_toupper;
+} op_cfn_toupper (true), op_cfn_tolower (false);
+
+// Return TRUE if we recognize the target character set and return the
+// range for lower case and upper case letters.
+
+bool
+cfn_toupper_tolower::get_letter_range (tree type, irange &lowers,
+				       irange &uppers) const
+{
+  // ASCII
+  int a = lang_hooks.to_target_charset ('a');
+  int z = lang_hooks.to_target_charset ('z');
+  int A = lang_hooks.to_target_charset ('A');
+  int Z = lang_hooks.to_target_charset ('Z');
+
+  if ((z - a == 25) && (Z - A == 25))
+    {
+      lowers = int_range<2> (build_int_cst (type, a), build_int_cst (type, z));
+      uppers = int_range<2> (build_int_cst (type, A), build_int_cst (type, Z));
+      return true;
+    }
+  // Unknown character set.
+  return false;
+}
+
+bool
+cfn_toupper_tolower::fold_range (irange &r, tree type, const irange &lh,
+				 const irange &, relation_kind) const
+{
+  int_range<3> lowers;
+  int_range<3> uppers;
+  if (!get_letter_range (type, lowers, uppers))
+    return false;
+
+  r = lh;
+  if (m_toupper)
+    {
+      // Return the range passed in without any lower case characters,
+      // but including all the upper case ones.
+      lowers.invert ();
+      r.intersect (lowers);
+      r.union_ (uppers);
+    }
+  else
+    {
+      // Return the range passed in without any lower case characters,
+      // but including all the upper case ones.
+      uppers.invert ();
+      r.intersect (uppers);
+      r.union_ (lowers);
+    }
+  return true;
+}
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -356,6 +421,18 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_op1 = gimple_call_arg (call, 0);
       m_float = &op_cfn_signbit;
       m_valid = true;
+      break;
+
+    case CFN_BUILT_IN_TOUPPER:
+    case CFN_BUILT_IN_TOLOWER:
+      // Only proceed If the argument is compatible with the LHS.
+      m_op1 = gimple_call_arg (call, 0);
+      if (range_compatible_p (type, TREE_TYPE (m_op1)))
+	{
+	  m_valid = true;
+	  m_int = (func == CFN_BUILT_IN_TOLOWER) ? &op_cfn_tolower
+						 : &op_cfn_toupper;
+	}
       break;
 
     default:

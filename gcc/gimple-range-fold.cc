@@ -887,28 +887,6 @@ fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
     r.set_varying (type);
 }
 
-// Return TRUE if we recognize the target character set and return the
-// range for lower case and upper case letters.
-
-static bool
-get_letter_range (tree type, irange &lowers, irange &uppers)
-{
-  // ASCII
-  int a = lang_hooks.to_target_charset ('a');
-  int z = lang_hooks.to_target_charset ('z');
-  int A = lang_hooks.to_target_charset ('A');
-  int Z = lang_hooks.to_target_charset ('Z');
-
-  if ((z - a == 25) && (Z - A == 25))
-    {
-      lowers = int_range<2> (build_int_cst (type, a), build_int_cst (type, z));
-      uppers = int_range<2> (build_int_cst (type, A), build_int_cst (type, Z));
-      return true;
-    }
-  // Unknown character set.
-  return false;
-}
-
 // For a builtin in CALL, return a range in R if known and return
 // TRUE.  Otherwise return FALSE.
 
@@ -944,50 +922,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 
   switch (func)
     {
-    case CFN_BUILT_IN_TOUPPER:
-      {
-	arg = gimple_call_arg (call, 0);
-	// If the argument isn't compatible with the LHS, do nothing.
-	if (!range_compatible_p (type, TREE_TYPE (arg)))
-	  return false;
-	if (!src.get_operand (r, arg))
-	  return false;
-
-	int_range<3> lowers;
-	int_range<3> uppers;
-	if (!get_letter_range (type, lowers, uppers))
-	  return false;
-
-	// Return the range passed in without any lower case characters,
-	// but including all the upper case ones.
-	lowers.invert ();
-	r.intersect (lowers);
-	r.union_ (uppers);
-	return true;
-      }
-
-     case CFN_BUILT_IN_TOLOWER:
-      {
-	arg = gimple_call_arg (call, 0);
-	// If the argument isn't compatible with the LHS, do nothing.
-	if (!range_compatible_p (type, TREE_TYPE (arg)))
-	  return false;
-	if (!src.get_operand (r, arg))
-	  return false;
-
-	int_range<3> lowers;
-	int_range<3> uppers;
-	if (!get_letter_range (type, lowers, uppers))
-	  return false;
-
-	// Return the range passed in without any upper case characters,
-	// but including all the lower case ones.
-	uppers.invert ();
-	r.intersect (uppers);
-	r.union_ (lowers);
-	return true;
-      }
-
     CASE_CFN_FFS:
     CASE_CFN_POPCOUNT:
       // __builtin_ffs* and __builtin_popcount* return [0, prec].
