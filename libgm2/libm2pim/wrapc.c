@@ -130,7 +130,10 @@ wrapc_fileinode (int f, unsigned int *low, unsigned int *high)
   if (fstat (f, (struct stat *)&s) == 0)
     {
       *low = (unsigned int)s.st_ino;
-      *high = (unsigned int)(s.st_ino >> (sizeof (unsigned int) * 8));
+      if ((sizeof (s.st_ino) == (sizeof (unsigned int))))
+	*high = 0;
+      else
+	*high = (unsigned int)(s.st_ino >> (sizeof (unsigned int) * 8));
       return 0;
     }
   else

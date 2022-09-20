@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 void abort (int);
-void exit  (int);
+void exit (int);
 
 void abort (int i)
 {

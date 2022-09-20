@@ -816,6 +816,8 @@ VAR
 BEGIN
    HighSrc := StrLen(src) ;
    HighDest := HIGH(dest) ;
+   p := NIL ;
+   c := 0 ;
    i := 0 ;
    j := 0 ;
    WHILE (i<HighSrc) AND (src[i]#nul) AND (j<HighDest) AND (src[i]#'%') DO
@@ -883,25 +885,27 @@ END StringFormat1 ;
 
 PROCEDURE FormatError (a: ARRAY OF CHAR) ;
 BEGIN
-   WriteString(StdErr, a)
+   WriteString (StdErr, a)
 END FormatError ;
 
 
 (*
-   FormatError1 - fairly generic error procedure.
+   FormatError1 - generic error procedure taking standard format string
+                  and single parameter.
 *)
 
 PROCEDURE FormatError1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
 VAR
    s: ARRAY [0..MaxErrorString] OF CHAR ;
 BEGIN
-   StringFormat1(s, a, w) ;
-   FormatError(s)
+   StringFormat1 (s, a, w) ;
+   FormatError (s)
 END FormatError1 ;
 
 
 (*
-   FormatError2 - fairly generic error procedure.
+   FormatError2 - generic error procedure taking standard format string
+                  and two parameters.
 *)
 
 PROCEDURE FormatError2 (a: ARRAY OF CHAR;
@@ -909,13 +913,13 @@ PROCEDURE FormatError2 (a: ARRAY OF CHAR;
 VAR
    s: ARRAY [0..MaxErrorString] OF CHAR ;
 BEGIN
-   StringFormat1(s, a, w1) ;
-   FormatError1(s, w2)
+   StringFormat1 (s, a, w1) ;
+   FormatError1 (s, w2)
 END FormatError2 ;
 
 
 (*
-   CheckAccess - checks to see whether a file, f, has been
+   CheckAccess - checks to see whether a file f has been
                  opened for read/write.
 *)
 
@@ -925,20 +929,20 @@ VAR
 BEGIN
    IF f#Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
+      fd := GetIndice (FileInfo, f) ;
       IF fd=NIL
       THEN
          IF f#StdErr
          THEN
-            FormatError('this file has probably been closed and not reopened successfully or alternatively never opened\n')
+            FormatError ('this file has probably been closed and not reopened successfully or alternatively never opened\n')
          END ;
          HALT
       ELSE
          WITH fd^ DO
             IF (use=openedforwrite) AND (usage=openedforread)
             THEN
-               FormatError1('this file (%s) has been opened for reading but is now being written\n',
-                            name.address) ;
+               FormatError1 ('this file (%s) has been opened for reading but is now being written\n',
+                             name.address) ;
                HALT
             ELSIF (use=openedforread) AND (usage=openedforwrite)
             THEN
@@ -973,7 +977,7 @@ END CheckAccess ;
 
 
 (*
-   ReadChar - returns a character read from file, f.
+   ReadChar - returns a character read from file f.
               Sensible to check with IsNoError or EOF after calling
               this function.
 *)
@@ -1018,7 +1022,7 @@ END SetEndOfLine ;
 
 
 (*
-   UnReadChar - replaces a character, ch, back into file, f.
+   UnReadChar - replaces a character, ch, back into file f.
                 This character must have been read by ReadChar
                 and it does not allow successive calls.  It may
                 only be called if the previous read was successful
@@ -1028,7 +1032,7 @@ END SetEndOfLine ;
                 Otherwise it is left alone.
 *)
 
-PROCEDURE UnReadChar (f: File ; ch: CHAR) ;
+PROCEDURE UnReadChar (f: File; ch: CHAR) ;
 VAR
    fd  : FileDescriptor ;
    n   : CARDINAL ;

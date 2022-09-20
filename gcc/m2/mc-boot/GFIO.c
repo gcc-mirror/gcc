@@ -245,7 +245,7 @@ extern "C" unsigned int FIO_EOLN (FIO_File f);
 extern "C" unsigned int FIO_WasEOLN (FIO_File f);
 
 /*
-   ReadChar - returns a character read from file, f.
+   ReadChar - returns a character read from file f.
               Sensible to check with IsNoError or EOF after calling
               this function.
 */
@@ -253,7 +253,7 @@ extern "C" unsigned int FIO_WasEOLN (FIO_File f);
 extern "C" char FIO_ReadChar (FIO_File f);
 
 /*
-   UnReadChar - replaces a character, ch, back into file, f.
+   UnReadChar - replaces a character, ch, back into file f.
                 This character must have been read by ReadChar
                 and it does not allow successive calls.  It may
                 only be called if the previous read was successful
@@ -438,19 +438,21 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
 static void FormatError (const char *a_, unsigned int _a_high);
 
 /*
-   FormatError1 - fairly generic error procedure.
+   FormatError1 - generic error procedure taking standard format string
+                  and single parameter.
 */
 
 static void FormatError1 (const char *a_, unsigned int _a_high, const unsigned char *w_, unsigned int _w_high);
 
 /*
-   FormatError2 - fairly generic error procedure.
+   FormatError2 - generic error procedure taking standard format string
+                  and two parameters.
 */
 
 static void FormatError2 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high);
 
 /*
-   CheckAccess - checks to see whether a file, f, has been
+   CheckAccess - checks to see whether a file f has been
                  opened for read/write.
 */
 
@@ -1001,6 +1003,8 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
 
   HighSrc = StrLib_StrLen ((const char *) src, _src_high);
   HighDest = _dest_high;
+  p = NULL;
+  c = 0;
   i = 0;
   j = 0;
   while ((((i < HighSrc) && (src[i] != ASCII_nul)) && (j < HighDest)) && (src[i] != '%'))
@@ -1090,7 +1094,8 @@ static void FormatError (const char *a_, unsigned int _a_high)
 
 
 /*
-   FormatError1 - fairly generic error procedure.
+   FormatError1 - generic error procedure taking standard format string
+                  and single parameter.
 */
 
 static void FormatError1 (const char *a_, unsigned int _a_high, const unsigned char *w_, unsigned int _w_high)
@@ -1112,7 +1117,8 @@ static void FormatError1 (const char *a_, unsigned int _a_high, const unsigned c
 
 
 /*
-   FormatError2 - fairly generic error procedure.
+   FormatError2 - generic error procedure taking standard format string
+                  and two parameters.
 */
 
 static void FormatError2 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high)
@@ -1136,7 +1142,7 @@ static void FormatError2 (const char *a_, unsigned int _a_high, const unsigned c
 
 
 /*
-   CheckAccess - checks to see whether a file, f, has been
+   CheckAccess - checks to see whether a file f has been
                  opened for read/write.
 */
 
@@ -1857,7 +1863,7 @@ extern "C" unsigned int FIO_WasEOLN (FIO_File f)
 
 
 /*
-   ReadChar - returns a character read from file, f.
+   ReadChar - returns a character read from file f.
               Sensible to check with IsNoError or EOF after calling
               this function.
 */
@@ -1882,7 +1888,7 @@ extern "C" char FIO_ReadChar (FIO_File f)
 
 
 /*
-   UnReadChar - replaces a character, ch, back into file, f.
+   UnReadChar - replaces a character, ch, back into file f.
                 This character must have been read by ReadChar
                 and it does not allow successive calls.  It may
                 only be called if the previous read was successful

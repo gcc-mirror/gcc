@@ -2236,12 +2236,6 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
-# Determine the noncanonical host name, for Modula-2.
-ACX_NONCANONICAL_HOST
-
-# Determine the noncanonical target name, for directory use.
-ACX_NONCANONICAL_TARGET
-
 for ac_prog in flex
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.

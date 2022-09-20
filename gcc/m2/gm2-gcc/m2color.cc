@@ -26,35 +26,41 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 
 
-const char *m2color_colorize_start (bool show_color, char *name, unsigned int name_len)
+char *
+m2color_colorize_start (bool show_color, char *name, unsigned int name_len)
 {
-  return colorize_start (show_color, name, name_len);
+  return const_cast<char*> (colorize_start (show_color, name, name_len));
 }
 
 
-const char *m2color_colorize_stop (bool show_color)
+char *
+m2color_colorize_stop (bool show_color)
 {
-  return colorize_stop (show_color);
+  return const_cast<char*> (colorize_stop (show_color));
 }
 
 
-const char *m2color_open_quote (void)
+char *
+m2color_open_quote (void)
 {
-  return open_quote;
+  return const_cast<char*> (open_quote);
 }
 
 
-const char *m2color_close_quote (void)
+char *
+m2color_close_quote (void)
 {
-  return close_quote;
+  return const_cast<char*> (close_quote);
 }
 
 
-void _M2_m2color_init ()
+void
+_M2_m2color_init ()
 {
 }
 
 
-void _M2_m2color_finish ()
+void
+_M2_m2color_finish ()
 {
 }

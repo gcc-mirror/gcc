@@ -36,14 +36,14 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !m2color_c.  */
 
 
-EXTERN const char *
+EXTERN char *
 m2color_colorize_start (bool show_color, char *name, unsigned int name_len);
 
-EXTERN const char *m2color_colorize_stop (bool show_color);
+EXTERN char *m2color_colorize_stop (bool show_color);
 
-EXTERN const char *m2color_open_quote (void);
+EXTERN char *m2color_open_quote (void);
 
-EXTERN const char *m2color_close_quote (void);
+EXTERN char *m2color_close_quote (void);
 
 EXTERN void _M2_m2color_init ();
 EXTERN void _M2_m2color_finish ();

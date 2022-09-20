@@ -2371,17 +2371,19 @@ END doParam ;
    FoldBuiltin - attempts to fold the gcc builtin function.
 *)
 
-PROCEDURE FoldBuiltin (tokenno: CARDINAL; p: WalkAction;
-                       q: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE FoldBuiltin (tokenno: CARDINAL; p: WalkAction; q: CARDINAL) ;
 VAR
    resolved  : BOOLEAN ;
    procedure,
    r         : CARDINAL ;
    n         : CARDINAL ;
+   op1, op2,
+   op3       : CARDINAL ;
    op        : QuadOperator ;
    val       : Tree ;
    location  : location_t ;
 BEGIN
+   GetQuad (q, op, op1, op2, op3) ;
    resolved := TRUE ;
    procedure := NulSym ;
    n := q ;
@@ -2454,7 +2456,7 @@ BEGIN
          FoldMakeAdr (tokenno, p, q, op1, op2, op3)
       ELSIF IsProcedure (op3) AND IsProcedureBuiltin (op3) AND CanUseBuiltin (op3)
       THEN
-         FoldBuiltin (tokenno, p, q, op1, op2, op3)
+         FoldBuiltin (tokenno, p, q)
       END
    END
 END FoldBuiltinFunction ;

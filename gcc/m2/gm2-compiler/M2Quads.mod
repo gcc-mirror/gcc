@@ -550,7 +550,7 @@ VAR
 BEGIN
    i := q ;
    WHILE i#0 DO
-      GetQuad(i, op, op1, op2, op3) ;
+      GetQuad (i, op, op1, op2, op3) ;
       CASE op OF
 
       NewLocalVarOp,
@@ -649,7 +649,7 @@ VAR
 BEGIN
    i := q ;
    WHILE i#0 DO
-      GetQuad(i, op, op1, op2, op3) ;
+      GetQuad (i, op, op1, op2, op3) ;
       CASE op OF
 
       NewLocalVarOp,
@@ -819,7 +819,7 @@ VAR
    op           : QuadOperator ;
    op1, op2, op3: CARDINAL ;
 BEGIN
-   GetQuad(QuadNo, op, op1, op2, op3) ;
+   GetQuad (QuadNo, op, op1, op2, op3) ;
    CASE op OF
 
    InclOp,
