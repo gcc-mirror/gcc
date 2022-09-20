@@ -597,7 +597,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		    if (prev == field_index)
 		      break;
 		    tree ptype = TREE_TYPE (prev);
-		    if (type_build_dtor_call (ptype))
+		    if (TYPE_P (ptype) && type_build_dtor_call (ptype))
 		      {
 			tree pcref = build3 (COMPONENT_REF, ptype, dest, prev,
 					     NULL_TREE);
