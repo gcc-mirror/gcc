@@ -414,6 +414,81 @@ public:
   }
 } op_cfn_popcount;
 
+// Implement range operator for CFN_BUILT_IN_CLZ
+class cfn_clz : public range_operator
+{
+public:
+  cfn_clz (bool internal) { m_gimple_call_internal_p = internal; }
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const;
+private:
+  bool m_gimple_call_internal_p;
+} op_cfn_clz (false), op_cfn_clz_internal (true);
+
+bool
+cfn_clz::fold_range (irange &r, tree type, const irange &lh,
+		     const irange &, relation_kind) const
+{
+  // __builtin_c[lt]z* return [0, prec-1], except when the
+  // argument is 0, but that is undefined behavior.
+  //
+  // For __builtin_c[lt]z* consider argument of 0 always undefined
+  // behavior, for internal fns depending on C?Z_DEFINED_ALUE_AT_ZERO.
+  if (lh.undefined_p ())
+    return false;
+  int prec = TYPE_PRECISION (lh.type ());
+  int mini = 0;
+  int maxi = prec - 1;
+  int zerov = 0;
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (lh.type ());
+  if (m_gimple_call_internal_p)
+    {
+      if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
+	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
+	{
+	  // Only handle the single common value.
+	  if (zerov == prec)
+	    maxi = prec;
+	  else
+	    // Magic value to give up, unless we can prove arg is non-zero.
+	    mini = -2;
+	}
+    }
+
+  // From clz of minimum we can compute result maximum.
+  if (wi::gt_p (lh.lower_bound (), 0, TYPE_SIGN (lh.type ())))
+    {
+      maxi = prec - 1 - wi::floor_log2 (lh.lower_bound ());
+      if (mini == -2)
+	mini = 0;
+    }
+  else if (!range_includes_zero_p (&lh))
+    {
+      mini = 0;
+      maxi = prec - 1;
+    }
+  if (mini == -2)
+    return false;
+  // From clz of maximum we can compute result minimum.
+  wide_int max = lh.upper_bound ();
+  int newmini = prec - 1 - wi::floor_log2 (max);
+  if (max == 0)
+    {
+      // If CLZ_DEFINED_VALUE_AT_ZERO is 2 with VALUE of prec,
+      // return [prec, prec], otherwise ignore the range.
+      if (maxi == prec)
+	mini = prec;
+    }
+  else
+    mini = newmini;
+
+  if (mini == -2)
+    return false;
+  r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
+  return true;
+}
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -467,6 +542,15 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_op1 = gimple_call_arg (call, 0);
       m_int = &op_cfn_popcount;
       m_valid = true;
+      break;
+
+    CASE_CFN_CLZ:
+      m_op1 = gimple_call_arg (call, 0);
+      m_valid = true;
+      if (gimple_call_internal_p (call))
+	m_int = &op_cfn_clz_internal;
+      else
+	m_int = &op_cfn_clz;
       break;
 
     default:
