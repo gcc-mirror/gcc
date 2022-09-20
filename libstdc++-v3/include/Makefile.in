@@ -1820,7 +1820,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_alt128_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT 1,' ;\
 	verbose_assert='s,g,g,' ; \
-	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_HOSTED[	 ][	 ]*1[	 ]*$$" \
+	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_HOSTED[	 ][	 ]*__STDC_HOSTED__[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_VERBOSE[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \

@@ -654,7 +654,7 @@ proc v3-build_support { } {
 	# do not prevent compilation.
 	# Disable LTO so that ar/ranlib don't need the LTO plugin.
 	if { [v3_target_compile $srcdir/util/$f $object_file "object" \
-		  [list "incdir=$srcdir" "additional_flags=-w -fno-lto"]]
+		  [list "incdir=$srcdir" "additional_flags=-w -fno-lto -fno-freestanding"]]
 	     != "" } {
 	    error "could not compile $f"
 	}
@@ -693,7 +693,7 @@ proc v3-build_support { } {
 	    # Compile with "-w" so that warnings issued by the compiler
 	    # do not prevent compilation.
 	    if { [v3_target_compile $srcdir/util/$f $object_file "sharedlib" \
-	     [list "incdir=$srcdir" "additional_flags=-fno-inline -w -shared -fPIC -DPIC -std=gnu++98"]]
+	     [list "incdir=$srcdir" "additional_flags=-fno-inline -w -shared -fPIC -DPIC -std=gnu++98 -fno-freestanding"]]
 		 != "" } {
 		error "could not compile $f"
 	    }

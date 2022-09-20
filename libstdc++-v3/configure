@@ -15651,7 +15651,7 @@ $as_echo "$as_me: Only freestanding libraries will be built" >&6;}
     fi
   else
     is_hosted=yes
-    hosted_define=1
+    hosted_define=__STDC_HOSTED__
   fi
 
 
