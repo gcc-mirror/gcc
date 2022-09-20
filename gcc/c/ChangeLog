@@ -1,3 +1,9 @@
+2022-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/106947
+	* c-typeck.cc (maybe_warn_for_null_address): Don't emit stray
+	notes.
+
 2022-09-15  Richard Biener  <rguenther@suse.de>
 
 	* c-decl.cc (build_void_list_node): Remove.

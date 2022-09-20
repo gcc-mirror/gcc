@@ -1,3 +1,7 @@
+2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: Declare GFC_FPE_AWAY.
+
 2022-09-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106857

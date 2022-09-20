@@ -1,3 +1,9 @@
+2022-09-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/99184
+	* libf7-asm.sx (to_integer, to_unsigned): Don't round 16-bit
+	and 32-bit integers.
+
 2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* t-libf7: Use -include.

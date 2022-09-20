@@ -1,3 +1,8 @@
+2022-09-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* targhooks.cc (default_zero_call_used_regs): Improve sorry
+	message.
+
 2022-09-18  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (omp_segregate_mapping_groups): Update comment.
