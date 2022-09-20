@@ -576,6 +576,41 @@ public:
   }
 } op_cfn_clrsb;
 
+
+// Implement range operator for CFN_BUILT_IN_
+class cfn_ubsan : public range_operator
+{
+public:
+  cfn_ubsan (enum tree_code code) { m_code = code; }
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &rh, relation_kind rel) const
+  {
+    range_op_handler handler (m_code, type);
+    gcc_checking_assert (handler);
+
+    bool saved_flag_wrapv = flag_wrapv;
+    // Pretend the arithmetic is wrapping.  If there is any overflow,
+    // we'll complain, but will actually do wrapping operation.
+    flag_wrapv = 1;
+    bool result = handler.fold_range (r, type, lh, rh, rel);
+    flag_wrapv = saved_flag_wrapv;
+
+    // If for both arguments vrp_valueize returned non-NULL, this should
+    // have been already folded and if not, it wasn't folded because of
+    // overflow.  Avoid removing the UBSAN_CHECK_* calls in that case.
+    if (result && r.singleton_p ())
+      r.set_varying (type);
+    return result;
+  }
+private:
+  enum tree_code m_code;
+};
+
+cfn_ubsan op_cfn_ubsan_add (PLUS_EXPR);
+cfn_ubsan op_cfn_ubsan_sub (MINUS_EXPR);
+cfn_ubsan op_cfn_ubsan_mul (MULT_EXPR);
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -653,6 +688,27 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_op1 = gimple_call_arg (call, 0);
       m_valid = true;
       m_int = &op_cfn_clrsb;
+      break;
+
+    case CFN_UBSAN_CHECK_ADD:
+      m_op1 = gimple_call_arg (call, 0);
+      m_op2 = gimple_call_arg (call, 1);
+      m_valid = true;
+      m_int = &op_cfn_ubsan_add;
+      break;
+
+    case CFN_UBSAN_CHECK_SUB:
+      m_op1 = gimple_call_arg (call, 0);
+      m_op2 = gimple_call_arg (call, 1);
+      m_valid = true;
+      m_int = &op_cfn_ubsan_sub;
+      break;
+
+    case CFN_UBSAN_CHECK_MUL:
+      m_op1 = gimple_call_arg (call, 0);
+      m_op2 = gimple_call_arg (call, 1);
+      m_valid = true;
+      m_int = &op_cfn_ubsan_mul;
       break;
 
     default:

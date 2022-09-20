@@ -852,41 +852,6 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &src)
   return true;
 }
 
-// Return the range of a __builtin_ubsan* in CALL and set it in R.
-// CODE is the type of ubsan call (PLUS_EXPR, MINUS_EXPR or
-// MULT_EXPR).
-
-void
-fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
-					       tree_code code, fur_source &src)
-{
-  gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR
-		       || code == MULT_EXPR);
-  tree type = gimple_range_type (call);
-  range_op_handler op (code, type);
-  gcc_checking_assert (op);
-  int_range_max ir0, ir1;
-  tree arg0 = gimple_call_arg (call, 0);
-  tree arg1 = gimple_call_arg (call, 1);
-  src.get_operand (ir0, arg0);
-  src.get_operand (ir1, arg1);
-  // Check for any relation between arg0 and arg1.
-  relation_kind relation = src.query_relation (arg0, arg1);
-
-  bool saved_flag_wrapv = flag_wrapv;
-  // Pretend the arithmetic is wrapping.  If there is any overflow,
-  // we'll complain, but will actually do wrapping operation.
-  flag_wrapv = 1;
-  op.fold_range (r, type, ir0, ir1, relation);
-  flag_wrapv = saved_flag_wrapv;
-
-  // If for both arguments vrp_valueize returned non-NULL, this should
-  // have been already folded and if not, it wasn't folded because of
-  // overflow.  Avoid removing the UBSAN_CHECK_* calls in that case.
-  if (r.singleton_p ())
-    r.set_varying (type);
-}
-
 // For a builtin in CALL, return a range in R if known and return
 // TRUE.  Otherwise return FALSE.
 
@@ -909,7 +874,7 @@ fold_using_range::range_of_builtin_call (vrange &r, gcall *call,
 
 bool
 fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
-					     fur_source &src)
+					     fur_source &)
 {
   combined_fn func = gimple_call_combined_fn (call);
   if (func == CFN_LAST)
@@ -922,16 +887,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
     {
     CASE_CFN_PARITY:
       r.set (build_zero_cst (type), build_one_cst (type));
-      return true;
-
-    case CFN_UBSAN_CHECK_ADD:
-      range_of_builtin_ubsan_call (r, call, PLUS_EXPR, src);
-      return true;
-    case CFN_UBSAN_CHECK_SUB:
-      range_of_builtin_ubsan_call (r, call, MINUS_EXPR, src);
-      return true;
-    case CFN_UBSAN_CHECK_MUL:
-      range_of_builtin_ubsan_call (r, call, MULT_EXPR, src);
       return true;
 
     case CFN_GOACC_DIM_SIZE:
