@@ -889,25 +889,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
       r.set (build_zero_cst (type), build_one_cst (type));
       return true;
 
-    case CFN_GOACC_DIM_SIZE:
-    case CFN_GOACC_DIM_POS:
-      // Optimizing these two internal functions helps the loop
-      // optimizer eliminate outer comparisons.  Size is [1,N]
-      // and pos is [0,N-1].
-      {
-	bool is_pos = func == CFN_GOACC_DIM_POS;
-	int axis = oacc_get_ifn_dim_arg (call);
-	int size = oacc_get_fn_dim_size (current_function_decl, axis);
-	if (!size)
-	  // If it's dynamic, the backend might know a hardware limitation.
-	  size = targetm.goacc.dim_limit (axis);
-
-	r.set (build_int_cst (type, is_pos ? 0 : 1),
-	       size
-	       ? build_int_cst (type, size - is_pos) : vrp_val_max (type));
-	return true;
-      }
-
     default:
       break;
     }

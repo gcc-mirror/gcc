@@ -635,6 +635,34 @@ public:
   }
 } op_cfn_strlen;
 
+
+// Implement range operator for CFN_BUILT_IN_GOACC_DIM
+class cfn_goacc_dim : public range_operator
+{
+public:
+  cfn_goacc_dim (bool is_pos) { m_is_pos = is_pos; }
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const
+  {
+    tree axis_tree;
+    if (!lh.singleton_p (&axis_tree))
+      return false;
+    HOST_WIDE_INT axis = TREE_INT_CST_LOW (axis_tree);
+    int size = oacc_get_fn_dim_size (current_function_decl, axis);
+    if (!size)
+      // If it's dynamic, the backend might know a hardware limitation.
+      size = targetm.goacc.dim_limit (axis);
+
+    r.set (build_int_cst (type, m_is_pos ? 0 : 1),
+	   size
+	   ? build_int_cst (type, size - m_is_pos) : vrp_val_max (type));
+    return true;
+  }
+private:
+  bool m_is_pos;
+} op_cfn_goacc_dim_size (false), op_cfn_goacc_dim_pos (true);
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -747,6 +775,25 @@ gimple_range_op_handler::maybe_builtin_call ()
 	  }
 	break;
       }
+
+    // Optimizing these two internal functions helps the loop
+    // optimizer eliminate outer comparisons.  Size is [1,N]
+    // and pos is [0,N-1].
+    case CFN_GOACC_DIM_SIZE:
+      // This call will ensure all the asserts are triggered.
+      oacc_get_ifn_dim_arg (call);
+      m_op1 = gimple_call_arg (call, 0);
+      m_valid = true;
+      m_int = &op_cfn_goacc_dim_size;
+      break;
+
+    case CFN_GOACC_DIM_POS:
+      // This call will ensure all the asserts are triggered.
+      oacc_get_ifn_dim_arg (call);
+      m_op1 = gimple_call_arg (call, 0);
+      m_valid = true;
+      m_int = &op_cfn_goacc_dim_pos;
+      break;
 
     default:
       break;
