@@ -20,14 +20,15 @@ int
 main ()
 {
   S s;
-  fill_struct(s);
-  s.c = 'a';
-  s.s = 42;
-
   S ss{ s };
+  fill_struct(ss);
+  ss.c = 'a';
+  ss.s = 42;
+
   std::atomic_ref<S> as{ s };
+  as.store(ss);
   auto ts = as.load();
-  VERIFY( !compare_struct(ss, ts) ); // padding cleared on construction
+  VERIFY( !compare_struct(ss, ts) ); // padding cleared on store
   as.exchange(ss);
   auto es = as.load();
   VERIFY( compare_struct(ts, es) ); // padding cleared on exchange

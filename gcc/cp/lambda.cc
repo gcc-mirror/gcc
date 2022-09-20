@@ -198,6 +198,7 @@ type_deducible_expression_p (tree expr)
   tree t = non_reference (TREE_TYPE (expr));
   return (t && TREE_CODE (t) != TYPE_PACK_EXPANSION
 	  && !WILDCARD_TYPE_P (t) && !LAMBDA_TYPE_P (t)
+	  && !array_of_unknown_bound_p (t)
 	  && !type_uses_auto (t));
 }
 

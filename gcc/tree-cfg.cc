@@ -4167,6 +4167,8 @@ verify_gimple_assign_binary (gassign *stmt)
     case ROUND_MOD_EXPR:
     case RDIV_EXPR:
     case EXACT_DIV_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
       /* Disallow pointer and offset types for many of the binary gimple. */
       if (POINTER_TYPE_P (lhs_type)
 	  || TREE_CODE (lhs_type) == OFFSET_TYPE)
@@ -4182,9 +4184,23 @@ verify_gimple_assign_binary (gassign *stmt)
 
     case MIN_EXPR:
     case MAX_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
+      /* Continue with generic binary expression handling.  */
+      break;
+
     case BIT_AND_EXPR:
+      if (POINTER_TYPE_P (lhs_type)
+	  && TREE_CODE (rhs2) == INTEGER_CST)
+	break;
+      /* Disallow pointer and offset types for many of the binary gimple. */
+      if (POINTER_TYPE_P (lhs_type)
+	  || TREE_CODE (lhs_type) == OFFSET_TYPE)
+	{
+	  error ("invalid types for %qs", code_name);
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  return true;
+	}
       /* Continue with generic binary expression handling.  */
       break;
 
@@ -9820,16 +9836,12 @@ execute_fixup_cfg (void)
 	      int flags = gimple_call_flags (stmt);
 	      if (flags & (ECF_CONST | ECF_PURE | ECF_LOOPING_CONST_OR_PURE))
 		{
-		  if (gimple_purge_dead_abnormal_call_edges (bb))
-		    todo |= TODO_cleanup_cfg;
-
 		  if (gimple_in_ssa_p (cfun))
 		    {
 		      todo |= TODO_update_ssa | TODO_cleanup_cfg;
 		      update_stmt (stmt);
 		    }
 		}
-
 	      if (flags & ECF_NORETURN
 		  && fixup_noreturn_call (stmt))
 		todo |= TODO_cleanup_cfg;
@@ -9859,10 +9871,15 @@ execute_fixup_cfg (void)
 		}
 	    }
 
-	  if (maybe_clean_eh_stmt (stmt)
+	  gsi_next (&gsi);
+	}
+      if (gimple *last = last_stmt (bb))
+	{
+	  if (maybe_clean_eh_stmt (last)
 	      && gimple_purge_dead_eh_edges (bb))
 	    todo |= TODO_cleanup_cfg;
-	  gsi_next (&gsi);
+	  if (gimple_purge_dead_abnormal_call_edges (bb))
+	    todo |= TODO_cleanup_cfg;
 	}
 
       /* If we have a basic block with no successors that does not

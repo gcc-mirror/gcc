@@ -6945,8 +6945,8 @@ extern bool decl_constant_var_p			(tree);
 extern bool decl_maybe_constant_var_p		(tree);
 extern void no_linkage_error			(tree);
 extern void check_default_args			(tree);
-extern bool mark_used				(tree);
-extern bool mark_used			        (tree, tsubst_flags_t);
+extern bool mark_used			        (tree,
+						 tsubst_flags_t = tf_warning_or_error);
 extern bool mark_single_function	        (tree, tsubst_flags_t);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
 extern tree cp_build_parm_decl			(tree, tree, tree);
@@ -7391,8 +7391,7 @@ extern tree template_for_substitution		(tree);
 extern tree build_non_dependent_expr		(tree);
 extern void make_args_non_dependent		(vec<tree, va_gc> *);
 extern bool reregister_specialization		(tree, tree, tree);
-extern tree instantiate_non_dependent_expr	(tree);
-extern tree instantiate_non_dependent_expr_sfinae (tree, tsubst_flags_t);
+extern tree instantiate_non_dependent_expr	(tree, tsubst_flags_t = tf_error);
 extern tree instantiate_non_dependent_expr_internal (tree, tsubst_flags_t);
 extern tree instantiate_non_dependent_or_null   (tree);
 extern bool variable_template_specialization_p  (tree);
@@ -7824,8 +7823,8 @@ extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
 extern tree build_local_temp			(tree);
 extern bool is_local_temp			(tree);
 extern tree build_aggr_init_expr		(tree, tree);
-extern tree get_target_expr			(tree);
-extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
+extern tree get_target_expr			(tree,
+						 tsubst_flags_t = tf_warning_or_error);
 extern tree build_cplus_array_type		(tree, tree, int is_dep = -1);
 extern tree build_array_of_n_type		(tree, int);
 extern bool array_of_runtime_bound_p		(tree);
@@ -7874,7 +7873,8 @@ extern tree replace_placeholders		(tree, tree, bool * = NULL);
 extern bool find_placeholders			(tree);
 extern tree get_type_decl			(tree);
 extern tree decl_namespace_context		(tree);
-extern bool decl_anon_ns_mem_p			(const_tree);
+extern bool decl_anon_ns_mem_p			(tree);
+extern bool decl_internal_context_p		(const_tree);
 extern tree lvalue_type				(tree);
 extern tree error_type				(tree);
 extern int varargs_function_p			(const_tree);
@@ -7937,8 +7937,8 @@ extern int string_conv_p			(const_tree, const_tree, int);
 extern tree cp_truthvalue_conversion		(tree, tsubst_flags_t);
 extern tree contextual_conv_bool		(tree, tsubst_flags_t);
 extern tree condition_conversion		(tree);
-extern tree require_complete_type		(tree);
-extern tree require_complete_type_sfinae	(tree, tsubst_flags_t);
+extern tree require_complete_type		(tree,
+						 tsubst_flags_t = tf_warning_or_error);
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern tree complete_type_or_maybe_complain	(tree, tree, tsubst_flags_t);
@@ -8152,10 +8152,10 @@ extern tree binfo_or_else			(tree, tree);
 extern void cxx_readonly_error			(location_t, tree,
 						 enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
-extern int abstract_virtuals_error		(tree, tree);
-extern int abstract_virtuals_error		(abstract_class_use, tree);
-extern int abstract_virtuals_error_sfinae	(tree, tree, tsubst_flags_t);
-extern int abstract_virtuals_error_sfinae	(abstract_class_use, tree, tsubst_flags_t);
+extern int abstract_virtuals_error		(tree, tree,
+						 tsubst_flags_t = tf_warning_or_error);
+extern int abstract_virtuals_error		(abstract_class_use, tree,
+						 tsubst_flags_t = tf_warning_or_error);
 
 extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
 extern tree split_nonconstant_init		(tree, tree);
@@ -8412,8 +8412,10 @@ extern bool require_potential_constant_expression (tree);
 extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
-extern tree cxx_constant_value			(tree, tree = NULL_TREE);
-extern tree cxx_constant_value_sfinae		(tree, tree, tsubst_flags_t);
+extern tree cxx_constant_value			(tree, tree = NULL_TREE,
+						 tsubst_flags_t = tf_error);
+inline tree cxx_constant_value (tree t, tsubst_flags_t complain)
+{ return cxx_constant_value (t, NULL_TREE, complain); }
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);

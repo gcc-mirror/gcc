@@ -11738,18 +11738,19 @@ maybe_warn_for_null_address (location_t loc, tree op, tree_code code)
       || from_macro_expansion_at (loc))
     return;
 
+  bool w;
   if (code == EQ_EXPR)
-    warning_at (loc, OPT_Waddress,
-		"the comparison will always evaluate as %<false%> "
-		"for the address of %qE will never be NULL",
-		op);
+    w = warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the address of %qE will never be NULL",
+		    op);
   else
-    warning_at (loc, OPT_Waddress,
-		"the comparison will always evaluate as %<true%> "
-		"for the address of %qE will never be NULL",
-		op);
+    w = warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the address of %qE will never be NULL",
+		    op);
 
-  if (DECL_P (op))
+  if (w && DECL_P (op))
     inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
 }
 
@@ -14238,11 +14239,18 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 	}
 
+  tree *grp_start_p = NULL, grp_sentinel = NULL_TREE;
+
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
       bool remove = false;
       bool need_complete = false;
       bool need_implicitly_determined = false;
+
+      /* We've reached the end of a list of expanded nodes.  Reset the group
+	 start pointer.  */
+      if (c == grp_sentinel)
+	grp_start_p = NULL;
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -15001,6 +15009,9 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
+	      grp_start_p = pc;
+	      grp_sentinel = OMP_CLAUSE_CHAIN (c);
+
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
 	      else
@@ -15644,7 +15655,19 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	}
 
       if (remove)
-	*pc = OMP_CLAUSE_CHAIN (c);
+	{
+	  if (grp_start_p)
+	    {
+	      /* If we found a clause to remove, we want to remove the whole
+		 expanded group, otherwise gimplify
+		 (omp_resolve_clause_dependencies) can get confused.  */
+	      *grp_start_p = grp_sentinel;
+	      pc = grp_start_p;
+	      grp_start_p = NULL;
+	    }
+	  else
+	    *pc = OMP_CLAUSE_CHAIN (c);
+	}
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }

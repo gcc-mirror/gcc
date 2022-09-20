@@ -2026,10 +2026,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       // To implement the splice (and merge) bits of N1599.
       void
-      _M_check_equal_allocators(list& __x) _GLIBCXX_NOEXCEPT
+      _M_check_equal_allocators(const list& __x) _GLIBCXX_NOEXCEPT
       {
-	if (std::__alloc_neq<typename _Base::_Node_alloc_type>::
-	    _S_do_it(_M_get_Node_allocator(), __x._M_get_Node_allocator()))
+	if (_M_get_Node_allocator() != __x._M_get_Node_allocator())
 	  __builtin_abort();
       }
 

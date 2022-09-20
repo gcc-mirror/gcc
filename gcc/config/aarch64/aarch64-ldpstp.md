@@ -83,8 +83,7 @@
 	(match_operand:DREG 1 "register_operand" ""))
    (set (match_operand:DREG2 2 "memory_operand" "")
 	(match_operand:DREG2 3 "register_operand" ""))]
-  "TARGET_SIMD
-   && aarch64_operands_ok_for_ldpstp (operands, false, <DREG:MODE>mode)"
+  "aarch64_operands_ok_for_ldpstp (operands, false, <DREG:MODE>mode)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (set (match_dup 2) (match_dup 3))])]
 {
@@ -96,7 +95,7 @@
 	(match_operand:VQ 1 "memory_operand" ""))
    (set (match_operand:VQ2 2 "register_operand" "")
 	(match_operand:VQ2 3 "memory_operand" ""))]
-  "TARGET_SIMD
+  "TARGET_FLOAT
    && aarch64_operands_ok_for_ldpstp (operands, true, <VQ:MODE>mode)
    && (aarch64_tune_params.extra_tuning_flags
 	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
@@ -111,7 +110,7 @@
 	(match_operand:VQ 1 "register_operand" ""))
    (set (match_operand:VQ2 2 "memory_operand" "")
 	(match_operand:VQ2 3 "register_operand" ""))]
-  "TARGET_SIMD
+  "TARGET_FLOAT
    && aarch64_operands_ok_for_ldpstp (operands, false, <VQ:MODE>mode)
    && (aarch64_tune_params.extra_tuning_flags
 	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
@@ -306,7 +305,7 @@
    (set (match_operand:VP_2E 6 "memory_operand" "")
         (match_operand:VP_2E 7 "aarch64_reg_or_zero" ""))
    (match_dup 8)]
-  "TARGET_SIMD
+  "TARGET_FLOAT
    && aarch64_operands_adjust_ok_for_ldpstp (operands, false, <MODE>mode)"
   [(const_int 0)]
 {
@@ -327,7 +326,7 @@
    (set (match_operand:VP_2E 6 "register_operand" "")
         (match_operand:VP_2E 7 "memory_operand" ""))
    (match_dup 8)]
-  "TARGET_SIMD
+  "TARGET_FLOAT
    && aarch64_operands_adjust_ok_for_ldpstp (operands, true, <MODE>mode)"
   [(const_int 0)]
 {

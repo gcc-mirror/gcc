@@ -51,19 +51,23 @@
 
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
+#define NULL __null
 
 namespace std
 {
-  extern "C" void abort(void) throw () _GLIBCXX_NORETURN;
-  extern "C" int atexit(void (*)(void)) throw ();
-  extern "C" void exit(int) throw () _GLIBCXX_NORETURN;
+  extern "C" void abort(void) _GLIBCXX_NOTHROW _GLIBCXX_NORETURN;
+  extern "C" int atexit(void (*)(void)) _GLIBCXX_NOTHROW;
+  extern "C" void exit(int) _GLIBCXX_NOTHROW _GLIBCXX_NORETURN;
 #if __cplusplus >= 201103L
 # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
-  extern "C" int at_quick_exit(void (*)(void)) throw ();
+  extern "C" int at_quick_exit(void (*)(void)) _GLIBCXX_NOTHROW;
 # endif
 # ifdef _GLIBCXX_HAVE_QUICK_EXIT
-  extern "C" void quick_exit(int) throw() _GLIBCXX_NORETURN;
+  extern "C" void quick_exit(int) _GLIBCXX_NOTHROW_GLIBCXX_NORETURN;
 # endif
+#if _GLIBCXX_USE_C99_STDLIB
+  extern "C" void _Exit(int) _GLIBCXX_NOTHROW _GLIBCXX_NORETURN;
+#endif
 #endif
 } // namespace std
 
@@ -174,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifndef __CORRECT_ISO_CPP_STDLIB_H_PROTO
   inline ldiv_t
-  div(long __i, long __j) { return ldiv(__i, __j); }
+  div(long __i, long __j) _GLIBCXX_NOTHROW { return ldiv(__i, __j); }
 #endif
 
 
@@ -200,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::lldiv_t;
 #endif
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
-  extern "C" void (_Exit)(int) throw () _GLIBCXX_NORETURN;
+  extern "C" void (_Exit)(int) _GLIBCXX_NOTHROW _GLIBCXX_NORETURN;
 #endif
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::_Exit;
@@ -217,11 +221,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  extern "C" long long int (atoll)(const char *) throw ();
+  extern "C" long long int (atoll)(const char *) _GLIBCXX_NOTHROW;
   extern "C" long long int
-    (strtoll)(const char * __restrict, char ** __restrict, int) throw ();
+    (strtoll)(const char * __restrict, char ** __restrict, int) _GLIBCXX_NOTHROW;
   extern "C" unsigned long long int
-    (strtoull)(const char * __restrict, char ** __restrict, int) throw ();
+    (strtoull)(const char * __restrict, char ** __restrict, int) _GLIBCXX_NOTHROW;
 #endif
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::atoll;

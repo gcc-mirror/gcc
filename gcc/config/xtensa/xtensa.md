@@ -2305,6 +2305,27 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand 0 "")
+		    (const_int 0))
+	      (match_operand 1 "")
+	      (match_operand 2 "")])]
+  ""
+{
+  int i;
+
+  emit_call_insn (gen_call (operands[0], const0_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  emit_insn (gen_blockage ());
+  DONE;
+})
+
 (define_insn "entry"
   [(set (reg:SI A1_REG)
 	(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "i")]

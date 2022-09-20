@@ -167,7 +167,6 @@ range_query::free_value_range_equiv (value_range_equiv *v)
 const class value_range_equiv *
 range_query::get_value_range (const_tree expr, gimple *stmt)
 {
-  gcc_checking_assert (value_range_equiv::supports_p (TREE_TYPE (expr)));
   int_range_max r;
   if (range_of_expr (r, const_cast<tree> (expr), stmt))
     return new (equiv_alloc->allocate ()) value_range_equiv (r);
@@ -218,22 +217,10 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
 
     case REAL_CST:
       {
-	if (TREE_OVERFLOW_P (expr))
-	  expr = drop_tree_overflow (expr);
-
 	frange &f = as_a <frange> (r);
 	f.set (expr, expr);
-
-	// Singletons from the tree world have known properties.
-	REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (expr);
-	if (real_isnan (rv))
-	  f.set_nan (fp_prop::YES);
-	else
-	  f.set_nan (fp_prop::NO);
-	if (real_isneg (rv))
-	  f.set_signbit (fp_prop::YES);
-	else
-	  f.set_signbit (fp_prop::NO);
+	if (!real_isnan (TREE_REAL_CST_PTR (expr)))
+	  f.clear_nan ();
 	return true;
       }
 

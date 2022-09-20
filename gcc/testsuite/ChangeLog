@@ -1,3 +1,249 @@
+2022-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/106947
+	* c-c++-common/Waddress-7.c: New test.
+
+2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/modes_1.f90: New test.
+
+2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/rounding_2.f90: New test.
+
+2022-09-18  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/target-lambda-1.C: Adjust expected scan output.
+
+2022-09-18  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* gcc.dg/tree-ssa/gen-vect-34.c: Skip RISC-V targets.
+
+2022-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/typename-friend_a.C: New test.
+	* g++.dg/modules/typename-friend_b.C: New test.
+
+2022-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106958
+	* gcc.c-torture/compile/pr106958.c: New test.
+
+2022-09-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Fix dg-final-use-autofdo.
+
+2022-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92505
+	* g++.dg/cpp0x/constexpr-mutable3.C: New test.
+	* g++.dg/cpp1y/constexpr-mutable1.C: New test.
+
+2022-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106858
+	* g++.dg/gomp/map-3.C: New test.
+
+2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106857
+	* gfortran.dg/pr106857.f90: New test.
+
+2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104314
+	* gfortran.dg/pr104314.f90: New test.
+
+2022-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-float-2.c: Require inff effective-target.
+	* gcc.dg/c2x-float-11.c: New test.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* g++.dg/tree-ssa/pr106922.C: New testcase.
+
+2022-09-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/target-50.c: Modify scan pattern.
+
+2022-09-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/mdc-2.c: Update expected errors.
+	* g++.dg/goacc/mdc.C: Likewise.
+
+2022-09-15  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106550
+	* gcc.target/powerpc/pr106550.c: New test.
+	* gcc.target/powerpc/pr106550_1.c: New test.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/goacc/member-array-acc.C: New test.
+	* g++.dg/gomp/member-array-omp.C: New test.
+	* g++.dg/gomp/target-3.C: Update expected output.
+	* g++.dg/gomp/target-lambda-1.C: Likewise.
+	* g++.dg/gomp/target-this-2.C: Likewise.
+	* c-c++-common/goacc/deep-copy-arrayofstruct.c: Move test from here.
+	* c-c++-common/gomp/target-50.c: New test.
+
+2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106938
+	* gcc.dg/pr106938.c: New testcase.
+
+2022-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106936
+	* g++.dg/tree-ssa/pr106936.C: New test.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/target-lambda-1.C: Adjust expected output.
+	* g++.dg/gomp/target-this-3.C: Likewise.
+	* g++.dg/gomp/target-this-4.C: Likewise.
+
+2022-09-14  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-one-insn-bool.c: Add -mzarch.
+	* gcc.target/s390/ifcvt-one-insn-char.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-bool.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-int.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Add -mzarch and change
+	long into long long.
+
+2022-09-14  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vperm-rev-z14.c: Add -save-temps.
+	* gcc.target/s390/vector/vperm-rev-z15.c: Likewise.
+
+2022-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106878
+	* gcc.c-torture/compile/pr106878.c: New test.
+
+2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* gfortran.dg/pr106934.f90: New testcase.
+
+2022-09-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106905.c: New test.
+	* gcc.target/ia64/pr106905.c: New test.
+
+2022-09-14  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	PR target/95720
+	* lib/g++.exp: Moved gluefile block to after flags have been
+	  prefixed for the target_compile call.
+	* lib/gcc.exp: Likewise.
+	* lib/wrapper.exp: Reset adjusted state flag.
+
+2022-09-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106877
+	* g++.dg/ext/pr106877.C: New test case.
+
+2022-09-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp1z/noexcept-type26.C: New test.
+	* g++.dg/cpp2a/explicit19.C: New test.
+	* g++.dg/ext/integer-pack6.C: New test.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* gcc.target/powerpc/pr104482.c: New test.
+
+2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* g++.target/powerpc/pr105485.C: New test.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_20.c: New test.
+	* gcc.target/aarch64/ldp_stp_21.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_22.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_23.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_24.c: Likewise.
+	* gcc.target/aarch64/movv16qi_1.c (gpr_to_gpr): New function.
+	* gcc.target/aarch64/movv8qi_1.c (gpr_to_gpr): Likewise.
+	* gcc.target/aarch64/movv16qi_2.c: New test.
+	* gcc.target/aarch64/movv16qi_3.c: Likewise.
+	* gcc.target/aarch64/movv2di_1.c: Likewise.
+	* gcc.target/aarch64/movv2x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv2x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv3x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv3x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv4x16qi_1.c: Likewise.
+	* gcc.target/aarch64/movv4x8qi_1.c: Likewise.
+	* gcc.target/aarch64/movv8qi_2.c: Likewise.
+	* gcc.target/aarch64/movv8qi_3.c: Likewise.
+	* gcc.target/aarch64/vect_unary_2.c: Likewise.
+
+2022-09-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/ls64_asm_2.c: New test.
+
+2022-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101906
+	* g++.dg/template/evaluated1.C: New test.
+	* g++.dg/template/evaluated1a.C: New test.
+	* g++.dg/template/evaluated1b.C: New test.
+	* g++.dg/template/evaluated1c.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106893
+	PR c++/90451
+	* g++.dg/cpp1y/auto-fn65.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93259
+	* g++.dg/cpp0x/initlist-array17.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106567
+	* g++.dg/cpp0x/lambda/lambda-array4.C: New test.
+
+2022-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/86491
+	* g++.dg/warn/anonymous-namespace-3.C: Use separate dg-warning
+	directives for C++98 and everything else.
+	* g++.dg/warn/Wsubobject-linkage-5.C: New test.
+
+2022-09-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/c2x-stdatomic-var-init-1.c: New test.
+
+2022-09-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/gcov/gcov.exp: Respect triplet when looking for gcov.
+	* gcc.misc-tests/gcov.exp: Likewise.
+
+2022-09-12  Joffrey Huguet  <huguet@adacore.com>
+
+	* gnat.dg/aspect2.adb: Removed.
+	* gnat.dg/aspect2.ads: Removed.
+	* gnat.dg/config_pragma1.adb: Removed.
+	* gnat.dg/config_pragma1_pkg.ads: Removed.
+	* gnat.dg/equal8.adb: Removed.
+	* gnat.dg/equal8.ads: Removed.
+	* gnat.dg/equal8_pkg.ads: Removed.
+	* gnat.dg/formal_containers.adb: Removed.
+	* gnat.dg/iter1.adb: Removed.
+	* gnat.dg/iter1.ads: Removed.
+
 2022-09-11  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106845

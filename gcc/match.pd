@@ -1763,6 +1763,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && (int_fits_type_p (@1, TREE_TYPE (@0))
 	     || tree_nop_conversion_p (TREE_TYPE (@0), type)))
 	|| types_match (@0, @1))
+       && !POINTER_TYPE_P (TREE_TYPE (@0))
+       && TREE_CODE (TREE_TYPE (@0)) != OFFSET_TYPE
        /* ???  This transform conflicts with fold-const.cc doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	  constants (if x has signed type, the sign bit cannot be set
@@ -1799,7 +1801,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (GIMPLE
        && TREE_CODE (@1) != INTEGER_CST
        && tree_nop_conversion_p (type, TREE_TYPE (@2))
-       && types_match (type, @0))
+       && types_match (type, @0)
+       && !POINTER_TYPE_P (TREE_TYPE (@0))
+       && TREE_CODE (TREE_TYPE (@0)) != OFFSET_TYPE)
    (bitop @0 (convert @1)))))
 
 (for bitop (bit_and bit_ior)

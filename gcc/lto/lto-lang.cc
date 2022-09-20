@@ -1239,7 +1239,6 @@ lto_build_c_type_nodes (void)
 {
   gcc_assert (void_type_node);
 
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node
     = build_pointer_type (build_qualified_type (char_type_node, TYPE_QUAL_CONST));

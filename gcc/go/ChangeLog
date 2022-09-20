@@ -1,3 +1,8 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* go-lang.cc (go_langhook_init): Do not initialize
+	void_list_node.
+
 2022-09-02  Martin Liska  <mliska@suse.cz>
 
 	* go-lang.cc (go_langhook_pushdecl): Remove -gstabs option support, DBX-related

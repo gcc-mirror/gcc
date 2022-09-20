@@ -4472,7 +4472,7 @@ xtensa_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 static bool
 xtensa_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == GP_RETURN);
+  return (regno >= GP_RETURN && regno < GP_RETURN + GP_RETURN_REG_COUNT);
 }
 
 /* The static chain is passed in memory.  Provide rtx giving 'mem'

@@ -6431,7 +6431,7 @@ gfc_simplify_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
       /* Copy only those elements of ARRAY to RESULT whose
 	 MASK equals .TRUE..  */
       mask_ctor = gfc_constructor_first (mask->value.constructor);
-      while (mask_ctor)
+      while (mask_ctor && array_ctor)
 	{
 	  if (mask_ctor->expr->value.logical)
 	    {

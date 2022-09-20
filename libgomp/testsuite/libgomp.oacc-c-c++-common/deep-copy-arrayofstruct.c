@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do run } */
 
 #include <stdlib.h>
 #include <stdio.h>

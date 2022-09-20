@@ -442,6 +442,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
+#if _GLIBCXX_HOSTED
   // Helpers for streambuf iterators (either istream or ostream).
   // NB: avoid including <iosfwd>, relatively large.
   template<typename _CharT>
@@ -479,6 +480,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	istreambuf_iterator<_CharT, char_traits<_CharT> >,
 	istreambuf_iterator<_CharT, char_traits<_CharT> >,
 	_GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*>);
+#endif // HOSTED
 
   template<bool _IsMove, typename _II, typename _OI>
     _GLIBCXX20_CONSTEXPR
@@ -574,6 +576,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       return __result;
     }
 
+#if _GLIBCXX_HOSTED
   template<typename _CharT, typename _Size>
     typename __gnu_cxx::__enable_if<
       __is_char<_CharT>::__value, _CharT*>::__type
@@ -587,6 +590,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __copy_n_a(istreambuf_iterator<_CharT, char_traits<_CharT> >, _Size,
 	       _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*>,
 	       bool);
+#endif
 
   /**
    *  @brief Copies the range [first,last) into result.

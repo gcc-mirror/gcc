@@ -506,43 +506,7 @@ namespace ranges
 
   inline constexpr __find_end_fn find_end{};
 
-  struct __adjacent_find_fn
-  {
-    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     typename _Proj = identity,
-	     indirect_binary_predicate<projected<_Iter, _Proj>,
-				       projected<_Iter, _Proj>> _Pred
-	       = ranges::equal_to>
-      constexpr _Iter
-      operator()(_Iter __first, _Sent __last,
-		 _Pred __pred = {}, _Proj __proj = {}) const
-      {
-	if (__first == __last)
-	  return __first;
-	auto __next = __first;
-	for (; ++__next != __last; __first = __next)
-	  {
-	    if (std::__invoke(__pred,
-			      std::__invoke(__proj, *__first),
-			      std::__invoke(__proj, *__next)))
-	      return __first;
-	  }
-	return __next;
-      }
-
-    template<forward_range _Range, typename _Proj = identity,
-	     indirect_binary_predicate<
-	       projected<iterator_t<_Range>, _Proj>,
-	       projected<iterator_t<_Range>, _Proj>> _Pred = ranges::equal_to>
-      constexpr borrowed_iterator_t<_Range>
-      operator()(_Range&& __r, _Pred __pred = {}, _Proj __proj = {}) const
-      {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::move(__pred), std::move(__proj));
-      }
-  };
-
-  inline constexpr __adjacent_find_fn adjacent_find{};
+  // adjacent_find is defined in <bits/ranges_util.h>.
 
   struct __is_permutation_fn
   {

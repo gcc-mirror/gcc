@@ -402,7 +402,7 @@ add_decl_to_level (cp_binding_level *b, tree decl)
       && ((VAR_P (decl) && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	  || (TREE_CODE (decl) == FUNCTION_DECL
 	      && (!TREE_PUBLIC (decl)
-		  || decl_anon_ns_mem_p (decl)
+		  || decl_internal_context_p (decl)
 		  || DECL_DECLARED_INLINE_P (decl)))))
     vec_safe_push (static_decls, decl);
 }

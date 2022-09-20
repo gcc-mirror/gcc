@@ -1,3 +1,8 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* d-builtins.cc (d_build_c_type_nodes): Do not initialize
+	void_list_node.
+
 2022-08-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 817610b16d.

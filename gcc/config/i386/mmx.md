@@ -1629,6 +1629,160 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; Parallel single-precision floating point rounding operations.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_expand "nearbyintv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "register_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "operands[2] = GEN_INT (ROUND_MXCSR | ROUND_NO_EXC);")
+
+(define_expand "rintv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "register_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "operands[2] = GEN_INT (ROUND_MXCSR);")
+
+(define_expand "ceilv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "register_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && !flag_trapping_math
+   && TARGET_MMX_WITH_SSE"
+  "operands[2] = GEN_INT (ROUND_CEIL | ROUND_NO_EXC);")
+
+(define_expand "lceilv2sfv2si2"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V2SF 1 "register_operand")]
+ "TARGET_SSE4_1 && !flag_trapping_math
+  && TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V2SFmode);
+  emit_insn (gen_ceilv2sf2 (tmp, operands[1]));
+  emit_insn (gen_fix_truncv2sfv2si2 (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "floorv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "vector_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && !flag_trapping_math
+  && TARGET_MMX_WITH_SSE"
+  "operands[2] = GEN_INT (ROUND_FLOOR | ROUND_NO_EXC);")
+
+(define_expand "lfloorv2sfv2si2"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V2SF 1 "register_operand")]
+ "TARGET_SSE4_1 && !flag_trapping_math
+  && TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V2SFmode);
+  emit_insn (gen_floorv2sf2 (tmp, operands[1]));
+  emit_insn (gen_fix_truncv2sfv2si2 (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "btruncv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "register_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && !flag_trapping_math"
+  "operands[2] = GEN_INT (ROUND_TRUNC | ROUND_NO_EXC);")
+
+(define_insn "*mmx_roundv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,v")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "register_operand" "Yr,x,v")
+	   (match_operand:SI 2 "const_0_to_15_operand")]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "%vroundps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssecvt")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "lrintv2sfv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=v")
+	(unspec:V2SI
+	  [(match_operand:V2SF 1 "register_operand" "v")]
+	  UNSPEC_FIX_NOTRUNC))]
+  "TARGET_MMX_WITH_SSE"
+  "%vcvtps2dq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (match_test "TARGET_AVX")
+     (const_string "*")
+     (const_string "1")))
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_expand "roundv2sf2"
+  [(set (match_dup 3)
+	(plus:V2SF
+	  (match_operand:V2SF 1 "register_operand")
+	  (match_dup 2)))
+   (set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF
+	  [(match_dup 3) (match_dup 4)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1 && !flag_trapping_math
+   && TARGET_MMX_WITH_SSE"
+{
+  const struct real_format *fmt;
+  REAL_VALUE_TYPE pred_half, half_minus_pred_half;
+  rtx half, vec_half;
+
+  /* load nextafter (0.5, 0.0) */
+  fmt = REAL_MODE_FORMAT (SFmode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1, SFmode);
+  real_arithmetic (&pred_half, MINUS_EXPR, &dconsthalf, &half_minus_pred_half);
+  half = const_double_from_real_value (pred_half, SFmode);
+
+  vec_half = ix86_build_const_vector (V2SFmode, true, half);
+  vec_half = force_reg (V2SFmode, vec_half);
+
+  operands[2] = gen_reg_rtx (V2SFmode);
+  emit_insn (gen_copysignv2sf3 (operands[2], vec_half, operands[1]));
+
+  operands[3] = gen_reg_rtx (V2SFmode);
+  operands[4] = GEN_INT (ROUND_TRUNC);
+})
+
+(define_expand "lroundv2sfv2si2"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V2SF 1 "register_operand")]
+ "TARGET_SSE4_1 && !flag_trapping_math
+  && TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V2SFmode);
+  emit_insn (gen_roundv2sf2 (tmp, operands[1]));
+  emit_insn (gen_fix_truncv2sfv2si2 (operands[0], tmp));
+  DONE;
+})
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; Parallel half-precision floating point arithmetic
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

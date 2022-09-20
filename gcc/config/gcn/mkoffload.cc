@@ -805,7 +805,7 @@ main (int argc, char **argv)
   FILE *cfile = stdout;
   const char *outname = 0;
 
-  progname = "mkoffload";
+  progname = tool_name;
   diagnostic_initialize (global_dc, 0);
 
   obstack_init (&files_to_cleanup);

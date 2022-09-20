@@ -1030,7 +1030,7 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 	if (src.get_operand (tmp, arg))
 	  {
 	    bool signbit;
-	    if (tmp.known_signbit (signbit))
+	    if (tmp.signbit_p (signbit))
 	      {
 		if (signbit)
 		  r.set_nonzero (type);

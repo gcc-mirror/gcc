@@ -113,12 +113,11 @@ class GTY (()) frange_storage_slot
   frange_storage_slot (const frange &r) { set_frange (r); }
   DISABLE_COPY_AND_ASSIGN (frange_storage_slot);
 
-  // We can get away with just storing the properties and the
-  // endpoints because the type can be gotten from the SSA, and
-  // UNDEFINED is unsupported, so it can only be a VR_RANGE.
+  enum value_range_kind m_kind;
   REAL_VALUE_TYPE m_min;
   REAL_VALUE_TYPE m_max;
-  frange_props m_props;
+  bool m_pos_nan;
+  bool m_neg_nan;
 };
 
 class obstack_vrange_allocator final: public vrange_allocator

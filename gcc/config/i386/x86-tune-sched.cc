@@ -73,9 +73,23 @@ ix86_issue_rate (void)
     case PROCESSOR_SANDYBRIDGE:
     case PROCESSOR_HASWELL:
     case PROCESSOR_TREMONT:
+    case PROCESSOR_SKYLAKE:
+    case PROCESSOR_SKYLAKE_AVX512:
+    case PROCESSOR_CASCADELAKE:
+    case PROCESSOR_CANNONLAKE:
     case PROCESSOR_ALDERLAKE:
     case PROCESSOR_GENERIC:
       return 4;
+
+    case PROCESSOR_ICELAKE_CLIENT:
+    case PROCESSOR_ICELAKE_SERVER:
+    case PROCESSOR_TIGERLAKE:
+    case PROCESSOR_COOPERLAKE:
+    case PROCESSOR_ROCKETLAKE:
+      return 5;
+
+    case PROCESSOR_SAPPHIRERAPIDS:
+      return 6;
 
     default:
       return 1;

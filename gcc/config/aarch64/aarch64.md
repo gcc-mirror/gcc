@@ -370,8 +370,11 @@
 ;; Attributes of the architecture required to support the instruction (or
 ;; alternative). This attribute is used to compute attribute "enabled", use type
 ;; "any" to enable an alternative in all cases.
+;;
+;; As a convenience, "fp_q" means "fp" + the ability to move between
+;; Q registers and is equivalent to "simd".
 
-(define_enum "arches" [ any rcpc8_4 fp simd sve fp16])
+(define_enum "arches" [ any rcpc8_4 fp fp_q simd sve fp16])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -399,7 +402,7 @@
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))
 
-	(and (eq_attr "arch" "simd")
+	(and (eq_attr "arch" "fp_q, simd")
 	     (match_test "TARGET_SIMD"))
 
 	(and (eq_attr "arch" "fp16")
@@ -6819,8 +6822,8 @@
 )
 
 (define_expand "@aarch64_reload_mov<mode>"
-  [(set (match_operand:TX 0 "register_operand" "=w")
-        (match_operand:TX 1 "register_operand" "w"))
+  [(set (match_operand:VTX 0 "register_operand" "=w")
+        (match_operand:VTX 1 "register_operand" "w"))
    (clobber (match_operand:DI 2 "register_operand" "=&r"))
   ]
   "TARGET_FLOAT"

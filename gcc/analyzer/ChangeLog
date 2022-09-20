@@ -1,3 +1,8 @@
+2022-09-12  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc (region_model::maybe_complain_about_infoleak):
+	  Remove unused fields.
+
 2022-09-11  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106845

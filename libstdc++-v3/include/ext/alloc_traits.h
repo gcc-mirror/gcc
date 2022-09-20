@@ -32,9 +32,6 @@
 #pragma GCC system_header
 
 # include <bits/alloc_traits.h>
-#if __cplusplus < 201103L
-# include <bits/allocator.h>  // for __alloc_swap
-#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {

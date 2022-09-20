@@ -1260,6 +1260,11 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   enum tree_code bcode;
   gimple *g;
 
+  /* For an unresolved overloaded builtin, return early here since there
+     is no builtin info for it and we are unable to fold it.  */
+  if (fn_code > RS6000_OVLD_NONE)
+    return false;
+
   size_t uns_fncode = (size_t) fn_code;
   enum insn_code icode = rs6000_builtin_info[uns_fncode].icode;
   const char *fn_name1 = rs6000_builtin_info[uns_fncode].bifname;
@@ -3256,6 +3261,14 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   enum rs6000_gen_builtins fcode
     = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
+
+  /* Emit error message if it's an unresolved overloaded builtin.  */
+  if (fcode > RS6000_OVLD_NONE)
+    {
+      error ("unresolved overload for builtin %qF", fndecl);
+      return const0_rtx;
+    }
+
   size_t uns_fcode = (size_t)fcode;
   enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
 

@@ -4623,7 +4623,7 @@ cxx_init_decl_processing (void)
   record_unknown_type (init_list_type_node, "init list");
 
   /* Used when parsing to distinguish parameter-lists () and (void).  */
-  explicit_void_list_node = build_void_list_node ();
+  explicit_void_list_node = build_tree_list (NULL_TREE, void_type_node);
 
   {
     /* Make sure we get a unique function type, so we can give
@@ -8140,6 +8140,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
 						      tf_warning_or_error);
 	  d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
+	  /* Force auto deduction now.  Use tf_none to avoid redundant warnings
+	     on deprecated-14.C.  */
+	  mark_single_function (d_init, tf_none);
 	}
       enum auto_deduction_context adc = adc_variable_type;
       if (DECL_DECOMPOSITION_P (decl))
@@ -18447,14 +18450,6 @@ cp_tree_node_structure (union lang_tree_node * t)
     }
 }
 
-/* Build the void_list_node (void_type_node having been created).  */
-tree
-build_void_list_node (void)
-{
-  tree t = build_tree_list (NULL_TREE, void_type_node);
-  return t;
-}
-
 bool
 cp_missing_noreturn_ok_p (tree decl)
 {
@@ -18553,8 +18548,8 @@ build_explicit_specifier (tree expr, tsubst_flags_t complain)
     return expr;
 
   expr = build_converted_constant_bool_expr (expr, complain);
-  expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-  expr = cxx_constant_value (expr);
+  expr = instantiate_non_dependent_expr (expr, complain);
+  expr = cxx_constant_value (expr, complain);
   return expr;
 }
 
