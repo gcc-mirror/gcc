@@ -663,6 +663,20 @@ private:
   bool m_is_pos;
 } op_cfn_goacc_dim_size (false), op_cfn_goacc_dim_pos (true);
 
+
+// Implement range operator for CFN_BUILT_IN_
+class cfn_parity : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &,
+			   const irange &, relation_kind) const
+  {
+    r.set (build_zero_cst (type), build_one_cst (type));
+    return true;
+  }
+} op_cfn_parity;
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -793,6 +807,11 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_op1 = gimple_call_arg (call, 0);
       m_valid = true;
       m_int = &op_cfn_goacc_dim_pos;
+      break;
+
+    CASE_CFN_PARITY:
+      m_valid = true;
+      m_int = &op_cfn_parity;
       break;
 
     default:

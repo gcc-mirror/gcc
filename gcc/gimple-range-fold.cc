@@ -534,6 +534,16 @@ fold_using_range::range_of_range_op (vrange &r,
   tree lhs = handler.lhs ();
   tree op1 = handler.operand1 ();
   tree op2 = handler.operand2 ();
+
+  // Certain types of builtin functions may have no arguments.
+  if (!op1)
+    {
+      Value_Range r1 (type);
+      if (!handler.fold_range (r, type, r1, r1))
+	r.set_varying (type);
+      return true;
+    }
+
   Value_Range range1 (TREE_TYPE (op1));
   Value_Range range2 (op2 ? TREE_TYPE (op2) : TREE_TYPE (op1));
 
@@ -823,7 +833,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 // If a range cannot be calculated, return false.
 
 bool
-fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &src)
+fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &)
 {
   tree type = gimple_range_type (call);
   if (!type)
@@ -832,9 +842,7 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &src)
   tree lhs = gimple_call_lhs (call);
   bool strict_overflow_p;
 
-  if (range_of_builtin_call (r, call, src))
-    ;
-  else if (gimple_stmt_nonnegative_warnv_p (call, &strict_overflow_p))
+  if (gimple_stmt_nonnegative_warnv_p (call, &strict_overflow_p))
     r.set_nonnegative (type);
   else if (gimple_call_nonnull_result_p (call)
 	   || gimple_call_nonnull_arg (call))
@@ -851,50 +859,6 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &src)
     }
   return true;
 }
-
-// For a builtin in CALL, return a range in R if known and return
-// TRUE.  Otherwise return FALSE.
-
-bool
-fold_using_range::range_of_builtin_call (vrange &r, gcall *call,
-					 fur_source &src)
-{
-  combined_fn func = gimple_call_combined_fn (call);
-  if (func == CFN_LAST)
-    return false;
-
-  tree type = gimple_range_type (call);
-  gcc_checking_assert (type);
-
-  if (irange::supports_p (type))
-    return range_of_builtin_int_call (as_a <irange> (r), call, src);
-
-  return false;
-}
-
-bool
-fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
-					     fur_source &)
-{
-  combined_fn func = gimple_call_combined_fn (call);
-  if (func == CFN_LAST)
-    return false;
-
-  tree type = gimple_range_type (call);
-  scalar_int_mode mode;
-
-  switch (func)
-    {
-    CASE_CFN_PARITY:
-      r.set (build_zero_cst (type), build_one_cst (type));
-      return true;
-
-    default:
-      break;
-    }
-  return false;
-}
-
 
 // Calculate a range for COND_EXPR statement S and return it in R.
 // If a range cannot be calculated, return false.
