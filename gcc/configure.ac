@@ -25,6 +25,7 @@
 
 AC_INIT
 AC_CONFIG_SRCDIR(tree.cc)
+AC_CONFIG_MACRO_DIRS([../config] [..])
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 gcc_version=`cat $srcdir/BASE-VER`
