@@ -489,6 +489,76 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
   return true;
 }
 
+// Implement range operator for CFN_BUILT_IN_CTZ
+class cfn_ctz : public range_operator
+{
+public:
+  cfn_ctz (bool internal) { m_gimple_call_internal_p = internal; }
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const;
+private:
+  bool m_gimple_call_internal_p;
+} op_cfn_ctz (false), op_cfn_ctz_internal (true);
+
+bool
+cfn_ctz::fold_range (irange &r, tree type, const irange &lh,
+		     const irange &, relation_kind) const
+{
+  if (lh.undefined_p ())
+    return false;
+  int prec = TYPE_PRECISION (lh.type ());
+  int mini = 0;
+  int maxi = prec - 1;
+  int zerov = 0;
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (lh.type ());
+
+  if (m_gimple_call_internal_p)
+    {
+      if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
+	  && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
+	{
+	  // Handle only the two common values.
+	  if (zerov == -1)
+	    mini = -1;
+	  else if (zerov == prec)
+	    maxi = prec;
+	  else
+	    // Magic value to give up, unless we can prove arg is non-zero.
+	    mini = -2;
+	}
+    }
+  // If arg is non-zero, then use [0, prec - 1].
+  if (!range_includes_zero_p (&lh))
+    {
+      mini = 0;
+      maxi = prec - 1;
+    }
+  // If some high bits are known to be zero, we can decrease
+  // the maximum.
+  wide_int max = lh.upper_bound ();
+  if (max == 0)
+    {
+      // Argument is [0, 0].  If CTZ_DEFINED_VALUE_AT_ZERO
+      // is 2 with value -1 or prec, return [-1, -1] or [prec, prec].
+      // Otherwise ignore the range.
+      if (mini == -1)
+	maxi = -1;
+      else if (maxi == prec)
+	mini = prec;
+    }
+  // If value at zero is prec and 0 is in the range, we can't lower
+  // the upper bound.  We could create two separate ranges though,
+  // [0,floor_log2(max)][prec,prec] though.
+  else if (maxi != prec)
+    maxi = wi::floor_log2 (max);
+
+  if (mini == -2)
+    return false;
+  r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
+  return true;
+}
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -551,6 +621,15 @@ gimple_range_op_handler::maybe_builtin_call ()
 	m_int = &op_cfn_clz_internal;
       else
 	m_int = &op_cfn_clz;
+      break;
+
+    CASE_CFN_CTZ:
+      m_op1 = gimple_call_arg (call, 0);
+      m_valid = true;
+      if (gimple_call_internal_p (call))
+	m_int = &op_cfn_ctz_internal;
+      else
+	m_int = &op_cfn_ctz;
       break;
 
     default:

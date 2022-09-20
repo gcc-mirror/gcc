@@ -917,72 +917,13 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 
   tree type = gimple_range_type (call);
   tree arg;
-  int mini, maxi, zerov = 0, prec;
+  int prec;
   scalar_int_mode mode;
 
   switch (func)
     {
     CASE_CFN_PARITY:
       r.set (build_zero_cst (type), build_one_cst (type));
-      return true;
-
-    CASE_CFN_CTZ:
-      // __builtin_ctz* return [0, prec-1], except for when the
-      // argument is 0, but that is undefined behavior.
-      //
-      // For __builtin_ctz* consider argument of 0 always undefined
-      // behavior, for internal fns depending on CTZ_DEFINED_VALUE_AT_ZERO.
-      arg = gimple_call_arg (call, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      mini = 0;
-      maxi = prec - 1;
-      mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-      if (gimple_call_internal_p (call))
-	{
-	  if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
-	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
-	    {
-	      // Handle only the two common values.
-	      if (zerov == -1)
-		mini = -1;
-	      else if (zerov == prec)
-		maxi = prec;
-	      else
-		// Magic value to give up, unless we can prove arg is non-zero.
-		mini = -2;
-	    }
-	}
-      src.get_operand (r, arg);
-      if (!r.undefined_p ())
-	{
-	  // If arg is non-zero, then use [0, prec - 1].
-	  if (!range_includes_zero_p (&r))
-	    {
-	      mini = 0;
-	      maxi = prec - 1;
-	    }
-	  // If some high bits are known to be zero, we can decrease
-	  // the maximum.
-	  wide_int max = r.upper_bound ();
-	  if (max == 0)
-	    {
-	      // Argument is [0, 0].  If CTZ_DEFINED_VALUE_AT_ZERO
-	      // is 2 with value -1 or prec, return [-1, -1] or [prec, prec].
-	      // Otherwise ignore the range.
-	      if (mini == -1)
-		maxi = -1;
-	      else if (maxi == prec)
-		mini = prec;
-	    }
-	  // If value at zero is prec and 0 is in the range, we can't lower
-	  // the upper bound.  We could create two separate ranges though,
-	  // [0,floor_log2(max)][prec,prec] though.
-	  else if (maxi != prec)
-	    maxi = wi::floor_log2 (max);
-	}
-      if (mini == -2)
-	break;
-      r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
       return true;
 
     CASE_CFN_CLRSB:
