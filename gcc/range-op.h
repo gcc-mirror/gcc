@@ -117,6 +117,11 @@ public:
 			   const frange &lh,
 			   const frange &rh,
 			   relation_kind rel = VREL_VARYING) const;
+  // Unary operations have the range of the LHS as op2.
+  virtual bool fold_range (irange &r, tree type,
+			   const frange &lh,
+			   const irange &rh,
+			   relation_kind rel = VREL_VARYING) const;
   virtual bool fold_range (irange &r, tree type,
 			   const frange &lh,
 			   const frange &rh,

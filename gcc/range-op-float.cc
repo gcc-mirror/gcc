@@ -62,6 +62,16 @@ bool
 range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
 				  tree type ATTRIBUTE_UNUSED,
 				  const frange &lh ATTRIBUTE_UNUSED,
+				  const irange &rh ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
+{
+  return false;
+}
+
+bool
+range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
+				  tree type ATTRIBUTE_UNUSED,
+				  const frange &lh ATTRIBUTE_UNUSED,
 				  const frange &rh ATTRIBUTE_UNUSED,
 				  relation_kind rel ATTRIBUTE_UNUSED) const
 {

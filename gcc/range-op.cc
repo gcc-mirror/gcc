@@ -4208,9 +4208,16 @@ range_op_handler::fold_range (vrange &r, tree type,
 			   as_a <irange> (rh), rel);
 
   if (is_a <irange> (r))
-    return m_float->fold_range (as_a <irange> (r), type,
-				as_a <frange> (lh),
-				as_a <frange> (rh), rel);
+    {
+      if (is_a <irange> (rh))
+	return m_float->fold_range (as_a <irange> (r), type,
+				    as_a <frange> (lh),
+				    as_a <irange> (rh), rel);
+      else
+	return m_float->fold_range (as_a <irange> (r), type,
+				    as_a <frange> (lh),
+				    as_a <frange> (rh), rel);
+    }
   return m_float->fold_range (as_a <frange> (r), type,
 			      as_a <frange> (lh),
 			      as_a <frange> (rh), rel);
