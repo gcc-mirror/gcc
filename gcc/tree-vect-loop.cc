@@ -8356,8 +8356,11 @@ vect_create_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 	    sel[2 * i + 1] = i + nunits;
 	  }
 	vec_perm_indices indices (sel, 2, nunits);
+	/* Don't use vect_gen_perm_mask_checked since can_vec_perm_const_p may
+	   fail when vec_init is const vector. In that situation vec_perm is not
+	   really needed.  */
 	tree perm_mask_even
-	  = vect_gen_perm_mask_checked (vectype, indices);
+	  = vect_gen_perm_mask_any (vectype, indices);
 	vec_init = gimple_build (stmts, VEC_PERM_EXPR,
 				 vectype,
 				 vec_init, vec_neg,
