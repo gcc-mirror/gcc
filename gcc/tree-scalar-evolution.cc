@@ -3635,6 +3635,64 @@ enum bit_op_kind
   return fold_build2 (code1, type, inv, wide_int_to_tree (type, bits));
 }
 
+/* Match.pd function to match bitop with invariant expression
+  .i.e.
+  tmp_7 = _0 & _1; */
+extern bool gimple_bitop_with_inv_p (tree, tree *, tree (*)(tree));
+
+/* Return the inductive expression of bitop with invariant if possible,
+   otherwise returns DEF.  */
+static tree
+analyze_and_compute_bitop_with_inv_effect (class loop* loop, tree phidef,
+					   tree niter)
+{
+  tree match_op[2],inv;
+  tree type = TREE_TYPE (phidef);
+  gphi* header_phi = NULL;
+  enum tree_code code;
+  /* match thing like op0 (match[0]), op1 (match[1]), phidef (PHIDEF)
+
+    op1 =  PHI <phidef, inv>
+    phidef = op0 & op1
+    if op0 is an invariant, it could change to
+    phidef = op0 & inv.  */
+  gimple *def;
+  def = SSA_NAME_DEF_STMT (phidef);
+  if (!(is_gimple_assign (def)
+      && ((code = gimple_assign_rhs_code (def)), true)
+      && (code == BIT_AND_EXPR || code == BIT_IOR_EXPR
+	  || code == BIT_XOR_EXPR)))
+    return NULL_TREE;
+
+  match_op[0] = gimple_assign_rhs1 (def);
+  match_op[1] = gimple_assign_rhs2 (def);
+
+  if (TREE_CODE (match_op[1]) != SSA_NAME
+      || !expr_invariant_in_loop_p (loop, match_op[0])
+      || !(header_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (match_op[1])))
+      || gimple_phi_num_args (header_phi) != 2)
+    return NULL_TREE;
+
+  if (PHI_ARG_DEF_FROM_EDGE (header_phi, loop_latch_edge (loop)) != phidef)
+    return NULL_TREE;
+
+  enum tree_code code1
+    = gimple_assign_rhs_code (def);
+
+  if (code1 == BIT_XOR_EXPR)
+    {
+       if (!tree_fits_uhwi_p (niter))
+	return NULL_TREE;
+       unsigned HOST_WIDE_INT niter_num;
+       niter_num = tree_to_uhwi (niter);
+       if (niter_num % 2 != 0)
+	match_op[0] =  build_zero_cst (type);
+    }
+
+  inv = PHI_ARG_DEF_FROM_EDGE (header_phi, loop_preheader_edge (loop));
+  return fold_build2 (code1, type, inv, match_op[0]);
+}
+
 /* Do final value replacement for LOOP, return true if we did anything.  */
 
 bool
@@ -3685,7 +3743,24 @@ final_value_replacement_loop (class loop *loop)
       bool folded_casts;
       def = analyze_scalar_evolution_in_loop (ex_loop, loop, def,
 					      &folded_casts);
-      def = compute_overall_effect_of_inner_loop (ex_loop, def);
+
+      tree bitinv_def, bit_def;
+      unsigned HOST_WIDE_INT niter_num;
+
+      if (def != chrec_dont_know)
+	def = compute_overall_effect_of_inner_loop (ex_loop, def);
+
+      /* Handle bitop with invariant induction expression.
+
+	.i.e
+	for (int i =0 ;i < 32; i++)
+	  tmp &= bit2;
+	if bit2 is an invariant in loop which could simple to
+	tmp &= bit2.  */
+      else if ((bitinv_def
+		= analyze_and_compute_bitop_with_inv_effect (loop,
+							     phidef, niter)))
+	def = bitinv_def;
 
       /* Handle bitwise induction expression.
 
@@ -3697,15 +3772,13 @@ final_value_replacement_loop (class loop *loop)
 	 expressible, but in fact final value of RES can be replaced by
 	 RES & CONSTANT where CONSTANT all ones with bit {0,3,6,9,... ,63}
 	 being cleared, similar for BIT_IOR_EXPR/BIT_XOR_EXPR.  */
-      unsigned HOST_WIDE_INT niter_num;
-      tree bit_def;
-      if (tree_fits_uhwi_p (niter)
-	  && (niter_num = tree_to_uhwi (niter)) != 0
-	  && niter_num < TYPE_PRECISION (TREE_TYPE (phidef))
-	  && (bit_def
-	      = analyze_and_compute_bitwise_induction_effect (loop,
-							      phidef,
-							      niter_num)))
+      else if (tree_fits_uhwi_p (niter)
+	       && (niter_num = tree_to_uhwi (niter)) != 0
+	       && niter_num < TYPE_PRECISION (TREE_TYPE (phidef))
+	       && (bit_def
+		   = analyze_and_compute_bitwise_induction_effect (loop,
+								   phidef,
+								   niter_num)))
 	def = bit_def;
 
       if (!tree_does_not_contain_chrecs (def)

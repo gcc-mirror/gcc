@@ -10297,6 +10297,41 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
 			gen_rtx_IOR (DImode, copy_rtx (temp),
 				     GEN_INT (ud1)));
     }
+  else if (TARGET_PREFIXED)
+    {
+      if (can_create_pseudo_p ())
+	{
+	  /* pli A,L + pli B,H + rldimi A,B,32,0.  */
+	  temp = gen_reg_rtx (DImode);
+	  rtx temp1 = gen_reg_rtx (DImode);
+	  emit_move_insn (temp, GEN_INT ((ud4 << 16) | ud3));
+	  emit_move_insn (temp1, GEN_INT ((ud2 << 16) | ud1));
+
+	  emit_insn (gen_rotldi3_insert_3 (dest, temp, GEN_INT (32), temp1,
+					   GEN_INT (0xffffffff)));
+	}
+      else
+	{
+	  /* pli A,H + sldi A,32 + paddi A,A,L.  */
+	  emit_move_insn (dest, GEN_INT ((ud4 << 16) | ud3));
+
+	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+
+	  bool can_use_paddi = REGNO (dest) != FIRST_GPR_REGNO;
+
+	  /* Use paddi for the low 32 bits.  */
+	  if (ud2 != 0 && ud1 != 0 && can_use_paddi)
+	    emit_move_insn (dest, gen_rtx_PLUS (DImode, dest,
+						GEN_INT ((ud2 << 16) | ud1)));
+
+	  /* Use oris, ori for low 32 bits.  */
+	  if (ud2 != 0 && (ud1 == 0 || !can_use_paddi))
+	    emit_move_insn (dest,
+			    gen_rtx_IOR (DImode, dest, GEN_INT (ud2 << 16)));
+	  if (ud1 != 0 && (ud2 == 0 || !can_use_paddi))
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	}
+    }
   else
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);

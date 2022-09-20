@@ -9414,6 +9414,8 @@ build_common_tree_nodes (bool signed_char)
   void_node = make_node (VOID_CST);
   TREE_TYPE (void_node) = void_type_node;
 
+  void_list_node = build_tree_list (NULL_TREE, void_type_node);
+
   null_pointer_node = build_int_cst (build_pointer_type (void_type_node), 0);
   layout_type (TREE_TYPE (null_pointer_node));
 

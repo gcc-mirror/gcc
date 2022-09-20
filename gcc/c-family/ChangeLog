@@ -1,3 +1,9 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* c-common.h (build_void_list_node): Remove.
+	* c-common.cc (c_common_nodes_and_builtins): Do not initialize
+	void_list_node.
+
 2022-09-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* c-format.cc (convert_format_name_to_system_name): Fix warning.

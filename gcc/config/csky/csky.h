@@ -422,7 +422,7 @@ typedef struct
    The int cast is to prevent a complaint about unsigned comparison to
    zero, since CSKY_FIRST_PARM_REGNUM is zero.  */
 #define FUNCTION_ARG_REGNO_P(REGNO)                          \
-  (((REGNO) >= CSKY_FIRST_PARM_REGNUM                        \
+  (((int)(REGNO) >= CSKY_FIRST_PARM_REGNUM                   \
     && (REGNO) < (CSKY_NPARM_REGS + CSKY_FIRST_PARM_REGNUM)) \
    || FUNCTION_VARG_REGNO_P(REGNO))
 

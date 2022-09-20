@@ -66,9 +66,16 @@ get_fpu_except_flags (void)
 
 int
 get_fpu_rounding_mode (void)
-{   
+{
   return 0;
-}               
+}
+
+
+int
+support_fpu_rounding_mode (int mode __attribute__((unused)))
+{
+  return 0;
+}
 
 
 void

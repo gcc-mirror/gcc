@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_FPE_TONEAREST  2
 #define GFC_FPE_TOWARDZERO 3
 #define GFC_FPE_UPWARD     4
+#define GFC_FPE_AWAY       5
 
 /* Size of the buffer required to store FPU state for any target.
    In particular, this has to be larger than fenv_t on all glibc targets.

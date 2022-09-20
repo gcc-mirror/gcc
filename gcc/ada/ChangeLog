@@ -1,3 +1,7 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc-interface/trans.cc (gigi): Do not initialize void_list_node.
+
 2022-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Relax assertion when

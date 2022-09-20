@@ -4088,6 +4088,8 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
   tree whole = cxx_eval_constant_expression (ctx, orig_whole,
 					     lval,
 					     non_constant_p, overflow_p);
+  if (*non_constant_p)
+    return t;
   if (INDIRECT_REF_P (whole)
       && integer_zerop (TREE_OPERAND (whole, 0)))
     {
@@ -4108,20 +4110,21 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
 			whole, part, NULL_TREE);
   /* Don't VERIFY_CONSTANT here; we only want to check that we got a
      CONSTRUCTOR.  */
-  if (!*non_constant_p && TREE_CODE (whole) != CONSTRUCTOR)
+  if (TREE_CODE (whole) != CONSTRUCTOR)
     {
       if (!ctx->quiet)
 	error ("%qE is not a constant expression", orig_whole);
       *non_constant_p = true;
+      return t;
     }
-  if (DECL_MUTABLE_P (part))
+  if ((cxx_dialect < cxx14 || CONSTRUCTOR_MUTABLE_POISON (whole))
+      && DECL_MUTABLE_P (part))
     {
       if (!ctx->quiet)
 	error ("mutable %qD is not usable in a constant expression", part);
       *non_constant_p = true;
+      return t;
     }
-  if (*non_constant_p)
-    return t;
   bool pmf = TYPE_PTRMEMFUNC_P (TREE_TYPE (whole));
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (whole), i, field, value)
     {

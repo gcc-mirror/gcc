@@ -4734,7 +4734,8 @@ friend_from_decl_list (tree frnd)
       if (TYPE_P (frnd))
 	{
 	  res = TYPE_NAME (frnd);
-	  if (CLASSTYPE_TEMPLATE_INFO (frnd))
+	  if (CLASS_TYPE_P (frnd)
+	      && CLASSTYPE_TEMPLATE_INFO (frnd))
 	    tmpl = CLASSTYPE_TI_TEMPLATE (frnd);
 	}
       else if (DECL_TEMPLATE_INFO (frnd))
@@ -12121,7 +12122,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	    {
 	      tree f = TREE_VALUE (friend_classes);
 
-	      if (TYPE_P (f))
+	      if (CLASS_TYPE_P (f))
 		{
 		  CLASSTYPE_BEFRIENDING_CLASSES (f)
 		    = tree_cons (NULL_TREE, type,

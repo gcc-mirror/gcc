@@ -1,3 +1,36 @@
+2022-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (friend_from_decl_list): Don't consider
+	CLASSTYPE_TEMPLATE_INFO for a TYPENAME_TYPE friend.
+	(trees_in::read_class_def): Don't add to
+	CLASSTYPE_BEFRIENDING_CLASSES for a TYPENAME_TYPE friend.
+
+2022-09-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92505
+	* constexpr.cc (cxx_eval_component_reference): Check non_constant_p
+	sooner.  In C++14 or later, reject a DECL_MUTABLE_P member access
+	only if CONSTRUCTOR_MUTABLE_POISION is also set.
+
+2022-09-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106858
+	* parser.cc (cp_parser_omp_var_list_no_open): Pass the
+	initial token location down.
+	* semantics.cc (finish_omp_clauses): Check
+	invalid_nonstatic_memfn_p.
+	* typeck.cc (invalid_nonstatic_memfn_p): Handle null TREE_TYPE.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* decl.cc (cxx_init_decl_processing): Inline last
+	build_void_list_node call.
+	(build_void_list_node): Remove.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.cc (finish_omp_clauses): Likewise.
+
 2022-09-13  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (mark_used): Remove single-parameter overload.  Add

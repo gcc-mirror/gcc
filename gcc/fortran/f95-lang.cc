@@ -530,8 +530,6 @@ gfc_init_decl_processing (void)
      only use it for actual characters, not for INTEGER(1).  */
   build_common_tree_nodes (false);
 
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
-
   /* Set up F95 type nodes.  */
   gfc_init_kinds ();
   gfc_init_types ();

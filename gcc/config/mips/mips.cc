@@ -20018,7 +20018,7 @@ mips_set_tune (const struct mips_cpu_info *info)
 static void
 mips_option_override (void)
 {
-  int i, start, regno, mode;
+  int i, regno, mode;
 
   if (OPTION_SET_P (mips_isa_option))
     mips_isa_option_info = &mips_cpu_info_table[mips_isa_option];

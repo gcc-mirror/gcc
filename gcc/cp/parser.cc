@@ -36938,10 +36938,9 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  cp_id_kind idk = CP_ID_KIND_NONE;
 		  cp_lexer_consume_token (parser->lexer);
 		  decl = convert_from_reference (decl);
-		  decl
-		    = cp_parser_postfix_dot_deref_expression (parser, ttype,
-							      decl, false,
-							      &idk, loc);
+		  decl = (cp_parser_postfix_dot_deref_expression
+			  (parser, ttype, cp_expr (decl, token->location),
+			   false, &idk, loc));
 		}
 	      /* FALLTHROUGH.  */
 	    case OMP_CLAUSE_AFFINITY:

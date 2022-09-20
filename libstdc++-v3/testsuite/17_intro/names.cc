@@ -20,6 +20,8 @@
 
 // Define macros for some common variables names that we must not use for
 // naming variables, parameters etc. in the library.
+// N.B. we cannot use '#pragma GCC poison A' because that also prevents using
+// these names even as macro arguments, e.g. #define FOO(A) BAR(A)
 #define A (
 #define B (
 #define C (

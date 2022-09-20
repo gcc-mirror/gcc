@@ -60,11 +60,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+#if _GLIBCXX_HOSTED
   template<typename>
     class allocator;
 
   template<>
     class allocator<void>;
+#endif
 
 #if __cplusplus >= 201103L
   /// Declare uses_allocator so it can be specialized in `<queue>` etc.

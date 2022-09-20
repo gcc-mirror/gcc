@@ -10676,14 +10676,6 @@ record_builtin_type (enum rid rid_index, const char *name, tree type)
     debug_hooks->type_decl (decl, false);
 }
 
-/* Build the void_list_node (void_type_node having been created).  */
-tree
-build_void_list_node (void)
-{
-  tree t = build_tree_list (NULL_TREE, void_type_node);
-  return t;
-}
-
 /* Return a c_parm structure with the given SPECS, ATTRS and DECLARATOR.  */
 
 struct c_parm *

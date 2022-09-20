@@ -93,6 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
+#include "options.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -1181,9 +1182,21 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
       static bool issued_error;
       if (!issued_error)
 	{
+	  const char *name = NULL;
+	  for (unsigned int i = 0; zero_call_used_regs_opts[i].name != NULL;
+	       ++i)
+	    if (flag_zero_call_used_regs == zero_call_used_regs_opts[i].flag)
+	      {
+		name = zero_call_used_regs_opts[i].name;
+		break;
+	      }
+
+	  if (!name)
+	    name = "";
+
 	  issued_error = true;
-	  sorry ("%qs not supported on this target",
-		 "-fzero-call-used-regs");
+	  sorry ("argument %qs is not supported for %qs on this target",
+		 name, "-fzero-call-used-regs");
 	}
     }
 
