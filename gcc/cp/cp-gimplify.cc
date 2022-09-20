@@ -1084,9 +1084,9 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	}
       break;
 
-      /* These are only for genericize time; they're here rather than in
-	 cp_genericize to avoid problems with the invisible reference
-	 transition.  */
+      /* cp_genericize_{init,target}_expr are only for genericize time; they're
+	 here rather than in cp_genericize to avoid problems with the invisible
+	 reference transition.  */
     case INIT_EXPR:
       if (data->genericize)
 	cp_genericize_init_expr (stmt_p);
@@ -1095,6 +1095,16 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
     case TARGET_EXPR:
       if (data->genericize)
 	cp_genericize_target_expr (stmt_p);
+
+      /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
+	 that case, use it in place of this one.  */
+      if (tree &init = TARGET_EXPR_INITIAL (stmt))
+	{
+	  cp_walk_tree (&init, cp_fold_r, data, NULL);
+	  *walk_subtrees = 0;
+	  if (TREE_CODE (init) == TARGET_EXPR)
+	    *stmt_p = init;
+	}
       break;
 
     default:

@@ -5426,7 +5426,8 @@ target_expr_needs_replace (tree t)
     return false;
   while (TREE_CODE (init) == COMPOUND_EXPR)
     init = TREE_OPERAND (init, 1);
-  return TREE_CODE (init) != AGGR_INIT_EXPR;
+  return (TREE_CODE (init) != AGGR_INIT_EXPR
+	  && TREE_CODE (init) != VEC_INIT_EXPR);
 }
 
 /* True if EXPR expresses direct-initialization of a TYPE.  */
