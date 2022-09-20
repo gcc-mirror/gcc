@@ -2283,7 +2283,8 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	 initialization expression, or we want a subsection.  */
       if (p->symtree->n.sym->attr.flavor == FL_PARAMETER
 	  && (gfc_init_expr_flag || p->ref
-	      || p->symtree->n.sym->value->expr_type != EXPR_ARRAY))
+	      || (p->symtree->n.sym->value
+		  && p->symtree->n.sym->value->expr_type != EXPR_ARRAY)))
 	{
 	  if (!simplify_parameter_variable (p, type))
 	    return false;
