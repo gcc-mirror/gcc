@@ -230,11 +230,8 @@ frange_add_zeros (frange &r, tree type)
 static bool
 build_le (frange &r, tree type, const frange &val)
 {
-  if (val.known_isnan ())
-    {
-      r.set_undefined ();
-      return false;
-    }
+  gcc_checking_assert (!val.known_isnan ());
+
   r.set (type, dconstninf, val.upper_bound ());
 
   // Add both zeros if there's the possibility of zero equality.
@@ -248,11 +245,8 @@ build_le (frange &r, tree type, const frange &val)
 static bool
 build_lt (frange &r, tree type, const frange &val)
 {
-  if (val.known_isnan ())
-    {
-      r.set_undefined ();
-      return false;
-    }
+  gcc_checking_assert (!val.known_isnan ());
+
   // < -INF is outside the range.
   if (real_isinf (&val.upper_bound (), 1))
     {
@@ -272,11 +266,8 @@ build_lt (frange &r, tree type, const frange &val)
 static bool
 build_ge (frange &r, tree type, const frange &val)
 {
-  if (val.known_isnan ())
-    {
-      r.set_undefined ();
-      return false;
-    }
+  gcc_checking_assert (!val.known_isnan ());
+
   r.set (type, val.lower_bound (), dconstinf);
 
   // Add both zeros if there's the possibility of zero equality.
@@ -290,11 +281,8 @@ build_ge (frange &r, tree type, const frange &val)
 static bool
 build_gt (frange &r, tree type, const frange &val)
 {
-  if (val.known_isnan ())
-    {
-      r.set_undefined ();
-      return false;
-    }
+  gcc_checking_assert (!val.known_isnan ());
+
   // > +INF is outside the range.
   if (real_isinf (&val.lower_bound (), 0))
     {
@@ -365,9 +353,11 @@ foperator_equal::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_EQ))
     return true;
 
+  if (op1.known_isnan () || op2.known_isnan ())
+    r = range_false (type);
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
-  if (op1.singleton_p () && op2.singleton_p ())
+  else if (op1.singleton_p () && op2.singleton_p ())
     {
       if (op1 == op2)
 	r = range_true (type);
@@ -393,25 +383,33 @@ foperator_equal::fold_range (irange &r, tree type,
 bool
 foperator_equal::op1_range (frange &r, tree type,
 			    const irange &lhs,
-			    const frange &op2 ATTRIBUTE_UNUSED,
+			    const frange &op2,
 			    relation_kind rel) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      // If it's true, the result is the same as OP2.
-      r = op2;
-      // Add both zeros if there's the possibility of zero equality.
-      frange_add_zeros (r, type);
-      // The TRUE side of op1 == op2 implies op1 is !NAN.
-      r.clear_nan ();
+      // The TRUE side of x == NAN is unreachable.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  // If it's true, the result is the same as OP2.
+	  r = op2;
+	  // Add both zeros if there's the possibility of zero equality.
+	  frange_add_zeros (r, type);
+	  // The TRUE side of op1 == op2 implies op1 is !NAN.
+	  r.clear_nan ();
+	}
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
       // The FALSE side of op1 == op1 implies op1 is a NAN.
       if (rel == VREL_EQ)
 	r.set_nan (type);
+      // On the FALSE side of x == NAN, we know nothing about x.
+      else if (op2.known_isnan ())
+	r.set_varying (type);
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
       else if (op2.singleton_p ()
@@ -420,6 +418,8 @@ foperator_equal::op1_range (frange &r, tree type,
 	  REAL_VALUE_TYPE tmp = op2.lower_bound ();
 	  r.set (type, tmp, tmp, VR_ANTI_RANGE);
 	}
+      else
+	r.set_varying (type);
       break;
 
     default:
@@ -453,9 +453,12 @@ foperator_not_equal::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_NE))
     return true;
 
+  // x != NAN is always TRUE.
+  if (op1.known_isnan () || op2.known_isnan ())
+    r = range_true (type);
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
-  if (op1.singleton_p () && op2.singleton_p ())
+  else if (op1.singleton_p () && op2.singleton_p ())
     {
       if (op1 != op2)
 	r = range_true (type);
@@ -481,7 +484,7 @@ foperator_not_equal::fold_range (irange &r, tree type,
 bool
 foperator_not_equal::op1_range (frange &r, tree type,
 				const irange &lhs,
-				const frange &op2 ATTRIBUTE_UNUSED,
+				const frange &op2,
 				relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
@@ -502,12 +505,18 @@ foperator_not_equal::op1_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      // If it's false, the result is the same as OP2.
-      r = op2;
-      // Add both zeros if there's the possibility of zero equality.
-      frange_add_zeros (r, type);
-      // The FALSE side of op1 != op2 implies op1 is !NAN.
-      r.clear_nan ();
+      // The FALSE side of x != NAN is impossible.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  // If it's false, the result is the same as OP2.
+	  r = op2;
+	  // Add both zeros if there's the possibility of zero equality.
+	  frange_add_zeros (r, type);
+	  // The FALSE side of op1 != op2 implies op1 is !NAN.
+	  r.clear_nan ();
+	}
       break;
 
     default:
@@ -545,7 +554,9 @@ foperator_lt::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LT))
     return true;
 
-  if (finite_operands_p (op1, op2))
+  if (op1.known_isnan () || op2.known_isnan ())
+    r = range_false (type);
+  else if (finite_operands_p (op1, op2))
     {
       if (real_less (&op1.upper_bound (), &op2.lower_bound ()))
 	r = range_true (type);
@@ -555,8 +566,6 @@ foperator_lt::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_isnan () || op2.known_isnan ())
-    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -566,13 +575,16 @@ bool
 foperator_lt::op1_range (frange &r,
 			 tree type,
 			 const irange &lhs,
-			 const frange &op2 ATTRIBUTE_UNUSED,
+			 const frange &op2,
 			 relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_lt (r, type, op2))
+      // The TRUE side of x < NAN is unreachable.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_lt (r, type, op2))
 	{
 	  r.clear_nan ();
 	  // x < y implies x is not +INF.
@@ -581,7 +593,11 @@ foperator_lt::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_ge (r, type, op2);
+      // On the FALSE side of x < NAN, we know nothing about x.
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_ge (r, type, op2);
       break;
 
     default:
@@ -594,13 +610,16 @@ bool
 foperator_lt::op2_range (frange &r,
 			 tree type,
 			 const irange &lhs,
-			 const frange &op1 ATTRIBUTE_UNUSED,
+			 const frange &op1,
 			 relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_gt (r, type, op1))
+      // The TRUE side of NAN < x is unreachable.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_gt (r, type, op1))
 	{
 	  r.clear_nan ();
 	  // x < y implies y is not -INF.
@@ -609,7 +628,11 @@ foperator_lt::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_le (r, type, op1);
+      // On the FALSE side of NAN < x, we know nothing about x.
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_le (r, type, op1);
       break;
 
     default:
@@ -647,7 +670,9 @@ foperator_le::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LE))
     return true;
 
-  if (finite_operands_p (op1, op2))
+  if (op1.known_isnan () || op2.known_isnan ())
+    r = range_false (type);
+  else if (finite_operands_p (op1, op2))
     {
       if (real_compare (LE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
 	r = range_true (type);
@@ -657,8 +682,6 @@ foperator_le::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_isnan () || op2.known_isnan ())
-    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -674,12 +697,19 @@ foperator_le::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_le (r, type, op2))
+      // The TRUE side of x <= NAN is unreachable.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_le (r, type, op2))
 	r.clear_nan ();
       break;
 
     case BRS_FALSE:
-      build_gt (r, type, op2);
+      // On the FALSE side of x <= NAN, we know nothing about x.
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_gt (r, type, op2);
       break;
 
     default:
@@ -698,12 +728,19 @@ foperator_le::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_ge (r, type, op1))
+      // The TRUE side of NAN <= x is unreachable.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_ge (r, type, op1))
 	r.clear_nan ();
       break;
 
     case BRS_FALSE:
-      build_lt (r, type, op1);
+      // On the FALSE side of NAN <= x, we know nothing about x.
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_lt (r, type, op1);
       break;
 
     default:
@@ -741,7 +778,9 @@ foperator_gt::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GT))
     return true;
 
-  if (finite_operands_p (op1, op2))
+  if (op1.known_isnan () || op2.known_isnan ())
+    r = range_false (type);
+  else if (finite_operands_p (op1, op2))
     {
       if (real_compare (GT_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_true (type);
@@ -751,8 +790,6 @@ foperator_gt::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_isnan () || op2.known_isnan ())
-    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -762,13 +799,16 @@ bool
 foperator_gt::op1_range (frange &r,
 			 tree type,
 			 const irange &lhs,
-			 const frange &op2 ATTRIBUTE_UNUSED,
+			 const frange &op2,
 			 relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_gt (r, type, op2))
+      // The TRUE side of x > NAN is unreachable.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_gt (r, type, op2))
 	{
 	  r.clear_nan ();
 	  // x > y implies x is not -INF.
@@ -777,7 +817,11 @@ foperator_gt::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_le (r, type, op2);
+      // On the FALSE side of x > NAN, we know nothing about x.
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_le (r, type, op2);
       break;
 
     default:
@@ -790,13 +834,16 @@ bool
 foperator_gt::op2_range (frange &r,
 			 tree type,
 			 const irange &lhs,
-			 const frange &op1 ATTRIBUTE_UNUSED,
+			 const frange &op1,
 			 relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (build_lt (r, type, op1))
+      // The TRUE side of NAN > x is unreachable.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_lt (r, type, op1))
 	{
 	  r.clear_nan ();
 	  // x > y implies y is not +INF.
@@ -805,7 +852,11 @@ foperator_gt::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_ge (r, type, op1);
+      // On The FALSE side of NAN > x, we know nothing about x.
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_ge (r, type, op1);
       break;
 
     default:
@@ -843,7 +894,9 @@ foperator_ge::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GE))
     return true;
 
-  if (finite_operands_p (op1, op2))
+  if (op1.known_isnan () || op2.known_isnan ())
+    r = range_false (type);
+  else if (finite_operands_p (op1, op2))
     {
       if (real_compare (GE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_true (type);
@@ -853,8 +906,6 @@ foperator_ge::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else if (op1.known_isnan () || op2.known_isnan ())
-    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -870,12 +921,19 @@ foperator_ge::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_ge (r, type, op2);
-      r.clear_nan ();
+      // The TRUE side of x >= NAN is unreachable.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_ge (r, type, op2))
+	r.clear_nan ();
       break;
 
     case BRS_FALSE:
-      build_lt (r, type, op2);
+      // On the FALSE side of x >= NAN, we know nothing about x.
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_lt (r, type, op2);
       break;
 
     default:
@@ -892,13 +950,23 @@ foperator_ge::op2_range (frange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_gt (r, type, op1);
+    case BRS_TRUE:
+      // The TRUE side of NAN >= x is unreachable.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  build_le (r, type, op1);
+	  r.clear_nan ();
+	}
       break;
 
-    case BRS_TRUE:
-      build_le (r, type, op1);
-      r.clear_nan ();
+    case BRS_FALSE:
+      // On the FALSE side of NAN >= x, we know nothing about x.
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_gt (r, type, op1);
       break;
 
     default:
@@ -949,23 +1017,30 @@ foperator_unordered::fold_range (irange &r, tree type,
 bool
 foperator_unordered::op1_range (frange &r, tree type,
 				const irange &lhs,
-				const frange &op2 ATTRIBUTE_UNUSED,
+				const frange &op2,
 				relation_kind) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
       if (!op2.maybe_isnan ())
 	r.set_nan (type);
+      else
+	r.set_varying (type);
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
-      // A false UNORDERED means both operands are !NAN.
-      r.clear_nan ();
+      // A false UNORDERED means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  r.set_varying (type);
+	  r.clear_nan ();
+	}
       break;
 
     default:
@@ -1002,10 +1077,10 @@ foperator_ordered::fold_range (irange &r, tree type,
 			       const frange &op1, const frange &op2,
 			       relation_kind) const
 {
-  if (!op1.maybe_isnan () && !op2.maybe_isnan ())
-    r = range_true (type);
-  else if (op1.known_isnan () || op2.known_isnan ())
+  if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
+  else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
+    r = range_true (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -1014,15 +1089,21 @@ foperator_ordered::fold_range (irange &r, tree type,
 bool
 foperator_ordered::op1_range (frange &r, tree type,
 			      const irange &lhs,
-			      const frange &op2 ATTRIBUTE_UNUSED,
+			      const frange &op2,
 			      relation_kind rel) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
-      // The TRUE side of op1 ORDERED op2 implies op1 is !NAN.
-      r.clear_nan ();
+      // The TRUE side of ORDERED means both operands are !NAN, so
+      // it's impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  r.set_varying (type);
+	  r.clear_nan ();
+	}
       break;
 
     case BRS_FALSE:
@@ -1046,13 +1127,16 @@ class foperator_relop_unknown : public range_operator_float
 
 public:
   bool fold_range (irange &r, tree type,
-		   const frange &, const frange &,
+		   const frange &op1, const frange &op2,
 		   relation_kind) const final override
   {
-    r.set_varying (type);
+    if (op1.known_isnan () || op2.known_isnan ())
+      r = range_true (type);
+    else
+      r.set_varying (type);
     return true;
   }
-} fop_relop_unknown;
+} fop_unordered_relop_unknown;
 
 
 // Instantiate a range_op_table for floating point operations.
@@ -1077,11 +1161,11 @@ floating_op_table::floating_op_table ()
   set (LE_EXPR, fop_le);
   set (GT_EXPR, fop_gt);
   set (GE_EXPR, fop_ge);
-  set (UNLE_EXPR, fop_relop_unknown);
-  set (UNLT_EXPR, fop_relop_unknown);
-  set (UNGE_EXPR, fop_relop_unknown);
-  set (UNGT_EXPR, fop_relop_unknown);
-  set (UNEQ_EXPR, fop_relop_unknown);
+  set (UNLE_EXPR, fop_unordered_relop_unknown);
+  set (UNLT_EXPR, fop_unordered_relop_unknown);
+  set (UNGE_EXPR, fop_unordered_relop_unknown);
+  set (UNGT_EXPR, fop_unordered_relop_unknown);
+  set (UNEQ_EXPR, fop_unordered_relop_unknown);
   set (ORDERED_EXPR, fop_ordered);
   set (UNORDERED_EXPR, fop_unordered);
 }
