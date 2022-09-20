@@ -123,7 +123,11 @@ gimple_range_op_handler::supported_p (gimple *s)
 {
   enum tree_code code;
   tree type = get_code_and_type (s, code);
-  return (type && range_op_handler (code, type));
+  if (type && range_op_handler (code, type))
+    return true;
+  if (is_a <gcall *> (s) && gimple_range_op_handler (s))
+    return true;
+  return false;
 }
 
 // Construct a handler object for statement S.
@@ -133,6 +137,8 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
   enum tree_code code;
   tree type = get_code_and_type (s, code);
   m_stmt = s;
+  m_op1 = NULL_TREE;
+  m_op2 = NULL_TREE;
   if (type)
     set_op_handler (code, type);
 
@@ -142,7 +148,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	case GIMPLE_COND:
 	  m_op1 = gimple_cond_lhs (m_stmt);
 	  m_op2 = gimple_cond_rhs (m_stmt);
-	  break;
+	  return;
 	case GIMPLE_ASSIGN:
 	  m_op1 = gimple_range_base_of_assignment (m_stmt);
 	  if (m_op1 && TREE_CODE (m_op1) == MEM_REF)
@@ -158,14 +164,15 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	    }
 	  if (gimple_num_ops (m_stmt) >= 3)
 	    m_op2 = gimple_assign_rhs2 (m_stmt);
-	  else
-	    m_op2 = NULL_TREE;
-	  break;
+	  return;
 	default:
-	  m_op1 = NULL_TREE;
-	  m_op2 = NULL_TREE;
-	  break;
+	  gcc_unreachable ();
+	  return;
       }
+  // If no range-op table entry handled this stmt, check for other supported
+  // statements.
+  if (is_a <gcall *> (m_stmt))
+    maybe_builtin_call ();
 }
 
 // Calculate what we can determine of the range of this unary
@@ -246,4 +253,85 @@ gimple_range_op_handler::calc_op2 (vrange &r, const vrange &lhs_range,
       return op2_range (r, type, lhs_range, trange);
     }
   return op2_range (r, type, lhs_range, op1_range);
+}
+
+// --------------------------------------------------------------------
+
+// Implement range operator for float CFN_BUILT_IN_CONSTANT_P.
+class cfn_constant_float_p : public range_operator_float
+{
+public:
+  using range_operator_float::fold_range;
+  virtual bool fold_range (irange &r, tree type, const frange &lh,
+			   const irange &, relation_kind) const
+  {
+    if (lh.singleton_p ())
+      {
+	r.set (build_one_cst (type), build_one_cst (type));
+	return true;
+      }
+    if (cfun->after_inlining)
+      {
+	r.set_zero (type);
+	return true;
+      }
+    return false;
+  }
+} op_cfn_constant_float_p;
+
+// Implement range operator for integral CFN_BUILT_IN_CONSTANT_P.
+class cfn_constant_p : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const
+  {
+    if (lh.singleton_p ())
+      {
+	r.set (build_one_cst (type), build_one_cst (type));
+	return true;
+      }
+    if (cfun->after_inlining)
+      {
+	r.set_zero (type);
+	return true;
+      }
+    return false;
+  }
+} op_cfn_constant_p;
+
+// Set up a gimple_range_op_handler for any built in function which can be
+// supported via range-ops.
+
+void
+gimple_range_op_handler::maybe_builtin_call ()
+{
+  gcc_checking_assert (is_a <gcall *> (m_stmt));
+
+  gcall *call = as_a <gcall *> (m_stmt);
+  combined_fn func = gimple_call_combined_fn (call);
+  if (func == CFN_LAST)
+    return;
+  tree type = gimple_range_type (call);
+  gcc_checking_assert (type);
+  if (!Value_Range::supports_type_p (type))
+    return;
+
+  switch (func)
+    {
+    case CFN_BUILT_IN_CONSTANT_P:
+      m_op1 = gimple_call_arg (call, 0);
+      m_valid = true;
+      if (irange::supports_p (TREE_TYPE (m_op1)))
+	m_int = &op_cfn_constant_p;
+      else if (frange::supports_p (TREE_TYPE (m_op1)))
+	m_float = &op_cfn_constant_float_p;
+      else
+	m_valid = false;
+      break;
+
+    default:
+      break;
+    }
 }

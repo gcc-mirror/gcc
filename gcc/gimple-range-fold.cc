@@ -944,23 +944,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 
   switch (func)
     {
-    case CFN_BUILT_IN_CONSTANT_P:
-      {
-	arg = gimple_call_arg (call, 0);
-	Value_Range tmp (TREE_TYPE (arg));
-	if (src.get_operand (tmp, arg) && tmp.singleton_p ())
-	  {
-	    r.set (build_one_cst (type), build_one_cst (type));
-	    return true;
-	  }
-	if (cfun->after_inlining)
-	  {
-	    r.set_zero (type);
-	    return true;
-	  }
-	break;
-      }
-
     case CFN_BUILT_IN_SIGNBIT:
       {
 	arg = gimple_call_arg (call, 0);

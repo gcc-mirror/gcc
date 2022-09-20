@@ -38,6 +38,7 @@ public:
   bool calc_op1 (vrange &r, const vrange &lhs_range, const vrange &op2_range);
   bool calc_op2 (vrange &r, const vrange &lhs_range, const vrange &op1_range);
 private:
+  void maybe_builtin_call ();
   gimple *m_stmt;
   tree m_op1, m_op2;
 };
