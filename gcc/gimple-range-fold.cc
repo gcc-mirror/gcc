@@ -916,8 +916,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
     return false;
 
   tree type = gimple_range_type (call);
-  tree arg;
-  int prec;
   scalar_int_mode mode;
 
   switch (func)
@@ -926,11 +924,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
       r.set (build_zero_cst (type), build_one_cst (type));
       return true;
 
-    CASE_CFN_CLRSB:
-      arg = gimple_call_arg (call, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
-      return true;
     case CFN_UBSAN_CHECK_ADD:
       range_of_builtin_ubsan_call (r, call, PLUS_EXPR, src);
       return true;

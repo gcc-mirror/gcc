@@ -559,6 +559,23 @@ cfn_ctz::fold_range (irange &r, tree type, const irange &lh,
   return true;
 }
 
+
+// Implement range operator for CFN_BUILT_IN_
+class cfn_clrsb : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &lh,
+			   const irange &, relation_kind) const
+  {
+    if (lh.undefined_p ())
+      return false;
+    int prec = TYPE_PRECISION (lh.type ());
+    r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
+    return true;
+  }
+} op_cfn_clrsb;
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -630,6 +647,12 @@ gimple_range_op_handler::maybe_builtin_call ()
 	m_int = &op_cfn_ctz_internal;
       else
 	m_int = &op_cfn_ctz;
+      break;
+
+    CASE_CFN_CLRSB:
+      m_op1 = gimple_call_arg (call, 0);
+      m_valid = true;
+      m_int = &op_cfn_clrsb;
       break;
 
     default:
