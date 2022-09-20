@@ -611,6 +611,30 @@ cfn_ubsan op_cfn_ubsan_add (PLUS_EXPR);
 cfn_ubsan op_cfn_ubsan_sub (MINUS_EXPR);
 cfn_ubsan op_cfn_ubsan_mul (MULT_EXPR);
 
+
+// Implement range operator for CFN_BUILT_IN_STRLEN
+class cfn_strlen : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree type, const irange &,
+			   const irange &, relation_kind) const
+  {
+    tree max = vrp_val_max (ptrdiff_type_node);
+    wide_int wmax
+      = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+    tree range_min = build_zero_cst (type);
+    // To account for the terminating NULL, the maximum length
+    // is one less than the maximum array size, which in turn
+    // is one less than PTRDIFF_MAX (or SIZE_MAX where it's
+    // smaller than the former type).
+    // FIXME: Use max_object_size() - 1 here.
+    tree range_max = wide_int_to_tree (type, wmax - 2);
+    r.set (range_min, range_max);
+    return true;
+  }
+} op_cfn_strlen;
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -710,6 +734,19 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_valid = true;
       m_int = &op_cfn_ubsan_mul;
       break;
+
+    case CFN_BUILT_IN_STRLEN:
+      {
+	tree lhs = gimple_call_lhs (call);
+	if (lhs && ptrdiff_type_node && (TYPE_PRECISION (ptrdiff_type_node)
+					 == TYPE_PRECISION (TREE_TYPE (lhs))))
+	  {
+	    m_op1 = gimple_call_arg (call, 0);
+	    m_valid = true;
+	    m_int = &op_cfn_strlen;
+	  }
+	break;
+      }
 
     default:
       break;

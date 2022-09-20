@@ -908,27 +908,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 	return true;
       }
 
-    case CFN_BUILT_IN_STRLEN:
-      if (tree lhs = gimple_call_lhs (call))
-	if (ptrdiff_type_node
-	    && (TYPE_PRECISION (ptrdiff_type_node)
-		== TYPE_PRECISION (TREE_TYPE (lhs))))
-	  {
-	    tree type = TREE_TYPE (lhs);
-	    tree max = vrp_val_max (ptrdiff_type_node);
-	    wide_int wmax
-	      = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
-	    tree range_min = build_zero_cst (type);
-	    // To account for the terminating NULL, the maximum length
-	    // is one less than the maximum array size, which in turn
-	    // is one less than PTRDIFF_MAX (or SIZE_MAX where it's
-	    // smaller than the former type).
-	    // FIXME: Use max_object_size() - 1 here.
-	    tree range_max = wide_int_to_tree (type, wmax - 2);
-	    r.set (range_min, range_max);
-	    return true;
-	  }
-      break;
     default:
       break;
     }
