@@ -1,5 +1,5 @@
 /* Similiar to vec-cmp-1.c but requires that
-   s390_canonicalize_comparison is able to merge the the two nested
+   s390_canonicalize_comparison is able to merge the two nested
    compares.  */
 
 /* { dg-do compile { target { s390*-*-* } } } */

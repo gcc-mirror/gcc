@@ -3786,7 +3786,7 @@ The arguments are passed in the following order
 @code{CHARACTER} and no C binding is used
 @item The arguments in the order in which they appear in the Fortran
 declaration
-@item The the present status for optional arguments with value attribute,
+@item The present status for optional arguments with value attribute,
 which are internally passed by value
 @item The character length and/or coarray token and offset for the first
 argument which is a @code{CHARACTER} or a nonallocatable coarray dummy

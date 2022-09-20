@@ -6582,7 +6582,7 @@ package body Exp_Ch6 is
 
          --  but optimize the case where the result is a function call that
          --  also needs finalization. In this case the result can directly be
-         --  allocated on the the return stack of the caller and no further
+         --  allocated on the return stack of the caller and no further
          --  processing is required.
 
          if Present (Utyp)
