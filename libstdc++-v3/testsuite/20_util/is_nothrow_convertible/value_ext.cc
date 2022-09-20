@@ -19,10 +19,10 @@
 
 #include <type_traits>
 
-// Test the non-standard __is_nothrow_convertible trait
+// Test the non-standard __is_nothrow_convertible_lib trait
 
 template<typename From, typename To>
-  using is_nothrow_convertible = std::__is_nothrow_convertible<From, To>;
+  using is_nothrow_convertible = std::__is_nothrow_convertible_lib<From, To>;
 
 #define IS_NT_CONVERTIBLE_DEFINED
 #include "value.cc"
