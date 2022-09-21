@@ -3427,12 +3427,14 @@ struct GTY(())  machine_function {
 
 /* If we are *not* using multilibs and the default ABI is not ABI_32 we
    need to change these from /lib and /usr/lib.  */
+#ifndef ENABLE_MULTIARCH
 #if MIPS_ABI_DEFAULT == ABI_N32
 #define STANDARD_STARTFILE_PREFIX_1 "/lib32/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib32/"
 #elif MIPS_ABI_DEFAULT == ABI_64
 #define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
+#endif
 #endif
 
 /* Load store bonding is not supported by micromips and fix_24k.  The
