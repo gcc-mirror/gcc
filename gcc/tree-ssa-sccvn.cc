@@ -1803,7 +1803,8 @@ struct vn_walk_cb_data
 		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_,
 		   bool redundant_store_removal_p_)
     : vr (vr_), last_vuse_ptr (last_vuse_ptr_), last_vuse (NULL_TREE),
-      mask (mask_), masked_result (NULL_TREE), vn_walk_kind (vn_walk_kind_),
+      mask (mask_), masked_result (NULL_TREE), same_val (NULL_TREE),
+      vn_walk_kind (vn_walk_kind_),
       tbaa_p (tbaa_p_), redundant_store_removal_p (redundant_store_removal_p_),
       saved_operands (vNULL), first_set (-2), first_base_set (-2),
       known_ranges (NULL)
@@ -1864,6 +1865,7 @@ struct vn_walk_cb_data
   tree last_vuse;
   tree mask;
   tree masked_result;
+  tree same_val;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
   bool redundant_store_removal_p;
@@ -1902,6 +1904,8 @@ vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
       masked_result = val;
       return (void *) -1;
     }
+  if (same_val && !operand_equal_p (val, same_val))
+    return (void *) -1;
   vec<vn_reference_op_s> &operands
     = saved_operands.exists () ? saved_operands : vr->operands;
   return vn_reference_lookup_or_insert_for_pieces (last_vuse, set, base_set,
@@ -2675,36 +2679,57 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 and return the found value.  */
       if (is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
-	  && (ref->ref || data->orig_ref.ref))
+	  && (ref->ref || data->orig_ref.ref)
+	  && !data->same_val
+	  && !data->mask
+	  && data->partial_defs.is_empty ()
+	  && multiple_p (get_object_alignment
+			   (ref->ref ? ref->ref : data->orig_ref.ref),
+			   ref->size)
+	  && multiple_p (get_object_alignment (lhs), ref->size))
 	{
-	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;
-	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
-	  data->last_vuse_ptr = NULL;
-	  tree saved_vuse = vr->vuse;
-	  hashval_t saved_hashcode = vr->hashcode;
-	  void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt), data);
-	  /* Need to restore vr->vuse and vr->hashcode.  */
-	  vr->vuse = saved_vuse;
-	  vr->hashcode = saved_hashcode;
-	  data->last_vuse_ptr = saved_last_vuse_ptr;
-	  if (res && res != (void *)-1)
+	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  /* ???  We may not compare to ahead values which might be from
+	     a different loop iteration but only to loop invariants.  Use
+	     CONSTANT_CLASS_P (unvalueized!) as conservative approximation.
+	     The one-hop lookup below doesn't have this issue since there's
+	     a virtual PHI before we ever reach a backedge to cross.  */
+	  if (CONSTANT_CLASS_P (rhs))
 	    {
-	      vn_reference_t vnresult = (vn_reference_t) res;
-	      tree rhs = gimple_assign_rhs1 (def_stmt);
-	      if (TREE_CODE (rhs) == SSA_NAME)
-		rhs = SSA_VAL (rhs);
-	      if (vnresult->result
-		  && operand_equal_p (vnresult->result, rhs, 0)
-		  /* We have to honor our promise about union type punning
-		     and also support arbitrary overlaps with
-		     -fno-strict-aliasing.  So simply resort to alignment to
-		     rule out overlaps.  Do this check last because it is
-		     quite expensive compared to the hash-lookup above.  */
-		  && multiple_p (get_object_alignment
-				   (ref->ref ? ref->ref : data->orig_ref.ref),
-				 ref->size)
-		  && multiple_p (get_object_alignment (lhs), ref->size))
-		return res;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file,
+			   "Skipping possible redundant definition ");
+		  print_gimple_stmt (dump_file, def_stmt, 0);
+		}
+	      /* Delay the actual compare of the values to the end of the walk
+		 but do not update last_vuse from here.  */
+	      data->last_vuse_ptr = NULL;
+	      data->same_val = rhs;
+	      return NULL;
+	    }
+	  else
+	    {
+	      tree *saved_last_vuse_ptr = data->last_vuse_ptr;
+	      /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
+	      data->last_vuse_ptr = NULL;
+	      tree saved_vuse = vr->vuse;
+	      hashval_t saved_hashcode = vr->hashcode;
+	      void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt),
+						 data);
+	      /* Need to restore vr->vuse and vr->hashcode.  */
+	      vr->vuse = saved_vuse;
+	      vr->hashcode = saved_hashcode;
+	      data->last_vuse_ptr = saved_last_vuse_ptr;
+	      if (res && res != (void *)-1)
+		{
+		  vn_reference_t vnresult = (vn_reference_t) res;
+		  if (TREE_CODE (rhs) == SSA_NAME)
+		    rhs = SSA_VAL (rhs);
+		  if (vnresult->result
+		      && operand_equal_p (vnresult->result, rhs, 0))
+		    return res;
+		}
 	    }
 	}
     }
@@ -3798,6 +3823,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
       if (ops_for_ref != shared_lookup_references)
 	ops_for_ref.release ();
       gcc_checking_assert (vr1.operands == shared_lookup_references);
+      if (*vnresult
+	  && data.same_val
+	  && (!(*vnresult)->result
+	      || !operand_equal_p ((*vnresult)->result, data.same_val)))
+	{
+	  *vnresult = NULL;
+	  return NULL_TREE;
+	}
     }
 
   if (*vnresult)
@@ -3913,6 +3946,10 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
       if (wvnresult)
 	{
 	  gcc_assert (mask == NULL_TREE);
+	  if (data.same_val
+	      && (!wvnresult->result
+		  || !operand_equal_p (wvnresult->result, data.same_val)))
+	    return NULL_TREE;
 	  if (vnresult)
 	    *vnresult = wvnresult;
 	  return wvnresult->result;
