@@ -313,8 +313,13 @@ frange::set (tree min, tree max, value_range_kind kind)
       gcc_checking_assert (real_identical (TREE_REAL_CST_PTR (min),
 					   TREE_REAL_CST_PTR (max)));
       tree type = TREE_TYPE (min);
-      bool sign = real_isneg (TREE_REAL_CST_PTR (min));
-      set_nan (type, sign);
+      if (HONOR_NANS (type))
+	{
+	  bool sign = real_isneg (TREE_REAL_CST_PTR (min));
+	  set_nan (type, sign);
+	}
+      else
+	set_undefined ();
       return;
     }
 
