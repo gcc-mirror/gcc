@@ -87,5 +87,4 @@ void testfunctionfoo() {
   }
 }
 
-// { dg-final { scan-tree-dump-times "Found fully redundant value" 4 "pre" { xfail { ! lp64 } } } }
-// { dg-final { scan-tree-dump-not "m_initialized" "cddce3" { xfail { ! lp64 } } } }
+// { dg-final { scan-tree-dump-not "m_initialized" "dce3" } }
