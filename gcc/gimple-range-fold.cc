@@ -544,7 +544,8 @@ fold_using_range::range_of_range_op (vrange &r,
 	  // Fold range, and register any dependency if available.
 	  Value_Range r2 (type);
 	  r2.set_varying (type);
-	  handler.fold_range (r, type, range1, r2);
+	  if (!handler.fold_range (r, type, range1, r2))
+	    r.set_varying (type);
 	  if (lhs && gimple_range_ssa_p (op1))
 	    {
 	      if (src.gori ())
@@ -567,7 +568,8 @@ fold_using_range::range_of_range_op (vrange &r,
 	      fputc ('\n', dump_file);
 	    }
 	  // Fold range, and register any dependency if available.
-	  handler.fold_range (r, type, range1, range2, rel);
+	  if (!handler.fold_range (r, type, range1, range2, rel))
+	    r.set_varying (type);
 	  if (irange::supports_p (type))
 	    relation_fold_and_or (as_a <irange> (r), s, src);
 	  if (lhs)
