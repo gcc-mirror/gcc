@@ -1260,14 +1260,44 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define ENDIAN_LANE_N(NUNITS, N) \
   (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
 
+/* Extra specs when building a native AArch64-hosted compiler.
+   Option rewriting rules based on host system.  */
+#if defined(__aarch64__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
+# define EXTRA_SPEC_FUNCTIONS                                           \
+  { "local_cpu_detect", host_detect_local_cpu },                        \
+  MCPU_TO_MARCH_SPEC_FUNCTIONS
+
+/* Rewrite -m{arch,cpu,tune}=native based on the host system information.
+   When rewriting -march=native convert it into an -mcpu option if no other
+   -mcpu or -mtune was given.  */
+# define MCPU_MTUNE_NATIVE_SPECS                                        \
+   " %{march=native:%<march=native %:local_cpu_detect(%{mcpu=*|mtune=*:arch;:cpu})}"            \
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"              \
+   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+/* This will be used in OPTION_DEFAULT_SPECS below.
+   When GCC is configured with --with-tune we don't want to materialize an
+   implicit -mtune would prevent the rewriting of -march=native into
+   -mcpu=native as per the above rules.  */
+#define CONFIG_TUNE_SPEC						\
+ { "tune", "%{!mcpu=*:%{!mtune=*:%{!march=native:-mtune=%(VALUE)}}}" },
+#else
+# define MCPU_MTUNE_NATIVE_SPECS ""
+# define EXTRA_SPEC_FUNCTIONS MCPU_TO_MARCH_SPEC_FUNCTIONS
+# define CONFIG_TUNE_SPEC                                                \
+  {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}"},
+#endif
+
 /* Support for configure-time --with-arch, --with-cpu and --with-tune.
    --with-arch and --with-cpu are ignored if either -mcpu or -march is used.
    --with-tune is ignored if either -mtune or -mcpu is used (but is not
-   affected by -march).  */
+   affected by -march, except in the -march=native case as per the
+   CONFIG_TUNE_SPEC above).  */
 #define OPTION_DEFAULT_SPECS				\
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" },	\
   {"cpu",  "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" },   \
-  {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}"},
+  CONFIG_TUNE_SPEC
 
 #define MCPU_TO_MARCH_SPEC \
    " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
@@ -1275,22 +1305,6 @@ extern enum aarch64_code_model aarch64_cmodel;
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 #define MCPU_TO_MARCH_SPEC_FUNCTIONS \
   { "rewrite_mcpu", aarch64_rewrite_mcpu },
-
-#if defined(__aarch64__)
-extern const char *host_detect_local_cpu (int argc, const char **argv);
-#define HAVE_LOCAL_CPU_DETECT
-# define EXTRA_SPEC_FUNCTIONS						\
-  { "local_cpu_detect", host_detect_local_cpu },			\
-  MCPU_TO_MARCH_SPEC_FUNCTIONS
-
-# define MCPU_MTUNE_NATIVE_SPECS					\
-   " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
-   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
-   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
-#else
-# define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS MCPU_TO_MARCH_SPEC_FUNCTIONS
-#endif
 
 #define ASM_CPU_SPEC \
    MCPU_TO_MARCH_SPEC
