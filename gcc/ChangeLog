@@ -1,3 +1,89 @@
+2022-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::maybe_isnan): Return false for
+	undefined ranges.
+
+2022-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set_nonnegative): Set +NAN.
+	(range_tests_signed_zeros): New test.
+	* value-range.h (frange::update_nan): New overload to set NAN sign.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106491
+	* config/aarch64/aarch64-sve-builtins.cc (scalar_types)
+	(acle_vector_types, acle_svpattern, acle_svprfop): Add GTY
+	markup to (new) extern declarations instead of to the main
+	definition.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106794
+	PR tree-optimization/106914
+	* tree-vect-slp.cc (vect_optimize_slp_pass::internal_node_cost):
+	Only consider loads that already have a permutation.
+	(vect_optimize_slp_pass::start_choosing_layouts): Assert that
+	loads with permutations are leaf nodes.  Prevent any kind of grouped
+	access from changing layout if it doesn't have a load permutation.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Restrict
+	early-out optimisation to SSA_NAMEs.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* ctfc.cc (ctf_add_string): Replace "the the" with "the".
+	* doc/md.texi: Likewise.
+	* gimple-range-infer.cc (non_null_loadstore): Likewise.
+
+2022-09-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/106910
+	* config/i386/mmx.md (nearbyintv2sf2): New expander.
+	(rintv2sf2): Ditto.
+	(ceilv2sf2): Ditto.
+	(lceilv2sfv2si2): Ditto.
+	(floorv2sf2): Ditto.
+	(lfloorv2sfv2si2): Ditto.
+	(btruncv2sf2): Ditto.
+	(lrintv2sfv2si2): Ditto.
+	(roundv2sf2): Ditto.
+	(lroundv2sfv2si2): Ditto.
+	(*mmx_roundv2sf2): New define_insn.
+
+2022-09-20  konglin1  <lingling.kong@intel.com>
+
+	PR middle-end/105735
+	* tree-scalar-evolution.cc
+	(analyze_and_compute_bitop_with_inv_effect): New function.
+	(final_value_replacement_loop): Enhanced to handle bitop
+	with inv induction.
+
+2022-09-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/gnu-user.h (GNU_USER_TARGET_LINK_SPEC): For
+	-static-pie, pass -static -pie --no-dynamic-linker -z text to
+	the linker, and do not pass --dynamic-linker.
+
+2022-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::flush_denormals_to_zero): New.
+	(frange::set): Call flush_denormals_to_zero.
+	* value-range.h (class frange): Add flush_denormals_to_zero.
+
+2022-09-20  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Adjust for
+	latest Intel processors.
+
+2022-09-20  konglin1  <lingling.kong@intel.com>
+
+	PR target/106887
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
+	Fixed V16BF mode case.
+
 2022-09-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* targhooks.cc (default_zero_call_used_regs): Improve sorry

@@ -1,3 +1,40 @@
+2022-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104143
+	* interface.cc (compare_parameter): Permit scalar args to
+	'type(*), dimension(*)'.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* simplify.cc (gfc_simplify_findloc): Do not try to simplify
+	intrinsic FINDLOC when the ARRAY argument has a NULL shape.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* expr.cc (gfc_simplify_expr): Avoid NULL pointer dereference.
+
+2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* trans-types.cc (create_fn_spec): Fix function attributes when
+	passing polymorphic pointers.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/106636
+	* gfortran.texi: Add back link to ISO_VARYING_STRING.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.texi: Replace "the the" with "the".
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/106636
+	* gfortran.texi: Remove 2 dead links.
+
 2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libgfortran.h: Declare GFC_FPE_AWAY.

@@ -1,3 +1,16 @@
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (cp_finish_decl): After updating the deduced type of a
+	VAR_DECL, also update the corresponding TEMPLATE_DECL if there
+	is one.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106761
+	* module.cc (trees_out::type_node) <case TYPE_PACK_EXPANSION>:
+	Stream PACK_EXPANSION_EXTRA_ARGS.
+	(trees_in::tree_node) <case TYPE_PACK_EXPANSION>: Likewise.
+
 2022-09-17  Patrick Palka  <ppalka@redhat.com>
 
 	* module.cc (friend_from_decl_list): Don't consider

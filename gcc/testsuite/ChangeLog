@@ -1,3 +1,87 @@
+2022-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104143
+	* gfortran.dg/c-interop/c407b-2.f90: Remove dg-error.
+	* gfortran.dg/assumed_type_16.f90: New test.
+	* gfortran.dg/assumed_type_17.f90: New test.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* gfortran.dg/pr106986.f90: New test.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* gfortran.dg/pr106985.f90: New test.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/xtreme-header-2.h: Include <execution>.
+	* g++.dg/modules/xtreme-header-6.h: Include implemented
+	C++20 library headers.
+	* g++.dg/modules/xtreme-header.h: Likewise.  Remove
+	NO_ASSOCIATED_LAMBDA workaround.  Include implemented C++23
+	library headers.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/auto-3.h: New test.
+	* g++.dg/modules/auto-3_a.H: New test.
+	* g++.dg/modules/auto-3_b.C: New test.
+
+2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* gfortran.dg/PR100132.f90: New test.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr106914.c: New test.
+	* g++.dg/vect/pr106794.cc: Likewise.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-gather-5.c: New test.
+
+2022-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106970
+	* gcc.dg/tree-ssa/pr106970.c: New test.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106761
+	* g++.dg/modules/pr106761.h: New test.
+	* g++.dg/modules/pr106761_a.H: New test.
+	* g++.dg/modules/pr106761_b.C: New test.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/warn/Wclass-memaccess.C: Replace "the the" with "the".
+	* g++.dg/warn/Wconversion-real-integer2.C: Likewise.
+	* gcc.target/powerpc/p9-extract-1.c: Likewise.
+	* gcc.target/s390/s390.exp: Likewise.
+	* gcc.target/s390/zvector/vec-cmp-2.c: Likewise.
+	* gdc.dg/torture/simd_store.d: Likewise.
+	* gfortran.dg/actual_array_offset_1.f90: Likewise.
+	* gfortran.dg/pdt_15.f03: Likewise.
+	* gfortran.dg/pointer_array_8.f90: Likewise.
+
+2022-09-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106910-1.c: New test.
+
+2022-09-20  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr105735-1.c: New test.
+	* gcc.target/i386/pr105735-2.c: New test.
+
+2022-09-20  konglin1  <lingling.kong@intel.com>
+
+	PR target/106887
+	* gcc.target/i386/vect-bfloat16-2c.c: New test.
+
 2022-09-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/106947

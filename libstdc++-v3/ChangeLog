@@ -1,3 +1,8 @@
+2022-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstdlib [!_GLIBCXX_HOSTED] (quick_exit): Fix
+	missing space.
+
 2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/106953

@@ -1,3 +1,9 @@
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* exp_ch6.adb: Replace "the the" with "the".
+	* sem_ch6.adb: Likewise.
+	* sem_disp.ads: Likewise.
+
 2022-09-15  Richard Biener  <rguenther@suse.de>
 
 	* gcc-interface/trans.cc (gigi): Do not initialize void_list_node.
