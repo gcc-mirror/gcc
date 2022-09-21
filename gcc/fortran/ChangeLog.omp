@@ -1,3 +1,11 @@
+
+2022-09-28  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* parse.cc (gfc_ascii_statement): Missing $ in !$OMP END METADIRECTIVE.
+	(parse_omp_structured_block): Fix handling of OMP end metadirective.
+	(parse_omp_metadirective_body): Reject OMP end statements
+	at the end of an OMP metadirective.
+
 2022-09-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

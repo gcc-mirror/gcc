@@ -37,5 +37,5 @@ program main
     do i = 1, N
       c(i) = a(i) * b(i)
     end do
-  !$omp end metadirective ! { dg-error "Unexpected !OMP END METADIRECTIVE statement at .1." }
+  !$omp end metadirective ! { dg-error "Unexpected !.OMP END METADIRECTIVE statement at .1." }
 end program
