@@ -1759,3 +1759,9 @@ GFORTRAN_12 {
   _gfortran_transfer_real128_write;
 #endif
 } GFORTRAN_10.2;
+
+GFORTRAN_13 {
+  global:
+    __ieee_exceptions_MOD_ieee_get_modes;
+    __ieee_exceptions_MOD_ieee_set_modes;
+} GFORTRAN_12;
