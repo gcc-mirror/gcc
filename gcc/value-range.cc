@@ -422,7 +422,7 @@ frange::combine_zeros (const frange &r, bool union_p)
       if (maybe_isnan ())
 	m_kind = VR_NAN;
       else
-	m_kind = VR_UNDEFINED;
+	set_undefined ();
       changed = true;
     }
   return changed;
@@ -506,7 +506,7 @@ frange::intersect_nans (const frange &r)
   if (maybe_isnan ())
     m_kind = VR_NAN;
   else
-    m_kind = VR_UNDEFINED;
+    set_undefined ();
   if (flag_checking)
     verify_range ();
   return true;
@@ -558,7 +558,7 @@ frange::intersect (const vrange &v)
       if (maybe_isnan ())
 	m_kind = VR_NAN;
       else
-	m_kind = VR_UNDEFINED;
+	set_undefined ();
       if (flag_checking)
 	verify_range ();
       return true;
@@ -696,7 +696,7 @@ frange::verify_range ()
   switch (m_kind)
     {
     case VR_UNDEFINED:
-      // m_type is ignored.
+      gcc_checking_assert (!m_type);
       return;
     case VR_VARYING:
       gcc_checking_assert (m_type);

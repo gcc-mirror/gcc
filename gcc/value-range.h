@@ -1083,6 +1083,10 @@ inline void
 frange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
+  m_type = NULL;
+  m_pos_nan = false;
+  m_neg_nan = false;
+  // m_min and m_min are unitialized as they are REAL_VALUE_TYPE ??.
   if (flag_checking)
     verify_range ();
 }
