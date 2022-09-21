@@ -2535,7 +2535,7 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       p = "!$OMP END MASTER TASKLOOP SIMD";
       break;
     case ST_OMP_END_METADIRECTIVE:
-      p = "!OMP END METADIRECTIVE";
+      p = "!$OMP END METADIRECTIVE";
       break;
     case ST_OMP_END_ORDERED:
       p = "!$OMP END ORDERED";
@@ -5678,8 +5678,14 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   np->block = NULL;
 
   omp_end_st = gfc_omp_end_stmt (omp_st, false, true);
-  if (omp_st == ST_NONE)
+  if (omp_end_st == ST_NONE)
     gcc_unreachable ();
+
+  /* If handling a metadirective variant, treat 'omp end metadirective'
+     as the expected end statement for the current construct.  */
+  if (gfc_state_stack->previous != NULL
+      && gfc_state_stack->previous->state == COMP_OMP_BEGIN_METADIRECTIVE)
+    omp_end_st = ST_OMP_END_METADIRECTIVE;
 
   bool block_construct = false;
   gfc_namespace *my_ns = NULL;
@@ -5779,13 +5785,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	}
       else
 	st = parse_executable (st);
-
-      /* If handling a metadirective variant, treat 'omp end metadirective'
-	 as the expected end statement for the current construct.  */
-      if (st == ST_OMP_END_METADIRECTIVE
-	  && gfc_state_stack->previous != NULL
-	  && gfc_state_stack->previous->state == COMP_OMP_BEGIN_METADIRECTIVE)
-	st = omp_end_st;
 
       if (st == ST_NONE)
 	unexpected_eof ();
@@ -5916,6 +5915,21 @@ parse_omp_metadirective_body (gfc_statement omp_st)
 	  st = parse_executable (next_statement ());
 	  break;
 	}
+
+      if (gfc_state_stack->state == COMP_OMP_METADIRECTIVE
+	  && startswith (gfc_ascii_statement (st), "!$OMP END "))
+	{
+	  for (gfc_state_data *p = gfc_state_stack; p; p = p->previous)
+	    if (p->state == COMP_OMP_STRUCTURED_BLOCK
+		|| p->state == COMP_OMP_BEGIN_METADIRECTIVE)
+	      goto finish;
+	  gfc_error (
+	    "Unexpected %s statement in an OMP METADIRECTIVE block at %C",
+	    gfc_ascii_statement (st));
+	  reject_statement ();
+	  st = next_statement ();
+	}
+    finish:
 
       gfc_in_metadirective_body = old_in_metadirective_body;
 

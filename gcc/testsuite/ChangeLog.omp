@@ -1,3 +1,10 @@
+2022-09-28  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gfortran.dg/gomp/metadirective-1.f90: Match !$OMP END METADIRECTIVE.
+	* gfortran.dg/gomp/metadirective-10.f90: New test.
+	* gfortran.dg/gomp/metadirective-11.f90: New test.
+	* gfortran.dg/gomp/metadirective-9.f90: New test.
+
 2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/depend-6.f90: Update expected tree dumps.
