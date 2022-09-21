@@ -530,7 +530,8 @@ static CONSTEXPR const function_group_info function_groups[] = {
 };
 
 /* The scalar type associated with each vector type.  */
-GTY(()) tree scalar_types[NUM_VECTOR_TYPES];
+extern GTY(()) tree scalar_types[NUM_VECTOR_TYPES];
+tree scalar_types[NUM_VECTOR_TYPES];
 
 /* The single-predicate and single-vector types, with their built-in
    "__SV..._t" name.  Allow an index of NUM_VECTOR_TYPES, which always
@@ -538,13 +539,16 @@ GTY(()) tree scalar_types[NUM_VECTOR_TYPES];
 static GTY(()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
 
 /* Same, but with the arm_sve.h "sv..._t" name.  */
-GTY(()) tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
+extern GTY(()) tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
+tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
 
 /* The svpattern enum type.  */
-GTY(()) tree acle_svpattern;
+extern GTY(()) tree acle_svpattern;
+tree acle_svpattern;
 
 /* The svprfop enum type.  */
-GTY(()) tree acle_svprfop;
+extern GTY(()) tree acle_svprfop;
+tree acle_svprfop;
 
 /* The list of all registered function decls, indexed by code.  */
 static GTY(()) vec<registered_function *, va_gc> *registered_functions;
