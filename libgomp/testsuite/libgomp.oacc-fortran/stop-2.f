@@ -17,7 +17,9 @@
 
 ! { dg-output "CheCKpOInT(\n|\r\n|\r)+" }
 
-! { dg-output "STOP 35(\n|\r\n|\r)+" }
+! '_gfortran_error_stop_numeric' -> '_gfortrani_st_printf' -> [...]
+! overflows the stack for nvptx offloading, thus XFAILed.
+! { dg-output "STOP 35(\n|\r\n|\r)+" { xfail openacc_nvidia_accel_selected } }
 !
 ! PR85463.  The 'exit' implementation used with nvptx
 ! offloading is a little bit different.

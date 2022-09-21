@@ -1,5 +1,12 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.fortran/target-print-1.f90: Adjust.
+	* testsuite/libgomp.fortran/target-print-1-nvptx.f90: Remove.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/print-1-nvptx.f90: Remove.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Adjust.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+
 	* plugin/plugin-nvptx.c (nvptx_do_global_cdtors): New.
 	(nvptx_close_device, GOMP_OFFLOAD_load_image)
 	(GOMP_OFFLOAD_unload_image): Call it.

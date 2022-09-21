@@ -6231,17 +6231,12 @@ else
 fi
 
 
-# For GPU offloading, not everything in libfortran can be supported.
-# Currently, the only target that has this problem is nvptx.  The
-# following is a (partial) list of features that are unsupportable on
-# this particular target:
-# * Constructors
-# * alloca
-# * C library support for I/O, with printf as the one notable exception
-# * C library support for other features such as signal, environment
-#   variables, time functions
+# "Minimal" mode is for targets that cannot (yet) support all features of
+# libgfortran.  It avoids the need for working constructors, alloca, and C
+# library support for I/O, signals, environment variables, time functions, etc.
+# At present there are no targets that require this mode.
 
- if test "x${target_cpu}" = xnvptx; then
+ if false; then
   LIBGFOR_MINIMAL_TRUE=
   LIBGFOR_MINIMAL_FALSE='#'
 else
