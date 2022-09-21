@@ -1,4 +1,10 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/nvptx/t-nvptx: Add unwind-nvptx.c.
+	* config/nvptx/unwind-nvptx.c: New file.
+
+2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/crtstuff.c ["mgomp"]
 	(__do_global_ctors__entry__mgomp)
