@@ -1,6 +1,7 @@
 LIB2ADD=$(srcdir)/config/nvptx/reduction.c \
 	$(srcdir)/config/nvptx/mgomp.c \
-	$(srcdir)/config/nvptx/atomic.c
+	$(srcdir)/config/nvptx/atomic.c \
+	$(srcdir)/config/nvptx/unwind-nvptx.c
 
 LIB2ADDEH=
 LIB2FUNCS_EXCLUDE=
