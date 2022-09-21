@@ -301,6 +301,27 @@ public:
   }
 } op_cfn_constant_p;
 
+// Implement range operator for CFN_BUILT_IN_SIGNBIT.
+class cfn_signbit : public range_operator_float
+{
+public:
+  using range_operator_float::fold_range;
+  virtual bool fold_range (irange &r, tree type, const frange &lh,
+			   const irange &, relation_kind) const
+  {
+    bool signbit;
+    if (lh.signbit_p (signbit))
+      {
+	if (signbit)
+	  r.set_nonzero (type);
+	else
+	  r.set_zero (type);
+	return true;
+      }
+   return false;
+  }
+} op_cfn_signbit;
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -329,6 +350,12 @@ gimple_range_op_handler::maybe_builtin_call ()
 	m_float = &op_cfn_constant_float_p;
       else
 	m_valid = false;
+      break;
+
+    case CFN_BUILT_IN_SIGNBIT:
+      m_op1 = gimple_call_arg (call, 0);
+      m_float = &op_cfn_signbit;
+      m_valid = true;
       break;
 
     default:

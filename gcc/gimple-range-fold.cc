@@ -944,26 +944,6 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
 
   switch (func)
     {
-    case CFN_BUILT_IN_SIGNBIT:
-      {
-	arg = gimple_call_arg (call, 0);
-	frange tmp;
-	if (src.get_operand (tmp, arg))
-	  {
-	    bool signbit;
-	    if (tmp.signbit_p (signbit))
-	      {
-		if (signbit)
-		  r.set_nonzero (type);
-		else
-		  r.set_zero (type);
-		return true;
-	      }
-	    return false;
-	  }
-	break;
-      }
-
     case CFN_BUILT_IN_TOUPPER:
       {
 	arg = gimple_call_arg (call, 0);
