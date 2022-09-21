@@ -19604,6 +19604,119 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
+/* A subroutine of ix86_expand_vec_perm_const_1. Try to implement D
+   in terms of a pair of shufps+ shufps/pshufd instructions.  */
+static bool
+expand_vec_perm_shufps_shufps (struct expand_vec_perm_d *d)
+{
+  unsigned char perm1[4];
+  machine_mode vmode = d->vmode;
+  bool ok;
+  unsigned i, j, k, count = 0;
+
+  if (d->one_operand_p
+      || (vmode != V4SImode && vmode != V4SFmode))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  for (i = 0; i < 4; ++i)
+    count += d->perm[i] > 3 ? 1 : 0;
+
+  gcc_assert (count & 3);
+
+  rtx tmp = gen_reg_rtx (vmode);
+  /* 2 from op0 and 2 from op1.  */
+  if (count == 2)
+    {
+      unsigned char perm2[4];
+      for (i = 0, j = 0, k = 2; i < 4; ++i)
+	if (d->perm[i] & 4)
+	  {
+	    perm1[k++] = d->perm[i];
+	    perm2[i] = k - 1;
+	  }
+	else
+	  {
+	    perm1[j++] = d->perm[i];
+	    perm2[i] = j - 1;
+	  }
+
+      /* shufps.  */
+      ok = expand_vselect_vconcat (tmp, d->op0, d->op1,
+				  perm1, d->nelt, false);
+      gcc_assert (ok);
+      if (vmode == V4SImode && TARGET_SSE2)
+      /* pshufd.  */
+	ok = expand_vselect (d->target, tmp,
+			     perm2, d->nelt, false);
+      else
+	{
+	  /* shufps.  */
+	  perm2[2] += 4;
+	  perm2[3] += 4;
+	  ok = expand_vselect_vconcat (d->target, tmp, tmp,
+				       perm2, d->nelt, false);
+	}
+      gcc_assert (ok);
+    }
+  /* 3 from one op and 1 from another.  */
+  else
+    {
+      unsigned pair_idx = 8, lone_idx = 8, shift;
+
+      /* Find the lone index.  */
+      for (i = 0; i < 4; ++i)
+	if ((d->perm[i] > 3 && count == 1)
+	    || (d->perm[i] < 4 && count == 3))
+	  lone_idx = i;
+
+      /* When lone_idx is not 0, it must from second op(count == 1).  */
+      gcc_assert (count == (lone_idx ? 1 : 3));
+
+      /* Find the pair index that sits in the same half as the lone index.  */
+      shift = lone_idx & 2;
+      pair_idx = 1 - lone_idx + 2 * shift;
+
+      /* First permutate lone index and pair index into the same vector as
+	 [ lone, lone, pair, pair ].  */
+      perm1[1] = perm1[0]
+	= (count == 3) ? d->perm[lone_idx] : d->perm[lone_idx] - 4;
+      perm1[3] = perm1[2]
+	= (count == 3) ? d->perm[pair_idx] : d->perm[pair_idx] + 4;
+
+      /* Alway put the vector contains lone indx at the first.  */
+      if (count == 1)
+	std::swap (d->op0, d->op1);
+
+      /* shufps.  */
+      ok = expand_vselect_vconcat (tmp, d->op0, d->op1,
+				   perm1, d->nelt, false);
+      gcc_assert (ok);
+
+      /* Refine lone and pair index to original order.  */
+      perm1[shift] = lone_idx << 1;
+      perm1[shift + 1] = pair_idx << 1;
+
+      /* Select the remaining 2 elements in another vector.  */
+      for (i = 2 - shift; i < 4 - shift; ++i)
+	perm1[i] = lone_idx == 1 ? d->perm[i] + 4 : d->perm[i];
+
+      /* Adjust to original selector.  */
+      if (lone_idx > 1)
+	std::swap (tmp, d->op1);
+
+      /* shufps.  */
+      ok = expand_vselect_vconcat (d->target, tmp, d->op1,
+				   perm1, d->nelt, false);
+
+      gcc_assert (ok);
+    }
+
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_const_1.  Try to implement D
    in terms of a pair of pshuflw + pshufhw instructions.  */
 
@@ -22150,6 +22263,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_2perm_pblendv (d, true))
+    return true;
+
+  if (expand_vec_perm_shufps_shufps (d))
     return true;
 
   /* Try sequences of three instructions.  */
