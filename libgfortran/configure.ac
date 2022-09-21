@@ -222,17 +222,12 @@ AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" != xno])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_GNU, [test "x$gfortran_use_symver" = xgnu])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_SUN, [test "x$gfortran_use_symver" = xsun])
 
-# For GPU offloading, not everything in libfortran can be supported.
-# Currently, the only target that has this problem is nvptx.  The
-# following is a (partial) list of features that are unsupportable on
-# this particular target:
-# * Constructors
-# * alloca
-# * C library support for I/O, with printf as the one notable exception
-# * C library support for other features such as signal, environment
-#   variables, time functions
+# "Minimal" mode is for targets that cannot (yet) support all features of
+# libgfortran.  It avoids the need for working constructors, alloca, and C
+# library support for I/O, signals, environment variables, time functions, etc.
+# At present there are no targets that require this mode.
 
-AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
+AM_CONDITIONAL(LIBGFOR_MINIMAL, false)
 
 # Some compiler target support may have limited support for integer
 # or floating point numbers – or may want to reduce the libgfortran size
