@@ -2034,6 +2034,10 @@ def add_one_template_type_printer(obj, name, defargs):
         printer = TemplateTypePrinter(ns+name, defargs)
         gdb.types.register_type_printer(obj, printer)
 
+        # Add type printer for same type in debug namespace:
+        printer = TemplateTypePrinter('std::__debug::'+name, defargs)
+        gdb.types.register_type_printer(obj, printer)
+
 class FilteringTypePrinter(object):
     r"""
     A type printer that uses typedef names for common template specializations.
