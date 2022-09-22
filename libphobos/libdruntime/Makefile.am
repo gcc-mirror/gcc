@@ -171,9 +171,10 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
 	core/exception.d core/gc/config.d core/gc/gcinterface.d \
 	core/gc/registry.d core/int128.d core/internal/abort.d \
-	core/internal/array/appending.d core/internal/array/capacity.d \
-	core/internal/array/casting.d core/internal/array/comparison.d \
-	core/internal/array/concatenation.d core/internal/array/construction.d \
+	core/internal/array/appending.d core/internal/array/arrayassign.d \
+	core/internal/array/capacity.d core/internal/array/casting.d \
+	core/internal/array/comparison.d core/internal/array/concatenation.d \
+	core/internal/array/construction.d core/internal/array/duplication.d \
 	core/internal/array/equality.d core/internal/array/operations.d \
 	core/internal/array/utils.d core/internal/atomic.d \
 	core/internal/attributes.d core/internal/container/array.d \

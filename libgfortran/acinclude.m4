@@ -356,18 +356,39 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
       ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
     ])
 
+    dnl Determine -Bstatic ... -Bdynamic etc. support from gfortran -### stderr.
+    touch conftest1.$ac_objext conftest2.$ac_objext
+    LQUADMATH=-lquadmath
+    $FC -static-libgfortran -### -o conftest \
+	conftest1.$ac_objext -lgfortran conftest2.$ac_objext 2>&1 >/dev/null \
+	| grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
+    if grep "conftest1.$ac_objext.* -Bstatic -lgfortran -Bdynamic .*conftest2.$ac_objext" \
+       conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
+    elif grep "conftest1.$ac_objext.* -bstatic -lgfortran -bdynamic .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
+    elif grep "conftest1.$ac_objext.* -aarchive_shared -lgfortran -adefault .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
+    elif grep "conftest1.$ac_objext.*libgfortran.a .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
+    fi
+    rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
+
     dnl For static libgfortran linkage, depend on libquadmath only if needed.
     dnl If using *f128 APIs from libc/libm, depend on libquadmath only if needed
     dnl even for dynamic libgfortran linkage, and don't link libgfortran against
     dnl -lquadmath.
     if test "x$libgfor_cv_have_as_needed" = xyes; then
       if test "x$USE_IEC_60559" = xyes; then
-	LIBQUADSPEC="$libgfor_cv_as_needed_option -lquadmath $libgfor_cv_no_as_needed_option"
+	LIBQUADSPEC="$libgfor_cv_as_needed_option $LQUADMATH $libgfor_cv_no_as_needed_option"
       else
-	LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} -lquadmath %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
+	LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} $LQUADMATH %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
       fi
     else
-      LIBQUADSPEC="-lquadmath"
+      LIBQUADSPEC="$LQUADMATH"
     fi
     if test "x$USE_IEC_60559" != xyes; then
       if test -f ../libquadmath/libquadmath.la; then

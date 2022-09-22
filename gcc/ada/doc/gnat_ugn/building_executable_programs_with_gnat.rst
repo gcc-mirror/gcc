@@ -4455,7 +4455,7 @@ to the default checks required by Ada as described above.
 
   All validity checks are turned on.
   That is, :switch:`-gnatVa` is
-  equivalent to ``gnatVcdfimoprst``.
+  equivalent to ``gnatVcdefimoprst``.
 
 
 .. index:: -gnatVc  (gcc)
@@ -4463,8 +4463,8 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVc`
   *Validity checks for copies.*
 
-  The right hand side of assignments, and the initializing values of
-  object declarations are validity checked.
+  The right-hand side of assignments, and the (explicit) initializing values
+  of object declarations are validity checked.
 
 
 .. index:: -gnatVd  (gcc)
@@ -4472,12 +4472,14 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVd`
   *Default (RM) validity checks.*
 
-  Some validity checks are done by default following normal Ada semantics
-  (RM 13.9.1 (9-11)).
-  A check is done in case statements that the expression is within the range
-  of the subtype. If it is not, Constraint_Error is raised.
-  For assignments to array components, a check is done that the expression used
-  as index is within the range. If it is not, Constraint_Error is raised.
+  Some validity checks are required by Ada (see RM 13.9.1 (9-11)); these
+  (and only these) validity checks are enabled by default.
+  For case statements (and case expressions) that lack a "when others =>"
+  choice, a check is made that the value of the selector expression
+  belongs to its nominal subtype. If it does not, Constraint_Error is raised.
+  For assignments to array components (and for indexed components in some
+  other contexts), a check is made that each index expression belongs to the
+  corresponding index subtype. If it does not, Constraint_Error is raised.
   Both these validity checks may be turned off using switch :switch:`-gnatVD`.
   They are turned on by default. If :switch:`-gnatVD` is specified, a subsequent
   switch :switch:`-gnatVd` will leave the checks turned on.
@@ -4490,28 +4492,31 @@ to the default checks required by Ada as described above.
 .. index:: -gnatVe  (gcc)
 
 :switch:`-gnatVe`
-  *Validity checks for elementary components.*
+  *Validity checks for scalar components.*
 
-  In the absence of this switch, assignments to record or array components are
-  not validity checked, even if validity checks for assignments generally
-  (:switch:`-gnatVc`) are turned on. In Ada, assignment of composite values do not
-  require valid data, but assignment of individual components does. So for
-  example, there is a difference between copying the elements of an array with a
-  slice assignment, compared to assigning element by element in a loop. This
-  switch allows you to turn off validity checking for components, even when they
-  are assigned component by component.
-
+  In the absence of this switch, assignments to scalar components of
+  enclosing record or array objects are not validity checked, even if
+  validity checks for assignments generally (:switch:`-gnatVc`) are turned on.
+  Specifying this switch enables such checks.
+  This switch has no effect if the :switch:`-gnatVc` switch is not specified.
 
 .. index:: -gnatVf  (gcc)
 
 :switch:`-gnatVf`
   *Validity checks for floating-point values.*
 
-  In the absence of this switch, validity checking occurs only for discrete
-  values. If :switch:`-gnatVf` is specified, then validity checking also applies
+  Specifying this switch enables validity checking for floating-point
+  values in the same contexts where validity checking is enabled for
+  other scalar values.
+  In the absence of this switch, validity checking is not performed for
+  floating-point values. This takes precedence over other statements about
+  performing validity checking for scalar objects in various scenarios.
+  One way to look at it is that if this switch is not set, then whenever
+  any of the other rules in this section use the word "scalar" they
+  really mean "scalar and not floating-point".
+  If :switch:`-gnatVf` is specified, then validity checking also applies
   for floating-point values, and NaNs and infinities are considered invalid,
-  as well as out of range values for constrained types. Note that this means
-  that standard IEEE infinity mode is not allowed. The exact contexts
+  as well as out-of-range values for constrained types. The exact contexts
   in which floating-point values are checked depends on the setting of other
   options. For example, :switch:`-gnatVif` or :switch:`-gnatVfi`
   (the order does not matter) specifies that floating-point parameters of mode
@@ -4558,7 +4563,8 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVo`
   *Validity checks for operator and attribute operands.*
 
-  Arguments for predefined operators and attributes are validity checked.
+  Scalar arguments for predefined operators and for attributes are
+  validity checked.
   This includes all operators in package ``Standard``,
   the shift operators defined as intrinsic in package ``Interfaces``
   and operands for attributes such as ``Pos``. Checks are also made
@@ -4572,22 +4578,22 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVp`
   *Validity checks for parameters.*
 
-  This controls the treatment of parameters within a subprogram (as opposed
-  to :switch:`-gnatVi` and :switch:`-gnatVm` which control validity testing
-  of parameters on a call. If either of these call options is used, then
-  normally an assumption is made within a subprogram that the input arguments
-  have been validity checking at the point of call, and do not need checking
-  again within a subprogram). If :switch:`-gnatVp` is set, then this assumption
-  is not made, and parameters are not assumed to be valid, so their validity
-  will be checked (or rechecked) within the subprogram.
-
+  This controls the treatment of formal parameters within a subprogram (as
+  opposed to :switch:`-gnatVi` and :switch:`-gnatVm`, which control validity
+  testing of actual parameters of a call). If either of these call options is
+  specified, then normally an assumption is made within a subprogram that
+  the validity of any incoming formal parameters of the corresponding mode(s)
+  has already been checked at the point of call and does not need rechecking.
+  If :switch:`-gnatVp` is set, then this assumption is not made and so their
+  validity may be checked (or rechecked) within the subprogram. If neither of
+  the two call-related options is specified, then this switch has no effect.
 
 .. index:: -gnatVr  (gcc)
 
 :switch:`-gnatVr`
   *Validity checks for function returns.*
 
-  The expression in ``return`` statements in functions is validity
+  The expression in simple ``return`` statements in functions is validity
   checked.
 
 
@@ -4596,9 +4602,10 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVs`
   *Validity checks for subscripts.*
 
-  All subscripts expressions are checked for validity, whether they appear
-  on the right side or left side (in default mode only left side subscripts
-  are validity checked).
+  All subscript expressions are checked for validity, whatever context
+  they occur in (in default mode some subscripts are not validity checked;
+  for example, validity checking may be omitted in some cases involving
+  a read of a component of an array).
 
 
 .. index:: -gnatVt  (gcc)
@@ -6532,6 +6539,22 @@ be presented in subsequent sections.
   Do not look for sources in the current directory where ``gnatbind`` was
   invoked, and do not look for ALI files in the directory containing the
   ALI file named in the ``gnatbind`` command line.
+
+
+  .. index:: -k  (gnatbind)
+
+:switch:`-k`
+  Disable checking of elaboration flags. When using :switch:`-n`
+  either explicitly or implicitly, :switch:`-F` is also implied,
+  unless :switch:`-k` is used. This switch should be used with care
+  and you should ensure manually that elaboration routines are not called
+  twice unintentionally.
+
+
+  .. index:: -K  (gnatbind)
+
+:switch:`-K`
+  Give list of linker options specified for link.
 
 
   .. index:: -l  (gnatbind)

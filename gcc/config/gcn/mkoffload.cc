@@ -553,6 +553,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	    char *funcname;
 	    if (sscanf (buf, "\t.8byte\t%ms\n", &funcname))
 	      {
+		fputs (buf, out);
 		obstack_ptr_grow (&fns_os, funcname);
 		fn_count++;
 		continue;
@@ -577,7 +578,15 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 		 out);
 	}
       else if (sscanf (buf, " .section .gnu.offload_funcs%c", &dummy) > 0)
-	state = IN_FUNCS;
+	{
+	  state = IN_FUNCS;
+	  /* Likewise for .gnu.offload_vars; used for reverse offload. */
+	  fputs (buf, out);
+	  fputs ("\t.global .offload_func_table\n"
+		 "\t.type .offload_func_table, @object\n"
+		 ".offload_func_table:\n",
+		 out);
+	}
       else if (sscanf (buf, " .amdgpu_metadata%c", &dummy) > 0)
 	{
 	  state = IN_METADATA;
@@ -796,7 +805,7 @@ main (int argc, char **argv)
   FILE *cfile = stdout;
   const char *outname = 0;
 
-  progname = "mkoffload";
+  progname = tool_name;
   diagnostic_initialize (global_dc, 0);
 
   obstack_init (&files_to_cleanup);
@@ -1030,6 +1039,7 @@ main (int argc, char **argv)
 		    }
 		  else
 		    dbgobj = make_temp_file (".mkoffload.dbg.o");
+		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
 
 		  /* If the copy fails then just ignore it.  */
 		  if (copy_early_debug_info (argv[ix], dbgobj))
@@ -1085,6 +1095,7 @@ main (int argc, char **argv)
 	omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
       else
 	omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+      obstack_ptr_grow (&files_to_cleanup, omp_requires_file);
 
       /* Run the compiler pass.  */
       xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));

@@ -61,19 +61,11 @@
 #include "tree-ssa-propagate.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
-#if TARGET_XCOFF
-#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
 #include "ppc-auxv.h"
 #include "targhooks.h"
 #include "opts.h"
 
 #include "rs6000-internal.h"
-
-#if TARGET_MACHO
-#include "gstab.h"  /* for N_SLINE */
-#include "dbxout.h" /* dbxout_ */
-#endif
 
 #ifndef TARGET_PROFILE_KERNEL
 #define TARGET_PROFILE_KERNEL 0

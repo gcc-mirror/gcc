@@ -2678,7 +2678,10 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
 	for (j = 0; j < path->length (); j++)
 	  {
 	    edge e = (*path)[j]->e;
-	    if (m_removed_edges->find_slot (e, NO_INSERT))
+	    if (m_removed_edges->find_slot (e, NO_INSERT)
+		|| (((*path)[j]->type == EDGE_COPY_SRC_BLOCK
+		     || (*path)[j]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+		    && !can_duplicate_block_p (e->src)))
 	      break;
 	  }
 

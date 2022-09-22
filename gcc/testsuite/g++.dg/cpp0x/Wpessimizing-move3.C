@@ -39,7 +39,7 @@ Tp1
 fn2 ()
 {
   Tp2 t;
-  return std::move (t); // { dg-warning "moving a local object in a return statement prevents copy elision" }
+  return std::move (t);
 }
 
 template<typename Tp1, typename Tp2>

@@ -170,7 +170,7 @@ and warnings}.
 
 @item Link Options
 @xref{Link Options,,Options for influencing the linking step}.
-@gccoptlist{-static-libgfortran}
+@gccoptlist{-static-libgfortran  -static-libquadmath}
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
@@ -1092,6 +1092,11 @@ The type of a function result is declared more than once with the same type.  If
 
 @item
 A @code{CHARACTER} variable is declared with negative length.
+
+@item
+With @option{-fopenmp}, for fixed-form source code, when an @code{omx}
+vendor-extension sentinel is encountered. (The equivalent @code{ompx},
+used in free-form source code, is diagnosed by default.)
 @end itemize
 
 @item -Wtabs
@@ -1422,6 +1427,20 @@ On systems that provide @file{libgfortran} as a shared and a static
 library, this option forces the use of the static version. If no
 shared version of @file{libgfortran} was built when the compiler was
 configured, this option has no effect.
+@end table
+
+
+@table @gcctabopt
+@item -static-libquadmath
+@opindex @code{static-libquadmath}
+On systems that provide @file{libquadmath} as a shared and a static
+library, this option forces the use of the static version. If no
+shared version of @file{libquadmath} was built when the compiler was
+configured, this option has no effect.
+
+Please note that the @file{libquadmath} runtime library is licensed under the
+GNU Lesser General Public License (LGPL), and linking it statically introduces
+requirements when redistributing the resulting binaries.
 @end table
 
 

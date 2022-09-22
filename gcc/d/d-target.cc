@@ -464,6 +464,8 @@ Target::isReturnOnStack (TypeFunction *tf, bool)
     return false;
 
   Type *tn = tf->next->toBasetype ();
+  if (tn->size () == SIZE_INVALID)
+    return false;
 
   return (tn->ty == TY::Tstruct || tn->ty == TY::Tsarray);
 }

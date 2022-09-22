@@ -6135,6 +6135,10 @@ package body Exp_Ch4 is
       --  itself such a slice, in order to catch if expressions with more than
       --  two dependent expressions in the source code.
 
+      --  Also note that this creates variables on branches without an explicit
+      --  scope, causing troubles with e.g. the LLVM IR, so disable this
+      --  optimization when Unnest_Subprogram_Mode (enabled for LLVM).
+
       elsif Is_Array_Type (Typ)
         and then Number_Dimensions (Typ) = 1
         and then not Is_Constrained (Typ)
@@ -6151,6 +6155,7 @@ package body Exp_Ch4 is
              and then
                OK_For_Single_Subtype (Etype (Thenx), Etype (Prefix (Elsex)))))
         and then not Generate_C_Code
+        and then not Unnest_Subprogram_Mode
       then
          declare
             Ityp : constant Entity_Id := Base_Type (Etype (First_Index (Typ)));

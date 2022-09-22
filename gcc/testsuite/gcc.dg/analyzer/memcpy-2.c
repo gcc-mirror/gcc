@@ -1,4 +1,4 @@
-/* { dg-additional-options "-Wno-stringop-overflow" } */
+/* { dg-additional-options "-Wno-stringop-overflow -Wno-analyzer-out-of-bounds" } */
 
 void
 main (int c, void *v)

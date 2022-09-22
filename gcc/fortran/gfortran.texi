@@ -246,7 +246,7 @@ including OpenMP and OpenACC support for parallel programming.
 The GNU Fortran compiler passes the
 @uref{http://www.fortran-2000.com/ArnaudRecipes/fcvs21_f95.html,
 NIST Fortran 77 Test Suite}, and produces acceptable results on the
-@uref{https://www.netlib.org/lapack/faq.html#1.21, LAPACK Test Suite}.
+@uref{https://www.netlib.org/lapack/faq.html, LAPACK Test Suite}.
 It also provides respectable performance on
 the @uref{https://polyhedron.com/?page_id=175,
 Polyhedron Fortran compiler benchmarks} and the
@@ -441,7 +441,7 @@ found in the following sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 4.5 and partial support of the features of the 5.0 version,
-@url{https://openmp.org/@/openmp-specifications/}).
+@url{https://openmp.org/@/specifications/}).
 There also is support for the OpenACC specification (targeting
 version 2.6, @uref{https://www.openacc.org/}).  See
 @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
@@ -455,9 +455,8 @@ version 2.6, @uref{https://www.openacc.org/}).  See
 The Fortran 95 standard specifies in Part 2 (ISO/IEC 1539-2:2000)
 varying length character strings.  While GNU Fortran currently does not
 support such strings directly, there exist two Fortran implementations
-for them, which work with GNU Fortran.  They can be found at
-@uref{https://www.fortran.com/@/iso_varying_string.f95} and at
-@uref{ftp://ftp.nag.co.uk/@/sc22wg5/@/ISO_VARYING_STRING/}.
+for them, which work with GNU Fortran. One can be found at
+@uref{http://user.astro.wisc.edu/~townsend/static.php?ref=iso-varying-string}.
 
 Deferred-length character strings of Fortran 2003 supports part of
 the features of @code{ISO_VARYING_STRING} and should be considered as
@@ -1806,7 +1805,7 @@ It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
 GNU Fortran strives to be compatible to the
-@uref{https://openmp.org/wp/openmp-specifications/,
+@uref{https://openmp.org/specifications/,
 OpenMP Application Program Interface v4.5}.
 
 To enable the processing of the OpenMP directive @code{!$omp} in
@@ -3788,7 +3787,7 @@ The arguments are passed in the following order
 @code{CHARACTER} and no C binding is used
 @item The arguments in the order in which they appear in the Fortran
 declaration
-@item The the present status for optional arguments with value attribute,
+@item The present status for optional arguments with value attribute,
 which are internally passed by value
 @item The character length and/or coarray token and offset for the first
 argument which is a @code{CHARACTER} or a nonallocatable coarray dummy

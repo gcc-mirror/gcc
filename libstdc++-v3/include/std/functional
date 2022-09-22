@@ -56,18 +56,22 @@
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
 #include <bits/refwrap.h>	// std::reference_wrapper and _Mem_fn_traits
-#include <bits/std_function.h>	// std::function
-#if __cplusplus > 201402L
-# include <unordered_map>
-# include <vector>
-# include <array>
-# include <bits/stl_algo.h>
+#if _GLIBCXX_HOSTED
+# include <bits/std_function.h>	// std::function
+#endif
+#if __cplusplus >= 201703L
+# if _GLIBCXX_HOSTED
+#  include <unordered_map>
+#  include <vector>
+#  include <array>
+# endif
+# include <bits/stl_algo.h> // std::search
 #endif
 #if __cplusplus > 201703L
 # include <bits/ranges_cmp.h>
 # include <compare>
 #endif
-#if __cplusplus > 202002L
+#if __cplusplus > 202002L && _GLIBCXX_HOSTED
 # include <bits/move_only_function.h>
 #endif
 
@@ -238,7 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief Trait that identifies a bind expression.
-   * 
+   *
    * Determines if the given type `_Tp` is a function object that
    * should be treated as a subexpression when evaluating calls to
    * function objects returned by `std::bind`.
@@ -1117,6 +1121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
     };
 
+#if _GLIBCXX_HOSTED
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
     struct __boyer_moore_map_base
     {
@@ -1359,6 +1364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return std::make_pair(__last, __last);
     }
+#endif // HOSTED
 
 #endif // C++17
 #endif // C++14

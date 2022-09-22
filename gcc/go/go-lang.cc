@@ -98,9 +98,6 @@ go_langhook_init (void)
 {
   build_common_tree_nodes (false);
 
-  /* I don't know why this has to be done explicitly.  */
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
-
   /* We must create the gogo IR after calling build_common_tree_nodes
      (because Gogo::define_builtin_function_trees refers indirectly
      to, e.g., unsigned_char_type_node) but before calling
@@ -507,8 +504,7 @@ go_langhook_pushdecl (tree decl ATTRIBUTE_UNUSED)
 }
 
 /* This hook is used to get the current list of declarations as trees.
-   We don't support that; instead we use the write_globals hook.  This
-   can't simply crash because it is called by -gstabs.  */
+   We don't support that; instead we use the write_globals hook.  */
 
 static tree
 go_langhook_getdecls (void)

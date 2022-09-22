@@ -160,7 +160,14 @@ foo (void)
   for (i = 0; i < 64; i++)
     #pragma omp parallel
     {
-      #pragma omp ordered depend(source)	/* { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
-      #pragma omp ordered depend(sink: i - 1)	/* { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause with a parameter" } */
+      #pragma omp ordered depend(source)	/* { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered depend(sink: i - 1)	/* { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause" } */
+    }
+  #pragma omp for ordered(1)
+  for (i = 0; i < 64; i++)
+    #pragma omp parallel
+    {
+      #pragma omp ordered doacross(source:)	/* { dg-error ".ordered. construct with .doacross. clause must be closely nested inside a loop with .ordered. clause" } */
+      #pragma omp ordered doacross(sink: i - 1)	/* { dg-error ".ordered. construct with .doacross. clause must be closely nested inside a loop with .ordered. clause" } */
     }
 }

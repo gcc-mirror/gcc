@@ -1146,7 +1146,7 @@ if (distinctFieldNames!(Specs))
         }
 
         ///
-        static if (Specs.length == 0) @safe unittest
+        static if (Specs.length == 0) @system unittest
         {
             //replace names by their position
 
@@ -1166,7 +1166,7 @@ if (distinctFieldNames!(Specs))
             assert(t2Named.c == 3);
         }
 
-        static if (Specs.length == 0) @safe unittest
+        static if (Specs.length == 0) @system unittest
         {
             //check that empty translations work fine
             enum string[string] a0 = null;
@@ -4905,8 +4905,14 @@ if (is(Interface == interface) && is(BaseClass == class))
         // - try default first
         // - only on a failure run & return fallback
         enum fallback = q{
-            scope (failure) return fallback.%1$s(args);
-            return default_.%1$s(args);
+            try
+            {
+                return default_.%1$s(args);
+            }
+            catch (Exception)
+            {
+                return fallback.%1$s(args);
+            }
         }.format(__traits(identifier, func));
     }
 
@@ -6589,15 +6595,11 @@ if (!is(T == class) && !(is(T == interface)))
         private enum enableGCScan = hasIndirections!T;
     }
 
-    // TODO remove pure when https://issues.dlang.org/show_bug.cgi?id=15862 has been fixed
     extern(C) private pure nothrow @nogc static
     {
         pragma(mangle, "free") void pureFree( void *ptr );
         static if (enableGCScan)
-        {
-            pragma(mangle, "gc_addRange") void pureGcAddRange( in void* p, size_t sz, const TypeInfo ti = null );
-            pragma(mangle, "gc_removeRange") void pureGcRemoveRange( in void* p );
-        }
+            import core.memory : GC;
     }
 
     /// `RefCounted` storage implementation.
@@ -6637,7 +6639,7 @@ if (!is(T == class) && !(is(T == interface)))
             {
                 import std.internal.memory : enforceCalloc;
                 _store = cast(Impl*) enforceCalloc(1, Impl.sizeof);
-                pureGcAddRange(&_store._payload, T.sizeof);
+                GC.addRange(&_store._payload, T.sizeof);
             }
             else
             {
@@ -6650,7 +6652,7 @@ if (!is(T == class) && !(is(T == interface)))
         {
             static if (enableGCScan)
             {
-                pureGcRemoveRange(&this._store._payload);
+                GC.removeRange(&this._store._payload);
             }
             pureFree(_store);
             _store = null;

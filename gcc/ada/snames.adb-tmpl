@@ -256,8 +256,6 @@ package body Snames is
             return Pragma_Interface;
          when Name_Interrupt_Priority               =>
             return Pragma_Interrupt_Priority;
-         when Name_Lock_Free                        =>
-            return Pragma_Lock_Free;
          when Name_Preelaborable_Initialization     =>
             return Pragma_Preelaborable_Initialization;
          when Name_Priority                         =>
@@ -489,7 +487,6 @@ package body Snames is
         or else N = Name_Fast_Math
         or else N = Name_Interface
         or else N = Name_Interrupt_Priority
-        or else N = Name_Lock_Free
         or else N = Name_Preelaborable_Initialization
         or else N = Name_Priority
         or else N = Name_Secondary_Stack_Size

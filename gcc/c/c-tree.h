@@ -147,6 +147,9 @@ struct c_expr
      etc), so we stash a copy here.  */
   source_range src_range;
 
+  /* True if this was directly from a decimal constant token.  */
+  bool m_decimal : 1;
+
   /* Access to the first and last locations within the source spelling
      of this expression.  */
   location_t get_start () const { return src_range.m_start; }
@@ -161,12 +164,13 @@ struct c_expr
   }
 
   /* Set the value to error_mark_node whilst ensuring that src_range
-     is initialized.  */
+     and m_decimal are initialized.  */
   void set_error ()
   {
     value = error_mark_node;
     src_range.m_start = UNKNOWN_LOCATION;
     src_range.m_finish = UNKNOWN_LOCATION;
+    m_decimal = 0;
   }
 };
 

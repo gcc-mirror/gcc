@@ -113,4 +113,3 @@ struct pcadmin_t
     id_t    pc_cid;
     caddr_t pc_cladmin;
 }
-

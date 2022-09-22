@@ -22,10 +22,6 @@
 #ifndef GIMPLE_PREDICATE_ANALYSIS_H_INCLUDED
 #define GIMPLE_PREDICATE_ANALYSIS_H_INCLUDED
 
-#define MAX_NUM_CHAINS 8
-#define MAX_CHAIN_LEN 5
-#define MAX_POSTDOM_CHECK 8
-#define MAX_SWITCH_CASES 40
 
 /* Represents a simple Boolean predicate.  */
 struct pred_info
@@ -48,37 +44,11 @@ typedef vec<pred_chain, va_heap, vl_ptr> pred_chain_union;
 class predicate
 {
  public:
-  /* Base function object type used to determine whether an expression
-     is of interest.  */
-  struct func_t
-  {
-    typedef unsigned phi_arg_set_t;
-
-    /* Return true if the argument is an expression of interest.  */
-    virtual bool operator()(tree) = 0;
-    /* Return a bitset of PHI arguments of interest.  By default returns
-       bitset with a bit set for each argument.  Should be called in
-       the overriden function first and, if nonzero, the result then
-       refined as appropriate.  */
-    virtual phi_arg_set_t phi_arg_set (gphi *);
-
-    /* Maximum number of PHI arguments supported by phi_arg_set().  */
-    static constexpr unsigned max_phi_args =
-      sizeof (phi_arg_set_t) * CHAR_BIT;
-  };
-
   /* Construct with the specified EVAL object.  */
-  predicate (func_t &eval)
-    : m_preds (vNULL), m_eval (eval), m_use_expr () { }
+  predicate () : m_preds (vNULL) { }
 
   /* Copy.  */
-  predicate (const predicate &rhs)
-    : m_preds (vNULL), m_eval (rhs.m_eval), m_use_expr ()
-    {
-      *this = rhs;
-    }
-
-  predicate (basic_block, basic_block, func_t &);
+  predicate (const predicate &rhs) : m_preds (vNULL) { *this = rhs; }
 
   ~predicate ();
 
@@ -95,43 +65,25 @@ class predicate
     return m_preds;
   }
 
-  /* Return true if the use by a statement in the basic block of
-     a PHI operand is ruled out (i.e., guarded) by *THIS.  */
-  bool is_use_guarded (gimple *, basic_block, gphi *, unsigned);
+  void init_from_control_deps (const vec<edge> *, unsigned, bool);
 
-  void init_from_control_deps (const vec<edge> *, unsigned);
-
-  void dump (gimple *, const char *) const;
+  void dump (FILE *) const;
+  void dump (FILE *, gimple *, const char *) const;
+  void debug () const;
 
   void normalize (gimple * = NULL, bool = false);
   void simplify (gimple * = NULL, bool = false);
 
-  bool is_use_guarded (gimple *, basic_block, gphi *, unsigned,
-		       hash_set<gphi *> *);
-
-  /* Return the predicate expression guarding the definition of
-     the interesting variable, optionally inverted.  */
-  tree def_expr (bool = false) const;
-  /* Return the predicate expression guarding the use of the interesting
-     variable.  */
-  tree use_expr () const;
-
-  tree expr (bool = false) const;
+  bool superset_of (const predicate &) const;
 
 private:
+
   bool includes (const pred_chain &) const;
-  bool superset_of (const predicate &) const;
-  bool overlap (gphi *, unsigned, hash_set<gphi *> *);
-  bool use_cannot_happen (gphi *, unsigned);
-
-  bool init_from_phi_def (gphi *);
-
   void push_pred (const pred_info &);
 
   /* Normalization functions.  */
   void normalize (pred_chain *, pred_info, tree_code, pred_chain *,
 		  hash_set<tree> *);
-
   void normalize (const pred_info &);
   void normalize (const pred_chain &);
 
@@ -140,14 +92,62 @@ private:
   bool simplify_3 ();
   bool simplify_4 ();
 
-private:
   /* Representation of the predicate expression(s).  */
   pred_chain_union m_preds;
+};
+
+/* Represents a complex Boolean predicate expression.  */
+class uninit_analysis
+{
+ public:
+  /* Base function object type used to determine whether an expression
+     is of interest.  */
+  struct func_t
+  {
+    typedef unsigned phi_arg_set_t;
+
+    /* Return a bitset of PHI arguments of interest.  By default returns
+       bitset with a bit set for each argument.  Should be called in
+       the overriden function first and, if nonzero, the result then
+       refined as appropriate.  */
+    virtual phi_arg_set_t phi_arg_set (gphi *);
+
+    /* Maximum number of PHI arguments supported by phi_arg_set().  */
+    static constexpr unsigned max_phi_args =
+      sizeof (phi_arg_set_t) * CHAR_BIT;
+  };
+
+  /* Construct with the specified EVAL object.  */
+  uninit_analysis (func_t &eval)
+    : m_phi_def_preds (), m_eval (eval) { }
+
+  /* Copy.  */
+  uninit_analysis (const uninit_analysis &rhs) = delete;
+
+  /* Assign.  */
+  uninit_analysis& operator= (const uninit_analysis&) = delete;
+
+  /* Return true if the use by a statement in the basic block of
+     a PHI operand is ruled out (i.e., guarded) by *THIS.  */
+  bool is_use_guarded (gimple *, basic_block, gphi *, unsigned);
+
+private:
+  bool is_use_guarded (gimple *, basic_block, gphi *, unsigned,
+		       hash_set<gphi *> *);
+  bool prune_phi_opnds (gphi *, unsigned, gphi *, tree, tree_code,
+			hash_set<gphi *> *, bitmap *);
+  bool overlap (gphi *, unsigned, hash_set<gphi *> *, const predicate &);
+
+  void collect_phi_def_edges (gphi *, basic_block, vec<edge> *,
+			      hash_set<gimple *> *);
+  bool init_from_phi_def (gphi *);
+  bool init_use_preds (predicate &, basic_block, basic_block);
+
+
+  /* Representation of the predicate expression(s).  */
+  predicate m_phi_def_preds;
   /* Callback to evaluate an operand.  Return true if it's interesting.  */
   func_t &m_eval;
-  /* The predicate expression guarding the use of the interesting
-     variable.  */
-  tree m_use_expr;
 };
 
 /* Bit mask handling macros.  */

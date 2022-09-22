@@ -435,6 +435,7 @@ public:
 
   bool emit (rich_location *rich_loc) override
   {
+    /* "CWE-129: Improper Validation of Array Index".  */
     diagnostic_metadata m;
     m.add_cwe (129);
     if (m_arg)
@@ -1362,6 +1363,33 @@ region_model::check_dynamic_size_for_taint (enum memory_space mem_space,
       tree arg = get_representative_tree (size_in_bytes);
       ctxt->warn (new tainted_allocation_size (taint_sm, arg, b, mem_space));
     }
+}
+
+/* Mark SVAL as TAINTED.  CTXT must be non-NULL.  */
+
+void
+region_model::mark_as_tainted (const svalue *sval,
+			       region_model_context *ctxt)
+{
+  gcc_assert (sval);
+  gcc_assert (ctxt);
+
+  sm_state_map *smap;
+  const state_machine *sm;
+  unsigned sm_idx;
+  if (!ctxt->get_taint_map (&smap, &sm, &sm_idx))
+    return;
+
+  gcc_assert (smap);
+  gcc_assert (sm);
+
+  const taint_state_machine &taint_sm = (const taint_state_machine &)*sm;
+
+  const extrinsic_state *ext_state = ctxt->get_ext_state ();
+  if (!ext_state)
+    return;
+
+  smap->set_state (this, sval, taint_sm.m_tainted, NULL, *ext_state);
 }
 
 } // namespace ana

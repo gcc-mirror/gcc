@@ -331,7 +331,7 @@ range_def_chain::has_def_chain (tree name)
 bitmap
 range_def_chain::get_def_chain (tree name)
 {
-  tree ssa1, ssa2, ssa3;
+  tree ssa[3];
   unsigned v = SSA_NAME_VERSION (name);
 
   // If it has already been processed, just return the cached value.
@@ -347,23 +347,10 @@ range_def_chain::get_def_chain (tree name)
     }
 
   gimple *stmt = SSA_NAME_DEF_STMT (name);
-  if (range_op_handler (stmt))
+  unsigned count = gimple_range_ssa_names (ssa, 3, stmt);
+  if (count == 0)
     {
-      ssa1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
-      ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
-      ssa3 = NULL_TREE;
-    }
-  else if (is_a<gassign *> (stmt)
-	   && gimple_assign_rhs_code (stmt) == COND_EXPR)
-    {
-      gassign *st = as_a<gassign *> (stmt);
-      ssa1 = gimple_range_ssa_p (gimple_assign_rhs1 (st));
-      ssa2 = gimple_range_ssa_p (gimple_assign_rhs2 (st));
-      ssa3 = gimple_range_ssa_p (gimple_assign_rhs3 (st));
-    }
-  else
-    {
-      // Stmts not understood are always imports.
+      // Stmts not understood or with no operands are always imports.
       set_import (m_def_chain[v], name, NULL);
       return NULL;
     }
@@ -373,17 +360,13 @@ range_def_chain::get_def_chain (tree name)
     return NULL;
 
   // Increase the depth if we have a pair of ssa-names.
-  if (ssa1 && ssa2)
+  if (count > 1)
     m_logical_depth++;
 
-  register_dependency (name, ssa1, gimple_bb (stmt));
-  register_dependency (name, ssa2, gimple_bb (stmt));
-  register_dependency (name, ssa3, gimple_bb (stmt));
-  // Stmts with no understandable operands are also imports.
-  if (!ssa1 && !ssa2 & !ssa3)
-    set_import (m_def_chain[v], name, NULL);
+  for (unsigned x = 0; x < count; x++)
+    register_dependency (name, ssa[x], gimple_bb (stmt));
 
-  if (ssa1 && ssa2)
+  if (count > 1)
     m_logical_depth--;
 
   return m_def_chain[v].bm;
@@ -1398,16 +1381,17 @@ gori_compute::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
     }
 
    // Now solve for SSA1 or SSA2 if they are in the dependency chain.
-  Value_Range tmp (type);
    if (ssa1 && in_chain_p (ssa1, cond_name))
     {
-      if (compute_operand_range (tmp, def_stmt, cond_true, ssa1, src))
-	r1.intersect (tmp);
+      Value_Range tmp1 (TREE_TYPE (ssa1));
+      if (compute_operand_range (tmp1, def_stmt, cond_true, ssa1, src))
+	r1.intersect (tmp1);
     }
   if (ssa2 && in_chain_p (ssa2, cond_name))
     {
-      if (compute_operand_range (tmp, def_stmt, cond_false, ssa2, src))
-	r2.intersect (tmp);
+      Value_Range tmp2 (TREE_TYPE (ssa2));
+      if (compute_operand_range (tmp2, def_stmt, cond_false, ssa2, src))
+	r2.intersect (tmp2);
     }
   if (idx)
     {

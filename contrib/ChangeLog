@@ -1,3 +1,42 @@
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Skip egrep: warning: egrep is
+	  obsolescent; using grep -E.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove deprecated ports.
+
+2022-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* gcc_update (files_and_dependencies): Add rule for
+	gcc/cp/std-name-hint.h.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove the port.
+
+2022-08-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* gen_autofdo_event.py: Port to Python 3, and use grep -E
+	instead of egrep.
+
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove cr16.
+
+2022-08-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* clang-format: Add further FOR_EACH_ macros.
+
+2022-08-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* git-fetch-vendor.sh : Fix typo.
+
+2022-08-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Do not deduce changelog for root ChangeLog.
+
 2022-07-22  Martin Liska  <mliska@suse.cz>
 
 	* git-commit-mklog.py: Do not parse -b argument.

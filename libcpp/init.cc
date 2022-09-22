@@ -96,34 +96,37 @@ struct lang_flags
   char dfp_constants;
   char size_t_literals;
   char elifdef;
+  char warning_directive;
+  char delimited_escape_seqs;
+  char true_false;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig u8chlit vaopt scope dfp szlit elifdef */
-  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
-  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
-  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
-  /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
-  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1 },
-  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
-  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
-  /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
-  /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
-  /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0 },
-  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    1,     1,     1,   1,      0,   1,     1,   0,   1 },
-  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
-  /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0,   0,   0 },
-  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0,   0,   0 },
-  /* CXX11    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1,   0,      0,   1,     0,   0,   0 },
-  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   0,      1,   1,     0,   0,   0 },
-  /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1,     0,   0,   0 },
-  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0 },
-  /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0,   0,   0 },
-  /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0 },
-  /* CXX20    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0 },
-  /* GNUCXX23 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1 },
-  /* CXX23    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1 },
-  /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0,   0,   0 }
+{ /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig u8chlit vaopt scope dfp szlit elifdef warndir delim trufal */
+  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
+  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
+  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
+  /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
+  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
+  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
+  /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
+  /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
+  /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
+  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    1,     1,     0,   1,      0,   1,     1,   0,   1,      1,      0,    1 },
+  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
+  /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0,   0,   0,      0,      0,    1 },
+  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
+  /* CXX11    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1,   0,      0,   1,     0,   0,   0,      0,      0,    1 },
+  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
+  /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1,     0,   0,   0,      0,      0,    1 },
+  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0,      0,      0,    1 },
+  /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0,   0,   0,      0,      0,    1 },
+  /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0,      0,      0,    1 },
+  /* CXX20    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0,      0,      0,    1 },
+  /* GNUCXX23 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1,    1 },
+  /* CXX23    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1,    1 },
+  /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0,   0,   0,      0,      0,    0 }
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -153,6 +156,9 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, dfp_constants)		 = l->dfp_constants;
   CPP_OPTION (pfile, size_t_literals)		 = l->size_t_literals;
   CPP_OPTION (pfile, elifdef)			 = l->elifdef;
+  CPP_OPTION (pfile, warning_directive)		 = l->warning_directive;
+  CPP_OPTION (pfile, delimited_escape_seqs)	 = l->delimited_escape_seqs;
+  CPP_OPTION (pfile, true_false)		 = l->true_false;
 }
 
 /* Initialize library global state.  */
@@ -202,6 +208,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, cpp_warn_c90_c99_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_cxx11_compat) = 0;
+  CPP_OPTION (pfile, cpp_warn_cxx20_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
   CPP_OPTION (pfile, cpp_warn_long_long) = 0;
   CPP_OPTION (pfile, dollars_in_ident) = 1;
@@ -222,6 +229,9 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, ext_numeric_literals) = 1;
   CPP_OPTION (pfile, warn_date_time) = 0;
   CPP_OPTION (pfile, cpp_warn_bidirectional) = bidirectional_unpaired;
+  CPP_OPTION (pfile, cpp_warn_invalid_utf8) = 0;
+  CPP_OPTION (pfile, cpp_warn_unicode) = 1;
+  CPP_OPTION (pfile, cpp_input_charset_explicit) = 0;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */
@@ -231,6 +241,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, int_precision) = CHAR_BIT * sizeof (int);
   CPP_OPTION (pfile, unsigned_char) = 0;
   CPP_OPTION (pfile, unsigned_wchar) = 1;
+  CPP_OPTION (pfile, unsigned_utf8char) = 1;
   CPP_OPTION (pfile, bytes_big_endian) = 1;  /* does not matter */
 
   /* Default to no charset conversion.  */

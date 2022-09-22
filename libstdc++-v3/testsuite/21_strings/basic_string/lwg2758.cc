@@ -40,6 +40,6 @@ int main()
     x.replace(0, 3, "foo", 0, 3);
     x.replace(0, 3, cs, 0, 3);
     x = "bar";
-    x.compare(0, 3, "foo", 0, 3);
-    x.compare(0, 3, cs, 0, 3);
+    (void) x.compare(0, 3, "foo", 0, 3);
+    (void) x.compare(0, 3, cs, 0, 3);
 }

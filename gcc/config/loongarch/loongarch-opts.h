@@ -46,6 +46,7 @@ loongarch_config_target (struct loongarch_target *target,
 #define TARGET_CMODEL_NORMAL	    (la_target.cmodel == CMODEL_NORMAL)
 #define TARGET_CMODEL_TINY	    (la_target.cmodel == CMODEL_TINY)
 #define TARGET_CMODEL_TINY_STATIC   (la_target.cmodel == CMODEL_TINY_STATIC)
+#define TARGET_CMODEL_MEDIUM	    (la_target.cmodel == CMODEL_MEDIUM)
 #define TARGET_CMODEL_LARGE	    (la_target.cmodel == CMODEL_LARGE)
 #define TARGET_CMODEL_EXTREME	    (la_target.cmodel == CMODEL_EXTREME)
 

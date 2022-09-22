@@ -345,6 +345,9 @@ enum omp_clause_code {
   /* OpenMP clause: has_device_addr (variable-list).  */
   OMP_CLAUSE_HAS_DEVICE_ADDR,
 
+  /* OpenMP clause: doacross ({source,sink}:vec).  */
+  OMP_CLAUSE_DOACROSS,
+
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
@@ -1525,10 +1528,16 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_INOUT,
   OMP_CLAUSE_DEPEND_MUTEXINOUTSET,
   OMP_CLAUSE_DEPEND_INOUTSET,
-  OMP_CLAUSE_DEPEND_SOURCE,
-  OMP_CLAUSE_DEPEND_SINK,
   OMP_CLAUSE_DEPEND_DEPOBJ,
+  OMP_CLAUSE_DEPEND_INVALID,
   OMP_CLAUSE_DEPEND_LAST
+};
+
+enum omp_clause_doacross_kind
+{
+  OMP_CLAUSE_DOACROSS_SOURCE,
+  OMP_CLAUSE_DOACROSS_SINK,
+  OMP_CLAUSE_DOACROSS_LAST
 };
 
 enum omp_clause_proc_bind_kind
@@ -1589,17 +1598,17 @@ struct GTY(()) tree_ssa_name {
 
   /* Value range information.  */
   union ssa_name_info_type {
+    /* Ranges for integers.  */
+    struct GTY ((tag ("0"))) irange_storage_slot *irange_info;
+    /* Ranges for floating point numbers.  */
+    struct GTY ((tag ("1"))) frange_storage_slot *frange_info;
     /* Pointer attributes used for alias analysis.  */
-    struct GTY ((tag ("0"))) ptr_info_def *ptr_info;
+    struct GTY ((tag ("2"))) ptr_info_def *ptr_info;
     /* This holds any range info supported by ranger (except ptr_info
        above) and is managed by vrange_storage.  */
     void * GTY ((skip)) range_info;
-    /* GTY tag when the range in the range_info slot above satisfies
-       irange::supports_type_p.  */
-    struct GTY ((tag ("1"))) irange_storage_slot *irange_info;
   } GTY ((desc ("%1.typed.type ?" \
-		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
-
+		"(POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) ? 2 : SCALAR_FLOAT_TYPE_P (TREE_TYPE ((tree)&%1))) : 3"))) info;
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_t imm_uses;
 };
@@ -1620,6 +1629,7 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_default_kind   default_kind;
     enum omp_clause_schedule_kind  schedule_kind;
     enum omp_clause_depend_kind    depend_kind;
+    enum omp_clause_doacross_kind  doacross_kind;
     /* See include/gomp-constants.h for enum gomp_map_kind's values.  */
     unsigned int		   map_kind;
     enum omp_clause_proc_bind_kind proc_bind_kind;

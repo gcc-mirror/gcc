@@ -324,7 +324,7 @@ ctf_add_string (ctf_container_ref ctfc, const char * name,
   return ctfc_strtable_add_str (str_table, name, name_offset);
 }
 
-/* Add the compilation unit (CU) name string to the the CTF string table.  The
+/* Add the compilation unit (CU) name string to the CTF string table.  The
    CU name has a prepended pwd string if it is a relative path.  Also set the
    CU name offset in the CTF container.  */
 
@@ -777,7 +777,7 @@ ctf_add_function_arg (ctf_container_ref ctfc, dw_die_ref func,
 ctf_id_t
 ctf_add_function (ctf_container_ref ctfc, uint32_t flag, const char * name,
 		  const ctf_funcinfo_t * ctc, dw_die_ref die,
-		  bool from_global_func)
+		  bool from_global_func, int linkage)
 {
   ctf_dtdef_ref dtd;
   ctf_id_t type;
@@ -791,6 +791,7 @@ ctf_add_function (ctf_container_ref ctfc, uint32_t flag, const char * name,
   type = ctf_add_generic (ctfc, flag, name, &dtd, die);
 
   dtd->from_global_func = from_global_func;
+  dtd->linkage = linkage;
   dtd->dtd_data.ctti_info = CTF_TYPE_INFO (CTF_K_FUNCTION, flag, vlen);
   /* Caller must make sure CTF types for ctc->ctc_return are already added.  */
   dtd->dtd_data.ctti_type = (uint32_t) ctc->ctc_return;

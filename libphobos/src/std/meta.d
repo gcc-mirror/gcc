@@ -627,35 +627,9 @@ Evaluates to `AliasSeq!(fun!(args[0]), fun!(args[1]), ..., fun!(args[$ - 1]))`.
  */
 template staticMap(alias fun, args...)
 {
-    version (__staticMap_simplest_but_buggy)
-    {
-        // @@@ BUG @@@
-        // The following straightforward implementation exposes a bug.
-        // See issue https://issues.dlang.org/show_bug.cgi?id=22421 and unittest below.
-        alias staticMap = AliasSeq!();
-        static foreach (arg; args)
-             staticMap = AliasSeq!(staticMap, fun!arg);
-    }
-    else version (__staticMap_simple_but_slow)
-    {
-        // This has a performance bug. Appending to the staticMap seems to be quadratic.
-        alias staticMap = AliasSeq!();
-        static foreach (i; 0 .. args.length)
-            staticMap = AliasSeq!(staticMap, fun!(args[i]));
-    }
-    else // Current best-of-breed implementation imitates quicksort
-    {
-        static if (args.length <= 8)
-        {
-            alias staticMap = AliasSeq!();
-            static foreach (i; 0 .. args.length)
-                staticMap = AliasSeq!(staticMap, fun!(args[i]));
-        }
-        else
-        {
-            alias staticMap = AliasSeq!(staticMap!(fun, args[0 .. $ / 2]), staticMap!(fun, args[$ / 2 .. $]));
-        }
-    }
+    alias staticMap = AliasSeq!();
+    static foreach (arg; args)
+        staticMap = AliasSeq!(staticMap, fun!arg);
 }
 
 ///

@@ -111,8 +111,8 @@ bool checkNonAssignmentArrayOp(Expression e, bool suggestion = false)
  * evaluation order as the actual array operations have no
  * side-effect.
  * References:
- * https://github.com/dlang/druntime/blob/master/src/object.d#L3944
- * https://github.com/dlang/druntime/blob/master/src/core/internal/array/operations.d
+ * https://github.com/dlang/dmd/blob/cdfadf8a18f474e6a1b8352af2541efe3e3467cc/druntime/src/object.d#L4694
+ * https://github.com/dlang/dmd/blob/master/druntime/src/core/internal/array/operations.d
  */
 Expression arrayOp(BinExp e, Scope* sc)
 {

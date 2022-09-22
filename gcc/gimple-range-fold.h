@@ -96,6 +96,14 @@ range_compatible_p (tree type1, tree type2)
 	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
 }
 
+extern tree gimple_range_operand1 (const gimple *s);
+extern tree gimple_range_operand2 (const gimple *s);
+
+// Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names
+// on the statement.  For efficiency, it is an error to not pass in enough
+// elements for the vector.  Return the number of ssa-names.
+
+unsigned gimple_range_ssa_names (tree *vec, unsigned vec_size, gimple *stmt);
 
 // Source of all operands for fold_using_range and gori_compute.
 // It abstracts out the source of an operand so it can come from a stmt or
@@ -150,9 +158,6 @@ protected:
   relation_oracle *m_oracle;
 };
 
-extern tree gimple_range_operand1 (const gimple *s);
-extern tree gimple_range_operand2 (const gimple *s);
-
 // This class uses ranges to fold a gimple statement producinf a range for
 // the LHS.  The source of all operands is supplied via the fur_source class
 // which provides a range_query as well as a source location and any other
@@ -173,7 +178,7 @@ protected:
   void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code,
 				    fur_source &src);
   bool range_of_phi (vrange &r, gphi *phi, fur_source &src);
-  void range_of_ssa_name_with_loop_info (irange &, tree, class loop *, gphi *,
+  void range_of_ssa_name_with_loop_info (vrange &, tree, class loop *, gphi *,
 					 fur_source &src);
   void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src);
 };

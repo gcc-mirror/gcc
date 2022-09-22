@@ -1,3 +1,7 @@
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

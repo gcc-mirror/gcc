@@ -1,3 +1,6 @@
+#ifdef _AIX
+#define _MODE_T
+#endif
 #include <stdio.h>
 
 int open(const char *, int mode);
@@ -9,6 +12,12 @@ int read (int fd, void *buf, int nbytes);
 #define O_WRONLY 1
 #define O_RDWR 2
 
+typedef enum {
+  S_IRWXU
+  // etc
+} mode_t;
+
+int creat (const char *, mode_t mode);
 
 void
 test_1 (const char *path, void *buf)
@@ -69,4 +78,27 @@ test_5 (const char *path)
     int fd = open (path, O_RDWR);
     close(fd);
     printf("%d", fd); /* { dg-bogus "'printf' on a closed file descriptor 'fd'" } */
+}
+
+
+void
+test_6 (const char *path, mode_t mode, void *buf)
+{
+  int fd = creat (path, mode);
+  if (fd != -1)
+  {
+    read (fd, buf, 1); /* { dg-warning "'read' on write-only file descriptor 'fd'" } */
+    close(fd);
+  }
+}
+
+void
+test_7 (const char *path, mode_t mode, void *buf)
+{
+  int fd = creat (path, mode);
+  if (fd != -1)
+  {
+    write (fd, buf, 1);
+    close(fd);
+  }
 }

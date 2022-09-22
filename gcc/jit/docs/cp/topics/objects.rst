@@ -23,7 +23,7 @@ Objects
 .. class:: gccjit::object
 
 Almost every entity in the API (with the exception of
-:class:`gccjit::context` and :c:type:`gcc_jit_result *`) is a
+:class:`gccjit::context` and :c:expr:`gcc_jit_result *`) is a
 "contextual" object, a :class:`gccjit::object`.
 
 A JIT object:

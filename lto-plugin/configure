@@ -6015,7 +6015,7 @@ fi
 use_locking=no
 ac_lto_plugin_extra_ldflags=
 
-case $target in
+case $host in
   riscv*)
     # do not use locking as pthread depends on libatomic
     ;;

@@ -33,9 +33,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) \
-  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n) \
+  (TARGET_64BIT ? debugger64_register_map[n] : svr4_debugger_register_map[n])
 
 #undef ASM_SPEC
 #define ASM_SPEC "--32 -march=iamcu"

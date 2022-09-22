@@ -242,7 +242,7 @@ public:
   relation_kind query_relation (basic_block, tree, tree) final override;
   relation_kind query_relation (basic_block, const_bitmap, const_bitmap)
     final override;
-  void reset_path ();
+  void reset_path (relation_oracle *oracle = NULL);
   void set_root_oracle (relation_oracle *oracle) { m_root = oracle; }
   void dump (FILE *, basic_block) const final override;
   void dump (FILE *) const final override;

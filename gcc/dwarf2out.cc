@@ -3865,7 +3865,7 @@ static int decl_quals (const_tree);
 static dw_die_ref modified_type_die (tree, int, bool, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
 static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
-static unsigned int dbx_reg_number (const_rtx);
+static unsigned int debugger_reg_number (const_rtx);
 static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static dw_loc_descr_ref reg_loc_descriptor (rtx, enum var_init_status);
 static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int,
@@ -6069,11 +6069,7 @@ dwarf2out_register_external_die (tree decl, const char *sym,
 
   if (!external_die_map)
     external_die_map = hash_map<tree, sym_off_pair>::create_ggc (1000);
-  /* When we do tree merging during WPA we can end up re-using GC memory
-     as there's currently no way to unregister external DIEs.  Ideally
-     we'd register them only after merging finished but allowing override
-     here is easiest.  See PR106334.  */
-  gcc_checking_assert (flag_wpa || !external_die_map->get (decl));
+  gcc_checking_assert (!external_die_map->get (decl));
   sym_off_pair p = { IDENTIFIER_POINTER (get_identifier (sym)), off };
   external_die_map->put (decl, p);
 }
@@ -13214,6 +13210,7 @@ base_type_die (tree type, bool reverse)
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 	  if (strcmp (name, "char16_t") == 0
+	      || strcmp (name, "char8_t") == 0
 	      || strcmp (name, "char32_t") == 0)
 	    {
 	      encoding = DW_ATE_UTF;
@@ -14205,10 +14202,10 @@ template_parameter_pack_die (tree parm_pack,
   return die;
 }
 
-/* Return the DBX register number described by a given RTL node.  */
+/* Return the debugger register number described by a given RTL node.  */
 
 static unsigned int
-dbx_reg_number (const_rtx rtl)
+debugger_reg_number (const_rtx rtl)
 {
   unsigned regno = REGNO (rtl);
 
@@ -14223,7 +14220,7 @@ dbx_reg_number (const_rtx rtl)
     }
 #endif
 
-  regno = DBX_REGISTER_NUMBER (regno);
+  regno = DEBUGGER_REGNO (regno);
   gcc_assert (regno != INVALID_REGNUM);
   return regno;
 }
@@ -14286,10 +14283,10 @@ reg_loc_descriptor (rtx rtl, enum var_init_status initialized)
     return multiple_reg_loc_descriptor (rtl, regs, initialized);
   else
     {
-      unsigned int dbx_regnum = dbx_reg_number (rtl);
-      if (dbx_regnum == IGNORED_DWARF_REGNUM)
+      unsigned int debugger_regnum = debugger_reg_number (rtl);
+      if (debugger_regnum == IGNORED_DWARF_REGNUM)
 	return 0;
-      return one_reg_loc_descriptor (dbx_regnum, initialized);
+      return one_reg_loc_descriptor (debugger_regnum, initialized);
     }
 }
 
@@ -14338,7 +14335,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 	}
 #endif
 
-      gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
+      gcc_assert ((unsigned) DEBUGGER_REGNO (reg) == debugger_reg_number (rtl));
       nregs = REG_NREGS (rtl);
 
       /* At present we only track constant-sized pieces.  */
@@ -14351,7 +14348,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 	{
 	  dw_loc_descr_ref t;
 
-	  t = one_reg_loc_descriptor (DBX_REGISTER_NUMBER (reg),
+	  t = one_reg_loc_descriptor (DEBUGGER_REGNO (reg),
 				      VAR_INIT_STATUS_INITIALIZED);
 	  add_loc_descr (&loc_result, t);
 	  add_loc_descr_op_piece (&loc_result, size);
@@ -14373,7 +14370,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
     {
       dw_loc_descr_ref t;
 
-      t = one_reg_loc_descriptor (dbx_reg_number (XVECEXP (regs, 0, i)),
+      t = one_reg_loc_descriptor (debugger_reg_number (XVECEXP (regs, 0, i)),
 				  VAR_INIT_STATUS_INITIALIZED);
       add_loc_descr (&loc_result, t);
       add_loc_descr_op_piece (&loc_result, size);
@@ -16031,7 +16028,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      ))
 	{
 	  dw_die_ref type_die;
-	  unsigned int dbx_regnum;
+	  unsigned int debugger_regnum;
 
 	  if (dwarf_strict && dwarf_version < 5)
 	    break;
@@ -16041,11 +16038,11 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  if (type_die == NULL)
 	    break;
 
-	  dbx_regnum = dbx_reg_number (rtl);
-	  if (dbx_regnum == IGNORED_DWARF_REGNUM)
+	  debugger_regnum = debugger_reg_number (rtl);
+	  if (debugger_regnum == IGNORED_DWARF_REGNUM)
 	    break;
 	  mem_loc_result = new_loc_descr (dwarf_OP (DW_OP_regval_type),
-					  dbx_regnum, 0);
+					  debugger_regnum, 0);
 	  mem_loc_result->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	  mem_loc_result->dw_loc_oprnd2.v.val_die_ref.die = type_die;
 	  mem_loc_result->dw_loc_oprnd2.v.val_die_ref.external = 0;
@@ -16316,10 +16313,10 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 				      VOIDmode, VAR_INIT_STATUS_INITIALIZED);
 	  else
 	    {
-              unsigned int dbx_regnum = dbx_reg_number (ENTRY_VALUE_EXP (rtl));
-	      if (dbx_regnum == IGNORED_DWARF_REGNUM)
+	      unsigned int debugger_regnum = debugger_reg_number (ENTRY_VALUE_EXP (rtl));
+	      if (debugger_regnum == IGNORED_DWARF_REGNUM)
 		return NULL;
-	      op0 = one_reg_loc_descriptor (dbx_regnum,
+	      op0 = one_reg_loc_descriptor (debugger_regnum,
 					    VAR_INIT_STATUS_INITIALIZED);
 	    }
 	}

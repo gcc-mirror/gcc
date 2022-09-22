@@ -638,7 +638,7 @@ enum reg_class {
    can use DWARF_ALT_FRAME_RETURN_COLUMN defined below.  This is just the same
    as the default definition in dwarf2out.cc.  */
 #undef DWARF_FRAME_REGNUM
-#define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
+#define DWARF_FRAME_REGNUM(REG) DEBUGGER_REGNO (REG)
 
 /* Before the prologue, RA lives in $26.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)

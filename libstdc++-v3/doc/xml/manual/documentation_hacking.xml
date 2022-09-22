@@ -353,7 +353,7 @@
 	  documentation. Here are some of the obvious errors, and ways
 	  to fix some common issues that may appear quite cryptic.
 	</para>
-	
+
 	<para>
 	  First, if using a rule like <code>make pdf</code>, try to
 	  narrow down the scope of the error to either docbook
@@ -844,7 +844,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 	  documentation. Here are some of the obvious errors, and ways
 	  to fix some common issues that may appear quite cryptic.
 	</para>
-	
+
 	<para>
 	  First, if using a rule like <code>make pdf</code>, try to
 	  narrow down the scope of the error to either docbook

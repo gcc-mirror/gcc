@@ -1013,7 +1013,7 @@ m32c_eh_return_stackadj_rtx (void)
 
 /* Registers That Address the Stack Frame */
 
-/* Implements DWARF_FRAME_REGNUM and DBX_REGISTER_NUMBER.  Note that
+/* Implements DWARF_FRAME_REGNUM and DEBUGGER_REGNO.  Note that
    the original spec called for dwarf numbers to vary with register
    width as well, for example, r0l, r0, and r2r0 would each have
    different dwarf numbers.  GCC doesn't support this, and we don't do

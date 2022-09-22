@@ -167,7 +167,6 @@ range_query::free_value_range_equiv (value_range_equiv *v)
 const class value_range_equiv *
 range_query::get_value_range (const_tree expr, gimple *stmt)
 {
-  gcc_checking_assert (value_range_equiv::supports_p (TREE_TYPE (expr)));
   int_range_max r;
   if (range_of_expr (r, const_cast<tree> (expr), stmt))
     return new (equiv_alloc->allocate ()) value_range_equiv (r);
@@ -211,11 +210,19 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-    case REAL_CST:
       if (TREE_OVERFLOW_P (expr))
 	expr = drop_tree_overflow (expr);
       r.set (expr, expr);
       return true;
+
+    case REAL_CST:
+      {
+	frange &f = as_a <frange> (r);
+	f.set (expr, expr);
+	if (!real_isnan (TREE_REAL_CST_PTR (expr)))
+	  f.clear_nan ();
+	return true;
+      }
 
     case SSA_NAME:
       gimple_range_global (r, expr);

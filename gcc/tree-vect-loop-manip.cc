@@ -992,7 +992,7 @@ vect_set_loop_condition (class loop *loop, loop_vec_info loop_vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "New loop exit condition: %G",
-		     cond_stmt);
+		     (gimple *) cond_stmt);
 }
 
 /* Helper routine of slpeel_tree_duplicate_loop_to_edge_cfg.
@@ -1539,7 +1539,8 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
       stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "vect_update_ivs_after_vectorizer: phi: %G", phi);
+			 "vect_update_ivs_after_vectorizer: phi: %G",
+			 (gimple *) phi);
 
       /* Skip reduction and virtual phis.  */
       if (!iv_phi_p (phi_info))
@@ -1559,15 +1560,28 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
       gcc_assert (!tree_is_chrec (step_expr));
 
       init_expr = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
+      gimple_seq stmts = NULL;
+      enum vect_induction_op_type induction_type
+	= STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (phi_info);
 
-      off = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
-			 fold_convert (TREE_TYPE (step_expr), niters),
-			 step_expr);
-      if (POINTER_TYPE_P (type))
-	ni = fold_build_pointer_plus (init_expr, off);
+      if (induction_type == vect_step_op_add)
+	{
+	  off = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			     fold_convert (TREE_TYPE (step_expr), niters),
+			     step_expr);
+	  if (POINTER_TYPE_P (type))
+	    ni = fold_build_pointer_plus (init_expr, off);
+	  else
+	    ni = fold_build2 (PLUS_EXPR, type,
+			      init_expr, fold_convert (type, off));
+	}
+      /* Don't bother call vect_peel_nonlinear_iv_init.  */
+      else if (induction_type == vect_step_op_neg)
+	ni = init_expr;
       else
-	ni = fold_build2 (PLUS_EXPR, type,
-			  init_expr, fold_convert (type, off));
+	ni = vect_peel_nonlinear_iv_init (&stmts, init_expr,
+					  niters, step_expr,
+					  induction_type);
 
       var = create_tmp_var (type, "tmp");
 
@@ -1576,9 +1590,15 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
       ni_name = force_gimple_operand (ni, &new_stmts, false, var);
       /* Exit_bb shouldn't be empty.  */
       if (!gsi_end_p (last_gsi))
-	gsi_insert_seq_after (&last_gsi, new_stmts, GSI_SAME_STMT);
+	{
+	  gsi_insert_seq_after (&last_gsi, stmts, GSI_SAME_STMT);
+	  gsi_insert_seq_after (&last_gsi, new_stmts, GSI_SAME_STMT);
+	}
       else
-	gsi_insert_seq_before (&last_gsi, new_stmts, GSI_SAME_STMT);
+	{
+	  gsi_insert_seq_before (&last_gsi, stmts, GSI_SAME_STMT);
+	  gsi_insert_seq_before (&last_gsi, new_stmts, GSI_SAME_STMT);
+	}
 
       /* Fix phi expressions in the successor bb.  */
       adjust_phi_and_debug_stmts (phi1, update_e, ni_name);
@@ -1978,7 +1998,8 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
   else
     ni_minus_gap = niters;
 
-  unsigned HOST_WIDE_INT const_vf;
+  /* To silence some unexpected warnings, simply initialize to 0. */
+  unsigned HOST_WIDE_INT const_vf = 0;
   if (vf.is_constant (&const_vf)
       && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {

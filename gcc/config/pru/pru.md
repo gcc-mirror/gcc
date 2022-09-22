@@ -112,12 +112,14 @@
 (define_mode_iterator MOV64 [DI DF DD DQ UDQ])
 (define_mode_iterator QISI [QI HI SI])
 (define_mode_iterator HISI [HI SI])
+(define_mode_iterator HIDI [HI SI DI])
 (define_mode_iterator SFDF [SF DF])
 
 ;; EQS0/1 for extension source 0/1 and EQD for extension destination patterns.
 (define_mode_iterator EQS0 [QI HI SI])
 (define_mode_iterator EQS1 [QI HI SI])
 (define_mode_iterator EQD [QI HI SI])
+(define_mode_iterator EQDHIDI [HI SI DI])
 
 ;; GCC sign-extends its integer constants.  Hence 0x80 will be represented
 ;; as -128 for QI mode and 128 for HI and SI modes.  To cope with this,
@@ -204,8 +206,8 @@
 ;;
 ;; Note: Assume that Program Mem (T constraint) can fit in 16 bits!
 (define_insn "prumov<mode>"
-  [(set (match_operand:MOV32 0 "nonimmediate_operand" "=m,r,r,r,r,r")
-	(match_operand:MOV32 1 "general_operand"      "r,m,r,T,J,iF"))]
+  [(set (match_operand:MOV32 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
+	(match_operand:MOV32 1 "general_operand"      "r,m,r,T,J,Um,iF"))]
   ""
   "@
     sb%B0o\\t%b1, %0, %S0
@@ -213,9 +215,10 @@
     mov\\t%0, %1
     ldi\\t%0, %%pmem(%1)
     ldi\\t%0, %1
+    fill\\t%0, 4
     ldi32\\t%0, %1"
-  [(set_attr "type" "st,ld,alu,alu,alu,alu")
-   (set_attr "length" "4,4,4,4,4,8")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,4,4,4,8")])
 
 
 ;; Separate pattern for 8 and 16 bit moves, since LDI32 pseudo instruction
@@ -245,8 +248,8 @@
 ; Forcing DI reg alignment (akin to microblaze's HARD_REGNO_MODE_OK)
 ; does not seem efficient, and will violate TI ABI.
 (define_insn "mov<mode>"
-  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r")
-	(match_operand:MOV64 1 "general_operand"      "r,m,r,T,J,nF"))]
+  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
+	(match_operand:MOV64 1 "general_operand"      "r,m,Um,r,T,J,nF"))]
   ""
 {
   switch (which_alternative)
@@ -256,6 +259,8 @@
     case 1:
       return "lb%B1o\\t%b0, %1, %S1";
     case 2:
+      return "fill\\t%F0, 8";
+    case 3:
       /* careful with overlapping source and destination regs.  */
       gcc_assert (GP_REG_P (REGNO (operands[0])));
       gcc_assert (GP_REG_P (REGNO (operands[1])));
@@ -263,18 +268,18 @@
 	return "mov\\t%N0, %N1\;mov\\t%F0, %F1";
       else
 	return "mov\\t%F0, %F1\;mov\\t%N0, %N1";
-    case 3:
-      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 4:
-      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 5:
+      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+    case 6:
       return "ldi32\\t%F0, %w1\;ldi32\\t%N0, %W1";
     default:
       gcc_unreachable ();
   }
 }
-  [(set_attr "type" "st,ld,alu,alu,alu,alu")
-   (set_attr "length" "4,4,8,8,8,16")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,8,8,8,16")])
 
 ;
 ; load_multiple pattern(s).
@@ -415,18 +420,68 @@
   "mov\\t%0, %1"
   [(set_attr "type"     "alu")])
 
-;; Sign extension patterns.  We have to emulate them due to lack of
+(define_insn "zero_extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:QI 1 "register_operand" "0,r")))]
+  ""
+  "@
+    zero\\t%F0.b1, 7
+    mov\\t%F0.b0, %1\;zero\\t%F0.b1, 7"
+  [(set_attr "type" "alu,alu")
+   (set_attr "length" "4,8")])
+
+(define_insn "zero_extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:HI 1 "register_operand" "0,r")))]
+  ""
+  "@
+    zero\\t%F0.b2, 6
+    mov\\t%F0.w0, %1\;zero\\t%F0.b2, 6"
+  [(set_attr "type" "alu,alu")
+   (set_attr "length" "4,8")])
+
+(define_insn "zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:SI 1 "register_operand" "0,r")))]
+  ""
+  "@
+    zero\\t%N0, 4
+    mov\\t%F0, %1\;zero\\t%N0, 4"
+  [(set_attr "type" "alu,alu")
+   (set_attr "length" "4,8")])
+
+;; Sign extension pattern.  We have to emulate it due to lack of
 ;; signed operations in PRU's ALU.
 
-(define_insn "extend<EQS0:mode><EQD:mode>2"
-  [(set (match_operand:EQD 0 "register_operand"			  "=r")
-	(sign_extend:EQD (match_operand:EQS0 1 "register_operand"  "r")))]
+(define_expand "extend<EQS0:mode><EQDHIDI:mode>2"
+  [(set (match_operand:EQDHIDI 0 "register_operand" "=r")
+	(sign_extend:EQDHIDI (match_operand:EQS0 1 "register_operand" "r")))]
   ""
 {
-  return pru_output_sign_extend (operands);
-}
-  [(set_attr "type" "complex")
-   (set_attr "length" "12")])
+  rtx_code_label *skip_hiset_label;
+
+  /* Clear the higher bits to temporarily make the value positive.  */
+  emit_insn (gen_rtx_SET (operands[0],
+			  gen_rtx_ZERO_EXTEND (<EQDHIDI:MODE>mode,
+					       operands[1])));
+
+  /* Now check if the result must be made negative.  */
+  skip_hiset_label = gen_label_rtx ();
+  const int op1_size = GET_MODE_SIZE (<EQS0:MODE>mode);
+  const int op1_sign_bit = op1_size * BITS_PER_UNIT - 1;
+  emit_jump_insn (gen_cbranch_qbbx_const (EQ,
+					  <EQDHIDI:MODE>mode,
+					  operands[0],
+					  GEN_INT (op1_sign_bit),
+					  skip_hiset_label));
+  emit_insn (gen_ior<EQDHIDI:mode>3 (
+			 operands[0],
+			 operands[0],
+			 GEN_INT (~GET_MODE_MASK (<EQS0:MODE>mode))));
+  emit_label (skip_hiset_label);
+
+  DONE;
+})
 
 ;; Bit extraction
 ;; We define it solely to allow combine to choose SImode
@@ -518,6 +573,51 @@
   ""
   "")
 
+;; Specialised IOR pattern, which can emit an efficient FILL instruction.
+(define_insn "@pru_ior_fillbytes<mode>"
+  [(set (match_operand:HIDI 0 "register_operand" "=r")
+	(ior:HIDI
+	   (match_operand:HIDI 1 "register_operand" "0")
+	   (match_operand:HIDI 2 "const_fillbytes_operand" "Uf")))]
+  ""
+{
+  static char line[64];
+  pru_byterange r;
+
+  r = pru_calc_byterange (INTVAL (operands[2]), <MODE>mode);
+  gcc_assert (r.start >=0 && r.nbytes > 0);
+  gcc_assert ((r.start + r.nbytes) <= GET_MODE_SIZE (<MODE>mode));
+
+  const int regno = REGNO (operands[0]) + r.start;
+
+  sprintf (line, "fill\\tr%d.b%d, %d", regno / 4, regno % 4, r.nbytes);
+  return line;
+}
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
+
+;; Specialised AND pattern, which can emit an efficient ZERO instruction.
+(define_insn "@pru_and_zerobytes<mode>"
+  [(set (match_operand:HIDI 0 "register_operand" "=r")
+	(and:HIDI
+	   (match_operand:HIDI 1 "register_operand" "0")
+	   (match_operand:HIDI 2 "const_zerobytes_operand" "Uz")))]
+  ""
+{
+  static char line[64];
+  pru_byterange r;
+
+  r = pru_calc_byterange (~INTVAL (operands[2]), <MODE>mode);
+  gcc_assert (r.start >=0 && r.nbytes > 0);
+  gcc_assert ((r.start + r.nbytes) <= GET_MODE_SIZE (<MODE>mode));
+
+  const int regno = REGNO (operands[0]) + r.start;
+
+  sprintf (line, "zero\\tr%d.b%d, %d", regno / 4, regno % 4, r.nbytes);
+  return line;
+}
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
 
 ;;  Shift instructions
 
@@ -641,18 +741,89 @@
 ;; DI logical ops could be automatically split into WORD-mode ops in
 ;; expand_binop().  But then we'll miss an opportunity to use SI mode
 ;; operations, since WORD mode for PRU is QI.
-(define_insn "<code>di3"
-  [(set (match_operand:DI 0 "register_operand"		"=&r,&r")
+(define_expand "<code>di3"
+  [(set (match_operand:DI 0 "register_operand")
 	  (LOGICAL_BITOP:DI
-	    (match_operand:DI 1 "register_operand"	"%r,r")
-	    (match_operand:DI 2 "reg_or_ubyte_operand"	"r,I")))]
+	    (match_operand:DI 1 "register_operand")
+	    (match_operand:DI 2 "reg_or_const_int_operand")))]
   ""
-  "@
-   <logical_bitop_asm>\\t%F0, %F1, %F2\;<logical_bitop_asm>\\t%N0, %N1, %N2
-   <logical_bitop_asm>\\t%F0, %F1, %2\;<logical_bitop_asm>\\t%N0, %N1, 0"
+{
+  /* Try with the more efficient zero/fill patterns first.  */
+  if (<LOGICAL_BITOP:CODE> == IOR
+      && CONST_INT_P (operands[2])
+      && const_fillbytes_operand (operands[2], DImode))
+    {
+      rtx insn = maybe_gen_pru_ior_fillbytes (DImode,
+					      operands[0],
+					      operands[0],
+					      operands[2]);
+      if (insn != nullptr)
+	{
+	  if (REGNO (operands[0]) != REGNO (operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  emit_insn (insn);
+	  DONE;
+	}
+    }
+  if (<LOGICAL_BITOP:CODE> == AND
+      && CONST_INT_P (operands[2])
+      && const_zerobytes_operand (operands[2], DImode))
+    {
+      rtx insn = maybe_gen_pru_and_zerobytes (DImode,
+					      operands[0],
+					      operands[0],
+					      operands[2]);
+      if (insn != nullptr)
+	{
+	  if (REGNO (operands[0]) != REGNO (operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  emit_insn (insn);
+	  DONE;
+	}
+    }
+  /* No optimized case found.  Rely on the two-instruction pattern below.  */
+  if (!reg_or_ubyte_operand (operands[2], DImode))
+    operands[2] = force_reg (DImode, operands[2]);
+})
+
+;; 64-bit pattern for logical operations.
+(define_insn "pru_<code>di3"
+  [(set (match_operand:DI 0 "register_operand"		"=r,&r,r")
+	  (LOGICAL_BITOP:DI
+	    (match_operand:DI 1 "register_operand"	"%0,r,r")
+	    (match_operand:DI 2 "reg_or_ubyte_operand"	"r,r,I")))]
+  ""
+{
+  switch (which_alternative)
+    {
+    case 0:
+      if (REGNO (operands[0]) == (REGNO (operands[2]) + 4))
+	return "<logical_bitop_asm>\\t%N0, %N0, %N2\;"
+	       "<logical_bitop_asm>\\t%F0, %F0, %F2";
+      else
+	return "<logical_bitop_asm>\\t%F0, %F0, %F2\;"
+	       "<logical_bitop_asm>\\t%N0, %N0, %N2";
+    case 1:
+      /* With the three-register variant there is no way to handle the case
+	 when OP0 overlaps both OP1 and OP2.  Example:
+	     OP0_lo == OP1_hi
+	     OP0_hi == OP2_lo
+	 Hence this variant's OP0 must be marked as an earlyclobber.  */
+      return "<logical_bitop_asm>\\t%F0, %F1, %F2\;"
+	     "<logical_bitop_asm>\\t%N0, %N1, %N2";
+    case 2:
+      if (REGNO (operands[0]) == (REGNO (operands[1]) + 4))
+	return "<logical_bitop_asm>\\t%N0, %N1, 0\;"
+	       "<logical_bitop_asm>\\t%F0, %F1, %2";
+      else
+	return "<logical_bitop_asm>\\t%F0, %F1, %2\;"
+	       "<logical_bitop_asm>\\t%N0, %N1, 0";
+    default:
+      gcc_unreachable ();
+  }
+}
   [(set_attr "type" "alu")
    (set_attr "length" "8")])
-
 
 (define_insn "one_cmpldi2"
   [(set (match_operand:DI 0 "register_operand"		"=r")
@@ -967,6 +1138,55 @@
     return "<BIT_TEST:qbbx_op>\\t%l2, %0, %u1";
   else
     return "<BIT_TEST:qbbx_negop>\\t.+8, %0, %u1\;jmp\\t%%label(%l2)";
+}
+  [(set_attr "type" "control")
+   (set (attr "length")
+      (if_then_else
+	  (and (ge (minus (match_dup 2) (pc)) (const_int -2048))
+	       (le (minus (match_dup 2) (pc)) (const_int 2044)))
+	  (const_int 4)
+	  (const_int 8)))])
+
+;; Bit test conditional branch, but only for constant bit positions.
+;; This restriction allows an efficient code for DImode operands.
+;;
+;; QImode is already handled by the pattern variant above.
+(define_insn "@cbranch_qbbx_const_<BIT_TEST:code><HIDI:mode>"
+ [(set (pc)
+   (if_then_else
+    (BIT_TEST (zero_extract:HIDI
+	 (match_operand:HIDI 0 "register_operand" "r")
+	 (const_int 1)
+	 (match_operand:VOID 1 "const_int_operand" "i"))
+     (const_int 0))
+    (label_ref (match_operand 2))
+    (pc)))]
+  ""
+{
+  const int length = (get_attr_length (insn));
+  const bool is_near = (length == 4);
+
+  if (<HIDI:MODE>mode == DImode && INTVAL (operands[1]) <= 31)
+    {
+      if (is_near)
+	return "<BIT_TEST:qbbx_op>\\t%l2, %F0, %1";
+      else
+	return "<BIT_TEST:qbbx_negop>\\t.+8, %F0, %1\;jmp\\t%%label(%l2)";
+    }
+  else if (<HIDI:MODE>mode == DImode)
+    {
+      if (is_near)
+	return "<BIT_TEST:qbbx_op>\\t%l2, %N0, %1 - 32";
+      else
+	return "<BIT_TEST:qbbx_negop>\\t.+8, %N0, %1 - 32\;jmp\\t%%label(%l2)";
+    }
+  else
+    {
+      if (is_near)
+	return "<BIT_TEST:qbbx_op>\\t%l2, %0, %1";
+      else
+	return "<BIT_TEST:qbbx_negop>\\t.+8, %0, %1\;jmp\\t%%label(%l2)";
+    }
 }
   [(set_attr "type" "control")
    (set (attr "length")

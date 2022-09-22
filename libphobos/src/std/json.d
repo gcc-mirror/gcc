@@ -1537,19 +1537,15 @@ if (isOutputRange!(Out,char))
             toStringImpl!char(str);
     }
 
-    // recursive @safe inference is broken here
-    // workaround: if json.put is @safe, we should be too,
-    // so annotate the recursion as @safe manually
-    static if (isSafe!({ json.put(""); }))
-    {
-        void delegate(ref const JSONValue, ulong) @safe toValue;
-    }
-    else
-    {
-        void delegate(ref const JSONValue, ulong) @system toValue;
-    }
+    /* make the function infer @system when json.put() is @system
+     */
+    if (0)
+        json.put(' ');
 
-    void toValueImpl(ref const JSONValue value, ulong indentLevel)
+    /* Mark as @trusted because json.put() may be @system. This has difficulty
+     * inferring @safe because it is recursive.
+     */
+    void toValueImpl(ref const JSONValue value, ulong indentLevel) @trusted
     {
         void putTabs(ulong additionalIndent = 0)
         {
@@ -1594,7 +1590,7 @@ if (isOutputRange!(Out,char))
                             json.put(':');
                             if (pretty)
                                 json.put(' ');
-                            toValue(member, indentLevel + 1);
+                            toValueImpl(member, indentLevel + 1);
                         }
                     }
 
@@ -1631,7 +1627,7 @@ if (isOutputRange!(Out,char))
                         if (i)
                             putCharAndEOL(',');
                         putTabs(1);
-                        toValue(el, indentLevel + 1);
+                        toValueImpl(el, indentLevel + 1);
                     }
                     putEOL();
                     putTabs();
@@ -1710,9 +1706,7 @@ if (isOutputRange!(Out,char))
         }
     }
 
-    toValue = &toValueImpl;
-
-    toValue(root, 0);
+    toValueImpl(root, 0);
 }
 
  // https://issues.dlang.org/show_bug.cgi?id=12897

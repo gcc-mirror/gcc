@@ -3163,9 +3163,21 @@ package body Sem_Res is
                    = N_Iterated_Component_Association
                  and then Is_Boolean_Type (Typ)
                then
-                  Error_Msg_N -- CODEFIX
-                    ("missing ALL or SOME in quantified expression",
-                     Defining_Identifier (First (Component_Associations (N))));
+                  if Present
+                       (Iterator_Specification
+                         (First (Component_Associations (N))))
+                  then
+                     Error_Msg_N -- CODEFIX
+                       ("missing ALL or SOME in quantified expression",
+                        Defining_Identifier
+                          (Iterator_Specification
+                            (First (Component_Associations (N)))));
+                  else
+                     Error_Msg_N -- CODEFIX
+                       ("missing ALL or SOME in quantified expression",
+                        Defining_Identifier
+                          (First (Component_Associations (N))));
+                  end if;
 
                --  For an operator with no interpretation, check whether
                --  one of its operands may be a user-defined literal.
@@ -8400,6 +8412,7 @@ package body Sem_Res is
       if Is_Entry (Nam)
         and then Present (Contract_Wrapper (Nam))
         and then Current_Scope /= Contract_Wrapper (Nam)
+        and then Current_Scope /= Wrapped_Statements (Contract_Wrapper (Nam))
       then
          --  Note the entity being called before rewriting the call, so that
          --  it appears used at this point.
@@ -8864,6 +8877,20 @@ package body Sem_Res is
          end if;
 
       else
+
+         --  For Ada 2022, check for user-defined literals when the type has
+         --  the appropriate aspect.
+
+         if Has_Applicable_User_Defined_Literal (L, Etype (R)) then
+            Resolve (L, Etype (R));
+            Set_Etype (N, Standard_Boolean);
+         end if;
+
+         if Has_Applicable_User_Defined_Literal (R, Etype (L)) then
+            Resolve (R, Etype (L));
+            Set_Etype (N, Standard_Boolean);
+         end if;
+
          --  Deal with other error cases
 
          if T = Any_String    or else

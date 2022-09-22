@@ -1236,7 +1236,11 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (same_valid)
     *same_valid = true;
 
-  if (gimple_bb (phi) != phiblock)
+  /* If value-numbering provided a memory state for this
+     that dominates PHIBLOCK we can just use that.  */
+  if (gimple_nop_p (phi)
+      || (gimple_bb (phi) != phiblock
+	  && dominated_by_p (CDI_DOMINATORS, phiblock, gimple_bb (phi))))
     return vuse;
 
   /* We have pruned expressions that are killed in PHIBLOCK via
@@ -2031,11 +2035,13 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 	    {
 	      gimple *def_stmt = SSA_NAME_DEF_STMT (ref->vuse);
 	      if (!gimple_nop_p (def_stmt)
-		  && ((gimple_bb (def_stmt) != block
-		       && !dominated_by_p (CDI_DOMINATORS,
-					   block, gimple_bb (def_stmt)))
-		      || (gimple_bb (def_stmt) == block
-			  && value_dies_in_block_x (expr, block))))
+		  /* If value-numbering provided a memory state for this
+		     that dominates BLOCK we're done, otherwise we have
+		     to check if the value dies in BLOCK.  */
+		  && !(gimple_bb (def_stmt) != block
+		       && dominated_by_p (CDI_DOMINATORS,
+					  block, gimple_bb (def_stmt)))
+		  && value_dies_in_block_x (expr, block))
 		to_remove = i;
 	    }
 	  /* If the REFERENCE may trap make sure the block does not contain

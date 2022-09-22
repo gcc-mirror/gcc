@@ -1,3 +1,8 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Remove deprecated ports.
+	* configure: Regenerate.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

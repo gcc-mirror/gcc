@@ -59,6 +59,41 @@ DEF_BUILTIN (SQRTF, 3 /*CODE_FOR_sqrtf */,
 	     _A2 (GCN_BTI_SF, GCN_BTI_SF),
 	     gcn_expand_builtin_1)
 
+DEF_BUILTIN (FABSVF, 3 /*CODE_FOR_fabsvf */,
+	     "fabsvf", B_INSN,
+	     _A2 (GCN_BTI_V64SF, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (LDEXPVF, 3 /*CODE_FOR_ldexpvf */,
+	     "ldexpvf", B_INSN,
+	     _A3 (GCN_BTI_V64SF, GCN_BTI_V64SF, GCN_BTI_V64SI),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (LDEXPV, 3 /*CODE_FOR_ldexpv */,
+	     "ldexpv", B_INSN,
+	     _A3 (GCN_BTI_V64DF, GCN_BTI_V64DF, GCN_BTI_V64SI),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FREXPVF_EXP, 3 /*CODE_FOR_frexpvf_exp */,
+	     "frexpvf_exp", B_INSN,
+	     _A2 (GCN_BTI_V64SI, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FREXPVF_MANT, 3 /*CODE_FOR_frexpvf_mant */,
+	     "frexpvf_mant", B_INSN,
+	     _A2 (GCN_BTI_V64SF, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FREXPV_EXP, 3 /*CODE_FOR_frexpv_exp */,
+	     "frexpv_exp", B_INSN,
+	     _A2 (GCN_BTI_V64SI, GCN_BTI_V64DF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FREXPV_MANT, 3 /*CODE_FOR_frexpv_mant */,
+	     "frexpv_mant", B_INSN,
+	     _A2 (GCN_BTI_V64DF, GCN_BTI_V64DF),
+	     gcn_expand_builtin_1)
+
 DEF_BUILTIN (CMP_SWAP, -1,
 	    "cmp_swap", B_INSN,
 	    _A4 (GCN_BTI_UINT, GCN_BTI_VOIDPTR, GCN_BTI_UINT, GCN_BTI_UINT),

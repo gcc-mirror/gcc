@@ -26,6 +26,7 @@
 with Atree;          use Atree;
 with Aspects;        use Aspects;
 with Checks;         use Checks;
+with Contracts;      use Contracts;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -133,15 +134,6 @@ package body Exp_Ch9 is
       Def_Id : Entity_Id) return Node_Id;
    --  Build a specification for a function implementing the protected entry
    --  barrier of the specified entry body.
-
-   procedure Build_Contract_Wrapper (E : Entity_Id; Decl : Node_Id);
-   --  Build the body of a wrapper procedure for an entry or entry family that
-   --  has contract cases, preconditions, or postconditions. The body gathers
-   --  the executable contract items and expands them in the usual way, and
-   --  performs the entry call itself. This way preconditions are evaluated
-   --  before the call is queued. E is the entry in question, and Decl is the
-   --  enclosing synchronized type declaration at whose freeze point the
-   --  generated body is analyzed.
 
    function Build_Corresponding_Record
      (N    : Node_Id;
@@ -1295,288 +1287,6 @@ package body Exp_Ch9 is
 
       Set_Master_Id (Typ, Master_Id);
    end Build_Class_Wide_Master;
-
-   ----------------------------
-   -- Build_Contract_Wrapper --
-   ----------------------------
-
-   procedure Build_Contract_Wrapper (E : Entity_Id; Decl : Node_Id) is
-      Conc_Typ : constant Entity_Id  := Scope (E);
-      Loc      : constant Source_Ptr := Sloc (E);
-
-      procedure Add_Discriminant_Renamings
-        (Obj_Id : Entity_Id;
-         Decls  : List_Id);
-      --  Add renaming declarations for all discriminants of concurrent type
-      --  Conc_Typ. Obj_Id is the entity of the wrapper formal parameter which
-      --  represents the concurrent object.
-
-      procedure Add_Matching_Formals
-        (Formals : List_Id;
-         Actuals : in out List_Id);
-      --  Add formal parameters that match those of entry E to list Formals.
-      --  The routine also adds matching actuals for the new formals to list
-      --  Actuals.
-
-      procedure Transfer_Pragma (Prag : Node_Id; To : in out List_Id);
-      --  Relocate pragma Prag to list To. The routine creates a new list if
-      --  To does not exist.
-
-      --------------------------------
-      -- Add_Discriminant_Renamings --
-      --------------------------------
-
-      procedure Add_Discriminant_Renamings
-        (Obj_Id : Entity_Id;
-         Decls  : List_Id)
-      is
-         Discr : Entity_Id;
-
-      begin
-         --  Inspect the discriminants of the concurrent type and generate a
-         --  renaming for each one.
-
-         if Has_Discriminants (Conc_Typ) then
-            Discr := First_Discriminant (Conc_Typ);
-            while Present (Discr) loop
-               Prepend_To (Decls,
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc, Chars (Discr)),
-                   Subtype_Mark        =>
-                     New_Occurrence_Of (Etype (Discr), Loc),
-                   Name                =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => New_Occurrence_Of (Obj_Id, Loc),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Chars (Discr)))));
-
-               Next_Discriminant (Discr);
-            end loop;
-         end if;
-      end Add_Discriminant_Renamings;
-
-      --------------------------
-      -- Add_Matching_Formals --
-      --------------------------
-
-      procedure Add_Matching_Formals
-        (Formals : List_Id;
-         Actuals : in out List_Id)
-      is
-         Formal     : Entity_Id;
-         New_Formal : Entity_Id;
-
-      begin
-         --  Inspect the formal parameters of the entry and generate a new
-         --  matching formal with the same name for the wrapper. A reference
-         --  to the new formal becomes an actual in the entry call.
-
-         Formal := First_Formal (E);
-         while Present (Formal) loop
-            New_Formal := Make_Defining_Identifier (Loc, Chars (Formal));
-            Append_To (Formals,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => New_Formal,
-                In_Present          => In_Present  (Parent (Formal)),
-                Out_Present         => Out_Present (Parent (Formal)),
-                Parameter_Type      =>
-                  New_Occurrence_Of (Etype (Formal), Loc)));
-
-            if No (Actuals) then
-               Actuals := New_List;
-            end if;
-
-            Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
-            Next_Formal (Formal);
-         end loop;
-      end Add_Matching_Formals;
-
-      ---------------------
-      -- Transfer_Pragma --
-      ---------------------
-
-      procedure Transfer_Pragma (Prag : Node_Id; To : in out List_Id) is
-         New_Prag : Node_Id;
-
-      begin
-         if No (To) then
-            To := New_List;
-         end if;
-
-         New_Prag := Relocate_Node (Prag);
-
-         Set_Analyzed (New_Prag, False);
-         Append       (New_Prag, To);
-      end Transfer_Pragma;
-
-      --  Local variables
-
-      Items      : constant Node_Id := Contract (E);
-      Actuals    : List_Id := No_List;
-      Call       : Node_Id;
-      Call_Nam   : Node_Id;
-      Decls      : List_Id := No_List;
-      Formals    : List_Id;
-      Has_Pragma : Boolean := False;
-      Index_Id   : Entity_Id;
-      Obj_Id     : Entity_Id;
-      Prag       : Node_Id;
-      Wrapper_Id : Entity_Id;
-
-   --  Start of processing for Build_Contract_Wrapper
-
-   begin
-      --  This routine generates a specialized wrapper for a protected or task
-      --  entry [family] which implements precondition/postcondition semantics.
-      --  Preconditions and case guards of contract cases are checked before
-      --  the protected action or rendezvous takes place. Postconditions and
-      --  consequences of contract cases are checked after the protected action
-      --  or rendezvous takes place. The structure of the generated wrapper is
-      --  as follows:
-
-      --    procedure Wrapper
-      --      (Obj_Id    : Conc_Typ;    --  concurrent object
-      --       [Index    : Index_Typ;]  --  index of entry family
-      --       [Formal_1 : ...;         --  parameters of original entry
-      --        Formal_N : ...])
-      --    is
-      --       [Discr_1 : ... renames Obj_Id.Discr_1;   --  discriminant
-      --        Discr_N : ... renames Obj_Id.Discr_N;]  --  renamings
-
-      --       <precondition checks>
-      --       <case guard checks>
-
-      --       procedure _Postconditions is
-      --       begin
-      --          <postcondition checks>
-      --          <consequence checks>
-      --       end _Postconditions;
-
-      --    begin
-      --       Entry_Call (Obj_Id, [Index,] [Formal_1, Formal_N]);
-      --       _Postconditions;
-      --    end Wrapper;
-
-      --  Create the wrapper only when the entry has at least one executable
-      --  contract item such as contract cases, precondition or postcondition.
-
-      if Present (Items) then
-
-         --  Inspect the list of pre/postconditions and transfer all available
-         --  pragmas to the declarative list of the wrapper.
-
-         Prag := Pre_Post_Conditions (Items);
-         while Present (Prag) loop
-            if Pragma_Name_Unmapped (Prag) in Name_Postcondition
-                                            | Name_Precondition
-              and then Is_Checked (Prag)
-            then
-               Has_Pragma := True;
-               Transfer_Pragma (Prag, To => Decls);
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-
-         --  Inspect the list of test/contract cases and transfer only contract
-         --  cases pragmas to the declarative part of the wrapper.
-
-         Prag := Contract_Test_Cases (Items);
-         while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Contract_Cases
-              and then Is_Checked (Prag)
-            then
-               Has_Pragma := True;
-               Transfer_Pragma (Prag, To => Decls);
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-      end if;
-
-      --  The entry lacks executable contract items and a wrapper is not needed
-
-      if not Has_Pragma then
-         return;
-      end if;
-
-      --  Create the profile of the wrapper. The first formal parameter is the
-      --  concurrent object.
-
-      Obj_Id :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_External_Name (Chars (Conc_Typ), 'A'));
-
-      Formals := New_List (
-        Make_Parameter_Specification (Loc,
-          Defining_Identifier => Obj_Id,
-          Out_Present         => True,
-          In_Present          => True,
-          Parameter_Type      => New_Occurrence_Of (Conc_Typ, Loc)));
-
-      --  Construct the call to the original entry. The call will be gradually
-      --  augmented with an optional entry index and extra parameters.
-
-      Call_Nam :=
-        Make_Selected_Component (Loc,
-          Prefix        => New_Occurrence_Of (Obj_Id, Loc),
-          Selector_Name => New_Occurrence_Of (E, Loc));
-
-      --  When creating a wrapper for an entry family, the second formal is the
-      --  entry index.
-
-      if Ekind (E) = E_Entry_Family then
-         Index_Id := Make_Defining_Identifier (Loc, Name_I);
-
-         Append_To (Formals,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier => Index_Id,
-             Parameter_Type      =>
-               New_Occurrence_Of (Entry_Index_Type (E), Loc)));
-
-         --  The call to the original entry becomes an indexed component to
-         --  accommodate the entry index.
-
-         Call_Nam :=
-           Make_Indexed_Component (Loc,
-             Prefix      => Call_Nam,
-             Expressions => New_List (New_Occurrence_Of (Index_Id, Loc)));
-      end if;
-
-      --  Add formal parameters to match those of the entry and build actuals
-      --  for the entry call.
-
-      Add_Matching_Formals (Formals, Actuals);
-
-      Call :=
-        Make_Procedure_Call_Statement (Loc,
-          Name                   => Call_Nam,
-          Parameter_Associations => Actuals);
-
-      --  Add renaming declarations for the discriminants of the enclosing type
-      --  as the various contract items may reference them.
-
-      Add_Discriminant_Renamings (Obj_Id, Decls);
-
-      Wrapper_Id :=
-        Make_Defining_Identifier (Loc, New_External_Name (Chars (E), 'E'));
-      Set_Contract_Wrapper (E, Wrapper_Id);
-      Set_Is_Entry_Wrapper (Wrapper_Id);
-
-      --  The wrapper body is analyzed when the enclosing type is frozen
-
-      Append_Freeze_Action (Defining_Entity (Decl),
-        Make_Subprogram_Body (Loc,
-          Specification              =>
-            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       => Wrapper_Id,
-              Parameter_Specifications => Formals),
-          Declarations               => Decls,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Call))));
-   end Build_Contract_Wrapper;
 
    --------------------------------
    -- Build_Corresponding_Record --
@@ -3811,6 +3521,7 @@ package body Exp_Ch9 is
          --  Establish link between subprogram body and source entry body
 
          Set_Corresponding_Entry_Body (Proc_Body, N);
+         Set_At_End_Proc (Proc_Body, At_End_Proc (N));
 
          Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;
@@ -3867,32 +3578,35 @@ package body Exp_Ch9 is
       Ident       : Entity_Id;
       Unprotected : Boolean := False) return List_Id
    is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Decl      : Node_Id;
-      Formal    : Entity_Id;
-      New_Plist : List_Id;
-      New_Param : Node_Id;
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Decl       : Node_Id;
+      Formal     : Entity_Id;
+      New_Formal : Entity_Id;
+      New_Plist  : List_Id;
 
    begin
       New_Plist := New_List;
 
       Formal := First_Formal (Ident);
       while Present (Formal) loop
-         New_Param :=
+         New_Formal :=
+           Make_Defining_Identifier (Sloc (Formal), Chars (Formal));
+         Set_Comes_From_Source (New_Formal, Comes_From_Source (Formal));
+
+         if Unprotected then
+            Mutate_Ekind (New_Formal, Ekind (Formal));
+            Set_Protected_Formal (Formal, New_Formal);
+         end if;
+
+         Append_To (New_Plist,
            Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
+             Defining_Identifier => New_Formal,
              Aliased_Present     => Aliased_Present (Parent (Formal)),
              In_Present          => In_Present      (Parent (Formal)),
              Out_Present         => Out_Present     (Parent (Formal)),
-             Parameter_Type      => New_Occurrence_Of (Etype (Formal), Loc));
+             Parameter_Type      => New_Occurrence_Of (Etype (Formal), Loc)));
 
-         if Unprotected then
-            Set_Protected_Formal (Formal, Defining_Identifier (New_Param));
-            Mutate_Ekind (Defining_Identifier (New_Param), Ekind (Formal));
-         end if;
-
-         Append (New_Param, New_Plist);
          Next_Formal (Formal);
       end loop;
 
@@ -4021,8 +3735,7 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id
    is
-      Exc_Safe : constant Boolean := not Might_Raise (N);
-      --  True if N cannot raise an exception
+      Might_Raise : constant Boolean := Sem_Util.Might_Raise (N);
 
       Loc       : constant Source_Ptr := Sloc (N);
       Op_Spec   : constant Node_Id := Specification (N);
@@ -4059,7 +3772,17 @@ package body Exp_Ch9 is
       --  for use by the protected version built below.
 
       if Nkind (Op_Spec) = N_Function_Specification then
-         if Exc_Safe then
+         if Might_Raise then
+            Unprot_Call :=
+              Make_Simple_Return_Statement (Loc,
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      Make_Identifier (Loc,
+                        Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
+                    Parameter_Associations => Uactuals));
+
+         else
             R := Make_Temporary (Loc, 'R');
 
             Unprot_Call :=
@@ -4078,16 +3801,6 @@ package body Exp_Ch9 is
             Return_Stmt :=
               Make_Simple_Return_Statement (Loc,
                 Expression => New_Occurrence_Of (R, Loc));
-
-         else
-            Unprot_Call :=
-              Make_Simple_Return_Statement (Loc,
-                Expression =>
-                  Make_Function_Call (Loc,
-                    Name                   =>
-                      Make_Identifier (Loc,
-                        Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
-                    Parameter_Associations => Uactuals));
          end if;
 
          if Has_Aspect (Pid, Aspect_Exclusive_Functions)
@@ -4113,7 +3826,7 @@ package body Exp_Ch9 is
 
       --  Wrap call in block that will be covered by an at_end handler
 
-      if not Exc_Safe then
+      if Might_Raise then
          Unprot_Call :=
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence =>
@@ -4160,7 +3873,7 @@ package body Exp_Ch9 is
          Stmts := New_List (Lock_Stmt);
       end if;
 
-      if not Exc_Safe then
+      if Might_Raise then
          Append (Unprot_Call, Stmts);
       else
          if Nkind (Op_Spec) = N_Function_Specification then
@@ -4169,10 +3882,6 @@ package body Exp_Ch9 is
          else
             Append (Unprot_Call, Stmts);
          end if;
-
-         --  Historical note: Previously, call to the cleanup was inserted
-         --  here. This is now done by Build_Protected_Subprogram_Call_Cleanup,
-         --  which is also shared by the 'not Exc_Safe' path.
 
          Build_Protected_Subprogram_Call_Cleanup (Op_Spec, Pid, Loc, Stmts);
 
@@ -4196,10 +3905,10 @@ package body Exp_Ch9 is
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
 
       --  Mark this subprogram as a protected subprogram body so that the
-      --  cleanup will be inserted. This is done only in the 'not Exc_Safe'
-      --  path as otherwise the cleanup has already been inserted.
+      --  cleanup will be inserted. This is done only in the Might_Raise
+      --  case because otherwise the cleanup has already been inserted.
 
-      if not Exc_Safe then
+      if Might_Raise then
          Set_Is_Protected_Subprogram_Body (Sub_Body);
       end if;
 
@@ -5236,7 +4945,8 @@ package body Exp_Ch9 is
           Specification              =>
             Build_Protected_Sub_Specification (N, Pid, Unprotected_Mode),
           Declarations               => Decls,
-          Handled_Statement_Sequence => Handled_Statement_Sequence (N));
+          Handled_Statement_Sequence => Handled_Statement_Sequence (N),
+          At_End_Proc                => At_End_Proc (N));
    end Build_Unprotected_Subprogram_Body;
 
    ----------------------------
@@ -8216,7 +7926,7 @@ package body Exp_Ch9 is
 
       else
          Transient_Blk :=
-           First_Real_Statement (Handled_Statement_Sequence (Blk));
+           First (Statements (Handled_Statement_Sequence (Blk)));
 
          if Present (Transient_Blk)
            and then Nkind (Transient_Blk) = N_Block_Statement
@@ -9135,7 +8845,7 @@ package body Exp_Ch9 is
          --  Build a wrapper procedure to handle contract cases, preconditions,
          --  and postconditions.
 
-         Build_Contract_Wrapper (Ent_Id, N);
+         Build_Entry_Contract_Wrapper (Ent_Id, N);
 
          --  Create the barrier function
 
@@ -11833,17 +11543,11 @@ package body Exp_Ch9 is
 
       if Abort_Allowed then
          Call := Build_Runtime_Call (Loc, RE_Abort_Undefer);
-         Insert_Before
-           (First (Statements (Handled_Statement_Sequence (N))), Call);
+         Prepend (Call, Declarations (N));
          Analyze (Call);
       end if;
 
-      --  The statement part has already been protected with an at_end and
-      --  cleanup actions. The call to Complete_Activation must be placed
-      --  at the head of the sequence of statements of that block. The
-      --  declarations have been merged in this sequence of statements but
-      --  the first real statement is accessible from the First_Real_Statement
-      --  field (which was set for exactly this purpose).
+      --  Place call to Complete_Activation at the head of the statement list.
 
       if Restricted_Profile then
          Call := Build_Runtime_Call (Loc, RE_Complete_Restricted_Activation);
@@ -11852,7 +11556,7 @@ package body Exp_Ch9 is
       end if;
 
       Insert_Before
-        (First_Real_Statement (Handled_Statement_Sequence (N)), Call);
+        (First (Statements (Handled_Statement_Sequence (N))), Call);
       Analyze (Call);
 
       New_N :=
@@ -11861,6 +11565,7 @@ package body Exp_Ch9 is
           Declarations               => Declarations (N),
           Handled_Statement_Sequence => Handled_Statement_Sequence (N));
       Set_Is_Task_Body_Procedure (New_N);
+      Set_At_End_Proc (New_N, At_End_Proc (N));
 
       --  If the task contains generic instantiations, cleanup actions are
       --  delayed until after instantiation. Transfer the activation chain to
@@ -12534,7 +12239,7 @@ package body Exp_Ch9 is
          Ent := First_Entity (Tasktyp);
          while Present (Ent) loop
             if Ekind (Ent) in E_Entry | E_Entry_Family then
-               Build_Contract_Wrapper (Ent, N);
+               Build_Entry_Contract_Wrapper (Ent, N);
             end if;
 
             Next_Entity (Ent);
@@ -13736,6 +13441,7 @@ package body Exp_Ch9 is
                   Make_Selected_Component (Loc,
                     Prefix        => New_Occurrence_Of (Obj_Ent, Loc),
                     Selector_Name => Make_Identifier (Loc, Name_uObject)));
+
             Add (Decl);
          end;
       end if;
@@ -13767,6 +13473,7 @@ package body Exp_Ch9 is
                      Make_Selected_Component (Loc,
                        Prefix        => New_Occurrence_Of (Obj_Ent, Loc),
                        Selector_Name => Make_Identifier (Loc, Chars (D))));
+
                Add (Decl);
 
                --  Set debug info needed on this renaming declaration even
@@ -13833,6 +13540,7 @@ package body Exp_Ch9 is
                            Make_Selected_Component (Loc,
                              Prefix => New_Occurrence_Of (Obj_Ent, Loc),
                              Selector_Name => Make_Identifier (Loc, Nam)));
+
                      Add (Decl);
                   end if;
 

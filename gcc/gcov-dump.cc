@@ -17,6 +17,7 @@ along with Gcov; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -27,6 +28,8 @@ along with Gcov; see the file COPYING3.  If not see
 #define IN_GCOV (-1)
 #include "gcov-io.h"
 #include "gcov-io.cc"
+
+using namespace std;
 
 static void dump_gcov_file (const char *);
 static void print_prefix (const char *, unsigned, gcov_position_t);
@@ -50,6 +53,7 @@ typedef struct tag_format
 static int flag_dump_contents = 0;
 static int flag_dump_positions = 0;
 static int flag_dump_raw = 0;
+static int flag_dump_stable = 0;
 
 static const struct option options[] =
 {
@@ -57,7 +61,9 @@ static const struct option options[] =
   { "version",              no_argument,       NULL, 'v' },
   { "long",                 no_argument,       NULL, 'l' },
   { "positions",	    no_argument,       NULL, 'o' },
-  { 0, 0, 0, 0 }
+  { "raw",		    no_argument,       NULL, 'r' },
+  { "stable",		    no_argument,       NULL, 's' },
+  {}
 };
 
 #define VALUE_PADDING_PREFIX "              "
@@ -96,7 +102,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
 
   diagnostic_initialize (global_dc, 0);
 
-  while ((opt = getopt_long (argc, argv, "hlprvw", options, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "hlprsvw", options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -114,6 +120,9 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
 	  break;
 	case 'r':
 	  flag_dump_raw = 1;
+	  break;
+	case 's':
+	  flag_dump_stable = 1;
 	  break;
 	default:
 	  fprintf (stderr, "unknown flag `%c'\n", opt);
@@ -134,6 +143,8 @@ print_usage (void)
   printf ("  -l, --long           Dump record contents too\n");
   printf ("  -p, --positions      Dump record positions\n");
   printf ("  -r, --raw            Print content records in raw format\n");
+  printf ("  -s, --stable         Print content in stable "
+	  "format usable for comparison\n");
   printf ("  -v, --version        Print version number\n");
   printf ("\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
@@ -439,16 +450,52 @@ tag_counters (const char *filename ATTRIBUTE_UNUSED,
   int n_counts = GCOV_TAG_COUNTER_NUM (length);
   bool has_zeros = n_counts < 0;
   n_counts = abs (n_counts);
+  unsigned counter_idx = GCOV_COUNTER_FOR_TAG (tag);
 
   printf (" %s %u counts%s",
-	  counter_names[GCOV_COUNTER_FOR_TAG (tag)], n_counts,
+	  counter_names[counter_idx], n_counts,
 	  has_zeros ? " (all zero)" : "");
   if (flag_dump_contents)
     {
+      vector<gcov_type> counters;
       for (int ix = 0; ix != n_counts; ix++)
-	{
-	  gcov_type count;
+	counters.push_back (has_zeros ? 0 : gcov_read_counter ());
 
+      /* Make stable sort for TOP N counters.  */
+      if (flag_dump_stable)
+	if (counter_idx == GCOV_COUNTER_V_INDIR
+	    || counter_idx == GCOV_COUNTER_V_TOPN)
+	  {
+	    unsigned start = 0;
+	    while (start < counters.size ())
+	      {
+		unsigned n = counters[start + 1];
+
+		/* Use bubble sort.  */
+		for (unsigned i = 1; i <= n; ++i)
+		  for (unsigned j = i; j <= n; ++j)
+		    {
+		      gcov_type key1 = counters[start + 2 * i];
+		      gcov_type value1 = counters[start + 2 * i + 1];
+		      gcov_type key2 = counters[start + 2 * j];
+		      gcov_type value2 = counters[start + 2 * j + 1];
+
+		      if (value1 < value2 || (value1 == value2 && key1 < key2))
+			{
+			  std::swap (counters[start + 2 * i],
+				     counters[start + 2 * j]);
+			  std::swap (counters[start + 2 * i + 1],
+				     counters[start + 2 * j + 1]);
+			}
+		    }
+		start += 2 * (n + 1);
+	      }
+	    if (start != counters.size ())
+	      abort ();
+	  }
+
+      for (unsigned ix = 0; ix < counters.size (); ++ix)
+	{
 	  if (flag_dump_raw)
 	    {
 	      if (ix == 0)
@@ -461,8 +508,7 @@ tag_counters (const char *filename ATTRIBUTE_UNUSED,
 	      printf (VALUE_PADDING_PREFIX VALUE_PREFIX, ix);
 	    }
 
-	  count = has_zeros ? 0 : gcov_read_counter ();
-	  printf ("%" PRId64 " ", count);
+	  printf ("%" PRId64 " ", counters[ix]);
 	}
     }
 }

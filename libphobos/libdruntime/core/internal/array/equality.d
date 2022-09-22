@@ -236,6 +236,33 @@ unittest
     static assert(!useMemcmp!(int[], int[]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=21094
+unittest
+{
+    static class C
+    {
+        int a;
+    }
+    static struct S
+    {
+        bool isValid;
+        C fib;
+
+        inout(C) get() pure @safe @nogc nothrow inout
+        {
+            return isValid ? fib : C.init;
+        }
+        T opCast(T : C)() const { return null; }
+
+        alias get this;
+    }
+
+    auto foo(S[] lhs, S[] rhs)
+    {
+        return lhs == rhs;
+    }
+}
+
 // Returns a reference to an array element, eliding bounds check and
 // casting void to ubyte.
 pragma(inline, true)

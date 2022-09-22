@@ -349,7 +349,8 @@ GOMP_OFFLOAD_version (void)
 
 extern "C" int
 GOMP_OFFLOAD_load_image (int device, const unsigned version,
-			 const void *target_image, addr_pair **result)
+			 const void *target_image, addr_pair **result,
+			 uint64_t ** /* rev_fn_table */)
 {
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 

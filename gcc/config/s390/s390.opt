@@ -321,3 +321,7 @@ and the default behavior is to emit separate multiplication and addition
 instructions for long doubles in vector registers, because measurements show
 that this improves performance.  This option allows overriding it for testing
 purposes.
+
+munroll-only-small-loops
+Target Undocumented Var(unroll_only_small_loops) Init(0) Save
+; Use conservative small loop unrolling.

@@ -21,7 +21,7 @@
 
 #include <tr1/random>
 
-// libtsdc++/37986
+// libstdc++/37986
 void test01()
 {
   std::tr1::mt19937 mt;

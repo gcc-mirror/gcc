@@ -1,5 +1,6 @@
 /* { dg-do "compile" { target *-*-linux* } } */
 /* { dg-options "-O1 -fpatchable-function-entry=1 -mfentry -pg -fasynchronous-unwind-tables" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 /* Test the placement of the .LPFE1 label.  */
 

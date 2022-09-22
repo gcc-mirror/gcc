@@ -1628,4 +1628,3 @@ version (Solaris)
     int addrtosymstr(uintptr_t, char*, int);
     int printstack(int);
 }
-

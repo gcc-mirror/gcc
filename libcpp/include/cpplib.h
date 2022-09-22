@@ -190,7 +190,7 @@ struct GTY(()) cpp_string {
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
 				     comment.  */
-#define BOL		(1 << 6) /* Token at beginning of line.  */
+#define DECIMAL_INT     (1 << 6) /* Decimal integer, set in c-lex.cc.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
@@ -199,6 +199,7 @@ struct GTY(()) cpp_string {
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
 #define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
+#define BOL		(1 << 12) /* Token at beginning of line.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -513,11 +514,20 @@ struct cpp_options
   /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
   unsigned char elifdef;
 
+  /* Nonzero for the '#warning' directive.  */
+  unsigned char warning_directive;
+
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
 
   /* Nonzero for C++23 size_t literals.  */
   unsigned char size_t_literals;
+
+  /* Nonzero for C++23 delimited escape sequences.  */
+  unsigned char delimited_escape_seqs;
+
+  /* Nonzero for 'true' and 'false' in #if expressions.  */
+  unsigned char true_false;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -547,9 +557,23 @@ struct cpp_options
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
 
+  /* True if warn about differences between C++17 and C++20.  */
+  bool cpp_warn_cxx20_compat;
+
   /* Nonzero if bidirectional control characters checking is on.  See enum
      cpp_bidirectional_level.  */
   unsigned char cpp_warn_bidirectional;
+
+  /* True if libcpp should warn about invalid UTF-8 characters in comments.
+     2 if it should be a pedwarn.  */
+  unsigned char cpp_warn_invalid_utf8;
+
+  /* True if libcpp should warn about invalid forms of delimited or named
+     escape sequences.  */
+  bool cpp_warn_unicode;
+
+  /* True if -finput-charset= option has been used explicitly.  */
+  bool cpp_input_charset_explicit;
 
   /* Dependency generation.  */
   struct
@@ -581,8 +605,8 @@ struct cpp_options
      ints and target wide characters, respectively.  */
   size_t precision, char_precision, int_precision, wchar_precision;
 
-  /* True means chars (wide chars) are unsigned.  */
-  bool unsigned_char, unsigned_wchar;
+  /* True means chars (wide chars, UTF-8 chars) are unsigned.  */
+  bool unsigned_char, unsigned_wchar, unsigned_utf8char;
 
   /* True if the most significant byte in a word has the lowest
      address in memory.  */
@@ -655,8 +679,11 @@ enum cpp_warning_reason {
   CPP_W_C90_C99_COMPAT,
   CPP_W_C11_C2X_COMPAT,
   CPP_W_CXX11_COMPAT,
+  CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
-  CPP_W_BIDIRECTIONAL
+  CPP_W_BIDIRECTIONAL,
+  CPP_W_INVALID_UTF8,
+  CPP_W_UNICODE
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

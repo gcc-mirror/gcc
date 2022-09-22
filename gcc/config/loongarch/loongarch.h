@@ -561,7 +561,8 @@ enum reg_class
   64, 65, 66, 67, 68, 69, 70, 71, 72, 73}
 
 #define IMM_BITS 12
-#define IMM_REACH (1LL << IMM_BITS)
+#define IMM_REACH (HOST_WIDE_INT_1 << IMM_BITS)
+#define HWIT_1U HOST_WIDE_INT_1U
 
 /* True if VALUE is an unsigned 6-bit number.  */
 
@@ -589,18 +590,20 @@ enum reg_class
 /* True if VALUE can be loaded into a register using LU12I.  */
 
 #define LU12I_OPERAND(VALUE) \
-  (((VALUE) | ((1UL << 31) - IMM_REACH)) == ((1UL << 31) - IMM_REACH) \
-   || ((VALUE) | ((1UL << 31) - IMM_REACH)) + IMM_REACH == 0)
+  (((VALUE) | ((HWIT_1U << 31) - IMM_REACH)) == ((HWIT_1U << 31) - IMM_REACH) \
+   || ((VALUE) | ((HWIT_1U << 31) - IMM_REACH)) + IMM_REACH == 0)
 
 /* True if VALUE can be loaded into a register using LU32I.  */
 
 #define LU32I_OPERAND(VALUE) \
-  (((VALUE) | (((1ULL << 19) - 1) << 32)) == (((1ULL << 19) - 1) << 32) \
-   || ((VALUE) | (((1ULL << 19) - 1) << 32)) + (1ULL << 32) == 0)
+  (((VALUE) | (((HWIT_1U << 19) - 1) << 32)) == (((HWIT_1U << 19) - 1) << 32) \
+   || ((VALUE) | (((HWIT_1U << 19) - 1) << 32)) + (HWIT_1U << 32) == 0)
 
 /* True if VALUE can be loaded into a register using LU52I.  */
 
-#define LU52I_OPERAND(VALUE) (((VALUE) | (0xfffULL << 52)) == (0xfffULL << 52))
+#define HWIT_UC_0xFFF HOST_WIDE_INT_UC(0xfff)
+#define LU52I_OPERAND(VALUE) \
+  (((VALUE) | (HWIT_UC_0xFFF << 52)) == (HWIT_UC_0xFFF << 52))
 
 /* Return a value X with the low 12 bits clear, and such that
    VALUE - X is a signed 12-bit value.  */
@@ -1127,8 +1130,13 @@ struct GTY (()) machine_function
 };
 #endif
 
+#ifdef HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
+#else
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
   (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_absptr)
+#endif
 
 /* Do emit .note.GNU-stack by default.  */
 #ifndef NEED_INDICATE_EXEC_STACK

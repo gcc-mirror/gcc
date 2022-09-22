@@ -85,14 +85,13 @@ CTFloat::isInfinity (real_t r)
 /* Return a real_t value from string BUFFER rounded to long double mode.  */
 
 real_t
-CTFloat::parse (const char *buffer, bool *overflow)
+CTFloat::parse (const char *buffer, bool &overflow)
 {
   real_t r;
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (long_double_type_node));
 
   /* Front-end checks overflow to see if the value is representable.  */
-  if (overflow && r == target.RealProperties.infinity)
-    *overflow = true;
+  overflow = (r == target.RealProperties.infinity) ? true : false;
 
   return r;
 }

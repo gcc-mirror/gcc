@@ -627,25 +627,7 @@ test_expansion_to_rtl ()
 			   (reg:SI 87 [ D.59 ])) -1 (nil))
        (insn 10 6 11 2 (set (reg/i:SI 0 ax)
 			    (reg:SI 88 [ <retval> ])) -1 (nil))
-       (insn 11 10 0 2 (use (reg/i:SI 0 ax)) -1 (nil))
-
-     On cr16-elf I get this:
-       (note 4 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
-       (insn 2 4 3 2 (set (reg:SI 24)
-	    (reg/f:SI 16 virtual-incoming-args)) -1
-	  (nil))
-       (note 3 2 6 2 NOTE_INSN_FUNCTION_BEG)
-       (insn 6 3 7 2 (set (reg:HI 22 [ _1 ])
-	    (const_int 42 [0x2a])) -1
-	 (nil))
-       (insn 7 6 11 2 (set (reg:HI 23 [ <retval> ])
-	   (reg:HI 22 [ _1 ])) -1
-	 (nil))
-       (insn 11 7 12 2 (set (reg/i:HI 0 r0)
-	   (reg:HI 23 [ <retval> ])) -1
-	 (nil))
-       (insn 12 11 0 2 (use (reg/i:HI 0 r0)) -1
-	 (nil)).  */
+       (insn 11 10 0 2 (use (reg/i:SI 0 ax)) -1 (nil)).  */
   verify_three_block_rtl_cfg (fun);
 
   /* Verify as much of the RTL as we can whilst avoiding

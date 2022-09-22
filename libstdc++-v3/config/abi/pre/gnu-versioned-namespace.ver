@@ -76,19 +76,8 @@ GLIBCXX_8.0 {
     # locale
     _ZNSt3__89has_facetINS_*;
 
-    # hash
-    _ZNSt8__detail3__812__prime_listE;
-    _ZNSt3tr18__detail3__812__prime_listE;
-
     # thread/mutex/condition_variable/future
     __once_proxy;
-
-    # std::__detail::_List_node_base
-    _ZNSt8__detail3__815_List_node_base7_M_hook*;
-    _ZNSt8__detail3__815_List_node_base9_M_unhookEv;
-    _ZNSt8__detail3__815_List_node_base10_M_reverseEv;
-    _ZNSt8__detail3__815_List_node_base11_M_transfer*;
-    _ZNSt8__detail3__815_List_node_base4swapER*;
 
     # std::__convert_to_v
     _ZNSt3__814__convert_to_v*;

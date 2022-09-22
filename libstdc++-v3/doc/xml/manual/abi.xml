@@ -348,6 +348,8 @@ compatible.
     <listitem><para>GCC 9.3.0: GLIBCXX_3.4.28, CXXABI_1.3.12</para></listitem>
     <listitem><para>GCC 10.1.0: GLIBCXX_3.4.28, CXXABI_1.3.12</para></listitem>
     <listitem><para>GCC 11.1.0: GLIBCXX_3.4.29, CXXABI_1.3.13</para></listitem>
+    <listitem><para>GCC 12.1.0: GLIBCXX_3.4.30, CXXABI_1.3.13</para></listitem>
+    <listitem><para>GCC 13.1.0: GLIBCXX_3.4.31, CXXABI_1.3.13</para></listitem>
 
     </itemizedlist>
     </listitem>

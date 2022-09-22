@@ -173,7 +173,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 32bit mode.  */
 
-int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
+int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 4, 5,
@@ -204,7 +204,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 64bit mode.  */
 
-int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
+int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 1, 2, 3, 4, 5, 6, 7,
@@ -283,7 +283,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 	17 for %st(6) (gcc regno = 14)
 	18 for %st(7) (gcc regno = 15)
 */
-int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
+int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 5, 4,
@@ -2399,6 +2399,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_CTImode:
       return 0;
     case E_HFmode:
+    case E_BFmode:
       if (!(bit_offset % 64))
 	classes[0] = X86_64_SSEHF_CLASS;
       else
@@ -2462,6 +2463,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8SImode:
     case E_V32QImode:
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
@@ -2473,6 +2475,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8DFmode:
     case E_V16SFmode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V8DImode:
     case E_V16SImode:
     case E_V32HImode:
@@ -2491,6 +2494,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V16QImode:
     case E_V8HImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V2DFmode:
     case E_V2DImode:
       classes[0] = X86_64_SSE_CLASS;
@@ -2792,9 +2796,10 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    intreg++;
 	    break;
 	  case X86_64_SSEHF_CLASS:
+	    tmpmode = (mode == BFmode ? BFmode : HFmode);
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
-				   gen_rtx_REG (HFmode,
+				   gen_rtx_REG (tmpmode,
 						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (i*8));
 	    sse_regno++;
@@ -2945,6 +2950,7 @@ pass_in_reg:
       /* FALLTHRU */
 
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V64QImode:
@@ -2952,6 +2958,7 @@ pass_in_reg:
     case E_V16SImode:
     case E_V8DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V8DFmode:
     case E_V32QImode:
@@ -2964,6 +2971,7 @@ pass_in_reg:
     case E_V4SImode:
     case E_V2DImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -3188,6 +3196,7 @@ pass_in_reg:
     case E_V4SImode:
     case E_V2DImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -3208,9 +3217,11 @@ pass_in_reg:
     case E_V16SImode:
     case E_V8DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V8DFmode:
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -3271,6 +3282,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
       break;
 
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -3278,6 +3290,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
     case E_V4DFmode:
     case E_V4DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -4001,8 +4014,8 @@ function_value_32 (machine_mode orig_mode, machine_mode mode,
     /* Most things go in %eax.  */
     regno = AX_REG;
 
-  /* Return _Float16/_Complex _Foat16 by sse register.  */
-  if (mode == HFmode)
+  /* Return __bf16/ _Float16/_Complex _Foat16 by sse register.  */
+  if (mode == HFmode || mode == BFmode)
     regno = FIRST_SSE_REG;
   if (mode == HCmode)
     {
@@ -4050,6 +4063,7 @@ function_value_64 (machine_mode orig_mode, machine_mode mode,
 
       switch (mode)
 	{
+	case E_BFmode:
 	case E_HFmode:
 	case E_HCmode:
 	case E_SFmode:
@@ -4745,6 +4759,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   switch (nat_mode)
     {
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -4752,6 +4767,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     case E_V4DFmode:
     case E_V4DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -5427,7 +5443,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (type)
 	{
 	case opcode_int:
-	  if (scalar_mode == E_HFmode)
+	  if (scalar_mode == E_HFmode || scalar_mode == E_BFmode)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
 		      : "vmovdqa64");
@@ -5447,6 +5463,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (scalar_mode)
 	{
 	case E_HFmode:
+	case E_BFmode:
 	  if (evex_reg_p)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
@@ -5631,6 +5648,7 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 	return "%vmovss\t{%1, %0|%0, %1}";
 
     case MODE_HF:
+    case MODE_BF:
       if (REG_P (operands[0]) && REG_P (operands[1]))
 	return "vmovsh\t{%d1, %0|%0, %d1}";
       else
@@ -10647,6 +10665,11 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 
     case CONST_VECTOR:
       if (!standard_sse_constant_p (x, mode))
+	return false;
+      break;
+
+    case CONST_DOUBLE:
+      if (mode == E_BFmode)
 	return false;
 
     default:
@@ -16070,6 +16093,19 @@ ix86_call_use_plt_p (rtx call_op)
   return true;
 }
 
+/* Implement TARGET_IFUNC_REF_LOCAL_OK.  If this hook returns true,
+   the PLT entry will be used as the function address for local IFUNC
+   functions.  When the PIC register is needed for PLT call, indirect
+   call via the PLT entry will fail since the PIC register may not be
+   set up properly for indirect call.  In this case, we should return
+   false.  */
+
+static bool
+ix86_ifunc_ref_local_ok (void)
+{
+  return !flag_pic || (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC);
+}
+
 /* Return true if the function being called was marked with attribute
    "noplt" or using -fno-plt and we are compiling for non-PIC.  We need
    to handle the non-PIC case in the backend because there is no easy
@@ -18416,6 +18452,15 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_PBLENDVB256:
+    case IX86_BUILTIN_BLENDVPS256:
+    case IX86_BUILTIN_BLENDVPD256:
+      /* pcmpeqb/d/q is under avx2, w/o avx2, it's veclower
+	 to scalar operations and not combined back.  */
+      if (!TARGET_AVX2)
+	break;
+
+      /* FALLTHRU.  */
     case IX86_BUILTIN_BLENDVPD:
       /* blendvpd is under sse4.1 but pcmpgtq is under sse4.2,
 	 w/o sse4.2, it's veclowered to scalar operations and
@@ -18424,10 +18469,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	break;
       /* FALLTHRU.  */
     case IX86_BUILTIN_PBLENDVB128:
-    case IX86_BUILTIN_PBLENDVB256:
     case IX86_BUILTIN_BLENDVPS:
-    case IX86_BUILTIN_BLENDVPS256:
-    case IX86_BUILTIN_BLENDVPD256:
       gcc_assert (n_args == 3);
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
@@ -19402,7 +19444,8 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
     }
 
   /* Require movement to gpr, and then store to memory.  */
-  if ((mode == HFmode || mode == HImode || mode == V2QImode)
+  if ((mode == HFmode || mode == HImode || mode == V2QImode
+       || mode == BFmode)
       && !TARGET_SSE4_1
       && SSE_CLASS_P (rclass)
       && !in_p && MEM_P (x))
@@ -21050,10 +21093,24 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case UNSPEC:
       if (XINT (x, 1) == UNSPEC_TP)
 	*total = 0;
-      else if (XINT(x, 1) == UNSPEC_VTERNLOG)
+      else if (XINT (x, 1) == UNSPEC_VTERNLOG)
 	{
 	  *total = cost->sse_op;
 	  return true;
+	}
+      else if (XINT (x, 1) == UNSPEC_PTEST)
+	{
+	  *total = cost->sse_op;
+	  if (XVECLEN (x, 0) == 2
+	      && GET_CODE (XVECEXP (x, 0, 0)) == AND)
+	    {
+	      rtx andop = XVECEXP (x, 0, 0);
+	      *total += rtx_cost (XEXP (andop, 0), GET_MODE (andop),
+				  AND, opno, speed)
+			+ rtx_cost (XEXP (andop, 1), GET_MODE (andop),
+				    AND, opno, speed);
+	      return true;
+	    }
 	}
       return false;
 
@@ -22331,7 +22388,7 @@ ix86_scalar_mode_supported_p (scalar_mode mode)
     return default_decimal_float_supported_p ();
   else if (mode == TFmode)
     return true;
-  else if (mode == HFmode && TARGET_SSE2)
+  else if ((mode == HFmode || mode == BFmode) && TARGET_SSE2)
     return true;
   else
     return default_scalar_mode_supported_p (mode);
@@ -22646,6 +22703,8 @@ ix86_mangle_type (const_tree type)
 
   switch (TYPE_MODE (type))
     {
+    case E_BFmode:
+      return "u6__bf16";
     case E_HFmode:
       /* _Float16 is "DF16_".
 	 Align with clang's decision in https://reviews.llvm.org/D33719. */
@@ -22659,6 +22718,55 @@ ix86_mangle_type (const_tree type)
     default:
       return NULL;
     }
+}
+
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.  */
+
+static const char *
+ix86_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype))
+    {
+      /* Do no allow conversions to/from BFmode scalar types.  */
+      if (TYPE_MODE (fromtype) == BFmode)
+	return N_("invalid conversion from type %<__bf16%>");
+      if (TYPE_MODE (totype) == BFmode)
+	return N_("invalid conversion to type %<__bf16%>");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
+
+static const char *
+ix86_invalid_unary_op (int op, const_tree type)
+{
+  /* Reject all single-operand operations on BFmode except for &.  */
+  if (element_mode (type) == BFmode && op != ADDR_EXPR)
+    return N_("operation not permitted on type %<__bf16%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+
+static const char *
+ix86_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
+			   const_tree type2)
+{
+  /* Reject all 2-operand operations on BFmode.  */
+  if (element_mode (type1) == BFmode
+      || element_mode (type2) == BFmode)
+    return N_("operation not permitted on type %<__bf16%>");
+
+  /* Operation allowed.  */
+  return NULL;
 }
 
 static GTY(()) tree ix86_tls_stack_chk_guard_decl;
@@ -24718,6 +24826,15 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
 
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION ix86_invalid_conversion
+
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP ix86_invalid_unary_op
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP ix86_invalid_binary_op
+
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard
 
@@ -24953,7 +25070,7 @@ ix86_libgcc_floating_mode_supported_p
   ix86_get_multilib_abi_name
 
 #undef TARGET_IFUNC_REF_LOCAL_OK
-#define TARGET_IFUNC_REF_LOCAL_OK hook_bool_void_true
+#define TARGET_IFUNC_REF_LOCAL_OK ix86_ifunc_ref_local_ok
 
 #if !TARGET_MACHO && !TARGET_DLLIMPORT_DECL_ATTRIBUTES
 # undef TARGET_ASM_RELOC_RW_MASK

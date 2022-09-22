@@ -100,7 +100,27 @@ private:
   trailing_wide_ints<MAX_INTS> m_ints;
 };
 
-class obstack_vrange_allocator : public vrange_allocator
+// A chunk of memory to store an frange to long term memory.
+
+class GTY (()) frange_storage_slot
+{
+ public:
+  static frange_storage_slot *alloc_slot (vrange_allocator &, const frange &r);
+  void set_frange (const frange &r);
+  void get_frange (frange &r, tree type) const;
+  bool fits_p (const frange &) const;
+ private:
+  frange_storage_slot (const frange &r) { set_frange (r); }
+  DISABLE_COPY_AND_ASSIGN (frange_storage_slot);
+
+  enum value_range_kind m_kind;
+  REAL_VALUE_TYPE m_min;
+  REAL_VALUE_TYPE m_max;
+  bool m_pos_nan;
+  bool m_neg_nan;
+};
+
+class obstack_vrange_allocator final: public vrange_allocator
 {
 public:
   obstack_vrange_allocator ()
@@ -120,7 +140,7 @@ private:
   obstack m_obstack;
 };
 
-class ggc_vrange_allocator : public vrange_allocator
+class ggc_vrange_allocator final: public vrange_allocator
 {
 public:
   ggc_vrange_allocator () { }

@@ -1736,7 +1736,7 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE13*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE14_M_replace_aux*;
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[568-9]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[68-9]*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE2at*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE3end*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE4back*;
@@ -2443,6 +2443,10 @@ GLIBCXX_3.4.30 {
     _ZNSt16__time_get_state17_M_finalize_stateEP2tm;
 
 } GLIBCXX_3.4.29;
+
+GLIBCXX_3.4.31 {
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE15_M_replace_cold*;
+} GLIBCXX_3.4.30;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

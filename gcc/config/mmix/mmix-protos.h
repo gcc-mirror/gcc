@@ -42,7 +42,7 @@ extern int mmix_shiftable_wyde_value (uint64_t);
 extern void mmix_output_register_setting (FILE *, int, int64_t, int);
 extern int mmix_opposite_regno (int, int);
 extern int mmix_local_regno (int);
-extern unsigned mmix_dbx_register_number (unsigned);
+extern unsigned mmix_debugger_regno (unsigned);
 extern int mmix_use_simple_return (void);
 extern void mmix_make_decl_one_only (tree);
 extern int mmix_data_alignment (tree, int);

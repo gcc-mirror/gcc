@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target hard_float } */
 /* { dg-options "-fno-finite-math-only -fsigned-zeros -fsignaling-nans -dp" } */
 
 double

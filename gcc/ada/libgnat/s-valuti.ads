@@ -374,48 +374,274 @@ is
    --  no check for this case, the caller must ensure this condition is met.
    pragma Warnings (GNATprove, On, """Ptr"" is not modified");
 
+   --  Bundle Uns type with other types, constants and subprograms used in
+   --  ghost code, so that this package can be instantiated once and used
+   --  multiple times as generic formal for a given Uns type.
+   generic
+      type Uns is mod <>;
+      type P_Uns_Option is private with Ghost;
+      with function P_Wrap_Option (Value : Uns) return P_Uns_Option
+        with Ghost;
+      with function P_Hexa_To_Unsigned_Ghost (X : Character) return Uns
+        with Ghost;
+      with function P_Scan_Overflows_Ghost
+        (Digit : Uns;
+         Base  : Uns;
+         Acc   : Uns) return Boolean
+        with Ghost;
+      with function P_Is_Raw_Unsigned_Format_Ghost
+        (Str : String) return Boolean
+        with Ghost;
+      with function P_Scan_Split_No_Overflow_Ghost
+        (Str      : String;
+         From, To : Integer)
+      return Boolean
+        with Ghost;
+      with function P_Raw_Unsigned_No_Overflow_Ghost
+        (Str      : String;
+         From, To : Integer)
+      return Boolean
+        with Ghost;
+
+      with function P_Exponent_Unsigned_Ghost
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10) return P_Uns_Option
+        with Ghost;
+      with procedure P_Lemma_Exponent_Unsigned_Ghost_Base
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10)
+        with Ghost;
+      with procedure P_Lemma_Exponent_Unsigned_Ghost_Overflow
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10)
+        with Ghost;
+      with procedure P_Lemma_Exponent_Unsigned_Ghost_Step
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10)
+        with Ghost;
+
+      with function P_Scan_Raw_Unsigned_Ghost
+        (Str      : String;
+         From, To : Integer)
+      return Uns
+        with Ghost;
+      with procedure P_Lemma_Scan_Based_Number_Ghost_Base
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+        with Ghost;
+      with procedure P_Lemma_Scan_Based_Number_Ghost_Underscore
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+        with Ghost;
+      with procedure P_Lemma_Scan_Based_Number_Ghost_Overflow
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+        with Ghost;
+      with procedure P_Lemma_Scan_Based_Number_Ghost_Step
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+        with Ghost;
+
+      with function P_Raw_Unsigned_Last_Ghost
+        (Str      : String;
+         From, To : Integer)
+      return Positive
+        with Ghost;
+      with function P_Only_Decimal_Ghost
+        (Str      : String;
+         From, To : Integer)
+      return Boolean
+        with Ghost;
+      with function P_Scan_Based_Number_Ghost
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+      return P_Uns_Option
+        with Ghost;
+      with function P_Is_Unsigned_Ghost (Str : String) return Boolean
+        with Ghost;
+      with function P_Is_Value_Unsigned_Ghost
+        (Str : String;
+         Val : Uns) return Boolean
+        with Ghost;
+
+      with procedure P_Prove_Scan_Only_Decimal_Ghost
+        (Str : String;
+         Val : Uns)
+        with Ghost;
+      with procedure P_Prove_Scan_Based_Number_Ghost_Eq
+        (Str1, Str2 : String;
+         From, To   : Integer;
+         Base       : Uns := 10;
+         Acc        : Uns := 0)
+        with Ghost;
+
+   package Uns_Params is
+      subtype Uns_Option is P_Uns_Option with Ghost;
+      function Wrap_Option (Value : Uns) return Uns_Option renames
+        P_Wrap_Option;
+      function Hexa_To_Unsigned_Ghost
+        (X : Character) return Uns
+         renames P_Hexa_To_Unsigned_Ghost;
+      function Scan_Overflows_Ghost
+        (Digit : Uns;
+         Base  : Uns;
+         Acc   : Uns) return Boolean
+         renames P_Scan_Overflows_Ghost;
+      function Is_Raw_Unsigned_Format_Ghost
+        (Str : String) return Boolean
+         renames P_Is_Raw_Unsigned_Format_Ghost;
+      function Scan_Split_No_Overflow_Ghost
+        (Str      : String;
+         From, To : Integer) return Boolean
+         renames P_Scan_Split_No_Overflow_Ghost;
+      function Raw_Unsigned_No_Overflow_Ghost
+        (Str      : String;
+         From, To : Integer) return Boolean
+         renames P_Raw_Unsigned_No_Overflow_Ghost;
+
+      function Exponent_Unsigned_Ghost
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10) return Uns_Option
+         renames P_Exponent_Unsigned_Ghost;
+      procedure Lemma_Exponent_Unsigned_Ghost_Base
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10)
+         renames P_Lemma_Exponent_Unsigned_Ghost_Base;
+      procedure Lemma_Exponent_Unsigned_Ghost_Overflow
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10)
+         renames P_Lemma_Exponent_Unsigned_Ghost_Overflow;
+      procedure Lemma_Exponent_Unsigned_Ghost_Step
+        (Value : Uns;
+         Exp   : Natural;
+         Base  : Uns := 10)
+         renames P_Lemma_Exponent_Unsigned_Ghost_Step;
+
+      function Scan_Raw_Unsigned_Ghost
+        (Str      : String;
+         From, To : Integer) return Uns
+         renames P_Scan_Raw_Unsigned_Ghost;
+      procedure Lemma_Scan_Based_Number_Ghost_Base
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+         renames P_Lemma_Scan_Based_Number_Ghost_Base;
+      procedure Lemma_Scan_Based_Number_Ghost_Underscore
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+         renames P_Lemma_Scan_Based_Number_Ghost_Underscore;
+      procedure Lemma_Scan_Based_Number_Ghost_Overflow
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+         renames P_Lemma_Scan_Based_Number_Ghost_Overflow;
+      procedure Lemma_Scan_Based_Number_Ghost_Step
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+         renames P_Lemma_Scan_Based_Number_Ghost_Step;
+
+      function Raw_Unsigned_Last_Ghost
+        (Str      : String;
+         From, To : Integer) return Positive
+         renames P_Raw_Unsigned_Last_Ghost;
+      function Only_Decimal_Ghost
+        (Str      : String;
+         From, To : Integer) return Boolean
+         renames P_Only_Decimal_Ghost;
+      function Scan_Based_Number_Ghost
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0) return Uns_Option
+         renames P_Scan_Based_Number_Ghost;
+      function Is_Unsigned_Ghost (Str : String) return Boolean
+         renames P_Is_Unsigned_Ghost;
+      function Is_Value_Unsigned_Ghost
+        (Str : String;
+         Val : Uns) return Boolean
+         renames P_Is_Value_Unsigned_Ghost;
+
+      procedure Prove_Scan_Only_Decimal_Ghost
+        (Str : String;
+         Val : Uns)
+         renames P_Prove_Scan_Only_Decimal_Ghost;
+      procedure Prove_Scan_Based_Number_Ghost_Eq
+        (Str1, Str2 : String;
+         From, To   : Integer;
+         Base       : Uns := 10;
+         Acc        : Uns := 0)
+      renames P_Prove_Scan_Based_Number_Ghost_Eq;
+   end Uns_Params;
+
    --  Bundle Int type with other types, constants and subprograms used in
    --  ghost code, so that this package can be instantiated once and used
    --  multiple times as generic formal for a given Int type.
    generic
       type Int is range <>;
       type Uns is mod <>;
-      type Uns_Option is private;
 
-      Unsigned_Width_Ghost : Natural;
+      with package P_Uns_Params is new System.Val_Util.Uns_Params
+        (Uns => Uns, others => <>)
+         with Ghost;
 
-      with function Wrap_Option (Value : Uns) return Uns_Option
+      with function P_Abs_Uns_Of_Int (Val : Int) return Uns
          with Ghost;
-      with function Only_Decimal_Ghost
-        (Str      : String;
-         From, To : Integer)
-         return Boolean
+      with function P_Is_Int_Of_Uns
+        (Minus : Boolean;
+         Uval  : Uns;
+         Val   : Int)
+      return Boolean
          with Ghost;
-      with function Hexa_To_Unsigned_Ghost (X : Character) return Uns
+      with function P_Is_Integer_Ghost (Str : String) return Boolean
          with Ghost;
-      with function Scan_Based_Number_Ghost
-        (Str      : String;
-         From, To : Integer;
-         Base     : Uns := 10;
-         Acc      : Uns := 0)
-         return Uns_Option
+      with function P_Is_Value_Integer_Ghost
+        (Str : String;
+         Val : Int) return Boolean
          with Ghost;
-      with function Is_Integer_Ghost (Str : String) return Boolean
-         with Ghost;
-      with procedure Prove_Iter_Scan_Based_Number_Ghost
-        (Str1, Str2 : String;
-         From, To : Integer;
-         Base     : Uns := 10;
-         Acc      : Uns := 0)
-         with Ghost;
-      with procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
-         with Ghost;
-      with function Abs_Uns_Of_Int (Val : Int) return Uns
-         with Ghost;
-      with function Value_Integer (Str : String) return Int
+      with procedure P_Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
          with Ghost;
 
    package Int_Params is
+      package Uns_Params renames P_Uns_Params;
+      function Abs_Uns_Of_Int (Val : Int) return Uns renames
+        P_Abs_Uns_Of_Int;
+      function Is_Int_Of_Uns
+        (Minus : Boolean;
+         Uval  : Uns;
+         Val   : Int)
+      return Boolean
+         renames P_Is_Int_Of_Uns;
+      function Is_Integer_Ghost (Str : String) return Boolean renames
+        P_Is_Integer_Ghost;
+      function Is_Value_Integer_Ghost
+        (Str : String;
+         Val : Int) return Boolean
+         renames P_Is_Value_Integer_Ghost;
+      procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int) renames
+        P_Prove_Scan_Only_Decimal_Ghost;
    end Int_Params;
 
 private

@@ -45,45 +45,22 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
+with System.Val_Util;
+
 generic
 
    type Uns is mod <>;
-   type Uns_Option is private;
 
    --  Additional parameters for ghost subprograms used inside contracts
 
    Unsigned_Width_Ghost : Natural;
 
-   with function Wrap_Option (Value : Uns) return Uns_Option
-      with Ghost;
-   with function Only_Decimal_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-      with Ghost;
-   with function Hexa_To_Unsigned_Ghost (X : Character) return Uns
-      with Ghost;
-   with function Scan_Based_Number_Ghost
-     (Str      : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0) return Uns_Option
-      with Ghost;
-   with function Is_Unsigned_Ghost (Str : String) return Boolean
-      with Ghost;
-   with function Value_Unsigned (Str : String) return Uns;
-   with procedure Prove_Iter_Scan_Based_Number_Ghost
-     (Str1, Str2 : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-      with Ghost;
-   with procedure Prove_Scan_Only_Decimal_Ghost
-     (Str : String;
-      Val : Uns)
-      with Ghost;
+   with package Uns_Params is new System.Val_Util.Uns_Params
+     (Uns => Uns, others => <>)
+   with Ghost;
 
 package System.Image_U is
+   use all type Uns_Params.Uns_Option;
 
    procedure Image_Unsigned
      (V : Uns;
@@ -94,7 +71,7 @@ package System.Image_U is
        and then S'Last < Integer'Last
        and then S'Last >= Unsigned_Width_Ghost,
      Post => P in S'Range
-       and then Value_Unsigned (S (1 .. P)) = V;
+       and then Uns_Params.Is_Value_Unsigned_Ghost (S (1 .. P), V);
    pragma Inline (Image_Unsigned);
    --  Computes Uns'Image (V) and stores the result in S (1 .. P) setting
    --  the resulting value of P. The caller guarantees that S is long enough to
@@ -112,9 +89,10 @@ package System.Image_U is
        and then P <= S'Last - Unsigned_Width_Ghost + 1,
      Post => S (S'First .. P'Old) = S'Old (S'First .. P'Old)
        and then P in P'Old + 1 .. S'Last
-       and then Only_Decimal_Ghost (S, From => P'Old + 1, To => P)
-       and then Scan_Based_Number_Ghost (S, From => P'Old + 1, To => P)
-         = Wrap_Option (V);
+       and then Uns_Params.Only_Decimal_Ghost (S, From => P'Old + 1, To => P)
+       and then Uns_Params.Scan_Based_Number_Ghost
+         (S, From => P'Old + 1, To => P)
+         = Uns_Params.Wrap_Option (V);
    --  Stores the image of V in S starting at S (P + 1), P is updated to point
    --  to the last character stored. The value stored is identical to the value
    --  of Uns'Image (V) except that no leading space is stored. The caller

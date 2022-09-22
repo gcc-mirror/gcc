@@ -4,7 +4,7 @@
  * Copyright: Copyright Sean Kelly 2005 - 2009.
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Sean Kelly
- * Source:    $(LINK2 https://github.com/dlang/druntime/blob/master/src/core/runtime.d, _runtime.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/druntime/src/core/runtime.d, _runtime.d)
  * Documentation: https://dlang.org/phobos/core_runtime.html
  */
 

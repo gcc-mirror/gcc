@@ -111,7 +111,7 @@
   (match_code "const,symbol_ref,label_ref")
 {
   /* Split symbol to high and low if return false.
-     If defined TARGET_CMODEL_LARGE, all symbol would be splited,
+     If defined TARGET_CMODEL_EXTREME, all symbol would be splited,
      else if offset is not zero, the symbol would be splited.  */
 
   enum loongarch_symbol_type symbol_type;
@@ -123,13 +123,27 @@
   if (offset != const0_rtx)
     return false;
 
+  /* When compiling with '-mcmodel=medium -mexplicit-relocs'
+     symbols are splited in loongarch_legitimize_call_address.
+
+     When compiling with '-mcmodel=medium -mno-explicit-relocs',
+     first obtain the symbolic address or the address of the
+     plt entry, and then perform an indirect jump, so return false.  */
+
   switch (symbol_type)
     {
     case SYMBOL_PCREL:
-      return 1;
+      if (TARGET_CMODEL_EXTREME
+	  || (TARGET_CMODEL_MEDIUM && !TARGET_EXPLICIT_RELOCS))
+	return false;
+      else
+	return 1;
 
     case SYMBOL_GOT_DISP:
-      if (TARGET_CMODEL_LARGE || !flag_plt)
+      if (TARGET_CMODEL_EXTREME
+	  || !flag_plt
+	  || (flag_plt && TARGET_CMODEL_MEDIUM
+	      && !TARGET_EXPLICIT_RELOCS))
 	return false;
       else
 	return 1;

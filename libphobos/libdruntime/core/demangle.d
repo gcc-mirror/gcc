@@ -2328,7 +2328,7 @@ char[] mangle(T)(return scope const(char)[] fqn, return scope char[] dst = null)
 
         @property bool empty() const { return !s.length; }
 
-        @property const(char)[] front() const return
+        @property const(char)[] front() const return scope
         {
             immutable i = indexOfDot();
             return i == -1 ? s[0 .. $] : s[0 .. i];

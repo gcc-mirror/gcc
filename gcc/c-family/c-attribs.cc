@@ -4163,6 +4163,13 @@ handle_deprecated_attribute (tree *node, tree name,
 	  || TREE_CODE (decl) == CONST_DECL
 	  || objc_method_decl (TREE_CODE (decl)))
 	TREE_DEPRECATED (decl) = 1;
+      else if (TREE_CODE (decl) == LABEL_DECL)
+	{
+	  pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
+		   name);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
       else
 	warn = 1;
     }

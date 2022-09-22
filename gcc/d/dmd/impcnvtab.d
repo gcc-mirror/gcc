@@ -64,6 +64,57 @@ enum ImpCnvTab impCnvTab = generateImpCnvTab();
 
 ImpCnvTab generateImpCnvTab()
 {
+    TY[TMAX] typeTYs =
+    [
+        Tarray,
+        Tsarray,
+        Taarray,
+        Tpointer,
+        Treference,
+        Tfunction,
+        Tident,
+        Tclass,
+        Tstruct,
+        Tenum,
+        Tdelegate,
+        Tnone,
+        Tvoid,
+        Tint8,
+        Tuns8,
+        Tint16,
+        Tuns16,
+        Tint32,
+        Tuns32,
+        Tint64,
+        Tuns64,
+        Tfloat32,
+        Tfloat64,
+        Tfloat80,
+        Timaginary32,
+        Timaginary64,
+        Timaginary80,
+        Tcomplex32,
+        Tcomplex64,
+        Tcomplex80,
+        Tbool,
+        Tchar,
+        Twchar,
+        Tdchar,
+        Terror,
+        Tinstance,
+        Ttypeof,
+        Ttuple,
+        Tslice,
+        Treturn,
+        Tnull,
+        Tvector,
+        Tint128,
+        Tuns128,
+        Ttraits,
+        Tmixin,
+        Tnoreturn,
+        Ttag,
+    ];
     ImpCnvTab impCnvTab;
 
     // Set conversion tables
@@ -374,6 +425,10 @@ ImpCnvTab generateImpCnvTab()
     /* ======================= */
 
     X(Tcomplex80,Tcomplex80,  Tcomplex80,Tcomplex80, Tcomplex80);
+
+    // "No type is implicitly convertible to noreturn, but noreturn is implicitly convertible to every other type"
+    foreach(convertToTy; typeTYs)
+        X(Tnoreturn, convertToTy, convertToTy, convertToTy, convertToTy);
 
     return impCnvTab;
 }

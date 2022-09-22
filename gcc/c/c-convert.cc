@@ -133,6 +133,20 @@ c_convert (tree type, tree expr, bool init_const)
 	(loc, type, c_objc_common_truthvalue_conversion (input_location, expr));
 
     case POINTER_TYPE:
+      /* The type nullptr_t may be converted to a pointer type.  The result is
+	 a null pointer value.  */
+      if (NULLPTR_TYPE_P (TREE_TYPE (e)))
+	{
+	  /* To make sure that (void *)nullptr is not a null pointer constant,
+	     build_c_cast will create an additional NOP_EXPR around the result
+	     of this conversion.  */
+	  if (TREE_SIDE_EFFECTS (e))
+	    ret = build2 (COMPOUND_EXPR, type, e, build_int_cst (type, 0));
+	  else
+	    ret = build_int_cst (type, 0);
+	  goto maybe_fold;
+	}
+      gcc_fallthrough ();
     case REFERENCE_TYPE:
       ret = convert_to_pointer (type, e);
       goto maybe_fold;
@@ -180,7 +194,16 @@ c_convert (tree type, tree expr, bool init_const)
       return ret;
     }
 
-  error ("conversion to non-scalar type requested");
+  /* If we are converting to nullptr_t, don't say "non-scalar type" because
+     the nullptr_t type is a scalar type.  Only nullptr_t shall be converted
+     to nullptr_t.  */
+  if (code == NULLPTR_TYPE)
+    {
+      error ("conversion from %qT to %qT", TREE_TYPE (e), type);
+      inform (input_location, "only %qT can be converted to %qT", type, type);
+    }
+  else
+    error ("conversion to non-scalar type requested");
   return error_mark_node;
 }
 

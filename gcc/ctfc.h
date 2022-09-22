@@ -161,6 +161,7 @@ struct GTY ((for_user)) ctf_dtdef
   ctf_itype_t dtd_data;	      /* Type node.  */
   bool from_global_func; /* Whether this type was added from a global
 			    function.  */
+  uint32_t linkage;           /* Used in function types.  0=local, 1=global.  */
   union GTY ((desc ("ctf_dtu_d_union_selector (&%1)")))
   {
     /* struct, union, or enum.  */
@@ -423,7 +424,7 @@ extern ctf_id_t ctf_add_forward (ctf_container_ref, uint32_t, const char *,
 extern ctf_id_t ctf_add_typedef (ctf_container_ref, uint32_t, const char *,
 				 ctf_id_t, dw_die_ref);
 extern ctf_id_t ctf_add_function (ctf_container_ref, uint32_t, const char *,
-				  const ctf_funcinfo_t *, dw_die_ref, bool);
+				  const ctf_funcinfo_t *, dw_die_ref, bool, int);
 extern ctf_id_t ctf_add_sou (ctf_container_ref, uint32_t, const char *,
 			     uint32_t, size_t, dw_die_ref);
 

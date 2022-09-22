@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=skylake -mtune-ctrl=avx256_store_by_pieces" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 extern char array[64];
 

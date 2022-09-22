@@ -339,7 +339,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl,
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
   else if (!(flags & DIRECT_BIND) && ! obvalue_p (arg))
-    return get_target_expr_sfinae (arg, complain);
+    return get_target_expr (arg, complain);
 
   /* If we had a way to wrap this up, and say, if we ever needed its
      address, transform all occurrences of the register, into a memory
@@ -939,7 +939,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 
       ctor = e;
 
-      if (abstract_virtuals_error_sfinae (NULL_TREE, type, complain))
+      if (abstract_virtuals_error (NULL_TREE, type, complain))
 	return error_mark_node;
 
       if (BRACE_ENCLOSED_INITIALIZER_P (ctor))

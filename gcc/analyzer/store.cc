@@ -123,7 +123,7 @@ uncertainty_t::dump (bool simple) const
 const binding_key *
 binding_key::make (store_manager *mgr, const region *r)
 {
-  region_offset offset = r->get_offset ();
+  region_offset offset = r->get_offset (mgr->get_svalue_manager ());
   if (offset.symbolic_p ())
     return mgr->get_symbolic_binding (r);
   else
@@ -380,7 +380,11 @@ bit_range::as_byte_range (byte_range *out) const
 void
 byte_range::dump_to_pp (pretty_printer *pp) const
 {
-  if (m_size_in_bytes == 1)
+  if (m_size_in_bytes == 0)
+    {
+      pp_string (pp, "empty");
+    }
+  else if (m_size_in_bytes == 1)
     {
       pp_string (pp, "byte ");
       pp_wide_int (pp, m_start_byte_offset, SIGNED);
@@ -418,6 +422,77 @@ byte_range::contains_p (const byte_range &other, byte_range *out) const
     {
       out->m_start_byte_offset = other.m_start_byte_offset - m_start_byte_offset;
       out->m_size_in_bytes = other.m_size_in_bytes;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Return true if THIS and OTHER intersect and write the number
+   of bytes both buffers overlap to *OUT_NUM_OVERLAP_BYTES.
+
+   Otherwise return false.  */
+
+bool
+byte_range::intersects_p (const byte_range &other,
+			  byte_size_t *out_num_overlap_bytes) const
+{
+  if (get_start_byte_offset () < other.get_next_byte_offset ()
+      && other.get_start_byte_offset () < get_next_byte_offset ())
+    {
+      byte_offset_t overlap_start = MAX (get_start_byte_offset (),
+					 other.get_start_byte_offset ());
+      byte_offset_t overlap_next = MIN (get_next_byte_offset (),
+					other.get_next_byte_offset ());
+      gcc_assert (overlap_next > overlap_start);
+      *out_num_overlap_bytes = overlap_next - overlap_start;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Return true if THIS exceeds OTHER and write the overhanging
+   byte range to OUT_OVERHANGING_BYTE_RANGE.  */
+
+bool
+byte_range::exceeds_p (const byte_range &other,
+		       byte_range *out_overhanging_byte_range) const
+{
+  gcc_assert (!empty_p ());
+
+  if (other.get_next_byte_offset () < get_next_byte_offset ())
+    {
+      /* THIS definitely exceeds OTHER.  */
+      byte_offset_t start = MAX (get_start_byte_offset (),
+				 other.get_next_byte_offset ());
+      byte_offset_t size = get_next_byte_offset () - start;
+      gcc_assert (size > 0);
+      out_overhanging_byte_range->m_start_byte_offset = start;
+      out_overhanging_byte_range->m_size_in_bytes = size;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Return true if THIS falls short of OFFSET and write the
+   byte range fallen short to OUT_FALL_SHORT_BYTES.  */
+
+bool
+byte_range::falls_short_of_p (byte_offset_t offset,
+			      byte_range *out_fall_short_bytes) const
+{
+  gcc_assert (!empty_p ());
+
+  if (get_start_byte_offset () < offset)
+    {
+      /* THIS falls short of OFFSET.  */
+      byte_offset_t start = get_start_byte_offset ();
+      byte_offset_t size = MIN (offset, get_next_byte_offset ()) - start;
+      gcc_assert (size > 0);
+      out_fall_short_bytes->m_start_byte_offset = start;
+      out_fall_short_bytes->m_size_in_bytes = size;
       return true;
     }
   else
@@ -830,7 +905,7 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
     = get_subregion_within_ctor (parent_reg, min_index, mgr);
   const region *max_element
     = get_subregion_within_ctor (parent_reg, max_index, mgr);
-  region_offset min_offset = min_element->get_offset ();
+  region_offset min_offset = min_element->get_offset (mgr);
   if (min_offset.symbolic_p ())
     return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
@@ -888,11 +963,11 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 	  gcc_assert (sval_byte_size != -1);
 	  bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
 	  /* Get offset of child relative to base region.  */
-	  region_offset child_base_offset = child_reg->get_offset ();
+	  region_offset child_base_offset = child_reg->get_offset (mgr);
 	  if (child_base_offset.symbolic_p ())
 	    return false;
 	  /* Convert to an offset relative to the parent region.  */
-	  region_offset parent_base_offset = parent_reg->get_offset ();
+	  region_offset parent_base_offset = parent_reg->get_offset (mgr);
 	  gcc_assert (!parent_base_offset.symbolic_p ());
 	  bit_offset_t child_parent_offset
 	    = (child_base_offset.get_bit_offset ()
@@ -1298,7 +1373,8 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 				     const region *reg,
 				     const compound_svalue *compound_sval)
 {
-  region_offset reg_offset = reg->get_offset ();
+  region_offset reg_offset
+    = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
     {
       m_touched = true;
@@ -1547,7 +1623,7 @@ binding_cluster::get_any_binding (store_manager *mgr,
   /* Alternatively, if this is a symbolic read and the cluster has any bindings,
      then we don't know if we're reading those values or not, so the result
      is also "UNKNOWN".  */
-  if (reg->get_offset ().symbolic_p ()
+  if (reg->get_offset (mgr->get_svalue_manager ()).symbolic_p ()
       && m_map.elements () > 0)
     {
       region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
@@ -1576,10 +1652,11 @@ const svalue *
 binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 					     const region *reg) const
 {
-  region_offset cluster_offset = m_base_region->get_offset ();
+  region_offset cluster_offset
+    = m_base_region->get_offset (mgr->get_svalue_manager ());
   if (cluster_offset.symbolic_p ())
     return NULL;
-  region_offset reg_offset = reg->get_offset ();
+  region_offset reg_offset = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
     return NULL;
 

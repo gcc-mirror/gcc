@@ -53,6 +53,7 @@ public import
  std.getopt,
  std.int128,
  std.json,
+ std.logger,
  std.math,
  std.mathspecial,
  std.meta,

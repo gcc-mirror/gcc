@@ -1498,11 +1498,11 @@ package body Ada.Strings.Wide_Wide_Superbounded is
            or else High > Source.Current_Length
          then
             raise Index_Error;
-         else
-            Result.Current_Length := High - Low + 1;
-            Result.Data (1 .. Result.Current_Length) :=
-              Source.Data (Low .. High);
          end if;
+
+         Result.Current_Length := (if Low > High then 0 else High - Low + 1);
+         Result.Data (1 .. Result.Current_Length) :=
+           Source.Data (Low .. High);
       end return;
    end Super_Slice;
 
@@ -1517,10 +1517,10 @@ package body Ada.Strings.Wide_Wide_Superbounded is
         or else High > Source.Current_Length
       then
          raise Index_Error;
-      else
-         Target.Current_Length := High - Low + 1;
-         Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
       end if;
+
+      Target.Current_Length := (if Low > High then 0 else High - Low + 1);
+      Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
    end Super_Slice;
 
    ----------------

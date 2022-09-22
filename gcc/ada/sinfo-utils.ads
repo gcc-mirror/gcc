@@ -54,6 +54,12 @@ package Sinfo.Utils is
    -- Miscellaneous Tree Access Subprograms --
    -------------------------------------------
 
+   function First_Real_Statement -- ????
+     (Ignored : N_Handled_Sequence_Of_Statements_Id) return Node_Id is (Empty);
+   --  The First_Real_Statement field is going away, but it is referenced in
+   --  codepeer and gnat-llvm. This is a temporary version, always returning
+   --  Empty, to ease the transition.
+
    function End_Location (N : Node_Id) return Source_Ptr;
    --  N is an N_If_Statement or N_Case_Statement node, and this function
    --  returns the location of the IF token in the END IF sequence by

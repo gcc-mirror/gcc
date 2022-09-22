@@ -404,13 +404,19 @@
 #endif
 
 
+/* Define if your assembler supports eh_frame pcrel encoding. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT
+#endif
+
+
 /* Define if your assembler supports the R_PPC64_ENTRY relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ENTRY_MARKERS
 #endif
 
 
-/* Define if your assembler supports explicit relocations. */
+/* Define if your assembler supports explicit relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_EXPLICIT_RELOCS
 #endif
@@ -443,12 +449,6 @@
 /* Define true if the assembler supports '.long foo@GOTOFF'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_GOTOFF_IN_DATA
-#endif
-
-
-/* Define if your assembler supports the --gstabs option. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_GSTABS_DEBUG_FLAG
 #endif
 
 
@@ -737,12 +737,6 @@
    against hidden symbols. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
-#endif
-
-
-/* Define if your assembler supports .stabs. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_STABS_DIRECTIVE
 #endif
 
 
@@ -2139,6 +2133,12 @@
 /* Define if O_CLOEXEC supported by fcntl. */
 #ifndef USED_FOR_TARGET
 #undef HOST_HAS_O_CLOEXEC
+#endif
+
+
+/* Define if O_NONBLOCK supported by fcntl. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_O_NONBLOCK
 #endif
 
 

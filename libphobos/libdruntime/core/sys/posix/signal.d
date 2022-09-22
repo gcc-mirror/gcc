@@ -14,7 +14,7 @@ module core.sys.posix.signal;
 import core.sys.posix.config;
 public import core.stdc.signal;
 public import core.sys.posix.sys.types; // for pid_t
-//public import core.sys.posix.time;      // for timespec, now defined here
+public import core.sys.posix.time; // for timespec
 
 version (OSX)
     version = Darwin;
@@ -2798,83 +2798,6 @@ else version (CRuntime_UClibc)
     int siginterrupt(int, int);
     int sigpause(int);
     int sigrelse(int);
-}
-else
-{
-    static assert(false, "Unsupported platform");
-}
-
-//
-// Timer (TMR)
-//
-/*
-NOTE: This should actually be defined in core.sys.posix.time.
-      It is defined here instead to break a circular import.
-
-struct timespec
-{
-    time_t  tv_sec;
-    int     tv_nsec;
-}
-*/
-
-version (linux)
-{
-    struct timespec
-    {
-        time_t  tv_sec;
-        c_long  tv_nsec;
-    }
-}
-else version (Darwin)
-{
-    struct timespec
-    {
-        time_t  tv_sec;
-        c_long  tv_nsec;
-    }
-}
-else version (FreeBSD)
-{
-    struct timespec
-    {
-        time_t  tv_sec;
-        c_long  tv_nsec;
-    }
-}
-else version (NetBSD)
-{
-    struct timespec
-    {
-        time_t  tv_sec;
-        c_long  tv_nsec;
-    }
-}
-else version (OpenBSD)
-{
-    struct timespec
-    {
-        time_t  tv_sec;
-        c_long  tv_nsec;
-    }
-}
-else version (DragonFlyBSD)
-{
-    struct timespec
-    {
-        time_t  tv_sec;
-        c_long  tv_nsec;
-    }
-}
-else version (Solaris)
-{
-    struct timespec
-    {
-        time_t tv_sec;
-        c_long tv_nsec;
-    }
-
-    alias timespec timestruc_t;
 }
 else
 {

@@ -45,7 +45,7 @@ remainder.  @command{g++} accepts mostly the same options as @command{gcc}.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
-cpp(1), gcov(1), as(1), ld(1), gdb(1), dbx(1)
+cpp(1), gcov(1), as(1), ld(1), gdb(1)
 and the Info entries for @file{gcc}, @file{cpp}, @file{as},
 @file{ld}, @file{binutils} and @file{gdb}.
 @c man end
@@ -264,7 +264,7 @@ in the following sections.
 -Wreorder  -Wregister @gol
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
--Woverloaded-virtual  -Wno-pmf-conversions -Wsign-promo @gol
+-Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo @gol
 -Wsized-deallocation  -Wsuggest-final-methods @gol
 -Wsuggest-final-types  -Wsuggest-override  @gol
 -Wno-terminate  -Wuseless-cast  -Wno-vexing-parse  @gol
@@ -365,9 +365,9 @@ Objective-C and Objective-C++ Dialects}.
 -Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
--Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
--Wlogical-not-parentheses  -Wlogical-op  -Wlong-long @gol
--Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
+-Winvalid-pch  -Winvalid-utf8  -Wno-unicode  -Wjump-misses-init  @gol
+-Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op  @gol
+-Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
 -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-format-attribute @gol
@@ -414,6 +414,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wvector-operation-performance @gol
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than @gol
 -Wvolatile-register-var  -Wwrite-strings @gol
+-Wxor-used-as-pow @gol
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
@@ -446,6 +447,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
 -Wno-analyzer-exposure-through-output-file @gol
+-Wno-analyzer-exposure-through-uninit-copy @gol
 -Wno-analyzer-fd-access-mode-mismatch @gol
 -Wno-analyzer-fd-double-close @gol
 -Wno-analyzer-fd-leak @gol
@@ -453,12 +455,16 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-fd-use-without-check @gol
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
+-Wno-analyzer-imprecise-fp-arithmetic @gol
+-Wno-analyzer-jump-through-null @gol
 -Wno-analyzer-malloc-leak @gol
 -Wno-analyzer-mismatching-deallocation @gol
 -Wno-analyzer-null-argument @gol
 -Wno-analyzer-null-dereference @gol
+-Wno-analyzer-out-of-bounds @gol
 -Wno-analyzer-possible-null-argument @gol
 -Wno-analyzer-possible-null-dereference @gol
+-Wno-analyzer-putenv-of-auto-var @gol
 -Wno-analyzer-shift-count-negative @gol
 -Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
@@ -492,7 +498,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
 -gbtf -gctf  -gctf@var{level} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
--gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-gstrict-dwarf  -gno-strict-dwarf @gol
 -gas-loc-support  -gno-as-loc-support @gol
 -gas-locview-support  -gno-as-locview-support @gol
 -gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64 @gol
@@ -500,7 +506,7 @@ Objective-C and Objective-C++ Dialects}.
 -gvariable-location-views  -gno-variable-location-views @gol
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
 -ginline-points  -gno-inline-points @gol
--gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
+-gvms -gz@r{[}=@var{type}@r{]} @gol
 -gsplit-dwarf  -gdescribe-dies  -gno-describe-dies @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
@@ -875,12 +881,6 @@ Objective-C and Objective-C++ Dialects}.
 -melf  -maout  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
-@emph{CR16 Options}
-@gccoptlist{-mmac @gol
--mcr16cplus  -mcr16c @gol
--msim  -mint32  -mbit-ops
--mdata-model=@var{model}}
-
 @emph{C-SKY Options}
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
 -mbig-endian  -EB  -mlittle-endian  -EL @gol
@@ -1017,6 +1017,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float @gol
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
 -mmax-inline-memcpy-size=@var{n} @gol
+-mexplicit-relocs -mno-explicit-relocs @gol
+-mdirect-extern-access -mno-direct-extern-access @gol
 -mcmodel=@var{code-model}}
 
 @emph{M32R/D Options}
@@ -5045,7 +5047,7 @@ the vertical bars and the ``char *'' and ``long int'' text).
 @opindex fno-diagnostics-show-cwe
 @opindex fdiagnostics-show-cwe
 Diagnostic messages can optionally have an associated
-@url{https://cwe.mitre.org/index.html, CWE} identifier.
+@uref{https://cwe.mitre.org/index.html, CWE} identifier.
 GCC itself only provides such metadata for some of the @option{-fanalyzer}
 diagnostics.  GCC plugins may also provide diagnostics with such metadata.
 By default, if this information is present, it will be printed with
@@ -5839,6 +5841,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreorder   @gol
 -Wrestrict   @gol
 -Wreturn-type  @gol
+-Wself-move @r{(only for C++)}  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
 -Wsizeof-array-div @gol
@@ -6819,6 +6822,26 @@ of a declaration:
   // Declares a local variable called mymutex.
   std::unique_lock<std::mutex> (mymutex);
   // User meant std::unique_lock<std::mutex> lock (mymutex);
+@}
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
+
+@item -Wno-self-move @r{(C++ and Objective-C++ only)}
+@opindex Wself-move
+@opindex Wno-self-move
+This warning warns when a value is moved to itself with @code{std::move}.
+Such a @code{std::move} typically has no effect.
+
+@smallexample
+struct T @{
+@dots{}
+@};
+void fn()
+@{
+  T t;
+  @dots{}
+  t = std::move (t);
 @}
 @end smallexample
 
@@ -9549,6 +9572,19 @@ different size.
 Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
 the search path but cannot be used.
 
+@item -Winvalid-utf8
+@opindex Winvalid-utf8
+@opindex Wno-invalid-utf8
+Warn if an invalid UTF-8 character is found.
+This warning is on by default for C++23 if @option{-finput-charset=UTF-8}
+is used and turned into error with @option{-pedantic-errors}.
+
+@item -Wno-unicode
+@opindex Wunicode
+@opindex Wno-unicode
+Don't diagnose invalid forms of delimited or named escape sequences which are
+treated as separate tokens.  @option{Wunicode} is enabled by default.
+
 @item -Wlong-long
 @opindex Wlong-long
 @opindex Wno-long-long
@@ -9659,6 +9695,20 @@ modifier does not inhibit all optimizations that may eliminate reads
 and/or writes to register variables.  This warning is enabled by
 @option{-Wall}.
 
+@item -Wxor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wxor-used-as-pow
+@opindex Wno-xor-used-as-pow
+Warn about uses of @code{^}, the exclusive or operator, where it appears
+the user meant exponentiation.  Specifically, the warning occurs when the
+left-hand side is the decimal constant 2 or 10 and the right-hand side
+is also a decimal constant.
+
+In C and C++, @code{^} means exclusive or, whereas in some other languages
+(e.g. TeX and some versions of BASIC) it means exponentiation.
+
+This warning is enabled by default.  It can be silenced by converting one
+of the operands to hexadecimal.
+
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization
 @opindex Wno-disabled-optimization
@@ -9748,6 +9798,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-exposure-through-uninit-copy @gol
 -Wanalyzer-fd-access-mode-mismatch @gol
 -Wanalyzer-fd-double-close @gol
 -Wanalyzer-fd-leak @gol
@@ -9755,12 +9806,16 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-fd-use-without-check @gol
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-imprecise-fp-arithmetic @gol
+-Wanalyzer-jump-through-null @gol
 -Wanalyzer-malloc-leak @gol
 -Wanalyzer-mismatching-deallocation @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-out-of-bounds @gol
 -Wanalyzer-possible-null-argument @gol
 -Wanalyzer-possible-null-dereference @gol
+-Wanalyzer-putenv-of-auto-var @gol
 -Wanalyzer-shift-count-negative @gol
 -Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
@@ -9808,7 +9863,7 @@ This diagnostic warns for paths through the code in which a pointer to
 a buffer is assigned to point at a buffer with a size that is not a
 multiple of @code{sizeof (*pointer)}.
 
-See @url{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
+See @uref{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
 
 @item -Wno-analyzer-double-fclose
 @opindex Wanalyzer-double-fclose
@@ -9818,6 +9873,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a @code{FILE *}
 can have @code{fclose} called on it more than once.
+
+See @uref{https://cwe.mitre.org/data/definitions/1341.html, CWE-1341: Multiple Releases of Same Resource or Handle}.
 
 @item -Wno-analyzer-double-free
 @opindex Wanalyzer-double-free
@@ -9829,6 +9886,8 @@ This diagnostic warns for paths through the code in which a pointer
 can have a deallocator called on it more than once, either @code{free},
 or a deallocator referenced by attribute @code{malloc}.
 
+See @uref{https://cwe.mitre.org/data/definitions/415.html, CWE-415: Double Free}.
+
 @item -Wno-analyzer-exposure-through-output-file
 @opindex Wanalyzer-exposure-through-output-file
 @opindex Wno-analyzer-exposure-through-output-file
@@ -9839,6 +9898,22 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 security-sensitive value is written to an output file
 (such as writing a password to a log file).
+
+See @uref{https://cwe.mitre.org/data/definitions/532.html, CWE-532: Information Exposure Through Log Files}.
+
+@item Wanalyzer-exposure-through-uninit-copy
+@opindex Wanalyzer-exposure-through-uninit-copy
+@opindex Wno-analyzer-exposure-through-uninit-copy
+This warning requires both @option{-fanalyzer} and the use of a plugin
+to specify a function that copies across a ``trust boundary''.  Use
+@option{-Wno-analyzer-exposure-through-uninit-copy} to disable it.
+
+This diagnostic warns for ``infoleaks'' - paths through the code in which
+uninitialized values are copied across a security boundary
+(such as code within an OS kernel that copies a partially-initialized
+struct on the stack to user space).
+
+See @uref{https://cwe.mitre.org/data/definitions/200.html, CWE-200: Exposure of Sensitive Information to an Unauthorized Actor}.
 
 @item -Wno-analyzer-fd-access-mode-mismatch
 @opindex Wanalyzer-fd-access-mode-mismatch
@@ -9866,6 +9941,8 @@ to disable it.
 This diagnostic warns for paths through code in which a
 file descriptor can be closed more than once.
 
+See @uref{https://cwe.mitre.org/data/definitions/1341.html, CWE-1341: Multiple Releases of Same Resource or Handle}.
+
 @item -Wno-analyzer-fd-leak
 @opindex Wanalyzer-fd-leak
 @opindex Wno-analyzer-fd-leak
@@ -9875,6 +9952,8 @@ to disable it.
 
 This diagnostic warns for paths through code in which an
 open file descriptor is leaked.
+
+See @uref{https://cwe.mitre.org/data/definitions/775.html, CWE-775: Missing Release of File Descriptor or Handle after Effective Lifetime}.
 
 @item -Wno-analyzer-fd-use-after-close
 @opindex Wanalyzer-fd-use-after-close
@@ -9916,6 +9995,8 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 @code{<stdio.h>} @code{FILE *} stream object is leaked.
 
+See @uref{https://cwe.mitre.org/data/definitions/775.html, CWE-775: Missing Release of File Descriptor or Handle after Effective Lifetime}.
+
 @item -Wno-analyzer-free-of-non-heap
 @opindex Wanalyzer-free-of-non-heap
 @opindex Wno-analyzer-free-of-non-heap
@@ -9925,6 +10006,30 @@ to disable it.
 
 This diagnostic warns for paths through the code in which @code{free}
 is called on a non-heap pointer (e.g. an on-stack buffer, or a global).
+
+See @uref{https://cwe.mitre.org/data/definitions/590.html, CWE-590: Free of Memory not on the Heap}.
+
+@item -Wno-analyzer-imprecise-fp-arithmetic
+@opindex Wanalyzer-imprecise-fp-arithmetic
+@opindex Wno-analyzer-imprecise-fp-arithmetic
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-imprecise-fp-arithmetic}
+to disable it.
+
+This diagnostic warns for paths through the code in which floating-point
+arithmetic is used in locations where precise computation is needed.  This
+diagnostic only warns on use of floating-point operands inside the
+calculation of an allocation size at the moment.
+
+@item -Wno-analyzer-jump-through-null
+@opindex Wanalyzer-jump-through-null
+@opindex Wno-analyzer-jump-through-null
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-jump-through-null}
+to disable it.
+
+This diagnostic warns for paths through the code in which a @code{NULL}
+function pointer is called.
 
 @item -Wno-analyzer-malloc-leak
 @opindex Wanalyzer-malloc-leak
@@ -9936,6 +10041,8 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 pointer allocated via an allocator is leaked: either @code{malloc},
 or a function marked with attribute @code{malloc}.
+
+See @uref{https://cwe.mitre.org/data/definitions/401.html, CWE-401: Missing Release of Memory after Effective Lifetime}.
 
 @item -Wno-analyzer-mismatching-deallocation
 @opindex Wanalyzer-mismatching-deallocation
@@ -9951,6 +10058,23 @@ will warn about mismatches between @code{free}, scalar @code{delete}
 and vector @code{delete[]}, and those marked as allocator/deallocator
 pairs using attribute @code{malloc}.
 
+See @uref{https://cwe.mitre.org/data/definitions/762.html, CWE-762: Mismatched Memory Management Routines}.
+
+@item -Wno-analyzer-out-of-bounds
+@opindex Wanalyzer-out-of-bounds
+@opindex Wno-analyzer-out-of-bounds
+This warning requires @option{-fanalyzer} to enable it; use
+@option{-Wno-analyzer-out-of-bounds} to disable it.
+
+This diagnostic warns for path through the code in which a buffer is
+definitely read or written out-of-bounds.  The diagnostic applies for
+cases where the analyzer is able to determine a constant offset and for
+accesses past the end of a buffer, also a constant capacity.  Further,
+the diagnostic does limited checking for accesses past the end when the
+offset as well as the capacity is symbolic.
+
+See @uref{https://cwe.mitre.org/data/definitions/119.html, CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer}.
+
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
 @opindex Wno-analyzer-possible-null-argument
@@ -9962,6 +10086,8 @@ possibly-NULL value is passed to a function argument marked
 with @code{__attribute__((nonnull))} as requiring a non-NULL
 value.
 
+See @uref{https://cwe.mitre.org/data/definitions/690.html, CWE-690: Unchecked Return Value to NULL Pointer Dereference}.
+
 @item -Wno-analyzer-possible-null-dereference
 @opindex Wanalyzer-possible-null-dereference
 @opindex Wno-analyzer-possible-null-dereference
@@ -9970,6 +10096,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a
 possibly-NULL value is dereferenced.
+
+See @uref{https://cwe.mitre.org/data/definitions/690.html, CWE-690: Unchecked Return Value to NULL Pointer Dereference}.
 
 @item -Wno-analyzer-null-argument
 @opindex Wanalyzer-null-argument
@@ -9982,6 +10110,8 @@ value known to be NULL is passed to a function argument marked
 with @code{__attribute__((nonnull))} as requiring a non-NULL
 value.
 
+See @uref{https://cwe.mitre.org/data/definitions/476.html, CWE-476: NULL Pointer Dereference}.
+
 @item -Wno-analyzer-null-dereference
 @opindex Wanalyzer-null-dereference
 @opindex Wno-analyzer-null-dereference
@@ -9990,6 +10120,20 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a
 value known to be NULL is dereferenced.
+
+See @uref{https://cwe.mitre.org/data/definitions/476.html, CWE-476: NULL Pointer Dereference}.
+
+@item -Wno-analyzer-putenv-of-auto-var
+@opindex Wanalyzer-putenv-of-auto-var
+@opindex Wno-analyzer-putenv-of-auto-var
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-putenv-of-auto-var} to disable it.
+
+This diagnostic warns for paths through the code in which a
+call to @code{putenv} is passed a pointer to an automatic variable
+or an on-stack buffer.
+
+See @uref{https://wiki.sei.cmu.edu/confluence/x/6NYxBQ, POS34-C. Do not call putenv() with a pointer to an automatic variable as the argument}.
 
 @item -Wno-analyzer-shift-count-negative
 @opindex Wanalyzer-shift-count-negative
@@ -10049,7 +10193,7 @@ of an allocation without being sanitized, so that an attacker could
 inject an excessively large allocation and potentially cause a denial
 of service attack.
 
-See @url{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
+See @uref{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
 
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
@@ -10063,7 +10207,7 @@ that could be under an attacker's control is used as the index
 of an array access without being sanitized, so that an attacker
 could inject an out-of-bounds access.
 
-See @url{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
 
 @item -Wno-analyzer-tainted-divisor
 @opindex Wanalyzer-tainted-divisor
@@ -10077,6 +10221,8 @@ that could be under an attacker's control is used as the divisor
 in a division or modulus operation without being sanitized, so that
 an attacker could inject a division-by-zero.
 
+See @uref{https://cwe.mitre.org/data/definitions/369.html, CWE-369: Divide By Zero}.
+
 @item -Wno-analyzer-tainted-offset
 @opindex Wanalyzer-tainted-offset
 @opindex Wno-analyzer-tainted-offset
@@ -10089,7 +10235,7 @@ that could be under an attacker's control is used as a pointer offset
 without being sanitized, so that an attacker could inject an out-of-bounds
 access.
 
-See @url{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-of-range Pointer Offset}.
+See @uref{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-of-range Pointer Offset}.
 
 @item -Wno-analyzer-tainted-size
 @opindex Wanalyzer-tainted-size
@@ -10103,6 +10249,8 @@ that could be under an attacker's control is used as the size of
 an operation such as @code{memset} without being sanitized, so that an
 attacker could inject an out-of-bounds access.
 
+See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
 @item -Wno-analyzer-unsafe-call-within-signal-handler
 @opindex Wanalyzer-unsafe-call-within-signal-handler
 @opindex Wno-analyzer-unsafe-call-within-signal-handler
@@ -10113,6 +10261,8 @@ This diagnostic warns for paths through the code in which a
 function known to be async-signal-unsafe (such as @code{fprintf}) is
 called from a signal handler.
 
+See @uref{https://cwe.mitre.org/data/definitions/479.html, CWE-479: Signal Handler Use of a Non-reentrant Function}.
+
 @item -Wno-analyzer-use-after-free
 @opindex Wanalyzer-use-after-free
 @opindex Wno-analyzer-use-after-free
@@ -10122,6 +10272,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 This diagnostic warns for paths through the code in which a
 pointer is used after a deallocator is called on it: either @code{free},
 or a deallocator referenced by attribute @code{malloc}.
+
+See @uref{https://cwe.mitre.org/data/definitions/416.html, CWE-416: Use After Free}.
 
 @item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -10145,6 +10297,8 @@ the analyzer detects an attempt to use @code{va_arg} to extract a value
 passed to a variadic call, but uses a type that does not match that of
 the expression passed to the call.
 
+See @uref{https://cwe.mitre.org/data/definitions/686.html, CWE-686: Function Call With Incorrect Argument Type}.
+
 @item -Wno-analyzer-va-list-exhausted
 @opindex Wanalyzer-va-list-exhausted
 @opindex Wno-analyzer-va-list-exhausted
@@ -10156,6 +10310,8 @@ This diagnostic warns for interprocedural paths through the code for which
 the analyzer detects an attempt to use @code{va_arg} to access the next
 value passed to a variadic call, but all of the values in the
 @code{va_list} have already been consumed.
+
+See @uref{https://cwe.mitre.org/data/definitions/685.html, CWE-685: Function Call With Incorrect Number of Arguments}.
 
 @item -Wno-analyzer-va-list-leak
 @opindex Wanalyzer-va-list-leak
@@ -10213,7 +10369,90 @@ This warning requires @option{-fanalyzer}, which enables it; use
 This diagnostic warns for paths through the code in which an uninitialized
 value is used.
 
+See @uref{https://cwe.mitre.org/data/definitions/457.html, CWE-457: Use of Uninitialized Variable}.
+
 @end table
+
+The analyzer has hardcoded knowledge about the behavior of the following
+memory-management functions:
+
+@itemize @bullet
+@item @code{alloca}
+@item The built-in functions @code{__builtin_alloc},
+@code{__builtin_alloc_with_align}, @item @code{__builtin_calloc},
+@code{__builtin_free}, @code{__builtin_malloc}, @code{__builtin_memcpy},
+@code{__builtin_memcpy_chk}, @code{__builtin_memset},
+@code{__builtin_memset_chk}, @code{__builtin_realloc},
+@code{__builtin_stack_restore}, and @code{__builtin_stack_save}
+@item @code{calloc}
+@item @code{free}
+@item @code{malloc}
+@item @code{memset}
+@item @code{operator delete}
+@item @code{operator delete []}
+@item @code{operator new}
+@item @code{operator new []}
+@item @code{realloc}
+@item @code{strdup}
+@item @code{strndup}
+@end itemize
+
+of the following functions for working with file descriptors:
+
+@itemize @bullet
+@item @code{open}
+@item @code{close}
+@item @code{creat}
+@item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{read}
+@item @code{write}
+@end itemize
+
+of the following functions for working with @code{<stdio.h>} streams:
+@itemize @bullet
+@item The built-in functions @code{__builtin_fprintf},
+@code{__builtin_fprintf_unlocked}, @code{__builtin_fputc},
+@code{__builtin_fputc_unlocked}, @code{__builtin_fputs},
+@code{__builtin_fputs_unlocked}, @code{__builtin_fwrite},
+@code{__builtin_fwrite_unlocked}, @code{__builtin_printf},
+@code{__builtin_printf_unlocked}, @code{__builtin_putc},
+@code{__builtin_putchar}, @code{__builtin_putchar_unlocked},
+@code{__builtin_putc_unlocked}, @code{__builtin_puts},
+@code{__builtin_puts_unlocked}, @code{__builtin_vfprintf}, and
+@code{__builtin_vprintf}
+@item @code{fopen}
+@item @code{fclose}
+@item @code{fgets}
+@item @code{fgets_unlocked}
+@item @code{fread}
+@item @code{getchar}
+@item @code{fprintf}
+@item @code{printf}
+@item @code{fwrite}
+@end itemize
+
+and of the following functions:
+
+@itemize @bullet
+@item The built-in functions @code{__builtin_expect},
+@code{__builtin_expect_with_probability}, @code{__builtin_strchr},
+@code{__builtin_strcpy}, @code{__builtin_strcpy_chk},
+@code{__builtin_strlen}, @code{__builtin_va_copy}, and
+@code{__builtin_va_start}
+@item The GNU extensions @code{error} and @code{error_at_line}
+@item @code{getpass}
+@item @code{longjmp}
+@item @code{putenv}
+@item @code{setjmp}
+@item @code{siglongjmp}
+@item @code{signal}
+@item @code{sigsetjmp}
+@item @code{strchr}
+@item @code{strlen}
+@end itemize
+
+In addition, various functions with an @code{__analyzer_} prefix have
+special meaning to the analyzer, described in the GCC Internals manual.
 
 Pertinent parameters for controlling the exploration are:
 @option{--param analyzer-bb-explosion-factor=@var{value}},
@@ -10508,10 +10747,8 @@ information.
 On most systems that use stabs format, @option{-g} enables use of extra
 debugging information that only GDB can use; this extra information
 makes debugging work better in GDB but probably makes other debuggers
-crash or
-refuse to read the program.  If you want to control for certain whether
-to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
-@option{-gxcoff+}, @option{-gxcoff}, or @option{-gvms} (see below).
+crash or refuse to read the program.  If you want to control for certain whether
+to generate the extra information, use @option{-gvms} (see below).
 
 @item -ggdb
 @opindex ggdb
@@ -10568,34 +10805,6 @@ information, but does not include type information.
 Level 2 produces type information for entities (functions, data objects etc.)
 at file-scope or global-scope only.
 
-@item -gstabs
-@opindex gstabs
-Produce debugging information in stabs format (if that is supported),
-without GDB extensions.  This is the format used by DBX on most BSD
-systems.  On MIPS, Alpha and System V Release 4 systems this option
-produces stabs debugging output that is not understood by DBX@.
-On System V Release 4 systems this option requires the GNU assembler.
-
-@item -gstabs+
-@opindex gstabs+
-Produce debugging information in stabs format (if that is supported),
-using GNU extensions understood only by the GNU debugger (GDB)@.  The
-use of these extensions is likely to make other debuggers crash or
-refuse to read the program.
-
-@item -gxcoff
-@opindex gxcoff
-Produce debugging information in XCOFF format (if that is supported).
-This is the format used by the DBX debugger on IBM RS/6000 systems.
-
-@item -gxcoff+
-@opindex gxcoff+
-Produce debugging information in XCOFF format (if that is supported),
-using GNU extensions understood only by the GNU debugger (GDB)@.  The
-use of these extensions is likely to make other debuggers crash or
-refuse to read the program, and may cause assemblers other than the GNU
-assembler (GAS) to fail with an error.
-
 @item -gvms
 @opindex gvms
 Produce debugging information in Alpha/VMS debug format (if that is
@@ -10603,8 +10812,6 @@ supported).  This is the format used by DEBUG on Alpha/VMS systems.
 
 @item -g@var{level}
 @itemx -ggdb@var{level}
-@itemx -gstabs@var{level}
-@itemx -gxcoff@var{level}
 @itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
 much information.  The default level is 2.
@@ -10870,12 +11077,11 @@ location views are enabled.
 Produce compressed debug sections in DWARF format, if that is supported.
 If @var{type} is not given, the default type depends on the capabilities
 of the assembler and linker used.  @var{type} may be one of
-@samp{none} (don't compress debug sections), @samp{zlib} (use zlib
-compression in ELF gABI format), or @samp{zlib-gnu} (use zlib
-compression in traditional GNU format).  If the linker doesn't support
-writing compressed debug sections, the option is rejected.  Otherwise,
-if the assembler does not support them, @option{-gz} is silently ignored
-when producing object files.
+@samp{none} (don't compress debug sections), or @samp{zlib} (use zlib
+compression in ELF gABI format).  If the linker doesn't support writing
+compressed debug sections, the option is rejected.  Otherwise, if the
+assembler does not support them, @option{-gz} is silently ignored when
+producing object files.
 
 @item -femit-struct-debug-baseonly
 @opindex femit-struct-debug-baseonly
@@ -11679,7 +11885,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
+defaults to off.  On AVR and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.
@@ -13674,6 +13880,11 @@ math functions.
 
 The default is @option{-ftrapping-math}.
 
+Future versions of GCC may provide finer control of this setting
+using C99's @code{FENV_ACCESS} pragma.  This command-line option
+will be used along with @option{-frounding-math} to specify the
+default state for @code{FENV_ACCESS}.
+
 @item -frounding-math
 @opindex frounding-math
 Disable transformations and optimizations that assume default floating-point
@@ -13692,7 +13903,8 @@ This option is experimental and does not currently guarantee to
 disable all GCC optimizations that are affected by rounding mode.
 Future versions of GCC may provide finer control of this setting
 using C99's @code{FENV_ACCESS} pragma.  This command-line option
-will be used to specify the default state for @code{FENV_ACCESS}.
+will be used along with @option{-ftrapping-math} to specify the
+default state for @code{FENV_ACCESS}.
 
 @item -fsignaling-nans
 @opindex fsignaling-nans
@@ -14421,6 +14633,10 @@ Complex expressions slow the analyzer.
 Maximum number of arguments in a PHI supported by TREE if conversion
 unless the loop is marked with simd pragma.
 
+@item vect-max-layout-candidates
+The maximum number of possible vector layouts (such as permutations)
+to consider when optimizing to-be-vectorized code.
+
 @item vect-max-version-for-alignment-checks
 The maximum number of run-time checks that can be performed when
 doing loop versioning for alignment in the vectorizer.
@@ -14681,6 +14897,13 @@ optimizing.
 @item max-jump-thread-duplication-stmts
 Maximum number of statements allowed in a block that needs to be
 duplicated when threading jumps.
+
+@item max-jump-thread-paths
+The maximum number of paths to consider when searching for jump threading
+opportunities.  When arriving at a block, incoming edges are only considered
+if the number of paths to be searched so far multiplied by the number of
+incoming edges does not exhaust the specified maximum number of paths to
+consider.
 
 @item max-fields-for-field-sensitive
 Maximum number of fields in a structure treated in
@@ -15182,9 +15405,6 @@ Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
 @item max-fsm-thread-path-insns
 Maximum number of instructions to copy when duplicating blocks on a
 finite state automaton jump thread path.
-
-@item max-fsm-thread-length
-Maximum number of basic blocks on a jump thread path.
 
 @item threader-debug
 threader-debug=[none|all] Enables verbose dumping of the threader solver.
@@ -19216,7 +19436,6 @@ platform.
 * Blackfin Options::
 * C6X Options::
 * CRIS Options::
-* CR16 Options::
 * C-SKY Options::
 * Darwin Options::
 * DEC Alpha Options::
@@ -21466,14 +21685,25 @@ The following extension options are common to the listed CPUs:
 
 @table @samp
 @item +nodsp
-Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}.
+Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}
+and @samp{cortex-m55}. Also disable the M-Profile Vector Extension (MVE)
+integer and single precision floating-point instructions on @samp{cortex-m55}.
+
+@item +nomve
+Disable the M-Profile Vector Extension (MVE) integer and single precision
+floating-point instructions on @samp{cortex-m55}.
+
+@item +nomve.fp
+Disable the M-Profile Vector Extension (MVE) single precision floating-point
+instructions on @samp{cortex-m55}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
 @samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
 @samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
-@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33} and @samp{cortex-m35p}.
+@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p}
+and @samp{cortex-m55}.
 Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
@@ -22784,46 +23014,6 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
-@end table
-
-@node CR16 Options
-@subsection CR16 Options
-@cindex CR16 Options
-
-These options are defined specifically for the CR16 ports.
-
-@table @gcctabopt
-
-@item -mmac
-@opindex mmac
-Enable the use of multiply-accumulate instructions. Disabled by default.
-
-@item -mcr16cplus
-@itemx -mcr16c
-@opindex mcr16cplus
-@opindex mcr16c
-Generate code for CR16C or CR16C+ architecture. CR16C+ architecture 
-is default.
-
-@item -msim
-@opindex msim
-Links the library libsim.a which is in compatible with simulator. Applicable
-to ELF compiler only.
-
-@item -mint32
-@opindex mint32
-Choose integer type as 32-bit wide.
-
-@item -mbit-ops
-@opindex mbit-ops
-Generates @code{sbit}/@code{cbit} instructions for bit manipulations.
-
-@item -mdata-model=@var{model}
-@opindex mdata-model
-Choose a data model. The choices for @var{model} are @samp{near},
-@samp{far} or @samp{medium}. @samp{medium} is default.
-However, @samp{far} is not valid with @option{-mcr16c}, as the
-CR16C architecture does not support the far data model.
 @end table
 
 @node C-SKY Options
@@ -24893,50 +25083,22 @@ less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
 @item -mcmodel=@var{code-model}
 Set the code model to one of:
 @table @samp
-@item tiny-static
-@itemize @bullet
-@item
-local symbol and global strong symbol: The data section must be within +/-2MiB addressing space.
-The text section must be within +/-128MiB addressing space.
-@item
-global weak symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
-
-@item tiny
-@itemize @bullet
-@item
-local symbol: The data section must be within +/-2MiB addressing space.
-The text section must be within +/-128MiB
-addressing space.
-@item
-global symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
+@item tiny-static (Not implemented yet)
+@item tiny (Not implemented yet)
 
 @item normal
-@itemize @bullet
-@item
-local symbol: The data section must be within +/-2GiB addressing space.
-The text section must be within +/-128MiB addressing space.
-@item
-global symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
+The text segment must be within 128MB addressing space.  The data segment must
+be within 2GB addressing space.
 
-@item large
-@itemize @bullet
-@item
-local symbol: The data section must be within +/-2GiB addressing space.
-The text section must be within +/-128GiB addressing space.
-@item
-global symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
+@item medium
+The text segment and data segment must be within 2GB addressing space.
 
-@item extreme(Not implemented yet)
-@itemize @bullet
-@item
-local symbol: The data and text section must be within +/-8EiB addressing space.
-@item
-global symbol: The data got table must be within +/-8EiB addressing space.
-@end itemize
+@item large (Not implemented yet)
+
+@item extreme
+This mode does not limit the size of the code segment and data segment.
+The @option{-mcmodel=extreme} option is incompatible with @option{-fplt} and
+@option{-mno-explicit-relocs}.
 @end table
 The default code model is @code{normal}.
 
@@ -24952,6 +25114,20 @@ GCC build-time by detecting corresponding assembler support:
 @code{-mno-explicit-relocs} otherwise.  This option is mostly useful for
 debugging, or interoperation with assemblers different from the build-time
 one.
+
+@item -mdirect-extern-access
+@itemx -mno-direct-extern-access
+@opindex mdirect-extern-access
+Do not use or use GOT to access external symbols.  The default is
+@option{-mno-direct-extern-access}: GOT is used for external symbols with
+default visibility, but not used for other external symbols.
+
+With @option{-mdirect-extern-access}, GOT is not used and all external
+symbols are PC-relatively addressed.  It is @strong{only} suitable for
+environments where no dynamic link is performed, like firmwares, OS
+kernels, executables linked with @option{-static} or @option{-static-pie}.
+@option{-mdirect-extern-access} is not compatible with @option{-fPIC} or
+@option{-fpic}.
 @end table
 
 @node M32C Options
@@ -29705,6 +29881,13 @@ Generate (do not generate) code that will run in privileged state.
 @opindex no-block-ops-unaligned-vsx
 Generate (do not generate) unaligned vsx loads and stores for
 inline expansion of @code{memcpy} and @code{memmove}.
+
+@item --param rs6000-vect-unroll-limit=
+The vectorizer will check with target information to determine whether it
+would be beneficial to unroll the main vectorized loop and by how much.  This
+parameter sets the upper bound of how much the vectorizer will unroll the main
+loop.  The default value is four.
+
 @end table
 
 @node RX Options

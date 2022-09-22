@@ -175,7 +175,7 @@ void test01()
   sz03 = str02.size();
   sz04 = str02.length();
   VERIFY( sz03 == sz04 );
-  str02.c_str();
+  (void) str02.c_str();
   sz03 = str02.size();
   sz04 = str02.length();
   VERIFY( sz03 == sz04 );

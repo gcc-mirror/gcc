@@ -1093,8 +1093,7 @@ for (i = 0; i < n_target_array; i++) {
 	name = var_target_array[i]
 	size = var_target_array_size[i]
 	type = var_target_array_type[i]
-	print "  if (ptr1->" name" != ptr2->" name "";
-	print "      || memcmp (ptr1->" name ", ptr2->" name ", " size " * sizeof(" type ")))"
+	print "  if (memcmp (ptr1->" name ", ptr2->" name ", " size " * sizeof(" type ")))"
 	print "    return false;";
 }
 for (i = 0; i < n_target_val; i++) {

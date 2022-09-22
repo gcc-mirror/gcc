@@ -107,6 +107,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr auto
     uses_allocator_construction_args(const _Alloc&, pair<_Up, _Vp>&&) noexcept;
 
+#if __cplusplus > 202002L
+  template<_Std_pair _Tp, typename _Alloc, typename _Up, typename _Vp>
+    constexpr auto
+    uses_allocator_construction_args(const _Alloc&,
+				     pair<_Up, _Vp>&) noexcept;
+
+  template<_Std_pair _Tp, typename _Alloc, typename _Up, typename _Vp>
+    constexpr auto
+    uses_allocator_construction_args(const _Alloc&, const pair<_Up, _Vp>&&) noexcept;
+#endif // C++23
+
   template<_Std_pair _Tp, typename _Alloc, typename _Tuple1, typename _Tuple2>
     constexpr auto
     uses_allocator_construction_args(const _Alloc& __a, piecewise_construct_t,
@@ -180,6 +191,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::uses_allocator_construction_args<_Tp2>(__a,
 	    std::move(__pr).second));
     }
+
+#if __cplusplus > 202002L
+  template<_Std_pair _Tp, typename _Alloc, typename _Up, typename _Vp>
+    constexpr auto
+    uses_allocator_construction_args(const _Alloc& __a,
+				     pair<_Up, _Vp>& __pr) noexcept
+    {
+      using _Tp1 = typename _Tp::first_type;
+      using _Tp2 = typename _Tp::second_type;
+
+      return std::make_tuple(piecewise_construct,
+	  std::uses_allocator_construction_args<_Tp1>(__a, __pr.first),
+	  std::uses_allocator_construction_args<_Tp2>(__a, __pr.second));
+    }
+
+  template<_Std_pair _Tp, typename _Alloc, typename _Up, typename _Vp>
+    constexpr auto
+    uses_allocator_construction_args(const _Alloc& __a,
+				     const pair<_Up, _Vp>&& __pr) noexcept
+    {
+      using _Tp1 = typename _Tp::first_type;
+      using _Tp2 = typename _Tp::second_type;
+
+      return std::make_tuple(piecewise_construct,
+	  std::uses_allocator_construction_args<_Tp1>(__a,
+	    std::move(__pr).first),
+	  std::uses_allocator_construction_args<_Tp2>(__a,
+	    std::move(__pr).second));
+    }
+#endif // C++23
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     constexpr _Tp

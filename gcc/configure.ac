@@ -1707,6 +1707,15 @@ if test $ac_cv_o_cloexec = yes; then
   [Define if O_CLOEXEC supported by fcntl.])
 fi
 
+# Check if O_NONBLOCK is defined by fcntl
+AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_DECL(O_NONBLOCK,,,[#include <fcntl.h>])
+if test $ac_cv_have_decl_O_NONBLOCK = yes; then
+  AC_DEFINE(HOST_HAS_O_NONBLOCK, 1,
+  [Define if O_NONBLOCK supported by fcntl.])
+fi
+
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some
@@ -1793,19 +1802,6 @@ AC_ARG_ENABLE(sjlj-exceptions,
 [AS_HELP_STRING([--enable-sjlj-exceptions],
                 [arrange to use setjmp/longjmp exception handling])],
 [case $target in
-  *-*-hpux10*)
-    if test $enableval != yes; then
-      AC_MSG_WARN([dwarf2 exceptions not supported, sjlj exceptions forced])
-      enableval=yes
-    fi
-    ;;
-esac
-force_sjlj_exceptions=yes],
-[case $target in
-  *-*-hpux10*)
-    force_sjlj_exceptions=yes
-    enableval=yes
-    ;;
   lm32*-*-*)
      force_sjlj_exceptions=yes
      enableval=yes
@@ -2113,7 +2109,6 @@ AC_SUBST(HAVE_AUTO_BUILD)
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
-tm_d_file="${tm_d_file} defaults.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
@@ -2357,13 +2352,9 @@ for f in $tm_p_file; do
 done
 
 tm_d_file_list=
-tm_d_include_list="options.h insn-constants.h"
+tm_d_include_list=
 for f in $tm_d_file; do
   case $f in
-    defaults.h )
-       tm_d_file_list="${tm_d_file_list} \$(srcdir)/$f"
-       tm_d_include_list="${tm_d_include_list} $f"
-       ;;
     * )
        tm_d_file_list="${tm_d_file_list} \$(srcdir)/config/$f"
        tm_d_include_list="${tm_d_include_list} config/$f"
@@ -2499,6 +2490,12 @@ then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS-$@) $(CFLAGS_FOR_BUILD)'
     BUILD_CXXFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS_FOR_BUILD)'
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
+fi
+
+
+if test x$enable_fixincludes = xno;
+then
+    STMP_FIXINC=''
 fi
 
 # Expand extra_headers to include complete path.
@@ -3509,11 +3506,6 @@ esac
 AC_DEFINE_UNQUOTED(HAVE_LD_ALIGNED_SHF_MERGE,
   [`if test $gcc_cv_ld_aligned_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your linker supports the SHF_MERGE flag with section alignment > 1.])
-
-gcc_GAS_CHECK_FEATURE([stabs directive], gcc_cv_as_stabs_directive,,
-[.stabs "gcc2_compiled.",60,0,0,0],,
-[AC_DEFINE(HAVE_AS_STABS_DIRECTIVE, 1,
-  [Define if your assembler supports .stabs.])])
 
 gcc_GAS_CHECK_FEATURE([COMDAT group support (GNU as)],
  gcc_cv_as_comdat_group,
@@ -5302,6 +5294,14 @@ x:
       [a:pcalau12i $t0,%pc_hi20(a)],,
       [AC_DEFINE(HAVE_AS_EXPLICIT_RELOCS, 1,
 	  [Define if your assembler supports explicit relocation.])])
+    gcc_GAS_CHECK_FEATURE([eh_frame pcrel encoding support],
+      gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support,,
+      [.cfi_startproc
+       .cfi_personality 0x9b,a
+       .cfi_lsda 0x1b,b
+       .cfi_endproc],,
+      [AC_DEFINE(HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT, 1,
+	  [Define if your assembler supports eh_frame pcrel encoding.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
@@ -5718,12 +5718,6 @@ foo:
    fi
  fi
 
- gcc_GAS_CHECK_FEATURE([--gstabs option],
-  gcc_cv_as_gstabs_flag,
-  [--gstabs], [$insn],,
-  [AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
-[Define if your assembler supports the --gstabs option.])])
-
  gcc_GAS_CHECK_FEATURE([--debug-prefix-map option],
   gcc_cv_as_debug_prefix_map_flag,
   [--debug-prefix-map /a=/b], [$insn],,
@@ -5738,16 +5732,9 @@ gcc_GAS_CHECK_FEATURE([compressed debug sections],
    if $gcc_cv_as --compress-debug-sections -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null
    then
      gcc_cv_as_compress_debug=0
-   # Since binutils 2.26, gas supports --compress-debug-sections=type,
+   # Since binutils 2.26, gas supports --compress-debug-sections=zlib,
    # defaulting to the ELF gABI format.
-   elif $gcc_cv_as --compress-debug-sections=zlib-gnu -o conftest.o conftest.s > /dev/null 2>&1
-   then
-     gcc_cv_as_compress_debug=2
-     gcc_cv_as_compress_debug_option="--compress-debug-sections"
-     gcc_cv_as_no_compress_debug_option="--nocompress-debug-sections"
-   # Before binutils 2.26, gas only supported --compress-debug-options and
-   # emitted the traditional GNU format.
-   elif $gcc_cv_as --compress-debug-sections -o conftest.o conftest.s > /dev/null 2>&1
+   elif $gcc_cv_as --compress-debug-sections=zlib -o conftest.o conftest.s > /dev/null 2>&1
    then
      gcc_cv_as_compress_debug=1
      gcc_cv_as_compress_debug_option="--compress-debug-sections"
@@ -6136,49 +6123,17 @@ fi
 AC_MSG_RESULT($gcc_cv_ld_eh_gc_sections_bug)
 
 AC_MSG_CHECKING(linker for compressed debug sections)
-# gold/gld support compressed debug sections since binutils 2.19/2.21
-# In binutils 2.26, gld gained support for the ELF gABI format.
-if test $in_tree_ld = yes ; then
-  gcc_cv_ld_compress_debug=0
-  if test $ld_is_mold = yes; then
-    gcc_cv_ld_compress_debug=3
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes && test $ld_is_gold = yes; then
-    gcc_cv_ld_compress_debug=2
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 26 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes && test $ld_is_gold = no; then
-    gcc_cv_ld_compress_debug=3
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes; then
+# GNU ld/gold support --compressed-debug-sections=zlib since binutils 2.26.
+if $gcc_cv_ld --help 2>&1 | grep -- '--compress-debug-sections.*\<zlib-gabi\>' > /dev/null; then
     gcc_cv_ld_compress_debug=1
-  fi
-elif echo "$ld_ver" | grep GNU > /dev/null; then
-  if test $ld_is_mold = yes; then
-    gcc_cv_ld_compress_debug=3
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$ld_vers_major" -lt 2 \
-     || test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 21; then
-    gcc_cv_ld_compress_debug=0
-  elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
-    gcc_cv_ld_compress_debug=1
-  else
-    gcc_cv_ld_compress_debug=3
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  fi
-  if test $ld_is_gold = yes; then
-    gcc_cv_ld_compress_debug=2
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  fi
 else
 changequote(,)dnl
   case "${target}" in
     *-*-solaris2*)
       # Introduced in Solaris 11.2.
       if $gcc_cv_ld --help 2>&1 | grep -- '-z compress-sections' > /dev/null; then
-        gcc_cv_ld_compress_debug=3
+        gcc_cv_ld_compress_debug=1
         gcc_cv_ld_compress_debug_option="-z compress-sections"
       else
         gcc_cv_ld_compress_debug=0

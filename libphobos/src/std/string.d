@@ -6884,7 +6884,7 @@ if (isSomeString!S)
 
     if (inword)
     {
-        if (col + 1 + (s.length - wordstart) >= columns)
+        if (col + 1 + (s.length - wordstart) > columns)
         {
             result ~= '\n';
             result ~= indent;
@@ -6927,6 +6927,13 @@ if (isSomeString!S)
     assert(wrap("abcd", 3) == "\nabcd\n");
     assert(wrap("a de", 10, "\t", "   ", 8) == "\ta\n   de\n");
     });
+}
+
+@safe pure unittest // https://issues.dlang.org/show_bug.cgi?id=23298
+{
+    assert("1 2 3 4 5 6 7 8 9".wrap(17) == "1 2 3 4 5 6 7 8 9\n");
+    assert("1 2 3 4 5 6 7 8 9 ".wrap(17) == "1 2 3 4 5 6 7 8 9\n");
+    assert("1 2 3 4 5 6 7 8 99".wrap(17) == "1 2 3 4 5 6 7 8\n99\n");
 }
 
 /******************************************

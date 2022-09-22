@@ -1675,7 +1675,7 @@ final class CParser(AST) : Parser!AST
             auto stags = applySpecifier(stag, specifier);
             symbols.push(stags);
 
-            if (tt.tok == TOK.enum_)
+            if (0 && tt.tok == TOK.enum_)    // C11 proscribes enums with no members, but we allow it
             {
                 if (!tt.members)
                     error(tt.loc, "`enum %s` has no members", stag.toChars());

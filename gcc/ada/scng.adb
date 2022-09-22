@@ -1747,15 +1747,9 @@ package body Scng is
             --  In Ada 2022, a target name (i.e. @) is a valid prefix of an
             --  attribute, and functions like a name.
 
-            if Prev_Token = Tok_All
-              or else Prev_Token = Tok_At_Sign
-              or else Prev_Token = Tok_Delta
-              or else Prev_Token = Tok_Digits
-              or else Prev_Token = Tok_Identifier
-              or else Prev_Token = Tok_Project
-              or else Prev_Token = Tok_Right_Paren
-              or else Prev_Token = Tok_Right_Bracket
-              or else Prev_Token in Token_Class_Literal
+            if Prev_Token in Tok_All | Tok_At_Sign | Tok_Delta | Tok_Digits |
+              Tok_Identifier | Tok_Project | Tok_Right_Paren |
+              Tok_Right_Bracket | Token_Class_Literal
             then
                Token := Tok_Apostrophe;
 

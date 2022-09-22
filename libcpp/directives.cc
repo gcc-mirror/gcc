@@ -158,7 +158,7 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
   D(elifndef,	T_ELIFNDEF,	STDC2X,    COND | ELIFDEF)		\
   D(error,	T_ERROR,	STDC89,    0)				\
   D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
-  D(warning,	T_WARNING,	EXTENSION, 0)				\
+  D(warning,	T_WARNING,	STDC2X,    0)				\
   D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
   D(ident,	T_IDENT,	EXTENSION, IN_I)			\
   D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
@@ -385,6 +385,21 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
 	  && !(dir == &dtable[T_IMPORT] && CPP_OPTION (pfile, objc))
 	  && CPP_PEDANTIC (pfile))
 	cpp_error (pfile, CPP_DL_PEDWARN, "#%s is a GCC extension", dir->name);
+      else if (dir == &dtable[T_WARNING])
+	{
+	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, warning_directive))
+	    {
+	      if (CPP_OPTION (pfile, cplusplus))
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "#%s before C++23 is a GCC extension", dir->name);
+	      else
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "#%s before C2X is a GCC extension", dir->name);
+	    }
+	  else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	    cpp_warning (pfile, CPP_W_C11_C2X_COMPAT,
+			 "#%s before C2X is a GCC extension", dir->name);
+	}
       else if (((dir->flags & DEPRECATED) != 0
 		|| (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
 	       && CPP_OPTION (pfile, cpp_warn_deprecated))

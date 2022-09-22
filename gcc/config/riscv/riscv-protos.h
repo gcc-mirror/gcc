@@ -64,7 +64,7 @@ extern rtx riscv_legitimize_call_address (rtx);
 extern void riscv_set_return_address (rtx, rtx);
 extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern rtx riscv_return_addr (int, rtx);
-extern HOST_WIDE_INT riscv_initial_elimination_offset (int, int);
+extern poly_int64 riscv_initial_elimination_offset (int, int);
 extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (int);
 extern bool riscv_epilogue_uses (unsigned int);
@@ -77,10 +77,6 @@ extern bool riscv_gpr_save_operation_p (rtx);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
-
-/* Routines implemented in riscv-d.cc  */
-extern void riscv_d_target_versions (void);
-extern void riscv_d_register_target_info (void);
 
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);

@@ -111,11 +111,11 @@ along with GCC; see the file COPYING3.  If not see
    in MD_FALLBACK_FRAME_STATE_FOR and its content will be read with
    _Unwind_GetGR which uses dwarf_reg_size_table to get the size of
    the register.  So the entry of dwarf_reg_size_table corresponding to
-   this slot must be set.  To do this, we redefine DBX_REGISTER_NUMBER
+   this slot must be set.  To do this, we redefine DEBUGGER_REGNO
    so as to return itself for 16.  */
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(REGNO) \
-  (((REGNO) == 16) ? 16 : SH_DBX_REGISTER_NUMBER (REGNO))
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(REGNO) \
+  (((REGNO) == 16) ? 16 : SH_DEBUGGER_REGNO (REGNO))
 
 /* Install the __sync libcalls.  */
 #undef TARGET_INIT_LIBFUNCS

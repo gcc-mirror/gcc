@@ -4531,6 +4531,12 @@ c_init_decl_processing (void)
   pushdecl (build_decl (UNKNOWN_LOCATION, TYPE_DECL, get_identifier ("_Bool"),
 			boolean_type_node));
 
+  /* C-specific nullptr initialization.  */
+  record_builtin_type (RID_MAX, "nullptr_t", nullptr_type_node);
+  /* The size and alignment of nullptr_t is the same as for a pointer to
+     character type.  */
+  SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
+
   input_location = save_loc;
 
   make_fname_decl = c_make_fname_decl;
@@ -5074,8 +5080,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
       && ((VAR_P (*node) && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
-      if (VAR_P (*node)
-	  && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
+      if (VAR_P (*node) && !omp_mappable_type (TREE_TYPE (*node)))
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
@@ -5181,27 +5186,13 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	  initialized = false;
 	else if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	  {
-	    /* A complete type is ok if size is fixed.  */
-
-	    if (!poly_int_tree_p (TYPE_SIZE (TREE_TYPE (decl)))
-		|| C_DECL_VARIABLE_SIZE (decl))
-	      {
-		error ("variable-sized object may not be initialized");
-		initialized = false;
-	      }
+	    /* A complete type is ok if size is fixed.  If the size is
+	       variable, an empty initializer is OK and nonempty
+	       initializers will be diagnosed in the parser.  */
 	  }
 	else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
 	  {
 	    error ("variable %qD has initializer but incomplete type", decl);
-	    initialized = false;
-	  }
-	else if (C_DECL_VARIABLE_SIZE (decl))
-	  {
-	    /* Although C99 is unclear about whether incomplete arrays
-	       of VLAs themselves count as VLAs, it does not make
-	       sense to permit them to be initialized given that
-	       ordinary VLAs may not be initialized.  */
-	    error ("variable-sized object may not be initialized");
 	    initialized = false;
 	  }
       }
@@ -5701,7 +5692,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       DECL_ATTRIBUTES (decl)
 	= remove_attribute ("omp declare target implicit",
 			    DECL_ATTRIBUTES (decl));
-      if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (decl)))
+      if (!omp_mappable_type (TREE_TYPE (decl)))
 	error ("%q+D in declare target directive does not have mappable type",
 	       decl);
       else if (!lookup_attribute ("omp declare target",
@@ -7877,7 +7868,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       error ("%<[*]%> not allowed in other than function prototype scope");
     }
 
-  if (arg_types == NULL_TREE && !funcdef_flag
+  if (arg_types == NULL_TREE && !funcdef_flag && !flag_isoc2x
       && !in_system_header_at (input_location))
     warning (OPT_Wstrict_prototypes,
 	     "function declaration isn%'t a prototype");
@@ -7905,9 +7896,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       tree parm, type, typelt;
       unsigned int parmno;
 
-      /* In C2X, convert () in a function definition to (void).  */
+      /* In C2X, convert () to (void).  */
       if (flag_isoc2x
-	  && funcdef_flag
 	  && !arg_types
 	  && !arg_info->parms)
 	arg_types = arg_info->types = void_list_node;
@@ -10684,14 +10674,6 @@ record_builtin_type (enum rid rid_index, const char *name, tree type)
   pushdecl (decl);
   if (debug_hooks->type_decl)
     debug_hooks->type_decl (decl, false);
-}
-
-/* Build the void_list_node (void_type_node having been created).  */
-tree
-build_void_list_node (void)
-{
-  tree t = build_tree_list (NULL_TREE, void_type_node);
-  return t;
 }
 
 /* Return a c_parm structure with the given SPECS, ATTRS and DECLARATOR.  */

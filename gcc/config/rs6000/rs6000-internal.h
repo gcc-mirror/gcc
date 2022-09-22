@@ -82,7 +82,6 @@ extern const char *rs6000_machine;
    from rs6000-logue.cc  */
 
 extern int uses_TOC (void);
-extern bool rs6000_global_entry_point_needed_p (void);
 extern void rs6000_output_function_prologue (FILE *file);
 extern void rs6000_output_function_epilogue (FILE *file);
 extern bool rs6000_function_ok_for_sibcall (tree decl, tree exp);

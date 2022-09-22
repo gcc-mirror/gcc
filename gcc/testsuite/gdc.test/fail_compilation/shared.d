@@ -225,3 +225,14 @@ auto ref Object test_inference_4(const return shared ref Object a)
 {
     return a;
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=23226
+// Allow accessing non-shared `this`
+struct BitRange
+{
+    int bits;
+    void f()
+    {
+        this.bits++;
+    }
+}

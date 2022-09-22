@@ -230,7 +230,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      constexpr atomic(_Tp __i) noexcept : _M_i(__i) { }
+      constexpr atomic(_Tp __i) noexcept : _M_i(__i)
+      {
+#if __cplusplus >= 201402L && __has_builtin(__builtin_clear_padding)
+	if _GLIBCXX17_CONSTEXPR (__atomic_impl::__maybe_has_padding<_Tp>())
+	  __builtin_clear_padding(std::__addressof(_M_i));
+#endif
+      }
 
       operator _Tp() const noexcept
       { return load(); }
@@ -270,13 +276,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
       {
-	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+	__atomic_store(std::__addressof(_M_i),
+		       __atomic_impl::__clear_padding(__i),
+		       int(__m));
       }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
       {
-	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+	__atomic_store(std::__addressof(_M_i),
+		       __atomic_impl::__clear_padding(__i),
+		       int(__m));
       }
 
       _Tp
@@ -302,7 +312,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
-	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
+	__atomic_exchange(std::__addressof(_M_i),
+			  __atomic_impl::__clear_padding(__i),
 			  __ptr, int(__m));
 	return *__ptr;
       }
@@ -313,7 +324,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
-	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
+	__atomic_exchange(std::__addressof(_M_i),
+			  __atomic_impl::__clear_padding(__i),
 			  __ptr, int(__m));
 	return *__ptr;
       }
@@ -322,24 +334,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 true, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, true,
+						 __s, __f);
       }
 
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) volatile noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 true, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, true,
+						 __s, __f);
       }
 
       bool
@@ -358,24 +362,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 false, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, false,
+						 __s, __f);
       }
 
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) volatile noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 false, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, false,
+						 __s, __f);
       }
 
       bool
@@ -390,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
-#if __cpp_lib_atomic_wait 
+#if __cpp_lib_atomic_wait
     void
     wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
     {
@@ -407,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
-#endif // __cpp_lib_atomic_wait 
+#endif // __cpp_lib_atomic_wait
 
     };
 #undef _GLIBCXX20_INIT

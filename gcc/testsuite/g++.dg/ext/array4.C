@@ -16,7 +16,6 @@ template <typename _Tp>
 constexpr integral_constant<true> __is_complete_or_unbounded(_Tp) {
   return {};
 }
-struct Trans_NS_std_formatter;
 template <typename _Tp>
 struct is_default_constructible : integral_constant<false> {
   static_assert(__is_complete_or_unbounded(_Tp{}), "");
@@ -53,7 +52,7 @@ template <typename> struct basic_string_view { basic_string_view(int, int); };
 template <typename, typename> struct formatter;
 template <typename, typename>
 using has_formatter =
-    __bool_constant<__is_constructible(Trans_NS_std_formatter)>;
+    __bool_constant<__is_constructible(void)>;
 struct fallback_formatter;
 template <typename Context> struct custom_value {
   using parse_context = typename Context::parse_context_type;

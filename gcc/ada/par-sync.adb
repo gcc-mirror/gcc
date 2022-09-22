@@ -58,9 +58,7 @@ package body Sync is
    begin
       Resync_Init;
 
-      while Token not in Token_Class_Cunit
-        and then Token /= Tok_EOF
-      loop
+      while Token not in Token_Class_Cunit | Tok_EOF loop
          Scan;
       end loop;
 
@@ -92,9 +90,7 @@ package body Sync is
 
            or else (Paren_Count = 0
                      and then
-                       (Token = Tok_Comma
-                         or else Token = Tok_Right_Paren
-                         or else Token = Tok_Vertical_Bar))
+                       Token in Tok_Comma | Tok_Right_Paren | Tok_Vertical_Bar)
          then
             --  A special check: if we stop on the ELSE of OR ELSE or the
             --  THEN of AND THEN, keep going, because this is not really an
@@ -232,7 +228,7 @@ package body Sync is
          --  in this category only if it does NOT appear after WITH.
 
          elsif Token in Token_Class_After_SM
-            and then (Token /= Tok_Private or else Prev_Token /= Tok_With)
+           and then (Token /= Tok_Private or else Prev_Token /= Tok_With)
          then
             exit;
 
@@ -274,7 +270,7 @@ package body Sync is
 
          --  Done if we are at THEN or LOOP
 
-         elsif Token = Tok_Then or else Token = Tok_Loop then
+         elsif Token in Tok_Then | Tok_Loop then
             exit;
 
          --  Otherwise keep going
@@ -316,10 +312,7 @@ package body Sync is
       Paren_Count := 0;
 
       loop
-         if Token = Tok_EOF
-           or else Token = Tok_Semicolon
-           or else Token = Tok_Is
-           or else Token in Token_Class_After_SM
+         if Token in Tok_EOF | Tok_Semicolon | Tok_Is | Token_Class_After_SM
          then
             exit;
 
@@ -386,10 +379,7 @@ package body Sync is
       loop
          --  Done if at semicolon, WHEN or IS
 
-         if Token = Tok_Semicolon
-           or else Token = Tok_When
-           or else Token = Tok_Is
-         then
+         if Token in Tok_Semicolon | Tok_When | Tok_Is then
             exit;
 
          --  Otherwise keep going

@@ -54,6 +54,7 @@ extern int gcn_hard_regno_nregs (int regno, machine_mode mode);
 extern void gcn_hsa_declare_function_name (FILE *file, const char *name,
 					   tree decl);
 extern HOST_WIDE_INT gcn_initial_elimination_offset (int, int);
+extern REAL_VALUE_TYPE gcn_dconst1over2pi (void);
 extern bool gcn_inline_constant64_p (rtx, bool);
 extern bool gcn_inline_constant_p (rtx);
 extern int gcn_inline_fp_constant_p (rtx, bool);

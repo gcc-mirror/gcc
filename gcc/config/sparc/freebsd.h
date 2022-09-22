@@ -109,12 +109,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /************************[  Debugger stuff  ]*********************************/
 
-/* This is the char to use for continuation (in case we need to turn
-   continuation back on).  */
-
-#undef  DBX_CONTIN_CHAR
-#define DBX_CONTIN_CHAR	'?'
-
 /* DWARF bits.  */
 
 /* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets. 

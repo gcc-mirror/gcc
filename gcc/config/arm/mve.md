@@ -1624,7 +1624,7 @@
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:SI 2 "mve_imm_7" "Ra")]
+		       (match_operand:SI 2 "<MVE_pred>" "<MVE_constraint>")]
 	 VQSHLUQ_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -2615,7 +2615,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 				 (match_operand:MVE_5 2 "s_register_operand" "w")
-				 (match_operand:SI 3 "mve_imm_8" "Rb")]
+				 (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQRSHRNBQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -2630,7 +2630,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 				 (match_operand:MVE_5 2 "s_register_operand" "w")
-				 (match_operand:SI 3 "mve_imm_8" "Rb")]
+				 (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQRSHRUNBQ_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -3570,7 +3570,7 @@
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_selective_upto_8" "Rg")]
+		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")]
 	 VSRIQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -4473,7 +4473,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQRSHRNTQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -4489,7 +4489,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VQRSHRUNTQ_N_S))
   ]
   "TARGET_HAVE_MVE"
@@ -4777,7 +4777,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VRSHRNBQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -4793,7 +4793,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")]
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")]
 	 VRSHRNTQ_N))
   ]
   "TARGET_HAVE_MVE"
@@ -4987,7 +4987,7 @@
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_7" "Ra")
+		       (match_operand:SI 3 "<MVE_pred>" "<MVE_constraint>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VQSHLUQ_M_N_S))
   ]
@@ -5019,7 +5019,7 @@
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_selective_upto_8" "Rg")
+		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VSRIQ_M_N))
   ]
@@ -6138,7 +6138,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VQRSHRNBQ_M_N))
   ]
@@ -6155,7 +6155,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VQRSHRNTQ_M_N))
   ]
@@ -6223,7 +6223,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VRSHRNBQ_M_N))
   ]
@@ -6240,7 +6240,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VRSHRNTQ_M_N))
   ]
@@ -6461,7 +6461,7 @@
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "mve_imm_8" "Rb")
+		       (match_operand:SI 3 "<MVE_pred3>" "<MVE_constraint3>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
 	 VQRSHRUNBQ_M_N_S))
   ]

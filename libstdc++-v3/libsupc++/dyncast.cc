@@ -71,6 +71,12 @@ __dynamic_cast (const void *src_ptr,    // object started from
   if (whole_prefix->whole_type != whole_type)
     return NULL;
 
+  // Avoid virtual function call in the simple success case.
+  if (src2dst >= 0
+      && src2dst == -prefix->whole_object
+      && *whole_type == *dst_type)
+    return const_cast <void *> (whole_ptr);
+
   whole_type->__do_dyncast (src2dst, __class_type_info::__contained_public,
                             dst_type, whole_ptr, src_type, src_ptr, result);
   if (!result.dst_ptr)

@@ -33,8 +33,8 @@
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs) \
   _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular()	\
-			|| (_Lhs.base() == _Iterator{}			\
-			    && _Rhs.base() == _Iterator{}),		\
+			|| (_Lhs._M_value_initialized()			\
+			    && _Rhs._M_value_initialized()),		\
 			_M_message(__msg_iter_compare_bad)		\
 			._M_iterator(_Lhs, "lhs")			\
 			._M_iterator(_Rhs, "rhs"));			\
@@ -127,7 +127,7 @@ namespace __gnu_debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x.base() == _Iterator(),
+			      || __x._M_value_initialized(),
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -142,7 +142,7 @@ namespace __gnu_debug
       : _Iter_base()
       {
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x.base() == _Iterator(),
+			      || __x._M_value_initialized(),
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -167,7 +167,7 @@ namespace __gnu_debug
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-				|| __x.base() == _MutableIterator(),
+				|| __x._M_value_initialized(),
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
@@ -183,7 +183,7 @@ namespace __gnu_debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x.base() == _Iterator(),
+			      || __x._M_value_initialized(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -212,7 +212,7 @@ namespace __gnu_debug
       operator=(_Safe_local_iterator&& __x) noexcept
       {
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-			      || __x.base() == _Iterator(),
+			      || __x._M_value_initialized(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -342,6 +342,11 @@ namespace __gnu_debug
       bool
       _M_incrementable() const
       { return !this->_M_singular() && !_M_is_end(); }
+
+      /// Is the iterator value-initialized?
+      bool
+      _M_value_initialized() const
+      { return _M_version == 0 && base() == _Iter_base{}; }
 
       // Is the iterator range [*this, __rhs) valid?
       bool

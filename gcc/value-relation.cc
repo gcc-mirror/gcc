@@ -1400,16 +1400,7 @@ path_oracle::killing_def (tree ssa)
   unsigned v = SSA_NAME_VERSION (ssa);
 
   bitmap_set_bit (m_killed_defs, v);
-
-  // Walk the equivalency list and remove SSA from any equivalencies.
-  if (bitmap_bit_p (m_equiv.m_names, v))
-    {
-      for (equiv_chain *ptr = m_equiv.m_next; ptr; ptr = ptr->m_next)
-	if (bitmap_bit_p (ptr->m_names, v))
-	  bitmap_clear_bit (ptr->m_names, v);
-    }
-  else
-    bitmap_set_bit (m_equiv.m_names, v);
+  bitmap_set_bit (m_equiv.m_names, v);
 
   // Now add an equivalency with itself so we don't look to the root oracle.
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
@@ -1522,11 +1513,13 @@ path_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   return query_relation (bb, equiv_1, equiv_2);
 }
 
-// Reset any relations registered on this path.
+// Reset any relations registered on this path.  ORACLE is the root
+// oracle to use.
 
 void
-path_oracle::reset_path ()
+path_oracle::reset_path (relation_oracle *oracle)
 {
+  set_root_oracle (oracle);
   m_equiv.m_next = NULL;
   bitmap_clear (m_equiv.m_names);
   m_relations.m_head = NULL;

@@ -52,6 +52,7 @@
 #include "rtl-iter.h"
 #include "dwarf2.h"
 #include "gimple.h"
+#include "cgraph.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -778,10 +779,18 @@ init_ext_gcn_constants (void)
   /* FIXME: this constant probably does not match what hardware really loads.
      Reality check it eventually.  */
   real_from_string (&dconst1over2pi,
-		    "0.1591549430918953357663423455968866839");
+		    "0.15915494309189532");
   real_convert (&dconst1over2pi, SFmode, &dconst1over2pi);
 
   ext_gcn_constants_init = 1;
+}
+
+REAL_VALUE_TYPE
+gcn_dconst1over2pi (void)
+{
+  if (!ext_gcn_constants_init)
+    init_ext_gcn_constants ();
+  return dconst1over2pi;
 }
 
 /* Return non-zero if X is a constant that can appear as an inline operand.
@@ -2284,7 +2293,7 @@ gcn_function_value (const_tree valtype, const_tree, bool)
       && GET_MODE_SIZE (mode) < 4)
     mode = SImode;
 
-  return gen_rtx_REG (mode, SGPR_REGNO (RETURN_VALUE_REG));
+  return gen_rtx_REG (mode, RETURN_VALUE_REG);
 }
 
 /* Implement TARGET_FUNCTION_VALUE_REGNO_P.
@@ -2308,7 +2317,9 @@ num_arg_regs (const function_arg_info &arg)
     return 0;
 
   int size = arg.promoted_size_in_bytes ();
-  return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int regsize = UNITS_PER_WORD * (VECTOR_MODE_P (arg.mode)
+				  ? GET_MODE_NUNITS (arg.mode) : 1);
+  return (size + regsize - 1) / regsize;
 }
 
 /* Implement TARGET_STRICT_ARGUMENT_NAMING.
@@ -2358,16 +2369,16 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
-      /* Vector parameters are not supported yet.  */
-      if (VECTOR_MODE_P (arg.mode))
-	return 0;
-
-      int reg_num = FIRST_PARM_REG + cum->num;
+      int first_reg = (VECTOR_MODE_P (arg.mode)
+		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int cum_num = (VECTOR_MODE_P (arg.mode)
+		     ? cum->vnum : cum->num);
+      int reg_num = first_reg + cum_num;
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while (reg_num % num_regs != 0)
 	  reg_num++;
-      if (reg_num + num_regs <= FIRST_PARM_REG + NUM_PARM_REGS)
+      if (reg_num + num_regs <= first_reg + NUM_PARM_REGS)
 	return gen_rtx_REG (arg.mode, reg_num);
     }
   else
@@ -2419,11 +2430,15 @@ gcn_function_arg_advance (cumulative_args_t cum_v,
       if (!arg.named)
 	return;
 
+      int first_reg = (VECTOR_MODE_P (arg.mode)
+		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int *cum_num = (VECTOR_MODE_P (arg.mode)
+		      ? &cum->vnum : &cum->num);
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
-	while ((FIRST_PARM_REG + cum->num) % num_regs != 0)
-	  cum->num++;
-      cum->num += num_regs;
+	while ((first_reg + *cum_num) % num_regs != 0)
+	  (*cum_num)++;
+      *cum_num += num_regs;
     }
   else
     {
@@ -2454,14 +2469,18 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
-  if (cum->num >= NUM_PARM_REGS)
+  int cum_num = (VECTOR_MODE_P (arg.mode) ? cum->vnum : cum->num);
+  int regsize = UNITS_PER_WORD * (VECTOR_MODE_P (arg.mode)
+				  ? GET_MODE_NUNITS (arg.mode) : 1);
+
+  if (cum_num >= NUM_PARM_REGS)
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (cum->num + num_arg_regs (arg) <= NUM_PARM_REGS)
+  if (cum_num + num_arg_regs (arg) <= NUM_PARM_REGS)
     return 0;
 
-  return (NUM_PARM_REGS - cum->num) * UNITS_PER_WORD;
+  return (NUM_PARM_REGS - cum_num) * regsize;
 }
 
 /* A normal function which takes a pointer argument (to a scalar) may be
@@ -2549,14 +2568,11 @@ gcn_return_in_memory (const_tree type, const_tree ARG_UNUSED (fntype))
   if (AGGREGATE_TYPE_P (type))
     return true;
 
-  /* Vector return values are not supported yet.  */
-  if (VECTOR_TYPE_P (type))
-    return true;
-
   if (mode == BLKmode)
     return true;
 
-  if (size > 2 * UNITS_PER_WORD)
+  if ((!VECTOR_TYPE_P (type) && size > 2 * UNITS_PER_WORD)
+      || size > 2 * UNITS_PER_WORD * 64)
     return true;
 
   return false;
@@ -3199,9 +3215,10 @@ gcn_expand_epilogue (void)
       emit_move_insn (kernarg_reg, retptr_mem);
 
       rtx retval_mem = gen_rtx_MEM (SImode, kernarg_reg);
+      rtx scalar_retval = gen_rtx_REG (SImode, FIRST_PARM_REG);
       set_mem_addr_space (retval_mem, ADDR_SPACE_SCALAR_FLAT);
-      emit_move_insn (retval_mem,
-		      gen_rtx_REG (SImode, SGPR_REGNO (RETURN_VALUE_REG)));
+      emit_move_insn (scalar_retval, gen_rtx_REG (SImode, RETURN_VALUE_REG));
+      emit_move_insn (retval_mem, scalar_retval);
     }
 
   emit_jump_insn (gen_gcn_return ());
@@ -3596,6 +3613,7 @@ enum gcn_builtin_type_index
   GCN_BTI_SF,
   GCN_BTI_V64SI,
   GCN_BTI_V64SF,
+  GCN_BTI_V64DF,
   GCN_BTI_V64PTR,
   GCN_BTI_SIPTR,
   GCN_BTI_SFPTR,
@@ -3612,6 +3630,7 @@ static GTY(()) tree gcn_builtin_types[GCN_BTI_MAX];
 #define sf_type_node (gcn_builtin_types[GCN_BTI_SF])
 #define v64si_type_node (gcn_builtin_types[GCN_BTI_V64SI])
 #define v64sf_type_node (gcn_builtin_types[GCN_BTI_V64SF])
+#define v64df_type_node (gcn_builtin_types[GCN_BTI_V64DF])
 #define v64ptr_type_node (gcn_builtin_types[GCN_BTI_V64PTR])
 #define siptr_type_node (gcn_builtin_types[GCN_BTI_SIPTR])
 #define sfptr_type_node (gcn_builtin_types[GCN_BTI_SFPTR])
@@ -3701,6 +3720,7 @@ gcn_init_builtin_types (void)
   sf_type_node = float32_type_node;
   v64si_type_node = build_vector_type (intSI_type_node, 64);
   v64sf_type_node = build_vector_type (float_type_node, 64);
+  v64df_type_node = build_vector_type (double_type_node, 64);
   v64ptr_type_node = build_vector_type (unsigned_intDI_type_node
 					/*build_pointer_type
 					  (integer_type_node) */
@@ -3966,6 +3986,105 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 					  SFmode,
 					  EXPAND_NORMAL));
 	emit_insn (gen_sqrtsf2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FABSVF:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_absv64sf2_exec
+		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_LDEXPVF:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg1 = force_reg (V64SFmode,
+			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					   V64SFmode,
+					   EXPAND_NORMAL));
+	rtx arg2 = force_reg (V64SImode,
+			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
+					   V64SImode,
+					   EXPAND_NORMAL));
+	emit_insn (gen_ldexpv64sf3_exec
+		   (target, arg1, arg2, gcn_gen_undef (V64SFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_LDEXPV:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg1 = force_reg (V64DFmode,
+			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					   V64SFmode,
+					   EXPAND_NORMAL));
+	rtx arg2 = force_reg (V64SImode,
+			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
+					   V64SImode,
+					   EXPAND_NORMAL));
+	emit_insn (gen_ldexpv64df3_exec
+		   (target, arg1, arg2, gcn_gen_undef (V64DFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPVF_EXP:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64sf_exp2_exec
+		   (target, arg, gcn_gen_undef (V64SImode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPVF_MANT:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64sf_mant2_exec
+		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPV_EXP:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64df_exp2_exec
+		   (target, arg, gcn_gen_undef (V64SImode), exec));
+	return target;
+      }
+    case GCN_BUILTIN_FREXPV_MANT:
+      {
+	if (ignore)
+	  return target;
+	rtx exec = gcn_full_exec_reg ();
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_frexpv64df_mant2_exec
+		   (target, arg, gcn_gen_undef (V64DFmode), exec));
 	return target;
       }
     case GCN_BUILTIN_OMP_DIM_SIZE:
@@ -4545,6 +4664,61 @@ gcn_vectorization_cost (enum vect_cost_for_stmt ARG_UNUSED (type_of_cost),
 {
   /* Always vectorize.  */
   return 1;
+}
+
+/* Implement TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN.  */
+
+static int
+gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node),
+					    struct cgraph_simd_clone *clonei,
+					    tree base_type,
+					    int ARG_UNUSED (num))
+{
+  unsigned int elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
+
+  if (known_eq (clonei->simdlen, 0U))
+    clonei->simdlen = 64;
+  else if (maybe_ne (clonei->simdlen, 64U))
+    {
+      /* Note that x86 has a similar message that is likely to trigger on
+	 sizes that are OK for gcn; the user can't win.  */
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %wd (amdgcn)",
+		  clonei->simdlen.to_constant ());
+      return 0;
+    }
+
+  clonei->vecsize_mangle = 'n';
+  clonei->vecsize_int = 0;
+  clonei->vecsize_float = 0;
+
+  /* DImode ought to be more natural here, but VOIDmode produces better code,
+     at present, due to the shift-and-test steps not being optimized away
+     inside the in-branch clones.  */
+  clonei->mask_mode = VOIDmode;
+
+  return 1;
+}
+
+/* Implement TARGET_SIMD_CLONE_ADJUST.  */
+
+static void
+gcn_simd_clone_adjust (struct cgraph_node *ARG_UNUSED (node))
+{
+  /* This hook has to be defined when
+     TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN is defined, but we don't
+     need it to do anything yet.  */
+}
+
+/* Implement TARGET_SIMD_CLONE_USABLE.  */
+
+static int
+gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node))
+{
+  /* We don't need to do anything here because
+     gcn_simd_clone_compute_vecsize_and_simdlen currently only returns one
+     possibility.  */
+  return 0;
 }
 
 /* }}}  */
@@ -6412,7 +6586,7 @@ print_operand (FILE *file, rtx x, int code)
 	      str = "-4.0";
 	      break;
 	    case 248:
-	      str = "1/pi";
+	      str = "0.15915494";
 	      break;
 	    default:
 	      rtx ix = simplify_gen_subreg (GET_MODE (x) == DFmode
@@ -6446,7 +6620,7 @@ print_operand (FILE *file, rtx x, int code)
   gcc_unreachable ();
 }
 
-/* Implement DBX_REGISTER_NUMBER macro.
+/* Implement DEBUGGER_REGNO macro.
  
    Return the DWARF register number that corresponds to the GCC internal
    REGNO.  */
@@ -6635,6 +6809,13 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_SECTION_TYPE_FLAGS gcn_section_type_flags
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P gcn_scalar_mode_supported_p
+#undef  TARGET_SIMD_CLONE_ADJUST
+#define TARGET_SIMD_CLONE_ADJUST gcn_simd_clone_adjust
+#undef  TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+#define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \
+  gcn_simd_clone_compute_vecsize_and_simdlen
+#undef  TARGET_SIMD_CLONE_USABLE
+#define TARGET_SIMD_CLONE_USABLE gcn_simd_clone_usable
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p

@@ -293,9 +293,12 @@ set_fpu_rounding_mode (int round)
 
 
 int
-support_fpu_rounding_mode (int mode __attribute__((unused)))
+support_fpu_rounding_mode (int mode)
 {
-  return 1;
+  if (mode == GFC_FPE_AWAY)
+    return 0;
+  else
+    return 1;
 }
 
 

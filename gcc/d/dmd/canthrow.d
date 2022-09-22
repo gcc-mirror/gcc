@@ -114,8 +114,10 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
                         import dmd.id : Id;
 
                         auto sd = ts.sym;
+                        const id = ce.f.ident;
                         if (sd.postblit &&
-                            (ce.f.ident == Id._d_arrayctor || ce.f.ident == Id._d_arraysetctor))
+                            (id == Id._d_arrayctor || id == Id._d_arraysetctor ||
+                            id == Id._d_arrayassign_l || id == Id._d_arrayassign_r))
                         {
                             checkFuncThrows(ce, sd.postblit);
                             return;

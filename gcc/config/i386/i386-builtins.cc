@@ -126,6 +126,9 @@ BDESC_VERIFYS (IX86_BUILTIN_MAX,
 static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
 tree ix86_float16_type_node = NULL_TREE;
+tree ix86_bf16_type_node = NULL_TREE;
+tree ix86_bf16_ptr_type_node = NULL_TREE;
+
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
 
@@ -1367,6 +1370,22 @@ ix86_register_float16_builtin_type (void)
 }
 
 static void
+ix86_register_bf16_builtin_type (void)
+{
+  ix86_bf16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (ix86_bf16_type_node) = 16;
+  SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
+  layout_type (ix86_bf16_type_node);
+
+  if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
+    {
+      lang_hooks.types.register_builtin_type (ix86_bf16_type_node,
+					    "__bf16");
+      ix86_bf16_ptr_type_node = build_pointer_type (ix86_bf16_type_node);
+    }
+}
+
+static void
 ix86_init_builtin_types (void)
 {
   tree float80_type_node, const_string_type_node;
@@ -1395,6 +1414,8 @@ ix86_init_builtin_types (void)
   lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
 
   ix86_register_float16_builtin_type ();
+
+  ix86_register_bf16_builtin_type ();
 
   const_string_type_node
     = build_pointer_type (build_qualified_type
@@ -1519,21 +1540,16 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
   switch (fn)
     {
-    CASE_CFN_EXP2:
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_EXP2PS);
-	}
-      break;
-
     CASE_CFN_IFLOOR:
     CASE_CFN_LFLOOR:
-    CASE_CFN_LLFLOOR:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
+      /* PR106910, currently vectorizer doesn't go direct internal fn way
+	 when out_n != in_n, so let's still keep this.
+	 Otherwise, it relies on expander of
+	 lceilmn2/lfloormn2/lroundmn2/lrintmn2.  */
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
@@ -1543,20 +1559,10 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX512);
 	}
-      if (out_mode == SImode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS_SFIX);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS_SFIX256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS_SFIX512);
-	}
       break;
 
     CASE_CFN_ICEIL:
     CASE_CFN_LCEIL:
-    CASE_CFN_LLCEIL:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
@@ -1570,20 +1576,10 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_CEILPD_VEC_PACK_SFIX512);
 	}
-      if (out_mode == SImode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPS_SFIX);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPS_SFIX256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPS_SFIX512);
-	}
       break;
 
     CASE_CFN_IRINT:
     CASE_CFN_LRINT:
-    CASE_CFN_LLRINT:
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
@@ -1593,20 +1589,10 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_VEC_PACK_SFIX512);
 	}
-      if (out_mode == SImode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_CVTPS2DQ);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_CVTPS2DQ256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_CVTPS2DQ512);
-	}
       break;
 
     CASE_CFN_IROUND:
     CASE_CFN_LROUND:
-    CASE_CFN_LLROUND:
       /* The round insn does not trap on denormals.  */
       if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
@@ -1620,150 +1606,8 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  else if (out_n == 16 && in_n == 8)
 	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX512);
 	}
-      if (out_mode == SImode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ_SFIX);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ_SFIX256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ_SFIX512);
-	}
       break;
 
-    CASE_CFN_FLOOR:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_SSE4_1)
-	break;
-
-      if (out_mode == DFmode && in_mode == DFmode)
-	{
-	  if (out_n == 2 && in_n == 2)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD);
-	  else if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD256);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD512);
-	}
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS512);
-	}
-      if (out_mode == HFmode && in_mode == HFmode)
-	{
-	  /* V8HF/V16HF is supported in ix86_vector_mode_supported_p
-	     under TARGET_AVX512FP16, TARGET_AVX512VL is needed here.  */
-	  if (out_n < 32 && !TARGET_AVX512VL)
-	    break;
-
-	  if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPH);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPH256);
-	  else if (out_n == 32 && in_n == 32)
-	    return ix86_get_builtin (IX86_BUILTIN_FLOORPH512);
-	}
-      break;
-
-    CASE_CFN_CEIL:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_SSE4_1)
-	break;
-
-      if (out_mode == DFmode && in_mode == DFmode)
-	{
-	  if (out_n == 2 && in_n == 2)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPD);
-	  else if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPD256);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPD512);
-	}
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPS);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPS256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPS512);
-	}
-      if (out_mode == HFmode && in_mode == HFmode)
-	{
-	  /* V8HF/V16HF is supported in ix86_vector_mode_supported_p
-	     under TARGET_AVX512FP16, TARGET_AVX512VL is needed here.  */
-	  if (out_n < 32 && !TARGET_AVX512VL)
-	    break;
-
-	  if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPH);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPH256);
-	  else if (out_n == 32 && in_n == 32)
-	    return ix86_get_builtin (IX86_BUILTIN_CEILPH512);
-	}
-      break;
-
-    CASE_CFN_TRUNC:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_SSE4_1)
-	break;
-
-      if (out_mode == DFmode && in_mode == DFmode)
-	{
-	  if (out_n == 2 && in_n == 2)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPD);
-	  else if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPD256);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPD512);
-	}
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS256);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS512);
-	}
-      if (out_mode == HFmode && in_mode == HFmode)
-	{
-	  /* V8HF/V16HF is supported in ix86_vector_mode_supported_p
-	     under TARGET_AVX512FP16, TARGET_AVX512VL is needed here.  */
-	  if (out_n < 32 && !TARGET_AVX512VL)
-	    break;
-
-	  if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPH);
-	  else if (out_n == 16 && in_n == 16)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPH256);
-	  else if (out_n == 32 && in_n == 32)
-	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPH512);
-	}
-      break;
-
-    CASE_CFN_FMA:
-      if (out_mode == DFmode && in_mode == DFmode)
-	{
-	  if (out_n == 2 && in_n == 2)
-	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPD);
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPD256);
-	}
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPS);
-	  if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPS256);
-	}
-      break;
 
     default:
       break;

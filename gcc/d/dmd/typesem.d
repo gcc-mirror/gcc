@@ -1272,6 +1272,16 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     errors = true;
                 }
 
+                const bool isTypesafeVariadic = i + 1 == dim &&
+                                                tf.parameterList.varargs == VarArg.typesafe &&
+                                                (t.isTypeDArray() || t.isTypeClass());
+                if (isTypesafeVariadic)
+                {
+                    /* typesafe variadic arguments are constructed on the stack, so must be `scope`
+                     */
+                    fparam.storageClass |= STC.scope_ | STC.scopeinferred;
+                }
+
                 if (fparam.storageClass & STC.return_)
                 {
                     if (fparam.isReference())
@@ -1300,8 +1310,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         }
                     }
 
-                    if (i + 1 == dim && tf.parameterList.varargs == VarArg.typesafe &&
-                        (t.isTypeDArray() || t.isTypeClass()))
+                    if (isTypesafeVariadic)
                     {
                         /* This is because they can be constructed on the stack
                          * https://dlang.org/spec/function.html#typesafe_variadic_functions
@@ -1437,6 +1446,11 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         // https://issues.dlang.org/show_bug.cgi?id=19891
                         eparam.storageClass &= ~STC.auto_;
                         eparam.storageClass |= STC.autoref;
+                    }
+                    else if (eparam.storageClass & STC.ref_)
+                    {
+                        .error(loc, "cannot explicitly instantiate template function with `auto ref` parameter");
+                        errors = true;
                     }
                     else
                     {

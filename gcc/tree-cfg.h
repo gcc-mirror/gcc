@@ -33,6 +33,7 @@ extern void init_empty_tree_cfg_for_function (struct function *);
 extern void init_empty_tree_cfg (void);
 extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
+extern tree get_cases_for_edge (edge, gswitch *);
 extern basic_block label_to_block (struct function *, tree);
 extern void cleanup_dead_labels (void);
 extern bool group_case_labels_stmt (gswitch *);

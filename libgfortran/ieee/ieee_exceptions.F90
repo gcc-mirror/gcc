@@ -56,6 +56,13 @@ module IEEE_EXCEPTIONS
     character(len=GFC_FPE_STATE_BUFFER_SIZE) :: hidden
   end type
 
+  type, public :: IEEE_MODES_TYPE
+    private
+    integer :: rounding
+    integer :: underflow
+    integer :: halting
+  end type
+
   interface IEEE_SUPPORT_FLAG
     module procedure IEEE_SUPPORT_FLAG_4, &
                      IEEE_SUPPORT_FLAG_8, &
@@ -72,8 +79,64 @@ module IEEE_EXCEPTIONS
   public :: IEEE_SET_HALTING_MODE, IEEE_GET_HALTING_MODE
   public :: IEEE_SET_FLAG, IEEE_GET_FLAG
   public :: IEEE_SET_STATUS, IEEE_GET_STATUS
+  public :: IEEE_SET_MODES, IEEE_GET_MODES
 
 contains
+
+! Fortran 2018: Saving and restoring floating-point modes
+! (rounding modes, underflow mode, and halting mode)
+! 
+! For now, we only have one rounding mode for all kinds.
+! Some targets could optimize getting/setting all modes at once, but for now
+! we make three calls.  This code must be kept in sync with:
+!   - IEEE_{GET,SET}_ROUNDING_MODE
+!   - IEEE_{GET,SET}_UNDERFLOW_MODE
+!   - IEEE_{GET,SET}_HALTING_MODE
+
+  subroutine IEEE_GET_MODES (MODES)
+    implicit none
+    type(IEEE_MODES_TYPE), intent(out) :: MODES
+
+    interface
+      integer function helper_rounding() &
+        bind(c, name="_gfortrani_get_fpu_rounding_mode")
+      end function
+      integer function helper_underflow() &
+        bind(c, name="_gfortrani_get_fpu_underflow_mode")
+      end function
+      pure integer function helper_halting() &
+          bind(c, name="_gfortrani_get_fpu_trap_exceptions")
+      end function
+    end interface
+
+    MODES%rounding = helper_rounding()
+    MODES%underflow = helper_underflow()
+    MODES%halting = helper_halting()
+  end subroutine
+
+  subroutine IEEE_SET_MODES (MODES)
+    implicit none
+    type(IEEE_MODES_TYPE), intent(in) :: MODES
+
+    interface
+      subroutine helper_rounding(val) &
+          bind(c, name="_gfortrani_set_fpu_rounding_mode")
+        integer, value :: val
+      end subroutine
+      subroutine helper_underflow(val) &
+          bind(c, name="_gfortrani_set_fpu_underflow_mode")
+        integer, value :: val
+      end subroutine
+      pure subroutine helper_halting(trap, notrap) &
+          bind(c, name="_gfortrani_set_fpu_trap_exceptions")
+        integer, intent(in), value :: trap, notrap
+      end subroutine
+    end interface
+
+    call helper_rounding(MODES%rounding)
+    call helper_underflow(MODES%underflow)
+    call helper_halting(MODES%halting, NOT(MODES%halting))
+  end subroutine
 
 ! Saving and restoring floating-point status
 

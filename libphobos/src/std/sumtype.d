@@ -1941,79 +1941,8 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
     auto ref matchImpl(SumTypes...)(auto ref SumTypes args)
     if (allSatisfy!(isSumType, SumTypes) && args.length > 0)
     {
-        enum typeCount(SumType) = SumType.Types.length;
         alias stride(size_t i) = .stride!(i, Map!(typeCount, SumTypes));
-
-        /* A TagTuple represents a single possible set of tags that `args`
-         * could have at runtime.
-         *
-         * Because D does not allow a struct to be the controlling expression
-         * of a switch statement, we cannot dispatch on the TagTuple directly.
-         * Instead, we must map each TagTuple to a unique integer and generate
-         * a case label for each of those integers.
-         *
-         * This mapping is implemented in `fromCaseId` and `toCaseId`. It uses
-         * the same technique that's used to map index tuples to memory offsets
-         * in a multidimensional static array.
-         *
-         * For example, when `args` consists of two SumTypes with two member
-         * types each, the TagTuples corresponding to each case label are:
-         *
-         *   case 0:  TagTuple([0, 0])
-         *   case 1:  TagTuple([1, 0])
-         *   case 2:  TagTuple([0, 1])
-         *   case 3:  TagTuple([1, 1])
-         *
-         * When there is only one argument, the caseId is equal to that
-         * argument's tag.
-         */
-        static struct TagTuple
-        {
-            size_t[SumTypes.length] tags;
-            alias tags this;
-
-            invariant
-            {
-                static foreach (i; 0 .. tags.length)
-                {
-                    assert(tags[i] < SumTypes[i].Types.length, "Invalid tag");
-                }
-            }
-
-            this(ref const(SumTypes) args)
-            {
-                static foreach (i; 0 .. tags.length)
-                {
-                    tags[i] = args[i].tag;
-                }
-            }
-
-            static TagTuple fromCaseId(size_t caseId)
-            {
-                TagTuple result;
-
-                // Most-significant to least-significant
-                static foreach_reverse (i; 0 .. result.length)
-                {
-                    result[i] = caseId / stride!i;
-                    caseId %= stride!i;
-                }
-
-                return result;
-            }
-
-            size_t toCaseId()
-            {
-                size_t result;
-
-                static foreach (i; 0 .. tags.length)
-                {
-                    result += tags[i] * stride!i;
-                }
-
-                return result;
-            }
-        }
+        alias TagTuple = .TagTuple!(SumTypes);
 
         /*
          * A list of arguments to be passed to a handler needed for the case
@@ -2146,6 +2075,81 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
         }
 
         assert(false, "unreachable");
+    }
+}
+
+private enum typeCount(SumType) = SumType.Types.length;
+
+/* A TagTuple represents a single possible set of tags that `args`
+ * could have at runtime.
+ *
+ * Because D does not allow a struct to be the controlling expression
+ * of a switch statement, we cannot dispatch on the TagTuple directly.
+ * Instead, we must map each TagTuple to a unique integer and generate
+ * a case label for each of those integers.
+ *
+ * This mapping is implemented in `fromCaseId` and `toCaseId`. It uses
+ * the same technique that's used to map index tuples to memory offsets
+ * in a multidimensional static array.
+ *
+ * For example, when `args` consists of two SumTypes with two member
+ * types each, the TagTuples corresponding to each case label are:
+ *
+ *   case 0:  TagTuple([0, 0])
+ *   case 1:  TagTuple([1, 0])
+ *   case 2:  TagTuple([0, 1])
+ *   case 3:  TagTuple([1, 1])
+ *
+ * When there is only one argument, the caseId is equal to that
+ * argument's tag.
+ */
+private struct TagTuple(SumTypes...)
+{
+    size_t[SumTypes.length] tags;
+    alias tags this;
+
+    alias stride(size_t i) = .stride!(i, Map!(typeCount, SumTypes));
+
+    invariant
+    {
+        static foreach (i; 0 .. tags.length)
+        {
+            assert(tags[i] < SumTypes[i].Types.length, "Invalid tag");
+        }
+    }
+
+    this(ref const(SumTypes) args)
+    {
+        static foreach (i; 0 .. tags.length)
+        {
+            tags[i] = args[i].tag;
+        }
+    }
+
+    static TagTuple fromCaseId(size_t caseId)
+    {
+        TagTuple result;
+
+        // Most-significant to least-significant
+        static foreach_reverse (i; 0 .. result.length)
+        {
+            result[i] = caseId / stride!i;
+            caseId %= stride!i;
+        }
+
+        return result;
+    }
+
+    size_t toCaseId()
+    {
+        size_t result;
+
+        static foreach (i; 0 .. tags.length)
+        {
+            result += tags[i] * stride!i;
+        }
+
+        return result;
     }
 }
 

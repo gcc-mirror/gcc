@@ -25,7 +25,6 @@
   (A7_REG		7)
   (A8_REG		8)
   (A9_REG		9)
-  (A10_REG		10)
 
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
@@ -86,10 +85,6 @@
 
 ;; This code iterator is for *shlrd and its variants.
 (define_code_iterator ior_op [ior plus])
-
-;; This mode iterator allows the DC and SC patterns to be defined from
-;; the same template.
-(define_mode_iterator DSC [DC SC])
 
 
 ;; Attributes.
@@ -2279,7 +2274,7 @@
 })
 
 (define_insn "sibcall_internal"
-  [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "nir"))
+  [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "nic"))
 	 (match_operand 1 "" "i"))]
   "!TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)"
 {
@@ -2288,17 +2283,6 @@
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
-
-(define_split
-  [(call (mem:SI (match_operand:SI 0 "register_operand"))
-	 (match_operand 1 ""))]
-  "reload_completed
-   && !TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)
-   && ! call_used_or_fixed_reg_p (REGNO (operands[0]))"
-  [(set (reg:SI A10_REG)
-	(match_dup 0))
-   (call (mem:SI (reg:SI A10_REG))
-	 (match_dup 1))])
 
 (define_expand "sibcall_value"
   [(set (match_operand 0 "register_operand" "")
@@ -2311,7 +2295,7 @@
 
 (define_insn "sibcall_value_internal"
   [(set (match_operand 0 "register_operand" "=a")
-	(call (mem:SI (match_operand:SI 1 "call_insn_operand" "nir"))
+	(call (mem:SI (match_operand:SI 1 "call_insn_operand" "nic"))
 	      (match_operand 2 "" "i")))]
   "!TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)"
 {
@@ -2321,18 +2305,26 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
-(define_split
-  [(set (match_operand 0 "register_operand")
-	(call (mem:SI (match_operand:SI 1 "register_operand"))
-	      (match_operand 2 "")))]
-  "reload_completed
-   && !TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)
-   && ! call_used_or_fixed_reg_p (REGNO (operands[1]))"
-  [(set (reg:SI A10_REG)
-	(match_dup 1))
-   (set (match_dup 0)
-	(call (mem:SI (reg:SI A10_REG))
-	      (match_dup 2)))])
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand 0 "")
+		    (const_int 0))
+	      (match_operand 1 "")
+	      (match_operand 2 "")])]
+  ""
+{
+  int i;
+
+  emit_call_insn (gen_call (operands[0], const0_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  emit_insn (gen_blockage ());
+  DONE;
+})
 
 (define_insn "entry"
   [(set (reg:SI A1_REG)
@@ -2868,27 +2860,54 @@
 })
 
 (define_split
-  [(clobber (match_operand:DSC 0 "register_operand"))]
-  "GP_REG_P (REGNO (operands[0]))"
+  [(clobber (match_operand 0 "register_operand"))]
+  "HARD_REGISTER_P (operands[0])
+   && COMPLEX_MODE_P (GET_MODE (operands[0]))"
   [(const_int 0)]
 {
-  unsigned int regno = REGNO (operands[0]);
-  machine_mode inner_mode = GET_MODE_INNER (<MODE>mode);
+  auto_sbitmap bmp (FIRST_PSEUDO_REGISTER);
   rtx_insn *insn;
-  rtx x;
-  if (! ((insn = next_nonnote_nondebug_insn (curr_insn))
-	 && NONJUMP_INSN_P (insn)
-	 && GET_CODE (x = PATTERN (insn)) == SET
-	 && REG_P (x = XEXP (x, 0))
-	 && GET_MODE (x) == inner_mode
-	 && REGNO (x) == regno
-	 && (insn = next_nonnote_nondebug_insn (insn))
-	 && NONJUMP_INSN_P (insn)
-	 && GET_CODE (x = PATTERN (insn)) == SET
-	 && REG_P (x = XEXP (x, 0))
-	 && GET_MODE (x) == inner_mode
-	 && REGNO (x) == regno + REG_NREGS (operands[0]) / 2))
-    FAIL;
+  rtx reg = gen_rtx_REG (SImode, 0);
+  bitmap_set_range (bmp, REGNO (operands[0]), REG_NREGS (operands[0]));
+  for (insn = next_nonnote_nondebug_insn_bb (curr_insn);
+       insn; insn = next_nonnote_nondebug_insn_bb (insn))
+    {
+      sbitmap_iterator iter;
+      unsigned int regno;
+      if (NONJUMP_INSN_P (insn))
+	{
+	  EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
+	    {
+	      set_regno_raw (reg, regno, REG_NREGS (reg));
+	      if (reg_overlap_mentioned_p (reg, PATTERN (insn)))
+		break;
+	    }
+	  if (GET_CODE (PATTERN (insn)) == SET)
+	    {
+	      rtx x = SET_DEST (PATTERN (insn));
+	      if (REG_P (x) && HARD_REGISTER_P (x))
+		bitmap_clear_range (bmp, REGNO (x), REG_NREGS (x));
+	      else if (SUBREG_P (x) && HARD_REGISTER_P (SUBREG_REG (x)))
+		{
+		  struct subreg_info info;
+		  subreg_get_info (regno = REGNO (SUBREG_REG (x)),
+				   GET_MODE (SUBREG_REG (x)),
+				   SUBREG_BYTE (x), GET_MODE (x), &info);
+		  if (!info.representable_p)
+		    break;
+		  bitmap_clear_range (bmp, regno + info.offset, info.nregs);
+		}
+	    }
+	  if (bitmap_empty_p (bmp))
+	    goto FALLTHRU;
+	}
+      else if (CALL_P (insn))
+	EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
+	 if (call_used_or_fixed_reg_p (regno))
+	   break;
+    }
+  FAIL;
+FALLTHRU:;
 })
 
 (define_peephole2

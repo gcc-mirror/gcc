@@ -49,13 +49,8 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-
-/* Generate DBX debugging information.  */
-
-#define DBX_DEBUGGING_INFO
-
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 
 #define TARGET_40_PLUS		(TARGET_40 || TARGET_45)
 #define TARGET_10		(! TARGET_40_PLUS)
@@ -488,9 +483,6 @@ extern int current_first_parm_offset;
 
 /* Nonzero if access to memory by byte is no faster than by word.  */
 #define SLOW_BYTE_ACCESS 1
-
-/* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 0
 
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */

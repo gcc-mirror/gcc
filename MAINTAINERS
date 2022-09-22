@@ -30,7 +30,7 @@ Richard Biener					<rguenther@suse.de>
 Richard Earnshaw				<richard.earnshaw@arm.com>
 Jakub Jelinek					<jakub@redhat.com>
 Richard Kenner					<kenner@nyu.edu>
-Jeff Law					<jlaw@tachyum.com>
+Jeff Law					<jeffreyalaw@gmail.com>
 Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
@@ -67,8 +67,8 @@ bfin port		Jie Zhang		<jzhang918@gmail.com>
 bpf port		Jose E. Marchesi	<jose.marchesi@oracle.com>
 c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
-c-sky port		Xianmiao Qu		<xianmiao_qu@c-sky.com>
-c-sky port		Yunhai Shang		<yunhai_shang@c-sky.com>
+c-sky port		Xianmiao Qu		<cooper.qu@linux.alibaba.com>
+c-sky port		Yunhai Shang		<yunhai@linux.alibaba.com>
 epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
@@ -239,6 +239,7 @@ tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>
 profile feedback	Jan Hubicka		<hubicka@ucw.cz>
+AutoFDO			Eugene Rozenfeld	<erozen@microsoft.com>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
 RTL optimizers		Eric Botcazou		<ebotcazou@libertysurf.fr>
 instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
@@ -267,6 +268,7 @@ arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Liska		<mliska@suse.cz>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
+CTF, BTF		David Faust		<david.faust@oracle.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
@@ -397,7 +399,6 @@ Doug Evans					<dje@google.com>
 Chris Fairles					<cfairles@gcc.gnu.org>
 Alessandro Fanfarillo				<fanfarillo.gcc@gmail.com>
 Changpeng Fang					<changpeng.fang@amd.com>
-David Faust					<david.faust@oracle.com>
 Sam Feifer					<sfeifer@redhat.com>
 Li Feng						<nemokingdom@gmail.com>
 Thomas Fitzsimmons				<fitzsim@redhat.com>
@@ -603,7 +604,6 @@ Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>
 Yvan Roux					<yvan.roux@linaro.org>
-Eugene Rozenfeld				<erozen@microsoft.com>
 Silvius Rus					<rus@google.com>
 Matthew Sachs					<msachs@apple.com>
 Ankur Saini					<arsenic@sourceware.org>
@@ -641,6 +641,7 @@ YunQiang Su					<yunqiang.su@cipunited.com>
 Robert Suchanek					<rsuchy84@gmail.com>
 Andrew Sutton					<andrew.n.sutton@gmail.com>
 Gabriele Svelto					<gabriele.svelto@st.com>
+Torbjörn Svensson				<torbjorn.svensson@foss.st.com>
 Toma Tabacu					<toma.tabacu@gmail.com>
 Omar Tahir					<omar.tahir@arm.com>
 Sriraman Tallam					<tmsriram@google.com>

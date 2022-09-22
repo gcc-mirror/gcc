@@ -271,11 +271,11 @@ package body Ghost is
 
                if Present (Subp_Id) then
 
-                  --  The context is the internally built _Postconditions
+                  --  The context is the internally built _Wrapped_Statements
                   --  procedure, which is OK because the real check was done
-                  --  before expansion activities.
+                  --  before contract expansion activities.
 
-                  if Chars (Subp_Id) = Name_uPostconditions then
+                  if Chars (Subp_Id) = Name_uWrapped_Statements then
                      return True;
 
                   --  The context is the internally built predicate function,
@@ -432,9 +432,7 @@ package body Ghost is
             --  but it may still contain references to Ghost entities.
 
             elsif Nkind (Stmt) = N_If_Statement
-              and then Nkind (Original_Node (Stmt)) = N_Pragma
-              and then Assertion_Expression_Pragma
-                         (Get_Pragma_Id (Original_Node (Stmt)))
+              and then Comes_From_Check_Or_Contract (Stmt)
             then
                return True;
             end if;

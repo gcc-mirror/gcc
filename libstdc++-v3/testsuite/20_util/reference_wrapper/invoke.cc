@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// C++11 20.8.3.4 reference_wrapper invocation [refwrap.invoke]
+
 #include <functional>
 #include <type_traits>
 #include <testsuite_hooks.h>

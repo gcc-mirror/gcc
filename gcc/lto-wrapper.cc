@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    ./ccCJuXGv.lto.ltrans.o
 */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -49,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "collect-utils.h"
 #include "opts-diagnostic.h"
+#include "opt-suggestions.h"
+#include "opts-jobserver.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -86,6 +89,25 @@ static bool xassembler_options_error = false;
 
 const char tool_name[] = "lto-wrapper";
 
+/* Auxiliary function that frees elements of PTR and PTR itself.
+   N is number of elements to be freed.  If PTR is NULL, nothing is freed.
+   If an element is NULL, subsequent elements are not freed.  */
+
+static void **
+free_array_of_ptrs (void **ptr, unsigned n)
+{
+  if (!ptr)
+    return NULL;
+  for (unsigned i = 0; i < n; i++)
+    {
+      if (!ptr[i])
+	break;
+      free (ptr[i]);
+    }
+  free (ptr);
+  return NULL;
+}
+
 /* Delete tempfiles.  Called from utils_cleanup.  */
 
 void
@@ -110,6 +132,12 @@ tool_cleanup (bool)
       maybe_unlink (input_names[i]);
       if (output_names[i])
 	maybe_unlink (output_names[i]);
+    }
+  if (offload_names)
+    {
+      for (i = 0; offload_names[i]; i++)
+	maybe_unlink (offload_names[i]);
+      free_array_of_ptrs ((void **) offload_names, i);
     }
 }
 
@@ -623,25 +651,6 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
       }
 }
 
-/* Auxiliary function that frees elements of PTR and PTR itself.
-   N is number of elements to be freed.  If PTR is NULL, nothing is freed.
-   If an element is NULL, subsequent elements are not freed.  */
-
-static void **
-free_array_of_ptrs (void **ptr, unsigned n)
-{
-  if (!ptr)
-    return NULL;
-  for (unsigned i = 0; i < n; i++)
-    {
-      if (!ptr[i])
-	break;
-      free (ptr[i]);
-    }
-  free (ptr);
-  return NULL;
-}
-
 /* Parse STR, saving found tokens into PVALUES and return their number.
    Tokens are assumed to be delimited by ':'.  If APPEND is non-null,
    append it to every token we find.  */
@@ -905,13 +914,13 @@ access_check (const char *name, int mode)
 /* Prepare a target image for offload TARGET, using mkoffload tool from
    COMPILER_PATH.  Return the name of the resultant object file.  */
 
-static char *
+static const char *
 compile_offload_image (const char *target, const char *compiler_path,
 		       unsigned in_argc, char *in_argv[],
 		       vec<cl_decoded_option> compiler_opts,
-		       vec<cl_decoded_option> linker_opts)
+		       vec<cl_decoded_option> linker_opts,
+		       char **filename)
 {
-  char *filename = NULL;
   char *dumpbase;
   char **argv;
   char *suffix
@@ -919,6 +928,7 @@ compile_offload_image (const char *target, const char *compiler_path,
   strcpy (suffix, "/accel/");
   strcat (suffix, target);
   strcat (suffix, "/mkoffload");
+  *filename = NULL;
 
   char **paths = NULL;
   unsigned n_paths = parse_env_var (compiler_path, &paths, suffix);
@@ -947,9 +957,9 @@ compile_offload_image (const char *target, const char *compiler_path,
 
   /* Generate temporary output file name.  */
   if (save_temps)
-    filename = concat (dumpbase, ".o", NULL);
+    *filename = concat (dumpbase, ".o", NULL);
   else
-    filename = make_temp_file (".target.o");
+    *filename = make_temp_file (".target.o");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
@@ -959,7 +969,7 @@ compile_offload_image (const char *target, const char *compiler_path,
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
   obstack_ptr_grow (&argv_obstack, "-o");
-  obstack_ptr_grow (&argv_obstack, filename);
+  obstack_ptr_grow (&argv_obstack, *filename);
 
   /* Append names of input object files.  */
   for (unsigned i = 0; i < in_argc; i++)
@@ -983,7 +993,7 @@ compile_offload_image (const char *target, const char *compiler_path,
   obstack_free (&argv_obstack, NULL);
 
   free_array_of_ptrs ((void **) paths, n_paths);
-  return filename;
+  return *filename;
 }
 
 
@@ -1013,10 +1023,9 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
   offload_names = XCNEWVEC (char *, num_targets + 1);
   for (unsigned i = 0; i < num_targets; i++)
     {
-      offload_names[next_name_entry]
-	= compile_offload_image (names[i], compiler_path, in_argc, in_argv,
-				 compiler_opts, linker_opts);
-      if (!offload_names[next_name_entry])
+      if (!compile_offload_image (names[i], compiler_path, in_argc, in_argv,
+				  compiler_opts, linker_opts,
+				  &offload_names[next_name_entry]))
 #if OFFLOAD_DEFAULTED
 	continue;
 #else
@@ -1336,35 +1345,6 @@ init_num_threads (void)
 #endif
 }
 
-/* Test and return reason why a jobserver cannot be detected.  */
-
-static const char *
-jobserver_active_p (void)
-{
-  #define JS_PREFIX "jobserver is not available: "
-  #define JS_NEEDLE "--jobserver-auth="
-
-  const char *makeflags = getenv ("MAKEFLAGS");
-  if (makeflags == NULL)
-    return JS_PREFIX "%<MAKEFLAGS%> environment variable is unset";
-
-  const char *n = strstr (makeflags, JS_NEEDLE);
-  if (n == NULL)
-    return JS_PREFIX "%<" JS_NEEDLE "%> is not present in %<MAKEFLAGS%>";
-
-  int rfd = -1;
-  int wfd = -1;
-
-  if (sscanf (n + strlen (JS_NEEDLE), "%d,%d", &rfd, &wfd) == 2
-      && rfd > 0
-      && wfd > 0
-      && is_valid_fd (rfd)
-      && is_valid_fd (wfd))
-    return NULL;
-  else
-    return JS_PREFIX "cannot access %<" JS_NEEDLE "%> file descriptors";
-}
-
 /* Print link to -flto documentation with a hint message.  */
 
 void
@@ -1422,7 +1402,6 @@ run_gcc (unsigned argc, char *argv[])
   bool jobserver_requested = false;
   int auto_parallel = 0;
   bool no_partition = false;
-  const char *jobserver_error = NULL;
   bool fdecoded_options_first = true;
   vec<cl_decoded_option> fdecoded_options;
   fdecoded_options.create (16);
@@ -1653,14 +1632,14 @@ run_gcc (unsigned argc, char *argv[])
     }
   else
     {
-      jobserver_error = jobserver_active_p ();
-      if (jobserver && jobserver_error != NULL)
+      jobserver_info jinfo;
+      if (jobserver && !jinfo.is_active)
 	{
 	  /* Fall back to auto parallelism.  */
 	  jobserver = 0;
 	  auto_parallel = 1;
 	}
-      else if (!jobserver && jobserver_error == NULL)
+      else if (!jobserver && jinfo.is_active)
 	{
 	  parallel = 1;
 	  jobserver = 1;
@@ -1805,6 +1784,7 @@ cont1:
 	  for (i = 0; offload_names[i]; i++)
 	    printf ("%s\n", offload_names[i]);
 	  free_array_of_ptrs ((void **) offload_names, i);
+	  offload_names = NULL;
 	}
     }
 
@@ -1971,9 +1951,10 @@ cont:
 
       if (nr > 1)
 	{
-	  if (jobserver_requested && jobserver_error != NULL)
+	  jobserver_info jinfo;
+	  if (jobserver_requested && !jinfo.is_active)
 	    {
-	      warning (0, jobserver_error);
+	      warning (0, jinfo.error_msg.c_str ());
 	      print_lto_docs_link ();
 	    }
 	  else if (parallel == 0)

@@ -14,8 +14,6 @@ module dmd.dmacro;
 import core.stdc.ctype;
 import core.stdc.string;
 import dmd.doc;
-import dmd.errors;
-import dmd.globals;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
 
@@ -28,7 +26,7 @@ extern (C++) struct MacroTable
      *  name = name of macro
      *  text = text of macro
      */
-    extern (D) void define(const(char)[] name, const(char)[] text)
+    extern (D) void define(const(char)[] name, const(char)[] text) nothrow pure @safe
     {
         //printf("MacroTable::define('%.*s' = '%.*s')\n", cast(int)name.length, name.ptr, text.length, text.ptr);
         if (auto table = name in mactab)
@@ -42,8 +40,10 @@ extern (C++) struct MacroTable
     /*****************************************************
      * Look for macros in buf and expand them in place.
      * Only look at the text in buf from start to pend.
+     *
+     * Returns: `true` on success, `false` when the recursion limit was reached
      */
-    extern (D) void expand(ref OutBuffer buf, size_t start, ref size_t pend, const(char)[] arg)
+    extern (D) bool expand(ref OutBuffer buf, size_t start, ref size_t pend, const(char)[] arg, int recursionLimit) nothrow pure
     {
         version (none)
         {
@@ -51,14 +51,10 @@ extern (C++) struct MacroTable
             printf("Buf is: '%.*s'\n", cast(int)(pend - start), buf.data + start);
         }
         // limit recursive expansion
-        __gshared int nest;
-        if (nest > global.recursionLimit)
-        {
-            error(Loc.initial, "DDoc macro expansion limit exceeded; more than %d expansions.",
-                  global.recursionLimit);
-            return;
-        }
-        nest++;
+        recursionLimit--;
+        if (recursionLimit < 0)
+            return false;
+
         size_t end = pend;
         assert(start <= end);
         assert(end <= buf.length);
@@ -105,7 +101,9 @@ extern (C++) struct MacroTable
                     end += marg.length - 2;
                     // Scan replaced text for further expansion
                     size_t mend = u + marg.length;
-                    expand(buf, u, mend, null);
+                    const success = expand(buf, u, mend, null, recursionLimit);
+                    if (!success)
+                        return false;
                     end += mend - (u + marg.length);
                     u = mend;
                 }
@@ -121,7 +119,9 @@ extern (C++) struct MacroTable
                     end += -2 + 2 + marg.length + 2;
                     // Scan replaced text for further expansion
                     size_t mend = u + 2 + marg.length;
-                    expand(buf, u + 2, mend, null);
+                    const success = expand(buf, u + 2, mend, null, recursionLimit);
+                    if (!success)
+                        return false;
                     end += mend - (u + 2 + marg.length);
                     u = mend;
                 }
@@ -228,7 +228,9 @@ extern (C++) struct MacroTable
                             // Scan replaced text for further expansion
                             m.inuse++;
                             size_t mend = v + 1 + 2 + m.text.length + 2;
-                            expand(buf, v + 1, mend, marg);
+                            const success = expand(buf, v + 1, mend, marg, recursionLimit);
+                            if (!success)
+                                return false;
                             end += mend - (v + 1 + 2 + m.text.length + 2);
                             m.inuse--;
                             buf.remove(u, v + 1 - u);
@@ -253,12 +255,12 @@ extern (C++) struct MacroTable
         }
         mem.xfree(cast(char*)arg);
         pend = end;
-        nest--;
+        return true;
     }
 
   private:
 
-    extern (D) Macro* search(const(char)[] name)
+    extern (D) Macro* search(const(char)[] name) @nogc nothrow pure @safe
     {
         //printf("Macro::search(%.*s)\n", cast(int)name.length, name.ptr);
         if (auto table = name in mactab)
@@ -282,7 +284,7 @@ struct Macro
     const(char)[] text;     // macro replacement text
     int inuse;              // macro is in use (don't expand)
 
-    this(const(char)[] name, const(char)[] text)
+    this(const(char)[] name, const(char)[] text) @nogc nothrow pure @safe
     {
         this.name = name;
         this.text = text;
@@ -297,7 +299,7 @@ struct Macro
  *      copy allocated with mem.xmalloc()
  */
 
-char[] memdup(const(char)[] p)
+char[] memdup(const(char)[] p) nothrow pure @trusted
 {
     size_t len = p.length;
     return (cast(char*)memcpy(mem.xmalloc(len), p.ptr, len))[0 .. len];
@@ -312,7 +314,7 @@ char[] memdup(const(char)[] p)
  *              1..9:   get nth argument
  *              -1:     get 2nd through end
  */
-size_t extractArgN(const(char)[] buf, out const(char)[] marg, int n)
+size_t extractArgN(const(char)[] buf, out const(char)[] marg, int n) @nogc nothrow pure
 {
     /* Scan forward for matching right parenthesis.
      * Nest parentheses.

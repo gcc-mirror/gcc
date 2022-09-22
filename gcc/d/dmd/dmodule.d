@@ -325,7 +325,6 @@ extern (C++) final class Module : Package
     extern (C++) __gshared Dsymbols deferred;    // deferred Dsymbol's needing semantic() run on them
     extern (C++) __gshared Dsymbols deferred2;   // deferred Dsymbol's needing semantic2() run on them
     extern (C++) __gshared Dsymbols deferred3;   // deferred Dsymbol's needing semantic3() run on them
-    extern (C++) __gshared uint dprogress;       // progress resolving the deferred list
 
     static void _init()
     {
@@ -619,7 +618,7 @@ extern (C++) final class Module : Package
         else
         {
             // if module is not named 'package' but we're trying to read 'package.d', we're looking for a package module
-            bool isPackageMod = (strcmp(toChars(), "package") != 0) && (strcmp(srcfile.name(), package_d) == 0 || (strcmp(srcfile.name(), package_di) == 0));
+            bool isPackageMod = (strcmp(toChars(), "package") != 0) && isPackageFileName(srcfile);
             if (isPackageMod)
                 .error(loc, "importing package '%s' requires a 'package.d' file which cannot be found in '%s'", toChars(), srcfile.toChars());
             else
@@ -824,8 +823,7 @@ extern (C++) final class Module : Package
 
         const(char)* srcname = srcfile.toChars();
         //printf("Module::parse(srcname = '%s')\n", srcname);
-        isPackageFile = (strcmp(srcfile.name(), package_d) == 0 ||
-                         strcmp(srcfile.name(), package_di) == 0);
+        isPackageFile = isPackageFileName(srcfile);
         const(char)[] buf = cast(const(char)[]) this.src;
 
         bool needsReencoding = true;
@@ -1032,8 +1030,7 @@ extern (C++) final class Module : Package
             }
             assert(dst);
             Module m = ppack ? ppack.isModule() : null;
-            if (m && (strcmp(m.srcfile.name(), package_d) != 0 &&
-                      strcmp(m.srcfile.name(), package_di) != 0))
+            if (m && !isPackageFileName(m.srcfile))
             {
                 .error(md.loc, "package name '%s' conflicts with usage as a module name in file %s", ppack.toPrettyChars(), m.srcfile.toChars());
             }
@@ -1302,19 +1299,22 @@ extern (C++) final class Module : Package
     extern (D) static void addDeferredSemantic(Dsymbol s)
     {
         //printf("Module::addDeferredSemantic('%s')\n", s.toChars());
-        deferred.push(s);
+        if (!deferred.contains(s))
+            deferred.push(s);
     }
 
     extern (D) static void addDeferredSemantic2(Dsymbol s)
     {
         //printf("Module::addDeferredSemantic2('%s')\n", s.toChars());
-        deferred2.push(s);
+        if (!deferred2.contains(s))
+            deferred2.push(s);
     }
 
     extern (D) static void addDeferredSemantic3(Dsymbol s)
     {
         //printf("Module::addDeferredSemantic3('%s')\n", s.toChars());
-        deferred3.push(s);
+        if (!deferred.contains(s))
+            deferred3.push(s);
     }
 
     /******************************************
@@ -1322,19 +1322,15 @@ extern (C++) final class Module : Package
      */
     static void runDeferredSemantic()
     {
-        if (dprogress == 0)
-            return;
-
         __gshared int nested;
         if (nested)
             return;
-        //if (deferred.dim) printf("+Module::runDeferredSemantic(), len = %d\n", deferred.dim);
+        //if (deferred.dim) printf("+Module::runDeferredSemantic(), len = %ld\n", deferred.dim);
         nested++;
 
         size_t len;
         do
         {
-            dprogress = 0;
             len = deferred.dim;
             if (!len)
                 break;
@@ -1360,13 +1356,13 @@ extern (C++) final class Module : Package
                 s.dsymbolSemantic(null);
                 //printf("deferred: %s, parent = %s\n", s.toChars(), s.parent.toChars());
             }
-            //printf("\tdeferred.dim = %d, len = %d, dprogress = %d\n", deferred.dim, len, dprogress);
+            //printf("\tdeferred.dim = %ld, len = %ld\n", deferred.dim, len);
             if (todoalloc)
                 free(todoalloc);
         }
-        while (deferred.dim < len || dprogress); // while making progress
+        while (deferred.dim != len); // while making progress
         nested--;
-        //printf("-Module::runDeferredSemantic(), len = %d\n", deferred.dim);
+        //printf("-Module::runDeferredSemantic(), len = %ld\n", deferred.dim);
     }
 
     static void runDeferredSemantic2()

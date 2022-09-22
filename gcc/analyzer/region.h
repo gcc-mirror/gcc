@@ -72,27 +72,37 @@ enum region_kind
 
    region
      space_region
-       frame_region (RK_FRAME)
-       globals_region (RK_GLOBALS)
-       code_region (RK_CODE)
-       stack_region (RK_STACK)
-       heap_region (RK_HEAP)
-     root_region (RK_ROOT)
-     function_region (RK_FUNCTION)
-     label_region (RK_LABEL)
-     symbolic_region (RK_SYMBOLIC)
-     decl_region (RK_DECL),
-     field_region (RK_FIELD)
-     element_region (RK_ELEMENT)
-     offset_region (RK_OFFSET)
-     sized_region (RK_SIZED)
-     cast_region (RK_CAST)
-     heap_allocated_region (RK_HEAP_ALLOCATED)
-     alloca_region (RK_ALLOCA)
-     string_region (RK_STRING)
-     bit_range_region (RK_BIT_RANGE)
-     var_arg_region (RK_VAR_ARG)
-     unknown_region (RK_UNKNOWN).  */
+       frame_region (RK_FRAME): a function frame on the stack
+       globals_region (RK_GLOBALS): holds globals variables (data and bss)
+       code_region (RK_CODE): represents the code segment, containing functions
+       stack_region (RK_STACK): a stack, containing all stack frames
+       heap_region (RK_HEAP): the heap, containing heap_allocated_regions
+     root_region (RK_ROOT): the top-level region
+     function_region (RK_FUNCTION): the code for a particular function
+     label_region (RK_LABEL): a particular label within a function
+     symbolic_region (RK_SYMBOLIC): dereferencing a symbolic pointer
+     decl_region (RK_DECL): the memory occupied by a particular global, local,
+			    or SSA name
+     field_region (RK_FIELD): the memory occupied by a field within a struct
+			      or union
+     element_region (RK_ELEMENT): an element within an array
+     offset_region (RK_OFFSET): a byte-offset within another region, for
+				handling pointer arithmetic as a region
+     sized_region (RK_SIZED): a subregion of symbolic size (in bytes)
+			      within its parent
+     cast_region (RK_CAST): a region that views another region using a
+			    different type
+     heap_allocated_region (RK_HEAP_ALLOCATED): an untyped region dynamically
+						allocated on the heap via
+						"malloc" or similar
+     alloca_region (RK_ALLOCA): an untyped region dynamically allocated on the
+				stack via "alloca"
+     string_region (RK_STRING): a region for a STRING_CST
+     bit_range_region (RK_BIT_RANGE): a region for a specific range of bits
+				      within another region
+     var_arg_region (RK_VAR_ARG): a region for the N-th vararg within a
+				  frame_region for a variadic call
+     unknown_region (RK_UNKNOWN): for handling unimplemented tree codes.  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
 
@@ -165,7 +175,7 @@ public:
 
   bool involves_p (const svalue *sval) const;
 
-  region_offset get_offset () const;
+  region_offset get_offset (region_model_manager *mgr) const;
 
   /* Attempt to get the size of this region as a concrete number of bytes.
      If successful, return true and write the size to *OUT.
@@ -186,6 +196,11 @@ public:
      Otherwise return false.  */
   virtual bool get_relative_concrete_offset (bit_offset_t *out) const;
 
+  /* Get the offset in bytes of this region relative to its parent as a svalue.
+     Might return an unknown_svalue.  */
+  virtual const svalue *
+  get_relative_symbolic_offset (region_model_manager *mgr) const;
+
   /* Attempt to get the position and size of this region expressed as a
      concrete range of bytes relative to its parent.
      If successful, return true and write to *OUT.
@@ -201,6 +216,8 @@ public:
 
   bool symbolic_for_unknown_ptr_p () const;
 
+  bool symbolic_p () const;
+
   /* For most base regions it makes sense to track the bindings of the region
      within the store.  As an optimization, some are not tracked (to avoid
      bloating the store object with redundant binding clusters).  */
@@ -214,7 +231,7 @@ public:
   region (complexity c, unsigned id, const region *parent, tree type);
 
  private:
-  region_offset calc_offset () const;
+  region_offset calc_offset (region_model_manager *mgr) const;
 
   complexity m_complexity;
   unsigned m_id; // purely for deterministic sorting at this stage, for dumps
@@ -739,6 +756,8 @@ public:
   tree get_field () const { return m_field; }
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
 
 private:
   tree m_field;
@@ -823,6 +842,8 @@ public:
 
   virtual bool
   get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
 
 private:
   const svalue *m_index;
@@ -907,6 +928,11 @@ public:
   const svalue *get_byte_offset () const { return m_byte_offset; }
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
+  const svalue * get_byte_size_sval (region_model_manager *mgr)
+    const final override;
+
 
 private:
   const svalue *m_byte_offset;
@@ -1072,6 +1098,8 @@ public:
   void accept (visitor *v) const final override;
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
+  bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+
   const region *get_original_region () const { return m_original_region; }
 
 private:
@@ -1228,6 +1256,8 @@ public:
   bool get_bit_size (bit_size_t *out) const final override;
   const svalue *get_byte_size_sval (region_model_manager *mgr) const final override;
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
+    const final override;
 
 private:
   bit_range m_bits;

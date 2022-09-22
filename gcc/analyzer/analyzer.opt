@@ -70,6 +70,10 @@ Wanalyzer-exposure-through-output-file
 Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
 Warn about code paths in which sensitive data is written to a file.
 
+Wanalyzer-exposure-through-uninit-copy
+Common Var(warn_analyzer_exposure_through_uninit_copy) Init(1) Warning
+Warn about code paths in which sensitive data is copied across a security boundary.
+
 Wanalyzer-fd-access-mode-mismatch
 Common Var(warn_analyzer_fd_mode_mismatch) Init(1) Warning
 Warn about code paths in which read on a write-only file descriptor is attempted, or vice versa.
@@ -98,6 +102,14 @@ Wanalyzer-free-of-non-heap
 Common Var(warn_analyzer_free_of_non_heap) Init(1) Warning
 Warn about code paths in which a non-heap pointer is freed.
 
+Wanalyzer-imprecise-fp-arithmetic
+Common Var(warn_analyzer_imprecise_fp_arithmetic) Init(1) Warning
+Warn about code paths in which floating-point arithmetic is used in locations where precise computation is needed.
+
+Wanalyzer-jump-through-null
+Common Var(warn_analyzer_jump_through_null) Init(1) Warning
+Warn about code paths in which a NULL function pointer is called.
+
 Wanalyzer-malloc-leak
 Common Var(warn_analyzer_malloc_leak) Init(1) Warning
 Warn about code paths in which a heap-allocated pointer leaks.
@@ -105,6 +117,10 @@ Warn about code paths in which a heap-allocated pointer leaks.
 Wanalyzer-mismatching-deallocation
 Common Var(warn_analyzer_mismatching_deallocation) Init(1) Warning
 Warn about code paths in which the wrong deallocation function is called.
+
+Wanalyzer-out-of-bounds
+Common Var(warn_analyzer_out_of_bounds) Init(1) Warning
+Warn about code paths in which a write or read to a buffer is out-of-bounds.
 
 Wanalyzer-possible-null-argument
 Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
@@ -125,6 +141,10 @@ Warn about code paths in which NULL is passed to a must-not-be-NULL function arg
 Wanalyzer-null-dereference
 Common Var(warn_analyzer_null_dereference) Init(1) Warning
 Warn about code paths in which a NULL pointer is dereferenced.
+
+Wanalyzer-putenv-of-auto-var
+Common Var(warn_analyzer_putenv_of_auto_var) Init(1) Warning
+Warn about code paths in which an on-stack buffer is passed to putenv.
 
 Wanalyzer-shift-count-negative
 Common Var(warn_analyzer_shift_count_negative) Init(1) Warning

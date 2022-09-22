@@ -50,6 +50,9 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 #define TOKEN_SPELL(token) (token_spellings[(token)->type].category)
 #define TOKEN_NAME(token) (token_spellings[(token)->type].name)
 
+/* ISO 10646 defines the UCS codespace as the range 0-0x10FFFF inclusive.  */
+#define UCS_LIMIT 0x10FFFF
+
 static void add_line_note (cpp_buffer *, const uchar *, unsigned int);
 static int skip_line_comment (cpp_reader *);
 static void skip_whitespace (cpp_reader *, cppchar_t);
@@ -1426,19 +1429,35 @@ get_bidi_utf8 (cpp_reader *pfile, const unsigned char *const p, location_t *out)
 /* Parse a UCN where P points just past \u or \U and return its bidi code.  */
 
 static bidi::kind
-get_bidi_ucn_1 (const unsigned char *p, bool is_U)
+get_bidi_ucn_1 (const unsigned char *p, bool is_U, const unsigned char **end)
 {
   /* 6.4.3 Universal Character Names
       \u hex-quad
       \U hex-quad hex-quad
+      \u { simple-hexadecimal-digit-sequence }
      where \unnnn means \U0000nnnn.  */
 
+  *end = p + 4;
   if (is_U)
     {
       if (p[0] != '0' || p[1] != '0' || p[2] != '0' || p[3] != '0')
 	return bidi::kind::NONE;
       /* Skip 4B so we can treat \u and \U the same below.  */
       p += 4;
+      *end += 4;
+    }
+  else if (p[0] == '{')
+    {
+      p++;
+      while (*p == '0')
+	p++;
+      if (p[0] != '2'
+	  || p[1] != '0'
+	  || !ISXDIGIT (p[2])
+	  || !ISXDIGIT (p[3])
+	  || p[4] != '}')
+	return bidi::kind::NONE;
+      *end = p + 5;
     }
 
   /* All code points we are looking for start with 20xx.  */
@@ -1496,19 +1515,70 @@ get_bidi_ucn_1 (const unsigned char *p, bool is_U)
 }
 
 /* Parse a UCN where P points just past \u or \U and return its bidi code.
-   If the kind is not NONE, write the location to *OUT.*/
+   If the kind is not NONE, write the location to *OUT.  */
 
 static bidi::kind
-get_bidi_ucn (cpp_reader *pfile,  const unsigned char *p, bool is_U,
+get_bidi_ucn (cpp_reader *pfile, const unsigned char *p, bool is_U,
 	      location_t *out)
 {
-  bidi::kind result = get_bidi_ucn_1 (p, is_U);
+  const unsigned char *end;
+  bidi::kind result = get_bidi_ucn_1 (p, is_U, &end);
   if (result != bidi::kind::NONE)
     {
       const unsigned char *start = p - 2;
-      size_t num_bytes = 2 + (is_U ? 8 : 4);
+      size_t num_bytes = end - start;
       *out = get_location_for_byte_range_in_cur_line (pfile, start, num_bytes);
     }
+  return result;
+}
+
+/* Parse a named universal character escape where P points just past \N and
+   return its bidi code.  If the kind is not NONE, write the location to
+   *OUT.  */
+
+static bidi::kind
+get_bidi_named (cpp_reader *pfile, const unsigned char *p, location_t *out)
+{
+  bidi::kind result = bidi::kind::NONE;
+  if (*p != '{')
+    return bidi::kind::NONE;
+  if (strncmp ((const char *) (p + 1), "LEFT-TO-RIGHT ", 14) == 0)
+    {
+      if (strncmp ((const char *) (p + 15), "MARK}", 5) == 0)
+	result = bidi::kind::LTR;
+      else if (strncmp ((const char *) (p + 15), "EMBEDDING}", 10) == 0)
+	result = bidi::kind::LRE;
+      else if (strncmp ((const char *) (p + 15), "OVERRIDE}", 9) == 0)
+	result = bidi::kind::LRO;
+      else if (strncmp ((const char *) (p + 15), "ISOLATE}", 8) == 0)
+	result = bidi::kind::LRI;
+    }
+  else if (strncmp ((const char *) (p + 1), "RIGHT-TO-LEFT ", 14) == 0)
+    {
+      if (strncmp ((const char *) (p + 15), "MARK}", 5) == 0)
+	result = bidi::kind::RTL;
+      else if (strncmp ((const char *) (p + 15), "EMBEDDING}", 10) == 0)
+	result = bidi::kind::RLE;
+      else if (strncmp ((const char *) (p + 15), "OVERRIDE}", 9) == 0)
+	result = bidi::kind::RLO;
+      else if (strncmp ((const char *) (p + 15), "ISOLATE}", 8) == 0)
+	result = bidi::kind::RLI;
+    }
+  else if (strncmp ((const char *) (p + 1), "POP DIRECTIONAL ", 16) == 0)
+    {
+      if (strncmp ((const char *) (p + 16), "FORMATTING}", 11) == 0)
+	result = bidi::kind::PDF;
+      else if (strncmp ((const char *) (p + 16), "ISOLATE}", 8) == 0)
+	result = bidi::kind::PDI;
+    }
+  else if (strncmp ((const char *) (p + 1), "FIRST STRONG ISOLATE}", 21) == 0)
+    result = bidi::kind::FSI;
+  if (result != bidi::kind::NONE)
+    *out = get_location_for_byte_range_in_cur_line (pfile, p - 2,
+						    (strchr ((const char *)
+							     (p + 1), '}')
+						     - (const char *) p)
+						    + 3);
   return result;
 }
 
@@ -1637,6 +1707,120 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
   bidi::on_char (kind, ucn_p, loc);
 }
 
+static const cppchar_t utf8_continuation = 0x80;
+static const cppchar_t utf8_signifier = 0xC0;
+
+/* Emit -Winvalid-utf8 warning on invalid UTF-8 character starting
+   at PFILE->buffer->cur.  Return a pointer after the diagnosed
+   invalid character.  */
+
+static const uchar *
+_cpp_warn_invalid_utf8 (cpp_reader *pfile)
+{
+  cpp_buffer *buffer = pfile->buffer;
+  const uchar *cur = buffer->cur;
+  bool pedantic = (CPP_PEDANTIC (pfile)
+		   && CPP_OPTION (pfile, cpp_warn_invalid_utf8) == 2);
+
+  if (cur[0] < utf8_signifier
+      || cur[1] < utf8_continuation || cur[1] >= utf8_signifier)
+    {
+      if (pedantic)
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+			     pfile->line_table->highest_line,
+			     CPP_BUF_COL (buffer),
+			     "invalid UTF-8 character <%x>",
+			     cur[0]);
+      else
+	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
+			       pfile->line_table->highest_line,
+			       CPP_BUF_COL (buffer),
+			       "invalid UTF-8 character <%x>",
+			       cur[0]);
+      return cur + 1;
+    }
+  else if (cur[2] < utf8_continuation || cur[2] >= utf8_signifier)
+    {
+      if (pedantic)
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+			     pfile->line_table->highest_line,
+			     CPP_BUF_COL (buffer),
+			     "invalid UTF-8 character <%x><%x>",
+			     cur[0], cur[1]);
+      else
+	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
+			       pfile->line_table->highest_line,
+			       CPP_BUF_COL (buffer),
+			       "invalid UTF-8 character <%x><%x>",
+			       cur[0], cur[1]);
+      return cur + 2;
+    }
+  else if (cur[3] < utf8_continuation || cur[3] >= utf8_signifier)
+    {
+      if (pedantic)
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+			     pfile->line_table->highest_line,
+			     CPP_BUF_COL (buffer),
+			     "invalid UTF-8 character <%x><%x><%x>",
+			     cur[0], cur[1], cur[2]);
+      else
+	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
+			       pfile->line_table->highest_line,
+			       CPP_BUF_COL (buffer),
+			       "invalid UTF-8 character <%x><%x><%x>",
+			       cur[0], cur[1], cur[2]);
+      return cur + 3;
+    }
+  else
+    {
+      if (pedantic)
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+			     pfile->line_table->highest_line,
+			     CPP_BUF_COL (buffer),
+			     "invalid UTF-8 character <%x><%x><%x><%x>",
+			     cur[0], cur[1], cur[2], cur[3]);
+      else
+	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
+			       pfile->line_table->highest_line,
+			       CPP_BUF_COL (buffer),
+			       "invalid UTF-8 character <%x><%x><%x><%x>",
+			       cur[0], cur[1], cur[2], cur[3]);
+      return cur + 4;
+    }
+}
+
+/* Helper function of *skip_*_comment and lex*_string.  For C,
+   character at CUR[-1] with MSB set handle -Wbidi-chars* and
+   -Winvalid-utf8 diagnostics and return pointer to first character
+   that should be processed next.  */
+
+static inline const uchar *
+_cpp_handle_multibyte_utf8 (cpp_reader *pfile, uchar c,
+			    const uchar *cur, bool warn_bidi_p,
+			    bool warn_invalid_utf8_p)
+{
+  /* If this is a beginning of a UTF-8 encoding, it might be
+     a bidirectional control character.  */
+  if (c == bidi::utf8_start && warn_bidi_p)
+    {
+      location_t loc;
+      bidi::kind kind = get_bidi_utf8 (pfile, cur - 1, &loc);
+      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
+    }
+  if (!warn_invalid_utf8_p)
+    return cur;
+  if (c >= utf8_signifier)
+    {
+      cppchar_t s;
+      const uchar *pstr = cur - 1;
+      if (_cpp_valid_utf8 (pfile, &pstr, pfile->buffer->rlimit, 0, NULL, &s)
+	  && s <= UCS_LIMIT)
+	return pstr;
+    }
+  pfile->buffer->cur = cur - 1;
+  return _cpp_warn_invalid_utf8 (pfile);
+}
+
 /* Skip a C-style block comment.  We find the end of the comment by
    seeing if an asterisk is before every '/' we encounter.  Returns
    nonzero if comment terminated by EOF, zero otherwise.
@@ -1649,6 +1833,8 @@ _cpp_skip_block_comment (cpp_reader *pfile)
   const uchar *cur = buffer->cur;
   uchar c;
   const bool warn_bidi_p = pfile->warn_bidi_p ();
+  const bool warn_invalid_utf8_p = CPP_OPTION (pfile, cpp_warn_invalid_utf8);
+  const bool warn_bidi_or_invalid_utf8_p = warn_bidi_p | warn_invalid_utf8_p;
 
   cur++;
   if (*cur == '/')
@@ -1698,14 +1884,10 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 
 	  cur = buffer->cur;
 	}
-      /* If this is a beginning of a UTF-8 encoding, it might be
-	 a bidirectional control character.  */
-      else if (__builtin_expect (c == bidi::utf8_start, 0) && warn_bidi_p)
-	{
-	  location_t loc;
-	  bidi::kind kind = get_bidi_utf8 (pfile, cur - 1, &loc);
-	  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
-	}
+      else if (__builtin_expect (c >= utf8_continuation, 0)
+	       && warn_bidi_or_invalid_utf8_p)
+	cur = _cpp_handle_multibyte_utf8 (pfile, c, cur, warn_bidi_p,
+					  warn_invalid_utf8_p);
     }
 
   buffer->cur = cur;
@@ -1722,11 +1904,13 @@ skip_line_comment (cpp_reader *pfile)
   cpp_buffer *buffer = pfile->buffer;
   location_t orig_line = pfile->line_table->highest_line;
   const bool warn_bidi_p = pfile->warn_bidi_p ();
+  const bool warn_invalid_utf8_p = CPP_OPTION (pfile, cpp_warn_invalid_utf8);
+  const bool warn_bidi_or_invalid_utf8_p = warn_bidi_p | warn_invalid_utf8_p;
 
-  if (!warn_bidi_p)
+  if (!warn_bidi_or_invalid_utf8_p)
     while (*buffer->cur != '\n')
       buffer->cur++;
-  else
+  else if (!warn_invalid_utf8_p)
     {
       while (*buffer->cur != '\n'
 	     && *buffer->cur != bidi::utf8_start)
@@ -1745,6 +1929,22 @@ skip_line_comment (cpp_reader *pfile)
 	    }
 	  maybe_warn_bidi_on_close (pfile, buffer->cur);
 	}
+    }
+  else
+    {
+      while (*buffer->cur != '\n')
+	{
+	  if (*buffer->cur < utf8_continuation)
+	    {
+	      buffer->cur++;
+	      continue;
+	    }
+	  buffer->cur
+	    = _cpp_handle_multibyte_utf8 (pfile, *buffer->cur, buffer->cur + 1,
+					  warn_bidi_p, warn_invalid_utf8_p);
+	}
+      if (warn_bidi_p)
+	maybe_warn_bidi_on_close (pfile, buffer->cur);
     }
 
   _cpp_process_line_notes (pfile, true);
@@ -1852,8 +2052,6 @@ warn_about_normalization (cpp_reader *pfile,
     }
 }
 
-static const cppchar_t utf8_signifier = 0xC0;
-
 /* Returns TRUE if the sequence starting at buffer->cur is valid in
    an identifier.  FIRST is TRUE if this starts an identifier.  */
 
@@ -1897,16 +2095,20 @@ forms_identifier_p (cpp_reader *pfile, int first,
 	    return true;
 	}
       else if (*buffer->cur == '\\'
-	       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
+	       && (buffer->cur[1] == 'u'
+		   || buffer->cur[1] == 'U'
+		   || buffer->cur[1] == 'N'))
 	{
 	  buffer->cur += 2;
 	  if (warn_bidi_p)
 	    {
 	      location_t loc;
-	      bidi::kind kind = get_bidi_ucn (pfile,
-					      buffer->cur,
-					      buffer->cur[-1] == 'U',
-					      &loc);
+	      bidi::kind kind;
+	      if (buffer->cur[-1] == 'N')
+		kind = get_bidi_named (pfile, buffer->cur, &loc);
+	      else
+		kind = get_bidi_ucn (pfile, buffer->cur,
+				     buffer->cur[-1] == 'U', &loc);
 	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/true, loc);
 	    }
 	  if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
@@ -2290,6 +2492,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 {
   const uchar *pos = base;
   const bool warn_bidi_p = pfile->warn_bidi_p ();
+  const bool warn_invalid_utf8_p = CPP_OPTION (pfile, cpp_warn_invalid_utf8);
+  const bool warn_bidi_or_invalid_utf8_p = warn_bidi_p | warn_invalid_utf8_p;
 
   /* 'tis a pity this information isn't passed down from the lexer's
      initial categorization of the token.  */
@@ -2526,13 +2730,10 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	  pos = base = pfile->buffer->cur;
 	  note = &pfile->buffer->notes[pfile->buffer->cur_note];
 	}
-      else if (__builtin_expect ((unsigned char) c == bidi::utf8_start, 0)
-	       && warn_bidi_p)
-	{
-	  location_t loc;
-	  bidi::kind kind = get_bidi_utf8 (pfile, pos - 1, &loc);
-	  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
-	}
+      else if (__builtin_expect ((unsigned char) c >= utf8_continuation, 0)
+	       && warn_bidi_or_invalid_utf8_p)
+	pos = _cpp_handle_multibyte_utf8 (pfile, c, pos, warn_bidi_p,
+					  warn_invalid_utf8_p);
     }
 
   if (warn_bidi_p)
@@ -2633,6 +2834,8 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     terminator = '>', type = CPP_HEADER_NAME;
 
   const bool warn_bidi_p = pfile->warn_bidi_p ();
+  const bool warn_invalid_utf8_p = CPP_OPTION (pfile, cpp_warn_invalid_utf8);
+  const bool warn_bidi_or_invalid_utf8_p = warn_bidi_p | warn_invalid_utf8_p;
   for (;;)
     {
       cppchar_t c = *cur++;
@@ -2640,11 +2843,14 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
       /* In #include-style directives, terminators are not escapable.  */
       if (c == '\\' && !pfile->state.angled_headers && *cur != '\n')
 	{
-	  if ((cur[0] == 'u' || cur[0] == 'U') && warn_bidi_p)
+	  if ((cur[0] == 'u' || cur[0] == 'U' || cur[0] == 'N') && warn_bidi_p)
 	    {
 	      location_t loc;
-	      bidi::kind kind = get_bidi_ucn (pfile, cur + 1, cur[0] == 'U',
-					      &loc);
+	      bidi::kind kind;
+	      if (cur[0] == 'N')
+		kind = get_bidi_named (pfile, cur + 1, &loc);
+	      else
+		kind = get_bidi_ucn (pfile, cur + 1, cur[0] == 'U', &loc);
 	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/true, loc);
 	    }
 	  cur++;
@@ -2671,12 +2877,10 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	}
       else if (c == '\0')
 	saw_NUL = true;
-      else if (__builtin_expect (c == bidi::utf8_start, 0) && warn_bidi_p)
-	{
-	  location_t loc;
-	  bidi::kind kind = get_bidi_utf8 (pfile, cur - 1, &loc);
-	  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
-	}
+      else if (__builtin_expect (c >= utf8_continuation, 0)
+	       && warn_bidi_or_invalid_utf8_p)
+	cur = _cpp_handle_multibyte_utf8 (pfile, c, cur, warn_bidi_p,
+					  warn_invalid_utf8_p);
     }
 
   if (saw_NUL && !pfile->state.skipping)
@@ -3978,6 +4182,7 @@ _cpp_lex_direct (cpp_reader *pfile)
     default:
       {
 	const uchar *base = --buffer->cur;
+	static int no_warn_cnt;
 
 	/* Check for an extended identifier ($ or UCN or UTF-8).  */
 	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
@@ -3998,7 +4203,33 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    const uchar *pstr = base;
 	    cppchar_t s;
 	    if (_cpp_valid_utf8 (pfile, &pstr, buffer->rlimit, 0, NULL, &s))
-	      buffer->cur = pstr;
+	      {
+		if (s > UCS_LIMIT && CPP_OPTION (pfile, cpp_warn_invalid_utf8))
+		  {
+		    buffer->cur = base;
+		    _cpp_warn_invalid_utf8 (pfile);
+		  }
+		buffer->cur = pstr;
+	      }
+	    else if (CPP_OPTION (pfile, cpp_warn_invalid_utf8))
+	      {
+		buffer->cur = base;
+		const uchar *end = _cpp_warn_invalid_utf8 (pfile);
+		buffer->cur = base + 1;
+		no_warn_cnt = end - buffer->cur;
+	      }
+	  }
+	else if (c >= utf8_continuation
+		 && CPP_OPTION (pfile, cpp_warn_invalid_utf8))
+	  {
+	    if (no_warn_cnt)
+	      --no_warn_cnt;
+	    else
+	      {
+		buffer->cur = base;
+		_cpp_warn_invalid_utf8 (pfile);
+		buffer->cur = base + 1;
+	      }
 	  }
 	create_literal (pfile, result, base, buffer->cur - base, CPP_OTHER);
 	break;

@@ -1326,7 +1326,7 @@ class Lexer
                 switch (*p)
                 {
                 case ';':
-                    c = HtmlNamedEntity(idstart, p - idstart);
+                    c = HtmlNamedEntity(idstart[0 .. p - idstart]);
                     if (c == ~0)
                     {
                         error(loc, "unnamed character entity &%.*s;", cast(int)(p - idstart), idstart);
@@ -2531,7 +2531,7 @@ class Lexer
         auto sbufptr = cast(const(char)*)stringbuffer[].ptr;
         TOK result;
         bool isOutOfRange = false;
-        t.floatvalue = (isWellformedString ? CTFloat.parse(sbufptr, &isOutOfRange) : CTFloat.zero);
+        t.floatvalue = (isWellformedString ? CTFloat.parse(sbufptr, isOutOfRange) : CTFloat.zero);
         switch (*p)
         {
         case 'F':

@@ -29,5 +29,5 @@ main()
 {
   typedef std::wstring_view string_view_type;
   string_view_type s;
-  s[0]; // abort
+  (void) s[0]; // abort
 }

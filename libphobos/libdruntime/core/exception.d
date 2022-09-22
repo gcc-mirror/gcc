@@ -14,7 +14,7 @@ void __switch_errorT()(string file = __FILE__, size_t line = __LINE__) @trusted
 {
     // Consider making this a compile time check.
     version (D_Exceptions)
-        throw staticError!SwitchError(file, line, null);
+        throw staticError!SwitchError("No appropriate switch clause found", file, line, null);
     else
         assert(0, "No appropriate switch clause found");
 }
@@ -446,16 +446,16 @@ class ForkError : Error
  */
 class SwitchError : Error
 {
-    @safe pure nothrow @nogc this( string file = __FILE__, size_t line = __LINE__, Throwable next = null )
+    @safe pure nothrow @nogc this( string msg, string file = __FILE__, size_t line = __LINE__, Throwable next = null )
     {
-        super( "No appropriate switch clause found", file, line, next );
+        super( msg, file, line, next );
     }
 }
 
 unittest
 {
     {
-        auto se = new SwitchError();
+        auto se = new SwitchError("No appropriate switch clause found");
         assert(se.file == __FILE__);
         assert(se.line == __LINE__ - 2);
         assert(se.next is null);
@@ -463,7 +463,7 @@ unittest
     }
 
     {
-        auto se = new SwitchError("hello", 42, new Exception("It's an Exception!"));
+        auto se = new SwitchError("No appropriate switch clause found", "hello", 42, new Exception("It's an Exception!"));
         assert(se.file == "hello");
         assert(se.line == 42);
         assert(se.next !is null);

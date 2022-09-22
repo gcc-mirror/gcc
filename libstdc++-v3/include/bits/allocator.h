@@ -265,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp value_type;
       template<typename _Up> allocator(const allocator<_Up>&) { }
     };
+  /// @endcond
 
   /// @} group allocator
 
@@ -277,72 +278,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Undefine.
 #undef __allocator_base
-
-  // To implement Option 3 of DR 431.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
-    struct __alloc_swap
-    { static void _S_do_it(_Alloc&, _Alloc&) _GLIBCXX_NOEXCEPT { } };
-
-  template<typename _Alloc>
-    struct __alloc_swap<_Alloc, false>
-    {
-      static void
-      _S_do_it(_Alloc& __one, _Alloc& __two) _GLIBCXX_NOEXCEPT
-      {
-	// Precondition: swappable allocators.
-	if (__one != __two)
-	  swap(__one, __two);
-      }
-    };
-
-  // Optimize for stateless allocators.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
-    struct __alloc_neq
-    {
-      static bool
-      _S_do_it(const _Alloc&, const _Alloc&)
-      { return false; }
-    };
-
-  template<typename _Alloc>
-    struct __alloc_neq<_Alloc, false>
-    {
-      static bool
-      _S_do_it(const _Alloc& __one, const _Alloc& __two)
-      { return __one != __two; }
-    };
-
-#if __cplusplus >= 201103L
-  template<typename _Tp, bool
-    = __or_<is_copy_constructible<typename _Tp::value_type>,
-            is_nothrow_move_constructible<typename _Tp::value_type>>::value>
-    struct __shrink_to_fit_aux
-    { static bool _S_do_it(_Tp&) noexcept { return false; } };
-
-  template<typename _Tp>
-    struct __shrink_to_fit_aux<_Tp, true>
-    {
-      _GLIBCXX20_CONSTEXPR
-      static bool
-      _S_do_it(_Tp& __c) noexcept
-      {
-#if __cpp_exceptions
-	try
-	  {
-	    _Tp(__make_move_if_noexcept_iterator(__c.begin()),
-		__make_move_if_noexcept_iterator(__c.end()),
-		__c.get_allocator()).swap(__c);
-	    return true;
-	  }
-	catch(...)
-	  { return false; }
-#else
-	return false;
-#endif
-      }
-    };
-#endif
-  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

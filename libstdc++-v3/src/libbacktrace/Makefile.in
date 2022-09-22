@@ -181,10 +181,10 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am_libstdc___libbacktrace_la_OBJECTS = $(obj_prefix)-atomic.lo \
-	$(obj_prefix)-dwarf.lo $(obj_prefix)-fileline.lo \
-	$(obj_prefix)-posix.lo $(obj_prefix)-sort.lo \
-	$(obj_prefix)-simple.lo $(obj_prefix)-state.lo \
-	$(obj_prefix)-cp-demangle.lo
+	$(obj_prefix)-backtrace.lo $(obj_prefix)-dwarf.lo \
+	$(obj_prefix)-fileline.lo $(obj_prefix)-posix.lo \
+	$(obj_prefix)-sort.lo $(obj_prefix)-simple.lo \
+	$(obj_prefix)-state.lo $(obj_prefix)-cp-demangle.lo
 libstdc___libbacktrace_la_OBJECTS =  \
 	$(am_libstdc___libbacktrace_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -507,6 +507,7 @@ obj_prefix = std_stacktrace
 libstdc___libbacktrace_la_SHORTNAME = $(obj_prefix)
 libstdc___libbacktrace_la_SOURCES = \
 	atomic.c \
+	backtrace.c \
 	dwarf.c \
 	fileline.c \
 	posix.c \
@@ -646,6 +647,9 @@ distclean-compile:
 
 $(obj_prefix)-atomic.lo: atomic.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-atomic.lo `test -f 'atomic.c' || echo '$(srcdir)/'`atomic.c
+
+$(obj_prefix)-backtrace.lo: backtrace.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-backtrace.lo `test -f 'backtrace.c' || echo '$(srcdir)/'`backtrace.c
 
 $(obj_prefix)-dwarf.lo: dwarf.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-dwarf.lo `test -f 'dwarf.c' || echo '$(srcdir)/'`dwarf.c

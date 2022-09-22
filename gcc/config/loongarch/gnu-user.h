@@ -40,8 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef GNU_USER_TARGET_LINK_SPEC
 #define GNU_USER_TARGET_LINK_SPEC \
   "%{G*} %{shared} -m " GNU_USER_LINK_EMULATION \
-  "%{!shared: %{static} %{!static: %{rdynamic:-export-dynamic} " \
-  "-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
+  "%{!shared: %{static} " \
+  "%{!static: %{!static-pie: %{rdynamic:-export-dynamic} " \
+  "-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} " \
+  "%{static-pie: -static -pie --no-dynamic-linker -z text}}"
 
 
 /* Similar to standard Linux, but adding -ffast-math support.  */

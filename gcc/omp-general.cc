@@ -80,6 +80,17 @@ omp_check_optional_argument (tree decl, bool for_present_check)
   return lang_hooks.decls.omp_check_optional_argument (decl, for_present_check);
 }
 
+/* Return true if TYPE is an OpenMP mappable type.  */
+
+bool
+omp_mappable_type (tree type)
+{
+  /* Mappable type has to be complete.  */
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    return false;
+  return true;
+}
+
 /* True if OpenMP should privatize what this DECL points to rather
    than the DECL itself.  */
 
@@ -230,8 +241,13 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	break;
       case OMP_CLAUSE_ORDERED:
 	fd->have_ordered = true;
-	if (OMP_CLAUSE_ORDERED_EXPR (t))
-	  fd->ordered = tree_to_shwi (OMP_CLAUSE_ORDERED_EXPR (t));
+	if (OMP_CLAUSE_ORDERED_DOACROSS (t))
+	  {
+	    if (OMP_CLAUSE_ORDERED_EXPR (t))
+	      fd->ordered = tree_to_shwi (OMP_CLAUSE_ORDERED_EXPR (t));
+	    else
+	      fd->ordered = -1;
+	  }
 	break;
       case OMP_CLAUSE_SCHEDULE:
 	gcc_assert (!distribute && !taskloop);
@@ -289,6 +305,9 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       default:
 	break;
       }
+
+  if (fd->ordered == -1)
+    fd->ordered = fd->collapse;
 
   /* For order(reproducible:concurrent) schedule ({dynamic,guided,runtime})
      we have either the option to expensively remember at runtime how we've

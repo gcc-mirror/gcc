@@ -69,12 +69,16 @@
     </row>
 
     <row>
-      <entry><literal>-fexceptions</literal></entry>
+      <entry>
+	<literal>-fno-exceptions</literal>
+      </entry>
       <entry>See <link linkend="intro.using.exception.no">exception-free dialect</link></entry>
     </row>
 
     <row>
-      <entry><literal>-frtti</literal></entry>
+      <entry>
+	<literal>-fno-rtti</literal>
+      </entry>
       <entry>As above, but RTTI-free dialect.</entry>
     </row>
 
@@ -101,6 +105,17 @@
       <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
         is required for use of the Filesystem library extensions in
         <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
+      </entry>
+    </row>
+
+    <row>
+      <entry><literal>-lstdc++_libbacktrace</literal></entry>
+      <entry>Until C++23 support is non-experimental, linking to
+	<filename class="libraryfile">libstdc++_libbacktrace.a</filename>
+	is required for use of the C++23 type
+	<classname>std::stacktrace</classname>
+	and related types in
+	<filename class="headerfile">&lt;stacktrace&gt;</filename>.
       </entry>
     </row>
 
@@ -1129,6 +1144,15 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	extensions and libstdc++-specific behavior into errors.
       </para>
     </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_DEBUG_BACKTRACE</code></term>
+    <listitem>
+      <para>
+	Undefined by default. Considered only if libstdc++ has been configured with
+	<option>--enable-libstdcxx-backtrace=yes</option> and if <code>_GLIBCXX_DEBUG</code>
+	is defined. When defined display backtraces on
+	<link linkend="manual.ext.debug_mode">debug mode</link> assertions.
+      </para>
+    </listitem></varlistentry>
     <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
     <listitem>
       <para>Undefined by default. When defined, compiles user code
@@ -1635,6 +1659,7 @@ A quick read of the relevant part of the GCC
       header will remain compatible between different GCC releases.
     </para>
     </section>
+
   </section>
 
   <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>

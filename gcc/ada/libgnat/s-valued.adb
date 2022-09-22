@@ -38,7 +38,7 @@ package body System.Value_D is
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Round => False);
+   package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1), Round => False);
    --  We do not use the Extra digit for decimal fixed-point types
 
    function Integer_to_Decimal
@@ -229,16 +229,16 @@ package body System.Value_D is
       Max   : Integer;
       Scale : Integer) return Int
    is
-      Base   : Unsigned;
-      ScaleB : Integer;
-      Extra  : Unsigned;
-      Minus  : Boolean;
-      Val    : Uns;
+      Base  : Unsigned;
+      Scl   : Impl.Scale_Array;
+      Extra : Unsigned;
+      Minus : Boolean;
+      Val   : Impl.Value_Array;
 
    begin
-      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, ScaleB, Extra, Minus);
+      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scl, Extra, Minus);
 
-      return Integer_to_Decimal (Str, Val, Base, ScaleB, Minus, Scale);
+      return Integer_to_Decimal (Str, Val (1), Base, Scl (1), Minus, Scale);
    end Scan_Decimal;
 
    -------------------
@@ -246,16 +246,16 @@ package body System.Value_D is
    -------------------
 
    function Value_Decimal (Str : String; Scale : Integer) return Int is
-      Base   : Unsigned;
-      ScaleB : Integer;
-      Extra  : Unsigned;
-      Minus  : Boolean;
-      Val    : Uns;
+      Base  : Unsigned;
+      Scl   : Impl.Scale_Array;
+      Extra : Unsigned;
+      Minus : Boolean;
+      Val   : Impl.Value_Array;
 
    begin
-      Val := Impl.Value_Raw_Real (Str, Base, ScaleB, Extra, Minus);
+      Val := Impl.Value_Raw_Real (Str, Base, Scl, Extra, Minus);
 
-      return Integer_to_Decimal (Str, Val, Base, ScaleB, Minus, Scale);
+      return Integer_to_Decimal (Str, Val (1), Base, Scl (1), Minus, Scale);
    end Value_Decimal;
 
 end System.Value_D;

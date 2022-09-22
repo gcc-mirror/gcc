@@ -354,6 +354,11 @@ enum {
 };
 #endif
 
+#if !defined(SYS_timer_settime) && defined(SYS_timer_settime32)
+// musl defines SYS_timer_settim32 on 32-bit systems.
+#define SYS_timer_settime SYS_timer_settime32
+#endif
+
 #if defined(HAVE_LOFF_T)
 // loff_t can be defined as a macro; for -fgo-dump-spec make sure we
 // see a typedef.

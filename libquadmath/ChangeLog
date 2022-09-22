@@ -1,3 +1,7 @@
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2022-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Set XCFLAGS to -mno-gnu-attribute on

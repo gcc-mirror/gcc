@@ -2627,6 +2627,47 @@ execute_omp_device_lower ()
 	tree type = lhs ? TREE_TYPE (lhs) : integer_type_node;
 	switch (gimple_call_internal_fn (stmt))
 	  {
+	  case IFN_GOMP_TARGET_REV:
+	    {
+#ifndef ACCEL_COMPILER
+	      gimple_stmt_iterator gsi2 = gsi;
+	      gsi_next (&gsi2);
+	      gcc_assert (!gsi_end_p (gsi2));
+	      gcc_assert (gimple_call_builtin_p (gsi_stmt (gsi2),
+						 BUILT_IN_GOMP_TARGET));
+	      tree old_decl
+		= TREE_OPERAND (gimple_call_arg (gsi_stmt (gsi2), 1), 0);
+	      tree new_decl = gimple_call_arg (gsi_stmt (gsi), 0);
+	      gimple_call_set_arg (gsi_stmt (gsi2), 1, new_decl);
+	      update_stmt (gsi_stmt (gsi2));
+	      new_decl = TREE_OPERAND (new_decl, 0);
+	      unsigned i;
+	      unsigned num_funcs = vec_safe_length (offload_funcs);
+	      for (i = 0; i < num_funcs; i++)
+		{
+		  if ((*offload_funcs)[i] == old_decl)
+		    {
+		      (*offload_funcs)[i] = new_decl;
+		      break;
+		    }
+		  else if ((*offload_funcs)[i] == new_decl)
+		    break;  /* This can happen due to inlining.  */
+		}
+	      gcc_assert (i < num_funcs);
+#else
+	      tree old_decl = TREE_OPERAND (gimple_call_arg (gsi_stmt (gsi), 0),
+					    0);
+#endif
+	      /* FIXME: Find a way to actually prevent outputting the empty-body
+		 old_decl as debug symbol + function in the assembly file.  */
+	      cgraph_node *node = cgraph_node::get (old_decl);
+	      node->address_taken = false;
+	      node->need_lto_streaming = false;
+	      node->offloadable = false;
+
+	      unlink_stmt_vdef (stmt);
+	    }
+	    break;
 	  case IFN_GOMP_USE_SIMT:
 	    rhs = vf == 1 ? integer_zero_node : integer_one_node;
 	    break;
@@ -2803,6 +2844,15 @@ pass_omp_target_link::execute (function *fun)
 	{
 	  if (gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_GOMP_TARGET))
 	    {
+	      tree dev = gimple_call_arg (gsi_stmt (gsi), 0);
+	      tree fn = gimple_call_arg (gsi_stmt (gsi), 1);
+	      if (POINTER_TYPE_P (TREE_TYPE (fn)))
+		fn = TREE_OPERAND (fn, 0);
+	      if (TREE_CODE (dev) == INTEGER_CST
+		  && wi::to_wide (dev) == GOMP_DEVICE_HOST_FALLBACK
+		  && lookup_attribute ("omp target device_ancestor_nohost",
+				       DECL_ATTRIBUTES (fn)) != NULL_TREE)
+		continue;  /* ancestor:1  */
 	      /* Nullify the second argument of __builtin_GOMP_target_ext.  */
 	      gimple_call_set_arg (gsi_stmt (gsi), 1, null_pointer_node);
 	      update_stmt (gsi_stmt (gsi));

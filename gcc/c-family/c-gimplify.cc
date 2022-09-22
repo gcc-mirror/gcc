@@ -708,18 +708,6 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	break;
       }
 
-    case DECL_EXPR:
-      /* This is handled mostly by gimplify.cc, but we have to deal with
-	 not warning about int x = x; as it is a GCC extension to turn off
-	 this warning but only if warn_init_self is zero.  */
-      if (VAR_P (DECL_EXPR_DECL (*expr_p))
-	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
-	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
-	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
-	  && !warn_init_self)
-	suppress_warning (DECL_EXPR_DECL (*expr_p), OPT_Winit_self);
-      break;
-
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:

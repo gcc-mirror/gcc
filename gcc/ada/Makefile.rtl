@@ -110,14 +110,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-cbprqu$(objext) \
   a-cbsyqu$(objext) \
   a-cdlili$(objext) \
-  a-cfdlli$(objext) \
-  a-cfhama$(objext) \
-  a-cfhase$(objext) \
-  a-cfidll$(objext) \
-  a-cfinve$(objext) \
-  a-cfinse$(objext) \
-  a-cforma$(objext) \
-  a-cforse$(objext) \
   a-cgaaso$(objext) \
   a-cgarso$(objext) \
   a-cgcaso$(objext) \
@@ -144,14 +136,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-clrefi$(objext) \
   a-coboho$(objext) \
   a-cobove$(objext) \
-  a-cofove$(objext) \
-  a-cofuba$(objext) \
-  a-cofuma$(objext) \
-  a-cofuse$(objext) \
-  a-cofuve$(objext) \
   a-cogeso$(objext) \
-  a-cohama$(objext) \
-  a-cohase$(objext) \
   a-cohata$(objext) \
   a-coinho$(objext) \
   a-coinve$(objext) \
@@ -778,6 +763,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-vaenu8$(objext) \
   s-vafi32$(objext) \
   s-vafi64$(objext) \
+  s-vaispe$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
   s-valflt$(objext) \
@@ -796,6 +782,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-valuns$(objext) \
   s-valuti$(objext) \
   s-valwch$(objext) \
+  s-vauspe$(objext) \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \

@@ -27,6 +27,11 @@
  "Boolean registers @code{b0}-@code{b15}; only available if the Xtensa
   Boolean Option is configured.")
 
+(define_register_constraint "c" "TARGET_WINDOWED_ABI ? NO_REGS : ISC_REGS"
+ "@internal
+  General-purpose AR registers for indirect sibling calls, @code{a2}-
+  @code{a8}.")
+
 (define_register_constraint "d" "TARGET_DENSITY ? AR_REGS: NO_REGS"
  "@internal
   All AR registers, including sp, but only if the Xtensa Code Density

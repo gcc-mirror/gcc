@@ -35,6 +35,8 @@ enum value_range_kind
   VR_RANGE,
   /* Range is ~[MIN, MAX].  */
   VR_ANTI_RANGE,
+  /* Range is a NAN.  */
+  VR_NAN,
   /* Range is a nice guy.  */
   VR_LAST
 };
@@ -78,7 +80,7 @@ public:
   virtual void accept (const class vrange_visitor &v) const = 0;
   virtual void set (tree, tree, value_range_kind = VR_RANGE);
   virtual tree type () const;
-  virtual bool supports_type_p (tree type) const;
+  virtual bool supports_type_p (const_tree type) const;
   virtual void set_varying (tree type);
   virtual void set_undefined ();
   virtual bool union_ (const vrange &);
@@ -122,8 +124,8 @@ public:
   virtual void set_undefined () override;
 
   // Range types.
-  static bool supports_p (tree type);
-  virtual bool supports_type_p (tree type) const override;
+  static bool supports_p (const_tree type);
+  virtual bool supports_type_p (const_tree type) const override;
   virtual tree type () const override;
 
   // Iteration over sub-ranges.
@@ -228,6 +230,7 @@ public:
   int_range (tree type);
   int_range (const int_range &);
   int_range (const irange &);
+  virtual ~int_range () = default;
   int_range& operator= (const int_range &);
 private:
   template <unsigned X> friend void gt_ggc_mx (int_range<X> *);
@@ -250,120 +253,103 @@ private:
 class unsupported_range : public vrange
 {
 public:
-  unsupported_range ();
+  unsupported_range ()
+  {
+    m_discriminator = VR_UNKNOWN;
+    set_undefined ();
+  }
+  virtual void set_undefined () final override
+  {
+    m_kind = VR_UNDEFINED;
+  }
   virtual void accept (const vrange_visitor &v) const override;
 };
 
-// Floating point property to represent possible values of a NAN, INF, etc.
-
-class fp_prop
-{
-public:
-  enum kind {
-    UNDEFINED	= 0x0,		// Prop is impossible.
-    YES		= 0x1,		// Prop is definitely set.
-    NO		= 0x2,		// Prop is definitely not set.
-    VARYING	= (YES | NO)	// Prop may hold.
-  };
-  fp_prop (kind f) : m_kind (f) { }
-  bool varying_p () const { return m_kind == VARYING; }
-  bool undefined_p () const { return m_kind == UNDEFINED; }
-  bool yes_p () const { return m_kind == YES; }
-  bool no_p () const { return m_kind == NO; }
-private:
-  unsigned char m_kind : 2;
-};
-
-// Accessors for individual FP properties.
-
-#define FP_PROP_ACCESSOR(NAME) \
-  void NAME##_set_varying () { u.bits.NAME = fp_prop::VARYING; }	\
-  void NAME##_set_yes () { u.bits.NAME = fp_prop::YES; }	\
-  void NAME##_set_no () { u.bits.NAME = fp_prop::NO; }	\
-  bool NAME##_varying_p () const { return u.bits.NAME == fp_prop::VARYING; } \
-  bool NAME##_undefined_p () const { return u.bits.NAME == fp_prop::UNDEFINED; } \
-  bool NAME##_yes_p () const { return u.bits.NAME == fp_prop::YES; }	\
-  bool NAME##_no_p () const { return u.bits.NAME == fp_prop::NO; } \
-  fp_prop get_##NAME () const				   \
-  { return fp_prop ((fp_prop::kind) u.bits.NAME); } \
-  void set_##NAME (fp_prop::kind f) { u.bits.NAME = f; }
-
-// Aggregate of all the FP properties in an frange packed into one
-// structure to save space.  Using explicit fp_prop's in the frange,
-// would take one byte per property because of padding.  Instead, we
-// can save all properties into one byte.
-
-class frange_props
-{
-public:
-  frange_props () { set_varying (); }
-  void set_varying () { u.bytes = 0xff; }
-  void set_undefined () { u.bytes = 0; }
-  bool varying_p () { return u.bytes == 0xff; }
-  bool undefined_p () { return u.bytes == 0; }
-  bool union_ (const frange_props &other);
-  bool intersect (const frange_props &other);
-  bool operator== (const frange_props &other) const;
-  FP_PROP_ACCESSOR(nan)
-  FP_PROP_ACCESSOR(inf)
-  FP_PROP_ACCESSOR(ninf)
-private:
-  union {
-    struct {
-      unsigned char nan : 2;
-      unsigned char inf : 2;
-      unsigned char ninf : 2;
-    } bits;
-    unsigned char bytes;
-  } u;
-};
-
-// Accessors for getting/setting all FP properties at once.
-
-#define FRANGE_PROP_ACCESSOR(NAME)				\
-  fp_prop get_##NAME () const { return m_props.get_##NAME (); }	\
-  void set_##NAME (fp_prop::kind f)				\
-  {								\
-    m_props.set_##NAME (f);					\
-    normalize_kind ();						\
-  }
-
 // A floating point range.
+//
+// The representation is a type with a couple of endpoints, unioned
+// with the set of { -NAN, +Nan }.
 
 class frange : public vrange
 {
   friend class frange_storage_slot;
+  friend class vrange_printer;
 public:
   frange ();
   frange (const frange &);
-  static bool supports_p (tree type)
+  frange (tree, tree, value_range_kind = VR_RANGE);
+  frange (tree type, const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
+	  value_range_kind = VR_RANGE);
+  static bool supports_p (const_tree type)
   {
-    // Disabled until floating point range-ops come live.
-    return 0 && SCALAR_FLOAT_TYPE_P (type);
+    // ?? Decimal floats can have multiple representations for the
+    // same number.  Supporting them may be as simple as just
+    // disabling them in singleton_p.  No clue.
+    return SCALAR_FLOAT_TYPE_P (type) && !DECIMAL_FLOAT_TYPE_P (type);
   }
   virtual tree type () const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
+  void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
+	    value_range_kind = VR_RANGE);
+  void set_nan (tree type);
+  void set_nan (tree type, bool sign);
   virtual void set_varying (tree type) override;
   virtual void set_undefined () override;
   virtual bool union_ (const vrange &) override;
   virtual bool intersect (const vrange &) override;
-  virtual bool supports_type_p (tree type) const override;
+  virtual bool contains_p (tree) const override;
+  virtual bool singleton_p (tree *result = NULL) const override;
+  virtual bool supports_type_p (const_tree type) const override;
   virtual void accept (const vrange_visitor &v) const override;
+  virtual bool zero_p () const override;
+  virtual bool nonzero_p () const override;
+  virtual void set_nonzero (tree type) override;
+  virtual void set_zero (tree type) override;
+  virtual void set_nonnegative (tree type) override;
   frange& operator= (const frange &);
   bool operator== (const frange &) const;
   bool operator!= (const frange &r) const { return !(*this == r); }
+  const REAL_VALUE_TYPE &lower_bound () const;
+  const REAL_VALUE_TYPE &upper_bound () const;
+  void update_nan ();
+  void update_nan (bool sign);
+  void clear_nan ();
 
-  // Each fp_prop can be accessed with get_PROP() and set_PROP().
-  FRANGE_PROP_ACCESSOR(nan)
-  FRANGE_PROP_ACCESSOR(inf)
-  FRANGE_PROP_ACCESSOR(ninf)
+  // fpclassify like API
+  bool known_isfinite () const;
+  bool known_isnan () const;
+  bool known_isinf () const;
+  bool maybe_isnan () const;
+  bool maybe_isinf () const;
+  bool signbit_p (bool &signbit) const;
 private:
   void verify_range ();
-  void normalize_kind ();
+  bool normalize_kind ();
+  bool union_nans (const frange &);
+  bool intersect_nans (const frange &);
+  bool combine_zeros (const frange &, bool union_p);
+  void flush_denormals_to_zero ();
 
-  frange_props m_props;
   tree m_type;
+  REAL_VALUE_TYPE m_min;
+  REAL_VALUE_TYPE m_max;
+  bool m_pos_nan;
+  bool m_neg_nan;
 };
+
+inline const REAL_VALUE_TYPE &
+frange::lower_bound () const
+{
+  gcc_checking_assert (!undefined_p () && !known_isnan ());
+  return m_min;
+}
+
+inline const REAL_VALUE_TYPE &
+frange::upper_bound () const
+{
+  gcc_checking_assert (!undefined_p () && !known_isnan ());
+  return m_max;
+}
 
 // is_a<> and as_a<> implementation for vrange.
 
@@ -457,7 +443,7 @@ public:
   operator vrange &();
   operator const vrange &() const;
   void dump (FILE *) const;
-  static bool supports_type_p (tree type);
+  static bool supports_type_p (const_tree type);
 
   // Convenience methods for vrange compatability.
   void set (tree min, tree max, value_range_kind kind = VR_RANGE)
@@ -588,7 +574,7 @@ Value_Range::operator const vrange &() const
 // Return TRUE if TYPE is supported by the vrange infrastructure.
 
 inline bool
-Value_Range::supports_type_p (tree type)
+Value_Range::supports_type_p (const_tree type)
 {
   return irange::supports_p (type) || frange::supports_p (type);
 }
@@ -730,7 +716,7 @@ irange::nonzero_p () const
 }
 
 inline bool
-irange::supports_p (tree type)
+irange::supports_p (const_tree type)
 {
   return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
 }
@@ -1010,69 +996,6 @@ irange::normalize_kind ()
     }
 }
 
-
-// Supporting methods for frange.
-
-inline bool
-frange_props::operator== (const frange_props &other) const
-{
-  return u.bytes == other.u.bytes;
-}
-
-inline bool
-frange_props::union_ (const frange_props &other)
-{
-  unsigned char saved = u.bytes;
-  u.bytes |= other.u.bytes;
-  return u.bytes != saved;
-}
-
-inline bool
-frange_props::intersect (const frange_props &other)
-{
-  unsigned char saved = u.bytes;
-  u.bytes &= other.u.bytes;
-  return u.bytes != saved;
-}
-
-inline
-frange::frange ()
-{
-  m_discriminator = VR_FRANGE;
-  m_type = nullptr;
-  set_undefined ();
-}
-
-inline
-frange::frange (const frange &src)
-{
-  m_discriminator = VR_FRANGE;
-  *this = src;
-}
-
-inline tree
-frange::type () const
-{
-  return m_type;
-}
-
-inline void
-frange::set_varying (tree type)
-{
-  m_kind = VR_VARYING;
-  m_type = type;
-  m_props.set_varying ();
-}
-
-inline void
-frange::set_undefined ()
-{
-  m_kind = VR_UNDEFINED;
-  m_type = NULL;
-  m_props.set_undefined ();
-}
-
-
 // Return the maximum value for TYPE.
 
 inline tree
@@ -1085,6 +1008,8 @@ vrp_val_max (const_tree type)
       wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
       return wide_int_to_tree (const_cast<tree> (type), max);
     }
+  if (frange::supports_p (type))
+    return build_real (const_cast <tree> (type), dconstinf);
   return NULL_TREE;
 }
 
@@ -1097,7 +1022,242 @@ vrp_val_min (const_tree type)
     return TYPE_MIN_VALUE (type);
   if (POINTER_TYPE_P (type))
     return build_zero_cst (const_cast<tree> (type));
+  if (frange::supports_p (type))
+    return build_real (const_cast <tree> (type), dconstninf);
   return NULL_TREE;
+}
+
+inline
+frange::frange ()
+{
+  m_discriminator = VR_FRANGE;
+  set_undefined ();
+}
+
+inline
+frange::frange (const frange &src)
+{
+  m_discriminator = VR_FRANGE;
+  *this = src;
+}
+
+// frange constructor from REAL_VALUE_TYPE endpoints.
+
+inline
+frange::frange (tree type,
+		const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
+		value_range_kind kind)
+{
+  m_discriminator = VR_FRANGE;
+  set (type, min, max, kind);
+}
+
+// frange constructor from trees.
+
+inline
+frange::frange (tree min, tree max, value_range_kind kind)
+{
+  m_discriminator = VR_FRANGE;
+  set (min, max, kind);
+}
+
+inline tree
+frange::type () const
+{
+  gcc_checking_assert (!undefined_p ());
+  return m_type;
+}
+
+inline void
+frange::set_varying (tree type)
+{
+  m_kind = VR_VARYING;
+  m_type = type;
+  m_min = dconstninf;
+  m_max = dconstinf;
+  m_pos_nan = true;
+  m_neg_nan = true;
+}
+
+inline void
+frange::set_undefined ()
+{
+  m_kind = VR_UNDEFINED;
+  m_type = NULL;
+  m_pos_nan = false;
+  m_neg_nan = false;
+  // m_min and m_min are unitialized as they are REAL_VALUE_TYPE ??.
+  if (flag_checking)
+    verify_range ();
+}
+
+// Set the NAN bit and adjust the range.
+
+inline void
+frange::update_nan ()
+{
+  gcc_checking_assert (!undefined_p ());
+  m_pos_nan = true;
+  m_neg_nan = true;
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+}
+
+// Like above, but set the sign of the NAN.
+
+inline void
+frange::update_nan (bool sign)
+{
+  gcc_checking_assert (!undefined_p ());
+  m_pos_nan = !sign;
+  m_neg_nan = sign;
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+}
+
+// Clear the NAN bit and adjust the range.
+
+inline void
+frange::clear_nan ()
+{
+  gcc_checking_assert (!undefined_p ());
+  m_pos_nan = false;
+  m_neg_nan = false;
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+}
+
+// Set R to maximum representable value for TYPE.
+
+inline void
+real_max_representable (REAL_VALUE_TYPE *r, tree type)
+{
+  char buf[128];
+  get_max_float (REAL_MODE_FORMAT (TYPE_MODE (type)),
+		 buf, sizeof (buf), false);
+  int res = real_from_string (r, buf);
+  gcc_checking_assert (!res);
+}
+
+// Set R to minimum representable value for TYPE.
+
+inline void
+real_min_representable (REAL_VALUE_TYPE *r, tree type)
+{
+  real_max_representable (r, type);
+  *r = real_value_negate (r);
+}
+
+// Build a signless NAN of type TYPE.
+
+inline void
+frange::set_nan (tree type)
+{
+  m_kind = VR_NAN;
+  m_type = type;
+  m_pos_nan = true;
+  m_neg_nan = true;
+  if (flag_checking)
+    verify_range ();
+}
+
+// Build a NAN of type TYPE with SIGN.
+
+inline void
+frange::set_nan (tree type, bool sign)
+{
+  m_kind = VR_NAN;
+  m_type = type;
+  m_neg_nan = sign;
+  m_pos_nan = !sign;
+  if (flag_checking)
+    verify_range ();
+}
+
+// Return TRUE if range is known to be finite.
+
+inline bool
+frange::known_isfinite () const
+{
+  if (undefined_p () || varying_p () || m_kind == VR_ANTI_RANGE)
+    return false;
+  return (!maybe_isnan () && !real_isinf (&m_min) && !real_isinf (&m_max));
+}
+
+// Return TRUE if range may be infinite.
+
+inline bool
+frange::maybe_isinf () const
+{
+  if (undefined_p () || m_kind == VR_ANTI_RANGE || m_kind == VR_NAN)
+    return false;
+  if (varying_p ())
+    return true;
+  return real_isinf (&m_min) || real_isinf (&m_max);
+}
+
+// Return TRUE if range is known to be the [-INF,-INF] or [+INF,+INF].
+
+inline bool
+frange::known_isinf () const
+{
+  return (m_kind == VR_RANGE
+	  && real_identical (&m_min, &m_max)
+	  && real_isinf (&m_min));
+}
+
+// Return TRUE if range is possibly a NAN.
+
+inline bool
+frange::maybe_isnan () const
+{
+  if (undefined_p ())
+    return false;
+  return m_pos_nan || m_neg_nan;
+}
+
+// Return TRUE if range is a +NAN or -NAN.
+
+inline bool
+frange::known_isnan () const
+{
+  return m_kind == VR_NAN;
+}
+
+// If the signbit for the range is known, set it in SIGNBIT and return
+// TRUE.
+
+inline bool
+frange::signbit_p (bool &signbit) const
+{
+  if (undefined_p ())
+    return false;
+
+  // NAN with unknown sign.
+  if (m_pos_nan && m_neg_nan)
+    return false;
+  // No NAN.
+  if (!m_pos_nan && !m_neg_nan)
+    {
+      if (m_min.sign == m_max.sign)
+	{
+	  signbit = m_min.sign;
+	  return true;
+	}
+      return false;
+    }
+  // NAN with known sign.
+  bool nan_sign = m_neg_nan;
+  if (known_isnan ()
+      || (nan_sign == m_min.sign && nan_sign == m_max.sign))
+    {
+      signbit = nan_sign;
+      return true;
+    }
+  return false;
 }
 
 #endif // GCC_VALUE_RANGE_H

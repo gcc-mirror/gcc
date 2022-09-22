@@ -300,6 +300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     } _GLIBCXX11_DEPRECATED;
 
 #if __cplusplus >= 201103L
+#if _GLIBCXX_HOSTED
   template<_Lock_policy _Lp>
   template<typename _Tp>
     inline
@@ -325,13 +326,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline
     shared_ptr<_Tp>::shared_ptr(std::auto_ptr<_Tp1>&& __r)
     : __shared_ptr<_Tp>(std::move(__r)) { }
+#endif // HOSTED
 
   template<typename _Tp, typename _Dp>
   template<typename _Up, typename>
     inline
     unique_ptr<_Tp, _Dp>::unique_ptr(auto_ptr<_Up>&& __u) noexcept
     : _M_t(__u.release(), deleter_type()) { }
-#endif
+#endif // C++11
 
 #pragma GCC diagnostic pop
 

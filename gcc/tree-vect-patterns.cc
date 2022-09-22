@@ -742,7 +742,8 @@ vect_split_statement (vec_info *vinfo, stmt_vec_info stmt2_info, tree new_rhs,
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "into pattern statements: %G", stmt1);
-	  dump_printf_loc (MSG_NOTE, vect_location, "and: %G", new_stmt2);
+	  dump_printf_loc (MSG_NOTE, vect_location, "and: %G",
+			   (gimple *) new_stmt2);
 	}
 
       return true;
@@ -2267,7 +2268,7 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "created pattern stmt: %G", mulhrs_stmt);
+		     "created pattern stmt: %G", (gimple *) mulhrs_stmt);
 
   return vect_convert_output (vinfo, last_stmt_info, lhs_type,
 			      mulhrs_stmt, new_vectype);
@@ -2473,7 +2474,7 @@ vect_recog_average_pattern (vec_info *vinfo,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "created pattern stmt: %G", average_stmt);
+		     "created pattern stmt: %G", (gimple *) average_stmt);
 
   return vect_convert_output (vinfo, last_stmt_info,
 			      type, average_stmt, new_vectype);
@@ -4509,10 +4510,8 @@ vect_recog_bool_pattern (vec_info *vinfo,
 	   && STMT_VINFO_DATA_REF (stmt_vinfo))
     {
       stmt_vec_info pattern_stmt_info;
-      tree nunits_vectype;
-      if (!vect_get_vector_types_for_stmt (vinfo, stmt_vinfo, &vectype,
-					   &nunits_vectype)
-	  || !VECTOR_MODE_P (TYPE_MODE (vectype)))
+      vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
+      if (!vectype || !VECTOR_MODE_P (TYPE_MODE (vectype)))
 	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
@@ -5271,7 +5270,7 @@ vect_determine_precisions_from_range (stmt_vec_info stmt_info, gassign *stmt)
     dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
 		     " without loss of precision: %G",
 		     sign == SIGNED ? "signed" : "unsigned",
-		     value_precision, stmt);
+		     value_precision, (gimple *) stmt);
 
   vect_set_operation_type (stmt_info, type, value_precision, sign);
   vect_set_min_input_precision (stmt_info, type, value_precision);
@@ -5352,7 +5351,7 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
 	dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
 			 " without affecting users: %G",
 			 TYPE_UNSIGNED (type) ? "unsigned" : "signed",
-			 operation_precision, stmt);
+			 operation_precision, (gimple *) stmt);
       vect_set_operation_type (stmt_info, type, operation_precision,
 			       TYPE_SIGN (type));
     }

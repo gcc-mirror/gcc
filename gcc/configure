@@ -5226,12 +5226,16 @@ else
   GNATMAKE="$ac_cv_prog_GNATMAKE"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada" >&5
-$as_echo_n "checking whether compiler driver understands Ada... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada and is recent enough" >&5
+$as_echo_n "checking whether compiler driver understands Ada and is recent enough... " >&6; }
 if ${acx_cv_cc_gcc_supports_ada+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   cat >conftest.adb <<EOF
+pragma Warnings (Off);
+with System.CRTL;
+pragma Warnings (On);
+use type System.CRTL.int64;
 procedure conftest is begin null; end conftest;
 EOF
 acx_cv_cc_gcc_supports_ada=no
@@ -12456,6 +12460,31 @@ $as_echo "#define HOST_HAS_O_CLOEXEC 1" >>confdefs.h
 
 fi
 
+# Check if O_NONBLOCK is defined by fcntl
+for ac_header in fcntl.h
+do :
+  ac_fn_cxx_check_header_preproc "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h"
+if test "x$ac_cv_header_fcntl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FCNTL_H 1
+_ACEOF
+
+fi
+done
+
+ac_fn_cxx_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "#include <fcntl.h>
+"
+if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
+
+fi
+
+if test $ac_cv_have_decl_O_NONBLOCK = yes; then
+
+$as_echo "#define HOST_HAS_O_NONBLOCK 1" >>confdefs.h
+
+fi
+
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some
@@ -12651,21 +12680,6 @@ objext='.o'
 # Check whether --enable-sjlj-exceptions was given.
 if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; case $target in
-  *-*-hpux10*)
-    if test $enableval != yes; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: dwarf2 exceptions not supported, sjlj exceptions forced" >&5
-$as_echo "$as_me: WARNING: dwarf2 exceptions not supported, sjlj exceptions forced" >&2;}
-      enableval=yes
-    fi
-    ;;
-esac
-force_sjlj_exceptions=yes
-else
-  case $target in
-  *-*-hpux10*)
-    force_sjlj_exceptions=yes
-    enableval=yes
-    ;;
   lm32*-*-*)
      force_sjlj_exceptions=yes
      enableval=yes
@@ -13009,7 +13023,6 @@ fi
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
-tm_d_file="${tm_d_file} defaults.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
@@ -13404,13 +13417,9 @@ for f in $tm_p_file; do
 done
 
 tm_d_file_list=
-tm_d_include_list="options.h insn-constants.h"
+tm_d_include_list=
 for f in $tm_d_file; do
   case $f in
-    defaults.h )
-       tm_d_file_list="${tm_d_file_list} \$(srcdir)/$f"
-       tm_d_include_list="${tm_d_include_list} $f"
-       ;;
     * )
        tm_d_file_list="${tm_d_file_list} \$(srcdir)/config/$f"
        tm_d_include_list="${tm_d_include_list} config/$f"
@@ -13546,6 +13555,12 @@ then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS-$@) $(CFLAGS_FOR_BUILD)'
     BUILD_CXXFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS_FOR_BUILD)'
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
+fi
+
+
+if test x$enable_fixincludes = xno;
+then
+    STMP_FIXINC=''
 fi
 
 # Expand extra_headers to include complete path.
@@ -19674,7 +19689,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19677 "configure"
+#line 19692 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19780,7 +19795,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19783 "configure"
+#line 19798 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25078,38 +25093,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for stabs directive" >&5
-$as_echo_n "checking assembler for stabs directive... " >&6; }
-if ${gcc_cv_as_stabs_directive+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_stabs_directive=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '.stabs "gcc2_compiled.",60,0,0,0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_stabs_directive=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_stabs_directive" >&5
-$as_echo "$gcc_cv_as_stabs_directive" >&6; }
-if test $gcc_cv_as_stabs_directive = yes; then
-
-$as_echo "#define HAVE_AS_STABS_DIRECTIVE 1" >>confdefs.h
-
-fi
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support (GNU as)" >&5
 $as_echo_n "checking assembler for COMDAT group support (GNU as)... " >&6; }
 if ${gcc_cv_as_comdat_group+:} false; then :
@@ -28838,6 +28821,40 @@ $as_echo "#define HAVE_AS_EXPLICIT_RELOCS 1" >>confdefs.h
 
 fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for eh_frame pcrel encoding support" >&5
+$as_echo_n "checking assembler for eh_frame pcrel encoding support... " >&6; }
+if ${gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.cfi_startproc
+       .cfi_personality 0x9b,a
+       .cfi_lsda 0x1b,b
+       .cfi_endproc' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support" >&5
+$as_echo "$gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support" >&6; }
+if test $gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support = yes; then
+
+$as_echo "#define HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT 1" >>confdefs.h
+
+fi
+
     ;;
     s390*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
@@ -29657,38 +29674,6 @@ $as_echo "#define HAVE_AS_WORKING_DWARF_N_FLAG 1" >>confdefs.h
    fi
  fi
 
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gstabs option" >&5
-$as_echo_n "checking assembler for --gstabs option... " >&6; }
-if ${gcc_cv_as_gstabs_flag+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gstabs_flag=no
-  if test x$gcc_cv_as != x; then
-    $as_echo "$insn" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gstabs -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_gstabs_flag=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gstabs_flag" >&5
-$as_echo "$gcc_cv_as_gstabs_flag" >&6; }
-if test $gcc_cv_as_gstabs_flag = yes; then
-
-$as_echo "#define HAVE_AS_GSTABS_DEBUG_FLAG 1" >>confdefs.h
-
-fi
-
-
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --debug-prefix-map option" >&5
 $as_echo_n "checking assembler for --debug-prefix-map option... " >&6; }
 if ${gcc_cv_as_debug_prefix_map_flag+:} false; then :
@@ -29742,16 +29727,9 @@ else
    if $gcc_cv_as --compress-debug-sections -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null
    then
      gcc_cv_as_compress_debug=0
-   # Since binutils 2.26, gas supports --compress-debug-sections=type,
+   # Since binutils 2.26, gas supports --compress-debug-sections=zlib,
    # defaulting to the ELF gABI format.
-   elif $gcc_cv_as --compress-debug-sections=zlib-gnu -o conftest.o conftest.s > /dev/null 2>&1
-   then
-     gcc_cv_as_compress_debug=2
-     gcc_cv_as_compress_debug_option="--compress-debug-sections"
-     gcc_cv_as_no_compress_debug_option="--nocompress-debug-sections"
-   # Before binutils 2.26, gas only supported --compress-debug-options and
-   # emitted the traditional GNU format.
-   elif $gcc_cv_as --compress-debug-sections -o conftest.o conftest.s > /dev/null 2>&1
+   elif $gcc_cv_as --compress-debug-sections=zlib -o conftest.o conftest.s > /dev/null 2>&1
    then
      gcc_cv_as_compress_debug=1
      gcc_cv_as_compress_debug_option="--compress-debug-sections"
@@ -30269,48 +30247,16 @@ $as_echo "$gcc_cv_ld_eh_gc_sections_bug" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for compressed debug sections" >&5
 $as_echo_n "checking linker for compressed debug sections... " >&6; }
-# gold/gld support compressed debug sections since binutils 2.19/2.21
-# In binutils 2.26, gld gained support for the ELF gABI format.
-if test $in_tree_ld = yes ; then
-  gcc_cv_ld_compress_debug=0
-  if test $ld_is_mold = yes; then
-    gcc_cv_ld_compress_debug=3
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes && test $ld_is_gold = yes; then
-    gcc_cv_ld_compress_debug=2
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 26 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes && test $ld_is_gold = no; then
-    gcc_cv_ld_compress_debug=3
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2 \
-     && test $in_tree_ld_is_elf = yes; then
+# GNU ld/gold support --compressed-debug-sections=zlib since binutils 2.26.
+if $gcc_cv_ld --help 2>&1 | grep -- '--compress-debug-sections.*\<zlib-gabi\>' > /dev/null; then
     gcc_cv_ld_compress_debug=1
-  fi
-elif echo "$ld_ver" | grep GNU > /dev/null; then
-  if test $ld_is_mold = yes; then
-    gcc_cv_ld_compress_debug=3
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  elif test "$ld_vers_major" -lt 2 \
-     || test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 21; then
-    gcc_cv_ld_compress_debug=0
-  elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
-    gcc_cv_ld_compress_debug=1
-  else
-    gcc_cv_ld_compress_debug=3
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  fi
-  if test $ld_is_gold = yes; then
-    gcc_cv_ld_compress_debug=2
-    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
-  fi
 else
   case "${target}" in
     *-*-solaris2*)
       # Introduced in Solaris 11.2.
       if $gcc_cv_ld --help 2>&1 | grep -- '-z compress-sections' > /dev/null; then
-        gcc_cv_ld_compress_debug=3
+        gcc_cv_ld_compress_debug=1
         gcc_cv_ld_compress_debug_option="-z compress-sections"
       else
         gcc_cv_ld_compress_debug=0

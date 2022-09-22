@@ -54,24 +54,10 @@ package System.Val_LLLI with SPARK_Mode is
    subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
    package Impl is new Value_I
-     (Int                          => Long_Long_Long_Integer,
-      Uns                          => Long_Long_Long_Unsigned,
-      Scan_Raw_Unsigned            =>
-         Val_LLLU.Scan_Raw_Long_Long_Long_Unsigned,
-      Uns_Option                   => Val_LLLU.Impl.Uns_Option,
-      Wrap_Option                  => Val_LLLU.Impl.Wrap_Option,
-      Is_Raw_Unsigned_Format_Ghost =>
-         Val_LLLU.Impl.Is_Raw_Unsigned_Format_Ghost,
-      Raw_Unsigned_Overflows_Ghost =>
-         Val_LLLU.Impl.Raw_Unsigned_Overflows_Ghost,
-      Scan_Raw_Unsigned_Ghost      =>
-         Val_LLLU.Impl.Scan_Raw_Unsigned_Ghost,
-      Raw_Unsigned_Last_Ghost      =>
-         Val_LLLU.Impl.Raw_Unsigned_Last_Ghost,
-      Only_Decimal_Ghost           =>
-         Val_LLLU.Impl.Only_Decimal_Ghost,
-      Scan_Based_Number_Ghost      =>
-         Val_LLLU.Impl.Scan_Based_Number_Ghost);
+     (Int               => Long_Long_Long_Integer,
+      Uns               => Long_Long_Long_Unsigned,
+      Scan_Raw_Unsigned => Val_LLLU.Scan_Raw_Long_Long_Long_Unsigned,
+      Uns_Params        => System.Val_LLLU.Impl.Spec.Uns_Params);
 
    procedure Scan_Long_Long_Long_Integer
      (Str  : String;

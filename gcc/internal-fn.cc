@@ -368,6 +368,14 @@ expand_GOMP_SIMT_VF (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in omp_device_lower pass.  */
+
+static void
+expand_GOMP_TARGET_REV (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Lane index of the first SIMT lane that supplies a non-zero argument.
    This is a SIMT counterpart to GOMP_SIMD_LAST_LANE, used to represent the
    lane that executed the last iteration for handling OpenMP lastprivate.  */
@@ -4493,4 +4501,10 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   expand_insn (icode, 3, ops);
   if (!rtx_equal_p (target, ops[0].value))
     emit_move_insn (target, ops[0].value);
+}
+
+void
+expand_TRAP (internal_fn, gcall *)
+{
+  expand_builtin_trap ();
 }

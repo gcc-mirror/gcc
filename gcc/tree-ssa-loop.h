@@ -54,11 +54,11 @@ public:
   widest_int max;	/* The upper bound on the number of iterations of
 			   the loop.  */
 
-  /* The simplified shape of the exit condition.  The loop exits if
-     CONTROL CMP BOUND is false, where CMP is one of NE_EXPR,
-     LT_EXPR, or GT_EXPR, and step of CONTROL is positive if CMP is
-     LE_EXPR and negative if CMP is GE_EXPR.  This information is used
-     by loop unrolling.  */
+  /* The simplified shape of the exit condition.  This information is used by
+     loop unrolling.  If CMP is ERROR_MARK, then the loop cannot be unrolled.
+     Otherwise, the loop exits if CONTROL CMP BOUND is false, where CMP is one
+     of NE_EXPR, LT_EXPR, or GT_EXPR, and CONTROL.STEP is positive if CMP is
+     LT_EXPR and negative if CMP is GT_EXPR.  */
   affine_iv control;
   tree bound;
   enum tree_code cmp;

@@ -608,11 +608,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Target Pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() ix86_register_pragmas ()
 
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS ix86_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO ix86_d_register_target_info
-#define TARGET_D_HAS_STDCALL_CONVENTION ix86_d_has_stdcall_convention
-
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
 #endif
@@ -1011,7 +1006,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX256_REG_MODE(MODE)					\
   ((MODE) == V32QImode || (MODE) == V16HImode || (MODE) == V8SImode	\
    || (MODE) == V4DImode || (MODE) == V2TImode || (MODE) == V8SFmode	\
-   || (MODE) == V4DFmode || (MODE) == V16HFmode)
+   || (MODE) == V4DFmode || (MODE) == V16HFmode || (MODE) == V16BFmode)
 
 #define VALID_AVX256_REG_OR_OI_MODE(MODE)		\
   (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
@@ -1026,7 +1021,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
-   || (MODE) == V4TImode || (MODE) == V32HFmode)
+   || (MODE) == V4TImode || (MODE) == V32HFmode || (MODE) == V32BFmode)
 
 #define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
   (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
@@ -1035,7 +1030,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
    || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode	\
    || (MODE) == TFmode || (MODE) == V1TImode || (MODE) == V8HFmode	\
-   || (MODE) == TImode)
+   || (MODE) == V8BFmode || (MODE) == TImode)
 
 #define VALID_AVX512FP16_REG_MODE(MODE)					\
   ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode	\
@@ -1044,9 +1039,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
    || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
+   || (MODE) == V8BFmode \
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (MODE) == V2DImode || (MODE) == V2QImode || (MODE) == DFmode	\
-   || (MODE) == HFmode)
+   || (MODE) == HFmode || (MODE) == BFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
@@ -1077,7 +1073,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
    || (MODE) == SDmode || (MODE) == DDmode				\
-   || (MODE) == HFmode || (MODE) == HCmode				\
+   || (MODE) == HFmode || (MODE) == HCmode || (MODE) == BFmode		\
    || (MODE) == V2HImode || (MODE) == V2HFmode				\
    || (MODE) == V1SImode || (MODE) == V4QImode || (MODE) == V2QImode	\
    || (TARGET_64BIT							\
@@ -1095,8 +1091,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V4DImode || (MODE) == V8SFmode || (MODE) == V4DFmode	\
    || (MODE) == V2TImode || (MODE) == V8DImode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V32HImode || (MODE) == V8DFmode	\
-   || (MODE) == V16SFmode || (MODE) == V32HFmode || (MODE) == V16HFmode \
-   || (MODE) == V8HFmode)
+   || (MODE) == V16SFmode \
+   || (MODE) == V32HFmode || (MODE) == V16HFmode || (MODE) == V8HFmode  \
+   || (MODE) == V32BFmode || (MODE) == V16BFmode || (MODE) == V8BFmode)
 
 #define X87_FLOAT_MODE_P(MODE)	\
   (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
@@ -2033,14 +2030,14 @@ do {							\
   { "zmm28", XMM28_REG }, { "zmm29", XMM29_REG }, { "zmm30", XMM30_REG }, { "zmm31", XMM31_REG }  \
 }
 
-/* How to renumber registers for dbx and gdb.  */
+/* How to renumber registers for gdb.  */
 
-#define DBX_REGISTER_NUMBER(N) \
-  (TARGET_64BIT ? dbx64_register_map[(N)] : dbx_register_map[(N)])
+#define DEBUGGER_REGNO(N) \
+  (TARGET_64BIT ? debugger64_register_map[(N)] : debugger_register_map[(N)])
 
-extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
-extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern int const debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
+extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
