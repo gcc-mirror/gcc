@@ -7789,8 +7789,9 @@ trees_out::decl_value (tree decl, depset *dep)
 	    }
 	  else
 	    {
-	      tree_node (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (inner)));
-	      tree_node (CLASSTYPE_TI_ARGS (TREE_TYPE (inner)));
+	      tree ti = get_template_info (inner);
+	      tree_node (TI_TEMPLATE (ti));
+	      tree_node (TI_ARGS (ti));
 	    }
 	}
       tree_node (get_constraints (decl));
@@ -10625,9 +10626,10 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	case MK_partial:
 	  {
+	    tree ti = get_template_info (inner);
 	    key.constraints = get_constraints (inner);
-	    key.ret = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (inner));
-	    key.args = CLASSTYPE_TI_ARGS (TREE_TYPE (inner));
+	    key.ret = TI_TEMPLATE (ti);
+	    key.args = TI_ARGS (ti);
 	  }
 	  break;
 	}
@@ -10866,8 +10868,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	       spec; spec = TREE_CHAIN (spec))
 	    {
 	      tree tmpl = TREE_VALUE (spec);
-	      if (template_args_equal (key.args,
-				       CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl)))
+	      tree ti = get_template_info (tmpl);
+	      if (template_args_equal (key.args, TI_ARGS (ti))
 		  && cp_tree_equal (key.constraints,
 				    get_constraints
 				    (DECL_TEMPLATE_RESULT (tmpl))))
@@ -11381,8 +11383,7 @@ has_definition (tree decl)
 
     case VAR_DECL:
       if (DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INFO (decl)
-	  && DECL_USE_TEMPLATE (decl) < 2)
+	  && DECL_TEMPLATE_INFO (decl))
 	return DECL_INITIAL (decl);
       else
 	{
@@ -12498,11 +12499,14 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
   if (!dep)
     {
-      if (DECL_IMPLICIT_TYPEDEF_P (decl)
-	  /* ... not an enum, for instance.  */
-	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
-	  && TYPE_LANG_SPECIFIC (TREE_TYPE (decl))
-	  && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)) == 2)
+      if ((DECL_IMPLICIT_TYPEDEF_P (decl)
+	   /* ... not an enum, for instance.  */
+	   && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	   && TYPE_LANG_SPECIFIC (TREE_TYPE (decl))
+	   && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)) == 2)
+	  || (VAR_P (decl)
+	      && DECL_LANG_SPECIFIC (decl)
+	      && DECL_USE_TEMPLATE (decl) == 2))
 	{
 	  /* A partial or explicit specialization. Partial
 	     specializations might not be in the hash table, because
@@ -12515,7 +12519,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	     dep_hash, and then convert the dep we just found into a
 	     redirect.  */
 
-	  tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (decl));
+	  tree ti = get_template_info (decl);
 	  tree tmpl = TI_TEMPLATE (ti);
 	  tree partial = NULL_TREE;
 	  for (tree spec = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
