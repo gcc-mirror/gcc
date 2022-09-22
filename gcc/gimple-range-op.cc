@@ -208,10 +208,14 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
   // If op2 is undefined, solve as if it is varying.
   if (op2_range.undefined_p ())
     {
-      // This is sometimes invoked on single operand stmts.
       if (gimple_num_ops (m_stmt) < 3)
 	return false;
-      tree op2_type = TREE_TYPE (operand2 ());
+      tree op2_type;
+      // This is sometimes invoked on single operand stmts.
+      if (operand2 ())
+	op2_type = TREE_TYPE (operand2 ());
+      else
+	op2_type = TREE_TYPE (operand1 ());
       Value_Range trange (op2_type);
       trange.set_varying (op2_type);
       return op1_range (r, type, lhs_range, trange);
