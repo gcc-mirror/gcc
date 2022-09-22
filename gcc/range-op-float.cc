@@ -200,8 +200,7 @@ frelop_early_resolve (irange &r, tree type,
 static inline void
 frange_drop_inf (frange &r, tree type)
 {
-  REAL_VALUE_TYPE max;
-  real_max_representable (&max, type);
+  REAL_VALUE_TYPE max = real_max_representable (type);
   frange tmp (type, r.lower_bound (), max);
   r.intersect (tmp);
 }
@@ -212,8 +211,7 @@ frange_drop_inf (frange &r, tree type)
 static inline void
 frange_drop_ninf (frange &r, tree type)
 {
-  REAL_VALUE_TYPE min;
-  real_min_representable (&min, type);
+  REAL_VALUE_TYPE min = real_min_representable (type);
   frange tmp (type, min, r.upper_bound ());
   r.intersect (tmp);
 }
@@ -242,7 +240,8 @@ build_le (frange &r, tree type, const frange &val)
 {
   gcc_checking_assert (!val.known_isnan ());
 
-  r.set (type, dconstninf, val.upper_bound ());
+  REAL_VALUE_TYPE ninf = frange_val_min (type);
+  r.set (type, ninf, val.upper_bound ());
 
   // Add both zeros if there's the possibility of zero equality.
   frange_add_zeros (r, type);
@@ -267,7 +266,8 @@ build_lt (frange &r, tree type, const frange &val)
       return false;
     }
   // We only support closed intervals.
-  r.set (type, dconstninf, val.upper_bound ());
+  REAL_VALUE_TYPE ninf = frange_val_min (type);
+  r.set (type, ninf, val.upper_bound ());
   return true;
 }
 
@@ -278,7 +278,8 @@ build_ge (frange &r, tree type, const frange &val)
 {
   gcc_checking_assert (!val.known_isnan ());
 
-  r.set (type, val.lower_bound (), dconstinf);
+  REAL_VALUE_TYPE inf = frange_val_max (type);
+  r.set (type, val.lower_bound (), inf);
 
   // Add both zeros if there's the possibility of zero equality.
   frange_add_zeros (r, type);
@@ -304,7 +305,8 @@ build_gt (frange &r, tree type, const frange &val)
     }
 
   // We only support closed intervals.
-  r.set (type, val.lower_bound (), dconstinf);
+  REAL_VALUE_TYPE inf = frange_val_max (type);
+  r.set (type, val.lower_bound (), inf);
   return true;
 }
 
