@@ -3,6 +3,13 @@
 	Backport from mainline:
 	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (neg<mode>2): New define_expand.
+
+2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (vec_init<V_ALL:mode><V_ALL_ALT:mode>): New.
 	* config/gcn/gcn.cc (GEN_VN): Add andvNsi3, subvNsi3.
 	(GEN_VNM): Add gathervNm_expr.

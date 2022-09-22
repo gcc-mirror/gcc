@@ -2394,6 +2394,19 @@
    (set_attr "length" "8,8")])
 
 ;; }}}
+;; {{{ Int unops
+
+(define_expand "neg<mode>2"
+  [(match_operand:V_INT 0 "register_operand")
+   (match_operand:V_INT 1 "register_operand")]
+  ""
+  {
+    emit_insn (gen_sub<mode>3 (operands[0], gcn_vec_constant (<MODE>mode, 0),
+			       operands[1]));
+    DONE;
+  })
+
+;; }}}
 ;; {{{ FP binops - special cases
 
 ; GCN does not directly provide a DFmode subtract instruction, so we do it by
