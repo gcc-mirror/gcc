@@ -1,3 +1,19 @@
+2022-09-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* gcc.target/powerpc/pr104482.c: New test.
+
+2022-09-21  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* g++.target/powerpc/pr105485.C: New test.
+
 2022-09-19  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
