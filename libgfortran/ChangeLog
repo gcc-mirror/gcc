@@ -1,3 +1,13 @@
+2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_arithmetic.F90 (IEEE_SET_ROUNDING_MODE): Handle
+	RADIX argument better.
+
+2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Add symbols for IEEE_GET_MODES
+	and IEEE_SET_MODES.
+
 2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* ieee/ieee_exceptions.F90: Add IEEE_MODES_TYPE, IEEE_GET_MODES

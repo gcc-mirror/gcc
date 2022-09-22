@@ -1,3 +1,21 @@
+2022-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106984
+	* gcc.dg/tsan/pr106984.c: New testcase.
+
+2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/rounding_3.f90: New test.
+
+2022-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106967
+	* gcc.dg/tree-ssa/pr106967.c: New test.
+
+2022-09-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106963.c: New test.
+
 2022-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/104143

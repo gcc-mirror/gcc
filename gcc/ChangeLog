@@ -1,3 +1,67 @@
+2022-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106967
+	* value-range.cc (frange::set): Set known NANs to undefined for
+	flag_finite_math_only.
+
+2022-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::combine_zeros): Call set_undefined.
+	(frange::intersect_nans): Same.
+	(frange::intersect): Same.
+	(frange::verify_range): Undefined ranges do not have a type.
+	* value-range.h (frange::set_undefined): Clear NAN flags and type.
+
+2022-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106984
+	* tsan.cc (instrument_builtin_call): Build the COND_EXPR condition in
+	a separate statement.
+
+2022-09-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (HAVE_LOCAL_CPU_DETECT,
+	EXTRA_SPEC_FUNCTIONS, MCPU_MTUNE_NATIVE_SPECS): Move definitions up before
+	OPTION_DEFAULT_SPECS.
+	(MCPU_MTUNE_NATIVE_SPECS): Pass "cpu" to
+	local_cpu_detect when rewriting -march=native and no -mcpu or -mtune
+	is given.
+	(CONFIG_TUNE_SPEC): Define.
+	(OPTION_DEFAULT_SPECS): Use CONFIG_TUNE_SPEC for "tune".
+
+2022-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106967
+	* range-op-float.cc (foperator_equal::fold_range): Adjust for NAN.
+	(foperator_equal::op1_range): Same.
+	(foperator_not_equal::fold_range): Same.
+	(foperator_not_equal::op1_range): Same.
+	(foperator_lt::fold_range): Same.
+	(foperator_lt::op1_range): Same.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::fold_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_ge::fold_range): Same.
+	(foperator_ge::op1_range): Same.
+	(foperator_ge::op2_range): Same.
+	(foperator_unordered::op1_range): Same.
+	(foperator_ordered::fold_range): Same.
+	(foperator_ordered::op1_range): Same.
+	(build_le): Assert that we don't have a NAN.
+	(build_lt): Same.
+	(build_gt): Same.
+	(build_ge): Same.
+
+2022-09-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/106963
+	* tree-vect-loop.cc (vect_create_nonlinear_iv_init): Use
+	vec_gen_perm_mask_any instead of vec_gen_perm_mask_check.
+
 2022-09-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.h (frange::maybe_isnan): Return false for

@@ -1,3 +1,49 @@
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* testsuite/20_util/function/91456.cc: Add comment with PR
+	number.
+	* testsuite/20_util/is_invocable/91456.cc: Likewise. Replace
+	std::function checks with std::is_invocable_r checks.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Remove
+	unnecessary main function.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc:
+	Likewise.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/headers/memory/synopsis.cc: Add declarations
+	from C++11 and later.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Remove trailing
+	whitespace.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/stdlib.h [!_GLIBCXX_HOSTED]: Add
+	using-declaration for _Exit.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/uncaught_exception/14026.cc: Qualify
+	call to std::abort.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h: Include <initializer_list>.
+
 2022-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/c_global/cstdlib [!_GLIBCXX_HOSTED] (quick_exit): Fix
