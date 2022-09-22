@@ -128,6 +128,19 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
+;; '(a >= 0) ? b : 0' is emitted branchless (from if-conversion).  Without a
+;; bit of extra help for combine (i.e., the below split), we end up emitting
+;; not/srai/and instead of combining the not into an andn.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (neg:DI (ge:DI (match_operand:DI 1 "register_operand")
+			       (const_int 0)))
+		(match_operand:DI 2 "register_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_ZBB"
+  [(set (match_dup 3) (ashiftrt:DI (match_dup 1) (const_int 63)))
+   (set (match_dup 0) (and:DI (not:DI (match_dup 3)) (match_dup 2)))])
+
 (define_insn "*xor_not<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
         (not:X (xor:X (match_operand:X 1 "register_operand" "r")
