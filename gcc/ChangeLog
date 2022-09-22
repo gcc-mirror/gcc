@@ -1,3 +1,14 @@
+2022-09-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106491
+	* config/aarch64/aarch64-sve-builtins.cc (scalar_types)
+	(acle_vector_types, acle_svpattern, acle_svprfop): Add GTY
+	markup to (new) extern declarations instead of to the main
+	definition.
+
 2022-09-14  Tom de Vries  <tdevries@suse.de>
 
 	Backported from master:
