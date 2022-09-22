@@ -279,6 +279,29 @@ proc module-init { src } {
     return $option_list
 }
 
+# Return 1 if requirements are met
+proc module-check-requirements { tests } {
+    foreach test $tests {
+	set tmp [dg-get-options $test]
+	foreach op $tmp {
+	    switch [lindex $op 0] {
+		"dg-additional-options" {
+		    # Example strings to match:
+		    # -fmodules-ts -fmodule-mapper=|@g++-mapper-server\\ -t\\ [srcdir]/inc-xlate-1.map
+		    # -fmodules-ts -fmodule-mapper=|@g++-mapper-server
+		    if [regexp -- {(^| )-fmodule-mapper=\|@([^\\ ]*)} [lindex $op 2] dummy dummy2 prog] {
+			verbose "Checking that mapper exist: $prog"
+			if { ![ check_is_prog_name_available $prog ] } {
+			    return 0
+			}
+		    }
+		}
+	    }
+	}
+    }
+    return 1
+}
+
 # cleanup any detritus from previous run
 cleanup_module_files [find $DEFAULT_REPO *.gcm]
 
@@ -306,6 +329,14 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CHX}]] {
     if [runtest_file_p $runtests $src] {
 	set tests [lsort [find [file dirname $src] \
 			      [regsub {_a.[CHX]$} [file tail $src] {_[a-z].[CHX]}]]]
+
+	if { ![module-check-requirements $tests] } {
+	    set testcase [regsub {_a.[CH]} $src {}]
+	    set testcase \
+		[string range $testcase [string length "$srcdir/"] end]
+	    unsupported $testcase
+	    continue
+	}
 
 	set std_list [module-init $src]
 	foreach std $std_list {

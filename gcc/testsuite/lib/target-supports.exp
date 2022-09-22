@@ -12157,3 +12157,18 @@ main:
 	.byte 0
   } ""]
 }
+ 
+# Return 1 if this target has prog named "$prog", 0 otherwise.
+
+proc check_is_prog_name_available { prog } {
+    global tool
+
+    set options [list "additional_flags=-print-prog-name=$prog"]
+    set output [lindex [${tool}_target_compile "" "" "none" $options] 0]
+
+    if { $output == $prog } {
+        return 0
+    }
+
+    return 1
+}
