@@ -4460,28 +4460,39 @@ vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
   return vn_nary_op_insert_into (vno1, valid_info->nary);
 }
 
+/* Return whether we can track a predicate valid when PRED_E is executed.  */
+
+static bool
+can_track_predicate_on_edge (edge pred_e)
+{
+  /* ???  As we are currently recording a basic-block index in
+     vn_pval.valid_dominated_by_p and using dominance for the
+     validity check we cannot track predicates on all edges.  */
+  if (single_pred_p (pred_e->dest))
+    return true;
+  /* Never record for backedges.  */
+  if (pred_e->flags & EDGE_DFS_BACK)
+    return false;
+  /* When there's more than one predecessor we cannot track
+     predicate validity based on the destination block.  The
+     exception is when all other incoming edges are backedges.  */
+  edge_iterator ei;
+  edge e;
+  int cnt = 0;
+  FOR_EACH_EDGE (e, ei, pred_e->dest->preds)
+    if (! dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+      cnt++;
+  return cnt == 1;
+}
+
 static vn_nary_op_t
 vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 				     tree type, tree *ops,
 				     tree result, unsigned int value_id,
 				     edge pred_e)
 {
-  /* ???  Currently tracking BBs.  */
-  if (! single_pred_p (pred_e->dest))
-    {
-      /* Never record for backedges.  */
-      if (pred_e->flags & EDGE_DFS_BACK)
-	return NULL;
-      edge_iterator ei;
-      edge e;
-      int cnt = 0;
-      /* Ignore backedges.  */
-      FOR_EACH_EDGE (e, ei, pred_e->dest->preds)
-	if (! dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-	  cnt++;
-      if (cnt != 1)
-	return NULL;
-    }
+  if (!can_track_predicate_on_edge (pred_e))
+    return NULL;
   if (dump_file && (dump_flags & TDF_DETAILS)
       /* ???  Fix dumping, but currently we only get comparisons.  */
       && TREE_CODE_CLASS (code) == tcc_comparison)
