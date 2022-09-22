@@ -2994,6 +2994,7 @@ c_expr_sizeof_expr (location_t loc, struct c_expr expr)
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
+      ret.m_decimal = 0;
       pop_maybe_used (false);
     }
   else
@@ -3017,6 +3018,7 @@ c_expr_sizeof_expr (location_t loc, struct c_expr expr)
       c_last_sizeof_loc = loc;
       ret.original_code = SIZEOF_EXPR;
       ret.original_type = NULL;
+      ret.m_decimal = 0;
       if (C_TYPE_VARIABLE_SIZE (TREE_TYPE (folded_expr)))
 	{
 	  /* sizeof is evaluated when given a vla (C99 6.5.3.4p2).  */
@@ -3047,6 +3049,7 @@ c_expr_sizeof_type (location_t loc, struct c_type_name *t)
   c_last_sizeof_loc = loc;
   ret.original_code = SIZEOF_EXPR;
   ret.original_type = NULL;
+  ret.m_decimal = 0;
   if (type == error_mark_node)
     {
       ret.value = error_mark_node;
@@ -3782,6 +3785,7 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
 
   result.original_code = code;
   result.original_type = NULL;
+  result.m_decimal = 0;
 
   if (reject_gcc_builtin (arg.value))
     {
@@ -3844,6 +3848,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
 				  arg1.value, arg2.value, true);
   result.original_code = code;
   result.original_type = NULL;
+  result.m_decimal = 0;
 
   if (TREE_CODE (result.value) == ERROR_MARK)
     {
@@ -8072,6 +8077,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  expr.original_type = NULL;
+	  expr.m_decimal = 0;
 	  maybe_warn_string_init (init_loc, type, expr);
 
 	  if (TYPE_DOMAIN (type) && !TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
@@ -8936,6 +8942,7 @@ pop_init_level (location_t loc, int implicit,
   ret.value = NULL_TREE;
   ret.original_code = ERROR_MARK;
   ret.original_type = NULL;
+  ret.m_decimal = 0;
 
   if (implicit == 0)
     {

@@ -5464,6 +5464,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 		    = objc_build_message_expr (rec, args);
 		  mexpr.original_code = ERROR_MARK;
 		  mexpr.original_type = NULL;
+		  mexpr.m_decimal = 0;
 		  /* Now parse and process the remainder of the
 		     initializer, starting with this message
 		     expression as a primary-expression.  */
@@ -8146,6 +8147,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
 	set_c_expr_source_range (&ret, cast_loc, expr.get_finish ());
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
+      ret.m_decimal = 0;
       return ret;
     }
   else
@@ -8464,6 +8466,7 @@ c_parser_alignof_expression (c_parser *parser)
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       set_c_expr_source_range (&ret, start_loc, end_loc);
+      ret.m_decimal = 0;
       return ret;
     }
   else
@@ -8483,6 +8486,7 @@ c_parser_alignof_expression (c_parser *parser)
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       set_c_expr_source_range (&ret, start_loc, end_loc);
+      ret.m_decimal = 0;
       return ret;
     }
 }
@@ -10383,6 +10387,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   expr.value = build_compound_literal (start_loc, type, init.value, non_const,
 				       alignas_align);
   set_c_expr_source_range (&expr, init.src_range);
+  expr.m_decimal = 0;
   expr.original_code = ERROR_MARK;
   expr.original_type = NULL;
   if (type != error_mark_node
@@ -10597,6 +10602,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;
 	  expr.original_type = NULL;
+	  expr.m_decimal = 0;
 	  break;
 	case CPP_OPEN_PAREN:
 	  /* Function call.  */
@@ -10645,6 +10651,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	    = c_build_function_call_vec (expr_loc, arg_loc, expr.value,
 					 exprlist, origtypes);
 	  set_c_expr_source_range (&expr, start, finish);
+	  expr.m_decimal = 0;
 
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) == INTEGER_CST
@@ -10695,6 +10702,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      else
 		expr.original_type = DECL_BIT_FIELD_TYPE (field);
 	    }
+	  expr.m_decimal = 0;
 	  break;
 	case CPP_DEREF:
 	  /* Structure element reference.  */
@@ -10736,6 +10744,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      else
 		expr.original_type = DECL_BIT_FIELD_TYPE (field);
 	    }
+	  expr.m_decimal = 0;
 	  break;
 	case CPP_PLUS_PLUS:
 	  /* Postincrement.  */
@@ -10806,6 +10815,7 @@ c_parser_expression (c_parser *parser)
       expr.value = build_compound_expr (loc, expr.value, next.value);
       expr.original_code = COMPOUND_EXPR;
       expr.original_type = next.original_type;
+      expr.m_decimal = 0;
     }
   return expr;
 }
@@ -13256,6 +13266,7 @@ c_parser_omp_variable_list (c_parser *parser,
 		      t_expr.original_code = ERROR_MARK;
 		      t_expr.original_type = NULL;
 		      set_c_expr_source_range (&t_expr, op_loc, op_loc);
+		      t_expr.m_decimal = 0;
 		      t_expr = convert_lvalue_to_rvalue (op_loc, t_expr,
 							 true, false);
 		      t = build_indirect_ref (op_loc, t_expr.value, RO_ARROW);
@@ -23566,6 +23577,7 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
 	TRANSACTION_EXPR_RELAXED (ret.value) = 1;
       SET_EXPR_LOCATION (ret.value, loc);
       ret.original_code = TRANSACTION_EXPR;
+      ret.m_decimal = 0;
       if (!parens.require_close (parser))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
