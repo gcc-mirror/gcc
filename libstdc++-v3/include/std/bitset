@@ -44,14 +44,15 @@
 
 #pragma GCC system_header
 
-#include <string>
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
-#include <iosfwd>
-#include <bits/cxxabi_forced.h>
-
-#if __cplusplus >= 201103L
-# include <bits/functional_hash.h>
+#if _GLIBCXX_HOSTED
+# include <string>
+# include <iosfwd>
+# include <bits/cxxabi_forced.h>
+# if __cplusplus >= 201103L
+#  include <bits/functional_hash.h>
+# endif
 #endif
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
@@ -64,6 +65,10 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+
+#if __cplusplus > 202002L && _GLIBCXX_HOSTED
+# define __cpp_lib_constexpr_bitset 202202L
+#endif
 
   /**
    *  Base class, general case.  It is a class invariant that _Nw will be
@@ -111,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
-      _WordT&
+      _GLIBCXX14_CONSTEXPR _WordT&
       _M_getword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return _M_w[_S_whichword(__pos)]; }
 
@@ -120,12 +125,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_w[_S_whichword(__pos)]; }
 
 #if __cplusplus >= 201103L
-      const _WordT*
+      constexpr const _WordT*
       _M_getdata() const noexcept
       { return _M_w; }
 #endif
 
-      _WordT&
+      _GLIBCXX23_CONSTEXPR _WordT&
       _M_hiword() _GLIBCXX_NOEXCEPT
       { return _M_w[_Nw - 1]; }
 
@@ -133,52 +138,61 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_hiword() const _GLIBCXX_NOEXCEPT
       { return _M_w[_Nw - 1]; }
 
-      void
+      _GLIBCXX23_CONSTEXPR void
       _M_do_and(const _Base_bitset<_Nw>& __x) _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] &= __x._M_w[__i];
       }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_or(const _Base_bitset<_Nw>& __x) _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] |= __x._M_w[__i];
       }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_xor(const _Base_bitset<_Nw>& __x) _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] ^= __x._M_w[__i];
       }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_left_shift(size_t __shift) _GLIBCXX_NOEXCEPT;
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_right_shift(size_t __shift) _GLIBCXX_NOEXCEPT;
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_flip() _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] = ~_M_w[__i];
       }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_set() _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] = ~static_cast<_WordT>(0);
       }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_reset() _GLIBCXX_NOEXCEPT
-      { __builtin_memset(_M_w, 0, _Nw * sizeof(_WordT)); }
+      {
+	if (__builtin_is_constant_evaluated())
+	  {
+	    for (_WordT& __w : _M_w)
+	      __w = 0;
+	    return;
+	  }
 
-      bool
+	__builtin_memset(_M_w, 0, _Nw * sizeof(_WordT));
+      }
+
+      _GLIBCXX14_CONSTEXPR bool
       _M_is_equal(const _Base_bitset<_Nw>& __x) const _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; ++__i)
@@ -188,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       template<size_t _Nb>
-        bool
+        _GLIBCXX14_CONSTEXPR bool
         _M_are_all() const _GLIBCXX_NOEXCEPT
         {
 	  for (size_t __i = 0; __i < _Nw - 1; __i++)
@@ -199,7 +213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				     - _Nb));
 	}
 
-      bool
+      _GLIBCXX14_CONSTEXPR bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
@@ -208,7 +222,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return false;
       }
 
-      size_t
+      _GLIBCXX14_CONSTEXPR size_t
       _M_do_count() const _GLIBCXX_NOEXCEPT
       {
 	size_t __result = 0;
@@ -217,26 +231,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return __result;
       }
 
-      unsigned long
+      _GLIBCXX14_CONSTEXPR unsigned long
       _M_do_to_ulong() const;
 
 #if __cplusplus >= 201103L
-      unsigned long long
+      _GLIBCXX14_CONSTEXPR unsigned long long
       _M_do_to_ullong() const;
 #endif
 
       // find first "on" bit
-      size_t
+      _GLIBCXX14_CONSTEXPR size_t
       _M_do_find_first(size_t) const _GLIBCXX_NOEXCEPT;
 
       // find the next "on" bit that follows "prev"
-      size_t
+      _GLIBCXX14_CONSTEXPR size_t
       _M_do_find_next(size_t, size_t) const _GLIBCXX_NOEXCEPT;
     };
 
   // Definitions of non-inline functions from _Base_bitset.
   template<size_t _Nw>
-    void
+    _GLIBCXX14_CONSTEXPR void
     _Base_bitset<_Nw>::_M_do_left_shift(size_t __shift) _GLIBCXX_NOEXCEPT
     {
       if (__builtin_expect(__shift != 0, 1))
@@ -262,7 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<size_t _Nw>
-    void
+    _GLIBCXX14_CONSTEXPR void
     _Base_bitset<_Nw>::_M_do_right_shift(size_t __shift) _GLIBCXX_NOEXCEPT
     {
       if (__builtin_expect(__shift != 0, 1))
@@ -289,7 +303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<size_t _Nw>
-    unsigned long
+    _GLIBCXX14_CONSTEXPR unsigned long
     _Base_bitset<_Nw>::_M_do_to_ulong() const
     {
       for (size_t __i = 1; __i < _Nw; ++__i)
@@ -300,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
   template<size_t _Nw>
-    unsigned long long
+    _GLIBCXX14_CONSTEXPR unsigned long long
     _Base_bitset<_Nw>::_M_do_to_ullong() const
     {
       const bool __dw = sizeof(unsigned long long) > sizeof(unsigned long);
@@ -316,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
   template<size_t _Nw>
-    size_t
+    _GLIBCXX14_CONSTEXPR size_t
     _Base_bitset<_Nw>::
     _M_do_find_first(size_t __not_found) const _GLIBCXX_NOEXCEPT
     {
@@ -332,7 +346,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<size_t _Nw>
-    size_t
+    _GLIBCXX14_CONSTEXPR size_t
     _Base_bitset<_Nw>::
     _M_do_find_next(size_t __prev, size_t __not_found) const _GLIBCXX_NOEXCEPT
     {
@@ -406,7 +420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
-      _WordT&
+      _GLIBCXX14_CONSTEXPR _WordT&
       _M_getword(size_t) _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
@@ -415,12 +429,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_w; }
 
 #if __cplusplus >= 201103L
-      const _WordT*
+      constexpr const _WordT*
       _M_getdata() const noexcept
       { return &_M_w; }
 #endif
 
-      _WordT&
+      _GLIBCXX14_CONSTEXPR _WordT&
       _M_hiword() _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
@@ -428,67 +442,67 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_hiword() const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_and(const _Base_bitset<1>& __x) _GLIBCXX_NOEXCEPT
       { _M_w &= __x._M_w; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_or(const _Base_bitset<1>& __x) _GLIBCXX_NOEXCEPT
       { _M_w |= __x._M_w; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_xor(const _Base_bitset<1>& __x) _GLIBCXX_NOEXCEPT
       { _M_w ^= __x._M_w; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_left_shift(size_t __shift) _GLIBCXX_NOEXCEPT
       { _M_w <<= __shift; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_right_shift(size_t __shift) _GLIBCXX_NOEXCEPT
       { _M_w >>= __shift; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_flip() _GLIBCXX_NOEXCEPT
       { _M_w = ~_M_w; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_set() _GLIBCXX_NOEXCEPT
       { _M_w = ~static_cast<_WordT>(0); }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_reset() _GLIBCXX_NOEXCEPT
       { _M_w = 0; }
 
-      bool
+      _GLIBCXX14_CONSTEXPR bool
       _M_is_equal(const _Base_bitset<1>& __x) const _GLIBCXX_NOEXCEPT
       { return _M_w == __x._M_w; }
 
       template<size_t _Nb>
-        bool
+        _GLIBCXX14_CONSTEXPR bool
         _M_are_all() const _GLIBCXX_NOEXCEPT
         { return _M_w == (~static_cast<_WordT>(0)
 			  >> (_GLIBCXX_BITSET_BITS_PER_WORD - _Nb)); }
 
-      bool
+      _GLIBCXX14_CONSTEXPR bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
       { return _M_w != 0; }
 
-      size_t
+      _GLIBCXX14_CONSTEXPR size_t
       _M_do_count() const _GLIBCXX_NOEXCEPT
       { return __builtin_popcountl(_M_w); }
 
-      unsigned long
+      _GLIBCXX14_CONSTEXPR unsigned long
       _M_do_to_ulong() const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
 #if __cplusplus >= 201103L
-      unsigned long long
+      constexpr unsigned long long
       _M_do_to_ullong() const noexcept
       { return _M_w; }
 #endif
 
-      size_t
+      _GLIBCXX14_CONSTEXPR size_t
       _M_do_find_first(size_t __not_found) const _GLIBCXX_NOEXCEPT
       {
         if (_M_w != 0)
@@ -498,7 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       // find the next "on" bit that follows "prev"
-      size_t
+      _GLIBCXX14_CONSTEXPR size_t
       _M_do_find_next(size_t __prev, size_t __not_found) const
 	_GLIBCXX_NOEXCEPT
       {
@@ -552,17 +566,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // This would normally give access to the data.  The bounds-checking
       // in the bitset class will prevent the user from getting this far,
-      // but (1) it must still return an lvalue to compile, and (2) the
-      // user might call _Unchecked_set directly, in which case this /needs/
-      // to fail.  Let's not penalize zero-length users unless they actually
+      // but this must fail if the user calls _Unchecked_set directly.
+      // Let's not penalize zero-length users unless they actually
       // make an unchecked call; all the memory ugliness is therefore
       // localized to this single should-never-get-this-far function.
+      __attribute__((__noreturn__))
       _WordT&
       _M_getword(size_t) _GLIBCXX_NOEXCEPT
-      {
-	__throw_out_of_range(__N("_Base_bitset::_M_getword"));
-	return *new _WordT;
-      }
+      { __throw_out_of_range(__N("_Base_bitset::_M_getword")); }
 
       _GLIBCXX_CONSTEXPR _WordT
       _M_getword(size_t) const _GLIBCXX_NOEXCEPT
@@ -572,75 +583,75 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_hiword() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_and(const _Base_bitset<0>&) _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_or(const _Base_bitset<0>&) _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_xor(const _Base_bitset<0>&) _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_left_shift(size_t) _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_right_shift(size_t) _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_flip() _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_set() _GLIBCXX_NOEXCEPT
       { }
 
-      void
+      _GLIBCXX14_CONSTEXPR void
       _M_do_reset() _GLIBCXX_NOEXCEPT
       { }
 
       // Are all empty bitsets equal to each other?  Are they equal to
       // themselves?  How to compare a thing which has no state?  What is
       // the sound of one zero-length bitset clapping?
-      bool
+      _GLIBCXX_CONSTEXPR bool
       _M_is_equal(const _Base_bitset<0>&) const _GLIBCXX_NOEXCEPT
       { return true; }
 
       template<size_t _Nb>
-        bool
+        _GLIBCXX_CONSTEXPR bool
         _M_are_all() const _GLIBCXX_NOEXCEPT
         { return true; }
 
-      bool
+      _GLIBCXX_CONSTEXPR bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
       { return false; }
 
-      size_t
+      _GLIBCXX_CONSTEXPR size_t
       _M_do_count() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
-      unsigned long
+      _GLIBCXX_CONSTEXPR unsigned long
       _M_do_to_ulong() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
 #if __cplusplus >= 201103L
-      unsigned long long
+      constexpr unsigned long long
       _M_do_to_ullong() const noexcept
       { return 0; }
 #endif
 
       // Normally "not found" is the size, but that could also be
       // misinterpreted as an index in this corner case.  Oh well.
-      size_t
+      _GLIBCXX_CONSTEXPR size_t
       _M_do_find_first(size_t) const _GLIBCXX_NOEXCEPT
       { return 0; }
 
-      size_t
+      _GLIBCXX_CONSTEXPR size_t
       _M_do_find_next(size_t, size_t) const _GLIBCXX_NOEXCEPT
       { return 0; }
     };
@@ -652,7 +663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       typedef unsigned long _WordT;
 
-      static void
+      static _GLIBCXX14_CONSTEXPR void
       _S_do_sanitize(_WordT& __val) _GLIBCXX_NOEXCEPT
       { __val &= ~((~static_cast<_WordT>(0)) << _Extrabits); }
     };
@@ -662,7 +673,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       typedef unsigned long _WordT;
 
-      static void
+      static _GLIBCXX14_CONSTEXPR void
       _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { }
     };
 
@@ -755,7 +766,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Base_bitset<_GLIBCXX_BITSET_WORDS(_Nb)> _Base;
       typedef unsigned long _WordT;
 
+#if _GLIBCXX_HOSTED
       template<class _CharT, class _Traits, class _Alloc>
+      _GLIBCXX23_CONSTEXPR
       void
       _M_check_initial_position(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
 				size_t __position) const
@@ -766,7 +779,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				       "(which is %zu)"),
 				   __position, __s.size());
       }
+#endif // HOSTED
 
+      _GLIBCXX23_CONSTEXPR
       void _M_check(size_t __position, const char *__s) const
       {
 	if (__position >= _Nb)
@@ -775,6 +790,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				   __s, __position, _Nb);
       }
 
+      _GLIBCXX23_CONSTEXPR
       void
       _M_do_sanitize() _GLIBCXX_NOEXCEPT
       {
@@ -810,6 +826,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	reference();
 
       public:
+	_GLIBCXX23_CONSTEXPR
 	reference(bitset& __b, size_t __pos) _GLIBCXX_NOEXCEPT
 	{
 	  _M_wp = &__b._M_getword(__pos);
@@ -820,10 +837,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	reference(const reference&) = default;
 #endif
 
+#if __cplusplus > 202002L && __cpp_constexpr_dynamic_alloc
+	constexpr
+#endif
 	~reference() _GLIBCXX_NOEXCEPT
 	{ }
 
 	// For b[i] = __x;
+	_GLIBCXX23_CONSTEXPR
 	reference&
 	operator=(bool __x) _GLIBCXX_NOEXCEPT
 	{
@@ -835,6 +856,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 
 	// For b[i] = b[__j];
+	_GLIBCXX23_CONSTEXPR
 	reference&
 	operator=(const reference& __j) _GLIBCXX_NOEXCEPT
 	{
@@ -846,15 +868,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 
 	// Flips the bit
+	_GLIBCXX23_CONSTEXPR
 	bool
 	operator~() const _GLIBCXX_NOEXCEPT
 	{ return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) == 0; }
 
 	// For __x = b[i];
+	_GLIBCXX23_CONSTEXPR
 	operator bool() const _GLIBCXX_NOEXCEPT
 	{ return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) != 0; }
 
 	// For b[i].flip();
+	_GLIBCXX23_CONSTEXPR
 	reference&
 	flip() _GLIBCXX_NOEXCEPT
 	{
@@ -879,6 +904,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_do_sanitize(); }
 #endif
 
+#if _GLIBCXX_HOSTED
       /**
        *  Use a subset of a string.
        *  @param  __s  A string of @a 0 and @a 1 characters.
@@ -889,6 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                                 which is neither @a 0 nor @a 1.
        */
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	explicit
 	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
 	       size_t __position = 0)
@@ -911,6 +938,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                                 which is neither @a 0 nor @a 1.
        */
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
 	       size_t __position, size_t __n)
 	: _Base()
@@ -922,6 +950,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 396. what are characters zero and one.
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
 	       size_t __position, size_t __n,
 	       _CharT __zero, _CharT __one = _CharT('1'))
@@ -942,6 +971,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                                which is neither @a __zero nor @a __one.
        */
       template<typename _CharT>
+	[[__gnu__::__nonnull__]]
+	_GLIBCXX23_CONSTEXPR
         explicit
         bitset(const _CharT* __str,
 	       typename std::basic_string<_CharT>::size_type __n
@@ -958,7 +989,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 							     __n, __zero,
 							     __one);
 	}
-#endif
+#endif // C++11
+#endif // HOSTED
 
       // 23.3.5.2 bitset operations:
       ///@{
@@ -968,6 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  These should be self-explanatory.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       operator&=(const bitset<_Nb>& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -975,6 +1008,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       operator|=(const bitset<_Nb>& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -982,6 +1016,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       operator^=(const bitset<_Nb>& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -997,6 +1032,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  These should be self-explanatory.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       operator<<=(size_t __position) _GLIBCXX_NOEXCEPT
       {
@@ -1010,6 +1046,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       operator>>=(size_t __position) _GLIBCXX_NOEXCEPT
       {
@@ -1030,6 +1067,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  extensions from the SGI version.  They do no range checking.
        *  @ingroup SGIextensions
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       _Unchecked_set(size_t __pos) _GLIBCXX_NOEXCEPT
       {
@@ -1037,6 +1075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       _Unchecked_set(size_t __pos, int __val) _GLIBCXX_NOEXCEPT
       {
@@ -1047,6 +1086,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       _Unchecked_reset(size_t __pos) _GLIBCXX_NOEXCEPT
       {
@@ -1054,6 +1094,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       _Unchecked_flip(size_t __pos) _GLIBCXX_NOEXCEPT
       {
@@ -1071,6 +1112,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief Sets every bit to true.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       set() _GLIBCXX_NOEXCEPT
       {
@@ -1085,6 +1127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __val  Either true or false, defaults to true.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       set(size_t __position, bool __val = true)
       {
@@ -1095,6 +1138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief Sets every bit to false.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       reset() _GLIBCXX_NOEXCEPT
       {
@@ -1109,6 +1153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Same as writing @c set(pos,false).
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       reset(size_t __position)
       {
@@ -1119,6 +1164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief Toggles every bit to its opposite value.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       flip() _GLIBCXX_NOEXCEPT
       {
@@ -1132,6 +1178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __position  The index of the bit.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        */
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>&
       flip(size_t __position)
       {
@@ -1140,6 +1187,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       /// See the no-argument flip().
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>
       operator~() const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this).flip(); }
@@ -1159,6 +1207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  The DR has since been changed:  range-checking is a precondition
        *  (users' responsibility), and these functions must not throw.  -pme
        */
+      _GLIBCXX23_CONSTEXPR
       reference
       operator[](size_t __position)
       { return reference(*this, __position); }
@@ -1174,16 +1223,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @throw  std::overflow_error  If there are too many bits to be
        *                               represented in an @c unsigned @c long.
        */
+      _GLIBCXX23_CONSTEXPR
       unsigned long
       to_ulong() const
       { return this->_M_do_to_ulong(); }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX23_CONSTEXPR
       unsigned long long
       to_ullong() const
       { return this->_M_do_to_ullong(); }
 #endif
 
+#if _GLIBCXX_HOSTED
       /**
        *  @brief Returns a character interpretation of the %bitset.
        *  @return  The string equivalent of the bits.
@@ -1193,6 +1245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  an example).
        */
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	std::basic_string<_CharT, _Traits, _Alloc>
 	to_string() const
 	{
@@ -1204,6 +1257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 396. what are characters zero and one.
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	std::basic_string<_CharT, _Traits, _Alloc>
 	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
 	{
@@ -1215,6 +1269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 434. bitset::to_string() hard to use.
       template<class _CharT, class _Traits>
+	_GLIBCXX23_CONSTEXPR
 	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
 	to_string() const
 	{ return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
@@ -1222,12 +1277,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 853. to_string needs updating with zero and one.
       template<class _CharT, class _Traits>
+	_GLIBCXX23_CONSTEXPR
 	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
 	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
 	{ return to_string<_CharT, _Traits,
 	                   std::allocator<_CharT> >(__zero, __one); }
 
       template<class _CharT>
+	_GLIBCXX23_CONSTEXPR
 	std::basic_string<_CharT, std::char_traits<_CharT>,
 	                  std::allocator<_CharT> >
 	to_string() const
@@ -1237,6 +1294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 
       template<class _CharT>
+	_GLIBCXX23_CONSTEXPR
 	std::basic_string<_CharT, std::char_traits<_CharT>,
 	                  std::allocator<_CharT> >
 	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
@@ -1245,6 +1303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	                   std::allocator<_CharT> >(__zero, __one);
 	}
 
+      _GLIBCXX23_CONSTEXPR
       std::basic_string<char, std::char_traits<char>, std::allocator<char> >
       to_string() const
       {
@@ -1252,6 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	                 std::allocator<char> >();
       }
 
+      _GLIBCXX23_CONSTEXPR
       std::basic_string<char, std::char_traits<char>, std::allocator<char> >
       to_string(char __zero, char __one = '1') const
       {
@@ -1261,11 +1321,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Helper functions for string operations.
       template<class _CharT, class _Traits>
+	_GLIBCXX23_CONSTEXPR
         void
         _M_copy_from_ptr(const _CharT*, size_t, size_t, size_t,
 			 _CharT, _CharT);
 
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	void
 	_M_copy_from_string(const std::basic_string<_CharT,
 			    _Traits, _Alloc>& __s, size_t __pos, size_t __n,
@@ -1274,23 +1336,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 					    __zero, __one); }
 
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	void
         _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>&,
 			  _CharT, _CharT) const;
 
       // NB: Backward compat.
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	void
 	_M_copy_from_string(const std::basic_string<_CharT,
 			    _Traits, _Alloc>& __s, size_t __pos, size_t __n)
 	{ _M_copy_from_string(__s, __pos, __n, _CharT('0'), _CharT('1')); }
 
       template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
 	void
         _M_copy_to_string(std::basic_string<_CharT, _Traits,_Alloc>& __s) const
 	{ _M_copy_to_string(__s, _CharT('0'), _CharT('1')); }
+#endif // HOSTED
 
       /// Returns the number of bits which are set.
+      _GLIBCXX23_CONSTEXPR
       size_t
       count() const _GLIBCXX_NOEXCEPT
       { return this->_M_do_count(); }
@@ -1302,11 +1369,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       ///@{
       /// These comparisons for equality/inequality are, well, @e bitwise.
+      _GLIBCXX23_CONSTEXPR
       bool
       operator==(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return this->_M_is_equal(__rhs); }
 
 #if __cpp_impl_three_way_comparison < 201907L
+      _GLIBCXX23_CONSTEXPR
       bool
       operator!=(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_equal(__rhs); }
@@ -1319,6 +1388,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @return  The value at @a pos.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        */
+      _GLIBCXX23_CONSTEXPR
       bool
       test(size_t __position) const
       {
@@ -1332,6 +1402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Tests whether all the bits are on.
        *  @return  True if all the bits are set.
        */
+      _GLIBCXX23_CONSTEXPR
       bool
       all() const _GLIBCXX_NOEXCEPT
       { return this->template _M_are_all<_Nb>(); }
@@ -1340,6 +1411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Tests whether any of the bits are on.
        *  @return  True if at least one bit is set.
        */
+      _GLIBCXX23_CONSTEXPR
       bool
       any() const _GLIBCXX_NOEXCEPT
       { return this->_M_is_any(); }
@@ -1348,16 +1420,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Tests whether any of the bits are on.
        *  @return  True if none of the bits are set.
        */
+      _GLIBCXX23_CONSTEXPR
       bool
       none() const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_any(); }
 
       ///@{
       /// Self-explanatory.
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>
       operator<<(size_t __position) const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this) <<= __position; }
 
+      _GLIBCXX23_CONSTEXPR
       bitset<_Nb>
       operator>>(size_t __position) const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this) >>= __position; }
@@ -1369,6 +1444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @ingroup SGIextensions
        *  @sa  _Find_next
        */
+      _GLIBCXX23_CONSTEXPR
       size_t
       _Find_first() const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_first(_Nb); }
@@ -1380,14 +1456,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @ingroup SGIextensions
        *  @sa  _Find_first
        */
+      _GLIBCXX23_CONSTEXPR
       size_t
       _Find_next(size_t __prev) const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_next(__prev, _Nb); }
     };
 
+#if _GLIBCXX_HOSTED
   // Definitions of non-inline member functions.
   template<size_t _Nb>
     template<class _CharT, class _Traits>
+      _GLIBCXX23_CONSTEXPR
       void
       bitset<_Nb>::
       _M_copy_from_ptr(const _CharT* __s, size_t __len,
@@ -1409,6 +1488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
+      _GLIBCXX23_CONSTEXPR
       void
       bitset<_Nb>::
       _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>& __s,
@@ -1419,6 +1499,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if (_Unchecked_test(__i - 1))
 	    _Traits::assign(__s[_Nb - __i], __one);
       }
+#endif // HOSTED
 
   // 23.3.5.3 bitset operations:
   ///@{
@@ -1431,6 +1512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  These should be self-explanatory.
   */
   template<size_t _Nb>
+    _GLIBCXX23_CONSTEXPR
     inline bitset<_Nb>
     operator&(const bitset<_Nb>& __x, const bitset<_Nb>& __y) _GLIBCXX_NOEXCEPT
     {
@@ -1440,6 +1522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<size_t _Nb>
+    _GLIBCXX23_CONSTEXPR
     inline bitset<_Nb>
     operator|(const bitset<_Nb>& __x, const bitset<_Nb>& __y) _GLIBCXX_NOEXCEPT
     {
@@ -1449,6 +1532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template <size_t _Nb>
+    _GLIBCXX23_CONSTEXPR
     inline bitset<_Nb>
     operator^(const bitset<_Nb>& __x, const bitset<_Nb>& __y) _GLIBCXX_NOEXCEPT
     {
@@ -1458,6 +1542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
   ///@}
 
+#if _GLIBCXX_HOSTED
   ///@{
   /**
    *  @brief Global I/O operators for bitsets.
@@ -1549,6 +1634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __os << __tmp;
     }
   ///@}
+#endif // HOSTED
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 } // namespace std
@@ -1557,7 +1643,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
 #undef _GLIBCXX_BITSET_BITS_PER_ULL
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L && _GLIBCXX_HOSTED
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1591,7 +1677,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // C++11
 
-#ifdef _GLIBCXX_DEBUG
+#ifdef _GLIBCXX_DEBUG && _GLIBCXX_HOSTED
 # include <debug/bitset>
 #endif
 
