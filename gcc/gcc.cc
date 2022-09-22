@@ -835,6 +835,14 @@ proper position among the other output files.  */
 #define LINK_COMPRESS_DEBUG_SPEC \
 	" %{gz|gz=zlib:"  LD_COMPRESS_DEBUG_OPTION "=zlib}" \
 	" %{gz=none:"	  LD_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz*:%e-gz=zstd is not supported in this configuration} " \
+	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
+#elif HAVE_LD_COMPRESS_DEBUG == 2
+/* ELF gABI style and ZSTD.  */
+#define LINK_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib:"  LD_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"	  LD_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zstd:"	  LD_COMPRESS_DEBUG_OPTION "=zstd}" \
 	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
 #else
 #error Unknown value for HAVE_LD_COMPRESS_DEBUG.
@@ -889,6 +897,13 @@ proper position among the other output files.  */
 #define ASM_COMPRESS_DEBUG_SPEC \
 	" %{gz|gz=zlib:"  AS_COMPRESS_DEBUG_OPTION "=zlib}" \
 	" %{gz=none:"	  AS_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
+#elif HAVE_AS_COMPRESS_DEBUG == 2
+/* ELF gABI style and ZSTD.  */
+#define ASM_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib:"  AS_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"	  AS_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zstd:"	  AS_COMPRESS_DEBUG_OPTION "=zstd}" \
 	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
 #else
 #error Unknown value for HAVE_AS_COMPRESS_DEBUG.

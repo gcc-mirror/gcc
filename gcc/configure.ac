@@ -5732,13 +5732,16 @@ gcc_GAS_CHECK_FEATURE([compressed debug sections],
    if $gcc_cv_as --compress-debug-sections -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null
    then
      gcc_cv_as_compress_debug=0
-   # Since binutils 2.26, gas supports --compress-debug-sections=zlib,
-   # defaulting to the ELF gABI format.
    elif $gcc_cv_as --compress-debug-sections=zlib -o conftest.o conftest.s > /dev/null 2>&1
    then
      gcc_cv_as_compress_debug=1
      gcc_cv_as_compress_debug_option="--compress-debug-sections"
      gcc_cv_as_no_compress_debug_option="--nocompress-debug-sections"
+     # Since binutils 2.40, gas supports --compress-debug-sections=zstd.
+     if $gcc_cv_as --compress-debug-sections=zstd -o conftest.o conftest.s > /dev/null 2>&1
+     then
+       gcc_cv_as_compress_debug=2
+     fi
    else
      gcc_cv_as_compress_debug=0
    fi])
@@ -6127,6 +6130,10 @@ AC_MSG_CHECKING(linker for compressed debug sections)
 if $gcc_cv_ld --help 2>&1 | grep -- '--compress-debug-sections.*\<zlib-gabi\>' > /dev/null; then
     gcc_cv_ld_compress_debug=1
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+    # Detect zstd debug section compression support
+    if $gcc_cv_ld --help 2>&1 | grep -- '--compress-debug-sections.*\<zstd\>' > /dev/null; then
+      gcc_cv_ld_compress_debug=2
+    fi
 else
 changequote(,)dnl
   case "${target}" in
