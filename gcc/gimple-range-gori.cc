@@ -603,8 +603,10 @@ gori_compute::compute_operand_range_switch (vrange &r, gswitch *s,
 bool
 gori_compute::compute_operand_range (vrange &r, gimple *stmt,
 				     const vrange &lhs, tree name,
-				     fur_source &src)
+				     fur_source &src, value_relation *rel)
 {
+  value_relation vrel;
+  value_relation *vrel_ptr = rel;
   // If the lhs doesn't tell us anything, neither will unwinding further.
   if (lhs.varying_p ())
     return false;
@@ -625,11 +627,23 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   tree op1 = gimple_range_ssa_p (handler.operand1 ());
   tree op2 = gimple_range_ssa_p (handler.operand2 ());
 
+  // If there is a relation, use it instead of any passed in.  This will allow
+  // multiple relations to be processed in compound logicals.
+  if (op1 && op2)
+    {
+      relation_kind k = handler.op1_op2_relation (lhs);
+      if (k != VREL_VARYING)
+       {
+	 vrel.set_relation (k, op1, op2);
+	 vrel_ptr = &vrel;
+       }
+    }
+
   // Handle end of lookup first.
   if (op1 == name)
-    return compute_operand1_range (r, handler, lhs, name, src);
+    return compute_operand1_range (r, handler, lhs, name, src, vrel_ptr);
   if (op2 == name)
-    return compute_operand2_range (r, handler, lhs, name, src);
+    return compute_operand2_range (r, handler, lhs, name, src, vrel_ptr);
 
   // NAME is not in this stmt, but one of the names in it ought to be
   // derived from it.
@@ -672,11 +686,12 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
     }
   // Follow the appropriate operands now.
   else if (op1_in_chain && op2_in_chain)
-    res = compute_operand1_and_operand2_range (r, handler, lhs, name, src);
+    res = compute_operand1_and_operand2_range (r, handler, lhs, name, src,
+					       vrel_ptr);
   else if (op1_in_chain)
-    res = compute_operand1_range (r, handler, lhs, name, src);
+    res = compute_operand1_range (r, handler, lhs, name, src, vrel_ptr);
   else if (op2_in_chain)
-    res = compute_operand2_range (r, handler, lhs, name, src);
+    res = compute_operand2_range (r, handler, lhs, name, src, vrel_ptr);
   else
     gcc_unreachable ();
 
@@ -927,7 +942,7 @@ bool
 gori_compute::compute_operand1_range (vrange &r,
 				      gimple_range_op_handler &handler,
 				      const vrange &lhs, tree name,
-				      fur_source &src)
+				      fur_source &src, value_relation *rel)
 {
   gimple *stmt = handler.stmt ();
   tree op1 = handler.operand1 ();
@@ -998,7 +1013,7 @@ gori_compute::compute_operand1_range (vrange &r,
   gcc_checking_assert (src_stmt);
 
   // Then feed this range back as the LHS of the defining statement.
-  return compute_operand_range (r, src_stmt, op1_range, name, src);
+  return compute_operand_range (r, src_stmt, op1_range, name, src, rel);
 }
 
 
@@ -1010,7 +1025,7 @@ bool
 gori_compute::compute_operand2_range (vrange &r,
 				      gimple_range_op_handler &handler,
 				      const vrange &lhs, tree name,
-				      fur_source &src)
+				      fur_source &src, value_relation *rel)
 {
   gimple *stmt = handler.stmt ();
   tree op1 = handler.operand1 ();
@@ -1070,7 +1085,7 @@ gori_compute::compute_operand2_range (vrange &r,
 //  gcc_checking_assert (!is_import_p (op2, find.bb));
 
   // Then feed this range back as the LHS of the defining statement.
-  return compute_operand_range (r, src_stmt, op2_range, name, src);
+  return compute_operand_range (r, src_stmt, op2_range, name, src, rel);
 }
 
 // Calculate a range for NAME from both operand positions of S
@@ -1083,17 +1098,18 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 								     &handler,
 						   const vrange &lhs,
 						   tree name,
-						   fur_source &src)
+						   fur_source &src,
+						   value_relation *rel)
 {
   Value_Range op_range (TREE_TYPE (name));
 
   // Calculate a good a range for op2.  Since op1 == op2, this will
   // have already included whatever the actual range of name is.
-  if (!compute_operand2_range (op_range, handler, lhs, name, src))
+  if (!compute_operand2_range (op_range, handler, lhs, name, src, rel))
     return false;
 
   // Now get the range thru op1.
-  if (!compute_operand1_range (r, handler, lhs, name, src))
+  if (!compute_operand1_range (r, handler, lhs, name, src, rel))
     return false;
 
   // Both operands have to be simultaneously true, so perform an intersection.

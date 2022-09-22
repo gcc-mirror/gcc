@@ -202,7 +202,7 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range)
 
 bool
 gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
-				   const vrange &op2_range)
+				   const vrange &op2_range, relation_kind k)
 {
   // Give up on empty ranges.
   if (lhs_range.undefined_p ())
@@ -225,9 +225,9 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
 	op2_type = TREE_TYPE (operand1 ());
       Value_Range trange (op2_type);
       trange.set_varying (op2_type);
-      return op1_range (r, type, lhs_range, trange);
+      return op1_range (r, type, lhs_range, trange, k);
     }
-  return op1_range (r, type, lhs_range, op2_range);
+  return op1_range (r, type, lhs_range, op2_range, k);
 }
 
 // Calculate what we can determine of the range of this statement's
@@ -237,7 +237,7 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
 
 bool
 gimple_range_op_handler::calc_op2 (vrange &r, const vrange &lhs_range,
-				   const vrange &op1_range)
+				   const vrange &op1_range, relation_kind k)
 {
   // Give up on empty ranges.
   if (lhs_range.undefined_p ())
@@ -250,9 +250,9 @@ gimple_range_op_handler::calc_op2 (vrange &r, const vrange &lhs_range,
       tree op1_type = TREE_TYPE (operand1 ());
       Value_Range trange (op1_type);
       trange.set_varying (op1_type);
-      return op2_range (r, type, lhs_range, trange);
+      return op2_range (r, type, lhs_range, trange, k);
     }
-  return op2_range (r, type, lhs_range, op1_range);
+  return op2_range (r, type, lhs_range, op1_range, k);
 }
 
 // --------------------------------------------------------------------
