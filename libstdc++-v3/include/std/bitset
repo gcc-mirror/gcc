@@ -1495,9 +1495,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			_CharT __zero, _CharT __one) const
       {
 	__s.assign(_Nb, __zero);
-	for (size_t __i = _Nb; __i > 0; --__i)
-	  if (_Unchecked_test(__i - 1))
-	    _Traits::assign(__s[_Nb - __i], __one);
+	size_t __n = this->_Find_first();
+	while (__n < _Nb)
+	  {
+	    __s[_Nb - __n - 1] = __one;
+	    __n = _Find_next(__n);
+	  }
       }
 #endif // HOSTED
 
