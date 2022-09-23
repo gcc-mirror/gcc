@@ -1615,7 +1615,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       if (__tmp.empty() && _Nb)
 	__state |= __ios_base::failbit;
-      else
+      else if _GLIBCXX17_CONSTEXPR (_Nb)
 	__x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb,
 				__zero, __one);
       if (__state)

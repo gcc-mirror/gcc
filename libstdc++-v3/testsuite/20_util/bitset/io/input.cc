@@ -39,7 +39,7 @@ void test01()
   ss.clear();
   ss.str("*");
   ss >> b0;
-  VERIFY( ss.rdstate() == ios_base::goodbit );
+  VERIFY( ss.rdstate() == ios_base::goodbit ); // LWG 3199
 }
 
 int main()
