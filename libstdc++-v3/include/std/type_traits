@@ -2632,13 +2632,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  // Detection idiom.
+  // Detect whether _Op<_Args...> is a valid type, use default _Def if not.
+
+#if __cpp_concepts
+  // Implementation of the detection idiom (negative case).
+  template<typename _Def, template<typename...> class _Op, typename... _Args>
+    struct __detected_or
+    {
+      using type = _Def;
+      using __is_detected = false_type;
+    };
+
+  // Implementation of the detection idiom (positive case).
+  template<typename _Def, template<typename...> class _Op, typename... _Args>
+    requires requires { typename _Op<_Args...>; }
+    struct __detected_or<_Def, _Op, _Args...>
+    {
+      using type = _Op<_Args...>;
+      using __is_detected = true_type;
+    };
+#else
   /// Implementation of the detection idiom (negative case).
   template<typename _Default, typename _AlwaysVoid,
 	   template<typename...> class _Op, typename... _Args>
     struct __detector
     {
-      using value_t = false_type;
       using type = _Default;
+      using __is_detected = false_type;
     };
 
   /// Implementation of the detection idiom (positive case).
@@ -2646,14 +2667,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename... _Args>
     struct __detector<_Default, __void_t<_Op<_Args...>>, _Op, _Args...>
     {
-      using value_t = true_type;
       using type = _Op<_Args...>;
+      using __is_detected = true_type;
     };
 
-  // Detect whether _Op<_Args...> is a valid type, use _Default if not.
   template<typename _Default, template<typename...> class _Op,
 	   typename... _Args>
     using __detected_or = __detector<_Default, void, _Op, _Args...>;
+#endif // __cpp_concepts
 
   // _Op<_Args...> if that is a valid type, otherwise _Default.
   template<typename _Default, template<typename...> class _Op,
