@@ -8086,6 +8086,47 @@ and,
   (minus (mult (vec_perm @1 @1 @3) @2) @4)))
 
 
+/* Merge
+   c = VEC_PERM_EXPR <a, b, VCST0>;
+   d = VEC_PERM_EXPR <c, c, VCST1>;
+   to
+   d = VEC_PERM_EXPR <a, b, NEW_VCST>;  */
+
+(simplify
+ (vec_perm (vec_perm@0 @1 @2 VECTOR_CST@3) @0 VECTOR_CST@4)
+ (with
+  {
+    if (!TYPE_VECTOR_SUBPARTS (type).is_constant ())
+      return NULL_TREE;
+
+    tree op0;
+    machine_mode result_mode = TYPE_MODE (type);
+    machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+    int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+    vec_perm_builder builder0;
+    vec_perm_builder builder1;
+    vec_perm_builder builder2 (nelts, nelts, 1);
+
+    if (!tree_to_vec_perm_builder (&builder0, @3)
+	|| !tree_to_vec_perm_builder (&builder1, @4))
+      return NULL_TREE;
+
+    vec_perm_indices sel0 (builder0, 2, nelts);
+    vec_perm_indices sel1 (builder1, 1, nelts);
+
+    for (int i = 0; i < nelts; i++)
+      builder2.quick_push (sel0[sel1[i].to_constant ()]);
+
+    vec_perm_indices sel2 (builder2, 2, nelts);
+
+    if (!can_vec_perm_const_p (result_mode, op_mode, sel2, false))
+      return NULL_TREE;
+
+    op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+  }
+  (vec_perm @1 @2 { op0; })))
+
+
 /* Match count trailing zeroes for simplify_count_trailing_zeroes in fwprop.
    The canonical form is array[((x & -x) * C) >> SHIFT] where C is a magic
    constant which when multiplied by a power of 2 contains a unique value
