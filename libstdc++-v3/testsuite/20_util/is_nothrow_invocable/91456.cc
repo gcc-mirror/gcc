@@ -15,14 +15,21 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++17 } }
+
+// PR 91456
+// std::function and std::is_invocable_r do not understand guaranteed elision
 
 #include <type_traits>
 
-// Test the non-standard __is_nothrow_convertible trait
+#include <functional>
 
-template<typename From, typename To>
-  using is_nothrow_convertible = std::__is_nothrow_convertible<From, To>;
+struct Immovable {
+  Immovable() = default;
+  Immovable(const Immovable&) = delete;
+  Immovable& operator=(const Immovable&) = delete;
+};
 
-#define IS_NT_CONVERTIBLE_DEFINED
-#include "value.cc"
+static_assert(std::is_nothrow_invocable_r_v<Immovable, Immovable(*)() noexcept>);
+static_assert(std::is_nothrow_invocable_r_v<const Immovable, Immovable(*)() noexcept>);
+static_assert(std::is_nothrow_invocable_r_v<Immovable, const Immovable(*)() noexcept>);
