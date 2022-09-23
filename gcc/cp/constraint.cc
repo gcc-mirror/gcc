@@ -3592,13 +3592,13 @@ diagnose_trait_expr (tree expr, tree args)
   switch (TRAIT_EXPR_KIND (expr))
     {
     case CPTK_HAS_NOTHROW_ASSIGN:
-      inform (loc, "  %qT is not %<nothrow%> copy assignable", t1);
+      inform (loc, "  %qT is not nothrow copy assignable", t1);
       break;
     case CPTK_HAS_NOTHROW_CONSTRUCTOR:
-      inform (loc, "  %qT is not %<nothrow%> default constructible", t1);
+      inform (loc, "  %qT is not nothrow default constructible", t1);
       break;
     case CPTK_HAS_NOTHROW_COPY:
-      inform (loc, "  %qT is not %<nothrow%> copy constructible", t1);
+      inform (loc, "  %qT is not nothrow copy constructible", t1);
       break;
     case CPTK_HAS_TRIVIAL_ASSIGN:
       inform (loc, "  %qT is not trivially copy assignable", t1);
@@ -3674,7 +3674,7 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not trivially assignable from %qT", t1, t2);
       break;
     case CPTK_IS_NOTHROW_ASSIGNABLE:
-      inform (loc, "  %qT is not %<nothrow%> assignable from %qT", t1, t2);
+      inform (loc, "  %qT is not nothrow assignable from %qT", t1, t2);
       break;
     case CPTK_IS_CONSTRUCTIBLE:
       if (!t2)
@@ -3690,9 +3690,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
       if (!t2)
-	inform (loc, "  %qT is not %<nothrow%> default constructible", t1);
+	inform (loc, "  %qT is not nothrow default constructible", t1);
       else
-	inform (loc, "  %qT is not %<nothrow%> constructible from %qE", t1, t2);
+	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
       break;
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       inform (loc, "  %qT does not have unique object representations", t1);
@@ -3701,7 +3701,7 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not convertible from %qE", t2, t1);
       break;
     case CPTK_IS_NOTHROW_CONVERTIBLE:
-	inform (loc, "  %qT is not %<nothrow%> convertible from %qE", t2, t1);
+	inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
       break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "  %qT is not a reference that binds to a temporary "
