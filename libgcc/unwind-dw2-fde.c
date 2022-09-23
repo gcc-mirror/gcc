@@ -51,7 +51,7 @@ static struct btree registered_frames;
 static bool in_shutdown;
 
 static void
-release_registered_frames (void) __attribute__ ((destructor (110)));
+release_registered_frames (void) __attribute__ ((destructor));
 static void
 release_registered_frames (void)
 {
@@ -67,6 +67,8 @@ static void
 init_object (struct object *ob);
 
 #else
+/* Without fast path frame deregistration must always succeed.  */
+static const int in_shutdown = 0;
 
 /* The unseen_objects list contains objects that have been registered
    but not yet categorized in any way.  The seen_objects list has had
