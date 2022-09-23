@@ -2447,7 +2447,7 @@ PowerPC target pre-defines macro _ARCH_PWR9 which means the @code{-mcpu}
 setting is Power9 or later.
 @end table
 
-@subsection RISC-V specific attributes
+@subsubsection RISC-V specific attributes
 
 @table @code
 
