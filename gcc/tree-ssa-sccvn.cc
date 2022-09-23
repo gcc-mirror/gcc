@@ -2680,7 +2680,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
 	  && (ref->ref || data->orig_ref.ref)
-	  && !data->same_val
 	  && !data->mask
 	  && data->partial_defs.is_empty ()
 	  && multiple_p (get_object_alignment
@@ -2693,8 +2692,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     a different loop iteration but only to loop invariants.  Use
 	     CONSTANT_CLASS_P (unvalueized!) as conservative approximation.
 	     The one-hop lookup below doesn't have this issue since there's
-	     a virtual PHI before we ever reach a backedge to cross.  */
-	  if (CONSTANT_CLASS_P (rhs))
+	     a virtual PHI before we ever reach a backedge to cross.
+	     We can skip multiple defs as long as they are from the same
+	     value though.  */
+	  if (data->same_val
+	      && !operand_equal_p (data->same_val, rhs))
+	    ;
+	  else if (CONSTANT_CLASS_P (rhs))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
