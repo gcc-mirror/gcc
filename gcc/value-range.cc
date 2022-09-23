@@ -290,7 +290,9 @@ frange::flush_denormals_to_zero ()
 // Setter for franges.
 
 void
-frange::set (tree min, tree max, value_range_kind kind)
+frange::set (tree type,
+	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
+	     value_range_kind kind)
 {
   switch (kind)
     {
@@ -299,7 +301,7 @@ frange::set (tree min, tree max, value_range_kind kind)
       return;
     case VR_VARYING:
     case VR_ANTI_RANGE:
-      set_varying (TREE_TYPE (min));
+      set_varying (type);
       return;
     case VR_RANGE:
       break;
@@ -308,14 +310,12 @@ frange::set (tree min, tree max, value_range_kind kind)
     }
 
   // Handle NANs.
-  if (real_isnan (TREE_REAL_CST_PTR (min)) || real_isnan (TREE_REAL_CST_PTR (max)))
+  if (real_isnan (&min) || real_isnan (&max))
     {
-      gcc_checking_assert (real_identical (TREE_REAL_CST_PTR (min),
-					   TREE_REAL_CST_PTR (max)));
-      tree type = TREE_TYPE (min);
+      gcc_checking_assert (real_identical (&min, &max));
       if (HONOR_NANS (type))
 	{
-	  bool sign = real_isneg (TREE_REAL_CST_PTR (min));
+	  bool sign = real_isneg (&min);
 	  set_nan (type, sign);
 	}
       else
@@ -324,9 +324,9 @@ frange::set (tree min, tree max, value_range_kind kind)
     }
 
   m_kind = kind;
-  m_type = TREE_TYPE (min);
-  m_min = *TREE_REAL_CST_PTR (min);
-  m_max = *TREE_REAL_CST_PTR (max);
+  m_type = type;
+  m_min = min;
+  m_max = max;
   if (HONOR_NANS (m_type))
     {
       m_pos_nan = true;
@@ -351,7 +351,7 @@ frange::set (tree min, tree max, value_range_kind kind)
     }
 
   // Check for swapped ranges.
-  gcc_checking_assert (tree_compare (LE_EXPR, min, max));
+  gcc_checking_assert (real_compare (LE_EXPR, &min, &max));
 
   normalize_kind ();
 
@@ -361,14 +361,11 @@ frange::set (tree min, tree max, value_range_kind kind)
     verify_range ();
 }
 
-// Setter for frange from REAL_VALUE_TYPE endpoints.
-
 void
-frange::set (tree type,
-	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
-	     value_range_kind kind)
+frange::set (tree min, tree max, value_range_kind kind)
 {
-  set (build_real (type, min), build_real (type, max), kind);
+  set (TREE_TYPE (min),
+       *TREE_REAL_CST_PTR (min), *TREE_REAL_CST_PTR (max), kind);
 }
 
 // Normalize range to VARYING or UNDEFINED, or vice versa.  Return
