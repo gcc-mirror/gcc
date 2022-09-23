@@ -1,3 +1,111 @@
+2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* gfortran.dg/pr106986.f90: New test.
+
+2022-09-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/amx-check.h (request_perm_xtile_data):
+	New function to check if AMX is usable and enable AMX.
+	(main): Run test if AMX is usable.
+
+2022-09-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* gcc.target/powerpc/pr104482.c: New test.
+
+2022-09-21  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* g++.target/powerpc/pr105485.C: New test.
+
+2022-09-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/106947
+	* c-c++-common/Waddress-7.c: New test.
+
+2022-09-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106857
+	* gfortran.dg/pr106857.f90: New test.
+
+2022-09-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100245
+	* gfortran.dg/PR100245.f90: New test.
+
+2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106345
+	* lib/target-supports.exp (check_effective_target_powerpc_sqrt): Add
+	a function definition to avoid pedwarn about empty translation unit.
+	(check_effective_target_has_arch_pwr5): Likewise.
+	(check_effective_target_has_arch_pwr6): Likewise.
+	(check_effective_target_has_arch_pwr7): Likewise.
+	(check_effective_target_has_arch_pwr8): Likewise.
+	(check_effective_target_has_arch_pwr9): Likewise.
+	(check_effective_target_has_arch_pwr10): Likewise.
+	(check_effective_target_has_arch_ppc64): Likewise.
+	(check_effective_target_ppc_float128): Likewise.
+	(check_effective_target_ppc_float128_insns): Likewise.
+	(check_effective_target_powerpc_vsx): Likewise.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93259
+	* g++.dg/cpp0x/initlist-array17.C: New test.
+
+2022-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106893
+	PR c++/90451
+	* g++.dg/cpp1y/auto-fn65.C: New test.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106860
+	* g++.dg/opt/pr106860.C: New testcase.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106841
+	* g++.dg/vect/pr106841.cc: New testcase.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* gcc.dg/torture/pr106809.c: New testcase.
+
 2022-09-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:

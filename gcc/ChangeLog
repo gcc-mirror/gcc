@@ -1,3 +1,61 @@
+2022-09-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106491
+	* config/aarch64/aarch64-sve-builtins.cc (scalar_types)
+	(acle_vector_types, acle_svpattern, acle_svprfop): Add GTY
+	markup to (new) extern declarations instead of to the main
+	definition.
+
+2022-09-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104482
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin): Fix
+	the equality check for argument number, and move this hunk ahead.
+
+2022-09-21  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-13  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/105485
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin): Add
+	the handling for unresolved overloaded builtin function.
+	(rs6000_expand_builtin): Likewise.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106860
+	* tree-ssa-loop-split.cc (split_loop): Find the exit to
+	latch edge from the loop exit edge instead of from the
+	latch.  Verify we're going to find it.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106841
+	* tree-vect-slp.cc (vect_detect_hybrid_slp): Also process
+	scatter/gather offset.
+
+2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* tree-ssa-sccvn.cc (dominaged_by_p_w_unex): Check we have
+	more than one successor before doing extra work.
+
 2022-09-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rs6000/rtems.h (CPP_OS_DEFAULT_SPEC): Define __PPC_VRSAVE__ if
