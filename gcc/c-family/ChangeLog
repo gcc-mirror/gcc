@@ -1,3 +1,9 @@
+2022-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/106830
+	* c-warn.cc (check_for_xor_used_as_pow): Don't try checking
+	values that don't fit in uhwi.
+
 2022-09-15  Richard Biener  <rguenther@suse.de>
 
 	* c-common.h (build_void_list_node): Remove.

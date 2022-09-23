@@ -1,3 +1,15 @@
+2022-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106826
+	* module.cc (trees_out::decl_value): Use get_template_info in
+	the MK_partial case to handle both VAR_DECL and TYPE_DECL.
+	(trees_out::key_mergeable): Likewise.
+	(trees_in::key_mergeable): Likewise.
+	(has_definition): Consider DECL_INITIAL of a partial variable
+	template specialization.
+	(depset::hash::make_dependency): Handle partial variable template
+	specializations too.
+
 2022-09-20  Patrick Palka  <ppalka@redhat.com>
 
 	* decl.cc (cp_finish_decl): After updating the deduced type of a

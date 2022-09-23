@@ -1,3 +1,227 @@
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_range_op): Handle no operands.
+	(range_of_call): Do not check for builtins.
+	(fold_using_range::range_of_builtin_call): Delete.
+	(fold_using_range::range_of_builtin_int_call): Delete.
+	* gimple-range-fold.h: Adjust prototypes.
+	* gimple-range-op.cc (class cfn_parity): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_GOACC_DIM_*.
+	* gimple-range-op.cc (class cfn_goacc_dim): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_BUILT_IN_STRLEN.
+	* gimple-range-op.cc (class cfn_strlen): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_ubsan_call): Delete.
+	(range_of_builtin_int_call): Remove cases for
+	CFN_BUILT_IN_UBSAN_CHECK.
+	* gimple-range-op.cc (class cfn_ubsan): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_BUILT_IN_CLRSB.
+	* gimple-range-op.cc (class cfn_clrsb): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_CTZ.
+	* gimple-range-op.cc (class cfn_ctz): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_CLZ.
+	* gimple-range-op.cc (class cfn_clz): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_FFS and CFN_POPCOUNT.
+	* gimple-range-op.cc (class cfn_pocount): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (get_letter_range): Move to new class.
+	(range_of_builtin_int_call): Remove case for CFN_BUILT_IN_TOUPPER
+	and CFN_BUILT_IN_TOLOWER.
+	* gimple-range-op.cc (class cfn_toupper_tolower): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_builtin_int_call): Remove case
+	for CFN_BUILT_IN_SIGNBIT.
+	* gimple-range-op.cc (class cfn_signbit): New.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_builtin_int_call): Remove case for
+	CFN_BUILT_IN_CONSTANT_P.
+	* gimple-range-op.cc (gimple_range_op_handler::supported_p):
+	Check if a call also creates a range-op object.
+	(gimple_range_op_handler): Also check builtin calls.
+	(class cfn_constant_float_p): New.  Float CFN_BUILT_IN_CONSTANT_P.
+	(class cfn_constant_p): New.  Integral CFN_BUILT_IN_CONSTANT_P.
+	(gimple_range_op_handler::maybe_builtin_call): Set arguments and
+	handler for supported built-in calls.
+	* gimple-range-op.h (maybe_builtin_call): New prototype.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_range_op): Set result to
+	VARYING if the call to fold_range fails.
+	* tree-data-ref.cc (compute_distributive_range): Ditto.
+	* tree-vrp.cc (range_fold_binary_expr): Ditto.
+	(range_fold_unary_expr): Ditto.
+	* value-query.cc (range_query::get_tree_range): Ditto.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (range_operator_float::fold_range): New base
+	  method for "int = float op int".
+	* range-op.cc (range_op_handler::fold_range): New case.
+	* range-op.h: Update prototypes.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Use
+	  operand 1 for second range if there is no operand 2.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-range-op.o.
+	* gimple-range-edge.cc (gimple_outgoing_range_stmt_p): Use
+	gimple_range_op_handler.
+	* gimple-range-fold.cc (gimple_range_base_of_assignment): Move
+	to a method in gimple_range_op_handler.
+	(gimple_range_operand1): Ditto.
+	(gimple_range_operand2): Ditto.
+	(fold_using_range::fold_stmt): Use gimple_range_op_handler.
+	(fold_using_range::range_of_range_op): Ditto.
+	(fold_using_range::relation_fold_and_or): Ditto.
+	(fur_source::register_outgoing_edges): Ditto.
+	(gimple_range_ssa_names): Relocate to gimple-range-op.cc.
+	* gimple-range-fold.h: Adjust prototypes.
+	* gimple-range-gori.cc (gimple_range_calc_op1): Move
+	to a method in gimple_range_op_handler.
+	(gimple_range_calc_op2): Ditto.
+	(gori_compute::compute_operand_range): Use
+	gimple_range_op_handler.
+	(gori_compute::compute_logical_operands): Ditto.
+	(compute_operand1_range): Ditto.
+	(gori_compute::compute_operand2_range): Ditto.
+	(gori_compute::compute_operand1_and_operand2_range): Ditto.
+	* gimple-range-gori.h: Adjust protoypes.
+	* gimple-range-op.cc: New.  Supply gimple_range_op_handler methods.
+	* gimple-range-op.h: New.  Supply gimple_range_op_handler class.
+	* gimple-range.cc (gimple_ranger::prefill_name): Use
+	gimple_range_op_handler.
+	(gimple_ranger::prefill_stmt_dependencies): Ditto.
+	* gimple-range.h: Include gimple-range-op.h.
+	* range-op.cc (range_op_handler::range_op_handler): Adjust and
+	remove gimple * parameter option.
+	* range-op.h: Adjust prototypes.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (range_op_handler::set_op_handler): Set new fields.
+	(ange_op_handler::range_op_handler): Likewise.
+	(range_op_handler::operator bool): Remove.
+	(range_op_handler::fold_range): Use appropriate handler.
+	(range_op_handler::op1_range): Likewise.
+	(range_op_handler::op2_range): Likewise.
+	(range_op_handler::lhs_op1_relation): Likewise.
+	(range_op_handler::lhs_op2_relation): Likewise.
+	(range_op_handler::op1_op2_relation): Likewise.
+	* range-op.h (class range_op_handler): Store handler pointers.
+	(range_op_handler:: operator bool): Inline.
+
+2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-threadbackward.cc
+	  (back_threader::find_paths_to_names): Replace sequence with
+	  a call to gimple_range_ssa_names.
+
+2022-09-22  Martin Liska  <mliska@suse.cz>
+	    Fangrui Song  <i@maskray.me>
+
+	* configure: Regenerate.
+	* configure.ac: Simplify to gcc_cv_ld_compress_debug={0,1}
+	and gcc_cv_as_compress_debug={0,1}.
+	* doc/invoke.texi: Document the removal.
+	* gcc.cc (LINK_COMPRESS_DEBUG_SPEC): Simplify and ignore
+	  zlib-gnu.
+	(ASM_COMPRESS_DEBUG_SPEC): Likewise.
+
+2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::same_val): New member.
+	(vn_walk_cb_data::finish): Perform delayed verification of
+	a skipped may-alias.
+	(vn_reference_lookup_pieces): Likewise.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_lookup_3): When skipping stores of the same
+	value also handle constant stores that are more than a
+	single VDEF away by delaying the verification.
+
+2022-09-22  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (TARGET_MAX_ANCHOR_OFFSET): New
+	definition.
+
+2022-09-22  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (xtensa_can_output_mi_thunk)
+	(xtensa_output_mi_thunk): New functions.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK)
+	(TARGET_ASM_OUTPUT_MI_THUNK): New macro definitions.
+	(xtensa_prepare_expand_call): Use fixed register a8 as temporary
+	when called with reload_completed set to 1.
+
+2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99407
+	* tree-ssa-dse.cc (dse_stmt_to_dr_map): New global.
+	(dse_classify_store): Use data-ref analysis to disambiguate more uses.
+	(pass_dse::use_dr_analysis_p): New pass parameter.
+	(pass_dse::set_pass_param): Implement.
+	(pass_dse::execute): Allocate and deallocate dse_stmt_to_dr_map.
+	* passes.def: Allow DR analysis for the DSE pass before loop.
+
+2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (can_track_predicate_on_edge): New
+	function split out from ...
+	(vn_nary_op_insert_pieces_predicated): ... here.
+
+2022-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/106994
+	* config/i386/mmx.md (floorv2sf2): Fix typo, use
+	register_operand instead of vector_operand for operands[1].
+
 2022-09-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/106967

@@ -1,3 +1,10 @@
+2022-09-22  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: (release_register_frames) Remember
+	when the btree has been destroyed.
+	(__deregister_frame_info_bases) Disable the assert when
+	shutting down.
+
 2022-09-18  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* unwind-dw2-fde.c: Replace uintptr_t with typedef

@@ -1,3 +1,22 @@
+2022-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/106830
+	* c-parser.cc (c_parser_initelt): Initialize m_decimal.
+	(c_parser_cast_expression): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_expression): Likewise.
+	(c_parser_omp_variable_list): Likewise.
+	(c_parser_transaction_expression): Likewise.
+	* c-tree.h (c_expr::set_error): Likewise.
+	* c-typeck.cc (c_expr_sizeof_expr): Likewise.
+	(parser_build_unary_op): Likewise.
+	(parser_build_binary_op): Likewise.
+	(digest_init): Likewise.
+	(pop_init_level): Likewise.
+	* gimple-parser.cc (c_parser_gimple_call_internal): Likewise.
+
 2022-09-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/106947
