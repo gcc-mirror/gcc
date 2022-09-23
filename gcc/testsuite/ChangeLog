@@ -1,3 +1,17 @@
+2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* gfortran.dg/pr106986.f90: New test.
+
+2022-09-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/amx-check.h (request_perm_xtile_data):
+	New function to check if AMX is usable and enable AMX.
+	(main): Run test if AMX is usable.
+
 2022-09-21  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
