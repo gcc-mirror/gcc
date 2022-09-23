@@ -25731,6 +25731,13 @@ package body Sem_Prag is
                        ("argument of pragma% must be On/Off or static string "
                         & "expression", Arg1);
 
+                  --  Use of pragma Warnings to set warning switches is
+                  --  ignored in GNATprove mode, as these switches apply to
+                  --  the compiler only.
+
+                  elsif GNATprove_Mode then
+                     null;
+
                   --  One argument string expression case
 
                   else
