@@ -27,6 +27,7 @@ test_indexing()
 
 static_assert( test_indexing() );
 
+#if _GLIBCXX_USE_CXX11_ABI
 constexpr bool
 test_to_string()
 {
@@ -35,6 +36,7 @@ test_to_string()
 }
 
 static_assert( test_to_string() );
+#endif
 
 constexpr bool
 test_to_ulong()

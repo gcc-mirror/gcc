@@ -24,6 +24,7 @@ constexpr bool test_ntbs()
 
 static_assert( test_ntbs() );
 
+#if _GLIBCXX_USE_CXX11_ABI
 constexpr bool test_string()
 {
   using S = std::string;
@@ -51,3 +52,4 @@ constexpr bool test_wstring()
 }
 
 static_assert( test_wstring() );
+#endif
