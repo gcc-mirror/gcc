@@ -1,3 +1,11 @@
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/reverse-offload-sm30.c: Fix nvptx-specific
+	'-foffload-options' syntax.
+
 2022-10-14  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/declare-1.f90: Adjust scan output.
