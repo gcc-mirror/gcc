@@ -1492,12 +1492,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #pragma GCC diagnostic pop
 
-  // is_nothrow_convertible for C++11
-  template<typename _From, typename _To>
-    struct __is_nothrow_convertible
-    : public __is_nt_convertible_helper<_From, _To>::type
-    { };
-
 #if __cplusplus > 201703L
 #define __cpp_lib_is_nothrow_convertible 201806L
   /// is_nothrow_convertible
@@ -2881,7 +2875,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The primary template is used for invalid INVOKE expressions.
   template<typename _Result, typename _Ret,
 	   bool = is_void<_Ret>::value, typename = void>
-    struct __is_invocable_impl : false_type { };
+    struct __is_invocable_impl
+    : false_type
+    {
+      using __nothrow_type = false_type; // For is_nothrow_invocable_r
+    };
 
   // Used for valid INVOKE and INVOKE<void> expressions.
   template<typename _Result, typename _Ret>
@@ -2889,7 +2887,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       /* is_void<_Ret> = */ true,
 			       __void_t<typename _Result::type>>
     : true_type
-    { };
+    {
+      using __nothrow_type = true_type; // For is_nothrow_invocable_r
+    };
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
@@ -2901,23 +2901,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     private:
       // The type of the INVOKE expression.
-      // Unlike declval, this doesn't add_rvalue_reference.
-      static typename _Result::type _S_get();
+      // Unlike declval, this doesn't add_rvalue_reference, so it respects
+      // guaranteed copy elision.
+      static typename _Result::type _S_get() noexcept;
 
       template<typename _Tp>
-	static void _S_conv(_Tp);
+	static void _S_conv(_Tp) noexcept;
 
       // This overload is viable if INVOKE(f, args...) can convert to _Tp.
-      template<typename _Tp, typename = decltype(_S_conv<_Tp>(_S_get()))>
-	static true_type
+      template<typename _Tp, bool _Check_Noex = false,
+	       typename = decltype(_S_conv<_Tp>(_S_get())),
+	       bool _Noex = noexcept(_S_conv<_Tp>(_S_get()))>
+	static __bool_constant<_Check_Noex ? _Noex : true>
 	_S_test(int);
 
-      template<typename _Tp>
+      template<typename _Tp, bool = false>
 	static false_type
 	_S_test(...);
 
     public:
+      // For is_invocable_r
       using type = decltype(_S_test<_Ret>(1));
+
+      // For is_nothrow_invocable_r
+      using __nothrow_type = decltype(_S_test<_Ret, true>(1));
     };
 #pragma GCC diagnostic pop
 
@@ -3048,15 +3055,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// @cond undocumented
-  template<typename _Result, typename _Ret, typename = void>
-    struct __is_nt_invocable_impl : false_type { };
-
   template<typename _Result, typename _Ret>
-    struct __is_nt_invocable_impl<_Result, _Ret,
-				  __void_t<typename _Result::type>>
-    : __or_<is_void<_Ret>,
-	    __is_nothrow_convertible<typename _Result::type, _Ret>>
-    { };
+    using __is_nt_invocable_impl
+      = typename __is_invocable_impl<_Result, _Ret>::__nothrow_type;
   /// @endcond
 
   /// std::is_nothrow_invocable_r

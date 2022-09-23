@@ -21,9 +21,7 @@
 #include <type_traits>
 #include <testsuite_tr1.h>
 
-#ifndef IS_NT_CONVERTIBLE_DEFINED
 using std::is_nothrow_convertible;
-#endif
 
 void test01()
 {
