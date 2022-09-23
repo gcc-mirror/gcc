@@ -5256,6 +5256,13 @@ maybe_unconstrained_array (tree exp)
 	    }
 	}
 
+      else if (code == LOAD_EXPR)
+	{
+	  const Entity_Id gnat_smo = tree_to_shwi (TREE_OPERAND (exp, 1));
+	  tree t = maybe_unconstrained_array (TREE_OPERAND (exp, 0));
+	  exp = build_storage_model_load (gnat_smo, t);
+	}
+
       else if (code == NULL_EXPR)
 	exp = build1 (NULL_EXPR,
 		      TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (type)))),
