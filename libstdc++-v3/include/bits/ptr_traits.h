@@ -144,29 +144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __ptr_traits_impl : __ptr_traits_ptr_to<_Ptr, _Elt>
     {
     private:
-      template<typename _Tp, typename = void>
-	struct __difference { using type = ptrdiff_t; };
-
       template<typename _Tp>
-#if __cpp_concepts
-	requires requires { typename _Tp::difference_type; }
-	struct __difference<_Tp>
-#else
-	struct __difference<_Tp, __void_t<typename _Tp::difference_type>>
-#endif
-	{ using type = typename _Tp::difference_type; };
-
-      template<typename _Tp, typename _Up, typename = void>
-	struct __rebind : __replace_first_arg<_Tp, _Up> { };
+	using __diff_t = typename _Tp::difference_type;
 
       template<typename _Tp, typename _Up>
-#if __cpp_concepts
-	requires requires { typename _Tp::template rebind<_Up>; }
-	struct __rebind<_Tp, _Up>
-#else
-	struct __rebind<_Tp, _Up, __void_t<typename _Tp::template rebind<_Up>>>
-#endif
-	{ using type = typename _Tp::template rebind<_Up>; };
+	using __rebind = __type_identity<typename _Tp::template rebind<_Up>>;
 
     public:
       /// The pointer type.
@@ -176,11 +158,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using element_type = _Elt;
 
       /// The type used to represent the difference between two pointers.
-      using difference_type = typename __difference<_Ptr>::type;
+      using difference_type = __detected_or_t<ptrdiff_t, __diff_t, _Ptr>;
 
       /// A pointer to a different type.
       template<typename _Up>
-        using rebind = typename __rebind<_Ptr, _Up>::type;
+	using rebind = typename __detected_or_t<__replace_first_arg<_Ptr, _Up>,
+						__rebind, _Ptr, _Up>::type;
     };
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
