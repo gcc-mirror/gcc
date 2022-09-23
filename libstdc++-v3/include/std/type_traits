@@ -1381,6 +1381,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
     { };
 
+#if __has_builtin(__is_convertible)
+  template<typename _From, typename _To>
+    struct is_convertible
+    : public __bool_constant<__is_convertible(_From, _To)>
+    { };
+#else
   template<typename _From, typename _To,
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
@@ -1416,12 +1422,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_convertible
     : public __is_convertible_helper<_From, _To>::type
     { };
+#endif
 
   // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
   template<typename _ToElementType, typename _FromElementType>
     using __is_array_convertible
       = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
 
+#if __cplusplus >= 202002L
+#define __cpp_lib_is_nothrow_convertible 201806L
+
+#if __has_builtin(__is_nothrow_convertible)
+  /// is_nothrow_convertible_v
+  template<typename _From, typename _To>
+    inline constexpr bool is_nothrow_convertible_v
+      = __is_nothrow_convertible(_From, _To);
+
+  /// is_nothrow_convertible
+  template<typename _From, typename _To>
+    struct is_nothrow_convertible
+    : public bool_constant<is_nothrow_convertible_v<_From, _To>>
+    { };
+#else
   template<typename _From, typename _To,
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
@@ -1451,8 +1473,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #pragma GCC diagnostic pop
 
-#if __cplusplus > 201703L
-#define __cpp_lib_is_nothrow_convertible 201806L
   /// is_nothrow_convertible
   template<typename _From, typename _To>
     struct is_nothrow_convertible
@@ -1463,6 +1483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _From, typename _To>
     inline constexpr bool is_nothrow_convertible_v
       = is_nothrow_convertible<_From, _To>::value;
+#endif
 #endif // C++2a
 
   // Const-volatile modifications.
@@ -3265,7 +3286,7 @@ template <typename _Tp>
 template <typename _Base, typename _Derived>
   inline constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
 template <typename _From, typename _To>
-  inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
+  inline constexpr bool is_convertible_v = __is_convertible(_From, _To);
 template<typename _Fn, typename... _Args>
   inline constexpr bool is_invocable_v = is_invocable<_Fn, _Args...>::value;
 template<typename _Fn, typename... _Args>
