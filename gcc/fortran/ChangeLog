@@ -1,3 +1,12 @@
+2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106857
+	* simplify.c (gfc_simplify_pack): Check for NULL pointer dereferences
+	while walking through constructors (error recovery).
+
 2022-07-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
