@@ -504,8 +504,8 @@
 
 #ifndef __cpp_char8_t
 #  error "__cpp_char8_t"
-#elif __cpp_char8_t != 201811
-#  error "__cpp_char8_t != 201811"
+#elif __cpp_char8_t != 202207
+#  error "__cpp_char8_t != 202207"
 #endif
 
 #ifndef __cpp_designated_initializers

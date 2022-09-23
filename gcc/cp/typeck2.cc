@@ -1118,6 +1118,15 @@ array_string_literal_compatible_p (tree type, tree init)
   if (ordinary_char_type_p (to_char_type)
       && ordinary_char_type_p (from_char_type))
     return true;
+
+  /* P2513 (C++20/C++23): "an array of char or unsigned char may
+     be initialized by a UTF-8 string literal, or by such a string
+     literal enclosed in braces."  */
+  if (from_char_type == char8_type_node
+      && (to_char_type == char_type_node
+	  || to_char_type == unsigned_char_type_node))
+    return true;
+
   return false;
 }
 
