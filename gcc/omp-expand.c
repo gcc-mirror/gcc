@@ -10043,7 +10043,10 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_OACC_UPDATE:
 		case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
 		case GF_OMP_TARGET_KIND_OACC_DECLARE:
-		  /* ..., other than for those stand-alone directives...  */
+		  /* ..., other than for those stand-alone directives...
+		     To be precise, target data isn't stand-alone, but
+		     gimplifier put the end API call into try finally block
+		     for it, so omp expansion can treat it as such.  */
 		  region = NULL;
 		  break;
 		default:
@@ -10060,6 +10063,11 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  else if (code == GIMPLE_OMP_TASK
 		   && gimple_omp_task_taskwait_p (stmt))
 	    /* #pragma omp taskwait depend(...) is a stand-alone directive.  */
+	    region = NULL;
+	  else if (code == GIMPLE_OMP_TASKGROUP)
+	    /* #pragma omp taskgroup isn't a stand-alone directive, but
+	       gimplifier put the end API call into try finall block
+	       for it, so omp expansion can treat it as such.  */
 	    region = NULL;
 	  /* ..., this directive becomes the parent for a new region.  */
 	  if (region)
@@ -10255,11 +10263,16 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_MASTER:
-    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_SECTION:
       cur_region = new_omp_region (bb, code, cur_region);
       fallthru = true;
+      break;
+
+    case GIMPLE_OMP_TASKGROUP:
+      cur_region = new_omp_region (bb, code, cur_region);
+      fallthru = true;
+      cur_region = cur_region->outer;
       break;
 
     case GIMPLE_OMP_TASK:
