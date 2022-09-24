@@ -1,3 +1,11 @@
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* c-common.cc (c_common_reswords): Add __is_convertible and
+	__is_nothrow_convertible.
+	* c-common.h (enum rid): Add RID_IS_CONVERTIBLE and
+	RID_IS_NOTHROW_CONVERTIBLE.
+
 2022-09-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/106830

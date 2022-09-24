@@ -1,3 +1,63 @@
+2022-09-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-complit-1.c, gcc.dg/c2x-concat-1.c,
+	gcc.dg/cpp/c2x-ucn-1.c: New tests.
+
+2022-09-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: Replace
+	dg-xfail-if with dg-skip-if.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: Likewise.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* g++.dg/ext/has-builtin-1.C: Enhance to test __is_convertible and
+	__is_nothrow_convertible.
+	* g++.dg/ext/is_convertible1.C: New test.
+	* g++.dg/ext/is_convertible2.C: New test.
+	* g++.dg/ext/is_nothrow_convertible1.C: New test.
+	* g++.dg/ext/is_nothrow_convertible2.C: New test.
+
+2022-09-23  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* selftests/riscv/empty-func.rtl: New test.
+
+2022-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* g++.dg/torture/pr106922.C: New testcase.
+
+2022-09-23  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/scanasm.exp (check_function_body): Add debug output to verbose log
+	on failure.
+
+2022-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106922
+	* g++.dg/tree-ssa/pr106922.C: Scan in cddce3 dump rather than
+	dce3.  Remove -fdump-tree-pre-details from dg-options.
+
+2022-09-23  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/94962
+	* gcc.target/i386/avx256-unaligned-load-1.c: Modify test.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Ditto.
+	* gcc.target/i386/pr94962-1.c: New test.
+	* gcc.target/i386/pr94962-2.c: Ditto.
+	* gcc.target/i386/pr94962-3.c: Ditto.
+	* gcc.target/i386/pr94962-4.c: Ditto.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106983
+	* g++.dg/other/error36.C: New test.
+
 2022-09-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100103

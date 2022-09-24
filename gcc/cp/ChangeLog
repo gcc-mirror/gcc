@@ -1,3 +1,30 @@
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_CONVERTIBLE
+	and CPTK_IS_NOTHROW_CONVERTIBLE.
+	* cp-objcp-common.cc (names_builtin_p): Handle RID_IS_CONVERTIBLE
+	RID_IS_NOTHROW_CONVERTIBLE.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_IS_CONVERTIBLE and
+	CPTK_IS_NOTHROW_CONVERTIBLE.
+	(is_convertible): Declare.
+	(is_nothrow_convertible): Likewise.
+	* cxx-pretty-print.cc (pp_cxx_trait_expression): Handle
+	CPTK_IS_CONVERTIBLE and CPTK_IS_NOTHROW_CONVERTIBLE.
+	* method.cc (is_convertible): New.
+	(is_nothrow_convertible): Likewise.
+	* parser.cc (cp_parser_primary_expression): Handle RID_IS_CONVERTIBLE
+	and RID_IS_NOTHROW_CONVERTIBLE.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.cc (trait_expr_value): Handle CPTK_IS_CONVERTIBLE and
+	CPTK_IS_NOTHROW_CONVERTIBLE.
+	(finish_trait_expr): Likewise.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106983
+	* typeck2.cc (split_nonconstant_init_1): Check TYPE_P.
+
 2022-09-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106826

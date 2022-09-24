@@ -1,3 +1,127 @@
+2022-09-23  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.h (LOCAL_SYM_P): New.
+	(USE_LOAD_ADDRESS_MACRO): Simplify by calling LOCAL_SYM_P.
+
+2022-09-23  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-modes.def (VECTOR_BOOL_MODE): Add RVV mask modes.
+	(ADJUST_NUNITS): Adjust nunits using riscv_vector_chunks.
+	(ADJUST_ALIGNMENT): Adjust alignment.
+	(ADJUST_BYTESIZE): Adjust bytesize using riscv_vector_chunks.
+	(RVV_MODES): New macro.
+	(VECTOR_MODE_WITH_PREFIX): Add RVV vector modes.
+	(VECTOR_MODES_WITH_PREFIX): Add RVV vector modes.
+
+2022-09-23  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* common/config/riscv/riscv-common.cc: Change "static void" to "void".
+	* config.gcc: Add riscv-selftests.o
+	* config/riscv/predicates.md: Allow const_poly_int.
+	* config/riscv/riscv-protos.h (riscv_reinit): New function.
+	(riscv_parse_arch_string): change as exten function.
+	(riscv_run_selftests): New function.
+	* config/riscv/riscv.cc (riscv_cannot_force_const_mem): Don't allow poly
+	into const pool.
+	(riscv_report_v_required): New function.
+	(riscv_expand_op): New function.
+	(riscv_expand_mult_with_const_int): New function.
+	(riscv_legitimize_poly_move): Ditto.
+	(riscv_legitimize_move): New function.
+	(riscv_hard_regno_mode_ok): Add VL/VTYPE register allocation and fix
+	vector RA.
+	(riscv_convert_vector_bits): Fix riscv_vector_chunks configuration for
+	-marh no 'v'.
+	(riscv_reinit): New function.
+	(TARGET_RUN_TARGET_SELFTESTS): New target hook support.
+	* config/riscv/t-riscv: Add riscv-selftests.o.
+	* config/riscv/riscv-selftests.cc: New file.
+
+2022-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Allow
+	an arbitrary number of same valued skipped stores.
+
+2022-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Swap setters such that the one
+	accepting REAL_VALUE_TYPE does all the work.
+
+2022-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-v2): New entry.
+	(demeter): Update tunings to neoversev2.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc (demeter_addrcost_table): Rename to
+	neoversev2_addrcost_table.
+	(demeter_regmove_cost): Rename to neoversev2_addrcost_table.
+	(demeter_advsimd_vector_cost): Rename to neoversev2_advsimd_vector_cost.
+	(demeter_sve_vector_cost): Rename to neoversev2_sve_vector_cost.
+	(demeter_scalar_issue_info): Rename to neoversev2_scalar_issue_info.
+	(demeter_advsimd_issue_info): Rename to neoversev2_advsimd_issue_info.
+	(demeter_sve_issue_info): Rename to neoversev2_sve_issue_info.
+	(demeter_vec_issue_info): Rename to neoversev2_vec_issue_info.
+	Update references to above.
+	(demeter_vector_cost): Rename to neoversev2_vector_cost.
+	(demeter_tunings): Rename to neoversev2_tunings.
+	(aarch64_vec_op_count::rename_cycles_per_iter): Use
+	neoversev2_sve_issue_info instead of demeter_sve_issue_info.
+	* doc/invoke.texi (AArch64 Options): Document neoverse-v2.
+
+2022-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_le): Use vrp_val_*.
+	(build_lt): Same.
+	(build_ge): Same.
+	(build_gt): Same.
+	* value-range.cc (frange::set): Chop ranges outside of the
+	representable numbers for -ffinite-math-only.
+	(frange::normalize_kind): Use vrp_val*.
+	(frange::verify_range): Same.
+	(frange::set_nonnegative): Same.
+	(range_tests_floats): Remove tests that depend on -INF and +INF.
+	* value-range.h (real_max_representable): Add prototype.
+	(real_min_representable): Same.
+	(vrp_val_max): Set max representable number for
+	-ffinite-math-only.
+	(vrp_val_min): Same but for min.
+	(frange::set_varying): Use vrp_val*.
+
+2022-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.cc (debug): New.
+
+2022-09-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-pretty-print.cc (vrange_printer::print_real_value): New.
+	(vrange_printer::visit): Call print_real_value.
+	* value-range-pretty-print.h: New print_real_value.
+
+2022-09-23  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Update -flto-compression-level documentation.
+	* opts.cc (print_filtered_help): Do not append range to an
+	  option that uses \t syntax.
+
+2022-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.cc (decl_attributes): Improve diagnostics, instead of
+	saying expected between 1 and 1, found 2 just say expected 1, found 2.
+
+2022-09-23  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/94962
+	* config/i386/constraints.md (BH): New define_constraint.
+	* config/i386/i386.cc (standard_sse_constant_p): Add return
+	3/4 when operand matches new predicate.
+	(standard_sse_constant_opcode): Add new alternative branch to
+	return "vpcmpeqd".
+	* config/i386/predicates.md
+	(vector_all_ones_zero_extend_half_operand): New define_predicate.
+	(vector_all_ones_zero_extend_quarter_operand): Ditto.
+	* config/i386/sse.md: Add constraint to insn "mov<mode>_internal".
+
 2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-fold.cc (range_of_range_op): Handle no operands.
