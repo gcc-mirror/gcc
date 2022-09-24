@@ -27,7 +27,7 @@ if { ![istarget aarch64*-*-*] } then {
 
 torture-init
 set-torture-options $C_TORTURE_OPTIONS
-set additional_flags "-W -Wall -Wno-abi"
+set additional_flags "-W -Wall -Wno-abi -fno-pie -no-pie"
 
 # Test parameter passing.  This uses abitest.S which relies on weak
 # symbols.
