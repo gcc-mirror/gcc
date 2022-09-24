@@ -15360,14 +15360,10 @@ c_tree_equal (tree t1, tree t2)
   if (!t1 || !t2)
     return false;
 
-  for (code1 = TREE_CODE (t1);
-       CONVERT_EXPR_CODE_P (code1)
-	 || code1 == NON_LVALUE_EXPR;
+  for (code1 = TREE_CODE (t1); code1 == NON_LVALUE_EXPR;
        code1 = TREE_CODE (t1))
     t1 = TREE_OPERAND (t1, 0);
-  for (code2 = TREE_CODE (t2);
-       CONVERT_EXPR_CODE_P (code2)
-	 || code2 == NON_LVALUE_EXPR;
+  for (code2 = TREE_CODE (t2); code2 == NON_LVALUE_EXPR;
        code2 = TREE_CODE (t2))
     t2 = TREE_OPERAND (t2, 0);
 
@@ -15376,6 +15372,9 @@ c_tree_equal (tree t1, tree t2)
     return true;
 
   if (code1 != code2)
+    return false;
+
+  if (CONSTANT_CLASS_P (t1) && !comptypes (TREE_TYPE (t1), TREE_TYPE (t2)))
     return false;
 
   switch (code1)
@@ -15496,6 +15495,11 @@ c_tree_equal (tree t1, tree t2)
 	    return false;
 	return true;
       }
+
+    CASE_CONVERT:
+      if (!comptypes (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
 
     default:
       break;
