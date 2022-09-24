@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcmodel=large -mabi=ilp32" } */
+/* { dg-options "-mcmodel=large -mabi=ilp32 -fno-pie" } */
 
 void
 foo ()
