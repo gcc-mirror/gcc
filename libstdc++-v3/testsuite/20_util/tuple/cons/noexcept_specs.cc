@@ -503,7 +503,17 @@ namespace NothrowCopyThrowMoveThrowCopyConversionNothrowMoveConversion
   static_assert(!std::is_nothrow_constructible<BT, IT&>::value, "");
   static_assert(!std::is_nothrow_constructible<BT, const IT &>::value, "");
   static_assert(!std::is_nothrow_constructible<BT, std::tuple<int&>>::value, "");
+#if __cplusplus > 202002L
+  // C++23 extended tuple's constructor overload set as part of P2321R2, after
+  // which its converting constructors more accurately forward the elements
+  // from a non-const tuple lvalue and from a const tuple rvalue.  In particular
+  // for the below test we now forward int&& as an rvalue reference instead of
+  // as an lvalue reference, which means we now select the noexcept B(int&&)
+  // ctor instead of the non-noexcept B(const int&) ctor.
+  static_assert(std::is_nothrow_constructible<BT, const std::tuple<int&&>>::value, "");
+#else
   static_assert(!std::is_nothrow_constructible<BT, const std::tuple<int&&>>::value, "");
+#endif
 
   static_assert(test_trait::is_nothrow_convertible<int,BT>::value,"");
   static_assert(!test_trait::is_nothrow_convertible<const int,BT>::value,"");
@@ -515,7 +525,13 @@ namespace NothrowCopyThrowMoveThrowCopyConversionNothrowMoveConversion
   static_assert(!test_trait::is_nothrow_convertible<IT&,BT>::value,"");
   static_assert(!test_trait::is_nothrow_convertible<const IT &,BT>::value,"");
   static_assert(!test_trait::is_nothrow_convertible<std::tuple<int&>,BT>::value,"");
+#if __cplusplus > 202002L
+  // See the note about P2321R2 above.
+  static_assert(test_trait::is_nothrow_convertible<const std::tuple<int&&>,BT>::value,"");
+#else
   static_assert(!test_trait::is_nothrow_convertible<const std::tuple<int&&>,BT>::value,"");
+#endif
+
 
 
   static_assert(!std::is_nothrow_constructible<BT, B>::value, "");
@@ -528,7 +544,12 @@ namespace NothrowCopyThrowMoveThrowCopyConversionNothrowMoveConversion
   static_assert(std::is_nothrow_constructible<BT, BT&>::value, "");
   static_assert(std::is_nothrow_constructible<BT, const BT &>::value, "");
   static_assert(std::is_nothrow_constructible<BT, std::tuple<B&>>::value, "");
+#if __cplusplus > 202002L
+  // See the note about P2321R2 above.
+  static_assert(!std::is_nothrow_constructible<BT, const std::tuple<B&&>>::value, "");
+#else
   static_assert(std::is_nothrow_constructible<BT, const std::tuple<B&&>>::value, "");
+#endif
 
   static_assert(!test_trait::is_nothrow_convertible<B,BT>::value,"");
   static_assert(test_trait::is_nothrow_convertible<const B,BT>::value,"");
@@ -540,7 +561,12 @@ namespace NothrowCopyThrowMoveThrowCopyConversionNothrowMoveConversion
   static_assert(test_trait::is_nothrow_convertible<BT&,BT>::value,"");
   static_assert(test_trait::is_nothrow_convertible<const BT &,BT>::value,"");
   static_assert(test_trait::is_nothrow_convertible<std::tuple<B&>,BT>::value,"");
+#if __cplusplus > 202002L
+  // See the note about P2321R2 above.
+  static_assert(!test_trait::is_nothrow_convertible<const std::tuple<B&&>,BT>::value,"");
+#else
   static_assert(test_trait::is_nothrow_convertible<const std::tuple<B&&>,BT>::value,"");
+#endif
 
 /* explicit */
   static_assert(std::is_nothrow_constructible<DT, int>::value, "");
@@ -553,7 +579,12 @@ namespace NothrowCopyThrowMoveThrowCopyConversionNothrowMoveConversion
   static_assert(!std::is_nothrow_constructible<DT, IT&>::value, "");
   static_assert(!std::is_nothrow_constructible<DT, const IT &>::value, "");
   static_assert(!std::is_nothrow_constructible<DT, std::tuple<int&>>::value, "");
+#if __cplusplus > 202002L
+  // See the note about P2321R2 above.
+  static_assert(std::is_nothrow_constructible<DT, const std::tuple<int&&>>::value, "");
+#else
   static_assert(!std::is_nothrow_constructible<DT, const std::tuple<int&&>>::value, "");
+#endif
 
   static_assert(!std::is_nothrow_constructible<DT, D>::value, "");
   static_assert(std::is_nothrow_constructible<DT,const D>::value, "");
@@ -565,7 +596,12 @@ namespace NothrowCopyThrowMoveThrowCopyConversionNothrowMoveConversion
   static_assert(std::is_nothrow_constructible<DT, DT&>::value, "");
   static_assert(std::is_nothrow_constructible<DT, const DT &>::value, "");
   static_assert(std::is_nothrow_constructible<DT, std::tuple<D&>>::value, "");
+#if __cplusplus > 202002L
+  // See note about P2321R2 above.
+  static_assert(!std::is_nothrow_constructible<DT, const std::tuple<D&&>>::value, "");
+#else
   static_assert(std::is_nothrow_constructible<DT, const std::tuple<D&&>>::value, "");
+#endif
 
   static_assert(!test_trait::is_nothrow_convertible<DT,DT>::value,"");
   static_assert(test_trait::is_nothrow_convertible<const DT,DT>::value,"");
@@ -884,7 +920,12 @@ namespace ThrowMoveNothrowConversion
   static_assert(std::is_nothrow_constructible<DT, IT&>::value, "");
   static_assert(std::is_nothrow_constructible<DT, const IT &>::value, "");
   static_assert(std::is_nothrow_constructible<DT, std::tuple<int&>>::value, "");
+#if __cplusplus > 202002L
+  // See the note about P2321R2 above.
+  static_assert(!std::is_nothrow_constructible<DT, const std::tuple<int&&>>::value, "");
+#else
   static_assert(std::is_nothrow_constructible<DT, const std::tuple<int&&>>::value, "");
+#endif
 
   static_assert(test_trait::is_nothrow_convertible<DT,DT>::value,"");
   static_assert(test_trait::is_nothrow_convertible<D,DT>::value,"");

@@ -146,6 +146,9 @@
     case CONST_INT:
       return !splittable_const_int_operand (op, mode);
 
+    case CONST_POLY_INT:
+      return known_eq (rtx_to_poly_int64 (op), BYTES_PER_RISCV_VECTOR);
+
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -226,11 +229,11 @@
 ;; Predicates for the ZBS extension.
 (define_predicate "single_bit_mask_operand"
   (and (match_code "const_int")
-       (match_test "pow2p_hwi (INTVAL (op))")))
+       (match_test "SINGLE_BIT_MASK_OPERAND (UINTVAL (op))")))
 
 (define_predicate "not_single_bit_mask_operand"
   (and (match_code "const_int")
-       (match_test "pow2p_hwi (~INTVAL (op))")))
+       (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
 
 (define_predicate "const31_operand"
   (and (match_code "const_int")
@@ -243,6 +246,11 @@
 (define_predicate "imm5_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) < 5")))
+
+;; A const_int for sh1add/sh2add/sh3add
+(define_predicate "imm123_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 3)")))
 
 ;; A CONST_INT operand that consists of a single run of consecutive set bits.
 (define_predicate "consecutive_bits_operand"

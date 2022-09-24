@@ -21,9 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "tm_p.h"
+#include "tm_d.h"
 #include "d/d-target.h"
 #include "d/d-target-def.h"
+#include "arm-protos.h"
 
 /* Implement TARGET_D_CPU_VERSIONS for ARM targets.  */
 

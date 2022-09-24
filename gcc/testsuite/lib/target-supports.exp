@@ -310,12 +310,6 @@ proc check_weak_available { } {
 	return 1
     }
 
-    # HP-UX 10.X doesn't support it
-
-    if { [istarget hppa*-*-hpux10*] } {
-	return 0
-    }
-
     # nvptx (nearly) supports it
 
     if { [istarget nvptx-*-*] } {
@@ -562,8 +556,6 @@ proc check_effective_target_trampolines { } {
     if { [istarget avr-*-*]
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
-	 || [istarget hppa2.0w-hp-hpux11.23]
-	 || [istarget hppa64-hp-hpux11.23]
 	 || [istarget pru-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0;
@@ -611,7 +603,7 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1
     }
-    if { [istarget msp430-*-*] || [istarget cr16-*-*] } {
+    if { [istarget msp430-*-*] } {
 	return 1;   
     }
     return 0
@@ -1123,15 +1115,6 @@ proc check_effective_target_pthread {} {
 	#include <pthread.h>
 	void foo (void) { }
     } "-pthread"]
-}
-
-# Return 1 if compilation with -gstabs is error-free for trivial
-# code, 0 otherwise.
-
-proc check_effective_target_stabs {} {
-    return [check_no_compiler_messages stabs object {
-	void foo (void) { }
-    } "-gstabs"]
 }
 
 # Return 1 if compilation with -mpe-aligned-commons is error-free
@@ -2827,10 +2810,7 @@ proc check_mkfifo_available {} {
 
 proc check_cxa_atexit_available { } {
     return [check_cached_effective_target cxa_atexit_available {
-	if { [istarget hppa*-*-hpux10*] } {
-	    # HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
-	    expr 0
-	} elseif { [istarget *-*-vxworks] } {
+	if { [istarget *-*-vxworks] } {
 	    # vxworks doesn't have __cxa_atexit but subsequent test passes.
 	    expr 0
 	} else {
@@ -6259,9 +6239,12 @@ proc check_effective_target_powerpc_sqrt { } {
     }
 
     return [check_no_compiler_messages powerpc_sqrt object {
+	void test (void)
+	{
 	#ifndef _ARCH_PPCSQ
 	#error _ARCH_PPCSQ is not defined
 	#endif
+	}
     } {}]
 }
 
@@ -6369,71 +6352,92 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 # as provided by the test.
 proc check_effective_target_has_arch_pwr5 { } {
 	return [check_no_compiler_messages_nocache arch_pwr5 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR5
 		#error does not have power5 support.
 		#else
 		/* "has power5 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr6 { } {
 	return [check_no_compiler_messages_nocache arch_pwr6 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR6
 		#error does not have power6 support.
 		#else
 		/* "has power6 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr7 { } {
 	return [check_no_compiler_messages_nocache arch_pwr7 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR7
 		#error does not have power7 support.
 		#else
 		/* "has power7 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr8 { } {
 	return [check_no_compiler_messages_nocache arch_pwr8 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR8
 		#error does not have power8 support.
 		#else
 		/* "has power8 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr9 { } {
 	return [check_no_compiler_messages_nocache arch_pwr9 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR9
 		#error does not have power9 support.
 		#else
 		/* "has power9 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr10 { } {
 	return [check_no_compiler_messages_nocache arch_pwr10 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PWR10
 		#error does not have power10 support.
 		#else
 		/* "has power10 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_ppc64 { } {
 	return [check_no_compiler_messages_nocache arch_ppc64 assembly {
+		void test (void)
+		{
 		#ifndef _ARCH_PPC64
 		#error does not have ppc64 support.
 		#else
 		/* "has ppc64 support" */
 		#endif
+		}
 	} [current_compiler_flags]]
 }
 
@@ -6520,9 +6524,12 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
 
 proc check_effective_target_ppc_float128 { } {
     return [check_no_compiler_messages_nocache ppc_float128 object {
+	void test (void)
+	{
 	#ifndef __FLOAT128__
 	  nope no good
 	#endif
+	}
     }]
 }
 
@@ -6530,9 +6537,12 @@ proc check_effective_target_ppc_float128 { } {
 
 proc check_effective_target_ppc_float128_insns { } {
     return [check_no_compiler_messages_nocache ppc_float128 object {
+	void test (void)
+	{
 	#ifndef __FLOAT128_HARDWARE__
 	  nope no good
 	#endif
+	}
     }]
 }
 
@@ -6540,9 +6550,12 @@ proc check_effective_target_ppc_float128_insns { } {
 
 proc check_effective_target_powerpc_vsx { } {
     return [check_no_compiler_messages_nocache powerpc_vsx object {
+	void test (void)
+	{
 	#ifndef __VSX__
 	  nope no vsx
 	#endif
+	}
     }]
 }
 
@@ -6814,6 +6827,7 @@ proc check_effective_target_vect_var_shift { } {
     return [check_cached_effective_target_indexed vect_var_shift {
       expr {(([istarget i?86-*-*] || [istarget x86_64-*-*])
 	     && [check_avx2_available])
+	    || [istarget aarch64*-*-*]
       }}]
 }
 
@@ -8646,6 +8660,13 @@ proc check_effective_target_bswap { } {
 	     || [istarget powerpc*-*-*]
 	     || [istarget rs6000-*-*]
 	     || [istarget s390*-*-*]
+	     || ([istarget riscv*-*-*]
+	         && [check_no_compiler_messages_nocache riscv_zbb object {
+		     #if __riscv_zbb  <= 0
+		     #error ZBB is not enabled
+		     #endif
+		     int i;
+		 } ""])
 	     || ([istarget arm*-*-*]
 		 && [check_no_compiler_messages_nocache arm_v6_or_later object {
 		     #if __ARM_ARCH < 6

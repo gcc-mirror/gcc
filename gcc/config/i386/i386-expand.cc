@@ -745,6 +745,10 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
       extract = gen_avx_vextractf128v32qi;
       mode = V16QImode;
       break;
+    case E_V16BFmode:
+      extract = gen_avx_vextractf128v16bf;
+      mode = V8BFmode;
+      break;
     case E_V16HFmode:
       extract = gen_avx_vextractf128v16hf;
       mode = V8HFmode;
@@ -15030,11 +15034,12 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  dperm.op0 = dperm.op1 = gen_reg_rtx (mode);
 	  dperm.one_operand_p = true;
 
-	  if (mode == V8HFmode)
+	  if (mode == V8HFmode || mode == V8BFmode)
 	    {
-	      tmp1 = force_reg (HFmode, val);
+	      tmp1 = force_reg (GET_MODE_INNER (mode), val);
 	      tmp2 = gen_reg_rtx (mode);
-	      emit_insn (gen_vec_setv8hf_0 (tmp2, CONST0_RTX (mode), tmp1));
+	      emit_insn (maybe_gen_vec_set_0 (mode, tmp2,
+					      CONST0_RTX (mode), tmp1));
 	      tmp1 = gen_lowpart (mode, tmp2);
 	    }
 	  else
@@ -15104,9 +15109,24 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	return ix86_vector_duplicate_value (mode, target, val);
       else
 	{
-	  machine_mode hvmode = (mode == V16HImode ? V8HImode
-				 : mode == V16HFmode ? V8HFmode
-				 : V16QImode);
+	  machine_mode hvmode;
+	  switch (mode)
+	    {
+	    case V16HImode:
+	      hvmode = V8HImode;
+	      break;
+	    case V16HFmode:
+	      hvmode = V8HFmode;
+	      break;
+	    case V16BFmode:
+	      hvmode = V8BFmode;
+	      break;
+	    case V32QImode:
+	      hvmode = V16QImode;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
 	  rtx x = gen_reg_rtx (hvmode);
 
 	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
@@ -15125,10 +15145,24 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	return ix86_vector_duplicate_value (mode, target, val);
       else
 	{
-	  machine_mode hvmode = (mode == V32HImode ? V16HImode
-				 : mode == V32HFmode ? V16HFmode
-				 : mode == V32BFmode ? V16BFmode
-				 : V32QImode);
+	  machine_mode hvmode;
+	  switch (mode)
+	    {
+	    case V32HImode:
+	      hvmode = V16HImode;
+	      break;
+	    case V32HFmode:
+	      hvmode = V16HFmode;
+	      break;
+	    case V32BFmode:
+	      hvmode = V16BFmode;
+	      break;
+	    case V64QImode:
+	      hvmode = V32QImode;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
 	  rtx x = gen_reg_rtx (hvmode);
 
 	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
@@ -21822,21 +21856,23 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       return true;
 
     case E_V8HFmode:
+    case E_V8BFmode:
       /* This can be implemented via interleave and pshufd.  */
       if (d->testing_p)
 	return true;
 
+      rtx (*maybe_gen) (machine_mode, int, rtx, rtx, rtx);
       if (elt >= nelt2)
 	{
-	  gen = gen_vec_interleave_highv8hf;
+	  maybe_gen = maybe_gen_vec_interleave_high;
 	  elt -= nelt2;
 	}
       else
-	gen = gen_vec_interleave_lowv8hf;
+	maybe_gen = maybe_gen_vec_interleave_low;
       nelt2 /= 2;
 
       dest = gen_reg_rtx (vmode);
-      emit_insn (gen (dest, op0, op0));
+      emit_insn (maybe_gen (vmode, 1, dest, op0, op0));
 
       vmode = V4SImode;
       op0 = gen_lowpart (vmode, dest);

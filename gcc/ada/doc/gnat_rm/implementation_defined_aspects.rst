@@ -317,23 +317,27 @@ The following is a typical example of use:
   type List is private with
       Iterable => (First       => First_Cursor,
                    Next        => Advance,
-                   Has_Element => Cursor_Has_Element,
-                  [Element     => Get_Element]);
+                   Has_Element => Cursor_Has_Element
+                 [,Element     => Get_Element]
+                 [,Last        => Last_Cursor]
+                 [,Previous    => Retreat]);
 
-* The value denoted by ``First`` must denote a primitive operation of the
-  container type that returns a ``Cursor``, which must a be a type declared in
+* The values of ``First`` and ``Last`` are primitive operations of the
+  container type that return a ``Cursor``, which must be a type declared in
   the container package or visible from it. For example:
 
 .. code-block:: ada
 
   function First_Cursor (Cont : Container) return Cursor;
+  function Last_Cursor  (Cont : Container) return Cursor;
 
-* The value of ``Next`` is a primitive operation of the container type that takes
-  both a container and a cursor and yields a cursor. For example:
+* The values of ``Next`` and ``Previous`` are primitive operations of the container type that take
+  both a container and a cursor and yield a cursor. For example:
 
 .. code-block:: ada
 
   function Advance (Cont : Container; Position : Cursor) return Cursor;
+  function Retreat (Cont : Container; Position : Cursor) return Cursor;
 
 * The value of ``Has_Element`` is a primitive operation of the container type
   that takes both a container and a cursor and yields a boolean. For example:

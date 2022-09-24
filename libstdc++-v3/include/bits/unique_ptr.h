@@ -36,9 +36,11 @@
 #include <tuple>
 #include <bits/stl_function.h>
 #include <bits/functional_hash.h>
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
-# include <ostream>
+# if _GLIBCXX_HOSTED
+#  include <ostream>
+# endif
 #endif
 
 #if __cplusplus > 202002L && __cpp_constexpr_dynamic_alloc
@@ -1031,7 +1033,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
     { };
 
-#if __cplusplus >= 201402L
+#if __cplusplus >= 201402L && _GLIBCXX_HOSTED
 #define __cpp_lib_make_unique 201304L
 
   /// @cond undocumented
@@ -1131,9 +1133,9 @@ namespace __detail
     make_unique_for_overwrite(_Args&&...) = delete;
 #endif // C++20
 
-#endif // C++14
+#endif // C++14 && HOSTED
 
-#if __cplusplus > 201703L && __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts && _GLIBCXX_HOSTED
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2948. unique_ptr does not define operator<< for stream output
   /// Stream output operator for unique_ptr
@@ -1148,7 +1150,7 @@ namespace __detail
       __os << __p.get();
       return __os;
     }
-#endif // C++20
+#endif // C++20 && HOSTED
 
   /// @} group pointer_abstractions
 

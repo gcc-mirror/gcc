@@ -2290,6 +2290,187 @@
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
+; These FP unops have f64, f32 and f16 versions.
+(define_int_iterator MATH_UNOP_1OR2REG
+  [UNSPEC_FLOOR UNSPEC_CEIL])
+
+; These FP unops only have f16/f32 versions.
+(define_int_iterator MATH_UNOP_1REG
+  [UNSPEC_EXP2 UNSPEC_LOG2])
+
+(define_int_iterator MATH_UNOP_TRIG
+  [UNSPEC_SIN UNSPEC_COS])
+
+(define_int_attr math_unop
+  [(UNSPEC_FLOOR "floor")
+   (UNSPEC_CEIL "ceil")
+   (UNSPEC_EXP2 "exp2")
+   (UNSPEC_LOG2 "log2")
+   (UNSPEC_SIN "sin")
+   (UNSPEC_COS "cos")])
+
+(define_insn "<math_unop><mode>2"
+  [(set (match_operand:FP 0 "register_operand"  "=  v")
+	(unspec:FP
+	  [(match_operand:FP 1 "gcn_alu_operand" "vSvB")]
+	  MATH_UNOP_1OR2REG))]
+  ""
+  "v_<math_unop>%i0\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "<math_unop><mode>2<exec>"
+  [(set (match_operand:V_FP 0 "register_operand"  "=  v")
+	(unspec:V_FP
+	  [(match_operand:V_FP 1 "gcn_alu_operand" "vSvB")]
+	  MATH_UNOP_1OR2REG))]
+  ""
+  "v_<math_unop>%i0\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "<math_unop><mode>2"
+  [(set (match_operand:FP_1REG 0 "register_operand"  "=  v")
+	(unspec:FP_1REG
+	  [(match_operand:FP_1REG 1 "gcn_alu_operand" "vSvB")]
+	  MATH_UNOP_1REG))]
+  "flag_unsafe_math_optimizations"
+  "v_<math_unop>%i0\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "<math_unop><mode>2<exec>"
+  [(set (match_operand:V_FP_1REG 0 "register_operand"  "=  v")
+	(unspec:V_FP_1REG
+	  [(match_operand:V_FP_1REG 1 "gcn_alu_operand" "vSvB")]
+	  MATH_UNOP_1REG))]
+  "flag_unsafe_math_optimizations"
+  "v_<math_unop>%i0\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "*<math_unop><mode>2_insn"
+  [(set (match_operand:FP_1REG 0 "register_operand"  "=  v")
+	(unspec:FP_1REG
+	  [(match_operand:FP_1REG 1 "gcn_alu_operand" "vSvB")]
+	  MATH_UNOP_TRIG))]
+  "flag_unsafe_math_optimizations"
+  "v_<math_unop>%i0\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "*<math_unop><mode>2<exec>_insn"
+  [(set (match_operand:V_FP_1REG 0 "register_operand"  "=  v")
+	(unspec:V_FP_1REG
+	  [(match_operand:V_FP_1REG 1 "gcn_alu_operand" "vSvB")]
+	  MATH_UNOP_TRIG))]
+  "flag_unsafe_math_optimizations"
+  "v_<math_unop>%i0\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+; Trigonometric functions need their input scaled by 1/(2*PI) first.
+
+(define_expand "<math_unop><mode>2"
+  [(set (match_dup 2)
+	(mult:FP_1REG
+	  (match_dup 3)
+	  (match_operand:FP_1REG 1 "gcn_alu_operand")))
+   (set (match_operand:FP_1REG 0 "register_operand")
+	(unspec:FP_1REG
+	  [(match_dup 2)]
+	  MATH_UNOP_TRIG))]
+  "flag_unsafe_math_optimizations"
+  {
+    operands[2] = gen_reg_rtx (<MODE>mode);
+    operands[3] = const_double_from_real_value (gcn_dconst1over2pi (),
+						<MODE>mode);
+  })
+
+(define_expand "<math_unop><mode>2<exec>"
+  [(set (match_dup 2)
+	(mult:V_FP_1REG
+	  (match_dup 3)
+	  (match_operand:V_FP_1REG 1 "gcn_alu_operand")))
+   (set (match_operand:V_FP_1REG 0 "register_operand")
+	(unspec:V_FP_1REG
+	  [(match_dup 2)]
+	  MATH_UNOP_TRIG))]
+  "flag_unsafe_math_optimizations"
+  {
+    operands[2] = gen_reg_rtx (<MODE>mode);
+    operands[3] =
+	gcn_vec_constant (<MODE>mode,
+			  const_double_from_real_value (gcn_dconst1over2pi (),
+							<SCALAR_MODE>mode));
+  })
+
+; Implement ldexp pattern
+
+(define_insn "ldexp<mode>3"
+  [(set (match_operand:FP 0 "register_operand"  "=v")
+	(unspec:FP
+	  [(match_operand:FP 1 "gcn_alu_operand" "vB")
+	   (match_operand:SI 2 "gcn_alu_operand" "vSvA")]
+	  UNSPEC_LDEXP))]
+  ""
+  "v_ldexp%i0\t%0, %1, %2"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+(define_insn "ldexp<mode>3<exec>"
+  [(set (match_operand:V_FP 0 "register_operand"  "=v")
+	(unspec:V_FP
+	  [(match_operand:V_FP 1 "gcn_alu_operand" "vB")
+	   (match_operand:V64SI 2 "gcn_alu_operand" "vSvA")]
+	  UNSPEC_LDEXP))]
+  ""
+  "v_ldexp%i0\t%0, %1, %2"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+; Implement frexp patterns
+
+(define_insn "frexp<mode>_exp2"
+  [(set (match_operand:SI 0 "register_operand" "=v")
+	(unspec:SI
+	  [(match_operand:FP 1 "gcn_alu_operand" "vB")]
+	  UNSPEC_FREXP_EXP))]
+  ""
+  "v_frexp_exp_i32%i1\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "frexp<mode>_mant2"
+  [(set (match_operand:FP 0 "register_operand" "=v")
+	(unspec:FP
+	  [(match_operand:FP 1 "gcn_alu_operand" "vB")]
+	  UNSPEC_FREXP_MANT))]
+  ""
+  "v_frexp_mant%i1\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "frexp<mode>_exp2<exec>"
+  [(set (match_operand:V64SI 0 "register_operand" "=v")
+	(unspec:V64SI
+	  [(match_operand:V_FP 1 "gcn_alu_operand" "vB")]
+	  UNSPEC_FREXP_EXP))]
+  ""
+  "v_frexp_exp_i32%i1\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "frexp<mode>_mant2<exec>"
+  [(set (match_operand:V_FP 0 "register_operand" "=v")
+	(unspec:V_FP
+	  [(match_operand:V_FP 1 "gcn_alu_operand" "vB")]
+	  UNSPEC_FREXP_MANT))]
+  ""
+  "v_frexp_mant%i1\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
 ;; }}}
 ;; {{{ FP fused multiply and add
 

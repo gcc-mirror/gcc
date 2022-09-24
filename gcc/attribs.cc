@@ -737,6 +737,9 @@ decl_attributes (tree *node, tree attributes, int flags,
 	      if (spec->max_length < 0)
 		inform (input_location, "expected %i or more, found %i",
 			spec->min_length, nargs);
+	      else if (spec->min_length == spec->max_length)
+		inform (input_location, "expected %i, found %i",
+			spec->min_length, nargs);
 	      else
 		inform (input_location, "expected between %i and %i, found %i",
 			spec->min_length, spec->max_length, nargs);

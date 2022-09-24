@@ -9042,7 +9042,8 @@ vectorizable_load (vec_info *vinfo,
 	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "hoisting out of the vectorized loop: %G", stmt);
+			     "hoisting out of the vectorized loop: %G",
+			     (gimple *) stmt);
 	  scalar_dest = copy_ssa_name (scalar_dest);
 	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
 	  edge pe = loop_preheader_edge (loop);
@@ -11485,6 +11486,16 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
     return NULL_TREE;
 
   unsigned int nbytes = GET_MODE_SIZE (inner_mode);
+
+  /* Interoperability between modes requires one to be a constant multiple
+     of the other, so that the number of vectors required for each operation
+     is a compile-time constant.  */
+  if (prevailing_mode != VOIDmode
+      && !constant_multiple_p (nunits * nbytes,
+			       GET_MODE_SIZE (prevailing_mode))
+      && !constant_multiple_p (GET_MODE_SIZE (prevailing_mode),
+			       nunits * nbytes))
+    return NULL_TREE;
 
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode

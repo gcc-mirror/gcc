@@ -151,17 +151,6 @@ while (0)
 #define TARGET_LIBC_HAS_FUNCTION default_libc_has_function
 
 
-/* Runtime target specification.  */
-
-/* Miscellaneous parameters.  */
-
-/* Controlling debugging info: dbx options.  */
-
-/* Don't use the `xsTAG;' construct in DBX output; OpenBSD systems that
-   use DBX don't support it.  */
-#define DBX_NO_XREFS
-
-
 /* - we use . - _func instead of a local label,
    - we put extra spaces in expressions such as 
      .type _func , @function

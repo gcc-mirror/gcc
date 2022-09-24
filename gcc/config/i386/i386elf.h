@@ -36,9 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
 			crtbegin.o%s"
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) \
-  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n) \
+  (TARGET_64BIT ? debugger64_register_map[n] : svr4_debugger_register_map[n])
 
 #define LOCAL_LABEL_PREFIX	"."
 

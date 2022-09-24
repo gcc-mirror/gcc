@@ -95,6 +95,11 @@
 	the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>, makes
 	the debug mode extremely picky by making the use of libstdc++
 	extensions and libstdc++-specific behavior into errors.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_DEBUG_BACKTRACE</code></span></dt><dd><p>
+	Undefined by default. Considered only if libstdc++ has been configured with
+	<code class="option">--enable-libstdcxx-backtrace=yes</code> and if <code class="code">_GLIBCXX_DEBUG</code>
+	is defined. When defined display backtraces on
+	<a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a> assertions.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PARALLEL</code></span></dt><dd><p>Undefined by default. When defined, compiles user code
 	using the <a class="link" href="parallel_mode.html" title="Chapter 18. Parallel Mode">parallel
 	mode</a>.

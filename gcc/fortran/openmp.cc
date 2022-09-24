@@ -575,11 +575,13 @@ syntax_error:
 
 }
 
-/* Match depend(sink : ...) construct a namelist from it.  */
+/* Match doacross(sink : ...) construct a namelist from it;
+   if depend is true, match legacy 'depend(sink : ...)'.  */
 
 static match
-gfc_match_omp_depend_sink (gfc_omp_namelist **list)
+gfc_match_omp_doacross_sink (gfc_omp_namelist **list, bool depend)
 {
+  char n[GFC_MAX_SYMBOL_LEN+1];
   gfc_omp_namelist *head, *tail, *p;
   locus old_loc, cur_loc;
   gfc_symbol *sym;
@@ -591,49 +593,51 @@ gfc_match_omp_depend_sink (gfc_omp_namelist **list)
   for (;;)
     {
       cur_loc = gfc_current_locus;
-      switch (gfc_match_symbol (&sym, 1))
+
+      if (gfc_match_name (n) != MATCH_YES)
+	goto syntax;
+      if (UNLIKELY (strcmp (n, "omp_all_memory") == 0))
 	{
-	case MATCH_YES:
-	  gfc_set_sym_referenced (sym);
-	  p = gfc_get_omp_namelist ();
-	  if (head == NULL)
-	    {
-	      head = tail = p;
-	      head->u.depend_op = OMP_DEPEND_SINK_FIRST;
-	    }
-	  else
-	    {
-	      tail->next = p;
-	      tail = tail->next;
-	      tail->u.depend_op = OMP_DEPEND_SINK;
-	    }
-	  tail->sym = sym;
-	  tail->expr = NULL;
-	  tail->where = cur_loc;
-	  if (UNLIKELY (strcmp (sym->name, "omp_all_memory") == 0))
-	    {
-	      gfc_error ("%<omp_all_memory%> used with DEPEND kind "
-			 "other than OUT or INOUT at %C");
-	      goto cleanup;
-	    }
-	  if (gfc_match_char ('+') == MATCH_YES)
-	    {
-	      if (gfc_match_literal_constant (&tail->expr, 0) != MATCH_YES)
-		goto syntax;
-	    }
-	  else if (gfc_match_char ('-') == MATCH_YES)
-	    {
-	      if (gfc_match_literal_constant (&tail->expr, 0) != MATCH_YES)
-		goto syntax;
-	      tail->expr = gfc_uminus (tail->expr);
-	    }
-	  break;
-	case MATCH_NO:
-	  goto syntax;
-	case MATCH_ERROR:
+	  gfc_error ("%<omp_all_memory%> used with dependence-type "
+		     "other than OUT or INOUT at %C");
 	  goto cleanup;
 	}
-
+      sym = NULL;
+      if (!(strcmp (n, "omp_cur_iteration") == 0))
+	{
+	  gfc_symtree *st;
+	  if (gfc_get_ha_sym_tree (n, &st))
+	    goto syntax;
+	  sym = st->n.sym;
+	  gfc_set_sym_referenced (sym);
+	}
+      p = gfc_get_omp_namelist ();
+      if (head == NULL)
+	{
+	  head = tail = p;
+	  head->u.depend_doacross_op = (depend ? OMP_DEPEND_SINK_FIRST
+					       : OMP_DOACROSS_SINK_FIRST);
+	}
+      else
+	{
+	  tail->next = p;
+	  tail = tail->next;
+	  tail->u.depend_doacross_op = OMP_DOACROSS_SINK;
+	}
+      tail->sym = sym;
+      tail->expr = NULL;
+      tail->where = cur_loc;
+      if (gfc_match_char ('+') == MATCH_YES)
+	{
+	  if (gfc_match_literal_constant (&tail->expr, 0) != MATCH_YES)
+	    goto syntax;
+	}
+      else if (gfc_match_char ('-') == MATCH_YES)
+	{
+	  if (gfc_match_literal_constant (&tail->expr, 0) != MATCH_YES)
+	    goto syntax;
+	  tail->expr = gfc_uminus (tail->expr);
+	}
       if (gfc_match_char (')') == MATCH_YES)
 	break;
       if (gfc_match_char (',') != MATCH_YES)
@@ -647,7 +651,7 @@ gfc_match_omp_depend_sink (gfc_omp_namelist **list)
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in OpenMP DEPEND SINK list at %C");
+  gfc_error ("Syntax error in OpenMP SINK dependence-type list at %C");
 
 cleanup:
   gfc_free_omp_namelist (head, false);
@@ -987,6 +991,7 @@ enum omp_mask2
   OMP_CLAUSE_NOHOST,
   OMP_CLAUSE_HAS_DEVICE_ADDR,  /* OpenMP 5.1  */
   OMP_CLAUSE_ENTER, /* OpenMP 5.2 */
+  OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1903,18 +1908,26 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					   OMP_MAP_RELEASE, true,
 					   allow_derived))
 	    continue;
-	  if ((mask & OMP_CLAUSE_DEPEND)
-	      && gfc_match ("depend ( ") == MATCH_YES)
+	  /* DOACROSS: match 'doacross' and 'depend' with sink/source.
+	     DEPEND: match 'depend' but not sink/source.  */
+	  m = MATCH_NO;
+	  if (((mask & OMP_CLAUSE_DOACROSS)
+	       && gfc_match ("doacross ( ") == MATCH_YES)
+	      || (((mask & OMP_CLAUSE_DEPEND) || (mask & OMP_CLAUSE_DOACROSS))
+		  && (m = gfc_match ("depend ( ")) == MATCH_YES))
 	    {
 	      bool has_omp_all_memory;
+	      bool is_depend = m == MATCH_YES;
 	      gfc_namespace *ns_iter = NULL, *ns_curr = gfc_current_ns;
-	      match m_it = gfc_match_iterator (&ns_iter, false);
+	      match m_it = MATCH_NO;
+	      if (is_depend)
+		m_it = gfc_match_iterator (&ns_iter, false);
 	      if (m_it == MATCH_ERROR)
 		break;
 	      if (m_it == MATCH_YES && gfc_match (" , ") != MATCH_YES)
 		break;
 	      m = MATCH_YES;
-	      gfc_omp_depend_op depend_op = OMP_DEPEND_OUT;
+	      gfc_omp_depend_doacross_op depend_op = OMP_DEPEND_OUT;
 	      if (gfc_match ("inoutset") == MATCH_YES)
 		depend_op = OMP_DEPEND_INOUTSET;
 	      else if (gfc_match ("inout") == MATCH_YES)
@@ -1927,34 +1940,77 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		depend_op = OMP_DEPEND_MUTEXINOUTSET;
 	      else if (gfc_match ("depobj") == MATCH_YES)
 		depend_op = OMP_DEPEND_DEPOBJ;
-	      else if (!c->depend_source
-		       && gfc_match ("source )") == MATCH_YES)
+	      else if (gfc_match ("source") == MATCH_YES)
 		{
 		  if (m_it == MATCH_YES)
 		    {
 		      gfc_error ("ITERATOR may not be combined with SOURCE "
 				 "at %C");
-		      gfc_free_omp_clauses (c);
-		      return MATCH_ERROR;
+		      goto error;
 		    }
-		  c->depend_source = true;
+		  if (!(mask & OMP_CLAUSE_DOACROSS))
+		    {
+		      gfc_error ("SOURCE at %C not permitted as dependence-type"
+				 " for this directive");
+		      goto error;
+		    }
+		  if (c->doacross_source)
+		    {
+		      gfc_error ("Duplicated clause with SOURCE dependence-type"
+				 " at %C");
+		      goto error;
+		    }
+		  gfc_gobble_whitespace ();
+		  m = gfc_match (": ");
+		  if (m != MATCH_YES && !is_depend)
+		    {
+		      gfc_error ("Expected %<:%> at %C");
+		      goto error;
+		    }
+		  if (gfc_match (")") != MATCH_YES
+		      && !(m == MATCH_YES
+			   && gfc_match ("omp_cur_iteration )") == MATCH_YES))
+		    {
+		      gfc_error ("Expected %<)%> or %<omp_cur_iteration)%> "
+				 "at %C");
+		      goto error;
+		    }
+		  c->doacross_source = true;
+		  c->depend_source = is_depend;
 		  continue;
 		}
-	      else if (gfc_match ("sink : ") == MATCH_YES)
+	      else if (gfc_match ("sink ") == MATCH_YES)
 		{
+		  if (!(mask & OMP_CLAUSE_DOACROSS))
+		    {
+		      gfc_error ("SINK at %C not permitted as dependence-type "
+				 "for this directive");
+		      goto error;
+		    }
+		  if (gfc_match (": ") != MATCH_YES)
+		    {
+		      gfc_error ("Expected %<:%> at %C");
+		      goto error;
+		    }
 		  if (m_it == MATCH_YES)
 		    {
 		      gfc_error ("ITERATOR may not be combined with SINK "
 				 "at %C");
-		      break;
+		      goto error;
 		    }
-		  if (gfc_match_omp_depend_sink (&c->lists[OMP_LIST_DEPEND])
-		      == MATCH_YES)
+		  m = gfc_match_omp_doacross_sink (&c->lists[OMP_LIST_DEPEND],
+						   is_depend);
+		  if (m == MATCH_YES)
 		    continue;
-		  m = MATCH_NO;
+		  goto error;
 		}
 	      else
 		m = MATCH_NO;
+	      if (!(mask & OMP_CLAUSE_DEPEND))
+		{
+		  gfc_error ("Expected dependence-type SINK or SOURCE at %C");
+		  goto error;
+		}
 	      head = NULL;
 	      if (ns_iter)
 		gfc_current_ns = ns_iter;
@@ -1976,7 +2032,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      gfc_omp_namelist *n;
 	      for (n = *head; n; n = n->next)
 		{
-		  n->u.depend_op = depend_op;
+		  n->u.depend_doacross_op = depend_op;
 		  n->u2.ns = ns_iter;
 		  if (ns_iter)
 		    ns_iter->refs++;
@@ -3971,18 +4027,15 @@ gfc_match_omp_depobj (void)
 
   if (c->depobj_update == OMP_DEPEND_UNSET && !c->destroy)
     {
-      if (!c->depend_source && !c->lists[OMP_LIST_DEPEND])
+      if (!c->doacross_source && !c->lists[OMP_LIST_DEPEND])
 	{
 	  gfc_error ("Expected DEPEND, UPDATE, or DESTROY clause at %C");
 	  goto error;
 	}
-      if (c->depend_source
-	  || c->lists[OMP_LIST_DEPEND]->u.depend_op == OMP_DEPEND_SINK_FIRST
-	  || c->lists[OMP_LIST_DEPEND]->u.depend_op == OMP_DEPEND_SINK
-	  || c->lists[OMP_LIST_DEPEND]->u.depend_op == OMP_DEPEND_DEPOBJ)
+      if (c->lists[OMP_LIST_DEPEND]->u.depend_doacross_op == OMP_DEPEND_DEPOBJ)
 	{
 	  gfc_error ("DEPEND clause at %L of OMP DEPOBJ construct shall not "
-		     "have dependence-type SOURCE, SINK or DEPOBJ",
+		     "have dependence-type DEPOBJ",
 		     c->lists[OMP_LIST_DEPEND]
 		     ? &c->lists[OMP_LIST_DEPEND]->where : &gfc_current_locus);
 	  goto error;
@@ -5988,7 +6041,7 @@ gfc_match_omp_nothing (void)
 match
 gfc_match_omp_ordered_depend (void)
 {
-  return match_omp (EXEC_OMP_ORDERED, omp_mask (OMP_CLAUSE_DEPEND));
+  return match_omp (EXEC_OMP_ORDERED, omp_mask (OMP_CLAUSE_DOACROSS));
 }
 
 
@@ -7057,18 +7110,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 		if (list == OMP_LIST_DEPEND)
 		  {
-		    if (n->u.depend_op == OMP_DEPEND_SINK_FIRST
-			|| n->u.depend_op == OMP_DEPEND_SINK)
+		    if (n->u.depend_doacross_op == OMP_DEPEND_SINK_FIRST
+			|| n->u.depend_doacross_op == OMP_DOACROSS_SINK_FIRST
+			|| n->u.depend_doacross_op == OMP_DOACROSS_SINK)
 		      {
-			if (code->op != EXEC_OMP_ORDERED)
-			  gfc_error ("SINK dependence type only allowed "
-				     "on ORDERED directive at %L", &n->where);
-			else if (omp_clauses->depend_source)
+			if (omp_clauses->doacross_source)
 			  {
-			    gfc_error ("DEPEND SINK used together with "
-				       "DEPEND SOURCE on the same construct "
-				       "at %L", &n->where);
-			    omp_clauses->depend_source = false;
+			    gfc_error ("Dependence-type SINK used together with"
+				       " SOURCE on the same construct at %L",
+				       &n->where);
+			    omp_clauses->doacross_source = false;
 			  }
 			else if (n->expr)
 			  {
@@ -7078,13 +7129,14 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			      gfc_error ("SINK addend not a constant integer "
 					 "at %L", &n->where);
 			  }
+			if (n->sym == NULL
+			    && (n->expr == NULL
+				|| mpz_cmp_si (n->expr->value.integer, -1) != 0))
+			  gfc_error ("omp_cur_iteration at %L requires %<-1%> "
+				     "as logical offset", &n->where);
 			continue;
 		      }
-		    else if (code->op == EXEC_OMP_ORDERED)
-		      gfc_error ("Only SOURCE or SINK dependence types "
-				 "are allowed on ORDERED directive at %L",
-				 &n->where);
-		    else if (n->u.depend_op == OMP_DEPEND_DEPOBJ
+		    else if (n->u.depend_doacross_op == OMP_DEPEND_DEPOBJ
 			     && !n->expr
 			     && (n->sym->ts.type != BT_INTEGER
 				 || n->sym->ts.kind
@@ -7094,7 +7146,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				 "type shall be a scalar integer of "
 				 "OMP_DEPEND_KIND kind", n->sym->name,
 				 &n->where);
-		    else if (n->u.depend_op == OMP_DEPEND_DEPOBJ
+		    else if (n->u.depend_doacross_op == OMP_DEPEND_DEPOBJ
 			     && n->expr
 			     && (!gfc_resolve_expr (n->expr)
 				 || n->expr->ts.type != BT_INTEGER
@@ -7573,10 +7625,6 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			    linear_op = n->u.linear.op;
 			  }
 		      }
-		    else if (omp_clauses->orderedc)
-		      gfc_error ("LINEAR clause specified together with "
-				 "ORDERED clause with argument at %L",
-				 &n->where);
 		    else if (n->u.linear.op != OMP_LINEAR_REF
 			     && n->sym->ts.type != BT_INTEGER)
 		      gfc_error ("LINEAR variable %qs must be INTEGER "
@@ -7760,9 +7808,6 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     resolve_scalar_int_expr (el->expr, "WAIT");
   if (omp_clauses->collapse && omp_clauses->tile_list)
     gfc_error ("Incompatible use of TILE and COLLAPSE at %L", &code->loc);
-  if (omp_clauses->depend_source && code->op != EXEC_OMP_ORDERED)
-    gfc_error ("SOURCE dependence type only allowed "
-	       "on ORDERED directive at %L", &code->loc);
   if (omp_clauses->message)
     {
       gfc_expr *expr = omp_clauses->message;
@@ -9565,6 +9610,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_ERROR:
     case EXEC_OMP_MASKED:
+    case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_MASKED:

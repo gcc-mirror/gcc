@@ -633,6 +633,12 @@ package Lib is
    function In_Extended_Main_Source_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer
 
+   function ipu (N : Node_Or_Entity_Id) return Boolean;
+   --  Same as In_Predefined_Unit, but renamed so it can assist debugging.
+   --  Otherwise, there is a disambiguous name conflict in the two versions of
+   --  In_Predefined_Unit which makes it inconvient to set as a breakpoint
+   --  condition.
+
    function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
    --  Returns True if the given node or entity appears within the source text
    --  of a predefined unit (i.e. within Ada, Interfaces, System or within one

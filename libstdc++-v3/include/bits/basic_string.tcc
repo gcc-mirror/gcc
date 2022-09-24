@@ -471,6 +471,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
+    __attribute__((__noinline__, __noclone__, __cold__)) void
+    basic_string<_CharT, _Traits, _Alloc>::
+    _M_replace_cold(pointer __p, size_type __len1, const _CharT* __s,
+		    const size_type __len2, const size_type __how_much)
+    {
+      // Work in-place.
+      if (__len2 && __len2 <= __len1)
+	this->_S_move(__p, __s, __len2);
+      if (__how_much && __len1 != __len2)
+	this->_S_move(__p + __len2, __p + __len1, __how_much);
+      if (__len2 > __len1)
+	{
+	  if (__s + __len2 <= __p + __len1)
+	    this->_S_move(__p, __s, __len2);
+	  else if (__s >= __p + __len1)
+	    {
+	      // Hint to middle end that __p and __s overlap
+	      // (PR 98465).
+	      const size_type __poff = (__s - __p) + (__len2 - __len1);
+	      this->_S_copy(__p, __p + __poff, __len2);
+	    }
+	  else
+	    {
+	      const size_type __nleft = (__p + __len1) - __s;
+	      this->_S_move(__p, __s, __nleft);
+	      this->_S_copy(__p + __nleft, __p + __len2, __len2 - __nleft);
+	    }
+	}
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX20_CONSTEXPR
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
@@ -500,7 +531,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  else
 #endif
-	  if (_M_disjunct(__s))
+	  if (__builtin_expect(_M_disjunct(__s), true))
 	    {
 	      if (__how_much && __len1 != __len2)
 		this->_S_move(__p + __len2, __p + __len1, __how_much);
@@ -508,32 +539,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		this->_S_copy(__p, __s, __len2);
 	    }
 	  else
-	    {
-	      // Work in-place.
-	      if (__len2 && __len2 <= __len1)
-		this->_S_move(__p, __s, __len2);
-	      if (__how_much && __len1 != __len2)
-		this->_S_move(__p + __len2, __p + __len1, __how_much);
-	      if (__len2 > __len1)
-		{
-		  if (__s + __len2 <= __p + __len1)
-		    this->_S_move(__p, __s, __len2);
-		  else if (__s >= __p + __len1)
-		    {
-		      // Hint to middle end that __p and __s overlap
-		      // (PR 98465).
-		      const size_type __poff = (__s - __p) + (__len2 - __len1);
-		      this->_S_copy(__p, __p + __poff, __len2);
-		    }
-		  else
-		    {
-		      const size_type __nleft = (__p + __len1) - __s;
-		      this->_S_move(__p, __s, __nleft);
-		      this->_S_copy(__p + __nleft, __p + __len2,
-				    __len2 - __nleft);
-		    }
-		}
-	    }
+	    _M_replace_cold(__p, __len1, __s, __len2, __how_much);
 	}
       else
 	this->_M_mutate(__pos, __len1, __s, __len2);
@@ -1000,6 +1006,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // to ensure the definition in libstdc++.so is unique (PR 86138).
   extern template basic_string<char>::size_type
     basic_string<char>::_Rep::_S_empty_rep_storage[];
+# elif _GLIBCXX_EXTERN_TEMPLATE > 0
+  // Export _M_replace_cold even for C++20.
+  extern template void
+    basic_string<char>::_M_replace_cold(char *, size_type, const char*,
+					const size_type, const size_type);
 # endif
 
   extern template
@@ -1021,6 +1032,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # elif ! _GLIBCXX_USE_CXX11_ABI
   extern template basic_string<wchar_t>::size_type
     basic_string<wchar_t>::_Rep::_S_empty_rep_storage[];
+# elif _GLIBCXX_EXTERN_TEMPLATE > 0
+  // Export _M_replace_cold even for C++20.
+  extern template void
+    basic_string<wchar_t>::_M_replace_cold(wchar_t*, size_type, const wchar_t*,
+					   const size_type, const size_type);
 # endif
 
   extern template

@@ -1046,7 +1046,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Thunk_Entity, Node_Id,
             Pre => "Is_Thunk (N)"),
         Sm (Wrapped_Entity, Node_Id,
-            Pre => "Is_Primitive_Wrapper (N)")));
+            Pre => "Is_Primitive_Wrapper (N)"),
+        Sm (Wrapped_Statements, Node_Id)));
 
    Cc (E_Operator, Subprogram_Kind,
        --  A predefined operator, appearing in Standard, or an implicitly
@@ -1095,7 +1096,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Thunk_Entity, Node_Id,
             Pre => "Is_Thunk (N)"),
         Sm (Wrapped_Entity, Node_Id,
-            Pre => "Is_Primitive_Wrapper (N)")));
+            Pre => "Is_Primitive_Wrapper (N)"),
+        Sm (Wrapped_Statements, Node_Id)));
 
    Cc (E_Abstract_State, Overloadable_Kind,
        --  A state abstraction. Used to designate entities introduced by aspect
@@ -1134,7 +1136,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Protection_Object, Node_Id),
         Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
-        Sm (SPARK_Pragma_Inherited, Flag)));
+        Sm (SPARK_Pragma_Inherited, Flag),
+        Sm (Wrapped_Statements, Node_Id)));
 
    Cc (E_Entry_Family, Entity_Kind,
        --  An entry family, created by an entry family declaration in a
@@ -1161,7 +1164,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Renamed_Or_Alias, Node_Id),
         Sm (Scope_Depth_Value, Unat),
         Sm (SPARK_Pragma, Node_Id),
-        Sm (SPARK_Pragma_Inherited, Flag)));
+        Sm (SPARK_Pragma_Inherited, Flag),
+        Sm (Wrapped_Statements, Node_Id)));
 
    Cc (E_Block, Entity_Kind,
        --  A block identifier, created by an explicit or implicit label on

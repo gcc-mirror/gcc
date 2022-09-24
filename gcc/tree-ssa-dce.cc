@@ -1313,6 +1313,7 @@ eliminate_unnecessary_stmts (bool aggressive)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nEliminating unnecessary statements:\n");
 
+  bool had_setjmp = cfun->calls_setjmp;
   clear_special_calls ();
 
   /* Walking basic blocks and statements in reverse order avoids
@@ -1496,19 +1497,48 @@ eliminate_unnecessary_stmts (bool aggressive)
       something_changed |= remove_dead_phis (bb);
     }
 
-
-  /* Since we don't track liveness of virtual PHI nodes, it is possible that we
-     rendered some PHI nodes unreachable while they are still in use.
-     Mark them for renaming.  */
+  /* First remove queued edges.  */
   if (!to_remove_edges.is_empty ())
     {
-      basic_block prev_bb;
-
       /* Remove edges.  We've delayed this to not get bogus debug stmts
          during PHI node removal.  */
       for (unsigned i = 0; i < to_remove_edges.length (); ++i)
 	remove_edge (to_remove_edges[i]);
       cfg_altered = true;
+    }
+  /* When we cleared calls_setjmp we can purge all abnormal edges.  Do so.  */
+  if (cfun->calls_setjmp != had_setjmp)
+    {
+      gcc_assert (!cfun->calls_setjmp);
+      /* Make sure we only remove the edges, not dominated blocks.  Using
+	 gimple_purge_dead_abnormal_call_edges would do that and we
+	 cannot free dominators yet.  */
+      FOR_EACH_BB_FN (bb, cfun)
+	if (gcall *stmt = safe_dyn_cast <gcall *> (last_stmt (bb)))
+	  if (!stmt_can_make_abnormal_goto (stmt))
+	    {
+	      edge_iterator ei;
+	      edge e;
+	      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+		{
+		  if (e->flags & EDGE_ABNORMAL)
+		    {
+		      if (e->flags & EDGE_FALLTHRU)
+			e->flags &= ~EDGE_ABNORMAL;
+		      else
+			remove_edge (e);
+		      cfg_altered = true;
+		    }
+		  else
+		    ei_next (&ei);
+		}
+	    }
+    }
+
+  /* Now remove the unreachable blocks.  */
+  if (cfg_altered)
+    {
+      basic_block prev_bb;
 
       find_unreachable_blocks ();
 
@@ -1518,9 +1548,13 @@ eliminate_unnecessary_stmts (bool aggressive)
 	{
 	  prev_bb = bb->prev_bb;
 
-	  if (!bitmap_bit_p (bb_contains_live_stmts, bb->index)
+	  if ((bb_contains_live_stmts
+	       && !bitmap_bit_p (bb_contains_live_stmts, bb->index))
 	      || !(bb->flags & BB_REACHABLE))
 	    {
+	      /* Since we don't track liveness of virtual PHI nodes, it is
+		 possible that we rendered some PHI nodes unreachable while
+		 they are still in use.  Mark them for renaming.  */
 	      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		if (virtual_operand_p (gimple_phi_result (gsi.phi ())))

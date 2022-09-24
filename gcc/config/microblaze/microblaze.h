@@ -39,7 +39,7 @@ extern char microblaze_print_operand_punct[];
 extern int microblaze_section_threshold;
 
 /* Map register # to debug register # */
-extern int microblaze_dbx_regno[];
+extern int microblaze_debugger_regno[];
 
 extern int microblaze_no_unsafe_delay;
 extern int microblaze_has_clz;
@@ -163,8 +163,8 @@ extern enum pipeline_type microblaze_pipe;
 
 /* Debug stuff.  */
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) microblaze_dbx_regno[(REGNO)]
+/* How to renumber registers for gdb.  */
+#define DEBUGGER_REGNO(REGNO) microblaze_debugger_regno[(REGNO)]
 
 /* Generate DWARF exception handling info.  */
 #define DWARF2_UNWIND_INFO 1
@@ -276,7 +276,7 @@ extern enum pipeline_type microblaze_pipe;
 #define GP_REG_FIRST    0
 #define GP_REG_LAST     31
 #define GP_REG_NUM      (GP_REG_LAST - GP_REG_FIRST + 1)
-#define GP_DBX_FIRST    0
+#define GP_DEBUGGER_FIRST    0
 
 #define ST_REG		32
 #define AP_REG_NUM      33

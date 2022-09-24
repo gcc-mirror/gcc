@@ -110,8 +110,6 @@ bfin*-*)
 bpf-*-*)
         cpu_type=bpf
         ;;
-cr16-*-*)
-	;;
 csky*-*-*)
 	cpu_type=csky
 	;;
@@ -591,10 +589,6 @@ bpf-*-*)
         tmake_file="$tmake_file ${cpu_type}/t-${cpu_type}"
         extra_parts="crti.o crtn.o"
 	;;
-cr16-*-elf)
-	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
-	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
-        ;;
 cris-*-elf)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-elfmulti"
 	;;
@@ -654,17 +648,6 @@ hppa*-*-linux*)
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	md_unwind_header=pa/linux-unwind.h
 	;;
-hppa[12]*-*-hpux10*)
-	tmake_file="$tmake_file pa/t-hpux pa/t-hpux10 t-libgcc-pic t-slibgcc"
-	# Set the libgcc version number
-	if test x$ac_cv_sjlj_exceptions = xyes; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
-	tmake_file="$tmake_file pa/t-slibgcc-hpux t-slibgcc-hpux"
-	md_unwind_header=pa/hpux-unwind.h
-	;;
 hppa*64*-*-hpux11*)
 	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-dimode"
 	tmake_file="$tmake_file pa/t-stublib t-libgcc-pic t-slibgcc"
@@ -679,17 +662,6 @@ hppa*64*-*-hpux11*)
 	tm_file="$tm_file pa/pa64-hpux-lib.h"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 		     libgcc_stub.a"
-	md_unwind_header=pa/hpux-unwind.h
-	;;
-hppa[12]*-*-hpux11*)
-	tmake_file="$tmake_file pa/t-hpux pa/t-stublib t-libgcc-pic t-slibgcc"
-	# Set the libgcc version number
-	if test x$ac_cv_sjlj_exceptions = xyes; then
-	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
-	else
-	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
-	fi
-	tmake_file="$tmake_file pa/t-slibgcc-hpux t-slibgcc-hpux"
 	md_unwind_header=pa/hpux-unwind.h
 	;;
 hppa*-*-openbsd*)
@@ -1516,7 +1488,7 @@ am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	tmake_file="$tmake_file t-fdpbit"
 	;;
-m32c-*-elf*|m32c-*-rtems*)
+m32c-*-elf*)
 	tmake_file="$tmake_file m32c/t-m32c"
  	;;
 nvptx-*)

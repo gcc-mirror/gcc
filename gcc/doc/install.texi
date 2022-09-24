@@ -751,7 +751,7 @@ Here are the possible CPU types:
 
 @quotation
 aarch64, aarch64_be, alpha, alpha64, amdgcn, arc, arceb, arm, armeb, avr, bfin,
-bpf, cr16, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
+bpf, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
 hppa64, i486, i686, ia64, iq2000, lm32, loongarch64, m32c, m32r, m32rle, m68k,
 mcore, microblaze, microblazeel, mips, mips64, mips64el, mips64octeon,
 mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
@@ -3863,29 +3863,6 @@ are available at @uref{https://sourceforge.net/projects/adi-toolchain/}.
 @html
 <hr />
 @end html
-@anchor{cr16}
-@heading CR16
-The CR16 CompactRISC architecture is a 16-bit architecture. This
-architecture is used in embedded applications.
-
-@ifnothtml
-@xref{CR16 Options,, CR16 Options, gcc, Using and Porting the GNU Compiler
-Collection (GCC)},
-@end ifnothtml
-
-@ifhtml
-See ``CR16 Options'' in the main manual for a list of CR16-specific options.
-@end ifhtml
-
-Use @samp{configure --target=cr16-elf --enable-languages=c,c++} to configure
-GCC@ for building a CR16 elf cross-compiler.
-
-Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to
-configure GCC@ for building a CR16 uclinux cross-compiler.
-
-@html
-<hr />
-@end html
 @anchor{cris}
 @heading CRIS
 CRIS is a CPU architecture in Axis Communications systems-on-a-chip, for
@@ -3936,8 +3913,7 @@ on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
 by GCC 4.5 and above.
 
 We support FreeBSD using the ELF file format with DWARF 2 debugging
-for all CPU architectures.  You may use @option{-gstabs} instead of
-@option{-g}, if you really want the old debugging format.  There are
+for all CPU architectures.  There are
 no known issues with mixing object files and libraries with different
 debugging formats.  Otherwise, this release of GCC should now match
 more of the configuration used in the stock FreeBSD configuration of

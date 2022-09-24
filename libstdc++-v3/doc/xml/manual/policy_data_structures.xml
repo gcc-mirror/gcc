@@ -3003,7 +3003,7 @@
 		</textobject>
 	      </mediaobject>
 	    </figure>
-	
+
 	    <para>Let U be a domain (e.g., the integers, or the
 	    strings of 3 characters). A hash-table algorithm needs to map
 	    elements of U "uniformly" into the range [0,..., m -
@@ -3179,7 +3179,7 @@
 		0</subscript><superscript>t - 1</superscript> s<subscript>i</subscript> a<superscript>i</superscript> mod m
 	      </mathphrase>
 	    </equation>
-	
+
 
 	    <para>where a is some non-negative integral value. This is
 	    the standard string-hashing function used in SGI's
@@ -3278,7 +3278,7 @@
 		  </textobject>
 		</mediaobject>
 	      </figure>
-	
+
 	      <para>If <classname>cc_hash_table</classname>'s
 	      hash-functor, <classname>Hash_Fn</classname> is instantiated by <classname>null_type</classname> , then <classname>Comb_Hash_Fn</classname> is taken to be
 	      a ranged-hash function. The graphic below shows an <function>insert</function> sequence
@@ -3298,7 +3298,7 @@
 		  </textobject>
 		</mediaobject>
 	      </figure>
-	
+
 	    </section>
 
 	    <section xml:id="hash_policies.implementation.probe">
@@ -3917,7 +3917,7 @@
 	      </textobject>
 	    </mediaobject>
 	  </figure>
-	
+
 	  <para>Supporting such trees is difficult for a number of
 	  reasons:</para>
 
@@ -4819,7 +4819,7 @@
 	    assert(p.top() == 3);
 	  </programlisting>
 
-	
+
 	  <para>It should be noted that an alternative design could embed an
 	  associative container in a priority queue. Could, but most
 	  probably should not. To begin with, it should be noted that one

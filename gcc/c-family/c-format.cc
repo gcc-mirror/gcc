@@ -5111,8 +5111,7 @@ convert_format_name_to_system_name (const char *attr_name)
 
 #ifdef TARGET_OVERRIDES_FORMAT_ATTRIBUTES
   /* Check if format attribute is overridden by target.  */
-  if (TARGET_OVERRIDES_FORMAT_ATTRIBUTES != NULL
-      && TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT > 0)
+  if (TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT > 0)
     {
       for (i = 0; i < TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT; ++i)
         {

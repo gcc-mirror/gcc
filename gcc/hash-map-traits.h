@@ -105,14 +105,19 @@ struct simple_cache_map_traits: public simple_hashmap_traits<H,Value>
   static const bool maybe_mx = false;
 };
 
-/* Implement traits for a hash_map with values of type Value for cases
-   in which the key cannot represent empty and deleted slots.  Instead
-   record empty and deleted entries in Value.  Derived classes must
-   implement the hash and equal_keys functions.  */
+/* Implement traits for a hash_map with keys of type Key and values of
+   type Value for cases in which the key cannot represent empty and
+   deleted slots.  Instead record empty and deleted entries in Value.  */
 
-template <typename Value>
+template <typename Key, typename Value>
 struct unbounded_hashmap_traits
 {
+  typedef typename Key::value_type key_type;
+
+  static hashval_t hash (const typename Key::value_type &);
+  static bool equal_keys (const typename Key::value_type &,
+			  const typename Key::compare_type &);
+
   template <typename T> static inline void remove (T &);
   static const bool empty_zero_p = default_hash_traits <Value>::empty_zero_p;
   template <typename T> static inline bool is_empty (const T &);
@@ -121,42 +126,59 @@ struct unbounded_hashmap_traits
   template <typename T> static inline void mark_deleted (T &);
 };
 
-template <typename Value>
+template <typename Key, typename Value>
+inline hashval_t
+unbounded_hashmap_traits <Key, Value>
+::hash (const typename Key::value_type &key)
+{
+  return Key::hash (key);
+}
+
+template <typename Key, typename Value>
+inline bool
+unbounded_hashmap_traits <Key, Value>
+::equal_keys (const typename Key::value_type &x,
+	      const typename Key::compare_type &y)
+{
+  return Key::equal (x, y);
+}
+
+template <typename Key, typename Value>
 template <typename T>
 inline void
-unbounded_hashmap_traits <Value>::remove (T &entry)
+unbounded_hashmap_traits <Key, Value>::remove (T &entry)
 {
   default_hash_traits <Value>::remove (entry.m_value);
 }
 
-template <typename Value>
+template <typename Key, typename Value>
 template <typename T>
 inline bool
-unbounded_hashmap_traits <Value>::is_empty (const T &entry)
+unbounded_hashmap_traits <Key, Value>::is_empty (const T &entry)
 {
   return default_hash_traits <Value>::is_empty (entry.m_value);
 }
 
-template <typename Value>
+template <typename Key, typename Value>
 template <typename T>
 inline bool
-unbounded_hashmap_traits <Value>::is_deleted (const T &entry)
+unbounded_hashmap_traits <Key, Value>::is_deleted (const T &entry)
 {
   return default_hash_traits <Value>::is_deleted (entry.m_value);
 }
 
-template <typename Value>
+template <typename Key, typename Value>
 template <typename T>
 inline void
-unbounded_hashmap_traits <Value>::mark_empty (T &entry)
+unbounded_hashmap_traits <Key, Value>::mark_empty (T &entry)
 {
   default_hash_traits <Value>::mark_empty (entry.m_value);
 }
 
-template <typename Value>
+template <typename Key, typename Value>
 template <typename T>
 inline void
-unbounded_hashmap_traits <Value>::mark_deleted (T &entry)
+unbounded_hashmap_traits <Key, Value>::mark_deleted (T &entry)
 {
   default_hash_traits <Value>::mark_deleted (entry.m_value);
 }
@@ -166,25 +188,7 @@ unbounded_hashmap_traits <Value>::mark_deleted (T &entry)
    slots.  */
 
 template <typename Key, typename Value>
-struct unbounded_int_hashmap_traits : unbounded_hashmap_traits <Value>
-{
-  typedef Key key_type;
-  static inline hashval_t hash (Key);
-  static inline bool equal_keys (Key, Key);
-};
-
-template <typename Key, typename Value>
-inline hashval_t
-unbounded_int_hashmap_traits <Key, Value>::hash (Key k)
-{
-  return k;
-}
-
-template <typename Key, typename Value>
-inline bool
-unbounded_int_hashmap_traits <Key, Value>::equal_keys (Key k1, Key k2)
-{
-  return k1 == k2;
-}
+using unbounded_int_hashmap_traits
+  = unbounded_hashmap_traits <int_hash_base <Key>, Value>;
 
 #endif // HASH_MAP_TRAITS_H

@@ -1,4 +1,5 @@
 /* { dg-additional-options "-flto" } */
+/* { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } } */
 /* { dg-additional-sources requires-4-aux.c } */
 
 /* Check no diagnostic by device-compiler's or host compiler's lto1.

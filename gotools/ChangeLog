@@ -1,3 +1,11 @@
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+
 2022-02-13  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Revert 2022-02-09 change:

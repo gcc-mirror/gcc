@@ -42,7 +42,10 @@ package System.Val_LFlt is
    package Impl is new Val_Real
      (Long_Float,
       System.Powten_LFlt.Maxpow,
-      System.Powten_LFlt.Powten'Address,
+      System.Powten_LFlt.Powfive'Address,
+      System.Powten_LFlt.Powfive_100'Address,
+      System.Powten_LFlt.Powfive_200'Address,
+      System.Powten_LFlt.Powfive_300'Address,
       Unsigned_Types.Long_Long_Unsigned);
 
    function Scan_Long_Float

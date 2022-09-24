@@ -1,3 +1,8 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* dummy-frontend.cc (jit_langhook_init): Do not initialize
+	void_list_node.
+
 2022-08-09  Vibhav Pant  <vibhavp@gmail.com>
 
 	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast): Move

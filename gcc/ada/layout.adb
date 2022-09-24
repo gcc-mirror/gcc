@@ -1053,8 +1053,6 @@ package body Layout is
             --  derived types.
 
             declare
-               FST : constant Entity_Id := First_Subtype (E);
-
                function Has_Attribute_Clause
                  (E  : Entity_Id;
                   Id : Attribute_Id) return Boolean;
@@ -1072,7 +1070,17 @@ package body Layout is
                   return Present (Get_Attribute_Definition_Clause (E, Id));
                end Has_Attribute_Clause;
 
+               FST : Entity_Id;
+
             begin
+               FST := First_Subtype (E);
+
+               --  Deal with private types
+
+               if Is_Private_Type (FST) then
+                  FST := Full_View (FST);
+               end if;
+
                --  If the alignment comes from a clause, then we respect it.
                --  Consider for example:
 

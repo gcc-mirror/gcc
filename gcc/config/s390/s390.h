@@ -247,10 +247,6 @@ enum processor_flags
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() s390_cpu_cpp_builtins (pfile)
 
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS s390_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO s390_d_register_target_info
-
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
 			    | MASK_OPT_HTM | MASK_OPT_VX)
@@ -705,7 +701,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Define the dwarf register mapping.
    v16-v31 -> 68-83
    rX      -> X      otherwise  */
-#define DBX_REGISTER_NUMBER(regno)				\
+#define DEBUGGER_REGNO(regno)				\
   (((regno) >= 38 && (regno) <= 53) ? (regno) + 30 : (regno))
 
 /* Frame registers.  */

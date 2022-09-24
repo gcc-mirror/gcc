@@ -106,6 +106,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return *this;
     }
 
+#if __cplusplus > 202002L
+    constexpr const _Bit_reference&
+    operator=(bool __x) const noexcept
+    {
+      if (__x)
+	*_M_p |= _M_mask;
+      else
+	*_M_p &= ~_M_mask;
+      return *this;
+    }
+#endif // C++23
+
     _GLIBCXX20_CONSTEXPR
     _Bit_reference&
     operator=(const _Bit_reference& __x) _GLIBCXX_NOEXCEPT

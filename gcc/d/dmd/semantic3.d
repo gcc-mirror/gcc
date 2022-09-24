@@ -472,9 +472,6 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         stc |= STC.variadic;
                     }
 
-                    if ((funcdecl.flags & FUNCFLAG.inferScope) && !(fparam.storageClass & STC.scope_))
-                        stc |= STC.maybescope;
-
                     stc |= fparam.storageClass & (STC.IOR | STC.return_ | STC.scope_ | STC.lazy_ | STC.final_ | STC.TYPECTOR | STC.nodtor | STC.returnScope | STC.register);
                     v.storage_class = stc;
                     v.dsymbolSemantic(sc2);

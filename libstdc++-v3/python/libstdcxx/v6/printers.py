@@ -969,6 +969,57 @@ class StdStringPrinter:
     def display_hint (self):
         return 'string'
 
+def access_streambuf_ptrs(streambuf):
+    "Access the streambuf put area pointers"
+    pbase = streambuf['_M_out_beg']
+    pptr = streambuf['_M_out_cur']
+    egptr = streambuf['_M_in_end']
+    return pbase, pptr, egptr
+
+class StdStringBufPrinter:
+    "Print a std::basic_stringbuf"
+
+    def __init__(self, _, val):
+        self.val = val
+
+    def to_string(self):
+        (pbase, pptr, egptr) = access_streambuf_ptrs(self.val)
+        # Logic from basic_stringbuf::_M_high_mark()
+        if pptr:
+            if not egptr or pptr > egptr:
+                return pbase.string(length = pptr - pbase)
+            else:
+                return pbase.string(length = egptr - pbase)
+        return self.val['_M_string']
+
+    def display_hint(self):
+        return 'string'
+
+class StdStringStreamPrinter:
+    "Print a std::basic_stringstream"
+
+    def __init__(self, typename, val):
+        self.val = val
+        self.typename = typename
+
+        # Check if the stream was redirected:
+        # This is essentially: val['_M_streambuf'] == val['_M_stringbuf'].address
+        # However, GDB can't resolve the virtual inheritance, so we do that manually
+        basetype = [f.type for f in val.type.fields() if f.is_base_class][0]
+        gdb.set_convenience_variable('__stream', val.cast(basetype).address)
+        self.streambuf = gdb.parse_and_eval('$__stream->rdbuf()')
+        self.was_redirected = self.streambuf != val['_M_stringbuf'].address
+
+    def to_string(self):
+        if self.was_redirected:
+            return "%s redirected to %s" % (self.typename, self.streambuf.dereference())
+        return self.val['_M_stringbuf']
+
+    def display_hint(self):
+        if self.was_redirected:
+            return None
+        return 'string'
+
 class Tr1HashtableIterator(Iterator):
     def __init__ (self, hashtable):
         self.buckets = hashtable['_M_buckets']
@@ -2195,12 +2246,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add('std::__debug::map', StdMapPrinter)
     libstdcxx_printer.add('std::__debug::multimap', StdMapPrinter)
     libstdcxx_printer.add('std::__debug::multiset', StdSetPrinter)
-    libstdcxx_printer.add('std::__debug::priority_queue',
-                          StdStackOrQueuePrinter)
-    libstdcxx_printer.add('std::__debug::queue', StdStackOrQueuePrinter)
     libstdcxx_printer.add('std::__debug::set', StdSetPrinter)
-    libstdcxx_printer.add('std::__debug::stack', StdStackOrQueuePrinter)
-    libstdcxx_printer.add('std::__debug::unique_ptr', UniquePointerPrinter)
     libstdcxx_printer.add('std::__debug::vector', StdVectorPrinter)
 
     # These are the TR1 and C++11 printers.
@@ -2232,6 +2278,11 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'initializer_list',
                                   StdInitializerListPrinter)
     libstdcxx_printer.add_version('std::', 'atomic', StdAtomicPrinter)
+    libstdcxx_printer.add_version('std::', 'basic_stringbuf', StdStringBufPrinter)
+    libstdcxx_printer.add_version('std::__cxx11::', 'basic_stringbuf', StdStringBufPrinter)
+    for sstream in ('istringstream', 'ostringstream', 'stringstream'):
+        libstdcxx_printer.add_version('std::', 'basic_' + sstream, StdStringStreamPrinter)
+        libstdcxx_printer.add_version('std::__cxx11::', 'basic_' + sstream, StdStringStreamPrinter)
 
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',

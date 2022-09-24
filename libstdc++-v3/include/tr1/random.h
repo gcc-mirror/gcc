@@ -81,9 +81,8 @@ namespace tr1
     template<typename _Engine, typename _Distribution>
       struct _Adaptor
       { 
-	typedef typename remove_reference<_Engine>::type _BEngine;
-	typedef typename _BEngine::result_type           _Engine_result_type;
-	typedef typename _Distribution::input_type       result_type;
+	typedef typename _Engine::result_type           _Engine_result_type;
+	typedef typename _Distribution::input_type      result_type;
 
       public:
 	_Adaptor(const _Engine& __g)
@@ -146,71 +145,7 @@ namespace tr1
 	  return __return_value;
 	}
 
-      private:
 	_Engine _M_g;
-      };
-
-    // Specialization for _Engine*.
-    template<typename _Engine, typename _Distribution>
-      struct _Adaptor<_Engine*, _Distribution>
-      {
-	typedef typename _Engine::result_type      _Engine_result_type;
-	typedef typename _Distribution::input_type result_type;
-
-      public:
-	_Adaptor(_Engine* __g)
-	: _M_g(__g) { }
-
-	result_type
-	min() const
-	{
-	  result_type __return_value;
-	  if (is_integral<_Engine_result_type>::value
-	      && is_integral<result_type>::value)
-	    __return_value = _M_g->min();
-	  else
-	    __return_value = result_type(0);
-	  return __return_value;
-	}
-
-	result_type
-	max() const
-	{
-	  result_type __return_value;
-	  if (is_integral<_Engine_result_type>::value
-	      && is_integral<result_type>::value)
-	    __return_value = _M_g->max();
-	  else if (!is_integral<result_type>::value)
-	    __return_value = result_type(1);
-	  else
-	    __return_value = std::numeric_limits<result_type>::max() - 1;
-	  return __return_value;
-	}
-
-	result_type
-	operator()()
-	{
-	  result_type __return_value;
-	  if (is_integral<_Engine_result_type>::value
-	      && is_integral<result_type>::value)
-	    __return_value = (*_M_g)();
-	  else if (!is_integral<_Engine_result_type>::value
-		   && !is_integral<result_type>::value)
-	    __return_value = result_type((*_M_g)() - _M_g->min())
-	      / result_type(_M_g->max() - _M_g->min());
-	  else if (is_integral<_Engine_result_type>::value
-		   && !is_integral<result_type>::value)
-	    __return_value = result_type((*_M_g)() - _M_g->min())
-	      / result_type(_M_g->max() - _M_g->min() + result_type(1));
-	  else
-	    __return_value = ((((*_M_g)() - _M_g->min()) 
-			       / (_M_g->max() - _M_g->min()))
-			      * std::numeric_limits<result_type>::max());
-	  return __return_value;
-	}
-
-      private:
-	_Engine* _M_g;
       };
   } // namespace __detail
 
@@ -223,16 +158,44 @@ namespace tr1
   template<typename _Engine, typename _Dist>
     class variate_generator
     {
-      // Concept requirements.
-      __glibcxx_class_requires(_Engine, _CopyConstructibleConcept)
-      //  __glibcxx_class_requires(_Engine, _EngineConcept)
-      //  __glibcxx_class_requires(_Dist, _EngineConcept)
+      template<typename _Eng>
+	struct _Value
+	{
+	  typedef _Eng type;
+
+	  static const _Eng&
+	  _S_ref(const _Eng& __e) { return __e; }
+	};
+
+      template<typename _Eng>
+	struct _Value<_Eng*>
+	{
+	  typedef _Eng type;
+
+	  __attribute__((__nonnull__))
+	  static const _Eng&
+	  _S_ref(const _Eng* __e) { return *__e; }
+	};
+
+      template<typename _Eng>
+	struct _Value<_Eng&>
+	{
+	  typedef _Eng type;
+
+	  static const _Eng&
+	  _S_ref(const _Eng& __e) { return __e; }
+	};
 
     public:
       typedef _Engine                                engine_type;
-      typedef __detail::_Adaptor<_Engine, _Dist>     engine_value_type;
+      typedef typename _Value<_Engine>::type         engine_value_type;
       typedef _Dist                                  distribution_type;
       typedef typename _Dist::result_type            result_type;
+
+      // Concept requirements.
+      __glibcxx_class_requires(engine_value_type, _CopyConstructibleConcept)
+      // __glibcxx_class_requires(_Engine, _EngineConcept)
+      //  __glibcxx_class_requires(_Dist, _EngineConcept)
 
       // tr1:5.1.1 table 5.1 requirement
       typedef typename __gnu_cxx::__enable_if<
@@ -246,7 +209,7 @@ namespace tr1
        * the @p _Engine or @p _Dist objects.
        */
       variate_generator(engine_type __eng, distribution_type __dist)
-      : _M_engine(__eng), _M_dist(__dist) { }
+      : _M_engine(_Value<_Engine>::_S_ref(__eng)), _M_dist(__dist) { }
 
       /**
        * Gets the next generated value on the distribution.
@@ -269,7 +232,7 @@ namespace tr1
        */
       engine_value_type&
       engine()
-      { return _M_engine; }
+      { return _M_engine._M_g; }
 
       /**
        * Gets a const reference to the underlying uniform random number
@@ -277,7 +240,7 @@ namespace tr1
        */
       const engine_value_type&
       engine() const
-      { return _M_engine; }
+      { return _M_engine._M_g; }
 
       /**
        * Gets a reference to the underlying random distribution.
@@ -308,7 +271,7 @@ namespace tr1
       { return this->distribution().max(); }
 
     private:
-      engine_value_type _M_engine;
+      __detail::_Adaptor<engine_value_type, _Dist> _M_engine;
       distribution_type _M_dist;
     };
 

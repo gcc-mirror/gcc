@@ -2806,7 +2806,7 @@ auto ref choice(Range)(ref Range range)
 {
     import std.algorithm.searching : canFind;
 
-    class MyTestClass
+    static class MyTestClass
     {
         int x;
 

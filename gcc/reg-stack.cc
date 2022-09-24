@@ -1073,7 +1073,8 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	      break;
 
 	  /* The destination must be dead, or life analysis is borked.  */
-	  gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+	  gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG
+		      || any_malformed_asm);
 
 	  /* If the source is not live, this is yet another case of
 	     uninitialized variables.  Load up a NaN instead.  */

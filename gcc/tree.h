@@ -1722,8 +1722,15 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_DEPEND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEPEND)->omp_clause.subcode.depend_kind)
 
-#define OMP_CLAUSE_DEPEND_SINK_NEGATIVE(NODE) \
+#define OMP_CLAUSE_DOACROSS_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DOACROSS)->omp_clause.subcode.doacross_kind)
+
+#define OMP_CLAUSE_DOACROSS_SINK_NEGATIVE(NODE) \
   TREE_PUBLIC (TREE_LIST_CHECK (NODE))
+
+/* True if DOACROSS clause is spelled as DEPEND.  */
+#define OMP_CLAUSE_DOACROSS_DEPEND(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DOACROSS))
 
 #define OMP_CLAUSE_MAP_KIND(NODE) \
   ((enum gomp_map_kind) OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind)
@@ -1785,6 +1792,11 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_ORDERED_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDERED), 0)
+
+/* True on an OMP_CLAUSE_ORDERED if stand-alone ordered construct is nested
+   inside of work-sharing loop the clause is on.  */
+#define OMP_CLAUSE_ORDERED_DOACROSS(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDERED)->base.public_flag)
 
 /* True for unconstrained modifier on order(concurrent) clause.  */
 #define OMP_CLAUSE_ORDER_UNCONSTRAINED(NODE) \

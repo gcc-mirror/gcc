@@ -216,7 +216,7 @@ along with GCC; see the file COPYING3.  If not see
 #define FIRST_PSEUDO_REGISTER 36
 
 /* Return the stabs register number to use for REGNO.  */
-#define DBX_REGISTER_NUMBER(REGNO) xtensa_dbx_register_number (REGNO)
+#define DEBUGGER_REGNO(REGNO) xtensa_debugger_regno (REGNO)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
@@ -488,6 +488,7 @@ enum reg_class
    point, and values of coprocessor and user-defined modes.  */
 #define GP_RETURN (GP_REG_FIRST + 2 + WINDOW_SIZE)
 #define GP_OUTGOING_RETURN (GP_REG_FIRST + 2)
+#define GP_RETURN_REG_COUNT 4
 
 /* Symbolic macros for the first/last argument registers.  */
 #define GP_ARG_FIRST (GP_REG_FIRST + 2)

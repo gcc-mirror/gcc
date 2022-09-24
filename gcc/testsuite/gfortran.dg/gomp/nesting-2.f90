@@ -158,8 +158,8 @@ subroutine foo
   !$omp do ordered(1)
   do i = 0, 63
     !$omp parallel
-      !$omp ordered depend(source)	! { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause with a parameter" }
-      !$omp ordered depend(sink: i - 1)	! { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause with a parameter" }
+      !$omp ordered depend(source)	! { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause" }
+      !$omp ordered depend(sink: i - 1)	! { dg-error ".ordered. construct with .depend. clause must be closely nested inside a loop with .ordered. clause" }
     !$omp end parallel
   end do
 end

@@ -58,7 +58,8 @@ void identify_vertices (struct graph *, int, int);
 typedef bool (*skip_edge_callback) (struct graph_edge *);
 int graphds_dfs (struct graph *, int *, int,
 		 vec<int> *, bool, bitmap, skip_edge_callback = NULL);
-int graphds_scc (struct graph *, bitmap, skip_edge_callback = NULL);
+int graphds_scc (struct graph *, bitmap, skip_edge_callback = NULL,
+		 vec<int> * = NULL);
 void graphds_domtree (struct graph *, int, int *, int *, int *);
 typedef void (*graphds_edge_callback) (struct graph *,
 				       struct graph_edge *, void *);

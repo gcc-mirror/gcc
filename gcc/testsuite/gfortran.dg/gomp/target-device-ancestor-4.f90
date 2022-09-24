@@ -6,7 +6,7 @@
 
 !$omp requires reverse_offload
 
-!$omp target device (ancestor : 1)  ! { dg-message "sorry, unimplemented: 'ancestor' not yet supported" }
+!$omp target device (ancestor : 1)
 !$omp end target
 
 end

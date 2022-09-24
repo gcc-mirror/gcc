@@ -1885,7 +1885,7 @@ arc_init_reg_tables (void)
    Because mlo / mhi form a 64 bit value, we use different gcc internal
    register numbers to make them form a register pair as the gcc internals
    know it.  mmid gets number 57, if still available, and mlo / mhi get
-   number 58 and 59, depending on endianness.  We use DBX_REGISTER_NUMBER
+   number 58 and 59, depending on endianness.  We use DEBUGGER_REGNO
    to map this back.  */
   char rname56[5] = "r56";
   char rname57[5] = "r57";

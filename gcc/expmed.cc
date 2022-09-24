@@ -794,7 +794,7 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	 words or to cope with mode punning between equal-sized modes.
 	 In the latter case, use subreg on the rhs side, not lhs.  */
       rtx sub;
-      HOST_WIDE_INT regnum;
+      poly_uint64 bytenum;
       poly_uint64 regsize = REGMODE_NATURAL_SIZE (GET_MODE (op0));
       if (known_eq (bitnum, 0U)
 	  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (op0))))
@@ -808,13 +808,13 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	      return true;
 	    }
 	}
-      else if (((constant_multiple_p (bitnum, regsize * BITS_PER_UNIT, &regnum)
-		 && multiple_p (bitsize, regsize * BITS_PER_UNIT))
-		|| undefined_p)
+      else if (multiple_p (bitnum, BITS_PER_UNIT, &bytenum)
+	       && (undefined_p
+		   || (multiple_p (bitnum, regsize * BITS_PER_UNIT)
+		       && multiple_p (bitsize, regsize * BITS_PER_UNIT)))
 	       && known_ge (GET_MODE_BITSIZE (GET_MODE (op0)), bitsize))
 	{
-	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
-				     regnum * regsize);
+	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0), bytenum);
 	  if (sub)
 	    {
 	      if (reverse)

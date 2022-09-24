@@ -227,7 +227,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       || (GET_MODE_SIZE (MODE) == 8 * UNITS_PER_WORD			\
 	  && ((REGNO) & 7) == 3 && (REGNO) <= 19)))
 
-/* How to renumber registers for dbx and gdb.
+/* How to renumber registers for gdb.
 
    Registers 0  - 31 remain unchanged.
 
@@ -235,11 +235,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    Register 88 is mapped to 32.  */
 
-#define DBX_REGISTER_NUMBER(REGNO) \
+#define DEBUGGER_REGNO(REGNO) \
   ((REGNO) <= 31 ? (REGNO) :						\
    ((REGNO) <= 87 ? (REGNO) + 40 : 32))
 
-/* We must not use the DBX register numbers for the DWARF 2 CFA column
+/* We must not use the debugger register numbers for the DWARF 2 CFA column
    numbers because that maps to numbers beyond FIRST_PSEUDO_REGISTER.
    Instead use the identity mapping.  */
 #define DWARF_FRAME_REGNUM(REG) REG

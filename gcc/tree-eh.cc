@@ -3321,7 +3321,7 @@ lower_resx (basic_block bb, gresx *stmt,
   int lp_nr;
   eh_region src_r, dst_r;
   gimple_stmt_iterator gsi;
-  gimple *x;
+  gcall *x;
   tree fn, src_nr;
   bool ret = false;
 
@@ -3346,6 +3346,7 @@ lower_resx (basic_block bb, gresx *stmt,
 
       fn = builtin_decl_implicit (BUILT_IN_TRAP);
       x = gimple_build_call (fn, 0);
+      gimple_call_set_ctrl_altering (x, true);
       gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
       while (EDGE_COUNT (bb->succs) > 0)
@@ -3463,6 +3464,7 @@ lower_resx (basic_block bb, gresx *stmt,
 
 	  fn = builtin_decl_implicit (BUILT_IN_UNWIND_RESUME);
 	  x = gimple_build_call (fn, 1, var);
+	  gimple_call_set_ctrl_altering (x, true);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 	}
 

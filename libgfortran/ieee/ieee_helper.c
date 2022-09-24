@@ -26,13 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-/* Check support for issignaling macro.  If not, we include our own
-   fallback implementation.  */
-#ifndef issignaling
-# include "issignaling_fallback.h"
-#endif
-
-
 /* Prototypes.  */
 
 extern int ieee_class_helper_4 (GFC_REAL_4 *);
@@ -50,26 +43,6 @@ internal_proto(ieee_class_helper_10);
 extern int ieee_class_helper_16 (GFC_REAL_16 *);
 internal_proto(ieee_class_helper_16);
 #endif
-
-/* Enumeration of the possible floating-point types. These values
-   correspond to the hidden arguments of the IEEE_CLASS_TYPE
-   derived-type of IEEE_ARITHMETIC.  */
-
-enum {
-  IEEE_OTHER_VALUE = 0,
-  IEEE_SIGNALING_NAN,
-  IEEE_QUIET_NAN,
-  IEEE_NEGATIVE_INF,
-  IEEE_NEGATIVE_NORMAL,
-  IEEE_NEGATIVE_DENORMAL,
-  IEEE_NEGATIVE_SUBNORMAL = IEEE_NEGATIVE_DENORMAL,
-  IEEE_NEGATIVE_ZERO,
-  IEEE_POSITIVE_ZERO,
-  IEEE_POSITIVE_DENORMAL,
-  IEEE_POSITIVE_SUBNORMAL = IEEE_POSITIVE_DENORMAL,
-  IEEE_POSITIVE_NORMAL,
-  IEEE_POSITIVE_INF
-};
 
 
 #define CLASSMACRO(TYPE) \
@@ -94,7 +67,7 @@ enum {
  \
     if (res == IEEE_QUIET_NAN) \
     { \
-      if (issignaling (*value)) \
+      if (__builtin_issignaling (*value)) \
 	return IEEE_SIGNALING_NAN; \
       else \
 	return IEEE_QUIET_NAN; \

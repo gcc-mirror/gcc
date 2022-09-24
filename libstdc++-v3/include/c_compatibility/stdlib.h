@@ -45,6 +45,9 @@ using std::exit;
 # ifdef _GLIBCXX_HAVE_QUICK_EXIT
   using std::quick_exit;
 # endif
+# if _GLIBCXX_USE_C99_STDLIB
+  using std::_Exit;
+# endif
 #endif
 
 #if _GLIBCXX_HOSTED

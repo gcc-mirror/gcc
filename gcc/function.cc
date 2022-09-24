@@ -4639,14 +4639,6 @@ number_blocks (tree fn)
   int n_blocks;
   tree *block_vector;
 
-  /* For XCOFF debugging output, we start numbering the blocks
-     from 1 within each function, rather than keeping a running
-     count.  */
-#if defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == XCOFF_DEBUG)
-    next_block_index = 1;
-#endif
-
   block_vector = get_block_vector (DECL_INITIAL (fn), &n_blocks);
 
   /* The top-level BLOCK isn't numbered at all.  */

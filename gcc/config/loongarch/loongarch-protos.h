@@ -28,7 +28,12 @@ along with GCC; see the file COPYING3.  If not see
        The symbol's value will be loaded directly from the GOT.
 
    SYMBOL_PCREL
-       The symbol's value will be loaded directly from data section.
+       The symbol's value will be loaded directly from data section within
+       +/- 2GiB range.
+
+   SYMBOL_PCREL64
+       The symbol's value will be loaded directly from data section within
+       +/- 8EiB range.
 
    SYMBOL_TLS
        A thread-local symbol.
@@ -42,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 enum loongarch_symbol_type {
   SYMBOL_GOT_DISP,
   SYMBOL_PCREL,
+  SYMBOL_PCREL64,
   SYMBOL_TLS,
   SYMBOL_TLS_IE,
   SYMBOL_TLS_LE,

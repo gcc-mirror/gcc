@@ -16,7 +16,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.6.4 function object return types [func.ret]
+// C++11 20.8.3.4 reference_wrapper invocation [refwrap.invoke]
 #include <functional>
 
 struct X
@@ -27,6 +27,7 @@ struct X
 
 void test01()
 {
+  // PR libstdc++/48521 std::result_of doesn't work with pointer to member
   typedef int (X::*mfp)(int);
   typedef int X::*mp;
   mfp m = &X::f;

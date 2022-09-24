@@ -34,7 +34,7 @@ program main
       !!$omp end task
     !$omp task depend(iterator(i=1:5), source )  ! { dg-error "ITERATOR may not be combined with SOURCE" }
   !!$omp end task
-  !$omp task affinity (iterator(i=1:5): a) depend(iterator(i=1:5), sink : x) ! { dg-error "ITERATOR may not be combined with SINK" }
+  !$omp task affinity (iterator(i=1:5): a) depend(iterator(i=1:5), sink : x) ! { dg-error "SINK at .1. not permitted as dependence-type for this directive" }
   !!$omp end task
 
     end do

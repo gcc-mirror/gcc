@@ -37,22 +37,37 @@ with System.Unsigned_Types; use System.Unsigned_Types;
 generic
 
    type Uns is mod <>;
+   --  Modular type used for the value
+
+   Parts : Positive;
+   --  Number of Uns parts in the value
 
    Precision_Limit : Uns;
+   --  Precision limit for each part of the value
 
    Round : Boolean;
+   --  If Parts = 1, True if the extra digit must be rounded
 
 package System.Value_R is
    pragma Preelaborate;
+
+   subtype Data_Index is Positive range 1 .. Parts;
+   --  The type indexing the value
+
+   type Scale_Array is array (Data_Index) of Integer;
+   --  The scale for each part of the value
+
+   type Value_Array is array (Data_Index) of Uns;
+   --  The value split into parts
 
    function Scan_Raw_Real
      (Str   : String;
       Ptr   : not null access Integer;
       Max   : Integer;
       Base  : out Unsigned;
-      Scale : out Integer;
+      Scale : out Scale_Array;
       Extra : out Unsigned;
-      Minus : out Boolean) return Uns;
+      Minus : out Boolean) return Value_Array;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  real literal according to the syntax described in (RM 3.5(43)). The
    --  substring scanned extends no further than Str (Max). There are three
@@ -64,9 +79,13 @@ package System.Value_R is
    --  parameters are set; if Val is the result of the call, then the real
    --  represented by the literal is equal to
    --
-   --    (Val * Base + Extra) * (Base ** (Scale - 1))
+   --    (Val (1) * Base + Extra) * (Base ** (Scale (1) - 1))
    --
-   --  with the negative sign if Minus is true.
+   --  when Parts = 1 and
+   --
+   --    Sum [Val (N) * (Base ** Scale (N)), N in 1 .. Parts]
+   --
+   --  when Parts > 1, with the negative sign if Minus is true.
    --
    --  If no valid real is found, then Ptr.all points either to an initial
    --  non-blank character, or to Max + 1 if the field is all spaces and the
@@ -91,9 +110,9 @@ package System.Value_R is
    function Value_Raw_Real
      (Str   : String;
       Base  : out Unsigned;
-      Scale : out Integer;
+      Scale : out Scale_Array;
       Extra : out Unsigned;
-      Minus : out Boolean) return Uns;
+      Minus : out Boolean) return Value_Array;
    --  Used in computing X'Value (Str) where X is a real type. Str is the
    --  string argument of the attribute. Constraint_Error is raised if the
    --  string is malformed.

@@ -1337,8 +1337,15 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  if (n->u2.ns != ns_iter)
 	    {
 	      if (n != n2)
-		fputs (list_type == OMP_LIST_AFFINITY
-		       ? ") AFFINITY(" : ") DEPEND(", dumpfile);
+		{
+		  fputs (") ", dumpfile);
+		  if (list_type == OMP_LIST_AFFINITY)
+		    fputs ("AFFINITY (", dumpfile);
+		  else if (n->u.depend_doacross_op == OMP_DOACROSS_SINK_FIRST)
+		    fputs ("DOACROSS (", dumpfile);
+		  else
+		    fputs ("DEPEND (", dumpfile);
+		}
 	      if (n->u2.ns)
 		{
 		  fputs ("ITERATOR(", dumpfile);
@@ -1374,7 +1381,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  default: break;
 	  }
       else if (list_type == OMP_LIST_DEPEND)
-	switch (n->u.depend_op)
+	switch (n->u.depend_doacross_op)
 	  {
 	  case OMP_DEPEND_IN: fputs ("in:", dumpfile); break;
 	  case OMP_DEPEND_OUT: fputs ("out:", dumpfile); break;
@@ -1385,10 +1392,14 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	    fputs ("mutexinoutset:", dumpfile);
 	    break;
 	  case OMP_DEPEND_SINK_FIRST:
+	  case OMP_DOACROSS_SINK_FIRST:
 	    fputs ("sink:", dumpfile);
 	    while (1)
 	      {
-		fprintf (dumpfile, "%s", n->sym->name);
+		if (!n->sym)
+		  fputs ("omp_cur_iteration", dumpfile);
+		else
+		  fprintf (dumpfile, "%s", n->sym->name);
 		if (n->expr)
 		  {
 		    fputc ('+', dumpfile);
@@ -1396,9 +1407,13 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 		  }
 		if (n->next == NULL)
 		  break;
-		else if (n->next->u.depend_op != OMP_DEPEND_SINK)
+		else if (n->next->u.depend_doacross_op != OMP_DOACROSS_SINK)
 		  {
-		    fputs (") DEPEND(", dumpfile);
+		    if (n->next->u.depend_doacross_op
+			== OMP_DOACROSS_SINK_FIRST)
+		      fputs (") DOACROSS(", dumpfile);
+		    else
+		      fputs (") DEPEND(", dumpfile);
 		    break;
 		  }
 		fputc (',', dumpfile);
@@ -1674,7 +1689,14 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_AFFINITY: type = "AFFINITY"; break;
 	  case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
 	  case OMP_LIST_LINEAR: type = "LINEAR"; break;
-	  case OMP_LIST_DEPEND: type = "DEPEND"; break;
+	  case OMP_LIST_DEPEND:
+	    if (omp_clauses->lists[list_type]
+		&& (omp_clauses->lists[list_type]->u.depend_doacross_op
+		    == OMP_DOACROSS_SINK_FIRST))
+	      type = "DOACROSS";
+	    else
+	      type = "DEPEND";
+	    break;
 	  case OMP_LIST_MAP: type = "MAP"; break;
 	  case OMP_LIST_TO: type = "TO"; break;
 	  case OMP_LIST_FROM: type = "FROM"; break;
@@ -1894,6 +1916,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     fputs (" DESTROY", dumpfile);
   if (omp_clauses->depend_source)
     fputs (" DEPEND(source)", dumpfile);
+  if (omp_clauses->doacross_source)
+    fputs (" DOACROSS(source:)", dumpfile);
   if (omp_clauses->capture)
     fputs (" CAPTURE", dumpfile);
   if (omp_clauses->depobj_update != OMP_DEPEND_UNSET)

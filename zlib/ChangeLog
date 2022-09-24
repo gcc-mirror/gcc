@@ -1,3 +1,7 @@
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
 
 	Revert:

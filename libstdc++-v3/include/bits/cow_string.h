@@ -3012,6 +3012,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       starts_with(_CharT __x) const noexcept
       { return __sv_type(this->data(), this->size()).starts_with(__x); }
 
+      [[__gnu__::__nonnull__]]
       bool
       starts_with(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).starts_with(__x); }
@@ -3024,6 +3025,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ends_with(_CharT __x) const noexcept
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 
+      [[__gnu__::__nonnull__]]
       bool
       ends_with(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
@@ -3038,6 +3040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       contains(_CharT __x) const noexcept
       { return __sv_type(this->data(), this->size()).contains(__x); }
 
+      [[__gnu__::__nonnull__]]
       bool
       contains(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).contains(__x); }

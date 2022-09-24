@@ -4421,7 +4421,7 @@ ia64_output_function_prologue (FILE *file)
 
   if (mask && TARGET_GNU_AS)
     fprintf (file, "\t.prologue %d, %d\n", mask,
-	     ia64_dbx_register_number (grsave));
+	     ia64_debugger_regno (grsave));
   else
     fputs ("\t.prologue\n", file);
 
@@ -4473,7 +4473,7 @@ ia64_output_function_epilogue (FILE *)
 }
 
 int
-ia64_dbx_register_number (int regno)
+ia64_debugger_regno (int regno)
 {
   /* In ia64_expand_prologue we quite literally renamed the frame pointer
      from its home at loc79 to something inside the register frame.  We
@@ -10104,7 +10104,7 @@ process_cfa_adjust_cfa (FILE *out_file, rtx pat, rtx insn,
 
       if (unwind)
 	fprintf (out_file, "\t.vframe r%d\n",
-		 ia64_dbx_register_number (REGNO (dest)));
+		 ia64_debugger_regno (REGNO (dest)));
     }
   else
     gcc_unreachable ();
@@ -10125,7 +10125,7 @@ process_cfa_register (FILE *out_file, rtx pat, bool unwind)
       /* Saving return address pointer.  */
       if (unwind)
 	fprintf (out_file, "\t.save rp, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       return;
     }
 
@@ -10137,21 +10137,21 @@ process_cfa_register (FILE *out_file, rtx pat, bool unwind)
       gcc_assert (dest_regno == current_frame_info.r[reg_save_pr]);
       if (unwind)
 	fprintf (out_file, "\t.save pr, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       break;
 
     case AR_UNAT_REGNUM:
       gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_unat]);
       if (unwind)
 	fprintf (out_file, "\t.save ar.unat, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       break;
 
     case AR_LC_REGNUM:
       gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_lc]);
       if (unwind)
 	fprintf (out_file, "\t.save ar.lc, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       break;
 
     default:
@@ -10326,7 +10326,7 @@ ia64_asm_unwind_emit (FILE *out_file, rtx_insn *insn)
 	{
 	  if (unwind)
 	    fprintf (out_file, "\t.save ar.pfs, r%d\n",
-		     ia64_dbx_register_number (dest_regno));
+		     ia64_debugger_regno (dest_regno));
 	}
       else
 	{

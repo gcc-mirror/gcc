@@ -11803,6 +11803,7 @@ deferred_op_assign (gfc_code **code, gfc_namespace *ns)
 
   if (!((*code)->expr1->ts.type == BT_CHARACTER
 	 && (*code)->expr1->ts.deferred && (*code)->expr1->rank
+	 && (*code)->expr2->ts.type == BT_CHARACTER
 	 && (*code)->expr2->expr_type == EXPR_OP))
     return false;
 

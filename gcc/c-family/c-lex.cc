@@ -381,12 +381,14 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 	    }
 	  else
 	    {
-	      if (is_attribute_p ("deprecated", attr_name)
-		  || is_attribute_p ("maybe_unused", attr_name)
-		  || is_attribute_p ("fallthrough", attr_name))
+	      if (is_attribute_p ("deprecated", attr_name))
 		result = 201904;
+	      else if (is_attribute_p ("fallthrough", attr_name))
+		result = 201910;
 	      else if (is_attribute_p ("nodiscard", attr_name))
 		result = 202003;
+	      else if (is_attribute_p ("maybe_unused", attr_name))
+		result = 202106;
 	    }
 	  if (result)
 	    attr_name = NULL_TREE;
@@ -509,7 +511,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	    /* C++ uses '0' to mark virtual functions as pure.
 	       Set PURE_ZERO to pass this information to the C++ parser.  */
 	    if (tok->val.str.len == 1 && *tok->val.str.text == '0')
-	      add_flags = PURE_ZERO;
+	      add_flags = PURE_ZERO | DECIMAL_INT;
+	    else if ((flags & CPP_N_INTEGER) && (flags & CPP_N_DECIMAL))
+	      /* -Wxor-used-as-pow is only active for LHS of ^ expressed
+		 as a decimal integer. */
+	      add_flags = DECIMAL_INT;
 	    *value = interpret_integer (tok, flags, &overflow);
 	    break;
 

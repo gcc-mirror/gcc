@@ -207,7 +207,6 @@ bpf_core_get_sou_member_index (ctf_container_ref ctfc, const tree node)
   if (TREE_CODE (node) == FIELD_DECL)
     {
       const tree container = DECL_CONTEXT (node);
-      const char * name = IDENTIFIER_POINTER (DECL_NAME (node));
 
       /* Lookup the CTF type info for the containing type.  */
       dw_die_ref die = lookup_type_die (container);
@@ -222,16 +221,21 @@ bpf_core_get_sou_member_index (ctf_container_ref ctfc, const tree node)
       if (kind != CTF_K_STRUCT && kind != CTF_K_UNION)
         return -1;
 
+      tree field = TYPE_FIELDS (container);
       int i = 0;
       ctf_dmdef_t * dmd;
       for (dmd = dtd->dtd_u.dtu_members;
            dmd != NULL; dmd = (ctf_dmdef_t *) ctf_dmd_list_next (dmd))
         {
-          if (get_btf_id (dmd->dmd_type) > BTF_MAX_TYPE)
-            continue;
-          if (strcmp (dmd->dmd_name, name) == 0)
-            return i;
-          i++;
+	  bool field_has_btf = get_btf_id (dmd->dmd_type) <= BTF_MAX_TYPE;
+
+	  if (field == node)
+	    return field_has_btf ? i : -1;
+
+	  if (field_has_btf)
+	    i++;
+
+	  field = DECL_CHAIN (field);
         }
     }
   return -1;

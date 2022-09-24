@@ -2150,9 +2150,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
       gimple_seq stmts = NULL;
       tree phi_result = PHI_RESULT (phi);
       result = gimple_build (&stmts, locus, minmax, TREE_TYPE (phi_result),
-			     arg0, bound);
+			     arg0, arg1);
       result = gimple_build (&stmts, locus, ass_code, TREE_TYPE (phi_result),
-			     result, arg1);
+			     result, bound);
       if (invert)
 	result = gimple_build (&stmts, locus, BIT_NOT_EXPR, TREE_TYPE (phi_result),
 			       result);

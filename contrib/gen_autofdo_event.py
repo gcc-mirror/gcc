@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Generate Intel taken branches Linux perf event script for autofdo profiling.
 
 # Copyright (C) 2016 Free Software Foundation, Inc.
@@ -26,18 +26,19 @@
 # Requires internet (https) access. This may require setting up a proxy
 # with export https_proxy=...
 #
-import urllib2
+import urllib.request
 import sys
 import json
 import argparse
 import collections
+import os
 
 baseurl = "https://download.01.org/perfmon"
 
-target_events = (u'BR_INST_RETIRED.NEAR_TAKEN',
-                 u'BR_INST_EXEC.TAKEN',
-                 u'BR_INST_RETIRED.TAKEN_JCC',
-                 u'BR_INST_TYPE_RETIRED.COND_TAKEN')
+target_events = ('BR_INST_RETIRED.NEAR_TAKEN',
+                 'BR_INST_EXEC.TAKEN',
+                 'BR_INST_RETIRED.TAKEN_JCC',
+                 'BR_INST_TYPE_RETIRED.COND_TAKEN')
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--all', '-a', help='Print for all CPUs', action='store_true')
@@ -71,47 +72,46 @@ def get_cpustr():
     return "%s-%d-%X" % tuple(cpu)[:3]
 
 def find_event(eventurl, model):
-    print >>sys.stderr, "Downloading", eventurl
-    u = urllib2.urlopen(eventurl)
+    print("Downloading", eventurl, file = sys.stderr)
+    u = urllib.request.urlopen(eventurl)
     events = json.loads(u.read())
     u.close()
 
     found = 0
     for j in events:
-        if j[u'EventName'] in target_events:
-            event = "cpu/event=%s,umask=%s/" % (j[u'EventCode'], j[u'UMask'])
-            if u'PEBS' in j and j[u'PEBS'] > 0:
+        if j['EventName'] in target_events:
+            event = "cpu/event=%s,umask=%s/" % (j['EventCode'], j['UMask'])
+            if 'PEBS' in j and int(j['PEBS']) > 0:
                 event += "p"
             if args.script:
                 eventmap[event].append(model)
             else:
-                print j[u'EventName'], "event for model", model, "is", event
+                print(j['EventName'], "event for model", model, "is", event)
             found += 1
     return found
 
 if not args.all:
-    cpu = get_cpu_str()
+    cpu = get_cpustr()
     if not cpu:
         sys.exit("Unknown CPU type")
 
 url = baseurl + "/mapfile.csv"
-print >>sys.stderr, "Downloading", url
-u = urllib2.urlopen(url)
+print("Downloading", url, file = sys.stderr)
+u = urllib.request.urlopen(url)
 found = 0
 cpufound = 0
 for j in u:
-    n = j.rstrip().split(',')
+    n = j.rstrip().decode().split(',')
     if len(n) >= 4 and (args.all or n[0] == cpu) and n[3] == "core":
-        if args.all:
-            components = n[0].split("-")
-            model = components[2]
-            model = int(model, 16)
+        components = n[0].split("-")
+        model = components[2]
+        model = int(model, 16)
         cpufound += 1
         found += find_event(baseurl + n[2], model)
 u.close()
 
 if args.script:
-    print '''#!/bin/sh
+    print('''#!/bin/sh
 # Profile workload for gcc profile feedback (autofdo) using Linux perf.
 # Auto generated. To regenerate for new CPUs run
 # contrib/gen_autofdo_event.py --script --all in gcc source
@@ -146,27 +146,27 @@ if grep -q hypervisor /proc/cpuinfo ; then
   echo >&2 "Warning: branch profiling may not be functional in VMs"
 fi
 
-case `egrep -q "^cpu family\s*: 6" /proc/cpuinfo &&
-  egrep "^model\s*:" /proc/cpuinfo | head -n1` in'''
-    for event, mod in eventmap.iteritems():
+case `grep -E -q "^cpu family\s*: 6" /proc/cpuinfo &&
+  grep -E "^model\s*:" /proc/cpuinfo | head -n1` in''')
+    for event, mod in eventmap.items():
         for m in mod[:-1]:
-            print "model*:\ %s|\\" % m
-        print 'model*:\ %s) E="%s$FLAGS" ;;' % (mod[-1], event)
-    print '''*)
+            print("model*:\ %s|\\" % m)
+        print('model*:\ %s) E="%s$FLAGS" ;;' % (mod[-1], event))
+    print('''*)
 echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
-	exit 1 ;;'''
-    print "esac"
-    print "set -x"
-    print 'if ! perf record -e $E -b "$@" ; then'
-    print '  # PEBS may not actually be working even if the processor supports it'
-    print '  # (e.g., in a virtual machine). Trying to run without /p.'
-    print '  set +x'
-    print '  echo >&2 "Retrying without /p."'
-    print '  E="$(echo "${E}" | sed -e \'s/\/p/\//\')"'
-    print '  set -x'
-    print '  exec perf record -e $E -b "$@"'
-    print ' set +x'
-    print 'fi'
+	exit 1 ;;''')
+    print("esac")
+    print("set -x")
+    print('if ! perf record -e $E -b "$@" ; then')
+    print('  # PEBS may not actually be working even if the processor supports it')
+    print('  # (e.g., in a virtual machine). Trying to run without /p.')
+    print('  set +x')
+    print('  echo >&2 "Retrying without /p."')
+    print('  E="$(echo "${E}" | sed -e \'s/\/p/\//\')"')
+    print('  set -x')
+    print('  exec perf record -e $E -b "$@"')
+    print(' set +x')
+    print('fi')
 
 if cpufound == 0 and not args.all:
     sys.exit('CPU %s not found' % cpu)

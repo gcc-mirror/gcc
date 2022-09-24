@@ -45,7 +45,7 @@ extern HOST_WIDE_INT arm_compute_initial_elimination_offset (unsigned int,
 							     unsigned int);
 extern HOST_WIDE_INT thumb_compute_initial_elimination_offset (unsigned int,
 							       unsigned int);
-extern unsigned int arm_dbx_register_number (unsigned int);
+extern unsigned int arm_debugger_regno (unsigned int);
 extern void arm_output_fn_unwind (FILE *, bool);
 
 extern rtx arm_expand_builtin (tree exp, rtx target, rtx subtarget
@@ -401,10 +401,6 @@ extern const char *arm_rewrite_selected_cpu (const char *name);
 extern void arm_lang_object_attributes_init (void);
 extern void arm_register_target_pragmas (void);
 extern void arm_cpu_cpp_builtins (struct cpp_reader *);
-
-/* Defined in arm-d.cc  */
-extern void arm_d_target_versions (void);
-extern void arm_d_register_target_info (void);
 
 extern bool arm_is_constant_pool_ref (rtx);
 

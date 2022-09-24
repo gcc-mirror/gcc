@@ -1069,7 +1069,8 @@ range_fold_binary_expr (value_range *vr,
     vr1.set_varying (expr_type);
   vr0.normalize_addresses ();
   vr1.normalize_addresses ();
-  op.fold_range (*vr, expr_type, vr0, vr1);
+  if (!op.fold_range (*vr, expr_type, vr0, vr1))
+    vr->set_varying (expr_type);
 }
 
 /* Perform a unary operation on a range.  */
@@ -1095,7 +1096,8 @@ range_fold_unary_expr (value_range *vr,
 
   value_range vr0_cst (*vr0);
   vr0_cst.normalize_addresses ();
-  op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
+  if (!op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type)))
+    vr->set_varying (expr_type);
 }
 
 /* If the range of values taken by OP can be inferred after STMT executes,

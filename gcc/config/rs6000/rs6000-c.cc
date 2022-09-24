@@ -1749,6 +1749,36 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   vec<tree, va_gc> *arglist = static_cast<vec<tree, va_gc> *> (passed_arglist);
   unsigned int nargs = vec_safe_length (arglist);
 
+  /* If the number of arguments did not match the prototype, return NULL
+     and the generic code will issue the appropriate error message.  Skip
+     this test for functions where we don't fully describe all the possible
+     overload signatures in rs6000-overload.def (because they aren't relevant
+     to the expansion here).  If we don't, we get confusing error messages.  */
+  /* As an example, for vec_splats we have:
+
+; There are no actual builtins for vec_splats.  There is special handling for
+; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
+; is replaced by a constructor.  The single overload here causes
+; __builtin_vec_splats to be registered with the front end so that can happen.
+[VEC_SPLATS, vec_splats, __builtin_vec_splats]
+  vsi __builtin_vec_splats (vsi);
+    ABS_V4SI SPLATS_FAKERY
+
+    So even though __builtin_vec_splats accepts all vector types, the
+    infrastructure cheats and just records one prototype.  We end up getting
+    an error message that refers to this specific prototype even when we
+    are handling a different argument type.  That is completely confusing
+    to the user, so it's best to let these cases be handled individually
+    in the resolve_vec_splats, etc., helper functions.  */
+
+  if (expected_args != nargs
+      && !(fcode == RS6000_OVLD_VEC_PROMOTE
+	   || fcode == RS6000_OVLD_VEC_SPLATS
+	   || fcode == RS6000_OVLD_VEC_EXTRACT
+	   || fcode == RS6000_OVLD_VEC_INSERT
+	   || fcode == RS6000_OVLD_VEC_STEP))
+    return NULL;
+
   for (n = 0;
        !VOID_TYPE_P (TREE_VALUE (fnargs)) && n < nargs;
        fnargs = TREE_CHAIN (fnargs), n++)
@@ -1808,36 +1838,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       args[n] = arg;
       types[n] = type;
     }
-
-  /* If the number of arguments did not match the prototype, return NULL
-     and the generic code will issue the appropriate error message.  Skip
-     this test for functions where we don't fully describe all the possible
-     overload signatures in rs6000-overload.def (because they aren't relevant
-     to the expansion here).  If we don't, we get confusing error messages.  */
-  /* As an example, for vec_splats we have:
-
-; There are no actual builtins for vec_splats.  There is special handling for
-; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
-; is replaced by a constructor.  The single overload here causes
-; __builtin_vec_splats to be registered with the front end so that can happen.
-[VEC_SPLATS, vec_splats, __builtin_vec_splats]
-  vsi __builtin_vec_splats (vsi);
-    ABS_V4SI SPLATS_FAKERY
-
-    So even though __builtin_vec_splats accepts all vector types, the
-    infrastructure cheats and just records one prototype.  We end up getting
-    an error message that refers to this specific prototype even when we
-    are handling a different argument type.  That is completely confusing
-    to the user, so it's best to let these cases be handled individually
-    in the resolve_vec_splats, etc., helper functions.  */
-
-  if (n != expected_args
-      && !(fcode == RS6000_OVLD_VEC_PROMOTE
-	   || fcode == RS6000_OVLD_VEC_SPLATS
-	   || fcode == RS6000_OVLD_VEC_EXTRACT
-	   || fcode == RS6000_OVLD_VEC_INSERT
-	   || fcode == RS6000_OVLD_VEC_STEP))
-    return NULL;
 
   /* Some overloads require special handling.  */
   tree returned_expr = NULL;

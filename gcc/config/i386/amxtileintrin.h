@@ -62,7 +62,7 @@ _tile_release (void)
 #define _tile_loadd_internal(dst,base,stride)				\
   __asm__ volatile							\
   ("{tileloadd\t(%0,%1,1), %%tmm"#dst"|tileloadd\t%%tmm"#dst", [%0+%1*1]}" \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_stream_loadd(dst,base,stride)		\
   _tile_stream_loadd_internal (dst, base, stride)
@@ -70,7 +70,7 @@ _tile_release (void)
 #define _tile_stream_loadd_internal(dst,base,stride)			\
   __asm__ volatile							\
   ("{tileloaddt1\t(%0,%1,1), %%tmm"#dst"|tileloaddt1\t%%tmm"#dst", [%0+%1*1]}" \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_stored(dst,base,stride)		\
   _tile_stored_internal (dst, base, stride)
@@ -78,7 +78,7 @@ _tile_release (void)
 #define _tile_stored_internal(src,base,stride)				\
   __asm__ volatile							\
   ("{tilestored\t%%tmm"#src", (%0,%1,1)|tilestored\t[%0+%1*1], %%tmm"#src"}" \
-   :: "r" ((void*) (base)), "r" ((long) (stride)) \
+   :: "r" ((void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)) \
    : "memory")
 
 #define _tile_zero(dst)				\

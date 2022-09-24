@@ -217,6 +217,7 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define List_Representation_Info	opt__list_representation_info
 #define No_Strict_Aliasing_CP		opt__no_strict_aliasing
 #define Suppress_Checks			opt__suppress_checks
+#define Unnest_Subprogram_Mode		opt__unnest_subprogram_mode
 
 typedef enum {
   Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions
@@ -233,6 +234,7 @@ extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
 extern Boolean No_Strict_Aliasing_CP;
 extern Boolean Suppress_Checks;
+extern Boolean Unnest_Subprogram_Mode;
 
 #define ZCX_Exceptions		opt__zcx_exceptions
 #define SJLJ_Exceptions		opt__sjlj_exceptions

@@ -509,11 +509,6 @@ package Exp_Util is
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
 
-   function Entry_Names_OK return Boolean;
-   --  Determine whether it is appropriate to dynamically allocate strings
-   --  which represent entry [family member] names. These strings are created
-   --  by the compiler and used by GDB.
-
    procedure Evaluate_Name (Nam : Node_Id);
    --  Remove all side effects from a name which appears as part of an object
    --  renaming declaration. Similarly to Force_Evaluation, it removes the

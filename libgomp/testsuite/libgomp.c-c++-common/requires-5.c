@@ -1,3 +1,4 @@
+/* { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } } */
 /* { dg-additional-sources requires-5-aux.c } */
 
 /* Depending on offload device capabilities, it may print something like the

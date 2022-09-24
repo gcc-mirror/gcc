@@ -46,11 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 
-/* This is the char to use for continuation (in case we need to turn
-   continuation back on).  */
-#undef DBX_CONTIN_CHAR
-#define DBX_CONTIN_CHAR '?'
-
 #undef  LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX  "."
 

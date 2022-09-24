@@ -190,7 +190,6 @@ package Snames is
    Name_uMaster                        : constant Name_Id := N + $;
    Name_uObject                        : constant Name_Id := N + $;
    Name_uPost                          : constant Name_Id := N + $;
-   Name_uPostconditions                : constant Name_Id := N + $;
    Name_uPostcond_Enabled              : constant Name_Id := N + $;
    Name_uPre                           : constant Name_Id := N + $;
    Name_uPriority                      : constant Name_Id := N + $;
@@ -208,6 +207,7 @@ package Snames is
    Name_uTask_Name                     : constant Name_Id := N + $;
    Name_uType_Invariant                : constant Name_Id := N + $;
    Name_uVariants                      : constant Name_Id := N + $;
+   Name_uWrapped_Statements            : constant Name_Id := N + $;
 
    --  Names of predefined primitives used in the expansion of dispatching
    --  requeue and select statements, Abort, 'Callable and 'Terminated.
@@ -600,12 +600,7 @@ package Snames is
    Name_Linker_Options                 : constant Name_Id := N + $;
    Name_Linker_Section                 : constant Name_Id := N + $; -- GNAT
    Name_List                           : constant Name_Id := N + $;
-
-   --  Note: Lock_Free is not in this list because its name matches the name of
-   --  the corresponding attribute. However, it is included in the definition
-   --  of the type Pragma_Id and the functions Get_Pragma_Id and Is_Pragma_Name
-   --  correctly recognize and process Lock_Free. Lock_Free is a GNAT pragma.
-
+   Name_Lock_Free                      : constant Name_Id := N + $; -- GNAT
    Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
    Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
@@ -787,6 +782,7 @@ package Snames is
    Name_Assertion                      : constant Name_Id := N + $;
    Name_Assertions                     : constant Name_Id := N + $;
    Name_Attribute_Name                 : constant Name_Id := N + $;
+   Name_Auto                           : constant Name_Id := N + $;
    Name_Body_File_Name                 : constant Name_Id := N + $;
    Name_Boolean_Entry_Barriers         : constant Name_Id := N + $;
    Name_By_Any                         : constant Name_Id := N + $;
@@ -978,7 +974,6 @@ package Snames is
    Name_Leading_Part                   : constant Name_Id := N + $;
    Name_Length                         : constant Name_Id := N + $;
    Name_Library_Level                  : constant Name_Id := N + $; -- GNAT
-   Name_Lock_Free                      : constant Name_Id := N + $; -- GNAT
    Name_Loop_Entry                     : constant Name_Id := N + $; -- GNAT
    Name_Machine_Emax                   : constant Name_Id := N + $;
    Name_Machine_Emin                   : constant Name_Id := N + $;
@@ -1503,7 +1498,6 @@ package Snames is
       Attribute_Leading_Part,
       Attribute_Length,
       Attribute_Library_Level,
-      Attribute_Lock_Free,
       Attribute_Loop_Entry,
       Attribute_Machine_Emax,
       Attribute_Machine_Emin,
@@ -1889,6 +1883,7 @@ package Snames is
       Pragma_Linker_Options,
       Pragma_Linker_Section,
       Pragma_List,
+      Pragma_Lock_Free,
       Pragma_Loop_Invariant,
       Pragma_Loop_Optimize,
       Pragma_Loop_Variant,
@@ -1981,7 +1976,6 @@ package Snames is
       Pragma_Fast_Math,
       Pragma_Interface,
       Pragma_Interrupt_Priority,
-      Pragma_Lock_Free,
       Pragma_Preelaborable_Initialization,
       Pragma_Priority,
       Pragma_Secondary_Stack_Size,
@@ -2073,10 +2067,10 @@ package Snames is
    function Is_Pragma_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized pragma. Note
    --  that pragmas CPU, Dispatching_Domain, Fast_Math, Interrupt_Priority,
-   --  Lock_Free, Priority, Storage_Size, and Storage_Unit are recognized
-   --  as pragmas by this function even though their names are separate from
-   --  the other pragma names. For this reason, clients should always use
-   --  this function, rather than do range tests on Name_Id values.
+   --  Priority, Storage_Size, and Storage_Unit are recognized as pragmas by
+   --  this function even though their names are separate from the other
+   --  pragma names. For this reason, clients should always use this function,
+   --  rather than do range tests on Name_Id values.
 
    function Is_Configuration_Pragma_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized configuration

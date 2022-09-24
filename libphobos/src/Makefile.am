@@ -127,11 +127,10 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
 	std/experimental/logger/multilogger.d \
 	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
-	std/experimental/typecons.d std/file.d std/format/internal/floats.d \
-	std/format/internal/read.d std/format/internal/write.d \
-	std/format/package.d std/format/read.d std/format/spec.d \
-	std/format/write.d std/functional.d std/getopt.d std/int128.d \
-	std/internal/attributes.d std/internal/cstring.d \
+	std/file.d std/format/internal/floats.d std/format/internal/read.d \
+	std/format/internal/write.d std/format/package.d std/format/read.d \
+	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
+	std/int128.d std/internal/attributes.d std/internal/cstring.d \
 	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
 	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
 	std/internal/memory.d std/internal/scopebuffer.d \
@@ -139,7 +138,9 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/internal/test/uda.d std/internal/unicode_comp.d \
 	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
 	std/internal/unicode_norm.d std/internal/unicode_tables.d \
-	std/internal/windows/advapi32.d std/json.d std/math/algebraic.d \
+	std/internal/windows/advapi32.d std/json.d std/logger/core.d \
+	std/logger/filelogger.d std/logger/multilogger.d \
+	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
 	std/math/constants.d std/math/exponential.d std/math/hardware.d \
 	std/math/operations.d std/math/package.d std/math/remainder.d \
 	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \

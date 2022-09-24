@@ -277,11 +277,21 @@ extern bool real_compare (int, const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *)
 /* Determine whether a floating-point value X is infinite.  */
 extern bool real_isinf (const REAL_VALUE_TYPE *);
 
+/* Determine whether a floating-point value X is infinite with SIGN.  */
+extern bool real_isinf (const REAL_VALUE_TYPE *, bool sign);
+
 /* Determine whether a floating-point value X is a NaN.  */
 extern bool real_isnan (const REAL_VALUE_TYPE *);
 
 /* Determine whether a floating-point value X is a signaling NaN.  */
 extern bool real_issignaling_nan (const REAL_VALUE_TYPE *);
+
+/* Determine whether a floating-point value X is a denormal.  */
+inline bool
+real_isdenormal (const REAL_VALUE_TYPE *r)
+{
+  return (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+}
 
 /* Determine whether a floating-point value X is finite.  */
 extern bool real_isfinite (const REAL_VALUE_TYPE *);
@@ -291,6 +301,12 @@ extern bool real_isneg (const REAL_VALUE_TYPE *);
 
 /* Determine whether a floating-point value X is minus zero.  */
 extern bool real_isnegzero (const REAL_VALUE_TYPE *);
+
+/* Determine whether a floating-point value X is plus or minus zero.  */
+extern bool real_iszero (const REAL_VALUE_TYPE *);
+
+/* Determine whether a floating-point value X is zero with SIGN.  */
+extern bool real_iszero (const REAL_VALUE_TYPE *, bool sign);
 
 /* Test relationships between reals.  */
 extern bool real_identical (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
@@ -331,7 +347,7 @@ extern long real_to_target (long *, const REAL_VALUE_TYPE *, format_helper);
 extern void real_from_target (REAL_VALUE_TYPE *, const long *,
 			      format_helper);
 
-extern void real_inf (REAL_VALUE_TYPE *);
+extern void real_inf (REAL_VALUE_TYPE *, bool sign = false);
 
 extern bool real_nan (REAL_VALUE_TYPE *, const char *, int, format_helper);
 
@@ -453,6 +469,8 @@ extern REAL_VALUE_TYPE dconst1;
 extern REAL_VALUE_TYPE dconst2;
 extern REAL_VALUE_TYPE dconstm1;
 extern REAL_VALUE_TYPE dconsthalf;
+extern REAL_VALUE_TYPE dconstinf;
+extern REAL_VALUE_TYPE dconstninf;
 
 #define dconst_e() (*dconst_e_ptr ())
 #define dconst_third() (*dconst_third_ptr ())

@@ -33,6 +33,7 @@
 #pragma GCC system_header
 
 #if __cplusplus > 201703L
+#include <initializer_list>
 #include <bits/iterator_concepts.h>
 #include <ext/numeric_traits.h>
 #include <bits/max_size_type.h>
@@ -778,7 +779,7 @@ namespace ranges
 	    else if (__n != 0) [[likely]]
 	      {
 		// n and bound must not lead in opposite directions:
-		__glibcxx_assert(__n < 0 == __diff < 0);
+		__glibcxx_assert((__n < 0) == (__diff < 0));
 
 		(*this)(__it, __n);
 		return 0;

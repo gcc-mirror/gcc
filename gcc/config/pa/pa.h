@@ -130,22 +130,12 @@ extern unsigned long total_code_bytes;
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_PA_20 ? 1 : 0)
 
-/* Override some settings from dbxelf.h.  */
-
 /* We do not have to be compatible with dbx, so we enable gdb extensions
    by default.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Select dwarf2 as the preferred debug format.  */
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-/* This used to be zero (no max length), but big enums and such can
-   cause huge strings which killed gas.
-
-   We also have to avoid lossage in dbxout.cc -- it does not compute the
-   string size accurately, so we are real conservative here.  */
-#undef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH 3000
 
 /* GDB always assumes the current function's frame begins at the value
    of the stack pointer upon entry to the current function.  Accessing
@@ -1309,10 +1299,6 @@ do {									     \
 #define MAX_PCREL17F_OFFSET (TARGET_HPUX ? 198164 : 217856)
 
 #define NEED_INDICATE_EXEC_STACK 0
-
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS pa_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO pa_d_register_target_info
 
 /* Output default function prologue for hpux.  */
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue

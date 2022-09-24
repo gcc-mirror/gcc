@@ -10,11 +10,11 @@
 #error "bad result for __nodiscard__"
 #endif
 
-#if __has_c_attribute(maybe_unused) != 201904L
+#if __has_c_attribute(maybe_unused) != 202106L
 #error "bad result for maybe_unused"
 #endif
 
-#if __has_c_attribute(__maybe_unused__) != 201904L
+#if __has_c_attribute(__maybe_unused__) != 202106L
 #error "bad result for __maybe_unused__"
 #endif
 
@@ -26,11 +26,11 @@
 #error "bad result for __deprecated__"
 #endif
 
-#if __has_c_attribute (fallthrough) != 201904L
+#if __has_c_attribute (fallthrough) != 201910L
 #error "bad result for fallthrough"
 #endif
 
-#if __has_c_attribute (__fallthrough__) != 201904L
+#if __has_c_attribute (__fallthrough__) != 201910L
 #error "bad result for __fallthrough__"
 #endif
 

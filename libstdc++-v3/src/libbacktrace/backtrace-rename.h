@@ -4,6 +4,7 @@
 #define backtrace_create_state __glibcxx_backtrace_create_state
 #define backtrace_dwarf_add __glibcxx_backtrace_dwarf_add
 #define backtrace_free __glibcxx_backtrace_free
+#define backtrace_full __glibcxx_backtrace_full
 #define backtrace_get_view __glibcxx_backtrace_get_view
 #define backtrace_initialize __glibcxx_backtrace_initialize
 #define backtrace_open __glibcxx_backtrace_open

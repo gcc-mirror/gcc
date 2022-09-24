@@ -508,27 +508,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
     "r8", "r9", "r10", "r11", "ap", "fp", "sp", "pc",	\
     "psl" }
 
-/* This is BSD, so it wants DBX format.  */
-
-#define DBX_DEBUGGING_INFO 1
-
-/* Do not break .stabs pseudos into continuations.  */
-
-#define DBX_CONTIN_LENGTH 0
-
-/* This is the char to use for continuation (in case we need to turn
-   continuation back on).  */
-
-#define DBX_CONTIN_CHAR '?'
-
-/* Don't use the `xsfoo;' construct in DBX output; this system
-   doesn't support it.  */
-
-#define DBX_NO_XREFS
-
-/* Output the .stabs for a C `static' variable in the data section.  */
-#define DBX_STATIC_STAB_DATA_SECTION
-
 /* VAX specific: which type character is used for type double?  */
 
 #define ASM_DOUBLE_CHAR (TARGET_G_FLOAT ? 'g' : 'd')

@@ -1317,8 +1317,8 @@ package body Erroutc is
             Name_Len := Name_Len - 1;
          end if;
 
-         --  If operator name or character literal name, just print it as is
-         --  Also print as is if it ends in a right paren (case of x'val(nnn))
+         --  If operator name or character literal name, just print it as is.
+         --  Also print as is if it ends in a right paren (case of x'val(nnn)).
 
          if Name_Buffer (1) = '"'
            or else Name_Buffer (1) = '''
@@ -1533,6 +1533,32 @@ package body Erroutc is
 
       elsif Text = "_TYPE_INVARIANT" then
          Set_Msg_Str ("TYPE_INVARIANT'CLASS");
+
+      --  Preserve casing for names that include acronyms
+
+      elsif Text = "Cpp_Class" then
+         Set_Msg_Str ("CPP_Class");
+
+      elsif Text = "Cpp_Constructor" then
+         Set_Msg_Str ("CPP_Constructor");
+
+      elsif Text = "Cpp_Virtual" then
+         Set_Msg_Str ("CPP_Virtual");
+
+      elsif Text = "Cpp_Vtable" then
+         Set_Msg_Str ("CPP_Vtable");
+
+      elsif Text = "Persistent_Bss" then
+         Set_Msg_Str ("Persistent_BSS");
+
+      elsif Text = "Spark_Mode" then
+         Set_Msg_Str ("SPARK_Mode");
+
+      elsif Text = "Use_Vads_Size" then
+         Set_Msg_Str ("Use_VADS_Size");
+
+      elsif Text = "Vads_Size" then
+         Set_Msg_Str ("VADS_size");
 
       --  Normal case with no replacement
 

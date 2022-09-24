@@ -1,3 +1,7 @@
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* testsuite/Makefile.in: Regenerate.
+
 2022-08-08  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/102218

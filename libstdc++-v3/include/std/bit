@@ -35,7 +35,7 @@
 
 #include <type_traits>
 
-#if _GLIBCXX_HOSTED
+#if _GLIBCXX_HOSTED || __has_include(<ext/numeric_traits.h>)
 # include <ext/numeric_traits.h>
 #else
 # include <limits>

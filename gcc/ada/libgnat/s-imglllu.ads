@@ -56,23 +56,11 @@ is
    subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
    package Impl is new Image_U
-     (Uns                                => Long_Long_Long_Unsigned,
-      Uns_Option                         => Val_LLLU.Impl.Uns_Option,
-      Unsigned_Width_Ghost               =>
+     (Uns                  => Long_Long_Long_Unsigned,
+      Unsigned_Width_Ghost =>
          Wid_LLLU.Width_Long_Long_Long_Unsigned
         (0, Long_Long_Long_Unsigned'Last),
-      Only_Decimal_Ghost                 => Val_LLLU.Impl.Only_Decimal_Ghost,
-      Hexa_To_Unsigned_Ghost             =>
-         Val_LLLU.Impl.Hexa_To_Unsigned_Ghost,
-      Wrap_Option                        => Val_LLLU.Impl.Wrap_Option,
-      Scan_Based_Number_Ghost            =>
-         Val_LLLU.Impl.Scan_Based_Number_Ghost,
-      Is_Unsigned_Ghost                  => Val_LLLU.Impl.Is_Unsigned_Ghost,
-      Value_Unsigned                     => Val_LLLU.Impl.Value_Unsigned,
-      Prove_Iter_Scan_Based_Number_Ghost =>
-         Val_LLLU.Impl.Prove_Iter_Scan_Based_Number_Ghost,
-      Prove_Scan_Only_Decimal_Ghost      =>
-         Val_LLLU.Impl.Prove_Scan_Only_Decimal_Ghost);
+      Uns_Params           => System.Val_LLLU.Impl.Spec.Uns_Params);
 
    procedure Image_Long_Long_Long_Unsigned
      (V : Long_Long_Long_Unsigned;

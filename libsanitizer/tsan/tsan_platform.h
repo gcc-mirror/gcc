@@ -394,6 +394,7 @@ struct MappingGo48 {
 0300 0000 0000 - 0700 0000 0000: -
 0700 0000 0000 - 0770 0000 0000: metainfo (memory blocks and sync objects)
 07d0 0000 0000 - 8000 0000 0000: -
+PIE binaries currently not supported, but it should be theoretically possible.
 */
 
 struct MappingGoWindows {
@@ -587,7 +588,7 @@ ALWAYS_INLINE auto SelectMapping(Arg arg) {
 #else  // SANITIZER_GO
 #  if SANITIZER_IOS && !SANITIZER_IOSSIM
   return Func::template Apply<MappingAppleAarch64>(arg);
-#  elif defined(__x86_64__) || SANITIZER_MAC
+#  elif defined(__x86_64__) || SANITIZER_APPLE
   return Func::template Apply<Mapping48AddressSpace>(arg);
 #  elif defined(__aarch64__)
   switch (vmaSize) {

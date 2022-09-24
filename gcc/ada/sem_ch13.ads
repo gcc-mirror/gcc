@@ -324,6 +324,36 @@ package Sem_Ch13 is
    --  Given an entity Typ that denotes a derived type or a subtype, this
    --  routine performs the inheritance of aspects at the freeze point.
 
+   --  ??? Note that, for now, just a limited number of representation aspects
+   --  have been inherited here so far. Many of them are still inherited in
+   --  Sem_Ch3 and need to be dealt with. Here is a non-exhaustive list of
+   --  aspects that likely also need to be moved to this routine: Alignment,
+   --  Component_Alignment, Component_Size, Machine_Radix, Object_Size, Pack,
+   --  Predicates, Preelaborable_Initialization, Size and Small.
+
+   procedure Inherit_Delayed_Rep_Aspects (Typ : Entity_Id);
+   --  As discussed in the spec of Aspects (see Aspect_Delay declaration),
+   --  a derived type can inherit aspects from its parent which have been
+   --  specified at the time of the derivation using an aspect, as in:
+   --
+   --    type A is range 1 .. 10
+   --      with Size => Not_Defined_Yet;
+   --    ..
+   --    type B is new A;
+   --    ..
+   --    Not_Defined_Yet : constant := 64;
+   --
+   --  In this example, the Size of A is considered to be specified prior
+   --  to the derivation, and thus inherited, even though the value is not
+   --  known at the time of derivation. To deal with this, we use two entity
+   --  flags. The flag Has_Derived_Rep_Aspects is set in the parent type (A
+   --  here), and then the flag May_Inherit_Delayed_Rep_Aspects is set in
+   --  the derived type (B here). If this flag is set when the derived type
+   --  is frozen, then this procedure is called to ensure proper inheritance
+   --  of all delayed aspects from the parent type.
+
+   --  ??? Obviously we ought not to have two mechanisms to do the same thing
+
    procedure Resolve_Aspect_Expressions (E : Entity_Id);
    --  Name resolution of an aspect expression happens at the end of the
    --  current declarative part or at the freeze point for the entity,

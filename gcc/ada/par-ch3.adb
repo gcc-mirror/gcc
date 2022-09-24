@@ -145,10 +145,7 @@ package body Ch3 is
 
       --  Here if := or something that we will take as equivalent
 
-      elsif Token = Tok_Colon_Equal
-        or else Token = Tok_Equal
-        or else Token = Tok_Is
-      then
+      elsif Token in Tok_Colon_Equal | Tok_Equal | Tok_Is then
          null;
 
       --  Another possibility. If we have a literal followed by a semicolon,
@@ -400,9 +397,7 @@ package body Ch3 is
          --  Ada 2005 (AI-419): AARM 3.4 (2/2)
 
          if (Ada_Version < Ada_2005 and then Token = Tok_Limited)
-           or else Token = Tok_Private
-           or else Token = Tok_Record
-           or else Token = Tok_Null
+           or else Token in Tok_Private | Tok_Record | Tok_Null
          then
             Error_Msg_AP ("TAGGED expected");
          end if;
@@ -610,7 +605,7 @@ package body Ch3 is
 
                --  LIMITED RECORD or LIMITED NULL RECORD
 
-               if Token = Tok_Record or else Token = Tok_Null then
+               if Token in Tok_Record | Tok_Null then
                   if Ada_Version = Ada_83 then
                      Error_Msg_SP
                        ("(Ada 83) limited record declaration not allowed!");
@@ -1005,7 +1000,7 @@ package body Ch3 is
       Type_Node : Node_Id;
 
    begin
-      if Token = Tok_Identifier or else Token = Tok_Operator_Symbol then
+      if Token in Tok_Identifier | Tok_Operator_Symbol then
          Type_Node := P_Subtype_Mark;
          return P_Subtype_Indication (Type_Node, Not_Null_Present);
 
@@ -2095,10 +2090,7 @@ package body Ch3 is
 
       --  OK, not an aspect specification, so continue test for extension
 
-      elsif Token = Tok_With
-        or else Token = Tok_Record
-        or else Token = Tok_Null
-      then
+      elsif Token in Tok_With | Tok_Record | Tok_Null then
          T_With; -- past WITH or give error message
 
          if Token = Tok_Limited then
@@ -2279,7 +2271,7 @@ package body Ch3 is
 
          --  Check for error of DIGITS or DELTA after a subtype mark
 
-         elsif Token = Tok_Digits or else Token = Tok_Delta then
+         elsif Token in Tok_Digits | Tok_Delta then
             Error_Msg_SC
               ("accuracy definition not allowed in membership test");
             Scan; -- past DIGITS or DELTA
@@ -2850,7 +2842,7 @@ package body Ch3 is
                Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
             end if;
 
-            exit when Token = Tok_Right_Paren or else Token = Tok_Of;
+            exit when Token in Tok_Right_Paren | Tok_Of;
             T_Comma;
          end loop;
 
@@ -2865,7 +2857,7 @@ package body Ch3 is
       --  constrained_array_definition, which will be processed further below.
 
       elsif Prev_Token = Tok_Range
-        and then Token /= Tok_Right_Paren and then Token /= Tok_Comma
+        and then Token not in Tok_Right_Paren | Tok_Comma
       then
          --  If we have an expression followed by "..", then scan farther
          --  and check for "<>" to see if we have a fixed-lower-bound range.
@@ -2920,7 +2912,7 @@ package body Ch3 is
                        ("fixed-lower-bound array", Token_Ptr);
                   end if;
 
-                  exit when Token = Tok_Right_Paren or else Token = Tok_Of;
+                  exit when Token in Tok_Right_Paren | Tok_Of;
                   T_Comma;
                end loop;
 
@@ -3382,7 +3374,7 @@ package body Ch3 is
             Save_Scan_State (Scan_State); -- at Id
             Scan; -- past Id
 
-            if Token = Tok_Arrow or else Token = Tok_Vertical_Bar then
+            if Token in Tok_Arrow | Tok_Vertical_Bar then
                Restore_Scan_State (Scan_State); -- to Id
                Append (P_Discriminant_Association, Constr_List);
                goto Loop_Continue;
@@ -3644,7 +3636,7 @@ package body Ch3 is
          --  If we have an END or WHEN now, everything is fine, otherwise we
          --  complain about the null, ignore it, and scan for more components.
 
-         if Token = Tok_End or else Token = Tok_When then
+         if Token in Tok_End | Tok_When then
             Set_Null_Present (Component_List_Node, True);
             return Component_List_Node;
          else
@@ -3657,13 +3649,11 @@ package body Ch3 is
       P_Pragmas_Opt (Decls_List);
 
       if Token /= Tok_Case then
-         Component_Scan_Loop : loop
+         loop
             P_Component_Items (Decls_List);
             P_Pragmas_Opt (Decls_List);
 
-            exit Component_Scan_Loop when Token = Tok_End
-              or else Token = Tok_Case
-              or else Token = Tok_When;
+            exit when Token in Tok_End | Tok_Case | Tok_When;
 
             --  We are done if we do not have an identifier. However, if we
             --  have a misspelled reserved identifier that is in a column to
@@ -3679,7 +3669,7 @@ package body Ch3 is
                   Save_Scan_State (Scan_State); -- at reserved id
                   Scan; -- possible reserved id
 
-                  if Token = Tok_Comma or else Token = Tok_Colon then
+                  if Token in Tok_Comma | Tok_Colon then
                      Restore_Scan_State (Scan_State);
                      Scan_Reserved_Identifier (Force_Msg => True);
 
@@ -3688,16 +3678,16 @@ package body Ch3 is
 
                   else
                      Restore_Scan_State (Scan_State);
-                     exit Component_Scan_Loop;
+                     exit;
                   end if;
 
                   --  Non-identifier that definitely was not reserved id
 
                else
-                  exit Component_Scan_Loop;
+                  exit;
                end if;
             end if;
-         end loop Component_Scan_Loop;
+         end loop;
       end if;
 
       if Token = Tok_Case then
@@ -3948,10 +3938,7 @@ package body Ch3 is
       loop
          P_Pragmas_Opt (Variants_List);
 
-         if Token /= Tok_When
-           and then Token /= Tok_If
-           and then Token /= Tok_Others
-         then
+         if Token not in Tok_When | Tok_If | Tok_Others then
             exit when Check_End;
          end if;
 
@@ -4267,14 +4254,12 @@ package body Ch3 is
          Saved_State : Saved_Scan_State;
 
       begin
-         if Token = Tok_Identifier or else Token = Tok_Operator_Symbol then
+         if Token in Tok_Identifier | Tok_Operator_Symbol then
             Save_Scan_State (Saved_State);
             Scan; -- past possible junk subprogram name
 
-            if Token = Tok_Left_Paren or else Token = Tok_Semicolon then
+            if Token in Tok_Left_Paren | Tok_Semicolon then
                Error_Msg_SP ("unexpected subprogram name ignored");
-               return;
-
             else
                Restore_Scan_State (Saved_State);
             end if;
@@ -4327,7 +4312,7 @@ package body Ch3 is
       if Prot_Flag then
          Scan; -- past PROTECTED
 
-         if Token /= Tok_Procedure and then Token /= Tok_Function then
+         if Token not in Tok_Procedure | Tok_Function then
             Error_Msg_SC -- CODEFIX
               ("FUNCTION or PROCEDURE expected");
          end if;
@@ -4402,7 +4387,7 @@ package body Ch3 is
          Set_Null_Exclusion_Present (Type_Def_Node, Not_Null_Present);
          Set_Null_Excluding_Subtype (Type_Def_Node, Not_Null_Subtype);
 
-         if Token = Tok_All or else Token = Tok_Constant then
+         if Token in Tok_All | Tok_Constant then
             if Ada_Version = Ada_83 then
                Error_Msg_SC ("(Ada 83) access modifier not allowed!");
             end if;
@@ -4472,10 +4457,7 @@ package body Ch3 is
 
       --  Ada 2005 (AI-254): Access_To_Subprogram_Definition
 
-      if Token = Tok_Protected
-        or else Token = Tok_Procedure
-        or else Token = Tok_Function
-      then
+      if Token in Tok_Protected | Tok_Procedure | Tok_Function then
          Error_Msg_Ada_2005_Extension ("access-to-subprogram");
 
          Subp_Node := P_Access_Type_Definition (Header_Already_Parsed => True);
@@ -4629,7 +4611,6 @@ package body Ch3 is
                   end if;
 
                   Done := True;
-                  return;
                else
                   Append (P_Representation_Clause, Decls);
                end if;
@@ -4873,10 +4854,9 @@ package body Ch3 is
                --  If reserved identifier not followed by colon or comma, then
                --  this is most likely an assignment statement to the bad id.
 
-               if Token /= Tok_Colon and then Token /= Tok_Comma then
+               if Token not in Tok_Colon | Tok_Comma then
                   Restore_Scan_State (Scan_State);
                   Statement_When_Declaration_Expected (Decls, Done, In_Spec);
-                  return;
 
                --  Otherwise we have a declaration of the bad id
 
@@ -4892,7 +4872,6 @@ package body Ch3 is
 
             else
                Statement_When_Declaration_Expected (Decls, Done, In_Spec);
-               return;
             end if;
 
          --  The token RETURN may well also signal a missing BEGIN situation,
@@ -4941,7 +4920,7 @@ package body Ch3 is
                Save_Scan_State (Scan_State);
                Scan; -- past the token
 
-               if Token /= Tok_Colon and then Token /= Tok_Comma then
+               if Token not in Tok_Colon | Tok_Comma then
                   Restore_Scan_State (Scan_State);
                   Set_Declaration_Expected;
                   raise Error_Resync;

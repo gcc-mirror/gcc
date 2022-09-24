@@ -74,13 +74,10 @@ extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
 extern bool riscv_gpr_save_operation_p (rtx);
+extern void riscv_reinit (void);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
-
-/* Routines implemented in riscv-d.cc  */
-extern void riscv_d_target_versions (void);
-extern void riscv_d_register_target_info (void);
 
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
@@ -90,6 +87,7 @@ extern void riscv_init_builtins (void);
 
 /* Routines implemented in riscv-common.cc.  */
 extern std::string riscv_arch_str (bool version_p = true);
+extern void riscv_parse_arch_string (const char *, struct gcc_options *, location_t);
 
 extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
@@ -108,5 +106,12 @@ struct riscv_cpu_info {
 };
 
 extern const riscv_cpu_info *riscv_find_cpu (const char *);
+
+/* Routines implemented in riscv-selftests.cc.  */
+#if CHECKING_P
+namespace selftest {
+extern void riscv_run_selftests (void);
+} // namespace selftest
+#endif
 
 #endif /* ! GCC_RISCV_PROTOS_H */

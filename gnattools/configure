@@ -2092,8 +2092,6 @@ case "${target}" in
     mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
     indepsw.adb<indepsw-gnu.adb"
     ;;
-  hppa*-hp-hpux10*)
-    ;;
   hppa*-hp-hpux11*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-hpux.adb"
     ;;

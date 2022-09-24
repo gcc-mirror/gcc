@@ -57,9 +57,9 @@ is
    type Set is tagged private
    with Constant_Indexing => Constant_Reference,
         Default_Iterator  => Iterate,
-        Iterator_Element  => Element_Type;
-        --  Aggregate         => (Empty       => Empty,
-        --                        Add_Unnamed => Include);
+        Iterator_Element  => Element_Type,
+        Aggregate         => (Empty       => Empty,
+                              Add_Unnamed => Include);
 
    pragma Preelaborable_Initialization (Set);
 

@@ -27,5 +27,5 @@ int main()
 {
   typedef std::wstring string_type;
   string_type s;
-  s[1]; // abort
+  (void) s[1]; // abort
 }
