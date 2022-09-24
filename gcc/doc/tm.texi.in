@@ -53,6 +53,7 @@ through the macros defined in the @file{.h} file.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
 * D Language and ABI::  Controlling D ABI changes.
+* Rust Language and ABI:: Controlling Rust ABI changes.
 * Named Address Spaces:: Adding support for named address spaces
 * Misc::                Everything else.
 @end menu
@@ -7142,6 +7143,12 @@ floating-point support; they are not included in this mechanism.
 @hook TARGET_D_HAS_STDCALL_CONVENTION
 
 @hook TARGET_D_TEMPLATES_ALWAYS_COMDAT
+
+@node Rust Language and ABI
+@section Rust ABI parameters
+@cindex parameters, rust abi
+
+@hook TARGET_RUST_CPU_INFO
 
 @node Named Address Spaces
 @section Adding support for named address spaces

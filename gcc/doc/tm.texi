@@ -53,6 +53,7 @@ through the macros defined in the @file{.h} file.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
 * D Language and ABI::  Controlling D ABI changes.
+* Rust Language and ABI:: Controlling Rust ABI changes.
 * Named Address Spaces:: Adding support for named address spaces
 * Misc::                Everything else.
 @end menu
@@ -10961,6 +10962,18 @@ This flag is true if instantiated functions and variables are always COMDAT
 if they have external linkage.  If this flag is false, then instantiated
 decls will be emitted as weak symbols.  The default is @code{false}.
 @end deftypevr
+
+@node Rust Language and ABI
+@section Rust ABI parameters
+@cindex parameters, rust abi
+
+@deftypefn {Rust Target Hook} void TARGET_RUST_CPU_INFO (void)
+Declare all environmental CPU info and features relating to the target CPU
+using the function @code{rust_add_target_info}, which takes a string
+representing the feature key and a string representing the feature value.
+Configuration pairs predefined by this hook apply to all files that are being
+compiled.
+@end deftypefn
 
 @node Named Address Spaces
 @section Adding support for named address spaces
