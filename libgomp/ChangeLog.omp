@@ -1,3 +1,11 @@
+2022-09-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* testsuite/libgomp.c-c++-common/pr106981.c: New test.
+
 2022-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
