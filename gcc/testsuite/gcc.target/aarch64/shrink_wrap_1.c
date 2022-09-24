@@ -1,5 +1,5 @@
 /* { dg-do compile { target { aarch64*-*-* } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-stack-protector" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*
