@@ -644,6 +644,7 @@ ISLLIBS
 GMPINC
 GMPLIBS
 target_cpu_default
+rust_target_objs
 d_target_objs
 fortran_target_objs
 cxx_target_objs
@@ -652,6 +653,8 @@ use_gcc_stdint
 xm_defines
 xm_include_list
 xm_file_list
+tm_rust_include_list
+tm_rust_file_list
 tm_d_include_list
 tm_d_file_list
 tm_p_include_list
@@ -13427,6 +13430,17 @@ for f in $tm_d_file; do
   esac
 done
 
+tm_rust_file_list=
+tm_rust_include_list=
+for f in $tm_rust_file; do
+  case $f in
+    * )
+       tm_rust_file_list="${tm_rust_file_list} \$(srcdir)/config/$f"
+       tm_rust_include_list="${tm_rust_include_list} config/$f"
+       ;;
+  esac
+done
+
 xm_file_list=
 xm_include_list=
 for f in $xm_file; do
@@ -19689,7 +19703,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19692 "configure"
+#line 19706 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19795,7 +19809,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19798 "configure"
+#line 19812 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31579,6 +31593,9 @@ fi
 
 
 # Substitute configuration variables
+
+
+
 
 
 

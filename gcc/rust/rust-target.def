@@ -1,0 +1,32 @@
+/* Target hook definitions for the Rust front end.
+   Copyright (C) 2022 Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* See target-hooks-macros.h for details of macros that should be
+   provided by the including file, and how to use them here.  */
+
+#include "target-hooks-macros.h"
+
+#undef HOOK_TYPE
+#define HOOK_TYPE "Rust Target Hook"
+
+HOOK_VECTOR (TARGETRUSTM_INITIALIZER, gcc_targetrustm)
+
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_"
+
+/* Close the 'struct gcc_targetrustm' definition.  */
+HOOK_VECTOR_END (C90_EMPTY_HACK)
