@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -funroll-loops" } */
+/* { dg-options "-O2 -funroll-loops -fno-stack-protector" } */
 
 typedef int v2 __attribute__((vector_size(8)));
 
