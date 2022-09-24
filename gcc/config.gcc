@@ -90,6 +90,9 @@
 #  tm_d_file		A list of headers with definitions of target hook
 #			macros for the D compiler.
 #
+#  tm_rust_file		list of headers with definitions of target hook
+#			macros for the Rust compiler.
+#
 #  out_file		The name of the machine description C support
 #			file, if different from "$cpu_type/$cpu_type.c".
 #
@@ -149,6 +152,9 @@
 #  fortran_target_objs	List of extra target-dependent objects that be
 #			linked into the fortran compiler only.
 #
+#  rust_target_objs	List of extra target-dependent objects that be
+#			linked into the Rust compiler only.
+#
 #  target_gtfiles       List of extra source files with type information.
 #
 #  xm_defines		List of macros to define when compiling for the
@@ -201,6 +207,9 @@
 #
 #  target_has_targetdm	Set to yes or no depending on whether the target
 #			has its own definition of targetdm.
+#
+#  target_has_targetrustm	Set to yes or no depending on whether the target
+#			has its own definition of targetrustm.
 
 out_file=
 common_out_file=
@@ -218,9 +227,11 @@ c_target_objs=
 cxx_target_objs=
 d_target_objs=
 fortran_target_objs=
+rust_target_objs=
 target_has_targetcm=no
 target_has_targetm_common=yes
 target_has_targetdm=no
+target_has_targetrustm=no
 tm_defines=
 xm_defines=
 # Set this to force installation and use of collect2.
@@ -589,6 +600,16 @@ tm_d_file=
 if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-d.h
 then
 	tm_d_file="${tm_d_file} ${cpu_type}/${cpu_type}-d.h"
+fi
+
+tm_rust_file=
+if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-rust.h
+then
+	tm_rust_file="${cpu_type}/${cpu_type}-rust.h"
+fi
+if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-rust.cc
+then
+	rust_target_objs="${rust_target_objs} ${cpu_type}-rust.o"
 fi
 
 extra_modes=
@@ -3605,6 +3626,10 @@ fi
 
 if [ "$target_has_targetdm" = "no" ]; then
   d_target_objs="$d_target_objs default-d.o"
+fi
+
+if [ "$target_has_targetrustm" = "no" ]; then
+  rust_target_objs="$rust_target_objs default-rust.o"
 fi
 
 # Support for --with-cpu and related options (and a few unrelated options,

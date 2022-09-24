@@ -115,6 +115,14 @@ initialize @code{targetdm} themselves, they should set
 @code{target_has_targetdm=yes} in @file{config.gcc}; otherwise a default
 definition is used.
 
+Similarly, there is a @code{targetrustm} variable for hooks that are
+specific to the Rust language front end, documented as ``Rust Target
+Hook''.  This is declared in @file{rust/rust-target.h}, the initializer
+@code{TARGETRUSTM_INITIALIZER} in @file{rust/rust-target-def.h}.
+If targets initialize @code{targetrustm} themselves, they should set
+@code{target_has_targetrustm=yes} in @file{config.gcc}; otherwise a
+default definition is used.
+
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
 @cindex driver
