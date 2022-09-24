@@ -28,5 +28,17 @@ HOOK_VECTOR (TARGETRUSTM_INITIALIZER, gcc_targetrustm)
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
 
+/* Environmental CPU info and features (e.g. endianness, pointer size) relating
+   to the target CPU.  */
+DEFHOOK
+(rust_cpu_info,
+ "Declare all environmental CPU info and features relating to the target CPU\n\
+using the function @code{rust_add_target_info}, which takes a string\n\
+representing the feature key and a string representing the feature value.\n\
+Configuration pairs predefined by this hook apply to all files that are being\n\
+compiled.",
+ void, (void),
+ hook_void_void)
+
 /* Close the 'struct gcc_targetrustm' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

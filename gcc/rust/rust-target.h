@@ -25,6 +25,10 @@
 
 #include "rust-target.def"
 
+/* Used by target to add target-related info.  */
+extern void
+rust_add_target_info (const char *, const char *);
+
 /* Each target can provide their own.  */
 extern struct gcc_targetrustm targetrustm;
 

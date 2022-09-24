@@ -42,7 +42,8 @@
 #include "diagnostic.h"
 #include "input.h"
 #include "selftest.h"
-#include "target.h"
+#include "tm.h"
+#include "rust-target.h"
 
 extern bool
 saw_errors (void);
@@ -135,6 +136,10 @@ validate_crate_name (const std::string &crate_name, Error &error)
 void
 Session::init ()
 {
+  // initialize target hooks
+  targetrustm.rust_cpu_info ();
+
+  // target-independent values that should exist in all targets
   options.target_data.insert_key_value_pair ("target_pointer_width",
 					     std::to_string (POINTER_SIZE));
   options.target_data.insert_key_value_pair ("target_endian", BYTES_BIG_ENDIAN
