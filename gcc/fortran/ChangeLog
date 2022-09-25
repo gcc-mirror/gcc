@@ -1,3 +1,12 @@
+2022-09-24  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100245
+	* trans-expr.c (trans_class_assignment): Add if clause to handle
+	derived type in the LHS.
+
 2022-09-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
