@@ -1084,8 +1084,10 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
     return;
 
   /* Test for FULL_ARRAY.  */
-  if (e->rank == 0 && gfc_expr_attr (e).codimension
-      && gfc_expr_attr (e).dimension)
+  if (e->rank == 0
+      && ((gfc_expr_attr (e).codimension && gfc_expr_attr (e).dimension)
+	  || (class_ts.u.derived->components->as
+	      && class_ts.u.derived->components->as->type == AS_ASSUMED_RANK)))
     full_array = true;
   else
     gfc_is_class_array_ref (e, &full_array);
@@ -1133,8 +1135,12 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 	  && e->rank != class_ts.u.derived->components->as->rank)
 	{
 	  if (e->rank == 0)
-	    gfc_add_modify (&parmse->post, gfc_class_data_get (parmse->expr),
-			    gfc_conv_descriptor_data_get (ctree));
+	    {
+	      tmp = gfc_class_data_get (parmse->expr);
+	      gfc_add_modify (&parmse->post, tmp,
+			      fold_convert (TREE_TYPE (tmp),
+					 gfc_conv_descriptor_data_get (ctree)));
+	    }
 	  else
 	    class_array_data_assign (&parmse->post, parmse->expr, ctree, true);
 	}
@@ -6096,23 +6102,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    base_object = build_fold_indirect_ref_loc (input_location,
 							       parmse.expr);
 
-		  /* A class array element needs converting back to be a
-		     class object, if the formal argument is a class object.  */
-		  if (fsym && fsym->ts.type == BT_CLASS
-			&& e->ts.type == BT_CLASS
-			&& ((CLASS_DATA (fsym)->as
-			     && CLASS_DATA (fsym)->as->type == AS_ASSUMED_RANK)
-			    || CLASS_DATA (e)->attr.dimension))
-		    gfc_conv_class_to_class (&parmse, e, fsym->ts, false,
-				     fsym->attr.intent != INTENT_IN
-				     && (CLASS_DATA (fsym)->attr.class_pointer
-					 || CLASS_DATA (fsym)->attr.allocatable),
-				     fsym->attr.optional
-				     && e->expr_type == EXPR_VARIABLE
-				     && e->symtree->n.sym->attr.optional,
-				     CLASS_DATA (fsym)->attr.class_pointer
-				     || CLASS_DATA (fsym)->attr.allocatable);
-
 		  /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
 		     allocated on entry, it must be deallocated.  */
 		  if (fsym && fsym->attr.intent == INTENT_OUT
@@ -6171,6 +6160,23 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		      gfc_add_expr_to_block (&se->pre, tmp);
 		    }
+
+		  /* A class array element needs converting back to be a
+		     class object, if the formal argument is a class object.  */
+		  if (fsym && fsym->ts.type == BT_CLASS
+			&& e->ts.type == BT_CLASS
+			&& ((CLASS_DATA (fsym)->as
+			     && CLASS_DATA (fsym)->as->type == AS_ASSUMED_RANK)
+			    || CLASS_DATA (e)->attr.dimension))
+		    gfc_conv_class_to_class (&parmse, e, fsym->ts, false,
+				     fsym->attr.intent != INTENT_IN
+				     && (CLASS_DATA (fsym)->attr.class_pointer
+					 || CLASS_DATA (fsym)->attr.allocatable),
+				     fsym->attr.optional
+				     && e->expr_type == EXPR_VARIABLE
+				     && e->symtree->n.sym->attr.optional,
+				     CLASS_DATA (fsym)->attr.class_pointer
+				     || CLASS_DATA (fsym)->attr.allocatable);
 
 		  if (fsym && (fsym->ts.type == BT_DERIVED
 			       || fsym->ts.type == BT_ASSUMED)
