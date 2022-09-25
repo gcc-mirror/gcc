@@ -1,3 +1,19 @@
+2022-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::is_always_equal):
+	Only instantiate is_empty if needed.
+	* include/bits/ptr_traits.h (__ptr_traits_impl::difference_type)
+	(__ptr_traits_impl::rebind): Use __detected_or.
+	* include/experimental/type_traits (is_same_v): Add a partial
+	specialization instead of instantiating the std::is_same class
+	template.
+	(detected_t): Redefine in terms of detected_or_t.
+	(is_detected, is_detected_v): Redefine in terms of detected_t.
+	* include/std/type_traits [__cpp_concepts] (__detected_or): Add
+	new definition using concepts.
+	(__detector::value_t): Rename to __is_detected.
+	* testsuite/17_intro/names.cc: Check value_t isn't used.
+
 2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/is_assignable/requirements/access.cc:

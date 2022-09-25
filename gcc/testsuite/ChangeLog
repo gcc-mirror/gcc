@@ -1,3 +1,13 @@
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107001
+	* c-c++-common/gomp/pr107001.c: New test.
+
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* c-c++-common/gomp/pr106981.c: New test.
+
 2022-09-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-complit-1.c, gcc.dg/c2x-concat-1.c,

@@ -1,3 +1,10 @@
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* c-typeck.cc (c_tree_equal): Only strip NON_LVALUE_EXPRs at the
+	start.  For CONSTANT_CLASS_P or CASE_CONVERT: return false if t1 and
+	t2 have different types.
+
 2022-09-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/106830

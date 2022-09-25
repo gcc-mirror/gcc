@@ -1,3 +1,14 @@
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107001
+	* omp-low.cc (lower_omp_taskgroup): Don't add GOMP_RETURN statement
+	at the end.
+	* omp-expand.cc (build_omp_regions_1): Clarify GF_OMP_TARGET_KIND_DATA
+	is not stand-alone directive.  For GIMPLE_OMP_TASKGROUP, also don't
+	update parent.
+	(omp_make_gimple_edges) <case GIMPLE_OMP_TASKGROUP>: Reset
+	cur_region back after new_omp_region.
+
 2022-09-23  Vineet Gupta  <vineetg@rivosinc.com>
 
 	* config/riscv/riscv.h (LOCAL_SYM_P): New.
