@@ -435,28 +435,14 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 		}
 	      /* For other local defs process their uses, amending
 		 imports on the way.  */
-	      else if (gassign *ass = dyn_cast <gassign *> (def_stmt))
+	      else
 		{
 		  tree ssa[3];
-		  if (range_op_handler (ass))
-		    {
-		      ssa[0] = gimple_range_ssa_p (gimple_range_operand1 (ass));
-		      ssa[1] = gimple_range_ssa_p (gimple_range_operand2 (ass));
-		      ssa[2] = NULL_TREE;
-		    }
-		  else if (gimple_assign_rhs_code (ass) == COND_EXPR)
-		    {
-		      ssa[0] = gimple_range_ssa_p (gimple_assign_rhs1 (ass));
-		      ssa[1] = gimple_range_ssa_p (gimple_assign_rhs2 (ass));
-		      ssa[2] = gimple_range_ssa_p (gimple_assign_rhs3 (ass));
-		    }
-		  else
-		    continue;
-		  for (unsigned j = 0; j < 3; ++j)
+		  unsigned lim = gimple_range_ssa_names (ssa, 3, def_stmt);
+		  for (unsigned j = 0; j < lim; ++j)
 		    {
 		      tree rhs = ssa[j];
 		      if (rhs
-			  && TREE_CODE (rhs) == SSA_NAME
 			  && bitmap_set_bit (m_imports,
 					     SSA_NAME_VERSION (rhs)))
 			{

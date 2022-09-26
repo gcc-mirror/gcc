@@ -22,6 +22,147 @@ along with GCC; see the file COPYING3.  If not see
 FLOAT_MODE (HF, 2, ieee_half_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
 
+/* Vector modes.  */
+
+/* Encode the ratio of SEW/LMUL into the mask types. There are the following
+ * mask types.  */
+
+/* | Mode     | MIN_VLEN = 32 | MIN_VLEN = 64 |
+   |          | SEW/LMUL      | SEW/LMUL      |
+   | VNx1BI   | 32            | 64            |
+   | VNx2BI   | 16            | 32            |
+   | VNx4BI   | 8             | 16            |
+   | VNx8BI   | 4             | 8             |
+   | VNx16BI  | 2             | 4             |
+   | VNx32BI  | 1             | 2             |
+   | VNx64BI  | N/A           | 1             |  */
+
+VECTOR_BOOL_MODE (VNx1BI, 1, BI, 8);
+VECTOR_BOOL_MODE (VNx2BI, 2, BI, 8);
+VECTOR_BOOL_MODE (VNx4BI, 4, BI, 8);
+VECTOR_BOOL_MODE (VNx8BI, 8, BI, 8);
+VECTOR_BOOL_MODE (VNx16BI, 16, BI, 8);
+VECTOR_BOOL_MODE (VNx32BI, 32, BI, 8);
+VECTOR_BOOL_MODE (VNx64BI, 64, BI, 8);
+
+ADJUST_NUNITS (VNx1BI, riscv_vector_chunks * 1);
+ADJUST_NUNITS (VNx2BI, riscv_vector_chunks * 2);
+ADJUST_NUNITS (VNx4BI, riscv_vector_chunks * 4);
+ADJUST_NUNITS (VNx8BI, riscv_vector_chunks * 8);
+ADJUST_NUNITS (VNx16BI, riscv_vector_chunks * 16);
+ADJUST_NUNITS (VNx32BI, riscv_vector_chunks * 32);
+ADJUST_NUNITS (VNx64BI, riscv_vector_chunks * 64);
+
+ADJUST_ALIGNMENT (VNx1BI, 1);
+ADJUST_ALIGNMENT (VNx2BI, 1);
+ADJUST_ALIGNMENT (VNx4BI, 1);
+ADJUST_ALIGNMENT (VNx8BI, 1);
+ADJUST_ALIGNMENT (VNx16BI, 1);
+ADJUST_ALIGNMENT (VNx32BI, 1);
+ADJUST_ALIGNMENT (VNx64BI, 1);
+
+ADJUST_BYTESIZE (VNx1BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+ADJUST_BYTESIZE (VNx2BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+ADJUST_BYTESIZE (VNx4BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+ADJUST_BYTESIZE (VNx8BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+ADJUST_BYTESIZE (VNx16BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+ADJUST_BYTESIZE (VNx32BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+ADJUST_BYTESIZE (VNx64BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
+
+/*
+   | Mode        | MIN_VLEN=32 | MIN_VLEN=32 | MIN_VLEN=64 | MIN_VLEN=64 |
+   |             | LMUL        |  SEW/LMUL   | LMUL        | SEW/LMUL    |
+   | VNx1QI      | MF4         |  32         | MF8         | 64          |
+   | VNx2QI      | MF2         |  16         | MF4         | 32          |
+   | VNx4QI      | M1          |  8          | MF2         | 16          |
+   | VNx8QI      | M2          |  4          | M1          | 8           |
+   | VNx16QI     | M4          |  2          | M2          | 4           |
+   | VNx32QI     | M8          |  1          | M4          | 2           |
+   | VNx64QI     | N/A         |  N/A        | M8          | 1           |
+   | VNx1(HI|HF) | MF2         |  32         | MF4         | 64          |
+   | VNx2(HI|HF) | M1          |  16         | MF2         | 32          |
+   | VNx4(HI|HF) | M2          |  8          | M1          | 16          |
+   | VNx8(HI|HF) | M4          |  4          | M2          | 8           |
+   | VNx16(HI|HF)| M8          |  2          | M4          | 4           |
+   | VNx32(HI|HF)| N/A         |  N/A        | M8          | 2           |
+   | VNx1(SI|SF) | M1          |  32         | MF2         | 64          |
+   | VNx2(SI|SF) | M2          |  16         | M1          | 32          |
+   | VNx4(SI|SF) | M4          |  8          | M2          | 16          |
+   | VNx8(SI|SF) | M8          |  4          | M4          | 8           |
+   | VNx16(SI|SF)| N/A         |  N/A        | M8          | 4           |
+   | VNx1(DI|DF) | N/A         |  N/A        | M1          | 64          |
+   | VNx2(DI|DF) | N/A         |  N/A        | M2          | 32          |
+   | VNx4(DI|DF) | N/A         |  N/A        | M4          | 16          |
+   | VNx8(DI|DF) | N/A         |  N/A        | M8          | 8           |
+*/
+
+/* Define RVV modes whose sizes are multiples of 64-bit chunks.  */
+#define RVV_MODES(NVECS, VB, VH, VS, VD)                                       \
+  VECTOR_MODES_WITH_PREFIX (VNx, INT, 8 * NVECS, 0);                           \
+  VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 8 * NVECS, 0);                         \
+                                                                               \
+  ADJUST_NUNITS (VB##QI, riscv_vector_chunks * NVECS * 8);                     \
+  ADJUST_NUNITS (VH##HI, riscv_vector_chunks * NVECS * 4);                     \
+  ADJUST_NUNITS (VS##SI, riscv_vector_chunks * NVECS * 2);                     \
+  ADJUST_NUNITS (VD##DI, riscv_vector_chunks * NVECS);                         \
+  ADJUST_NUNITS (VH##HF, riscv_vector_chunks * NVECS * 4);                     \
+  ADJUST_NUNITS (VS##SF, riscv_vector_chunks * NVECS * 2);                     \
+  ADJUST_NUNITS (VD##DF, riscv_vector_chunks * NVECS);                         \
+                                                                               \
+  ADJUST_ALIGNMENT (VB##QI, 1);                                                \
+  ADJUST_ALIGNMENT (VH##HI, 2);                                                \
+  ADJUST_ALIGNMENT (VS##SI, 4);                                                \
+  ADJUST_ALIGNMENT (VD##DI, 8);                                                \
+  ADJUST_ALIGNMENT (VH##HF, 2);                                                \
+  ADJUST_ALIGNMENT (VS##SF, 4);                                                \
+  ADJUST_ALIGNMENT (VD##DF, 8);
+
+/* 'VECTOR_MODES_WITH_PREFIX' does not allow ncomponents < 2.
+   So we use 'VECTOR_MODE_WITH_PREFIX' to define VNx1DImode and VNx1DFmode.  */
+VECTOR_MODE_WITH_PREFIX (VNx, INT, DI, 1, 0);
+VECTOR_MODE_WITH_PREFIX (VNx, FLOAT, DF, 1, 0);
+RVV_MODES (1, VNx8, VNx4, VNx2, VNx1)
+RVV_MODES (2, VNx16, VNx8, VNx4, VNx2)
+RVV_MODES (4, VNx32, VNx16, VNx8, VNx4)
+RVV_MODES (8, VNx64, VNx32, VNx16, VNx8)
+
+VECTOR_MODES_WITH_PREFIX (VNx, INT, 4, 0);
+VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 4, 0);
+ADJUST_NUNITS (VNx4QI, riscv_vector_chunks * 4);
+ADJUST_NUNITS (VNx2HI, riscv_vector_chunks * 2);
+ADJUST_NUNITS (VNx2HF, riscv_vector_chunks * 2);
+ADJUST_ALIGNMENT (VNx4QI, 1);
+ADJUST_ALIGNMENT (VNx2HI, 2);
+ADJUST_ALIGNMENT (VNx2HF, 2);
+
+/* 'VECTOR_MODES_WITH_PREFIX' does not allow ncomponents < 2.
+   So we use 'VECTOR_MODE_WITH_PREFIX' to define VNx1SImode and VNx1SFmode.  */
+VECTOR_MODE_WITH_PREFIX (VNx, INT, SI, 1, 0);
+VECTOR_MODE_WITH_PREFIX (VNx, FLOAT, SF, 1, 0);
+ADJUST_NUNITS (VNx1SI, riscv_vector_chunks);
+ADJUST_NUNITS (VNx1SF, riscv_vector_chunks);
+ADJUST_ALIGNMENT (VNx1SI, 4);
+ADJUST_ALIGNMENT (VNx1SF, 4);
+
+VECTOR_MODES_WITH_PREFIX (VNx, INT, 2, 0);
+ADJUST_NUNITS (VNx2QI, riscv_vector_chunks * 2);
+ADJUST_ALIGNMENT (VNx2QI, 1);
+
+/* 'VECTOR_MODES_WITH_PREFIX' does not allow ncomponents < 2.
+   So we use 'VECTOR_MODE_WITH_PREFIX' to define VNx1HImode and VNx1HFmode.  */
+VECTOR_MODE_WITH_PREFIX (VNx, INT, HI, 1, 0);
+VECTOR_MODE_WITH_PREFIX (VNx, FLOAT, HF, 1, 0);
+ADJUST_NUNITS (VNx1HI, riscv_vector_chunks);
+ADJUST_NUNITS (VNx1HF, riscv_vector_chunks);
+ADJUST_ALIGNMENT (VNx1HI, 2);
+ADJUST_ALIGNMENT (VNx1HF, 2);
+
+/* 'VECTOR_MODES_WITH_PREFIX' does not allow ncomponents < 2.
+   So we use 'VECTOR_MODE_WITH_PREFIX' to define VNx1QImode.  */
+VECTOR_MODE_WITH_PREFIX (VNx, INT, QI, 1, 0);
+ADJUST_NUNITS (VNx1QI, riscv_vector_chunks);
+ADJUST_ALIGNMENT (VNx1QI, 1);
+
 /* TODO: According to RISC-V 'V' ISA spec, the maximun vector length can
    be 65536 for a single vector register which means the vector mode in
    GCC can be maximum = 65536 * 8 bits (LMUL=8).

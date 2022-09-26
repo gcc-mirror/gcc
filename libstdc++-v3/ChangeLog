@@ -1,3 +1,207 @@
+2022-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::is_always_equal):
+	Only instantiate is_empty if needed.
+	* include/bits/ptr_traits.h (__ptr_traits_impl::difference_type)
+	(__ptr_traits_impl::rebind): Use __detected_or.
+	* include/experimental/type_traits (is_same_v): Add a partial
+	specialization instead of instantiating the std::is_same class
+	template.
+	(detected_t): Redefine in terms of detected_or_t.
+	(is_detected, is_detected_v): Redefine in terms of detected_t.
+	* include/std/type_traits [__cpp_concepts] (__detected_or): Add
+	new definition using concepts.
+	(__detector::value_t): Rename to __is_detected.
+	* testsuite/17_intro/names.cc: Check value_t isn't used.
+
+2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_assignable/requirements/access.cc:
+	New test.
+
+2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* include/std/type_traits (__is_nothrow_invocable_lib): Remove.
+	(__is_invocable_impl::__nothrow_type): New member type which
+	checks if the conversion can throw.
+	(__is_nt_invocable_impl): Replace class template with alias
+	template to __is_nt_invocable_impl::__nothrow_type.
+	* testsuite/20_util/is_nothrow_invocable/91456.cc: New test.
+	* testsuite/20_util/is_nothrow_convertible/value.cc: Remove
+	macro used by value_ext.cc test.
+	* testsuite/20_util/is_nothrow_convertible/value_ext.cc: Remove
+	test for non-standard __is_nothrow_invocable_lib trait.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* include/std/type_traits: Rename __is_nothrow_convertible to
+	__is_nothrow_convertible_lib.
+	* testsuite/20_util/is_nothrow_convertible/value_ext.cc: Likewise.
+
+2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (operator>>): Do not copy for N==0.
+	* testsuite/20_util/bitset/io/input.cc: Add comment.
+
+2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/bitset (__debug::bitset): Add constexpr to all
+	member functions.
+	(operator&, operator|, operator^): Add inline and constexpr.
+	(operator>>, operator<<): Add inline.
+	* testsuite/20_util/bitset/access/constexpr.cc: Only check using
+	constexpr std::string for the cxx11 ABI.
+	* testsuite/20_util/bitset/cons/constexpr_c++23.cc: Likewise.
+	* testsuite/20_util/headers/bitset/synopsis.cc: Check constexpr
+	for C++23.
+
+2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (bitset::_M_copy_to_string): Find set bits
+	instead of iterating over individual bits.
+
+2022-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (bitset): Add constexpr for C++23. Guard
+	members using std::string with _GLIBCXX_HOSTED.
+	* include/std/version (__cpp_lib_constexpr_bitset): Define.
+	* testsuite/20_util/bitset/access/constexpr.cc: New test.
+	* testsuite/20_util/bitset/cons/constexpr_c++23.cc: New test.
+	* testsuite/20_util/bitset/count/constexpr.cc: New test.
+	* testsuite/20_util/bitset/ext/constexpr.cc: New test.
+	* testsuite/20_util/bitset/operations/constexpr_c++23.cc: New test.
+	* testsuite/20_util/bitset/version.cc: New test.
+
+2022-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/bitset/18604.cc: Moved to...
+	* testsuite/20_util/bitset/18604.cc: ...here.
+	* testsuite/23_containers/bitset/45713.cc: Moved to...
+	* testsuite/20_util/bitset/45713.cc: ...here.
+	* testsuite/23_containers/bitset/to_string/dr396.cc: Moved to...
+	* testsuite/20_util/bitset/access/dr396.cc: ...here.
+	* testsuite/23_containers/bitset/to_string/1.cc: Moved to...
+	* testsuite/20_util/bitset/access/to_string.cc: ...here.
+	* testsuite/23_containers/bitset/to_ullong/1.cc: Moved to...
+	* testsuite/20_util/bitset/access/to_ullong.cc: ...here.
+	* testsuite/23_containers/bitset/to_ulong/1.cc: Moved to...
+	* testsuite/20_util/bitset/access/to_ulong.cc: ...here.
+	* testsuite/23_containers/bitset/cons/1.cc: Moved to...
+	* testsuite/20_util/bitset/cons/1.cc: ...here.
+	* testsuite/23_containers/bitset/cons/16020.cc: Moved to...
+	* testsuite/20_util/bitset/cons/16020.cc: ...here.
+	* testsuite/23_containers/bitset/cons/2.cc: Moved to...
+	* testsuite/20_util/bitset/cons/2.cc: ...here.
+	* testsuite/23_containers/bitset/cons/3.cc: Moved to...
+	* testsuite/20_util/bitset/cons/3.cc: ...here.
+	* testsuite/23_containers/bitset/cons/38244.cc: Moved to...
+	* testsuite/20_util/bitset/cons/38244.cc: ...here.
+	* testsuite/23_containers/bitset/cons/50268.cc: Moved to...
+	* testsuite/20_util/bitset/cons/50268.cc: ...here.
+	* testsuite/23_containers/bitset/cons/6282.cc: Moved to...
+	* testsuite/20_util/bitset/cons/6282.cc: ...here.
+	* testsuite/23_containers/bitset/cons/constexpr.cc: Moved to...
+	* testsuite/20_util/bitset/cons/constexpr.cc: ...here.
+	* testsuite/23_containers/bitset/cons/dr1325-1.cc: Moved to...
+	* testsuite/20_util/bitset/cons/dr1325-1.cc: ...here.
+	* testsuite/23_containers/bitset/cons/dr1325-2.cc: Moved to...
+	* testsuite/20_util/bitset/cons/dr1325-2.cc: ...here.
+	* testsuite/23_containers/bitset/cons/dr396.cc: Moved to...
+	* testsuite/20_util/bitset/cons/dr396.cc: ...here.
+	* testsuite/23_containers/bitset/debug/invalidation/1.cc: Moved to...
+	* testsuite/20_util/bitset/debug/invalidation/1.cc: ...here.
+	* testsuite/23_containers/bitset/ext/15361.cc: Moved to...
+	* testsuite/20_util/bitset/ext/15361.cc: ...here.
+	* testsuite/23_containers/bitset/hash/1.cc: Moved to...
+	* testsuite/20_util/bitset/hash/1.cc: ...here.
+	* testsuite/23_containers/bitset/input/1.cc: Moved to...
+	* testsuite/20_util/bitset/io/input.cc: ...here.
+	* testsuite/23_containers/bitset/count/6124.cc: Moved to...
+	* testsuite/20_util/bitset/observers/6124.cc: ...here.
+	* testsuite/23_containers/bitset/all/1.cc: Moved to...
+	* testsuite/20_util/bitset/observers/all.cc: ...here.
+	* testsuite/23_containers/bitset/test/1.cc: Moved to...
+	* testsuite/20_util/bitset/observers/test.cc: ...here.
+	* testsuite/23_containers/bitset/operations/1.cc: Moved to...
+	* testsuite/20_util/bitset/operations/1.cc: ...here.
+	* testsuite/23_containers/bitset/operations/13838.cc: Moved to...
+	* testsuite/20_util/bitset/operations/13838.cc: ...here.
+	* testsuite/23_containers/bitset/operations/2.cc: Moved to...
+	* testsuite/20_util/bitset/operations/2.cc: ...here.
+	* testsuite/23_containers/bitset/operations/96303.cc: Moved to...
+	* testsuite/20_util/bitset/operations/96303.cc: ...here.
+	* testsuite/23_containers/bitset/operations/constexpr-2.cc: Moved to...
+	* testsuite/20_util/bitset/operations/constexpr-2.cc: ...here.
+	* testsuite/23_containers/bitset/operations/constexpr.cc: Moved to...
+	* testsuite/20_util/bitset/operations/constexpr.cc: ...here.
+	* testsuite/23_containers/bitset/requirements/constexpr_functions.cc: Moved to...
+	* testsuite/20_util/bitset/requirements/constexpr_functions.cc: ...here.
+	* testsuite/23_containers/bitset/requirements/explicit_instantiation/1.cc: Moved to...
+	* testsuite/20_util/bitset/requirements/explicit_instantiation/1.cc: ...here.
+	* testsuite/23_containers/bitset/requirements/explicit_instantiation/1_c++0x.cc: Moved to...
+	* testsuite/20_util/bitset/requirements/explicit_instantiation/1_c++0x.cc: ...here.
+	* testsuite/23_containers/headers/bitset/synopsis.cc: Moved to...
+	* testsuite/20_util/headers/bitset/synopsis.cc: ...here.
+
+2022-09-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py: Remove ptinter registration for non-existing
+	types std::__debug::unique_ptr, std::__debug::stack, std::__debug::queue,
+	std::__debug::priority_queue.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* testsuite/20_util/function/91456.cc: Add comment with PR
+	number.
+	* testsuite/20_util/is_invocable/91456.cc: Likewise. Replace
+	std::function checks with std::is_invocable_r checks.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Remove
+	unnecessary main function.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc:
+	Likewise.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/headers/memory/synopsis.cc: Add declarations
+	from C++11 and later.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Remove trailing
+	whitespace.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/stdlib.h [!_GLIBCXX_HOSTED]: Add
+	using-declaration for _Exit.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/uncaught_exception/14026.cc: Qualify
+	call to std::abort.
+
+2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h: Include <initializer_list>.
+
+2022-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstdlib [!_GLIBCXX_HOSTED] (quick_exit): Fix
+	missing space.
+
 2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/106953

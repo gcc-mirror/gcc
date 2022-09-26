@@ -1900,6 +1900,14 @@ real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig, size_t buf_size,
 			    digits, crop_trailing_zeros, VOIDmode);
 }
 
+DEBUG_FUNCTION void
+debug (const REAL_VALUE_TYPE &r)
+{
+  char s[60];
+  real_to_hexadecimal (s, &r, sizeof (s), 0, 1);
+  fprintf (stderr, "%s\n", s);
+}
+
 /* Render R as a hexadecimal floating point constant.  Emit DIGITS
    significant digits in the result, bounded by BUF_SIZE.  If DIGITS is 0,
    choose the maximum for the representation.  If CROP_TRAILING_ZEROS,

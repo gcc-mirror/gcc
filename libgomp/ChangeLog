@@ -1,3 +1,8 @@
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* testsuite/libgomp.c-c++-common/pr106981.c: New test.
+
 2022-09-14  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/deep-copy-15.c: New test.

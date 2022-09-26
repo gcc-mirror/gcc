@@ -2692,7 +2692,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
      - if the actual argument is (a substring of) an element of a
        non-assumed-shape/non-pointer/non-polymorphic array; or
      - (F2003) if the actual argument is of type character of default/c_char
-       kind.  */
+       kind.
+     - (F2018) if the dummy argument is type(*).  */
 
   is_pointer = actual->expr_type == EXPR_VARIABLE
 	       ? actual->symtree->n.sym->attr.pointer : false;
@@ -2759,6 +2760,14 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
+      if (actual->rank == 0
+	  && formal->ts.type == BT_ASSUMED
+	  && formal->as
+	  && formal->as->type == AS_ASSUMED_SIZE)
+	/* This is new in F2018, type(*) is new in TS29113, but gfortran does
+	   not differentiate.  Thus, if type(*) exists, it is valid;
+	   otherwise, type(*) is already rejected.  */
+	return true;
       if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
 					   && !maybe_dummy_array_arg (actual))))

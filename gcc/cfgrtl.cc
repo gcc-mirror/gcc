@@ -3901,6 +3901,7 @@ fixup_reorder_chain (void)
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
 
+  bool remove_unreachable_blocks = false;
   for (bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; bb ; bb = (basic_block)
        bb->aux)
     {
@@ -4043,10 +4044,30 @@ fixup_reorder_chain (void)
 	    continue;
 	}
 
+      /* If E_FALL->dest is just a return block, then we can emit a
+	 return rather than a jump to the return block.  */
+      rtx_insn *ret, *use;
+      basic_block dest;
+      if (bb_is_just_return (e_fall->dest, &ret, &use)
+	  && (PATTERN (ret) == simple_return_rtx || PATTERN (ret) == ret_rtx))
+	{
+	  ret_label = PATTERN (ret);
+	  dest = EXIT_BLOCK_PTR_FOR_FN (cfun);
+
+	  /* E_FALL->dest might become unreachable as a result of
+	     replacing the jump with a return.  So arrange to remove
+	     unreachable blocks.  */
+	  remove_unreachable_blocks = true;
+	}
+      else
+	{
+	  dest = e_fall->dest;
+	}
+
       /* We got here if we need to add a new jump insn. 
 	 Note force_nonfallthru can delete E_FALL and thus we have to
 	 save E_FALL->src prior to the call to force_nonfallthru.  */
-      nb = force_nonfallthru_and_redirect (e_fall, e_fall->dest, ret_label);
+      nb = force_nonfallthru_and_redirect (e_fall, dest, ret_label);
       if (nb)
 	{
 	  nb->aux = bb->aux;
@@ -4134,6 +4155,12 @@ fixup_reorder_chain (void)
 		  ei_next (&ei2);
 	    }
       }
+
+  /* Replacing a jump with a return may have exposed an unreachable
+     block.  Conditionally remove them if such transformations were
+     made.  */
+  if (remove_unreachable_blocks)
+    delete_unreachable_blocks ();
 }
 
 /* Perform sanity checks on the insn chain.

@@ -17,6 +17,9 @@
 
 // { dg-do compile { target c++17 } }
 
+// PR 91456
+// std::function and std::is_invocable_r do not understand guaranteed elision
+
 #include <type_traits>
 
 #include <functional>
@@ -27,7 +30,6 @@ struct Immovable {
   Immovable& operator=(const Immovable&) = delete;
 };
 
-Immovable get() { return {}; }
-const Immovable i = get();                      // OK
-std::function<const Immovable()> f{&get};       // fails
-const Immovable i2 = f();
+static_assert(std::is_invocable_r_v<Immovable, Immovable(*)()>);
+static_assert(std::is_invocable_r_v<const Immovable, Immovable(*)()>);
+static_assert(std::is_invocable_r_v<Immovable, const Immovable(*)()>);

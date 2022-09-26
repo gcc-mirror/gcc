@@ -80,12 +80,6 @@
 #define FD_SETSIZE 1024
 
 #ifdef __MINGW32__
-/* winsock2.h allows WSAPoll related definitions only when
- * _WIN32_WINNT >= 0x0600 */
-#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0600
-#define _WIN32_WINNT 0x0600
-#endif
-
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <versionhelpers.h>

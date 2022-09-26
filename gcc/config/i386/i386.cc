@@ -5186,7 +5186,8 @@ standard_80387_constant_rtx (int idx)
 				       XFmode);
 }
 
-/* Return 1 if X is all bits 0 and 2 if X is all bits 1
+/* Return 1 if X is all bits 0, 2 if X is all bits 1
+   and 3 if X is all bits 1 with zero extend
    in supported SSE/AVX vector mode.  */
 
 int
@@ -5233,6 +5234,10 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
 	  break;
 	}
     }
+
+  if (vector_all_ones_zero_extend_half_operand (x, mode)
+      || vector_all_ones_zero_extend_quarter_operand (x, mode))
+    return 3;
 
   return 0;
 }
@@ -5341,6 +5346,25 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  gcc_unreachable ();
 	}
    }
+  else if (vector_all_ones_zero_extend_half_operand (x, mode))
+    {
+      if (GET_MODE_SIZE (mode) == 64)
+	{
+	  gcc_assert (TARGET_AVX512F);
+	  return "vpcmpeqd \t %t0, %t0, %t0";
+	}
+      else if (GET_MODE_SIZE (mode) == 32)
+	{
+	  gcc_assert (TARGET_AVX);
+	  return "vpcmpeqd \t %x0, %x0, %x0";
+	}
+      gcc_unreachable ();
+    }
+  else if (vector_all_ones_zero_extend_quarter_operand (x, mode))
+    {
+      gcc_assert (TARGET_AVX512F);
+      return "vpcmpeqd \t %x0, %x0, %x0";
+    }
 
   gcc_unreachable ();
 }

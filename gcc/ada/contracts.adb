@@ -1207,7 +1207,7 @@ package body Contracts is
          --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(7) and
          --  SPARK RM 6.9(19)).
 
-         elsif Is_Effectively_Volatile (Obj_Id) then
+         elsif SPARK_Mode = On and then Is_Effectively_Volatile (Obj_Id) then
             Error_Msg_N ("ghost object & cannot be volatile", Obj_Id);
 
          --  A Ghost object cannot be imported or exported (SPARK RM 6.9(7)).

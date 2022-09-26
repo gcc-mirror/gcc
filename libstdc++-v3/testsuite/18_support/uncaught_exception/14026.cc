@@ -28,7 +28,7 @@ static void
 no_uncaught ()
 {
   if (std::uncaught_exception())
-    abort();
+    std::abort();
 }
 
 int

@@ -164,12 +164,13 @@ struct c_expr
   }
 
   /* Set the value to error_mark_node whilst ensuring that src_range
-     is initialized.  */
+     and m_decimal are initialized.  */
   void set_error ()
   {
     value = error_mark_node;
     src_range.m_start = UNKNOWN_LOCATION;
     src_range.m_finish = UNKNOWN_LOCATION;
+    m_decimal = 0;
   }
 };
 

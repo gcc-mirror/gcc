@@ -1159,6 +1159,55 @@
        (match_test "INTEGRAL_MODE_P (GET_MODE (op))")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+/* Return true if operand is an 128/256bit all ones vector
+   that zero-extends to 256/512bit.  */
+(define_predicate "vector_all_ones_zero_extend_half_operand"
+  (match_code "const_vector")
+{
+  mode = GET_MODE (op);
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT
+      || (GET_MODE_SIZE (mode) != 32
+	  && GET_MODE_SIZE (mode) != 64))
+    return false;
+
+  int nelts = CONST_VECTOR_NUNITS (op);
+  for (int i = 0; i != nelts; i++)
+    {
+      rtx elt = CONST_VECTOR_ELT (op, i);
+      if (i < nelts / 2
+	  && elt != CONSTM1_RTX (GET_MODE_INNER (mode)))
+	return false;
+      if (i >= nelts / 2
+	  && elt != CONST0_RTX (GET_MODE_INNER (mode)))
+	return false;
+    }
+  return true;
+})
+
+/* Return true if operand is an 128bit all ones vector
+   that zero extends to 512bit.  */
+(define_predicate "vector_all_ones_zero_extend_quarter_operand"
+  (match_code "const_vector")
+{
+  mode = GET_MODE (op);
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT
+      || GET_MODE_SIZE (mode) != 64)
+    return false;
+
+  int nelts = CONST_VECTOR_NUNITS (op);
+  for (int i = 0; i != nelts; i++)
+    {
+      rtx elt = CONST_VECTOR_ELT (op, i);
+      if (i < nelts / 4
+	  && elt != CONSTM1_RTX (GET_MODE_INNER (mode)))
+	return false;
+      if (i >= nelts / 4
+	  && elt != CONST0_RTX (GET_MODE_INNER (mode)))
+	return false;
+    }
+  return true;
+})
+
 ; Return true when OP is operand acceptable for vector memory operand.
 ; Only AVX can have misaligned memory operand.
 (define_predicate "vector_memory_operand"

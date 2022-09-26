@@ -3809,12 +3809,9 @@ check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
 			   location_t operator_loc,
 			   tree rhs_val)
 {
-  /* Only complain if both args are non-negative integer constants.  */
-  if (!(TREE_CODE (lhs_val) == INTEGER_CST
-	&& tree_int_cst_sgn (lhs_val) >= 0))
-    return;
-  if (!(TREE_CODE (rhs_val) == INTEGER_CST
-	&& tree_int_cst_sgn (rhs_val) >= 0))
+  /* Only complain if both args are non-negative integer constants that fit
+     in uhwi.  */
+  if (!tree_fits_uhwi_p (lhs_val) || !tree_fits_uhwi_p (rhs_val))
     return;
 
   /* Only complain if the LHS is 2 or 10.  */

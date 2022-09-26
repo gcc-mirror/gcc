@@ -29,83 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
 
-// Calculate what we can determine of the range of this unary
-// statement's operand if the lhs of the expression has the range
-// LHS_RANGE.  Return false if nothing can be determined.
-
-bool
-gimple_range_calc_op1 (vrange &r, const gimple *stmt, const vrange &lhs_range)
-{
-  gcc_checking_assert (gimple_num_ops (stmt) < 3);
-  // Give up on empty ranges.
-  if (lhs_range.undefined_p ())
-    return false;
-
-  // Unary operations require the type of the first operand in the
-  // second range position.
-  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
-  Value_Range type_range (type);
-  type_range.set_varying (type);
-  return range_op_handler (stmt).op1_range (r, type, lhs_range, type_range);
-}
-
-// Calculate what we can determine of the range of this statement's
-// first operand if the lhs of the expression has the range LHS_RANGE
-// and the second operand has the range OP2_RANGE.  Return false if
-// nothing can be determined.
-
-bool
-gimple_range_calc_op1 (vrange &r, const gimple *stmt,
-		       const vrange &lhs_range, const vrange &op2_range)
-{
-  // Give up on empty ranges.
-  if (lhs_range.undefined_p ())
-    return false;
-
-  // Unary operation are allowed to pass a range in for second operand
-  // as there are often additional restrictions beyond the type which
-  // can be imposed.  See operator_cast::op1_range().
-  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
-  // If op2 is undefined, solve as if it is varying.
-  if (op2_range.undefined_p ())
-    {
-      // This is sometimes invoked on single operand stmts.
-      if (gimple_num_ops (stmt) < 3)
-	return false;
-      tree op2_type = TREE_TYPE (gimple_range_operand2 (stmt));
-      Value_Range trange (op2_type);
-      trange.set_varying (op2_type);
-      return range_op_handler (stmt).op1_range (r, type, lhs_range, trange);
-    }
-  return range_op_handler (stmt).op1_range (r, type, lhs_range, op2_range);
-}
-
-// Calculate what we can determine of the range of this statement's
-// second operand if the lhs of the expression has the range LHS_RANGE
-// and the first operand has the range OP1_RANGE.  Return false if
-// nothing can be determined.
-
-bool
-gimple_range_calc_op2 (vrange &r, const gimple *stmt,
-		       const vrange &lhs_range, const vrange &op1_range)
-{
-  // Give up on empty ranges.
-  if (lhs_range.undefined_p ())
-    return false;
-
-  tree type = TREE_TYPE (gimple_range_operand2 (stmt));
-  // If op1 is undefined, solve as if it is varying.
-  if (op1_range.undefined_p ())
-    {
-      tree op1_type = TREE_TYPE (gimple_range_operand1 (stmt));
-      Value_Range trange (op1_type);
-      trange.set_varying (op1_type);
-      return range_op_handler (stmt).op2_range (r, type, lhs_range, trange);
-    }
-  return range_op_handler (stmt).op2_range (r, type, lhs_range,
-					    op1_range);
-}
-
 // Return TRUE if GS is a logical && or || expression.
 
 static inline bool
@@ -695,17 +618,18 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (is_a<gswitch *> (stmt))
     return compute_operand_range_switch (r, as_a<gswitch *> (stmt), lhs, name,
 					 src);
-  if (!range_op_handler (stmt))
+  gimple_range_op_handler handler (stmt);
+  if (!handler)
     return false;
 
-  tree op1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
-  tree op2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
+  tree op1 = gimple_range_ssa_p (handler.operand1 ());
+  tree op2 = gimple_range_ssa_p (handler.operand2 ());
 
   // Handle end of lookup first.
   if (op1 == name)
-    return compute_operand1_range (r, stmt, lhs, name, src);
+    return compute_operand1_range (r, handler, lhs, name, src);
   if (op2 == name)
-    return compute_operand2_range (r, stmt, lhs, name, src);
+    return compute_operand2_range (r, handler, lhs, name, src);
 
   // NAME is not in this stmt, but one of the names in it ought to be
   // derived from it.
@@ -733,10 +657,10 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
       tree type = TREE_TYPE (name);
       Value_Range op1_trange (type), op1_frange (type);
       Value_Range op2_trange (type), op2_frange (type);
-      compute_logical_operands (op1_trange, op1_frange, stmt,
+      compute_logical_operands (op1_trange, op1_frange, handler,
 				as_a <irange> (lhs),
 				name, src, op1, op1_in_chain);
-      compute_logical_operands (op2_trange, op2_frange, stmt,
+      compute_logical_operands (op2_trange, op2_frange, handler,
 				as_a <irange> (lhs),
 				name, src, op2, op2_in_chain);
       res = logical_combine (r,
@@ -748,11 +672,11 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
     }
   // Follow the appropriate operands now.
   else if (op1_in_chain && op2_in_chain)
-    res = compute_operand1_and_operand2_range (r, stmt, lhs, name, src);
+    res = compute_operand1_and_operand2_range (r, handler, lhs, name, src);
   else if (op1_in_chain)
-    res = compute_operand1_range (r, stmt, lhs, name, src);
+    res = compute_operand1_range (r, handler, lhs, name, src);
   else if (op2_in_chain)
-    res = compute_operand2_range (r, stmt, lhs, name, src);
+    res = compute_operand2_range (r, handler, lhs, name, src);
   else
     gcc_unreachable ();
 
@@ -944,13 +868,14 @@ gori_compute::logical_combine (vrange &r, enum tree_code code,
 
 void
 gori_compute::compute_logical_operands (vrange &true_range, vrange &false_range,
-					gimple *stmt,
+					gimple_range_op_handler &handler,
 					const irange &lhs,
 					tree name, fur_source &src,
 					tree op, bool op_in_chain)
 {
+  gimple *stmt = handler.stmt ();
   gimple *src_stmt = gimple_range_ssa_p (op) ? SSA_NAME_DEF_STMT (op) : NULL;
-  if (!op_in_chain || !src_stmt || chain_import_p (gimple_get_lhs (stmt), op))
+  if (!op_in_chain || !src_stmt || chain_import_p (handler.lhs (), op))
     {
       // If op is not in the def chain, or defined in this block,
       // use its known value on entry to the block.
@@ -999,12 +924,15 @@ gori_compute::compute_logical_operands (vrange &true_range, vrange &false_range,
 // R, or false if no range could be calculated.
 
 bool
-gori_compute::compute_operand1_range (vrange &r, gimple *stmt,
+gori_compute::compute_operand1_range (vrange &r,
+				      gimple_range_op_handler &handler,
 				      const vrange &lhs, tree name,
 				      fur_source &src)
 {
-  tree op1 = gimple_range_operand1 (stmt);
-  tree op2 = gimple_range_operand2 (stmt);
+  gimple *stmt = handler.stmt ();
+  tree op1 = handler.operand1 ();
+  tree op2 = handler.operand2 ();
+
   Value_Range op1_range (TREE_TYPE (op1));
   Value_Range tmp (TREE_TYPE (op1));
   Value_Range op2_range (op2 ? TREE_TYPE (op2) : TREE_TYPE (op1));
@@ -1016,7 +944,7 @@ gori_compute::compute_operand1_range (vrange &r, gimple *stmt,
   if (op2)
     {
       src.get_operand (op2_range, op2);
-      if (!gimple_range_calc_op1 (tmp, stmt, lhs, op2_range))
+      if (!handler.calc_op1 (tmp, lhs, op2_range))
 	return false;
     }
   else
@@ -1024,7 +952,7 @@ gori_compute::compute_operand1_range (vrange &r, gimple *stmt,
       // We pass op1_range to the unary operation.  Nomally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
-      if (!gimple_range_calc_op1 (tmp, stmt, lhs, op1_range))
+      if (!handler.calc_op1 (tmp, lhs, op1_range))
 	return false;
     }
 
@@ -1079,12 +1007,15 @@ gori_compute::compute_operand1_range (vrange &r, gimple *stmt,
 // R, or false if no range could be calculated.
 
 bool
-gori_compute::compute_operand2_range (vrange &r, gimple *stmt,
+gori_compute::compute_operand2_range (vrange &r,
+				      gimple_range_op_handler &handler,
 				      const vrange &lhs, tree name,
 				      fur_source &src)
 {
-  tree op1 = gimple_range_operand1 (stmt);
-  tree op2 = gimple_range_operand2 (stmt);
+  gimple *stmt = handler.stmt ();
+  tree op1 = handler.operand1 ();
+  tree op2 = handler.operand2 ();
+
   Value_Range op1_range (TREE_TYPE (op1));
   Value_Range op2_range (TREE_TYPE (op2));
   Value_Range tmp (TREE_TYPE (op2));
@@ -1093,7 +1024,7 @@ gori_compute::compute_operand2_range (vrange &r, gimple *stmt,
   src.get_operand (op2_range, op2);
 
   // Intersect with range for op2 based on lhs and op1.
-  if (!gimple_range_calc_op2 (tmp, stmt, lhs, op1_range))
+  if (!handler.calc_op2 (tmp, lhs, op1_range))
     return false;
 
   unsigned idx;
@@ -1148,7 +1079,8 @@ gori_compute::compute_operand2_range (vrange &r, gimple *stmt,
 
 bool
 gori_compute::compute_operand1_and_operand2_range (vrange &r,
-						   gimple *stmt,
+						   gimple_range_op_handler
+								     &handler,
 						   const vrange &lhs,
 						   tree name,
 						   fur_source &src)
@@ -1157,11 +1089,11 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 
   // Calculate a good a range for op2.  Since op1 == op2, this will
   // have already included whatever the actual range of name is.
-  if (!compute_operand2_range (op_range, stmt, lhs, name, src))
+  if (!compute_operand2_range (op_range, handler, lhs, name, src))
     return false;
 
   // Now get the range thru op1.
-  if (!compute_operand1_range (r, stmt, lhs, name, src))
+  if (!compute_operand1_range (r, handler, lhs, name, src))
     return false;
 
   // Both operands have to be simultaneously true, so perform an intersection.

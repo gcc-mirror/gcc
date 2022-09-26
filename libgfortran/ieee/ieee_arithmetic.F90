@@ -816,7 +816,7 @@ REM_MACRO(4,4,4)
                      IEEE_SUPPORT_ROUNDING_NOARG
   end interface
   public :: IEEE_SUPPORT_ROUNDING
-  
+
   ! Interface to the FPU-specific function
   interface
     pure integer function support_rounding_helper(flag) &
@@ -839,7 +839,7 @@ REM_MACRO(4,4,4)
                      IEEE_SUPPORT_UNDERFLOW_CONTROL_NOARG
   end interface
   public :: IEEE_SUPPORT_UNDERFLOW_CONTROL
-  
+
   ! Interface to the FPU-specific function
   interface
     pure integer function support_underflow_control_helper(kind) &
@@ -1074,7 +1074,13 @@ contains
         integer, value :: val
       end subroutine
     end interface
-    
+
+    ! We do not support RADIX = 10, and such calls should not
+    ! modify the binary rounding mode.
+    if (present(RADIX)) then
+      if (RADIX == 10) return
+    end if
+
     call helper(ROUND_VALUE%hidden)
   end subroutine
 

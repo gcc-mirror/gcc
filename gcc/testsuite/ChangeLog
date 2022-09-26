@@ -1,3 +1,261 @@
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	* gfortran.dg/intent_optimize_10.f90: New test.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/99169
+	* gfortran.dg/intent_optimize_9.f90: New test.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/87401
+	* gfortran.dg/intent_optimize_8.f90: New test.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/87395
+	* gfortran.dg/intent_optimize_7.f90: New test.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/87395
+	* gfortran.dg/intent_optimize_6.f90: New test.
+
+2022-09-25  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* gfortran.dg/intent_optimize_5.f90: New test.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106817
+	* gfortran.dg/intent_optimize_4.f90: New test.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* gfortran.dg/intent_out_15.f90: New test.
+
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107001
+	* c-c++-common/gomp/pr107001.c: New test.
+
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* c-c++-common/gomp/pr106981.c: New test.
+
+2022-09-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-complit-1.c, gcc.dg/c2x-concat-1.c,
+	gcc.dg/cpp/c2x-ucn-1.c: New tests.
+
+2022-09-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: Replace
+	dg-xfail-if with dg-skip-if.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: Likewise.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* g++.dg/ext/has-builtin-1.C: Enhance to test __is_convertible and
+	__is_nothrow_convertible.
+	* g++.dg/ext/is_convertible1.C: New test.
+	* g++.dg/ext/is_convertible2.C: New test.
+	* g++.dg/ext/is_nothrow_convertible1.C: New test.
+	* g++.dg/ext/is_nothrow_convertible2.C: New test.
+
+2022-09-23  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* selftests/riscv/empty-func.rtl: New test.
+
+2022-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* g++.dg/torture/pr106922.C: New testcase.
+
+2022-09-23  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/scanasm.exp (check_function_body): Add debug output to verbose log
+	on failure.
+
+2022-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106922
+	* g++.dg/tree-ssa/pr106922.C: Scan in cddce3 dump rather than
+	dce3.  Remove -fdump-tree-pre-details from dg-options.
+
+2022-09-23  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/94962
+	* gcc.target/i386/avx256-unaligned-load-1.c: Modify test.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Ditto.
+	* gcc.target/i386/pr94962-1.c: New test.
+	* gcc.target/i386/pr94962-2.c: Ditto.
+	* gcc.target/i386/pr94962-3.c: Ditto.
+	* gcc.target/i386/pr94962-4.c: Ditto.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106983
+	* g++.dg/other/error36.C: New test.
+
+2022-09-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100103
+	* gfortran.dg/PR100103.f90: New test.
+
+2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82868
+	* gfortran.dg/associate_26a.f90: New test.
+
+2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102801
+	* g++.dg/warn/Wuninitialized-33.C: New testcase.
+
+2022-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106826
+	* g++.dg/modules/partial-2_a.C: New test.
+	* g++.dg/modules/partial-2_b.C: New test.
+
+2022-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/106830
+	* gcc.dg/Wxor-used-as-pow-pr106830.c: New test.
+
+2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* gcc.dg/tree-ssa/ssa-fre-100.c: New testcase.
+	* g++.dg/tree-ssa/pr106922.C: Adjust.
+
+2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99407
+	* gcc.dg/vect/tsvc/vect-tsvc-s243.c: Remove XFAIL.
+
+2022-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106994.c: New test.
+
+2022-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106984
+	* gcc.dg/tsan/pr106984.c: New testcase.
+
+2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/rounding_3.f90: New test.
+
+2022-09-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106967
+	* gcc.dg/tree-ssa/pr106967.c: New test.
+
+2022-09-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106963.c: New test.
+
+2022-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104143
+	* gfortran.dg/c-interop/c407b-2.f90: Remove dg-error.
+	* gfortran.dg/assumed_type_16.f90: New test.
+	* gfortran.dg/assumed_type_17.f90: New test.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* gfortran.dg/pr106986.f90: New test.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* gfortran.dg/pr106985.f90: New test.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/xtreme-header-2.h: Include <execution>.
+	* g++.dg/modules/xtreme-header-6.h: Include implemented
+	C++20 library headers.
+	* g++.dg/modules/xtreme-header.h: Likewise.  Remove
+	NO_ASSOCIATED_LAMBDA workaround.  Include implemented C++23
+	library headers.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/auto-3.h: New test.
+	* g++.dg/modules/auto-3_a.H: New test.
+	* g++.dg/modules/auto-3_b.C: New test.
+
+2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* gfortran.dg/PR100132.f90: New test.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr106914.c: New test.
+	* g++.dg/vect/pr106794.cc: Likewise.
+
+2022-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-gather-5.c: New test.
+
+2022-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106970
+	* gcc.dg/tree-ssa/pr106970.c: New test.
+
+2022-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106761
+	* g++.dg/modules/pr106761.h: New test.
+	* g++.dg/modules/pr106761_a.H: New test.
+	* g++.dg/modules/pr106761_b.C: New test.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/warn/Wclass-memaccess.C: Replace "the the" with "the".
+	* g++.dg/warn/Wconversion-real-integer2.C: Likewise.
+	* gcc.target/powerpc/p9-extract-1.c: Likewise.
+	* gcc.target/s390/s390.exp: Likewise.
+	* gcc.target/s390/zvector/vec-cmp-2.c: Likewise.
+	* gdc.dg/torture/simd_store.d: Likewise.
+	* gfortran.dg/actual_array_offset_1.f90: Likewise.
+	* gfortran.dg/pdt_15.f03: Likewise.
+	* gfortran.dg/pointer_array_8.f90: Likewise.
+
+2022-09-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106910-1.c: New test.
+
+2022-09-20  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr105735-1.c: New test.
+	* gcc.target/i386/pr105735-2.c: New test.
+
+2022-09-20  konglin1  <lingling.kong@intel.com>
+
+	PR target/106887
+	* gcc.target/i386/vect-bfloat16-2c.c: New test.
+
 2022-09-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/106947

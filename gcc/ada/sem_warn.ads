@@ -257,12 +257,9 @@ package Sem_Warn is
    ----------------------
 
    function Has_Junk_Name (E : Entity_Id) return Boolean;
-   --  Return True if the entity name contains any of the following substrings:
-   --    discard
-   --    dummy
-   --    ignore
-   --    junk
-   --    unused
+   --  Return True if the entity name contains substrings like "junk" or
+   --  "dummy" (see the body for the complete list).
+   --
    --  Used to suppress warnings on names matching these patterns. The contents
    --  of Name_Buffer and Name_Len are destroyed by this call.
 

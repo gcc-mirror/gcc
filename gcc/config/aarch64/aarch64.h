@@ -239,6 +239,15 @@
 /* Armv8.8-a architecture extensions.  */
 #define AARCH64_FL_V8_8       (1ULL << 45)
 
+/* Armv9.1-A.  */
+#define AARCH64_FL_V9_1       (1ULL << 46)
+
+/* Armv9.2-A.  */
+#define AARCH64_FL_V9_2       (1ULL << 47)
+
+/* Armv9.3-A.  */
+#define AARCH64_FL_V9_3       (1ULL << 48)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -273,6 +282,12 @@
 #define AARCH64_FL_FOR_ARCH9       \
   (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
    | AARCH64_FL_F16)
+#define AARCH64_FL_FOR_ARCH9_1	\
+  (AARCH64_FL_FOR_ARCH9 | AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V9_1)
+#define AARCH64_FL_FOR_ARCH9_2	\
+  (AARCH64_FL_FOR_ARCH9_1 | AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V9_2)
+#define AARCH64_FL_FOR_ARCH9_3	\
+  (AARCH64_FL_FOR_ARCH9_2 | AARCH64_FL_FOR_ARCH8_8 | AARCH64_FL_V9_3)
 
 /* Macros to test ISA flags.  */
 
@@ -312,6 +327,9 @@
 #define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
 #define AARCH64_ISA_V9		   (aarch64_isa_flags & AARCH64_FL_V9)
+#define AARCH64_ISA_V9_1           (aarch64_isa_flags & AARCH64_FL_V9_1)
+#define AARCH64_ISA_V9_2           (aarch64_isa_flags & AARCH64_FL_V9_2)
+#define AARCH64_ISA_V9_3           (aarch64_isa_flags & AARCH64_FL_V9_3)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
@@ -1260,14 +1278,44 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define ENDIAN_LANE_N(NUNITS, N) \
   (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
 
+/* Extra specs when building a native AArch64-hosted compiler.
+   Option rewriting rules based on host system.  */
+#if defined(__aarch64__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
+# define EXTRA_SPEC_FUNCTIONS                                           \
+  { "local_cpu_detect", host_detect_local_cpu },                        \
+  MCPU_TO_MARCH_SPEC_FUNCTIONS
+
+/* Rewrite -m{arch,cpu,tune}=native based on the host system information.
+   When rewriting -march=native convert it into an -mcpu option if no other
+   -mcpu or -mtune was given.  */
+# define MCPU_MTUNE_NATIVE_SPECS                                        \
+   " %{march=native:%<march=native %:local_cpu_detect(%{mcpu=*|mtune=*:arch;:cpu})}"            \
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"              \
+   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+/* This will be used in OPTION_DEFAULT_SPECS below.
+   When GCC is configured with --with-tune we don't want to materialize an
+   implicit -mtune would prevent the rewriting of -march=native into
+   -mcpu=native as per the above rules.  */
+#define CONFIG_TUNE_SPEC						\
+ { "tune", "%{!mcpu=*:%{!mtune=*:%{!march=native:-mtune=%(VALUE)}}}" },
+#else
+# define MCPU_MTUNE_NATIVE_SPECS ""
+# define EXTRA_SPEC_FUNCTIONS MCPU_TO_MARCH_SPEC_FUNCTIONS
+# define CONFIG_TUNE_SPEC                                                \
+  {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}"},
+#endif
+
 /* Support for configure-time --with-arch, --with-cpu and --with-tune.
    --with-arch and --with-cpu are ignored if either -mcpu or -march is used.
    --with-tune is ignored if either -mtune or -mcpu is used (but is not
-   affected by -march).  */
+   affected by -march, except in the -march=native case as per the
+   CONFIG_TUNE_SPEC above).  */
 #define OPTION_DEFAULT_SPECS				\
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" },	\
   {"cpu",  "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" },   \
-  {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}"},
+  CONFIG_TUNE_SPEC
 
 #define MCPU_TO_MARCH_SPEC \
    " %{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
@@ -1275,22 +1323,6 @@ extern enum aarch64_code_model aarch64_cmodel;
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 #define MCPU_TO_MARCH_SPEC_FUNCTIONS \
   { "rewrite_mcpu", aarch64_rewrite_mcpu },
-
-#if defined(__aarch64__)
-extern const char *host_detect_local_cpu (int argc, const char **argv);
-#define HAVE_LOCAL_CPU_DETECT
-# define EXTRA_SPEC_FUNCTIONS						\
-  { "local_cpu_detect", host_detect_local_cpu },			\
-  MCPU_TO_MARCH_SPEC_FUNCTIONS
-
-# define MCPU_MTUNE_NATIVE_SPECS					\
-   " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
-   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
-   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
-#else
-# define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS MCPU_TO_MARCH_SPEC_FUNCTIONS
-#endif
 
 #define ASM_CPU_SPEC \
    MCPU_TO_MARCH_SPEC

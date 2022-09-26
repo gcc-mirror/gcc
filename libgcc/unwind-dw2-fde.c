@@ -48,15 +48,17 @@ typedef __UINTPTR_TYPE__ uintptr_type;
 #include "unwind-dw2-btree.h"
 
 static struct btree registered_frames;
+static bool in_shutdown;
 
 static void
-release_registered_frames (void) __attribute__ ((destructor (110)));
+release_registered_frames (void) __attribute__ ((destructor));
 static void
 release_registered_frames (void)
 {
   /* Release the b-tree and all frames. Frame releases that happen later are
    * silently ignored */
   btree_destroy (&registered_frames);
+  in_shutdown = true;
 }
 
 static void
@@ -65,6 +67,8 @@ static void
 init_object (struct object *ob);
 
 #else
+/* Without fast path frame deregistration must always succeed.  */
+static const int in_shutdown = 0;
 
 /* The unseen_objects list contains objects that have been registered
    but not yet categorized in any way.  The seen_objects list has had
@@ -282,7 +286,7 @@ __deregister_frame_info_bases (const void *begin)
   __gthread_mutex_unlock (&object_mutex);
 #endif
 
-  gcc_assert (ob);
+  gcc_assert (in_shutdown || ob);
   return (void *) ob;
 }
 

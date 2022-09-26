@@ -1112,7 +1112,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_threadsafe_statics)
 	cpp_define (pfile, "__cpp_threadsafe_static_init=200806L");
       if (flag_char8_t)
-        cpp_define (pfile, "__cpp_char8_t=201811L");
+	cpp_define (pfile, "__cpp_char8_t=202207L");
 #ifndef THREAD_MODEL_SPEC
       /* Targets that define THREAD_MODEL_SPEC need to define
 	 __STDCPP_THREADS__ in their config/XXX/XXX-c.c themselves.  */

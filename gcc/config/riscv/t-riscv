@@ -23,6 +23,10 @@ riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+riscv-selftests.o: $(srcdir)/config/riscv/riscv-selftests.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 
 $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \

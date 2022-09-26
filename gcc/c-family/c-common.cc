@@ -541,6 +541,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
   { "__is_nothrow_assignable", RID_IS_NOTHROW_ASSIGNABLE, D_CXXONLY },
   { "__is_nothrow_constructible", RID_IS_NOTHROW_CONSTRUCTIBLE, D_CXXONLY },
+  { "__is_convertible", RID_IS_CONVERTIBLE, D_CXXONLY },
+  { "__is_nothrow_convertible", RID_IS_NOTHROW_CONVERTIBLE, D_CXXONLY },
   { "__reference_constructs_from_temporary", RID_REF_CONSTRUCTS_FROM_TEMPORARY,
 					D_CXXONLY },
   { "__reference_converts_from_temporary", RID_REF_CONVERTS_FROM_TEMPORARY,

@@ -1,3 +1,8 @@
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Skip egrep: warning: egrep is
+	  obsolescent; using grep -E.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* config-list.mk: Remove deprecated ports.

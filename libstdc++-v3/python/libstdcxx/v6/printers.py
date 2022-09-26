@@ -2246,12 +2246,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add('std::__debug::map', StdMapPrinter)
     libstdcxx_printer.add('std::__debug::multimap', StdMapPrinter)
     libstdcxx_printer.add('std::__debug::multiset', StdSetPrinter)
-    libstdcxx_printer.add('std::__debug::priority_queue',
-                          StdStackOrQueuePrinter)
-    libstdcxx_printer.add('std::__debug::queue', StdStackOrQueuePrinter)
     libstdcxx_printer.add('std::__debug::set', StdSetPrinter)
-    libstdcxx_printer.add('std::__debug::stack', StdStackOrQueuePrinter)
-    libstdcxx_printer.add('std::__debug::unique_ptr', UniquePointerPrinter)
     libstdcxx_printer.add('std::__debug::vector', StdVectorPrinter)
 
     # These are the TR1 and C++11 printers.
