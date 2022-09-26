@@ -37,8 +37,3 @@
 
 #include <bits/extc++.h>
 #include <cxxabi.h>
-
-int
-main()
-{
-}

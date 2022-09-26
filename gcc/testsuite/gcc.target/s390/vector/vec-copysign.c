@@ -1,5 +1,5 @@
 /* { dg-do compile { target { s390*-*-* } } } */
-/* { dg-options "-O2 -ftree-vectorize -mzarch" } */
+/* { dg-options "-O2 -ftree-vectorize -mzarch -fno-unroll-loops" } */
 /* { dg-final { scan-assembler-times "vgmg" 1 } } */
 /* { dg-final { scan-assembler-times "vgmf" 1 } } */
 /* { dg-final { scan-assembler-times "vsel" 2 } } */

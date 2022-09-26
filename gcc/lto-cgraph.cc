@@ -430,6 +430,13 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 	 after reading back.  */
       in_other_partition = 1;
     }
+  else if (UNLIKELY (lto_stream_offload_p
+		     && lookup_attribute ("omp target device_ancestor_host",
+					  DECL_ATTRIBUTES (node->decl))))
+    /* This symbol is only used as argument to IFN_GOMP_TARGET_REV; this IFN
+       is ignored on ACCEL_COMPILER.  Thus, mark it as in_other_partition to silence
+       verify_node_partition diagnostic.  */
+    in_other_partition = 1;
 
   clone_of = node->clone_of;
   while (clone_of
@@ -1140,10 +1147,15 @@ verify_node_partition (symtab_node *node)
   if (node->in_other_partition)
     {
       if (TREE_CODE (node->decl) == FUNCTION_DECL)
-	error_at (DECL_SOURCE_LOCATION (node->decl),
-		  "function %qs has been referenced in offloaded code but"
-		  " hasn%'t been marked to be included in the offloaded code",
-		  node->name ());
+	{
+	  if (lookup_attribute ("omp target device_ancestor_host",
+				DECL_ATTRIBUTES (node->decl)) != NULL)
+	    return;
+	  error_at (DECL_SOURCE_LOCATION (node->decl),
+		    "function %qs has been referenced in offloaded code but"
+		    " hasn%'t been marked to be included in the offloaded code",
+		    node->name ());
+	}
       else if (VAR_P (node->decl))
 	error_at (DECL_SOURCE_LOCATION (node->decl),
 		  "variable %qs has been referenced in offloaded code but"

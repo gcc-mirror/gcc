@@ -1300,8 +1300,6 @@ aarch64_get_attributes (unsigned int f, machine_mode mode)
   return aarch64_add_attribute ("leaf", attrs);
 }
 
-static bool aarch64_simd_builtins_initialized_p = false;
-
 /* Due to the architecture not providing lane variant of the lane instructions
    for fcmla we can't use the standard simd builtin expansion code, but we
    still want the majority of the validation that would normally be done.  */
@@ -1586,14 +1584,9 @@ handle_arm_neon_h (void)
   aarch64_init_simd_intrinsics ();
 }
 
-void
+static void
 aarch64_init_simd_builtins (void)
 {
-  if (aarch64_simd_builtins_initialized_p)
-    return;
-
-  aarch64_simd_builtins_initialized_p = true;
-
   aarch64_init_simd_builtin_types ();
 
   /* Strong-typing hasn't been implemented for all AdvSIMD builtin intrinsics.

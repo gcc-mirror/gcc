@@ -940,7 +940,7 @@ loop_versioning::analyze_term_using_scevs (address_info &address,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, address.stmt,
-			     "looking through %G", assign);
+			     "looking through %G", (gimple *) assign);
 	  stride = strip_casts (gimple_assign_rhs1 (assign));
 	}
 

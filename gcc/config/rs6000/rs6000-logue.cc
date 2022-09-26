@@ -47,10 +47,6 @@
 #include "diagnostic-core.h"
 #include "alias.h"
 #include "rs6000-internal.h"
-#if TARGET_MACHO
-#include "gstab.h"  /* for N_SLINE */
-#include "dbxout.h" /* dbxout_ */
-#endif
 
 static int rs6000_ra_ever_killed (void);
 static void is_altivec_return_reg (rtx, void *);
@@ -5144,10 +5140,6 @@ macho_branch_islands (void)
 	}
       strcpy (tmp_buf, "\n");
       strcat (tmp_buf, label);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, bi->line_number);
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       if (flag_pic)
 	{
 	  strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
@@ -5181,10 +5173,6 @@ macho_branch_islands (void)
 	  strcat (tmp_buf, ")\n\tmtctr r12\n\tbctr");
 	}
       output_asm_insn (tmp_buf, 0);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, bi->line_number);
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       branch_islands->pop ();
     }
 }

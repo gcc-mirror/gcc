@@ -135,10 +135,6 @@ package body Treepr is
    function From_Union is new Ada.Unchecked_Conversion (Union_Id, Uint);
    function From_Union is new Ada.Unchecked_Conversion (Union_Id, Ureal);
 
-   function To_Mixed (S : String) return String;
-   --  Turns an identifier into Mixed_Case. For bootstrap reasons, we cannot
-   --  use To_Mixed function from System.Case_Util.
-
    function Image (F : Node_Or_Entity_Field) return String;
 
    procedure Print_Init;
@@ -371,8 +367,9 @@ package body Treepr is
 
          when others =>
             declare
-               Result : constant String := To_Mixed (F'Img);
+               Result : String := F'Img;
             begin
+               To_Mixed (Result);
                return Result (3 .. Result'Last); -- Remove "F_"
             end;
       end case;
@@ -1671,8 +1668,10 @@ package body Treepr is
    --------------------------
 
    procedure Print_Str_Mixed_Case (S : String) is
+      Tmp : String := S;
    begin
-      Print_Str (To_Mixed (S));
+      To_Mixed (Tmp);
+      Print_Str (Tmp);
    end Print_Str_Mixed_Case;
 
    ----------------
@@ -1805,17 +1804,6 @@ package body Treepr is
       Serial_Numbers.Put (Hash_Table, Hash_Id, Next_Serial_Number);
       Next_Serial_Number := Next_Serial_Number + 1;
    end Set_Serial_Number;
-
-   --------------
-   -- To_Mixed --
-   --------------
-
-   function To_Mixed (S : String) return String is
-   begin
-      return Result : String (S'Range) := S do
-         To_Mixed (Result);
-      end return;
-   end To_Mixed;
 
    ---------------
    -- Tree_Dump --

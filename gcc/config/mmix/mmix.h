@@ -757,17 +757,8 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: All Debuggers */
 
-#define DBX_REGISTER_NUMBER(REGNO) \
- mmix_dbx_register_number (REGNO)
-
-
-/* Node: DBX Options */
-/* (empty) */
-/* Node: DBX Hooks */
-/* (empty) */
-/* Node: File Names and DBX */
-/* (empty) */
-
+#define DEBUGGER_REGNO(REGNO) \
+ mmix_debugger_regno (REGNO)
 
 /* Node: DWARF */
 #define DWARF2_DEBUGGING_INFO 1

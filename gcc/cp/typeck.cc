@@ -71,7 +71,8 @@ static bool is_std_forward_p (tree);
    complete type when this function returns.  */
 
 tree
-require_complete_type_sfinae (tree value, tsubst_flags_t complain)
+require_complete_type (tree value,
+		       tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   tree type;
 
@@ -94,12 +95,6 @@ require_complete_type_sfinae (tree value, tsubst_flags_t complain)
     return value;
   else
     return error_mark_node;
-}
-
-tree
-require_complete_type (tree value)
-{
-  return require_complete_type_sfinae (value, tf_warning_or_error);
 }
 
 /* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
@@ -2201,7 +2196,8 @@ invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
     return false;
   if (is_overloaded_fn (expr) && !really_overloaded_fn (expr))
     expr = get_first_fn (expr);
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
+  if (TREE_TYPE (expr)
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
     {
       if (complain & tf_error)
 	{
@@ -3899,7 +3895,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
-      ret = require_complete_type_sfinae (rval, complain);
+      ret = require_complete_type (rval, complain);
       protected_set_expr_location (ret, loc);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
@@ -4464,7 +4460,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 	    /* Don't do ellipsis conversion for __built_in_constant_p
 	       as this will result in spurious errors for non-trivial
 	       types.  */
-	    val = require_complete_type_sfinae (val, complain);
+	    val = require_complete_type (val, complain);
 	  else
 	    val = convert_arg_to_ellipsis (val, complain);
 
@@ -6264,7 +6260,7 @@ cp_build_binary_op (const op_location_t &location,
 		     instrument_expr, result);
 
   if (resultcode == SPACESHIP_EXPR && !processing_template_decl)
-    result = get_target_expr_sfinae (result, complain);
+    result = get_target_expr (result, complain);
 
   if (!c_inhibit_evaluation_warnings)
     {
@@ -8016,7 +8012,7 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
   /* [class.abstract]
      An abstract class shall not be used ... as the type of an explicit
      conversion.  */
-  if (abstract_virtuals_error_sfinae (ACU_CAST, type, complain))
+  if (abstract_virtuals_error (ACU_CAST, type, complain))
     return error_mark_node;
 
   /* [expr.static.cast]
@@ -8897,7 +8893,56 @@ cp_build_c_cast (location_t loc, tree type, tree expr,
 
   return error_mark_node;
 }
-
+
+/* Warn when a value is moved to itself with std::move.  LHS is the target,
+   RHS may be the std::move call, and LOC is the location of the whole
+   assignment.  */
+
+static void
+maybe_warn_self_move (location_t loc, tree lhs, tree rhs)
+{
+  if (!warn_self_move)
+    return;
+
+  /* C++98 doesn't know move.  */
+  if (cxx_dialect < cxx11)
+    return;
+
+  if (processing_template_decl)
+    return;
+
+  if (!REFERENCE_REF_P (rhs)
+      || TREE_CODE (TREE_OPERAND (rhs, 0)) != CALL_EXPR)
+    return;
+  tree fn = TREE_OPERAND (rhs, 0);
+  if (!is_std_move_p (fn))
+    return;
+
+  /* Just a little helper to strip * and various NOPs.  */
+  auto extract_op = [] (tree &op) {
+    STRIP_NOPS (op);
+    while (INDIRECT_REF_P (op))
+      op = TREE_OPERAND (op, 0);
+    op = maybe_undo_parenthesized_ref (op);
+    STRIP_ANY_LOCATION_WRAPPER (op);
+  };
+
+  tree arg = CALL_EXPR_ARG (fn, 0);
+  extract_op (arg);
+  if (TREE_CODE (arg) == ADDR_EXPR)
+    arg = TREE_OPERAND (arg, 0);
+  tree type = TREE_TYPE (lhs);
+  tree orig_lhs = lhs;
+  extract_op (lhs);
+  if (cp_tree_equal (lhs, arg))
+    {
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wself_move,
+		      "moving %qE of type %qT to itself", orig_lhs, type))
+	inform (loc, "remove %<std::move%> call");
+    }
+}
+
 /* For use from the C common bits.  */
 tree
 build_modify_expr (location_t location,
@@ -9095,12 +9140,14 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     }
   else
     {
-      lhs = require_complete_type_sfinae (lhs, complain);
+      lhs = require_complete_type (lhs, complain);
       if (lhs == error_mark_node)
 	return error_mark_node;
 
       if (modifycode == NOP_EXPR)
 	{
+	  maybe_warn_self_move (loc, lhs, rhs);
+
 	  if (c_dialect_objc ())
 	    {
 	      result = objc_maybe_build_modify_expr (lhs, rhs);
@@ -10072,7 +10119,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
     }
 
   if (exp != 0)
-    exp = require_complete_type_sfinae (exp, complain);
+    exp = require_complete_type (exp, complain);
   if (exp == error_mark_node)
     return error_mark_node;
 
@@ -10397,11 +10444,15 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
   if (!CLASS_TYPE_P (type))
     return;
 
+  bool wrapped_p = false;
   /* A a = std::move (A());  */
   if (TREE_CODE (expr) == TREE_LIST)
     {
       if (list_length (expr) == 1)
-	expr = TREE_VALUE (expr);
+	{
+	  expr = TREE_VALUE (expr);
+	  wrapped_p = true;
+	}
       else
 	return;
     }
@@ -10410,7 +10461,10 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
   else if (TREE_CODE (expr) == CONSTRUCTOR)
     {
       if (CONSTRUCTOR_NELTS (expr) == 1)
-	expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	{
+	  expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	  wrapped_p = true;
+	}
       else
 	return;
     }
@@ -10458,6 +10512,8 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
       /* Warn if the move is redundant.  It is redundant when we would
 	 do maybe-rvalue overload resolution even without std::move.  */
       else if (warn_redundant_move
+	       /* This doesn't apply for return {std::move (t)};.  */
+	       && !wrapped_p
 	       && !warning_suppressed_p (expr, OPT_Wredundant_move)
 	       && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
 	{

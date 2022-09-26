@@ -218,7 +218,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/multilogger.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/nulllogger.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/package.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/file.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/floats.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/read.lo \
@@ -246,7 +245,11 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_tables.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.lo std/logger/core.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/filelogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/multilogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/nulllogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/package.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/algebraic.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/constants.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/exponential.lo \
@@ -589,11 +592,10 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/multilogger.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.d std/file.d std/format/internal/floats.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/read.d std/format/internal/write.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/package.d std/format/read.d std/format/spec.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/write.d std/functional.d std/getopt.d std/int128.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/attributes.d std/internal/cstring.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/file.d std/format/internal/floats.d std/format/internal/read.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/write.d std/format/package.d std/format/read.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/int128.d std/internal/attributes.d std/internal/cstring.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/memory.d std/internal/scopebuffer.d \
@@ -601,7 +603,9 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/uda.d std/internal/unicode_comp.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.d std/internal/unicode_tables.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.d std/json.d std/math/algebraic.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.d std/json.d std/logger/core.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/filelogger.d std/logger/multilogger.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/constants.d std/math/exponential.d std/math/hardware.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/operations.d std/math/package.d std/math/remainder.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \
@@ -830,7 +834,6 @@ std/experimental/logger/nulllogger.lo:  \
 	std/experimental/logger/$(am__dirstamp)
 std/experimental/logger/package.lo:  \
 	std/experimental/logger/$(am__dirstamp)
-std/experimental/typecons.lo: std/experimental/$(am__dirstamp)
 std/file.lo: std/$(am__dirstamp)
 std/format/internal/$(am__dirstamp):
 	@$(MKDIR_P) std/format/internal
@@ -879,6 +882,14 @@ std/internal/windows/$(am__dirstamp):
 std/internal/windows/advapi32.lo:  \
 	std/internal/windows/$(am__dirstamp)
 std/json.lo: std/$(am__dirstamp)
+std/logger/$(am__dirstamp):
+	@$(MKDIR_P) std/logger
+	@: > std/logger/$(am__dirstamp)
+std/logger/core.lo: std/logger/$(am__dirstamp)
+std/logger/filelogger.lo: std/logger/$(am__dirstamp)
+std/logger/multilogger.lo: std/logger/$(am__dirstamp)
+std/logger/nulllogger.lo: std/logger/$(am__dirstamp)
+std/logger/package.lo: std/logger/$(am__dirstamp)
 std/math/$(am__dirstamp):
 	@$(MKDIR_P) std/math
 	@: > std/math/$(am__dirstamp)
@@ -994,6 +1005,8 @@ mostlyclean-compile:
 	-rm -f std/internal/test/*.lo
 	-rm -f std/internal/windows/*.$(OBJEXT)
 	-rm -f std/internal/windows/*.lo
+	-rm -f std/logger/*.$(OBJEXT)
+	-rm -f std/logger/*.lo
 	-rm -f std/math/*.$(OBJEXT)
 	-rm -f std/math/*.lo
 	-rm -f std/net/*.$(OBJEXT)
@@ -1033,6 +1046,7 @@ clean-libtool:
 	-rm -rf std/internal/math/.libs std/internal/math/_libs
 	-rm -rf std/internal/test/.libs std/internal/test/_libs
 	-rm -rf std/internal/windows/.libs std/internal/windows/_libs
+	-rm -rf std/logger/.libs std/logger/_libs
 	-rm -rf std/math/.libs std/math/_libs
 	-rm -rf std/net/.libs std/net/_libs
 	-rm -rf std/range/.libs std/range/_libs
@@ -1162,6 +1176,7 @@ distclean-generic:
 	-rm -f std/internal/math/$(am__dirstamp)
 	-rm -f std/internal/test/$(am__dirstamp)
 	-rm -f std/internal/windows/$(am__dirstamp)
+	-rm -f std/logger/$(am__dirstamp)
 	-rm -f std/math/$(am__dirstamp)
 	-rm -f std/net/$(am__dirstamp)
 	-rm -f std/range/$(am__dirstamp)

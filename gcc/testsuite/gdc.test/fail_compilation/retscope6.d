@@ -78,6 +78,7 @@ void foo() @safe
 fail_compilation/retscope6.d(8016): Error: address of variable `i` assigned to `p` with longer lifetime
 fail_compilation/retscope6.d(8031): Error: reference to local variable `i` assigned to non-scope parameter `p` calling `betty`
 fail_compilation/retscope6.d(8031): Error: reference to local variable `j` assigned to non-scope parameter `q` calling `betty`
+fail_compilation/retscope6.d(8021):        which is assigned to non-scope parameter `p`
 fail_compilation/retscope6.d(8048): Error: reference to local variable `j` assigned to non-scope parameter `q` calling `archie`
 ---
 */
@@ -255,6 +256,7 @@ void escape_throw_20150() @safe
 /* TEST_OUTPUT:
 ---
 fail_compilation/retscope6.d(14019): Error: scope variable `scopePtr` assigned to non-scope parameter `x` calling `noInfer23021`
+fail_compilation/retscope6.d(14009):        which is not `scope` because of `*escapeHole = cast(const(int)*)x`
 fail_compilation/retscope6.d(14022): Error: scope variable `scopePtr` may not be returned
 ---
 */

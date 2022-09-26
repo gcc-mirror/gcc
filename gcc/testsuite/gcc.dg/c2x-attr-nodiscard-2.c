@@ -39,4 +39,10 @@ f (void)
   [[nodiscard ("reason")]] int b = 1; /* { dg-error "can only be applied" } */
   [[nodiscard]]; /* { dg-error "ignored" } */
   [[nodiscard]] a = 1; /* { dg-error "ignored" } */
+  [[nodiscard]] label: ; /* { dg-error "can only be applied" } */
+  switch (var)
+    {
+      [[nodiscard]] case 1: ; /* { dg-error "can only be applied" } */
+      [[nodiscard]] default: ; /* { dg-error "can only be applied" } */
+    }
 }

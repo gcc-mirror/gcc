@@ -62,10 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "opts.h"
 
-#ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"		/* Needed for external data declarations.  */
-#endif
-
 /* The (assembler) name of the first globally-visible object output.  */
 extern GTY(()) const char *first_global_object_name;
 extern GTY(()) const char *weak_global_object_name;

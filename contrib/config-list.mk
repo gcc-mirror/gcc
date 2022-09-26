@@ -40,14 +40,13 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   bpf-unknown-none \
-  c6x-elf c6x-uclinux cr16-elfOPT-enable-obsolete cris-elf \
+  c6x-elf c6x-uclinux cris-elf \
   csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
-  hppa2.0-hpux10.1OPT-enable-obsolete hppa64-hpux11.3 \
+  hppa64-hpux11.3 \
   hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes \
-  hppa2.0-hpux11.9OPT-enable-obsolete \
   i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
   i686-netbsdelf9 \
@@ -59,7 +58,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux \
   loongarch64-linux-gnuf64 loongarch64-linux-gnuf32 loongarch64-linux-gnusf \
-  m32c-rtems m32c-elf m32r-elf m32rle-elf \
+  m32c-elf m32r-elf m32rle-elf \
   m68k-elf m68k-netbsdelf \
   m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf microblaze-linux microblaze-elf \

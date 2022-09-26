@@ -461,11 +461,8 @@ package body Prep is
 
                --  Handle relational operator
 
-               elsif     Token = Tok_Equal
-                 or else Token = Tok_Less
-                 or else Token = Tok_Less_Equal
-                 or else Token = Tok_Greater
-                 or else Token = Tok_Greater_Equal
+               elsif Token in Tok_Equal | Tok_Less | Tok_Less_Equal |
+                 Tok_Greater | Tok_Greater_Equal
                then
                   Relop := Token;
                   Scan.all;
@@ -771,9 +768,7 @@ package body Prep is
    begin
       --  Scan until we get an end of line or we reach the end of the buffer
 
-      while Token /= Tok_End_Of_Line
-        and then Token /= Tok_EOF
-      loop
+      while Token not in Tok_End_Of_Line | Tok_EOF loop
          Scan.all;
       end loop;
    end Go_To_End_Of_Line;
@@ -1042,7 +1037,7 @@ package body Prep is
 
                Scan.all;
 
-               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
+               if Token not in Tok_End_Of_Line | Tok_EOF then
                   Error_Msg ("extraneous text in definition", Token_Ptr);
                   goto Cleanup;
                end if;
@@ -1056,12 +1051,12 @@ package body Prep is
 
                Scan.all;
 
-               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
+               if Token not in Tok_End_Of_Line | Tok_EOF then
                   Error_Msg ("extraneous text in definition", Token_Ptr);
                   goto Cleanup;
                end if;
 
-            elsif Token = Tok_End_Of_Line or else Token = Tok_EOF then
+            elsif Token in Tok_End_Of_Line | Tok_EOF then
                Data := (Symbol              => Symbol_Name,
                         Original            => Original_Name,
                         On_The_Command_Line => False,
@@ -1093,7 +1088,7 @@ package body Prep is
 
                Scan.all;
 
-               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
+               if Token not in Tok_End_Of_Line | Tok_EOF then
                   Error_Msg ("extraneous text in definition", Token_Ptr);
                   goto Cleanup;
                end if;
@@ -1144,7 +1139,7 @@ package body Prep is
             <<Cleanup>>
                Set_Ignore_Errors (To => True);
 
-               while Token /= Tok_End_Of_Line and then Token /= Tok_EOF loop
+               while Token not in Tok_End_Of_Line | Tok_EOF loop
                   Scan.all;
                end loop;
 
@@ -1261,9 +1256,7 @@ package body Prep is
                         --  It is an error to have trailing characters after
                         --  the condition or "then".
 
-                        if Token /= Tok_End_Of_Line
-                          and then Token /= Tok_EOF
-                        then
+                        if Token not in Tok_End_Of_Line | Tok_EOF then
                            Error_Msg
                              ("extraneous text on preprocessor line",
                               Token_Ptr);
@@ -1318,9 +1311,7 @@ package body Prep is
                      --  It is an error to have trailing characters after the
                      --  condition or "then".
 
-                     if Token /= Tok_End_Of_Line
-                       and then Token /= Tok_EOF
-                     then
+                     if Token not in Tok_End_Of_Line | Tok_EOF then
                         Error_Msg
                           ("extraneous text on preprocessor line",
                            Token_Ptr);
@@ -1384,9 +1375,7 @@ package body Prep is
 
                      --  Error of character present after "#else"
 
-                     if Token /= Tok_End_Of_Line
-                       and then Token /= Tok_EOF
-                     then
+                     if Token not in Tok_End_Of_Line | Tok_EOF then
                         Error_Msg
                           ("extraneous text on preprocessor line",
                            Token_Ptr);
@@ -1427,9 +1416,7 @@ package body Prep is
 
                            --  Error of character present after "#end if;"
 
-                           if Token /= Tok_End_Of_Line
-                             and then Token /= Tok_EOF
-                           then
+                           if Token not in Tok_End_Of_Line | Tok_EOF then
                               Error_Msg
                                 ("extraneous text on preprocessor line",
                                  Token_Ptr);
@@ -1496,9 +1483,7 @@ package body Prep is
                   Go_To_End_Of_Line;
 
                else
-                  while Token /= Tok_End_Of_Line
-                    and then Token /= Tok_EOF
-                  loop
+                  while Token not in Tok_End_Of_Line | Tok_EOF loop
                      if Token = Tok_Special
                        and then Special_Character = '$'
                      then
@@ -1564,7 +1549,7 @@ package body Prep is
             end if;
          end if;
 
-         pragma Assert (Token = Tok_End_Of_Line or else Token = Tok_EOF);
+         pragma Assert (Token in Tok_End_Of_Line | Tok_EOF);
 
          --  At this point, the token is either end of line or EOF. The line to
          --  possibly output stops just before the token.

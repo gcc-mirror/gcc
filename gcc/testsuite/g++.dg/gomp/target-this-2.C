@@ -46,4 +46,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump {#pragma omp target num_teams.* firstprivate\(n\) map\(alloc:MEM.* \[len: 0\]\) map\(firstprivate:this \[pointer assign, bias: 0\]\) firstprivate\(m\) map\(to:\*__closure \[len: [0-9]+\]\) map\(firstprivate:__closure \[pointer assign, bias: 0\]\) map\(tofrom:\*_[0-9]+ \[len: [0-9]+\]\) map\(always_pointer:__closure->__this \[pointer assign, bias: 0\]\) map\(from:v \[len: [0-9]+\]\)} "gimple" } } */
+/* { dg-final { scan-tree-dump {map\(alloc:MEM\[\(char \*\)_[0-9]+\] \[len: [0-9]+\]\) map\(firstprivate:this \[pointer assign, bias: 0\]\) firstprivate\(m\) map\(to:\*__closure \[len: [0-9]+\]\) map\(firstprivate:__closure \[pointer assign, bias: 0\]\) map\(tofrom:\*_[0-9]+ \[len: [0-9]+\]\) map\(always_pointer:__closure->__this \[pointer assign, bias: 0\]\) map\(from:v \[len: [0-9]+\]\)} "gimple" } } */

@@ -1447,6 +1447,11 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         eparam.storageClass &= ~STC.auto_;
                         eparam.storageClass |= STC.autoref;
                     }
+                    else if (eparam.storageClass & STC.ref_)
+                    {
+                        .error(loc, "cannot explicitly instantiate template function with `auto ref` parameter");
+                        errors = true;
+                    }
                     else
                     {
                         .error(loc, "`auto` can only be used as part of `auto ref` for template function parameters");

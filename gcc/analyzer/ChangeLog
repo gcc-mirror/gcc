@@ -1,3 +1,155 @@
+2022-09-12  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc (region_model::maybe_complain_about_infoleak):
+	  Remove unused fields.
+
+2022-09-11  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106845
+	* region-model.cc (region_model::check_region_bounds):
+	Bail out if 0 bytes were accessed.
+	* store.cc (byte_range::dump_to_pp):
+	Add special case for empty ranges.
+	(byte_range::exceeds_p): Restrict to non-empty ranges.
+	(byte_range::falls_short_of_p): Restrict to non-empty ranges.
+	* store.h (bit_range::empty_p): New function.
+	(bit_range::get_last_byte_offset): Restrict to non-empty ranges.
+	(byte_range::empty_p): New function.
+	(byte_range::get_last_byte_offset): Restrict to non-empty ranges.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (Wanalyzer-exposure-through-uninit-copy): New.
+	* checker-path.cc (region_creation_event::region_creation_event):
+	Add "capacity" and "kind" params.
+	(region_creation_event::get_desc): Generalize to different kinds
+	of event.
+	(checker_path::add_region_creation_event): Convert to...
+	(checker_path::add_region_creation_events): ...this.
+	* checker-path.h (enum rce_kind): New.
+	(region_creation_event::region_creation_event): Add "capacity" and
+	"kind" params.
+	(region_creation_event::m_capacity): New field.
+	(region_creation_event::m_rce_kind): New field.
+	(checker_path::add_region_creation_event): Convert to...
+	(checker_path::add_region_creation_events): ...this.
+	* diagnostic-manager.cc (diagnostic_manager::build_emission_path):
+	Update for multiple region creation events.
+	(diagnostic_manager::add_event_on_final_node): Likewise.
+	(diagnostic_manager::add_events_for_eedge): Likewise.
+	* region-model-impl-calls.cc (call_details::get_logger): New.
+	* region-model.cc: Define INCLUDE_MEMORY before including
+	"system.h".  Include "gcc-rich-location.h".
+	(class record_layout): New.
+	(class exposure_through_uninit_copy): New.
+	(contains_uninit_p): New.
+	(region_model::maybe_complain_about_infoleak): New.
+	* region-model.h (call_details::get_logger): New decl.
+	(region_model::maybe_complain_about_infoleak): New decl.
+	(region_model::mark_as_tainted): New decl.
+	* sm-taint.cc (region_model::mark_as_tainted): New.
+
+2022-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class known_function_manager): New forward decl.
+	(class known_function): New.
+	(plugin_analyzer_init_iface::register_known_function): New.
+	* engine.cc: Include "analyzer/known-function-manager.h".
+	(plugin_analyzer_init_impl::plugin_analyzer_init_impl): Add
+	known_fn_mgr param.
+	(plugin_analyzer_init_impl::register_state_machine): Add
+	LOC_SCOPE.
+	(plugin_analyzer_init_impl::register_known_function): New.
+	(plugin_analyzer_init_impl::m_known_fn_mgr): New.
+	(impl_run_checkers): Update plugin callback invocation to use
+	eng's known_function_manager.
+	* known-function-manager.cc: New file.
+	* known-function-manager.h: New file.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Pass logger to
+	m_known_fn_mgr's ctor.
+	* region-model.cc (region_model::update_for_zero_return): New.
+	(region_model::update_for_nonzero_return): New.
+	(maybe_simplify_upper_bound): New.
+	(region_model::maybe_get_copy_bounds): New.
+	(region_model::get_known_function): New.
+	(region_model::on_call_pre): Handle plugin-supplied known
+	functions.
+	* region-model.h: Include "analyzer/known-function-manager.h".
+	(region_model_manager::get_known_function_manager): New.
+	(region_model_manager::m_known_fn_mgr): New.
+	(call_details::get_model): New accessor.
+	(region_model::maybe_get_copy_bounds): New decl.
+	(region_model::update_for_zero_return): New decl.
+	(region_model::update_for_nonzero_return): New decl.
+	(region_model::get_known_function): New decl.
+	(region_model::get_known_function_manager): New.
+
+2022-09-08  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106625
+	* analyzer.h (region_offset): Eliminate m_is_symbolic member.
+	* region-model-impl-calls.cc (region_model::impl_call_realloc):
+	Refine implementation to be more precise.
+	* region-model.cc (class symbolic_past_the_end):
+	Abstract diagnostic class to complain about accesses past the end
+	with symbolic values.
+	(class symbolic_buffer_overflow):
+	Concrete diagnostic class to complain about buffer overflows with
+	symbolic values.
+	(class symbolic_buffer_overread):
+	Concrete diagnostic class to complain about buffer overreads with
+	symbolic values.
+	(region_model::check_symbolic_bounds): New function.
+	(maybe_get_integer_cst_tree): New helper function.
+	(region_model::check_region_bounds):
+	Add call to check_symbolic_bounds if offset is not concrete.
+	(region_model::eval_condition_without_cm):
+	Add support for EQ_EXPR and GT_EXPR with binaryop_svalues.
+	(is_positive_svalue): New hleper function.
+	(region_model::symbolic_greater_than):
+	New function to handle GT_EXPR comparisons with symbolic values.
+	(region_model::structural_equality): New function to compare
+	whether two svalues are structured the same, i.e. evaluate to
+	the same value.
+	(test_struct): Reflect changes to region::calc_offset.
+	(test_var): Likewise.
+	(test_array_2): Likewise and add selftest with symbolic i.
+	* region-model.h (class region_model): Add check_symbolic_bounds,
+	symbolic_greater_than and structural_equality.
+	* region.cc (region::get_offset):
+	Reflect changes to region::calc_offset.
+	(region::calc_offset):
+	Compute the symbolic offset if the offset is not concrete.
+	(region::get_relative_symbolic_offset): New function to return the
+	symbolic offset in bytes relative to its parent.
+	(field_region::get_relative_symbolic_offset): Likewise.
+	(element_region::get_relative_symbolic_offset): Likewise.
+	(offset_region::get_relative_symbolic_offset): Likewise.
+	(bit_range_region::get_relative_symbolic_offset): Likewise.
+	* region.h: Add get_relative_symbolic_offset.
+	* store.cc (binding_key::make):
+	Reflect changes to region::calc_offset.
+	(binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.
+	(binding_cluster::bind_compound_sval): Likewise.
+	(binding_cluster::get_any_binding): Likewise.
+	(binding_cluster::maybe_get_compound_binding): Likewise.
+
+2022-09-05  Tim Lange  <mail@tim-lange.me>
+
+	* region-model-impl-calls.cc (region_model::impl_call_strcpy):
+	Handle the constant string case.
+	* region-model.cc (region_model::get_string_size):
+	New function to get the string size from a region or svalue.
+	* region-model.h (class region_model): Add get_string_size.
+
+2022-09-05  Tim Lange  <mail@tim-lange.me>
+
+	* region.cc (cast_region::get_relative_concrete_offset):
+	New overloaded method.
+	* region.h: Add cast_region::get_relative_concrete_offset.
+
 2022-08-22  Martin Liska  <mliska@suse.cz>
 
 	* region-model.cc: Add missing final keyword.

@@ -713,7 +713,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
 
   /* Make sure that we're not trying to create an instance of an
      abstract class.  */
-  if (abstract_virtuals_error_sfinae (NULL_TREE, type, complain))
+  if (abstract_virtuals_error (NULL_TREE, type, complain))
     return error_mark_node;
 
   if (TREE_CODE (rval) == AGGR_INIT_EXPR)
@@ -922,7 +922,7 @@ force_target_expr (tree type, tree init, tsubst_flags_t complain)
 /* Like build_target_expr_with_type, but use the type of INIT.  */
 
 tree
-get_target_expr_sfinae (tree init, tsubst_flags_t complain)
+get_target_expr (tree init, tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   if (TREE_CODE (init) == AGGR_INIT_EXPR)
     return build_target_expr (AGGR_INIT_EXPR_SLOT (init), init, complain);
@@ -933,12 +933,6 @@ get_target_expr_sfinae (tree init, tsubst_flags_t complain)
       init = convert_bitfield_to_declared_type (init);
       return build_target_expr_with_type (init, TREE_TYPE (init), complain);
     }
-}
-
-tree
-get_target_expr (tree init)
-{
-  return get_target_expr_sfinae (init, tf_warning_or_error);
 }
 
 /* If EXPR is a bitfield reference, convert it to the declared type of
@@ -2968,7 +2962,7 @@ verify_stmt_tree (tree t)
 /* Check if the type T depends on a type with no linkage and if so,
    return it.  If RELAXED_P then do not consider a class type declared
    within a vague-linkage function to have no linkage.  Remember:
-   no-linkage is not the same as internal-linkage*/
+   no-linkage is not the same as internal-linkage.  */
 
 tree
 no_linkage_check (tree t, bool relaxed_p)
@@ -3817,7 +3811,15 @@ decl_namespace_context (tree decl)
    nested, or false otherwise.  */
 
 bool
-decl_anon_ns_mem_p (const_tree decl)
+decl_anon_ns_mem_p (tree decl)
+{
+  return !TREE_PUBLIC (decl_namespace_context (decl));
+}
+
+/* Returns true if the enclosing scope of DECL has internal or no linkage.  */
+
+bool
+decl_internal_context_p (const_tree decl)
 {
   while (TREE_CODE (decl) != NAMESPACE_DECL)
     {

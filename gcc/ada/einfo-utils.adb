@@ -2081,7 +2081,7 @@ package body Einfo.Utils is
    --------------------
 
    function Number_Entries (Id : E) return Nat is
-      N   : Int;
+      N   : Nat;
       Ent : Entity_Id;
 
    begin

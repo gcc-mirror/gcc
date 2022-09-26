@@ -3158,7 +3158,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	     "%<new%> of %<initializer_list%> does not "
 	     "extend the lifetime of the underlying array");
 
-  if (abstract_virtuals_error_sfinae (ACU_NEW, elt_type, complain))
+  if (abstract_virtuals_error (ACU_NEW, elt_type, complain))
     return error_mark_node;
 
   is_initialized = (type_build_ctor_call (elt_type) || *init != NULL);

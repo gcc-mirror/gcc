@@ -1183,7 +1183,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
     case CPP_NAME:
       if (token->val.node.node == pfile->spec_nodes.n_defined)
 	return parse_defined (pfile);
-      else if (CPP_OPTION (pfile, cplusplus)
+      else if (CPP_OPTION (pfile, true_false)
 	       && (token->val.node.node == pfile->spec_nodes.n_true
 		   || token->val.node.node == pfile->spec_nodes.n_false))
 	{

@@ -193,7 +193,7 @@ struct microblaze_frame_info zero_frame_info;
 char microblaze_print_operand_punct[256];
 
 /* Map GCC register number to debugger register number.  */
-int microblaze_dbx_regno[FIRST_PSEUDO_REGISTER];
+int microblaze_debugger_regno[FIRST_PSEUDO_REGISTER];
 
 /* Map hard register number to register class.  */
 enum reg_class microblaze_regno_to_class[] =
@@ -1881,11 +1881,11 @@ microblaze_option_override (void)
      Ignore the special purpose register numbers.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    microblaze_dbx_regno[i] = -1;
+    microblaze_debugger_regno[i] = -1;
 
-  start = GP_DBX_FIRST - GP_REG_FIRST;
+  start = GP_DEBUGGER_FIRST - GP_REG_FIRST;
   for (i = GP_REG_FIRST; i <= GP_REG_LAST; i++)
-    microblaze_dbx_regno[i] = i + start;
+    microblaze_debugger_regno[i] = i + start;
 
   /* Set up array giving whether a given register can hold a given mode.   */
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cddce2 -ffinite-loops" } */
+/* { dg-options "-O2 -fdump-tree-cddce2 -ffinite-loops -Wno-unused-result" } */
 
 #include <string>
 #include <vector>

@@ -1042,7 +1042,7 @@ finish_if_stmt_cond (tree orig_cond, tree if_stmt)
     {
       maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/true);
       cond = instantiate_non_dependent_expr (cond);
-      cond = cxx_constant_value (cond, NULL_TREE);
+      cond = cxx_constant_value (cond);
     }
   else
     {
@@ -3318,7 +3318,7 @@ finish_compound_literal (tree type, tree compound_literal,
       /* The CONSTRUCTOR is now an initializer, not a compound literal.  */
       if (TREE_CODE (compound_literal) == CONSTRUCTOR)
 	TREE_HAS_CONSTRUCTOR (compound_literal) = false;
-      compound_literal = get_target_expr_sfinae (compound_literal, complain);
+      compound_literal = get_target_expr (compound_literal, complain);
     }
   else
     /* For e.g. int{42} just make sure it's a prvalue.  */
@@ -6477,13 +6477,13 @@ finish_omp_declare_simd_methods (tree t)
     }
 }
 
-/* Adjust sink depend clause to take into account pointer offsets.
+/* Adjust sink depend/doacross clause to take into account pointer offsets.
 
    Return TRUE if there was a problem processing the offset, and the
    whole clause should be removed.  */
 
 static bool
-cp_finish_omp_clause_depend_sink (tree sink_clause)
+cp_finish_omp_clause_doacross_sink (tree sink_clause)
 {
   tree t = OMP_CLAUSE_DECL (sink_clause);
   gcc_assert (TREE_CODE (t) == TREE_LIST);
@@ -6755,10 +6755,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 	}
 
+  tree *grp_start_p = NULL, grp_sentinel = NULL_TREE;
+
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
       bool remove = false;
       bool field_ok = false;
+
+      /* We've reached the end of a list of expanded nodes.  Reset the group
+	 start pointer.  */
+      if (c == grp_sentinel)
+	grp_start_p = NULL;
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -7795,21 +7802,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  goto handle_field_decl;
 
-	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DOACROSS:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
+	    break;
+	  if (OMP_CLAUSE_DOACROSS_KIND (c) == OMP_CLAUSE_DOACROSS_SINK)
 	    {
-	      gcc_assert (OMP_CLAUSE_DEPEND_KIND (c)
-			  == OMP_CLAUSE_DEPEND_SOURCE);
-	      break;
-	    }
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
-	    {
-	      if (cp_finish_omp_clause_depend_sink (c))
+	      if (cp_finish_omp_clause_doacross_sink (c))
 		remove = true;
 	      break;
 	    }
-	  /* FALLTHRU */
+	  gcc_unreachable ();
+	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE_AFFINITY:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST
@@ -7985,6 +7989,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
+	      grp_start_p = pc;
+	      grp_sentinel = OMP_CLAUSE_CHAIN (c);
+
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
 	      else
@@ -8112,6 +8119,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      t = TREE_OPERAND (t, 1);
 	      STRIP_NOPS (t);
 	    }
+	  if (TREE_CODE (t) == COMPONENT_REF
+	      && invalid_nonstatic_memfn_p (EXPR_LOCATION (t), t,
+					    tf_warning_or_error))
+	    remove = true;
 	  indir_component_ref_p = false;
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
@@ -8356,6 +8367,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		       && (OMP_CLAUSE_MAP_KIND (c)
 			   != GOMP_MAP_ATTACH_DETACH))
 		{
+		  grp_start_p = pc;
+		  grp_sentinel = OMP_CLAUSE_CHAIN (c);
+
 		  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					      OMP_CLAUSE_MAP);
 		  if (TREE_CODE (t) == COMPONENT_REF)
@@ -8766,7 +8780,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	}
 
       if (remove)
-	*pc = OMP_CLAUSE_CHAIN (c);
+	{
+	  if (grp_start_p)
+	    {
+	      /* If we found a clause to remove, we want to remove the whole
+		 expanded group, otherwise gimplify can get confused.  */
+	      *grp_start_p = grp_sentinel;
+	      pc = grp_start_p;
+	      grp_start_p = NULL;
+	    }
+	  else
+	    *pc = OMP_CLAUSE_CHAIN (c);
+	}
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }
@@ -9558,16 +9583,15 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
 {
   omp_target_walk_data data;
   data.this_expr_accessed = false;
+  data.current_object = NULL_TREE;
 
-  tree ct = current_nonlambda_class_type ();
-  if (ct)
-    {
-      tree object = maybe_dummy_object (ct, NULL);
-      object = maybe_resolve_dummy (object, true);
-      data.current_object = object;
-    }
-  else
-    data.current_object = NULL_TREE;
+  if (DECL_NONSTATIC_MEMBER_P (current_function_decl) && current_class_ptr)
+    if (tree ct = current_nonlambda_class_type ())
+      {
+	tree object = maybe_dummy_object (ct, NULL);
+	object = maybe_resolve_dummy (object, true);
+	data.current_object = object;
+      }
 
   if (DECL_LAMBDA_FUNCTION_P (current_function_decl))
     {
@@ -11333,7 +11357,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else if (processing_template_decl)
     {
-      expr = instantiate_non_dependent_expr_sfinae (expr, complain|tf_decltype);
+      expr = instantiate_non_dependent_expr (expr, complain|tf_decltype);
       if (expr == error_mark_node)
 	return error_mark_node;
       /* Keep processing_template_decl cleared for the rest of the function
@@ -12020,6 +12044,12 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
       return is_nothrow_xible (INIT_EXPR, type1, type2);
 
+    case CPTK_IS_CONVERTIBLE:
+      return is_convertible (type1, type2);
+
+    case CPTK_IS_NOTHROW_CONVERTIBLE:
+      return is_nothrow_convertible (type1, type2);
+
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       return ref_xes_from_temporary (type1, type2, /*direct_init=*/true);
 
@@ -12032,11 +12062,23 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     }
 }
 
-/* If TYPE is an array of unknown bound, or (possibly cv-qualified)
-   void, or a complete type, returns true, otherwise false.  */
+/* Returns true if TYPE meets the requirements for the specified KIND,
+   false otherwise.
+
+   When KIND == 1, TYPE must be an array of unknown bound,
+   or (possibly cv-qualified) void, or a complete type.
+
+   When KIND == 2, TYPE must be a complete type, or array of complete type,
+   or (possibly cv-qualified) void.
+
+   When KIND == 3:
+   If TYPE is a non-union class type, it must be complete.
+
+   When KIND == 4:
+   If TYPE is a class type, it must be complete.  */
 
 static bool
-check_trait_type (tree type)
+check_trait_type (tree type, int kind = 1)
 {
   if (type == NULL_TREE)
     return true;
@@ -12045,8 +12087,14 @@ check_trait_type (tree type)
     return (check_trait_type (TREE_VALUE (type))
 	    && check_trait_type (TREE_CHAIN (type)));
 
-  if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
-    return true;
+  if (kind == 1 && TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
+    return true; // Array of unknown bound. Don't care about completeness.
+
+  if (kind == 3 && !NON_UNION_CLASS_TYPE_P (type))
+    return true; // Not a non-union class type. Don't care about completeness.
+
+  if (kind == 4 && TREE_CODE (type) == ARRAY_TYPE)
+    return true; // Not a class type. Don't care about completeness.
 
   if (VOID_TYPE_P (type))
     return true;
@@ -12084,29 +12132,47 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_TRIVIAL_COPY:
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
-    case CPTK_IS_ABSTRACT:
-    case CPTK_IS_AGGREGATE:
-    case CPTK_IS_EMPTY:
-    case CPTK_IS_FINAL:
+      if (!check_trait_type (type1))
+	return error_mark_node;
+      break;
+
     case CPTK_IS_LITERAL_TYPE:
     case CPTK_IS_POD:
-    case CPTK_IS_POLYMORPHIC:
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
     case CPTK_IS_TRIVIALLY_COPYABLE:
-      if (!check_trait_type (type1))
+      if (!check_trait_type (type1, /* kind = */ 2))
+	return error_mark_node;
+      break;
+
+    case CPTK_IS_EMPTY:
+    case CPTK_IS_POLYMORPHIC:
+    case CPTK_IS_ABSTRACT:
+    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
+      if (!check_trait_type (type1, /* kind = */ 3))
+	return error_mark_node;
+      break;
+
+    /* N.B. std::is_aggregate is kind=2 but we don't need a complete element
+       type to know whether an array is an aggregate, so use kind=4 here.  */
+    case CPTK_IS_AGGREGATE:
+    case CPTK_IS_FINAL:
+      if (!check_trait_type (type1, /* kind = */ 4))
 	return error_mark_node;
       break;
 
     case CPTK_IS_ASSIGNABLE:
     case CPTK_IS_CONSTRUCTIBLE:
+      if (!check_trait_type (type1))
+	return error_mark_node;
       break;
 
     case CPTK_IS_TRIVIALLY_ASSIGNABLE:
     case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
     case CPTK_IS_NOTHROW_ASSIGNABLE:
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+    case CPTK_IS_CONVERTIBLE:
+    case CPTK_IS_NOTHROW_CONVERTIBLE:
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
       if (!check_trait_type (type1)
@@ -12470,7 +12536,7 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
   SET_EXPR_LOCATION (ret, loc);
 
   if (!processing_template_decl && CLASS_TYPE_P (type))
-    ret = get_target_expr_sfinae (ret, complain);
+    ret = get_target_expr (ret, complain);
 
   return ret;
 }

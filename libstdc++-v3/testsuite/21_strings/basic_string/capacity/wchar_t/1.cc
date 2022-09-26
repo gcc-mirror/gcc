@@ -71,15 +71,15 @@ void test01()
   sz01 = str01.size();
   sz02 = str01.length();
   VERIFY( sz01 == sz02 );
-  str01.c_str();
+  (void) str01.c_str();
   sz01 = str01.size();
   sz02 = str01.length();
   VERIFY( sz01 == sz02 );
 
   sz01 = str01.length();
-  str01.c_str();
+  (void) str01.c_str();
   str011 = str01 +  L"_addendum_";
-  str01.c_str();
+  (void) str01.c_str();
   sz02 = str01.length();    
   VERIFY( sz01 == sz02 );
   sz02 = str011.length();

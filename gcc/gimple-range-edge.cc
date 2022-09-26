@@ -43,7 +43,7 @@ gimple_outgoing_range_stmt_p (basic_block bb)
   if (!gsi_end_p (gsi))
     {
       gimple *s = gsi_stmt (gsi);
-      if (is_a<gcond *> (s) && range_op_handler (s))
+      if (is_a<gcond *> (s) && gimple_range_op_handler::supported_p (s))
 	return gsi_stmt (gsi);
       if (is_a <gswitch *> (s))
 	return gsi_stmt (gsi);

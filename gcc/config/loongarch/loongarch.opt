@@ -180,6 +180,9 @@ EnumValue
 Enum(cmodel) String(tiny-static) Value(CMODEL_TINY_STATIC)
 
 EnumValue
+Enum(cmodel) String(medium) Value(CMODEL_MEDIUM)
+
+EnumValue
 Enum(cmodel) String(large) Value(CMODEL_LARGE)
 
 EnumValue
@@ -188,3 +191,7 @@ Enum(cmodel) String(extreme) Value(CMODEL_EXTREME)
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(CMODEL_NORMAL)
 Specify the code model.
+
+mdirect-extern-access
+Target Var(TARGET_DIRECT_EXTERN_ACCESS) Init(0)
+Avoid using the GOT to access external symbols.

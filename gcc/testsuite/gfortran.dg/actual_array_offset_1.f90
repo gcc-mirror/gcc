@@ -155,7 +155,7 @@ program test_quicksort
 
     call quicksort( array )
 
-! Check the the array is correctly ordered
+! Check the array is correctly ordered
     if (.not.check (array)) STOP 2
 contains
      logical function check (arg)

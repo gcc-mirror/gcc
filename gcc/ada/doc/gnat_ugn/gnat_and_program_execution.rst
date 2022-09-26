@@ -756,12 +756,14 @@ for a complete list of supported platforms.
 .. rubric:: Tracebacks From an Unhandled Exception
 
 A runtime non-symbolic traceback is a list of addresses of call instructions.
-To enable this feature you must use the :switch:`-E`
-``gnatbind`` option. With this option a stack traceback is stored as part
-of exception information. You can retrieve this information using the
-``addr2line`` tool.
+To enable this feature you must use the :switch:`-E` ``gnatbind`` option. With
+this option a stack traceback is stored as part of exception information.
 
-Here is a simple example:
+You can translate this information using the ``addr2line`` tool, provided that
+the program is compiled with debugging options (see :ref:`Switches_for_gcc`)
+and linked at a fixed position with :switch:`-no-pie`.
+
+Here is a simple example with ``gnatmake``:
 
   .. code-block:: ada
 
@@ -783,94 +785,110 @@ Here is a simple example:
 
   ::
 
-     $ gnatmake stb -bargs -E
+     $ gnatmake stb -g -bargs -E -largs -no-pie
      $ stb
 
-     Execution terminated by unhandled exception
-     Exception name: CONSTRAINT_ERROR
-     Message: stb.adb:5
+     Execution of stb terminated by unhandled exception
+     raised CONSTRAINT_ERROR : stb.adb:5 explicit raise
+     Load address: 0x400000
      Call stack traceback locations:
      0x401373 0x40138b 0x40139c 0x401335 0x4011c4 0x4011f1 0x77e892a4
 
 As we see the traceback lists a sequence of addresses for the unhandled
 exception ``CONSTRAINT_ERROR`` raised in procedure P1. It is easy to
 guess that this exception come from procedure P1. To translate these
-addresses into the source lines where the calls appear, the
-``addr2line`` tool, described below, is invaluable. The use of this tool
-requires the program to be compiled with debug information.
+addresses into the source lines where the calls appear, the ``addr2line``
+tool needs to be invoked like this:
 
   ::
 
-     $ gnatmake -g stb -bargs -E
-     $ stb
-
-     Execution terminated by unhandled exception
-     Exception name: CONSTRAINT_ERROR
-     Message: stb.adb:5
-     Call stack traceback locations:
-     0x401373 0x40138b 0x40139c 0x401335 0x4011c4 0x4011f1 0x77e892a4
-
-     $ addr2line --exe=stb 0x401373 0x40138b 0x40139c 0x401335 0x4011c4
+     $ addr2line -e stb 0x401373 0x40138b 0x40139c 0x401335 0x4011c4
         0x4011f1 0x77e892a4
 
-     00401373 at d:/stb/stb.adb:5
-     0040138B at d:/stb/stb.adb:10
-     0040139C at d:/stb/stb.adb:14
-     00401335 at d:/stb/b~stb.adb:104
-     004011C4 at /build/.../crt1.c:200
-     004011F1 at /build/.../crt1.c:222
-     77E892A4 in ?? at ??:0
+     d:/stb/stb.adb:5
+     d:/stb/stb.adb:10
+     d:/stb/stb.adb:14
+     d:/stb/b~stb.adb:197
+     crtexe.c:?
+     crtexe.c:?
+     ??:0
 
 The ``addr2line`` tool has several other useful options:
 
-  ======================== ========================================================
-  :samp:`--functions`      to get the function name corresponding to any location
-  :samp:`--demangle=gnat`  to use the gnat decoding mode for the function names.
-                           Note that for binutils version 2.9.x the option is
-                           simply :samp:`--demangle`.
-  ======================== ========================================================
+  =========================  ====================================================
+  :samp:`-a --addresses`     to show the addresses alongside the line numbers
+  :samp:`-f --functions`     to get the function name corresponding to a location
+  :samp:`-p --pretty-print`  to print all the information on a single line
+  :samp:`--demangle=gnat`    to use the GNAT decoding mode for the function names
+  =========================  ====================================================
 
   ::
 
-     $ addr2line --exe=stb --functions --demangle=gnat 0x401373 0x40138b
-        0x40139c 0x401335 0x4011c4 0x4011f1
+     $ addr2line -e stb -a -f -p --demangle=gnat 0x401373 0x40138b
+        0x40139c 0x401335 0x4011c4 0x4011f1 0x77e892a4
 
-     00401373 in stb.p1 at d:/stb/stb.adb:5
-     0040138B in stb.p2 at d:/stb/stb.adb:10
-     0040139C in stb at d:/stb/stb.adb:14
-     00401335 in main at d:/stb/b~stb.adb:104
-     004011C4 in <__mingw_CRTStartup> at /build/.../crt1.c:200
-     004011F1 in <mainCRTStartup> at /build/.../crt1.c:222
+     0x00401373: stb.p1 at d:/stb/stb.adb:5
+     0x0040138B: stb.p2 at d:/stb/stb.adb:10
+     0x0040139C: stb at d:/stb/stb.adb:14
+     0x00401335: main at d:/stb/b~stb.adb:197
+     0x004011c4: ?? at crtexe.c:?
+     0x004011f1: ?? at crtexe.c:?
+     0x77e892a4: ?? ??:0
 
-From this traceback we can see that the exception was raised in
-:file:`stb.adb` at line 5, which was reached from a procedure call in
-:file:`stb.adb` at line 10, and so on. The :file:`b~std.adb` is the binder file,
-which contains the call to the main program.
-:ref:`Running_gnatbind`. The remaining entries are assorted runtime routines,
-and the output will vary from platform to platform.
+
+From this traceback we can see that the exception was raised in :file:`stb.adb`
+at line 5, which was reached from a procedure call in :file:`stb.adb` at line
+10, and so on. The :file:`b~std.adb` is the binder file, which contains the
+call to the main program. :ref:`Running_gnatbind`. The remaining entries are
+assorted runtime routines and the output will vary from platform to platform.
 
 It is also possible to use ``GDB`` with these traceback addresses to debug
 the program. For example, we can break at a given code location, as reported
-in the stack traceback:
-
-  ::
+in the stack traceback::
 
      $ gdb -nw stb
-
-Furthermore, this feature is not implemented inside Windows DLL. Only
-the non-symbolic traceback is reported in this case.
-
-  ::
 
      (gdb) break *0x401373
      Breakpoint 1 at 0x401373: file stb.adb, line 5.
 
-It is important to note that the stack traceback addresses
-do not change when debug information is included. This is particularly useful
-because it makes it possible to release software without debug information (to
-minimize object size), get a field report that includes a stack traceback
-whenever an internal bug occurs, and then be able to retrieve the sequence
-of calls with the same program compiled with debug information.
+It is important to note that the stack traceback addresses do not change when
+debug information is included. This is particularly useful because it makes it
+possible to release software without debug information (to minimize object
+size), get a field report that includes a stack traceback whenever an internal
+bug occurs, and then be able to retrieve the sequence of calls with the same
+program compiled with debug information.
+
+However the ``addr2line`` tool does not work with Position-Independent Code
+(PIC), the historical example being Windows DLLs, which nowadays encompasses
+Position-Independent Executables (PIE) on recent Windows versions.
+
+In order to translate addresses into the source lines with Position-Independent
+Executables on recent Windows versions, in other words without using the switch
+:switch:`-no-pie` during linking, you need to use the ``gnatsymbolize`` tool
+with :switch:`--load` instead of the ``addr2line`` tool. The main difference
+is that you need to copy the Load Address output in the traceback ahead of the
+sequence of addresses. And the default mode of ``gnatsymbolize`` is equivalent
+to that of ``addr2line`` with the above switches, so none of them is needed::
+
+     $ gnatmake stb -g -bargs -E
+     $ stb
+
+     Execution of stb terminated by unhandled exception
+     raised CONSTRAINT_ERROR : stb.adb:5 explicit raise
+     Load address: 0x400000
+     Call stack traceback locations:
+     0x401373 0x40138b 0x40139c 0x401335 0x4011c4 0x4011f1 0x77e892a4
+
+     $ gnatsymbolize --load stb 0x400000 0x401373 0x40138b 0x40139c 0x401335
+        0x4011c4 0x4011f1 0x77e892a4
+
+     0x00401373 Stb.P1 at stb.adb:5
+     0x0040138B Stb.P2 at stb.adb:10
+     0x0040139C Stb at stb.adb:14
+     0x00401335 Main at b~stb.adb:197
+     0x004011c4 __tmainCRTStartup at ???
+     0x004011f1 mainCRTStartup at ???
+     0x77e892a4 ??? at ???
 
 
 .. rubric:: Tracebacks From Exception Occurrences
@@ -914,25 +932,24 @@ This program will output:
 
      $ stb
 
-     Exception name: CONSTRAINT_ERROR
-     Message: stb.adb:12
+     raised CONSTRAINT_ERROR : stb.adb:12 range check failed
+     Load address: 0x400000
      Call stack traceback locations:
      0x4015e4 0x401633 0x401644 0x401461 0x4011c4 0x4011f1 0x77e892a4
 
 
 .. rubric:: Tracebacks From Anywhere in a Program
 
-It is also possible to retrieve a stack traceback from anywhere in a
-program. For this you need to
-use the ``GNAT.Traceback`` API. This package includes a procedure called
-``Call_Chain`` that computes a complete stack traceback, as well as useful
-display procedures described below. It is not necessary to use the
-:switch:`-E` ``gnatbind`` option in this case, because the stack traceback mechanism
-is invoked explicitly.
+It is also possible to retrieve a stack traceback from anywhere in a program.
+For this you need to use the ``GNAT.Traceback`` API. This package includes a
+procedure called ``Call_Chain`` that computes a complete stack traceback, as
+well as useful display procedures described below. It is not necessary to use
+the :switch:`-E` ``gnatbind`` option in this case, because the stack traceback
+mechanism is invoked explicitly.
 
-In the following example we compute a traceback at a specific location in
-the program, and we display it using ``GNAT.Debug_Utilities.Image`` to
-convert addresses to strings:
+In the following example we compute a traceback at a specific location in the
+program, and we display it using ``GNAT.Debug_Utilities.Image`` to convert
+addresses to strings:
 
 
   .. code-block:: ada
@@ -976,16 +993,16 @@ convert addresses to strings:
 
   ::
 
-     $ gnatmake -g stb
+     $ gnatmake stb -g
      $ stb
 
      In STB.P1 : 16#0040_F1E4# 16#0040_14F2# 16#0040_170B# 16#0040_171C#
      16#0040_1461# 16#0040_11C4# 16#0040_11F1# 16#77E8_92A4#
 
 
-You can then get further information by invoking the ``addr2line``
-tool as described earlier (note that the hexadecimal addresses
-need to be specified in C format, with a leading '0x').
+You can then get further information by invoking the ``addr2line`` tool or
+the ``gnatsymbolize`` tool as described earlier (note that the hexadecimal
+addresses need to be specified in C format, with a leading '0x').
 
 .. index:: traceback, symbolic
 
@@ -3716,12 +3733,13 @@ execution of this erroneous program:
   allocation and deallocation routines. This is done by linking with the
   :file:`libgmem.a` library. For correct symbolic backtrace information,
   the user program should also both be compiled with debugging options
-  (see :ref:`Switches_for_gcc`) and be linked at a fixed position. For
-  example to build :file:`my_program` with ``gnatmake``:
+  (see :ref:`Switches_for_gcc`) and be linked at a fixed position with
+  :switch:`-no-pie`. For example to build :file:`my_program` with
+  ``gnatmake``:
 
     ::
 
-       $ gnatmake -g my_program -largs -lgmem -no-pie
+       $ gnatmake my_program -g -largs -lgmem -no-pie
 
   As library :file:`libgmem.a` contains an alternate body for package
   ``System.Memory``, :file:`s-memory.adb` should not be compiled and linked

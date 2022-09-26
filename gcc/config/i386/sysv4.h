@@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef X86_FILE_START_VERSION_DIRECTIVE
 #define X86_FILE_START_VERSION_DIRECTIVE true
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n)  svr4_debugger_register_map[n]
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named

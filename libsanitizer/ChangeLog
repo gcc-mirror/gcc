@@ -1,3 +1,20 @@
+2022-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* LOCAL_PATCHES: Update.
+
+2022-08-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.tgt: Allow loongarch64-*-linux*.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* sanitizer_common/Makefile.am: Remove sanitizer_openbsd.
+	* sanitizer_common/Makefile.in: Regenerate.
+
 2022-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR sanitizer/105531

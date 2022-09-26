@@ -96,15 +96,6 @@ range_compatible_p (tree type1, tree type2)
 	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
 }
 
-extern tree gimple_range_operand1 (const gimple *s);
-extern tree gimple_range_operand2 (const gimple *s);
-
-// Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names
-// on the statement.  For efficiency, it is an error to not pass in enough
-// elements for the vector.  Return the number of ssa-names.
-
-unsigned gimple_range_ssa_names (tree *vec, unsigned vec_size, gimple *stmt);
-
 // Source of all operands for fold_using_range and gori_compute.
 // It abstracts out the source of an operand so it can come from a stmt or
 // and edge or anywhere a derived class of fur_source wants.
@@ -169,14 +160,11 @@ public:
   bool fold_stmt (vrange &r, gimple *s, class fur_source &src,
 		  tree name = NULL_TREE);
 protected:
-  bool range_of_range_op (vrange &r, gimple *s, fur_source &src);
+  bool range_of_range_op (vrange &r, gimple_range_op_handler &handler,
+			  fur_source &src);
   bool range_of_call (vrange &r, gcall *call, fur_source &src);
   bool range_of_cond_expr (vrange &r, gassign* cond, fur_source &src);
   bool range_of_address (irange &r, gimple *s, fur_source &src);
-  bool range_of_builtin_call (vrange &r, gcall *call, fur_source &src);
-  bool range_of_builtin_int_call (irange &r, gcall *call, fur_source &src);
-  void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code,
-				    fur_source &src);
   bool range_of_phi (vrange &r, gphi *phi, fur_source &src);
   void range_of_ssa_name_with_loop_info (vrange &, tree, class loop *, gphi *,
 					 fur_source &src);

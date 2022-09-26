@@ -123,6 +123,7 @@ static rtx expand_builtin_fegetround (tree, rtx, machine_mode);
 static rtx expand_builtin_feclear_feraise_except (tree, rtx, machine_mode,
 						  optab);
 static rtx expand_builtin_cexpi (tree, rtx);
+static rtx expand_builtin_issignaling (tree, rtx);
 static rtx expand_builtin_int_roundingfn (tree, rtx);
 static rtx expand_builtin_int_roundingfn_2 (tree, rtx);
 static rtx expand_builtin_next_arg (void);
@@ -2745,6 +2746,300 @@ build_call_nofold_loc (location_t loc, tree fndecl, int n, ...)
   va_end (ap);
   SET_EXPR_LOCATION (fn, loc);
   return fn;
+}
+
+/* Expand the __builtin_issignaling builtin.  This needs to handle
+   all floating point formats that do support NaNs (for those that
+   don't it just sets target to 0).  */
+
+static rtx
+expand_builtin_issignaling (tree exp, rtx target)
+{
+  if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  tree arg = CALL_EXPR_ARG (exp, 0);
+  scalar_float_mode fmode = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (arg));
+  const struct real_format *fmt = REAL_MODE_FORMAT (fmode);
+
+  /* Expand the argument yielding a RTX expression. */
+  rtx temp = expand_normal (arg);
+
+  /* If mode doesn't support NaN, always return 0.
+     Don't use !HONOR_SNANS (fmode) here, so there is some possibility of
+     __builtin_issignaling working without -fsignaling-nans.  Especially
+     when -fno-signaling-nans is the default.
+     On the other side, MODE_HAS_NANS (fmode) is unnecessary, with
+     -ffinite-math-only even __builtin_isnan or __builtin_fpclassify
+     fold to 0 or non-NaN/Inf classification.  */
+  if (!HONOR_NANS (fmode))
+    {
+      emit_move_insn (target, const0_rtx);
+      return target;
+    }
+
+  /* Check if the back end provides an insn that handles issignaling for the
+     argument's mode. */
+  enum insn_code icode = optab_handler (issignaling_optab, fmode);
+  if (icode != CODE_FOR_nothing)
+    {
+      rtx_insn *last = get_last_insn ();
+      rtx this_target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+      if (maybe_emit_unop_insn (icode, this_target, temp, UNKNOWN))
+	return this_target;
+      delete_insns_since (last);
+    }
+
+  if (DECIMAL_FLOAT_MODE_P (fmode))
+    {
+      scalar_int_mode imode;
+      rtx hi;
+      switch (fmt->ieee_bits)
+	{
+	case 32:
+	case 64:
+	  imode = int_mode_for_mode (fmode).require ();
+	  temp = gen_lowpart (imode, temp);
+	  break;
+	case 128:
+	  imode = int_mode_for_size (64, 1).require ();
+	  hi = NULL_RTX;
+	  /* For decimal128, TImode support isn't always there and even when
+	     it is, working on the DImode high part is usually better.  */
+	  if (!MEM_P (temp))
+	    {
+	      if (rtx t = simplify_gen_subreg (imode, temp, fmode,
+					       subreg_highpart_offset (imode,
+								       fmode)))
+		hi = t;
+	      else
+		{
+		  scalar_int_mode imode2;
+		  if (int_mode_for_mode (fmode).exists (&imode2))
+		    {
+		      rtx temp2 = gen_lowpart (imode2, temp);
+		      poly_uint64 off = subreg_highpart_offset (imode, imode2);
+		      if (rtx t = simplify_gen_subreg (imode, temp2,
+						       imode2, off))
+			hi = t;
+		    }
+		}
+	      if (!hi)
+		{
+		  rtx mem = assign_stack_temp (fmode, GET_MODE_SIZE (fmode));
+		  emit_move_insn (mem, temp);
+		  temp = mem;
+		}
+	    }
+	  if (!hi)
+	    {
+	      poly_int64 offset
+		= subreg_highpart_offset (imode, GET_MODE (temp));
+	      hi = adjust_address (temp, imode, offset);
+	    }
+	  temp = hi;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      /* In all of decimal{32,64,128}, there is MSB sign bit and sNaN
+	 have 6 bits below it all set.  */
+      rtx val
+	= GEN_INT (HOST_WIDE_INT_C (0x3f) << (GET_MODE_BITSIZE (imode) - 7));
+      temp = expand_binop (imode, and_optab, temp, val,
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      temp = emit_store_flag_force (target, EQ, temp, val, imode, 1, 1);
+      return temp;
+    }
+
+  /* Only PDP11 has these defined differently but doesn't support NaNs.  */
+  gcc_assert (FLOAT_WORDS_BIG_ENDIAN == WORDS_BIG_ENDIAN);
+  gcc_assert (fmt->signbit_ro > 0 && fmt->b == 2);
+  gcc_assert (MODE_COMPOSITE_P (fmode)
+	      || (fmt->pnan == fmt->p
+		  && fmt->signbit_ro == fmt->signbit_rw));
+
+  switch (fmt->p)
+    {
+    case 106: /* IBM double double  */
+      /* For IBM double double, recurse on the most significant double.  */
+      gcc_assert (MODE_COMPOSITE_P (fmode));
+      temp = convert_modes (DFmode, fmode, temp, 0);
+      fmode = DFmode;
+      fmt = REAL_MODE_FORMAT (DFmode);
+      /* FALLTHRU */
+    case 8: /* bfloat */
+    case 11: /* IEEE half */
+    case 24: /* IEEE single */
+    case 53: /* IEEE double or Intel extended with rounding to double */
+      if (fmt->p == 53 && fmt->signbit_ro == 79)
+	goto extended;
+      {
+	scalar_int_mode imode = int_mode_for_mode (fmode).require ();
+	temp = gen_lowpart (imode, temp);
+	rtx val = GEN_INT ((HOST_WIDE_INT_M1U << (fmt->p - 2))
+			   & ~(HOST_WIDE_INT_M1U << fmt->signbit_ro));
+	if (fmt->qnan_msb_set)
+	  {
+	    rtx mask = GEN_INT (~(HOST_WIDE_INT_M1U << fmt->signbit_ro));
+	    rtx bit = GEN_INT (HOST_WIDE_INT_1U << (fmt->p - 2));
+	    /* For non-MIPS/PA IEEE single/double/half or bfloat, expand to:
+	       ((temp ^ bit) & mask) > val.  */
+	    temp = expand_binop (imode, xor_optab, temp, bit,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = expand_binop (imode, and_optab, temp, mask,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = emit_store_flag_force (target, GTU, temp, val, imode,
+					  1, 1);
+	  }
+	else
+	  {
+	    /* For MIPS/PA IEEE single/double, expand to:
+	       (temp & val) == val.  */
+	    temp = expand_binop (imode, and_optab, temp, val,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = emit_store_flag_force (target, EQ, temp, val, imode,
+					  1, 1);
+	  }
+      }
+      break;
+    case 113: /* IEEE quad */
+      {
+	rtx hi = NULL_RTX, lo = NULL_RTX;
+	scalar_int_mode imode = int_mode_for_size (64, 1).require ();
+	/* For IEEE quad, TImode support isn't always there and even when
+	   it is, working on DImode parts is usually better.  */
+	if (!MEM_P (temp))
+	  {
+	    hi = simplify_gen_subreg (imode, temp, fmode,
+				      subreg_highpart_offset (imode, fmode));
+	    lo = simplify_gen_subreg (imode, temp, fmode,
+				      subreg_lowpart_offset (imode, fmode));
+	    if (!hi || !lo)
+	      {
+		scalar_int_mode imode2;
+		if (int_mode_for_mode (fmode).exists (&imode2))
+		  {
+		    rtx temp2 = gen_lowpart (imode2, temp);
+		    hi = simplify_gen_subreg (imode, temp2, imode2,
+					      subreg_highpart_offset (imode,
+								      imode2));
+		    lo = simplify_gen_subreg (imode, temp2, imode2,
+					      subreg_lowpart_offset (imode,
+								     imode2));
+		  }
+	      }
+	    if (!hi || !lo)
+	      {
+		rtx mem = assign_stack_temp (fmode, GET_MODE_SIZE (fmode));
+		emit_move_insn (mem, temp);
+		temp = mem;
+	      }
+	  }
+	if (!hi || !lo)
+	  {
+	    poly_int64 offset
+	      = subreg_highpart_offset (imode, GET_MODE (temp));
+	    hi = adjust_address (temp, imode, offset);
+	    offset = subreg_lowpart_offset (imode, GET_MODE (temp));
+	    lo = adjust_address (temp, imode, offset);
+	  }
+	rtx val = GEN_INT ((HOST_WIDE_INT_M1U << (fmt->p - 2 - 64))
+			   & ~(HOST_WIDE_INT_M1U << (fmt->signbit_ro - 64)));
+	if (fmt->qnan_msb_set)
+	  {
+	    rtx mask = GEN_INT (~(HOST_WIDE_INT_M1U << (fmt->signbit_ro
+							- 64)));
+	    rtx bit = GEN_INT (HOST_WIDE_INT_1U << (fmt->p - 2 - 64));
+	    /* For non-MIPS/PA IEEE quad, expand to:
+	       (((hi ^ bit) | ((lo | -lo) >> 63)) & mask) > val.  */
+	    rtx nlo = expand_unop (imode, neg_optab, lo, NULL_RTX, 0);
+	    lo = expand_binop (imode, ior_optab, lo, nlo,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    lo = expand_shift (RSHIFT_EXPR, imode, lo, 63, NULL_RTX, 1);
+	    temp = expand_binop (imode, xor_optab, hi, bit,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = expand_binop (imode, ior_optab, temp, lo,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = expand_binop (imode, and_optab, temp, mask,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = emit_store_flag_force (target, GTU, temp, val, imode,
+					  1, 1);
+	  }
+	else
+	  {
+	    /* For MIPS/PA IEEE quad, expand to:
+	       (hi & val) == val.  */
+	    temp = expand_binop (imode, and_optab, hi, val,
+				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    temp = emit_store_flag_force (target, EQ, temp, val, imode,
+					  1, 1);
+	  }
+      }
+      break;
+    case 64: /* Intel or Motorola extended */
+    extended:
+      {
+	rtx ex, hi, lo;
+	scalar_int_mode imode = int_mode_for_size (32, 1).require ();
+	scalar_int_mode iemode = int_mode_for_size (16, 1).require ();
+	if (!MEM_P (temp))
+	  {
+	    rtx mem = assign_stack_temp (fmode, GET_MODE_SIZE (fmode));
+	    emit_move_insn (mem, temp);
+	    temp = mem;
+	  }
+	if (fmt->signbit_ro == 95)
+	  {
+	    /* Motorola, always big endian, with 16-bit gap in between
+	       16-bit sign+exponent and 64-bit mantissa.  */
+	    ex = adjust_address (temp, iemode, 0);
+	    hi = adjust_address (temp, imode, 4);
+	    lo = adjust_address (temp, imode, 8);
+	  }
+	else if (!WORDS_BIG_ENDIAN)
+	  {
+	    /* Intel little endian, 64-bit mantissa followed by 16-bit
+	       sign+exponent and then either 16 or 48 bits of gap.  */
+	    ex = adjust_address (temp, iemode, 8);
+	    hi = adjust_address (temp, imode, 4);
+	    lo = adjust_address (temp, imode, 0);
+	  }
+	else
+	  {
+	    /* Big endian Itanium.  */
+	    ex = adjust_address (temp, iemode, 0);
+	    hi = adjust_address (temp, imode, 2);
+	    lo = adjust_address (temp, imode, 6);
+	  }
+	rtx val = GEN_INT (HOST_WIDE_INT_M1U << 30);
+	gcc_assert (fmt->qnan_msb_set);
+	rtx mask = GEN_INT (0x7fff);
+	rtx bit = GEN_INT (HOST_WIDE_INT_1U << 30);
+	/* For Intel/Motorola extended format, expand to:
+	   (ex & mask) == mask && ((hi ^ bit) | ((lo | -lo) >> 31)) > val.  */
+	rtx nlo = expand_unop (imode, neg_optab, lo, NULL_RTX, 0);
+	lo = expand_binop (imode, ior_optab, lo, nlo,
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	lo = expand_shift (RSHIFT_EXPR, imode, lo, 31, NULL_RTX, 1);
+	temp = expand_binop (imode, xor_optab, hi, bit,
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	temp = expand_binop (imode, ior_optab, temp, lo,
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	temp = emit_store_flag_force (target, GTU, temp, val, imode, 1, 1);
+	ex = expand_binop (iemode, and_optab, ex, mask,
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	ex = emit_store_flag_force (gen_reg_rtx (GET_MODE (temp)), EQ,
+				    ex, mask, iemode, 1, 1);
+	temp = expand_binop (GET_MODE (temp), and_optab, temp, ex,
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      }
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return temp;
 }
 
 /* Expand a call to one of the builtin rounding functions gcc defines
@@ -5508,9 +5803,9 @@ expand_builtin_signbit (tree exp, rtx target)
   if (icode != CODE_FOR_nothing)
     {
       rtx_insn *last = get_last_insn ();
-      target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
-      if (maybe_emit_unop_insn (icode, target, temp, UNKNOWN))
-	return target;
+      rtx this_target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+      if (maybe_emit_unop_insn (icode, this_target, temp, UNKNOWN))
+	return this_target;
       delete_insns_since (last);
     }
 
@@ -7120,6 +7415,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_ISSIGNALING:
+      target = expand_builtin_issignaling (exp, target);
+      if (target)
+	return target;
+      break;
+
     CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
@@ -8395,8 +8696,6 @@ fold_builtin_strlen (location_t loc, tree expr, tree type, tree arg)
 static tree
 fold_builtin_inf (location_t loc, tree type, int warn)
 {
-  REAL_VALUE_TYPE real;
-
   /* __builtin_inff is intended to be usable to define INFINITY on all
      targets.  If an infinity is not available, INFINITY expands "to a
      positive constant of type float that overflows at translation
@@ -8407,8 +8706,7 @@ fold_builtin_inf (location_t loc, tree type, int warn)
   if (!MODE_HAS_INFINITIES (TYPE_MODE (type)) && warn)
     pedwarn (loc, 0, "target format does not support infinity");
 
-  real_inf (&real);
-  return build_real (type, real);
+  return build_real (type, dconstinf);
 }
 
 /* Fold function call to builtin sincos, sincosf, or sincosl.  Return
@@ -8963,6 +9261,17 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       arg = builtin_save_expr (arg);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg, arg);
 
+    case BUILT_IN_ISSIGNALING:
+      /* Folding to true for REAL_CST is done in fold_const_call_ss.
+	 Don't use tree_expr_signaling_nan_p (arg) -> integer_one_node
+	 and !tree_expr_maybe_signaling_nan_p (arg) -> integer_zero_node
+	 here, so there is some possibility of __builtin_issignaling working
+	 without -fsignaling-nans.  Especially when -fno-signaling-nans is
+	 the default.  */
+      if (!tree_expr_maybe_nan_p (arg))
+	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
+      return NULL_TREE;
+
     default:
       gcc_unreachable ();
     }
@@ -9024,9 +9333,8 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 
   if (tree_expr_maybe_infinite_p (arg))
     {
-      real_inf (&r);
       tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, arg,
-			 build_real (type, r));
+			 build_real (type, dconstinf));
       res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
 			 fp_infinite, res);
     }
@@ -9398,6 +9706,9 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
     case BUILT_IN_ISNAND64:
     case BUILT_IN_ISNAND128:
       return fold_builtin_classify (loc, fndecl, arg0, BUILT_IN_ISNAN);
+
+    case BUILT_IN_ISSIGNALING:
+      return fold_builtin_classify (loc, fndecl, arg0, BUILT_IN_ISSIGNALING);
 
     case BUILT_IN_FREE:
       if (integer_zerop (arg0))

@@ -114,6 +114,29 @@ package body Bindgen is
    --  For CodePeer, introduce a wrapper subprogram which calls the
    --  user-defined main subprogram.
 
+   --  Names and link_names for CUDA device adainit/adafinal procs.
+
+   Device_Subp_Name_Prefix : constant String := "imported_device_";
+   Device_Link_Name_Prefix : constant String := "__device_";
+
+   function Device_Ada_Final_Link_Name return String is
+     (Device_Link_Name_Prefix & Ada_Final_Name.all);
+
+   function Device_Ada_Final_Subp_Name return String is
+     (Device_Subp_Name_Prefix & Ada_Final_Name.all);
+
+   function Device_Ada_Init_Link_Name return String is
+     (Device_Link_Name_Prefix & Ada_Init_Name.all);
+
+   function Device_Ada_Init_Subp_Name return String is
+     (Device_Subp_Name_Prefix & Ada_Init_Name.all);
+
+   --  Text for aspect specifications (if any) given as part of the
+   --  Adainit and Adafinal spec declarations.
+
+   function Aspect_Text return String is
+     (if Enable_CUDA_Device_Expansion then " with CUDA_Global" else "");
+
    ----------------------------------
    -- Interface_State Pragma Table --
    ----------------------------------
@@ -501,6 +524,12 @@ package body Bindgen is
          WBI ("      System.Standard_Library.Adafinal;");
       end if;
 
+      --  perform device (as opposed to host) finalization
+      if Enable_CUDA_Expansion then
+         WBI ("      pragma CUDA_Execute (" &
+                Device_Ada_Final_Subp_Name & ", 1, 1);");
+      end if;
+
       WBI ("   end " & Ada_Final_Name.all & ";");
       WBI ("");
    end Gen_Adafinal;
@@ -512,7 +541,6 @@ package body Bindgen is
    procedure Gen_Adainit (Elab_Order : Unit_Id_Array) is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
       Main_CPU      : Int renames ALIs.Table (ALIs.First).Main_CPU;
-
    begin
       --  Declare the access-to-subprogram type used for initialization of
       --  of __gnat_finalize_library_objects. This is declared at library
@@ -1334,6 +1362,13 @@ package body Bindgen is
          end;
       end loop;
 
+      WBI ("   procedure " & Device_Ada_Init_Subp_Name & ";");
+      WBI ("   pragma Import (C, " & Device_Ada_Init_Subp_Name &
+             ", Link_Name => """ & Device_Ada_Init_Link_Name & """);");
+      WBI ("   procedure " & Device_Ada_Final_Subp_Name & ";");
+      WBI ("   pragma Import (C, " & Device_Ada_Final_Subp_Name &
+             ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
+
       WBI ("");
    end Gen_CUDA_Defs;
 
@@ -1393,6 +1428,10 @@ package body Bindgen is
       end loop;
 
       WBI ("      CUDA_Register_Fat_Binary_End (Fat_Binary_Handle);");
+
+      --  perform device (as opposed to host) elaboration
+      WBI ("      pragma CUDA_Execute (" &
+             Device_Ada_Init_Subp_Name & ", 1, 1);");
    end Gen_CUDA_Init;
 
    --------------------------
@@ -1544,6 +1583,7 @@ package body Bindgen is
 
                Check_Elab_Flag :=
                  Units.Table (Unum_Spec).Set_Elab_Entity
+                   and then Check_Elaboration_Flags
                    and then not CodePeer_Mode
                    and then (Force_Checking_Of_Elaboration_Flags
                               or Interface_Library_Unit
@@ -2512,6 +2552,9 @@ package body Bindgen is
       if Enable_CUDA_Expansion then
          WBI ("with Interfaces.C;");
          WBI ("with Interfaces.C.Strings;");
+
+         --  with of CUDA.Internal needed for CUDA_Execute pragma expansion
+         WBI ("with CUDA.Internal;");
       end if;
 
       Resolve_Binder_Options (Elab_Order);
@@ -2601,9 +2644,14 @@ package body Bindgen is
       end if;
 
       WBI ("");
-      WBI ("   procedure " & Ada_Init_Name.all & ";");
-      WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
-           Ada_Init_Name.all & """);");
+      WBI ("   procedure " & Ada_Init_Name.all & Aspect_Text & ";");
+      if Enable_CUDA_Device_Expansion then
+         WBI ("   pragma Export (C, " & Ada_Init_Name.all &
+                ", Link_Name => """ & Device_Ada_Init_Link_Name & """);");
+      else
+         WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
+              Ada_Init_Name.all & """);");
+      end if;
 
       --  If -a has been specified use pragma Linker_Constructor for the init
       --  procedure and pragma Linker_Destructor for the final procedure.
@@ -2614,9 +2662,15 @@ package body Bindgen is
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          WBI ("");
-         WBI ("   procedure " & Ada_Final_Name.all & ";");
-         WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
-              Ada_Final_Name.all & """);");
+         WBI ("   procedure " & Ada_Final_Name.all & Aspect_Text & ";");
+
+         if Enable_CUDA_Device_Expansion then
+            WBI ("   pragma Export (C, " & Ada_Final_Name.all &
+                   ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
+         else
+            WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
+                 Ada_Final_Name.all & """);");
+         end if;
 
          if Use_Pragma_Linker_Constructor then
             WBI ("   pragma Linker_Destructor (" & Ada_Final_Name.all & ");");

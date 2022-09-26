@@ -29568,7 +29568,7 @@ arm_shift_truncation_mask (machine_mode mode)
 /* Map internal gcc register numbers to DWARF2 register numbers.  */
 
 unsigned int
-arm_dbx_register_number (unsigned int regno)
+arm_debugger_regno (unsigned int regno)
 {
   if (regno < 16)
     return regno;

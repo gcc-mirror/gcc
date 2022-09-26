@@ -2236,6 +2236,37 @@ ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
   return ref_conv_binds_directly (to, val, direct_init_p).is_false ();
 }
 
+/* Return true if FROM can be converted to TO using implicit conversions,
+   or both FROM and TO are possibly cv-qualified void.  NB: This doesn't
+   implement the "Access checks are performed as if from a context unrelated
+   to either type" restriction.  */
+
+bool
+is_convertible (tree from, tree to)
+{
+  if (VOID_TYPE_P (from) && VOID_TYPE_P (to))
+    return true;
+  tree expr = build_stub_object (from);
+  expr = perform_implicit_conversion (to, expr, tf_none);
+  if (expr == error_mark_node)
+    return false;
+  return !!expr;
+}
+
+/* Like is_convertible, but the conversion is also noexcept.  */
+
+bool
+is_nothrow_convertible (tree from, tree to)
+{
+  if (VOID_TYPE_P (from) && VOID_TYPE_P (to))
+    return true;
+  tree expr = build_stub_object (from);
+  expr = perform_implicit_conversion (to, expr, tf_none);
+  if (expr == NULL_TREE || expr == error_mark_node)
+    return false;
+  return expr_noexcept_p (expr, tf_none);
+}
+
 /* Categorize various special_function_kinds.  */
 #define SFK_CTOR_P(sfk) \
   ((sfk) >= sfk_constructor && (sfk) <= sfk_move_constructor)

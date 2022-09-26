@@ -803,7 +803,12 @@ proc check_function_body { functions name body_regexp } {
     if { ![info exists up_functions($name)] } {
 	return 0
     }
-    return [regexp "^$body_regexp\$" $up_functions($name)]
+    set fn_res [regexp "^$body_regexp\$" $up_functions($name)]
+    if { !$fn_res } {
+      verbose -log "body: $body_regexp"
+      verbose -log "against: $up_functions($name)"
+    }
+    return $fn_res
 }
 
 # Check the implementations of functions against expected output.  Used as:

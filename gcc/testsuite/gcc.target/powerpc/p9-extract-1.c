@@ -4,7 +4,7 @@
 
 /* Test to make sure VEXTU{B,H,W}{L,R}X is generated for various vector extract
    operations for ISA 3.0 (-mcpu=power9).  In addition, make sure that neither
-   of the the the old methods of doing vector extracts are done either by
+   of the old methods of doing vector extracts are done either by
    explict stores to the stack or by using direct move instructions.  */
 
 #include <altivec.h>

@@ -247,9 +247,6 @@ static void
 vax_file_start (void)
 {
   default_file_start ();
-
-  if (write_symbols == DBX_DEBUG)
-    fprintf (asm_out_file, "___vax_%c_doubles:\n", ASM_DOUBLE_CHAR);
 }
 
 /* We can use the BSD C library routines for the libgcc calls that are

@@ -24,9 +24,9 @@ global GCC_UNDER_TEST
 
 # For now find gcov in the same directory as $GCC_UNDER_TEST.
 if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
-    set GCOV [file dirname [lindex $GCC_UNDER_TEST 0]]/gcov
+    set GCOV [file dirname [lindex $GCC_UNDER_TEST 0]]/[transform gcov]
 } else {
-    set GCOV gcov
+    set GCOV [transform gcov]
 }
 
 # Initialize harness.

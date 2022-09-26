@@ -43,18 +43,13 @@ package body System.Val_Real is
    pragma Assert (Num'Machine_Mantissa <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   Need_Extra : constant Boolean := Num'Machine_Mantissa > Uns'Size - 4;
-   --  If the mantissa of the floating-point type is almost as large as the
-   --  unsigned type, we do not have enough space for an extra digit in the
-   --  unsigned type so we handle the extra digit separately, at the cost of
-   --  a bit more work in Integer_to_Real.
+   Is_Large_Type : constant Boolean := Num'Machine_Mantissa >= 53;
+   --  True if the floating-point type is at least IEEE Double
 
-   Precision_Limit : constant Uns :=
-     (if Need_Extra then 2**Num'Machine_Mantissa - 1 else 2**Uns'Size - 1);
-   --  If we handle the extra digit separately, we use the precision of the
-   --  floating-point type so that the conversion is exact.
+   Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
+   --  See below for the rationale
 
-   package Impl is new Value_R (Uns, Precision_Limit, Round => Need_Extra);
+   package Impl is new Value_R (Uns, 2, Precision_Limit, Round => False);
 
    subtype Base_T is Unsigned range 2 .. 16;
 
@@ -64,18 +59,21 @@ package body System.Val_Real is
 
    Maxexp32 : constant array (Base_T) of Positive :=
      [2  => 127, 3 => 80,  4 => 63,  5 => 55,  6 => 49,
-      7  => 45,  8 => 42,  9 => 40, 10 => 38, 11 => 37,
+      7  => 45,  8 => 42,  9 => 40, 10 => 55, 11 => 37,
       12 => 35, 13 => 34, 14 => 33, 15 => 32, 16 => 31];
+   --  The actual value for 10 is 38 but we also use scaling for 10
 
    Maxexp64 : constant array (Base_T) of Positive :=
      [2  => 1023, 3 => 646,  4 => 511,  5 => 441,  6 => 396,
-      7  => 364,  8 => 341,  9 => 323, 10 => 308, 11 => 296,
+      7  => 364,  8 => 341,  9 => 323, 10 => 441, 11 => 296,
       12 => 285, 13 => 276, 14 => 268, 15 => 262, 16 => 255];
+   --  The actual value for 10 is 308 but we also use scaling for 10
 
    Maxexp80 : constant array (Base_T) of Positive :=
      [2  => 16383, 3 => 10337, 4 => 8191,  5 => 7056,  6 => 6338,
-      7  => 5836,  8 => 5461,  9 => 5168, 10 => 4932, 11 => 4736,
+      7  => 5836,  8 => 5461,  9 => 5168, 10 => 7056, 11 => 4736,
       12 => 4570, 13 => 4427, 14 => 4303, 15 => 4193, 16 => 4095];
+   --  The actual value for 10 is 4932 but we also use scaling for 10
 
    package Double_Real is new System.Double_Real (Num);
    use type Double_Real.Double_T;
@@ -83,17 +81,28 @@ package body System.Val_Real is
    subtype Double_T is Double_Real.Double_T;
    --  The double floating-point type
 
+   function Exact_Log2 (N : Unsigned) return Positive is
+     (case N is
+        when  2     => 1,
+        when  4     => 2,
+        when  8     => 3,
+        when 16     => 4,
+        when others => raise Program_Error);
+   --  Return the exponent of a power of 2
+
    function Integer_to_Real
      (Str   : String;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
       Base  : Unsigned;
-      Scale : Integer;
-      Extra : Unsigned;
+      Scale : Impl.Scale_Array;
       Minus : Boolean) return Num;
    --  Convert the real value from integer to real representation
 
-   function Large_Powten (Exp : Natural) return Double_T;
-   --  Return 10.0**Exp as a double number, where Exp > Maxpow
+   function Large_Powfive (Exp : Natural) return Double_T;
+   --  Return 5.0**Exp as a double number, where Exp > Maxpow
+
+   function Large_Powfive (Exp : Natural; S : out Natural) return Double_T;
+   --  Return Num'Scaling (5.0**Exp, -S) as a double number where Exp > Maxexp
 
    ---------------------
    -- Integer_to_Real --
@@ -101,10 +110,9 @@ package body System.Val_Real is
 
    function Integer_to_Real
      (Str   : String;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
       Base  : Unsigned;
-      Scale : Integer;
-      Extra : Unsigned;
+      Scale : Impl.Scale_Array;
       Minus : Boolean) return Num
    is
       pragma Assert (Base in 2 .. 16);
@@ -120,9 +128,9 @@ package body System.Val_Real is
                   else  raise Program_Error);
       --  Maximum exponent of the base that can fit in Num
 
-      R_Val : Num;
       D_Val : Double_T;
-      S     : Integer := Scale;
+      R_Val : Num;
+      S     : Integer;
 
    begin
       --  We call the floating-point processor reset routine so we can be sure
@@ -134,82 +142,78 @@ package body System.Val_Real is
          System.Float_Control.Reset;
       end if;
 
-      --  Take into account the extra digit, i.e. do the two computations
+      --  First convert the integer mantissa into a double real. The conversion
+      --  of each part is exact, given the precision limit we used above. Then,
+      --  if the contribution of the low part might be nonnull, scale the high
+      --  part appropriately and add the low part to the result.
 
-      --    (1)  R_Val := R_Val * Num (B) + Num (Extra)
-      --    (2)  S := S - 1
-
-      --  In the first, the three operands are exact, so using an FMA would
-      --  be ideal, but we are most likely running on the x87 FPU, hence we
-      --  may not have one. That is why we turn the multiplication into an
-      --  iterated addition with exact error handling, so that we can do a
-      --  single rounding at the end.
-
-      if Need_Extra and then Extra > 0 then
-         declare
-            B   : Unsigned := Base;
-            Acc : Num      := 0.0;
-            Err : Num      := 0.0;
-            Fac : Num      := Num (Val);
-            DS  : Double_T;
-
-         begin
-            loop
-               --  If B is odd, add one factor. Note that the accumulator is
-               --  never larger than the factor at this point (it is in fact
-               --  never larger than the factor minus the initial value).
-
-               if B rem 2 /= 0 then
-                  if Acc = 0.0 then
-                     Acc := Fac;
-                  else
-                     DS  := Double_Real.Quick_Two_Sum (Fac, Acc);
-                     Acc := DS.Hi;
-                     Err := Err + DS.Lo;
-                  end if;
-                  exit when B = 1;
-               end if;
-
-               --  Now B is (morally) even, halve it and double the factor,
-               --  which is always an exact operation.
-
-               B := B / 2;
-               Fac := Fac * 2.0;
-            end loop;
-
-            --  Add Extra to the error, which are both small integers
-
-            D_Val := Double_Real.Quick_Two_Sum (Acc, Err + Num (Extra));
-
-            S := S - 1;
-         end;
-
-      --  Or else, if the Extra digit is zero, do the exact conversion
-
-      elsif Need_Extra then
-         D_Val := Double_Real.To_Double (Num (Val));
-
-      --  Otherwise, the value contains more bits than the mantissa so do the
-      --  conversion in two steps.
+      if Val (2) = 0 then
+         D_Val := Double_Real.To_Double (Num (Val (1)));
+         S := Scale (1);
 
       else
          declare
-            Mask : constant Uns := 2**(Uns'Size - Num'Machine_Mantissa) - 1;
-            Hi   : constant Uns := Val and not Mask;
-            Lo   : constant Uns := Val and Mask;
+            V1 : constant Num := Num (Val (1));
+            V2 : constant Num := Num (Val (2));
+
+            DS : Positive;
 
          begin
-            if Hi = 0 then
-               D_Val := Double_Real.To_Double (Num (Lo));
-            else
-               D_Val := Double_Real.Quick_Two_Sum (Num (Hi), Num (Lo));
-            end if;
+            DS := Scale (1) - Scale (2);
+
+            case Base is
+               --  If the base is a power of two, we use the efficient Scaling
+               --  attribute up to an amount worth a double mantissa.
+
+               when 2 | 4 | 8 | 16 =>
+                  declare
+                     L : constant Positive := Exact_Log2 (Base);
+
+                  begin
+                     if DS <= 2 * Num'Machine_Mantissa / L then
+                        DS := DS * L;
+                        D_Val :=
+                          Double_Real.Quick_Two_Sum (Num'Scaling (V1, DS), V2);
+                        S := Scale (2);
+
+                     else
+                        D_Val := Double_Real.To_Double (V1);
+                        S := Scale (1);
+                     end if;
+                  end;
+
+               --  If the base is 10, we also scale up to an amount worth a
+               --  double mantissa.
+
+               when 10 =>
+                  declare
+                     Powfive : constant array (0 .. Maxpow) of Double_T;
+                     pragma Import (Ada, Powfive);
+                     for Powfive'Address use Powfive_Address;
+
+                  begin
+                     if DS <= Maxpow then
+                        D_Val := Powfive (DS) * Num'Scaling (V1, DS) + V2;
+                        S := Scale (2);
+
+                     else
+                        D_Val := Double_Real.To_Double (V1);
+                        S := Scale (1);
+                     end if;
+                  end;
+
+               --  Inaccurate implementation for other bases
+
+               when others =>
+                  D_Val := Double_Real.To_Double (V1);
+                  S := Scale (1);
+            end case;
          end;
       end if;
 
       --  Compute the final value by applying the scaling, if any
 
-      if Val = 0 or else S = 0 then
+      if (Val (1) = 0 and then Val (2) = 0) or else S = 0 then
          R_Val := Double_Real.To_Single (D_Val);
 
       else
@@ -218,67 +222,58 @@ package body System.Val_Real is
             --  attribute with an overflow check, if it is not 2, to catch
             --  ludicrous exponents that would result in an infinity or zero.
 
-            when 2 =>
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
+            when 2 | 4 | 8 | 16 =>
+               declare
+                  L : constant Positive := Exact_Log2 (Base);
 
-            when 4 =>
-               if Integer'First / 2 <= S and then S <= Integer'Last / 2 then
-                  S := S * 2;
-               end if;
+               begin
+                  if Integer'First / L <= S and then S <= Integer'Last / L then
+                     S := S * L;
+                  end if;
 
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
+                  R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
+               end;
 
-            when 8 =>
-               if Integer'First / 3 <= S and then S <= Integer'Last / 3 then
-                  S := S * 3;
-               end if;
-
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
-
-            when 16 =>
-               if Integer'First / 4 <= S and then S <= Integer'Last / 4 then
-                  S := S * 4;
-               end if;
-
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
-
-            --  If the base is 10, use a double implementation for the sake
-            --  of accuracy, to be removed when exponentiation is improved.
-
-            --  When the exponent is positive, we can do the computation
-            --  directly because, if the exponentiation overflows, then
-            --  the final value overflows as well. But when the exponent
-            --  is negative, we may need to do it in two steps to avoid
-            --  an artificial underflow.
+            --  If the base is 10, we use a double implementation for the sake
+            --  of accuracy combining powers of 5 and scaling attribute. Using
+            --  this combination is better than using powers of 10 only because
+            --  the Large_Powfive function may overflow only if the final value
+            --  will also either overflow or underflow, thus making it possible
+            --  to use a single division for the case of negative powers of 10.
 
             when 10 =>
                declare
-                  Powten : constant array (0 .. Maxpow) of Double_T;
-                  pragma Import (Ada, Powten);
-                  for Powten'Address use Powten_Address;
+                  Powfive : constant array (0 .. Maxpow) of Double_T;
+                  pragma Import (Ada, Powfive);
+                  for Powfive'Address use Powfive_Address;
+
+                  RS : Natural;
 
                begin
                   if S > 0 then
                      if S <= Maxpow then
-                        D_Val := D_Val * Powten (S);
+                        D_Val := D_Val * Powfive (S);
                      else
-                        D_Val := D_Val * Large_Powten (S);
+                        D_Val := D_Val * Large_Powfive (S);
                      end if;
 
                   else
-                     if S < -Maxexp then
-                        D_Val := D_Val / Large_Powten (Maxexp);
-                        S := S + Maxexp;
-                     end if;
-
                      if S >= -Maxpow then
-                        D_Val := D_Val / Powten (-S);
+                        D_Val := D_Val / Powfive (-S);
+
+                     --  For small types, typically IEEE Single, the trick
+                     --  described above does not fully work.
+
+                     elsif not Is_Large_Type and then S < -Maxexp then
+                        D_Val := D_Val / Large_Powfive (-S, RS);
+                        S := S - RS;
+
                      else
-                        D_Val := D_Val / Large_Powten (-S);
+                        D_Val := D_Val / Large_Powfive (-S);
                      end if;
                   end if;
 
-                  R_Val := Double_Real.To_Single (D_Val);
+                  R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
                end;
 
             --  Implementation for other bases with exponentiation
@@ -320,14 +315,26 @@ package body System.Val_Real is
       when Constraint_Error => Bad_Value (Str);
    end Integer_to_Real;
 
-   ------------------
-   -- Large_Powten --
-   ------------------
+   -------------------
+   -- Large_Powfive --
+   -------------------
 
-   function Large_Powten (Exp : Natural) return Double_T is
-      Powten : constant array (0 .. Maxpow) of Double_T;
-      pragma Import (Ada, Powten);
-      for Powten'Address use Powten_Address;
+   function Large_Powfive (Exp : Natural) return Double_T is
+      Powfive : constant array (0 .. Maxpow) of Double_T;
+      pragma Import (Ada, Powfive);
+      for Powfive'Address use Powfive_Address;
+
+      Powfive_100 : constant Double_T;
+      pragma Import (Ada, Powfive_100);
+      for Powfive_100'Address use Powfive_100_Address;
+
+      Powfive_200 : constant Double_T;
+      pragma Import (Ada, Powfive_200);
+      for Powfive_200'Address use Powfive_200_Address;
+
+      Powfive_300 : constant Double_T;
+      pragma Import (Ada, Powfive_300);
+      for Powfive_300'Address use Powfive_300_Address;
 
       R : Double_T;
       E : Natural;
@@ -335,18 +342,80 @@ package body System.Val_Real is
    begin
       pragma Assert (Exp > Maxpow);
 
-      R := Powten (Maxpow);
-      E := Exp - Maxpow;
+      if Is_Large_Type and then Exp >= 300 then
+         R := Powfive_300;
+         E := Exp - 300;
+
+      elsif Is_Large_Type and then Exp >= 200 then
+         R := Powfive_200;
+         E := Exp - 200;
+
+      elsif Is_Large_Type and then Exp >= 100 then
+         R := Powfive_100;
+         E := Exp - 100;
+
+      else
+         R := Powfive (Maxpow);
+         E := Exp - Maxpow;
+      end if;
 
       while E > Maxpow loop
-         R := R * Powten (Maxpow);
+         R := R * Powfive (Maxpow);
          E := E - Maxpow;
       end loop;
 
-      R := R * Powten (E);
+      R := R * Powfive (E);
 
       return R;
-   end Large_Powten;
+   end Large_Powfive;
+
+   function Large_Powfive (Exp : Natural; S : out Natural) return Double_T is
+      Maxexp : constant Positive :=
+        (if    Num'Size = 32             then Maxexp32 (5)
+         elsif Num'Size = 64             then Maxexp64 (5)
+         elsif Num'Machine_Mantissa = 64 then Maxexp80 (5)
+         else  raise Program_Error);
+      --  Maximum exponent of 5 that can fit in Num
+
+      Powfive : constant array (0 .. Maxpow) of Double_T;
+      pragma Import (Ada, Powfive);
+      for Powfive'Address use Powfive_Address;
+
+      R : Double_T;
+      E : Natural;
+
+   begin
+      pragma Assert (Exp > Maxexp);
+
+      pragma Warnings (Off, "-gnatw.a");
+      pragma Assert (not Is_Large_Type);
+      pragma Warnings (On, "-gnatw.a");
+
+      R := Powfive (Maxpow);
+      E := Exp - Maxpow;
+
+      --  If the exponent is not too large, then scale down the result so that
+      --  its final value does not overflow but, if it's too large, then do not
+      --  bother doing it since overflow is just fine. The scaling factor is -3
+      --  for every power of 5 above the maximum, in other words division by 8.
+
+      if Exp - Maxexp <= Maxpow then
+         S := 3 * (Exp - Maxexp);
+         R.Hi := Num'Scaling (R.Hi, -S);
+         R.Lo := Num'Scaling (R.Lo, -S);
+      else
+         S := 0;
+      end if;
+
+      while E > Maxpow loop
+         R := R * Powfive (Maxpow);
+         E := E - Maxpow;
+      end loop;
+
+      R := R * Powfive (E);
+
+      return R;
+   end Large_Powfive;
 
    ---------------
    -- Scan_Real --
@@ -358,15 +427,15 @@ package body System.Val_Real is
       Max : Integer) return Num
    is
       Base  : Unsigned;
-      Scale : Integer;
+      Scale : Impl.Scale_Array;
       Extra : Unsigned;
       Minus : Boolean;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
 
    begin
       Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Minus);
    end Scan_Real;
 
    ----------------
@@ -375,15 +444,15 @@ package body System.Val_Real is
 
    function Value_Real (Str : String) return Num is
       Base  : Unsigned;
-      Scale : Integer;
+      Scale : Impl.Scale_Array;
       Extra : Unsigned;
       Minus : Boolean;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
 
    begin
       Val := Impl.Value_Raw_Real (Str, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Minus);
    end Value_Real;
 
 end System.Val_Real;

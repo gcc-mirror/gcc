@@ -606,13 +606,6 @@ in this example:
   end Gen;
 
 
-Attribute Lock_Free
-===================
-.. index:: Lock_Free
-
-``P'Lock_Free``, where P is a protected object, returns True if a
-pragma ``Lock_Free`` applies to P.
-
 Attribute Loop_Entry
 ====================
 .. index:: Loop_Entry

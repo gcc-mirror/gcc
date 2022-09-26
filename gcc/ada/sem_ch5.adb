@@ -2211,7 +2211,7 @@ package body Sem_Ch5 is
 
       procedure Check_Subtype_Definition (Comp_Type : Entity_Id) is
       begin
-         if not Present (Subt) then
+         if No (Subt) then
             return;
          end if;
 
@@ -2231,9 +2231,8 @@ package body Sem_Ch5 is
                   Subt, Comp_Type);
             end if;
 
-         elsif Present (Subt)
-           and then (not Covers (Base_Type (Bas), Comp_Type)
-                      or else not Subtypes_Statically_Match (Bas, Comp_Type))
+         elsif not Covers (Base_Type (Bas), Comp_Type)
+           or else not Subtypes_Statically_Match (Bas, Comp_Type)
          then
             if Is_Array_Type (Typ) then
                Error_Msg_NE
@@ -2330,7 +2329,7 @@ package body Sem_Ch5 is
                   Decl :=
                     Make_Full_Type_Declaration (Loc,
                       Defining_Identifier => S,
-                      Type_Definition  =>
+                      Type_Definition     =>
                         New_Copy_Tree
                           (Access_To_Subprogram_Definition (Subt)));
                end if;
@@ -3365,9 +3364,7 @@ package body Sem_Ch5 is
          declare
             Flist : constant List_Id := Freeze_Entity (Id, N);
          begin
-            if Is_Non_Empty_List (Flist) then
-               Insert_Actions (N, Flist);
-            end if;
+            Insert_Actions (N, Flist);
          end;
       end if;
 

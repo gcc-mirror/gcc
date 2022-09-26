@@ -21,8 +21,7 @@ char t1[1] = { "xy" }; /* { dg-warning "initializer-string for array of 'char' i
 char u[1] = { "x", "x" }; /* { dg-error "excess elements in 'char' array initializer" } */
 /* { dg-message "near init" "near" { target *-*-* } .-1 } */
 
-int i = { }; /* { dg-error "empty scalar initializer" } */
-/* { dg-message "near init" "near" { target *-*-* } .-1 } */
+int i = { };
 
 int j = { 1 };
 

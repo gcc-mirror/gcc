@@ -27,10 +27,6 @@
   UNSPEC_MEMORY_BARRIER
 ])
 
-(define_code_iterator any_atomic [plus ior xor and])
-(define_code_attr atomic_optab
-  [(plus "add") (ior "or") (xor "xor") (and "and")])
-
 ;; Memory barriers.
 
 (define_expand "mem_thread_fence"

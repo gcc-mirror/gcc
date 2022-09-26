@@ -68,7 +68,6 @@ enum STC : ulong  // transfer changes to declaration.h
     ref_                = 0x4_0000,   /// `ref`
     scope_              = 0x8_0000,   /// `scope`
 
-    maybescope          = 0x10_0000,   /// parameter might be `scope`
     scopeinferred       = 0x20_0000,   /// `scope` has been inferred and should not be part of mangling, `scope_` must also be set
     return_             = 0x40_0000,   /// 'return ref' or 'return scope' for function parameters
     returnScope         = 0x80_0000,   /// if `ref return scope` then resolve to `ref` and `return scope`

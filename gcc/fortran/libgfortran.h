@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_FPE_TONEAREST  2
 #define GFC_FPE_TOWARDZERO 3
 #define GFC_FPE_UPWARD     4
+#define GFC_FPE_AWAY       5
 
 /* Size of the buffer required to store FPU state for any target.
    In particular, this has to be larger than fenv_t on all glibc targets.
@@ -187,3 +188,23 @@ typedef enum
   BT_ASSUMED, BT_UNION, BT_BOZ
 }
 bt;
+
+/* Enumeration of the possible floating-point types. These values
+   correspond to the hidden arguments of the IEEE_CLASS_TYPE
+   derived-type of IEEE_ARITHMETIC.  */
+
+enum {
+  IEEE_OTHER_VALUE = 0,
+  IEEE_SIGNALING_NAN,
+  IEEE_QUIET_NAN,
+  IEEE_NEGATIVE_INF,
+  IEEE_NEGATIVE_NORMAL,
+  IEEE_NEGATIVE_DENORMAL,
+  IEEE_NEGATIVE_SUBNORMAL = IEEE_NEGATIVE_DENORMAL,
+  IEEE_NEGATIVE_ZERO,
+  IEEE_POSITIVE_ZERO,
+  IEEE_POSITIVE_DENORMAL,
+  IEEE_POSITIVE_SUBNORMAL = IEEE_POSITIVE_DENORMAL,
+  IEEE_POSITIVE_NORMAL,
+  IEEE_POSITIVE_INF
+};

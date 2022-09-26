@@ -21,4 +21,15 @@ void test_3(int *p)
   *p = 192437;
 }
 
+struct foo
+{
+  unsigned int b : 10;
+  unsigned int g : 11;
+  unsigned int r : 11;
+};
+void test_4(struct foo *p, unsigned int v)
+{
+  p->g = v;
+}
+
 /* { dg-final { scan-assembler-not "l32r" } } */

@@ -59,7 +59,6 @@ struct AttributeViolation;
     #define STCref                0x40000ULL    /// `ref`
     #define STCscope              0x80000ULL    /// `scope`
 
-    #define STCmaybescope         0x100000ULL    /// parameter might be `scope`
     #define STCscopeinferred      0x200000ULL    /// `scope` has been inferred and should not be part of mangling, `scope` must also be set
     #define STCreturn             0x400000ULL    /// 'return ref' or 'return scope' for function parameters
     #define STCreturnScope        0x800000ULL    /// if `ref return scope` then resolve to `ref` and `return scope`
@@ -166,9 +165,9 @@ class TupleDeclaration final : public Declaration
 {
 public:
     Objects *objects;
-    bool isexp;                 // true: expression tuple
-
     TypeTuple *tupletype;       // !=NULL if this is a type tuple
+    bool isexp;                 // true: expression tuple
+    bool building;              // it's growing in AliasAssign semantic
 
     TupleDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
@@ -264,8 +263,8 @@ public:
     bool overlapped(bool v);
     bool overlapUnsafe() const; // if it is an overlapping field and the overlaps are unsafe
     bool overlapUnsafe(bool v);
-    bool doNotInferScope() const; // do not infer 'scope' for this variable
-    bool doNotInferScope(bool v);
+    bool maybeScope() const; // allow inferring 'scope' for this variable
+    bool maybeScope(bool v);
     bool doNotInferReturn() const; // do not infer 'return' for this variable
     bool doNotInferReturn(bool v);
     bool isArgDtorVar() const; // temporary created to handle scope destruction of a function argument

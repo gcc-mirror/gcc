@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -march=armv8.2-a+sve -fdisable-tree-fre4 -fdump-tree-slp-details" } */
+/* { dg-options "-Ofast -march=armv8.2-a+sve -fdisable-tree-fre4" } */
 
 float a;
 int
@@ -14,5 +14,3 @@ struct c {
     }
     int coeffs[10];
 } f;
-
-/* { dg-final { scan-tree-dump "Not vectorized: Incompatible number of vector subparts between" "slp1" { target lp64 } } } */

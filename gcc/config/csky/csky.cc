@@ -172,7 +172,7 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER] =
 /* Arrays that map GCC register numbers to debugger register numbers,
    '-1' means that is INVALID_REGNUM.
    TODO: which rules according to here ?  */
-const int csky_dbx_regno[FIRST_PSEUDO_REGISTER] =
+const int csky_debugger_regno[FIRST_PSEUDO_REGISTER] =
 {
   0,  1,  2,  3,  4,  5,  6,  7,
   8,  9,  10, 11, 12, 13, 14, 15,
@@ -6342,9 +6342,7 @@ csky_emit_compare_float (enum rtx_code code, rtx op0, rtx op1)
     case GT:
     case LT:
     case LE:
-      if (op1 == CONST0_RTX (mode) && (CSKY_ISA_FEATURE_GET(fpv2_sf)
-				       || CSKY_ISA_FEATURE_GET(fpv2_df)
-				       || CSKY_ISA_FEATURE_GET(fpv2_divd)))
+      if (op1 == CONST0_RTX (mode) && TARGET_SUPPORT_FPV2)
 	op1 = force_reg (mode, op1);
       break;
     case ORDERED:

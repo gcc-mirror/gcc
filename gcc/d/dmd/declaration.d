@@ -563,8 +563,9 @@ extern (C++) abstract class Declaration : Dsymbol
 extern (C++) final class TupleDeclaration : Declaration
 {
     Objects* objects;
-    bool isexp;             // true: expression tuple
     TypeTuple tupletype;    // !=null if this is a type tuple
+    bool isexp;             // true: expression tuple
+    bool building;          // it's growing in AliasAssign semantic
 
     extern (D) this(const ref Loc loc, Identifier ident, Objects* objects)
     {
@@ -588,7 +589,7 @@ extern (C++) final class TupleDeclaration : Declaration
          */
 
         //printf("TupleDeclaration::getType() %s\n", toChars());
-        if (isexp)
+        if (isexp || building)
             return null;
         if (!tupletype)
         {
@@ -931,6 +932,19 @@ extern (C++) final class AliasDeclaration : Declaration
         }
         else
         {
+            // stop AliasAssign tuple building
+            if (aliassym)
+            {
+                if (auto td = aliassym.isTupleDeclaration())
+                {
+                    if (td.building)
+                    {
+                        td.building = false;
+                        semanticRun = PASS.semanticdone;
+                        return td;
+                    }
+                }
+            }
             if (_import && _import._scope)
             {
                 /* If this is an internal alias for selective/renamed import,
@@ -1076,7 +1090,7 @@ extern (C++) class VarDeclaration : Declaration
     VarDeclaration lastVar;         // Linked list of variables for goto-skips-init detection
     Expression edtor;               // if !=null, does the destruction of the variable
     IntRange* range;                // if !=null, the variable is known to be within the range
-    VarDeclarations* maybes;        // STC.maybescope variables that are assigned to this STC.maybescope variable
+    VarDeclarations* maybes;        // maybeScope variables that are assigned to this maybeScope variable
 
     uint endlinnum;                 // line number of end of scope that this var lives in
     uint offset;
@@ -1105,7 +1119,7 @@ extern (C++) class VarDeclaration : Declaration
 
         bool overlapped;        /// if it is a field and has overlapping
         bool overlapUnsafe;     /// if it is an overlapping field and the overlaps are unsafe
-        bool doNotInferScope;   /// do not infer 'scope' for this variable
+        bool maybeScope;        /// allow inferring 'scope' for this variable
         bool doNotInferReturn;  /// do not infer 'return' for this variable
 
         bool isArgDtorVar;      /// temporary created to handle scope destruction of a function argument

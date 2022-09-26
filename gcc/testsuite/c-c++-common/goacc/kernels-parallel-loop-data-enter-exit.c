@@ -57,7 +57,7 @@ main (void)
 // FIXME: OpenACC kernels stopped working with the firstprivate subarray
 // changes.
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 2 "parloops1" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 2 "parloops1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint, noclone\\)\\)" 2 "parloops1" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-not "FAILED:" "parloops1" { xfail *-*-* } } } */
 
 /* Check that the loop has been split off into a function.  */

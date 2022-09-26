@@ -291,7 +291,7 @@ extern int rs6000_trampoline_size (void);
 extern alias_set_type get_TOC_alias_set (void);
 extern void rs6000_emit_prologue (void);
 extern void rs6000_emit_load_toc_table (int);
-extern unsigned int rs6000_dbx_register_number (unsigned int, unsigned int);
+extern unsigned int rs6000_debugger_regno (unsigned int, unsigned int);
 extern void rs6000_emit_epilogue (enum epilogue_type);
 extern void rs6000_expand_split_stack_prologue (void);
 extern void rs6000_split_stack_space_check (rtx, rtx);
@@ -322,10 +322,6 @@ extern bool rs6000_pragma_target_parse (tree, tree);
 extern void rs6000_activate_target_options (tree new_tree);
 extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT);
-
-/* Declare functions in rs6000-d.cc  */
-extern void rs6000_d_target_versions (void);
-extern void rs6000_d_register_target_info (void);
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);

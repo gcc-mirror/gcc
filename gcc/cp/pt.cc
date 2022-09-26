@@ -3868,8 +3868,8 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     }
   else
     {
-      hi = instantiate_non_dependent_expr_sfinae (hi, complain);
-      hi = cxx_constant_value (hi);
+      hi = instantiate_non_dependent_expr (hi, complain);
+      hi = cxx_constant_value (hi, complain);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
 
       /* Calculate the largest value of len that won't make the size of the vec
@@ -6428,7 +6428,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
     return true;
 }
 
-/* The actual substitution part of instantiate_non_dependent_expr_sfinae,
+/* The actual substitution part of instantiate_non_dependent_expr,
    to be used when the caller has already checked
     !instantiation_dependent_uneval_expression_p (expr)
    and cleared processing_template_decl.  */
@@ -6447,7 +6447,8 @@ instantiate_non_dependent_expr_internal (tree expr, tsubst_flags_t complain)
 /* Instantiate the non-dependent expression EXPR.  */
 
 tree
-instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
+instantiate_non_dependent_expr (tree expr,
+				tsubst_flags_t complain /* = tf_error */)
 {
   if (expr == NULL_TREE)
     return NULL_TREE;
@@ -6460,12 +6461,6 @@ instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
       expr = instantiate_non_dependent_expr_internal (expr, complain);
     }
   return expr;
-}
-
-tree
-instantiate_non_dependent_expr (tree expr)
-{
-  return instantiate_non_dependent_expr_sfinae (expr, tf_error);
 }
 
 /* Like instantiate_non_dependent_expr, but return NULL_TREE if the
@@ -13616,6 +13611,9 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == error_mark_node)
     return error_mark_node;
 
+  /* In "sizeof(X<I>)" we need to evaluate "I".  */
+  cp_evaluated ev;
+
   const int len = TREE_VEC_LENGTH (t);
   tree *elts = XALLOCAVEC (tree, len);
   int expanded_len_adjust = 0;
@@ -13887,9 +13885,6 @@ tsubst_aggr_type (tree t,
 	{
 	  tree argvec;
 	  tree r;
-
-	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
-	  cp_evaluated ev;
 
 	  /* Figure out what arguments are appropriate for the
 	     type we are trying to find.  For example, given:
@@ -14317,6 +14312,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 				    /*function_p=*/false,
 				    /*i_c_e_p=*/true);
       spec = build_explicit_specifier (spec, complain);
+      if (spec == error_mark_node)
+	return error_mark_node;
       if (instantiation_dependent_expression_p (spec))
 	store_explicit_specifier (r, spec);
       else
@@ -16970,7 +16967,7 @@ tsubst_init (tree init, tree decl, tree args,
 	     zero.  */
 	  init = build_value_init (type, complain);
 	  if (TREE_CODE (init) == AGGR_INIT_EXPR)
-	    init = get_target_expr_sfinae (init, complain);
+	    init = get_target_expr (init, complain);
 	  if (TREE_CODE (init) == TARGET_EXPR)
 	    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 	}
@@ -17830,8 +17827,8 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
     }
 
   /* Handle an OpenMP array section represented as a TREE_LIST (or
-     OMP_CLAUSE_DEPEND_KIND).  An OMP_CLAUSE_DEPEND (with a depend
-     kind of OMP_CLAUSE_DEPEND_SINK) can also be represented as a
+     OMP_CLAUSE_DOACROSS_KIND).  An OMP_CLAUSE_DOACROSS (with a depend
+     kind of OMP_CLAUSE_DOACROSS_SINK) can also be represented as a
      TREE_LIST.  We can handle it exactly the same as an array section
      (purpose, value, and a chain), even though the nomenclature
      (low_bound, length, etc) is different.  */
@@ -17849,8 +17846,8 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
 	  && TREE_CHAIN (decl) == chain)
 	return decl;
       tree ret = tree_cons (low_bound, length, chain);
-      OMP_CLAUSE_DEPEND_SINK_NEGATIVE (ret)
-	= OMP_CLAUSE_DEPEND_SINK_NEGATIVE (decl);
+      OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (ret)
+	= OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (decl);
       return ret;
     }
   tree ret = tsubst_expr (decl, args, complain, in_decl,
@@ -17898,6 +17895,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_COPYPRIVATE:
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DOACROSS:
 	case OMP_CLAUSE_AFFINITY:
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE_TO:
@@ -19414,7 +19412,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       r = RECUR (OMP_DEPOBJ_DEPOBJ (t));
       if (OMP_DEPOBJ_CLAUSES (t) && OMP_DEPOBJ_CLAUSES (t) != error_mark_node)
 	{
-	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_SOURCE;
+	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INVALID;
 	  if (TREE_CODE (OMP_DEPOBJ_CLAUSES (t)) == OMP_CLAUSE)
 	    {
 	      tmp = tsubst_omp_clauses (OMP_DEPOBJ_CLAUSES (t), C_ORT_OMP,
@@ -19432,7 +19430,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	}
       else
 	finish_omp_depobj (EXPR_LOCATION (t), r,
-			   OMP_CLAUSE_DEPEND_SOURCE,
+			   OMP_CLAUSE_DEPEND_INVALID,
 			   OMP_DEPOBJ_CLAUSES (t));
       break;
 
@@ -19525,9 +19523,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OMP_ORDERED:
       tmp = tsubst_omp_clauses (OMP_ORDERED_CLAUSES (t), C_ORT_OMP, args,
 				complain, in_decl);
-      stmt = push_stmt_list ();
-      RECUR (OMP_BODY (t));
-      stmt = pop_stmt_list (stmt);
+      if (OMP_BODY (t))
+	{
+	  stmt = push_stmt_list ();
+	  RECUR (OMP_BODY (t));
+	  stmt = pop_stmt_list (stmt);
+	}
+      else
+	stmt = NULL_TREE;
 
       t = copy_node (t);
       OMP_BODY (t) = stmt;
@@ -20118,7 +20121,7 @@ fold_targs_r (tree targs, tsubst_flags_t complain)
 	       && !glvalue_p (elt)
 	       && !TREE_CONSTANT (elt))
 	{
-	  elt = cxx_constant_value_sfinae (elt, NULL_TREE, complain);
+	  elt = cxx_constant_value (elt, complain);
 	  if (elt == error_mark_node)
 	    return false;
 	}
@@ -25019,7 +25022,7 @@ mark_decl_instantiated (tree result, int extern_p)
     return;
 
   /* For anonymous namespace we don't need to do anything.  */
-  if (decl_anon_ns_mem_p (result))
+  if (decl_internal_context_p (result))
     {
       gcc_assert (!TREE_PUBLIC (result));
       return;
@@ -28076,11 +28079,11 @@ type_dependent_expression_p (tree expression)
      If the array has no length and has an initializer, it must be that
      we couldn't determine its length in cp_complete_array_type because
      it is dependent.  */
-  if (VAR_P (expression)
+  if (((VAR_P (expression) && DECL_INITIAL (expression))
+       || COMPOUND_LITERAL_P (expression))
       && TREE_TYPE (expression) != NULL_TREE
       && TREE_CODE (TREE_TYPE (expression)) == ARRAY_TYPE
-      && !TYPE_DOMAIN (TREE_TYPE (expression))
-      && DECL_INITIAL (expression))
+      && !TYPE_DOMAIN (TREE_TYPE (expression)))
    return true;
 
   /* Pull a FUNCTION_DECL out of a BASELINK if we can.  */

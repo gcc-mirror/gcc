@@ -1,3 +1,194 @@
+2022-09-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100103
+	* trans-array.cc (gfc_is_reallocatable_lhs): Add select rank
+	temporary associate names as possible targets of automatic
+	reallocation.
+
+2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82868
+	* trans-decl.cc (generate_coarray_sym_init): Skip symbol
+	if attr.associate_var.
+
+2022-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104143
+	* interface.cc (compare_parameter): Permit scalar args to
+	'type(*), dimension(*)'.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* simplify.cc (gfc_simplify_findloc): Do not try to simplify
+	intrinsic FINDLOC when the ARRAY argument has a NULL shape.
+
+2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* expr.cc (gfc_simplify_expr): Avoid NULL pointer dereference.
+
+2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* trans-types.cc (create_fn_spec): Fix function attributes when
+	passing polymorphic pointers.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/106636
+	* gfortran.texi: Add back link to ISO_VARYING_STRING.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.texi: Replace "the the" with "the".
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/106636
+	* gfortran.texi: Remove 2 dead links.
+
+2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: Declare GFC_FPE_AWAY.
+
+2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106857
+	* simplify.cc (gfc_simplify_pack): Check for NULL pointer dereferences
+	while walking through constructors (error recovery).
+
+2022-09-15  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104314
+	* resolve.cc (deferred_op_assign): Do not try to generate temporary
+	for deferred character length assignment if types do not agree.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* f95-lang.cc (gfc_init_decl_processing): Do not initialize
+	void_list_node.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Don't create
+	GOMP_MAP_TO_PSET mappings for class metadata, nor GOMP_MAP_POINTER
+	mappings for POINTER_TYPE_P decls.
+
+2022-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/95644
+	* f95-lang.cc (gfc_init_builtin_functions): Declare FMA
+	built-ins.
+	* mathbuiltins.def: Declare FMA built-ins.
+	* trans-intrinsic.cc (conv_intrinsic_ieee_fma): New function.
+	(conv_intrinsic_ieee_signbit): New function.
+	(gfc_build_intrinsic_lib_fndecls): Add cases for FMA and
+	SIGNBIT.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/106670
+	* scanner.cc (skip_fixed_omp_sentinel): Add -Wsurprising warning
+	for 'omx' sentinels with -fopenmp.
+	* invoke.texi (-Wsurprising): Document additional warning case.
+
+2022-09-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses): Remove ordered/linear
+	check as it is handled now in the middle end.
+
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist, show_omp_clauses): Handle
+	omp_cur_iteration and distinguish doacross/depend.
+	* gfortran.h (enum gfc_omp_depend_doacross_op): Renamed from
+	gfc_omp_depend_op.
+	(enum gfc_omp_depend_doacross_op): Add OMP_DOACROSS_SINK_FIRST,
+	Rename OMP_DEPEND_SINK to OMP_DOACROSS_SINK.
+	(gfc_omp_namelist) Handle renaming, rename depend_op to
+	depend_doacross_op.
+	(struct gfc_omp_clauses): Add doacross_source.
+	* openmp.cc (gfc_match_omp_depend_sink): Renamed to ...
+	(gfc_match_omp_doacross_sink): ... this; handle omp_all_memory.
+	(enum omp_mask2): Add OMP_CLAUSE_DOACROSS.
+	(gfc_match_omp_clauses): Handle 'doacross' and syntax changes to
+	depend.
+	(gfc_match_omp_depobj): Simplify as sink/source are now impossible.
+	(gfc_match_omp_ordered_depend): Request OMP_CLAUSE_DOACROSS.
+	(resolve_omp_clauses): Update sink/source checks.
+	(gfc_resolve_omp_directive): Resolve EXEC_OMP_ORDERED clauses.
+	* parse.cc (decode_omp_directive): Handle 'ordered doacross'.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle doacross.
+	(gfc_trans_omp_do): Fix OMP_FOR_ORIG_DECLS handling if 'ordered'
+	clause is present.
+	(gfc_trans_omp_depobj): Update for member name change.
+
+2022-09-04  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100136
+	* trans-expr.cc (gfc_conv_procedure_call): Add handling of pointer
+	expressions.
+
+2022-09-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100245
+	* trans-expr.cc (trans_class_assignment): Add if clause to handle
+	derived type in the LHS.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS
+	clause instead of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND
+	on it.
+
+2022-09-02  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99349
+	* decl.cc (match_data_constant): Avoid NULL pointer dereference.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/106579
+	* trans-intrinsic.cc: Include realmpfr.h.
+	(conv_intrinsic_ieee_value): New function.
+	(gfc_conv_ieee_arithmetic_function): Handle ieee_value.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/106579
+	* f95-lang.cc (gfc_init_builtin_functions): Initialize
+	BUILT_IN_FPCLASSIFY.
+	* libgfortran.h (IEEE_OTHER_VALUE, IEEE_SIGNALING_NAN,
+	IEEE_QUIET_NAN, IEEE_NEGATIVE_INF, IEEE_NEGATIVE_NORMAL,
+	IEEE_NEGATIVE_DENORMAL, IEEE_NEGATIVE_SUBNORMAL,
+	IEEE_NEGATIVE_ZERO, IEEE_POSITIVE_ZERO, IEEE_POSITIVE_DENORMAL,
+	IEEE_POSITIVE_SUBNORMAL, IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF):
+	New enum.
+	* trans-intrinsic.cc (conv_intrinsic_ieee_class): New function.
+	(gfc_conv_ieee_arithmetic_function): Handle ieee_class.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.cc (gfc_init_builtin_functions): Initialize
+	BUILT_IN_ISSIGNALING.
+
+2022-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (parse_omp_structured_block): When parsing strictly
+	structured blocks, issue an error if the end-directive comes
+	before the 'end block'.
+
+2022-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103694
+	* simplify.cc (simplify_size): The size expression of an array cannot
+	be simplified if an error occurs while resolving the array spec.
+
 2022-08-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106557

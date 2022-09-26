@@ -69,6 +69,7 @@ is
    package BI_Ghost renames Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
    subtype Big_Integer is BI_Ghost.Big_Integer with Ghost;
    subtype Big_Natural is BI_Ghost.Big_Natural with Ghost;
+   subtype Big_Positive is BI_Ghost.Big_Positive with Ghost;
    use type BI_Ghost.Big_Integer;
 
    package Signed_Conversion is

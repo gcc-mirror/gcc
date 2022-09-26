@@ -31,14 +31,10 @@ along with GCC; see the file COPYING3.  If not see
  * Next is the question of whether to uses underscores.  RMS didn't
  * like this idea at first, but since it is now obvious that we
  * need this separate tm file for use with gas, at least to get
- * dbx debugging info, I think we should also switch to underscores.
+ * debugging info, I think we should also switch to underscores.
  * We can keep i386v for real att style output, and the few
  * people who want both form will have to compile twice.
  */
-
-/* these come from i386/bsd.h, but are specific to sequent */
-#undef DBX_NO_XREFS
-#undef DBX_CONTIN_LENGTH
 
 /* Output #ident as a .ident.  */
 

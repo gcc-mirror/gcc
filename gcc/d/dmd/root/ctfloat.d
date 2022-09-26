@@ -47,7 +47,7 @@ extern (C++) struct CTFloat
     static bool isInfinity(real_t r) pure;
 
     @system
-    static real_t parse(const(char)* literal, bool* isOutOfRange = null);
+    static real_t parse(const(char)* literal, out bool isOutOfRange);
 
     @system
     static int sprint(char* str, char fmt, real_t x);

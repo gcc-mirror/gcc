@@ -1,7 +1,7 @@
 /* Check if conversion for two instructions.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -march=z13 --save-temps" } */
+/* { dg-options "-O2 -march=z13 -mzarch --save-temps" } */
 
 /* { dg-final { scan-assembler "lochih\t%r.?,1" } } */
 /* { dg-final { scan-assembler "locrh\t.*" } } */

@@ -50,14 +50,25 @@
 #endif
 
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
-# define __glibcxx_check_string(_String)				\
+# if __cplusplus < 201103L
+#  define __glibcxx_check_string(_String)			\
   _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(_String != 0,		\
 				    __FILE__, __LINE__,		\
 				    __PRETTY_FUNCTION__);
-# define __glibcxx_check_string_len(_String,_Len)		\
+#  define __glibcxx_check_string_len(_String,_Len)		\
   _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(_String != 0 || _Len == 0,	\
 				    __FILE__, __LINE__,		\
 				    __PRETTY_FUNCTION__);
+# else
+#  define __glibcxx_check_string(_String)			\
+  _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(_String != nullptr,		\
+				    __FILE__, __LINE__,		\
+				    __PRETTY_FUNCTION__);
+#  define __glibcxx_check_string_len(_String,_Len)		\
+  _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(_String != nullptr || _Len == 0,	\
+				    __FILE__, __LINE__,		\
+				    __PRETTY_FUNCTION__);
+# endif
 #else
 # define __glibcxx_check_string(_String)
 # define __glibcxx_check_string_len(_String,_Len)
@@ -75,8 +86,13 @@ namespace __gnu_debug
 		   const char* __function __attribute__((__unused__)))
     {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
+# if __cplusplus < 201103L
       _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(__s != 0 || __n == 0,
 					__file, __line, __function);
+# else
+      _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(__s != nullptr || __n == 0,
+					__file, __line, __function);
+# endif
 #endif
       return __s;
     }
@@ -90,8 +106,13 @@ namespace __gnu_debug
 		   const char* __function __attribute__((__unused__)))
     {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
+# if __cplusplus < 201103L
       _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(__s != 0,
 					__file, __line, __function);
+# else
+      _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(__s != nullptr,
+					__file, __line, __function);
+# endif
 #endif
       return __s;
     }

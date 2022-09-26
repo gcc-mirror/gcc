@@ -132,12 +132,11 @@ func (p *Package) addToFlag(flag string, args []string) {
 //
 // For example, the following string:
 //
-//     `a b:"c d" 'e''f'  "g\""`
+//	`a b:"c d" 'e''f'  "g\""`
 //
 // Would be parsed as:
 //
-//     []string{"a", "b:c d", "ef", `g"`}
-//
+//	[]string{"a", "b:c d", "ef", `g"`}
 func splitQuoted(s string) (r []string, err error) {
 	var args []string
 	arg := make([]rune, len(s))
@@ -1156,13 +1155,19 @@ func (p *Package) mangle(f *File, arg *ast.Expr, addPosition bool) (ast.Expr, bo
 
 // checkIndex checks whether arg has the form &a[i], possibly inside
 // type conversions. If so, then in the general case it writes
-//    _cgoIndexNN := a
-//    _cgoNN := &cgoIndexNN[i] // with type conversions, if any
+//
+//	_cgoIndexNN := a
+//	_cgoNN := &cgoIndexNN[i] // with type conversions, if any
+//
 // to sb, and writes
-//    _cgoCheckPointer(_cgoNN, _cgoIndexNN)
+//
+//	_cgoCheckPointer(_cgoNN, _cgoIndexNN)
+//
 // to sbCheck, and returns true. If a is a simple variable or field reference,
 // it writes
-//    _cgoIndexNN := &a
+//
+//	_cgoIndexNN := &a
+//
 // and dereferences the uses of _cgoIndexNN. Taking the address avoids
 // making a copy of an array.
 //
@@ -1210,10 +1215,14 @@ func (p *Package) checkIndex(sb, sbCheck *bytes.Buffer, arg ast.Expr, i int) boo
 
 // checkAddr checks whether arg has the form &x, possibly inside type
 // conversions. If so, it writes
-//    _cgoBaseNN := &x
-//    _cgoNN := _cgoBaseNN // with type conversions, if any
+//
+//	_cgoBaseNN := &x
+//	_cgoNN := _cgoBaseNN // with type conversions, if any
+//
 // to sb, and writes
-//    _cgoCheckPointer(_cgoBaseNN, true)
+//
+//	_cgoCheckPointer(_cgoBaseNN, true)
+//
 // to sbCheck, and returns true. This tells _cgoCheckPointer to check
 // just the contents of the pointer being passed, not any other part
 // of the memory allocation. This is run after checkIndex, which looks
@@ -2131,8 +2140,8 @@ type typeConv struct {
 	// Type names X for which there exists an XGetTypeID function with type func() CFTypeID.
 	getTypeIDs map[string]bool
 
-	// badStructs contains C structs that should be marked NotInHeap.
-	notInHeapStructs map[string]bool
+	// incompleteStructs contains C structs that should be marked Incomplete.
+	incompleteStructs map[string]bool
 
 	// Predeclared types.
 	bool                                   ast.Expr
@@ -2145,7 +2154,6 @@ type typeConv struct {
 	string                                 ast.Expr
 	goVoid                                 ast.Expr // _Ctype_void, denotes C's void
 	goVoidPtr                              ast.Expr // unsafe.Pointer or *byte
-	goVoidPtrNoHeap                        ast.Expr // *_Ctype_void_notinheap, like goVoidPtr but marked NotInHeap
 
 	ptrSize int64
 	intSize int64
@@ -2169,7 +2177,7 @@ func (c *typeConv) Init(ptrSize, intSize int64) {
 	c.m = make(map[string]*Type)
 	c.ptrs = make(map[string][]*Type)
 	c.getTypeIDs = make(map[string]bool)
-	c.notInHeapStructs = make(map[string]bool)
+	c.incompleteStructs = make(map[string]bool)
 	c.bool = c.Ident("bool")
 	c.byte = c.Ident("byte")
 	c.int8 = c.Ident("int8")
@@ -2188,7 +2196,6 @@ func (c *typeConv) Init(ptrSize, intSize int64) {
 	c.void = c.Ident("void")
 	c.string = c.Ident("string")
 	c.goVoid = c.Ident("_Ctype_void")
-	c.goVoidPtrNoHeap = c.Ident("*_Ctype_void_notinheap")
 
 	// Normally cgo translates void* to unsafe.Pointer,
 	// but for historical reasons -godefs uses *byte instead.
@@ -2531,19 +2538,13 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 			// other than try to determine a Go representation.
 			tt := *t
 			tt.C = &TypeRepr{"%s %s", []interface{}{dt.Kind, tag}}
-			tt.Go = c.Ident("struct{}")
-			if dt.Kind == "struct" {
-				// We don't know what the representation of this struct is, so don't let
-				// anyone allocate one on the Go side. As a side effect of this annotation,
-				// pointers to this type will not be considered pointers in Go. They won't
-				// get writebarrier-ed or adjusted during a stack copy. This should handle
-				// all the cases badPointerTypedef used to handle, but hopefully will
-				// continue to work going forward without any more need for cgo changes.
-				tt.NotInHeap = true
-				// TODO: we should probably do the same for unions. Unions can't live
-				// on the Go heap, right? It currently doesn't work for unions because
-				// they are defined as a type alias for struct{}, not a defined type.
-			}
+			// We don't know what the representation of this struct is, so don't let
+			// anyone allocate one on the Go side. As a side effect of this annotation,
+			// pointers to this type will not be considered pointers in Go. They won't
+			// get writebarrier-ed or adjusted during a stack copy. This should handle
+			// all the cases badPointerTypedef used to handle, but hopefully will
+			// continue to work going forward without any more need for cgo changes.
+			tt.Go = c.Ident("_cgopackage.Incomplete")
 			typedef[name.Name] = &tt
 			break
 		}
@@ -2569,7 +2570,9 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 				tt.C = &TypeRepr{"struct %s", []interface{}{tag}}
 			}
 			tt.Go = g
-			tt.NotInHeap = c.notInHeapStructs[tag]
+			if c.incompleteStructs[tag] {
+				tt.Go = c.Ident("_cgopackage.Incomplete")
+			}
 			typedef[name.Name] = &tt
 		}
 
@@ -2614,9 +2617,9 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 			}
 		}
 		if c.badVoidPointerTypedef(dt) {
-			// Treat this typedef as a pointer to a NotInHeap void.
+			// Treat this typedef as a pointer to a _cgopackage.Incomplete.
 			s := *sub
-			s.Go = c.goVoidPtrNoHeap
+			s.Go = c.Ident("*_cgopackage.Incomplete")
 			sub = &s
 			// Make sure we update any previously computed type.
 			if oldType := typedef[name.Name]; oldType != nil {
@@ -2624,22 +2627,21 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 			}
 		}
 		// Check for non-pointer "struct <tag>{...}; typedef struct <tag> *<name>"
-		// typedefs that should be marked NotInHeap.
+		// typedefs that should be marked Incomplete.
 		if ptr, ok := dt.Type.(*dwarf.PtrType); ok {
 			if strct, ok := ptr.Type.(*dwarf.StructType); ok {
 				if c.badStructPointerTypedef(dt.Name, strct) {
-					c.notInHeapStructs[strct.StructName] = true
+					c.incompleteStructs[strct.StructName] = true
 					// Make sure we update any previously computed type.
 					name := "_Ctype_struct_" + strct.StructName
 					if oldType := typedef[name]; oldType != nil {
-						oldType.NotInHeap = true
+						oldType.Go = c.Ident("_cgopackage.Incomplete")
 					}
 				}
 			}
 		}
 		t.Go = name
 		t.BadPointer = sub.BadPointer
-		t.NotInHeap = sub.NotInHeap
 		if unionWithPointer[sub.Go] {
 			unionWithPointer[t.Go] = true
 		}
@@ -2650,7 +2652,6 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 			tt := *t
 			tt.Go = sub.Go
 			tt.BadPointer = sub.BadPointer
-			tt.NotInHeap = sub.NotInHeap
 			typedef[name.Name] = &tt
 		}
 
@@ -3174,7 +3175,7 @@ func (c *typeConv) anonymousStructTypedef(dt *dwarf.TypedefType) bool {
 // non-pointers in this type.
 // TODO: Currently our best solution is to find these manually and list them as
 // they come up. A better solution is desired.
-// Note: DEPRECATED. There is now a better solution. Search for NotInHeap in this file.
+// Note: DEPRECATED. There is now a better solution. Search for _cgopackage.Incomplete in this file.
 func (c *typeConv) badPointerTypedef(dt *dwarf.TypedefType) bool {
 	if c.badCFType(dt) {
 		return true
@@ -3188,7 +3189,7 @@ func (c *typeConv) badPointerTypedef(dt *dwarf.TypedefType) bool {
 	return false
 }
 
-// badVoidPointerTypedef is like badPointerTypeDef, but for "void *" typedefs that should be NotInHeap.
+// badVoidPointerTypedef is like badPointerTypeDef, but for "void *" typedefs that should be _cgopackage.Incomplete.
 func (c *typeConv) badVoidPointerTypedef(dt *dwarf.TypedefType) bool {
 	// Match the Windows HANDLE type (#42018).
 	if goos != "windows" || dt.Name != "HANDLE" {

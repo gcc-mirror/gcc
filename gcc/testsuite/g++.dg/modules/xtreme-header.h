@@ -1,17 +1,8 @@
 // All the headers!
 
-#if __cplusplus > 201703L
-// FIXME: if we include everything, something goes wrong with location
-// information.  We used to not handle lambdas attached to global
-// vars, and this is a convienient flag to stop including everything.
-#define NO_ASSOCIATED_LAMBDA 1
-#endif
-
 // C++ 17 and below
 #if 1
-#if !NO_ASSOCIATED_LAMBDA
 #include <algorithm>
-#endif
 #include <any>
 #include <array>
 #include <atomic>
@@ -26,19 +17,12 @@
 #include <cwctype>
 #include <deque>
 #include <exception>
-#if !NO_ASSOCIATED_LAMBDA
-// FIXME: PR 97549
-//#include <execution>
-#endif
+#include <execution>
 #include <filesystem>
 #include <forward_list>
 #include <fstream>
-#if !NO_ASSOCIATED_LAMBDA
 #include <functional>
-#endif
-#if !NO_ASSOCIATED_LAMBDA
 #include <future>
-#endif
 #include <initializer_list>
 #include <iomanip>
 #include <ios>
@@ -49,12 +33,8 @@
 #include <list>
 #include <locale>
 #include <map>
-#if !NO_ASSOCIATED_LAMBDA
 #include <memory>
-#endif
-#if !NO_ASSOCIATED_LAMBDA
 #include <memory_resource>
-#endif
 #include <mutex>
 #include <new>
 #include <numeric>
@@ -63,12 +43,8 @@
 #include <queue>
 #include <random>
 #include <ratio>
-#if !NO_ASSOCIATED_LAMBDA
 #include <regex>
-#endif
-#if !NO_ASSOCIATED_LAMBDA
 #include <scoped_allocator>
-#endif
 #include <set>
 #include <shared_mutex>
 #include <sstream>
@@ -78,9 +54,7 @@
 #include <string>
 #include <string_view>
 #include <system_error>
-#if !NO_ASSOCIATED_LAMBDA
 #include <thread>
-#endif
 #include <tuple>
 #include <type_traits>
 #include <typeindex>
@@ -88,9 +62,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#if !NO_ASSOCIATED_LAMBDA
 #include <valarray>
-#endif
 #include <variant>
 #include <vector>
 #endif
@@ -119,26 +91,39 @@
 #if __cplusplus > 201703
 #if 1
 #include <version>
+#include <barrier>
 #include <bit>
 #include <compare>
 #include <concepts>
 #if __cpp_coroutines
 #include <coroutine>
 #endif
-#if !NO_ASSOCIATED_LAMBDA
-#include <ranges>
-#endif
-#include <numbers>
-#include <span>
-#include <stop_token>
-#if 0
-// Unimplemented
-#include <barrier>
-#include <format>
 #include <latch>
+#include <numbers>
+#include <ranges>
 #include <semaphore>
 #include <source_location>
+#include <span>
+#include <stop_token>
 #include <syncstream>
+#if 0
+// Unimplemented
+#include <format>
 #endif
+#endif
+#endif
+
+// C++23
+#if __cplusplus > 202002L
+#include <expected>
+#include <spanstream>
+#include <stacktrace>
+#if 0
+// Unimplemented
+#include <flat_map>
+#include <flat_set>
+#include <generator>
+#include <mdspan>
+#include <print>
 #endif
 #endif

@@ -2079,15 +2079,24 @@ package body ALI is
                --  Processing for SS
 
                elsif C = 'S' then
-                  --  Special case: a-tags.ali by itself should not set
+                  --  Special case: a-tags/i-c* by themselves should not set
                   --  Sec_Stack_Used, only if other code uses the secondary
                   --  stack should we set this flag. This ensures that we do
                   --  not bring the secondary stack unnecessarily when using
-                  --  Ada.Tags and not actually using the secondary stack.
+                  --  one of these packages and not actually using the
+                  --  secondary stack.
 
-                  if Get_Name_String (F) /= "a-tags.ali" then
-                     Opt.Sec_Stack_Used := True;
-                  end if;
+                  declare
+                     File : constant String := Get_Name_String (F);
+                  begin
+                     if File /= "a-tags.ali"
+                       and then File /= "i-c.ali"
+                       and then File /= "i-cstrin.ali"
+                       and then File /= "i-cpoint.ali"
+                     then
+                        Opt.Sec_Stack_Used := True;
+                     end if;
+                  end;
 
                --  Invalid switch starting with S
 

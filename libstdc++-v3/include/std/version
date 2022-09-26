@@ -309,6 +309,7 @@
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #if __cpp_constexpr_dynamic_alloc
+# define __cpp_lib_constexpr_bitset 202202L
 # undef __cpp_lib_constexpr_memory
 # define __cpp_lib_constexpr_memory 202202L
 #endif

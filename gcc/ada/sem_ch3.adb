@@ -4770,20 +4770,13 @@ package body Sem_Ch3 is
          if not Is_Entity_Name (Object_Definition (N)) then
             Act_T := Etype (E);
             Check_Compile_Time_Size (Act_T);
-
-            if Aliased_Present (N) then
-               Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
-            end if;
          end if;
 
          --  When the given object definition and the aggregate are specified
          --  independently, and their lengths might differ do a length check.
          --  This cannot happen if the aggregate is of the form (others =>...)
 
-         if not Is_Constrained (T) then
-            null;
-
-         elsif Nkind (E) = N_Raise_Constraint_Error then
+         if Nkind (E) = N_Raise_Constraint_Error then
 
             --  Aggregate is statically illegal. Place back in declaration
 
@@ -7419,12 +7412,13 @@ package body Sem_Ch3 is
             Analyze (High_Bound (Range_Expression (Constraint (Indic))));
          end if;
 
-         --  Introduce an implicit base type for the derived type even if there
+         --  Create an implicit base type for the derived type even if there
          --  is no constraint attached to it, since this seems closer to the
-         --  Ada semantics. Build a full type declaration tree for the derived
-         --  type using the implicit base type as the defining identifier. Then
-         --  build a subtype declaration tree which applies the constraint (if
-         --  any) have it replace the derived type declaration.
+         --  Ada semantics. Use an Itype like for the implicit base type of
+         --  other kinds of derived type, but build a full type declaration
+         --  for it so as to analyze the new literals properly. Then build a
+         --  subtype declaration tree which applies the constraint (if any)
+         --  and have it replace the derived type declaration.
 
          Literal := First_Literal (Parent_Type);
          Literals_List := New_List;
@@ -7457,8 +7451,7 @@ package body Sem_Ch3 is
          end loop;
 
          Implicit_Base :=
-           Make_Defining_Identifier (Sloc (Derived_Type),
-             Chars => New_External_Name (Chars (Derived_Type), 'B'));
+           Create_Itype (E_Enumeration_Type, N, Derived_Type, 'B');
 
          --  Indicate the proper nature of the derived type. This must be done
          --  before analysis of the literals, to recognize cases when a literal
@@ -7471,12 +7464,12 @@ package body Sem_Ch3 is
          Type_Decl :=
            Make_Full_Type_Declaration (Loc,
              Defining_Identifier => Implicit_Base,
-             Discriminant_Specifications => No_List,
              Type_Definition =>
                Make_Enumeration_Type_Definition (Loc, Literals_List));
 
-         Mark_Rewrite_Insertion (Type_Decl);
-         Insert_Before (N, Type_Decl);
+         --  Do not insert the declarationn, just analyze it in the context
+
+         Set_Parent (Type_Decl, Parent (N));
          Analyze (Type_Decl);
 
          --  The anonymous base now has a full declaration, but this base
@@ -7777,35 +7770,6 @@ package body Sem_Ch3 is
       --  must be converted to the derived type.
 
       Convert_Scalar_Bounds (N, Parent_Type, Derived_Type, Loc);
-
-      --  The implicit_base should be frozen when the derived type is frozen,
-      --  but note that it is used in the conversions of the bounds. For fixed
-      --  types we delay the determination of the bounds until the proper
-      --  freezing point. For other numeric types this is rejected by GCC, for
-      --  reasons that are currently unclear (???), so we choose to freeze the
-      --  implicit base now. In the case of integers and floating point types
-      --  this is harmless because subsequent representation clauses cannot
-      --  affect anything, but it is still baffling that we cannot use the
-      --  same mechanism for all derived numeric types.
-
-      --  There is a further complication: actually some representation
-      --  clauses can affect the implicit base type. For example, attribute
-      --  definition clauses for stream-oriented attributes need to set the
-      --  corresponding TSS entries on the base type, and this normally
-      --  cannot be done after the base type is frozen, so the circuitry in
-      --  Sem_Ch13.New_Stream_Subprogram must account for this possibility
-      --  and not use Set_TSS in this case.
-
-      --  There are also consequences for the case of delayed representation
-      --  aspects for some cases. For example, a Size aspect is delayed and
-      --  should not be evaluated to the freeze point. This early freezing
-      --  means that the size attribute evaluation happens too early???
-
-      if Is_Fixed_Point_Type (Parent_Type) then
-         Conditional_Delay (Implicit_Base, Parent_Type);
-      else
-         Freeze_Before (N, Implicit_Base);
-      end if;
    end Build_Derived_Numeric_Type;
 
    --------------------------------
@@ -14450,14 +14414,18 @@ package body Sem_Ch3 is
    begin
       Mutate_Ekind (Def_Id, E_Enumeration_Subtype);
 
-      Set_First_Literal     (Def_Id, First_Literal (Base_Type (T)));
-
-      Set_Etype             (Def_Id, Base_Type         (T));
-      Set_Size_Info         (Def_Id,                   (T));
-      Set_First_Rep_Item    (Def_Id, First_Rep_Item    (T));
-      Set_Is_Character_Type (Def_Id, Is_Character_Type (T));
-
+      Set_First_Literal            (Def_Id, First_Literal (Base_Type (T)));
+      Set_Etype                    (Def_Id, Base_Type         (T));
+      Set_Size_Info                (Def_Id,                   (T));
+      Set_Is_Character_Type        (Def_Id, Is_Character_Type (T));
       Set_Scalar_Range_For_Subtype (Def_Id, Range_Expression (C), T);
+
+      --  Inherit the chain of representation items instead of replacing it
+      --  because Build_Derived_Enumeration_Type rewrites the declaration of
+      --  the derived type as a subtype declaration and the former needs to
+      --  preserve existing representation items (see Build_Derived_Type).
+
+      Inherit_Rep_Item_Chain (Def_Id, T);
 
       Set_Discrete_RM_Size (Def_Id);
    end Constrain_Enumeration;
@@ -16999,11 +16967,9 @@ package body Sem_Ch3 is
           Low_Bound  => Lo,
           High_Bound => Hi));
 
-      Conditional_Delay (Derived_Type, Parent_Type);
-
-      Mutate_Ekind (Derived_Type, E_Enumeration_Subtype);
-      Set_Etype (Derived_Type, Implicit_Base);
-      Set_Size_Info         (Derived_Type, Parent_Type);
+      Mutate_Ekind  (Derived_Type, E_Enumeration_Subtype);
+      Set_Etype     (Derived_Type, Implicit_Base);
+      Set_Size_Info (Derived_Type, Parent_Type);
 
       if not Known_RM_Size (Derived_Type) then
          Set_RM_Size (Derived_Type, RM_Size (Parent_Type));
@@ -17022,16 +16988,6 @@ package body Sem_Ch3 is
       end if;
 
       Convert_Scalar_Bounds (N, Parent_Type, Derived_Type, Loc);
-
-      --  Because the implicit base is used in the conversion of the bounds, we
-      --  have to freeze it now. This is similar to what is done for numeric
-      --  types, and it equally suspicious, but otherwise a nonstatic bound
-      --  will have a reference to an unfrozen type, which is rejected by Gigi
-      --  (???). This requires specific care for definition of stream
-      --  attributes. For details, see comments at the end of
-      --  Build_Derived_Numeric_Type.
-
-      Freeze_Before (N, Implicit_Base);
    end Derived_Standard_Character;
 
    ------------------------------

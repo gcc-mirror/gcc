@@ -1268,6 +1268,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         auto o = (*e.args)[0];
         auto po = isParameter(o);
         auto s = getDsymbolWithoutExpCtx(o);
+        auto typeOfArg = isType(o);
         UserAttributeDeclaration udad = null;
         if (po)
         {
@@ -1281,6 +1282,10 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             }
             //printf("getAttributes %s, attrs = %p, scope = %p\n", s.toChars(), s.userAttribDecl, s._scope);
             udad = s.userAttribDecl;
+        }
+        else if (typeOfArg)
+        {
+            // If there is a type but no symbol, do nothing rather than erroring.
         }
         else
         {

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_CMODEL_NORMAL "normal"
 #define STR_CMODEL_TINY "tiny"
 #define STR_CMODEL_TS "tiny-static"
+#define STR_CMODEL_MEDIUM "medium"
 #define STR_CMODEL_LARGE "large"
 #define STR_CMODEL_EXTREME "extreme"
 

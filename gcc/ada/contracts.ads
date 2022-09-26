@@ -64,6 +64,16 @@ package Contracts is
    procedure Analyze_Contracts (L : List_Id);
    --  Analyze the contracts of all eligible constructs found in list L
 
+   procedure Analyze_Pragmas_In_Declarations (Body_Id : Entity_Id);
+   --  Perform early analysis of pragmas at the top of a given subprogram's
+   --  declarations.
+   --
+   --  The purpose of this is to analyze contract-related pragmas for later
+   --  processing, but also to handle other such pragmas before these
+   --  declarations get moved to an internal wrapper as part of contract
+   --  expansion. For example, pragmas Inline, Ghost, Volatile all need to
+   --  apply directly to the subprogram and not be moved to a wrapper.
+
    procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of entry or
    --  subprogram body Body_Id as if they appeared at the end of a declarative
@@ -177,6 +187,17 @@ package Contracts is
    --    Depends
    --    Global
 
+   procedure Build_Entry_Contract_Wrapper (E : Entity_Id; Decl : Node_Id);
+   --  Build the body of a wrapper procedure for an entry or entry family that
+   --  has contract cases, preconditions, or postconditions, and add it to the
+   --  freeze actions of the related synchronized type.
+   --
+   --  The body first verifies the preconditions and case guards of the
+   --  contract cases, then invokes the entry [family], and finally verifies
+   --  the postconditions and the consequences of the contract cases. E denotes
+   --  the entry family. Decl denotes the declaration of the enclosing
+   --  synchronized type.
+
    procedure Create_Generic_Contract (Unit : Node_Id);
    --  Create a contract node for a generic package, generic subprogram, or a
    --  generic body denoted by Unit by collecting all source contract-related
@@ -187,21 +208,6 @@ package Contracts is
    --  list which contains entry, package, protected, subprogram, or task body
    --  denoted by Body_Decl. In addition, freeze the contract of the nearest
    --  enclosing package body.
-
-   function Get_Postcond_Enabled (Subp : Entity_Id) return Entity_Id;
-   --  Get the defining identifier for a subprogram's Postcond_Enabled
-   --  object created during the expansion of the subprogram's postconditions.
-
-   function Get_Result_Object_For_Postcond (Subp : Entity_Id) return Entity_Id;
-   --  Get the defining identifier for a subprogram's
-   --  Result_Object_For_Postcond object created during the expansion of the
-   --  subprogram's postconditions.
-
-   function Get_Return_Success_For_Postcond
-     (Subp : Entity_Id) return Entity_Id;
-   --  Get the defining identifier for a subprogram's
-   --  Return_Success_For_Postcond object created during the expansion of the
-   --  subprogram's postconditions.
 
    procedure Inherit_Subprogram_Contract
      (Subp      : Entity_Id;

@@ -173,27 +173,11 @@ is
       Count     : Count_Type)
    is
    begin
-      --  In the general case, we pass the buck to Insert, but for efficiency,
-      --  we check for the usual case where Count = 1 and the vector has enough
-      --  room for at least one more element.
+      --  In the general case, we take the slow path; for efficiency,
+      --  we check for the common case where Count = 1 .
 
-      if Count = 1
-        and then Container.Elements /= null
-        and then Container.Last /= Container.Elements.Last
-      then
-         TC_Check (Container.TC);
-
-         --  Increment Container.Last after assigning the New_Item, so we
-         --  leave the Container unmodified in case Finalize/Adjust raises
-         --  an exception.
-
-         declare
-            New_Last : constant Index_Type := Container.Last + 1;
-         begin
-            Container.Elements.EA (New_Last) := New_Item;
-            Container.Last := New_Last;
-         end;
-
+      if Count = 1 then
+         Append (Container, New_Item);
       else
          Append_Slow_Path (Container, New_Item, Count);
       end if;
@@ -222,7 +206,28 @@ is
                      New_Item  :        Element_Type)
    is
    begin
-      Insert (Container, Last_Index (Container) + 1, New_Item, 1);
+      --  For performance, check for the common special case where the
+      --  container already has room for at least one more element.
+      --  In the general case, pass the buck to Insert.
+
+      if Container.Elements /= null
+        and then Container.Last /= Container.Elements.Last
+      then
+         TC_Check (Container.TC);
+
+         --  Increment Container.Last after assigning the New_Item, so we
+         --  leave the Container unmodified in case Finalize/Adjust raises
+         --  an exception.
+
+         declare
+            New_Last : constant Index_Type := Container.Last + 1;
+         begin
+            Container.Elements.EA (New_Last) := New_Item;
+            Container.Last := New_Last;
+         end;
+      else
+         Insert (Container, Last_Index (Container) + 1, New_Item, 1);
+      end if;
    end Append;
 
    ----------------------

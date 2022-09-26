@@ -79,7 +79,9 @@ typedef _Atomic __INTMAX_TYPE__ atomic_intmax_t;
 typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;        
 
 
+#if !(defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L)
 #define ATOMIC_VAR_INIT(VALUE)	(VALUE)
+#endif
 
 /* Initialize an atomic object pointed to by PTR with VAL.  */
 #define atomic_init(PTR, VAL)                           \

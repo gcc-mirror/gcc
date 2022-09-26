@@ -1818,7 +1818,7 @@ func (p *Package) load(ctx context.Context, opts PackageOpts, path string, stk *
 		if p.UsesCgo() {
 			addImport("unsafe", true)
 		}
-		if p.UsesCgo() && (!p.Standard || !cgoExclude[p.ImportPath]) && cfg.BuildContext.Compiler != "gccgo" {
+		if p.UsesCgo() && (!p.Standard || !cgoExclude[p.ImportPath]) {
 			addImport("runtime/cgo", true)
 		}
 		if p.UsesCgo() && (!p.Standard || !cgoSyscallExclude[p.ImportPath]) {
@@ -1828,9 +1828,7 @@ func (p *Package) load(ctx context.Context, opts PackageOpts, path string, stk *
 		// SWIG adds imports of some standard packages.
 		if p.UsesSwig() {
 			addImport("unsafe", true)
-			if cfg.BuildContext.Compiler != "gccgo" {
-				addImport("runtime/cgo", true)
-			}
+			addImport("runtime/cgo", true)
 			addImport("syscall", true)
 			addImport("sync", true)
 
@@ -2455,7 +2453,7 @@ func LinkerDeps(p *Package) []string {
 	deps := []string{"runtime"}
 
 	// External linking mode forces an import of runtime/cgo.
-	if externalLinkingForced(p) && cfg.BuildContext.Compiler != "gccgo" {
+	if externalLinkingForced(p) {
 		deps = append(deps, "runtime/cgo")
 	}
 	// On ARM with GOARM=5, it forces an import of math, for soft floating point.

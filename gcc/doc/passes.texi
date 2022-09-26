@@ -1184,7 +1184,7 @@ these files.
 
 This is run after final because it must output the stack slot offsets
 for pseudo registers that did not get hard registers.  Source files
-are @file{dbxout.cc} for DBX symbol table format, @file{dwarfout.c} for
+are @file{dwarfout.c} for
 DWARF symbol table format, files @file{dwarf2out.cc} and @file{dwarf2asm.cc}
 for DWARF2 symbol table format, and @file{vmsdbgout.cc} for VMS debug
 symbol table format.

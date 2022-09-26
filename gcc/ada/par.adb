@@ -361,36 +361,29 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    Expr_Form : Expr_Form_Type;
 
-   --  The following type is used for calls to P_Subprogram, P_Package, P_Task,
-   --  P_Protected to indicate which of several possibilities is acceptable.
+   --  The following type is used by P_Subprogram, P_Package, to indicate which
+   --  of several possibilities is acceptable.
 
    type Pf_Rec is record
-      Spcn : Boolean;                  -- True if specification OK
-      Decl : Boolean;                  -- True if declaration OK
-      Gins : Boolean;                  -- True if generic instantiation OK
-      Pbod : Boolean;                  -- True if proper body OK
-      Rnam : Boolean;                  -- True if renaming declaration OK
-      Stub : Boolean;                  -- True if body stub OK
-      Pexp : Boolean;                  -- True if parameterized expression OK
-      Fil2 : Boolean;                  -- Filler to fill to 8 bits
+      Spcn : Boolean; -- True if specification OK
+      Decl : Boolean; -- True if declaration OK
+      Gins : Boolean; -- True if generic instantiation OK
+      Pbod : Boolean; -- True if proper body OK
+      Rnam : Boolean; -- True if renaming declaration OK
+      Stub : Boolean; -- True if body stub OK
+      Pexp : Boolean; -- True if parameterized expression OK
    end record;
    pragma Pack (Pf_Rec);
 
    function T return Boolean renames True;
    function F return Boolean renames False;
 
-   Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp : constant Pf_Rec :=
-                                       Pf_Rec'(F, T, T, T, T, T, T, F);
-   Pf_Decl_Pexp                     : constant Pf_Rec :=
-                                       Pf_Rec'(F, T, F, F, F, F, T, F);
-   Pf_Decl_Gins_Pbod_Rnam_Pexp      : constant Pf_Rec :=
-                                       Pf_Rec'(F, T, T, T, T, F, T, F);
-   Pf_Decl_Pbod_Pexp                : constant Pf_Rec :=
-                                       Pf_Rec'(F, T, F, T, F, F, T, F);
-   Pf_Pbod_Pexp                     : constant Pf_Rec :=
-                                       Pf_Rec'(F, F, F, T, F, F, T, F);
-   Pf_Spcn                         : constant Pf_Rec :=
-                                       Pf_Rec'(T, F, F, F, F, F, F, F);
+   Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp : constant Pf_Rec := (F, T, T, T, T, T, T);
+   Pf_Decl_Pexp                     : constant Pf_Rec := (F, T, F, F, F, F, T);
+   Pf_Decl_Gins_Pbod_Rnam_Pexp      : constant Pf_Rec := (F, T, T, T, T, F, T);
+   Pf_Decl_Pbod_Pexp                : constant Pf_Rec := (F, T, F, T, F, F, T);
+   Pf_Pbod_Pexp                     : constant Pf_Rec := (F, F, F, T, F, F, T);
+   Pf_Spcn                          : constant Pf_Rec := (T, F, F, F, F, F, F);
    --  The above are the only allowed values of Pf_Rec arguments
 
    type SS_Rec is record
@@ -405,15 +398,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    end record;
    pragma Pack (SS_Rec);
 
-   SS_Eftm_Eltm_Sreq : constant SS_Rec := SS_Rec'(T, T, F, F, T, F, F, F);
-   SS_Eltm_Ortm_Tatm : constant SS_Rec := SS_Rec'(F, T, F, T, F, T, F, F);
-   SS_Extm_Sreq      : constant SS_Rec := SS_Rec'(F, F, T, F, T, F, F, F);
-   SS_None           : constant SS_Rec := SS_Rec'(F, F, F, F, F, F, F, F);
-   SS_Ortm_Sreq      : constant SS_Rec := SS_Rec'(F, F, F, T, T, F, F, F);
-   SS_Sreq           : constant SS_Rec := SS_Rec'(F, F, F, F, T, F, F, F);
-   SS_Sreq_Whtm      : constant SS_Rec := SS_Rec'(F, F, F, F, T, F, T, F);
-   SS_Whtm           : constant SS_Rec := SS_Rec'(F, F, F, F, F, F, T, F);
-   SS_Unco           : constant SS_Rec := SS_Rec'(F, F, F, F, F, F, F, T);
+   SS_Eftm_Eltm_Sreq : constant SS_Rec := (T, T, F, F, T, F, F, F);
+   SS_Eltm_Ortm_Tatm : constant SS_Rec := (F, T, F, T, F, T, F, F);
+   SS_Extm_Sreq      : constant SS_Rec := (F, F, T, F, T, F, F, F);
+   SS_None           : constant SS_Rec := (F, F, F, F, F, F, F, F);
+   SS_Ortm_Sreq      : constant SS_Rec := (F, F, F, T, T, F, F, F);
+   SS_Sreq           : constant SS_Rec := (F, F, F, F, T, F, F, F);
+   SS_Sreq_Whtm      : constant SS_Rec := (F, F, F, F, T, F, T, F);
+   SS_Whtm           : constant SS_Rec := (F, F, F, F, F, F, T, F);
+   SS_Unco           : constant SS_Rec := (F, F, F, F, F, F, F, T);
 
    Goto_List : Elist_Id;
    --  List of goto nodes appearing in the current compilation. Used to
@@ -882,9 +875,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       function P_Sequence_Of_Statements
         (SS_Flags : SS_Rec; Handled : Boolean := False) return List_Id;
-      --  The argument indicates the acceptable termination tokens.
-      --  See body in Par.Ch5 for details of the use of this parameter.
-      --  Handled is true if we are parsing a handled sequence of statements.
+      --  SS_Flags indicates the acceptable termination tokens; see body for
+      --  details. Handled is true if we are parsing a handled sequence of
+      --  statements.
 
       procedure Parse_Decls_Begin_End (Parent : Node_Id);
       --  Parses declarations and handled statement sequence, setting

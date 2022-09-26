@@ -2500,7 +2500,9 @@ package Sem_Util is
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
    pragma Inline (Is_User_Defined_Literal);
-   --  Determine whether N is a user-defined literal for Typ
+   --  Determine whether N is a user-defined literal for Typ, including
+   --  the case where N denotes a named number of the appropriate kind
+   --  when Typ has an Integer_Literal or Real_Literal aspect.
 
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
    --  Determine whether N denotes a reference to a variable which captures the
@@ -2560,11 +2562,6 @@ package Sem_Util is
    procedure Iterate_Call_Parameters (Call : Node_Id);
    --  Calls Handle_Parameter for each pair of formal and actual parameters of
    --  a function, procedure, or entry call.
-
-   function Itype_Has_Declaration (Id : Entity_Id) return Boolean;
-   --  Applies to Itypes. True if the Itype is attached to a declaration for
-   --  the type through its Parent field, which may or not be present in the
-   --  tree.
 
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False);
    --  This procedure is called to clear all constant indications from all
@@ -2748,7 +2745,6 @@ package Sem_Util is
    --      fields are recreated after the replication takes place.
    --
    --        First_Named_Actual
-   --        First_Real_Statement
    --        Next_Named_Actual
    --
    --      If applicable, the Etype field (if any) is updated to refer to a

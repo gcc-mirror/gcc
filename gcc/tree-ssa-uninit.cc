@@ -56,7 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Pointer set of potentially undefined ssa names, i.e.,
    ssa names that are defined by phi with operands that
    are not defined or potentially undefined.  */
-static hash_set<tree> *possibly_undefined_names = 0;
+static hash_set<tree> *possibly_undefined_names;
+static hash_map<gphi *, uninit_analysis::func_t::phi_arg_set_t> *defined_args;
 
 /* Returns the first bit position (starting from LSB)
    in mask that is non zero.  Returns -1 if the mask is empty.  */
@@ -987,10 +988,41 @@ warn_uninitialized_vars (bool wmaybe_uninit)
   wlimits wlims = { };
   wlims.wmaybe_uninit = wmaybe_uninit;
 
-  gimple_stmt_iterator gsi;
-  basic_block bb;
+  auto_bb_flag ft_reachable (cfun);
+
+  /* Mark blocks that are always executed when we ignore provably
+     not executed edges.  */
+  basic_block bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  while (!(bb->flags & ft_reachable))
+    {
+      bb->flags |= ft_reachable;
+      /* Find a single executable edge.  */
+      edge_iterator ei;
+      edge e, ee = NULL;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->flags & EDGE_EXECUTABLE)
+	  {
+	    if (!ee)
+	      ee = e;
+	    else
+	      {
+		ee = NULL;
+		break;
+	      }
+	  }
+      if (ee)
+	bb = ee->dest;
+      else
+	bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+      if (!bb || bb->index == EXIT_BLOCK)
+	break;
+    }
+
   FOR_EACH_BB_FN (bb, cfun)
     {
+      wlims.always_executed = (bb->flags & ft_reachable);
+      bb->flags &= ~ft_reachable;
+
       edge_iterator ei;
       edge e;
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1001,14 +1033,10 @@ warn_uninitialized_vars (bool wmaybe_uninit)
       if (!e)
 	continue;
 
-      basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-      /* ???  This could be improved when we use a greedy walk and have
-	 some edges marked as not executable.  */
-      wlims.always_executed = dominated_by_p (CDI_POST_DOMINATORS, succ, bb);
-
       if (wlims.always_executed)
 	warn_uninit_phi_uses (bb);
 
+      gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -1029,7 +1057,7 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
 	    {
 	      /* BIT_INSERT_EXPR first operand should not be considered
-	         a use for the purpose of uninit warnings.  */
+		 a use for the purpose of uninit warnings.  */
 	      if (gassign *ass = dyn_cast <gassign *> (stmt))
 		{
 		  if (gimple_assign_rhs_code (ass) == BIT_INSERT_EXPR
@@ -1040,7 +1068,7 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 	      if (wlims.always_executed)
 		warn_uninit (OPT_Wuninitialized, use,
 			     SSA_NAME_VAR (use), stmt);
-	      else if (wmaybe_uninit)
+	      else if (wlims.wmaybe_uninit)
 		warn_uninit (OPT_Wmaybe_uninitialized, use,
 			     SSA_NAME_VAR (use), stmt);
 	    }
@@ -1111,7 +1139,7 @@ compute_uninit_opnds_pos (gphi *phi)
 
   unsigned n = gimple_phi_num_args (phi);
   /* Bail out for phi with too many args.  */
-  if (n > predicate::func_t::max_phi_args)
+  if (n > uninit_analysis::func_t::max_phi_args)
     return 0;
 
   for (unsigned i = 0; i < n; ++i)
@@ -1131,28 +1159,19 @@ compute_uninit_opnds_pos (gphi *phi)
 	  MASK_SET_BIT (uninit_opnds, i);
 	}
     }
+  /* If we have recorded guarded uses of may-uninit values mask those.  */
+  if (auto *def_mask = defined_args->get (phi))
+    uninit_opnds &= ~*def_mask;
   return uninit_opnds;
 }
 
 /* Function object type used to determine whether an expression
    is of interest to the predicate analyzer.  */
 
-struct uninit_undef_val_t: public predicate::func_t
+struct uninit_undef_val_t: public uninit_analysis::func_t
 {
-  virtual bool operator()(tree) override;
   virtual unsigned phi_arg_set (gphi *) override;
 };
-
-/* Return true if the argument is an expression of interest.  */
-
-bool
-uninit_undef_val_t::operator()(tree val)
-{
-  if (TREE_CODE (val) == SSA_NAME)
-    return uninit_undefined_value_p (val);
-
-  return false;
-}
 
 /* Return a bitset of PHI arguments of interest.  */
 
@@ -1162,25 +1181,38 @@ uninit_undef_val_t::phi_arg_set (gphi *phi)
   return compute_uninit_opnds_pos (phi);
 }
 
+/* sort helper for find_uninit_use.  */
+
+static int
+cand_cmp (const void *a, const void *b, void *data)
+{
+  int *bb_to_rpo = (int *)data;
+  const gimple *sa = *(const gimple * const *)a;
+  const gimple *sb = *(const gimple * const *)b;
+  if (bb_to_rpo[gimple_bb (sa)->index] < bb_to_rpo[gimple_bb (sb)->index])
+    return -1;
+  else if (bb_to_rpo[gimple_bb (sa)->index] > bb_to_rpo[gimple_bb (sb)->index])
+    return 1;
+  return 0;
+}
+
 /* Searches through all uses of a potentially
    uninitialized variable defined by PHI and returns a use
    statement if the use is not properly guarded.  It returns
    NULL if all uses are guarded.  UNINIT_OPNDS is a bitvector
-   holding the position(s) of uninit PHI operands.  WORKLIST
-   is the vector of candidate phis that may be updated by this
-   function.  ADDED_TO_WORKLIST is the pointer set tracking
-   if the new phi is already in the worklist.  */
+   holding the position(s) of uninit PHI operands.  */
 
 static gimple *
-find_uninit_use (gphi *phi, unsigned uninit_opnds,
-		 vec<gphi *> *worklist, hash_set<gphi *> *added_to_worklist)
+find_uninit_use (gphi *phi, unsigned uninit_opnds, int *bb_to_rpo)
 {
   /* The Boolean predicate guarding the PHI definition.  Initialized
      lazily from PHI in the first call to is_use_guarded() and cached
      for subsequent iterations.  */
   uninit_undef_val_t eval;
-  predicate def_preds (eval);
+  uninit_analysis def_preds (eval);
 
+  /* First process PHIs and record other candidates.  */
+  auto_vec<gimple *, 64> cands;
   use_operand_p use_p;
   imm_use_iterator iter;
   tree phi_result = gimple_phi_result (phi);
@@ -1190,21 +1222,57 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
       if (is_gimple_debug (use_stmt))
 	continue;
 
-      basic_block use_bb;
       if (gphi *use_phi = dyn_cast<gphi *> (use_stmt))
 	{
-	  edge e = gimple_phi_arg_edge (use_phi,
-					PHI_ARG_INDEX_FROM_USE (use_p));
-	  use_bb = e->src;
+	  unsigned idx = PHI_ARG_INDEX_FROM_USE (use_p);
+	  edge e = gimple_phi_arg_edge (use_phi, idx);
 	  /* Do not look for uses in the next iteration of a loop, predicate
 	     analysis will not use the appropriate predicates to prove
 	     reachability.  */
 	  if (e->flags & EDGE_DFS_BACK)
 	    continue;
+
+	  basic_block use_bb = e->src;
+	  if (def_preds.is_use_guarded (use_stmt, use_bb, phi, uninit_opnds))
+	    {
+	      /* For a guarded use in a PHI record the PHI argument as
+		 initialized.  */
+	      if (idx < uninit_analysis::func_t::max_phi_args)
+		{
+		  bool existed_p;
+		  auto &def_mask
+		      = defined_args->get_or_insert (use_phi, &existed_p);
+		  if (!existed_p)
+		    def_mask = 0;
+		  MASK_SET_BIT (def_mask, idx);
+		}
+	      continue;
+	    }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Found unguarded use in bb %u: ",
+		       use_bb->index);
+	      print_gimple_stmt (dump_file, use_stmt, 0);
+	    }
+	  /* Found a phi use that is not guarded, mark the phi_result as
+	     possibly undefined.  */
+	  possibly_undefined_names->add (phi_result);
 	}
       else
-	use_bb = gimple_bb (use_stmt);
+	cands.safe_push (use_stmt);
+    }
 
+  /* Sort candidates after RPO.  */
+  cands.stablesort (cand_cmp, bb_to_rpo);
+  basic_block use_bb = NULL;
+  for (gimple *use_stmt : cands)
+    {
+      /* We only have to try diagnosing the first use in each block.  */
+      if (gimple_bb (use_stmt) == use_bb)
+	continue;
+
+      use_bb = gimple_bb (use_stmt);
       if (def_preds.is_use_guarded (use_stmt, use_bb, phi, uninit_opnds))
 	continue;
 
@@ -1214,23 +1282,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
 		   use_bb->index);
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
-      /* Found one real use, return.  */
-      if (gimple_code (use_stmt) != GIMPLE_PHI)
-	return use_stmt;
-
-      /* Found a phi use that is not guarded,
-	 add the phi to the worklist.  */
-      if (!added_to_worklist->add (as_a<gphi *> (use_stmt)))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "[WORKLIST]: Update worklist with phi: ");
-	      print_gimple_stmt (dump_file, use_stmt, 0);
-	    }
-
-	  worklist->safe_push (as_a<gphi *> (use_stmt));
-	  possibly_undefined_names->add (phi_result);
-	}
+      return use_stmt;
     }
 
   return NULL;
@@ -1240,33 +1292,20 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
    and gives warning if there exists a runtime path from the entry to a
    use of the PHI def that does not contain a definition.  In other words,
    the warning is on the real use.  The more dead paths that can be pruned
-   by the compiler, the fewer false positives the warning is.  WORKLIST
-   is a vector of candidate phis to be examined.  ADDED_TO_WORKLIST is
-   a pointer set tracking if the new phi is added to the worklist or not.  */
+   by the compiler, the fewer false positives the warning is.  */
 
 static void
-warn_uninitialized_phi (gphi *phi, vec<gphi *> *worklist,
-			hash_set<gphi *> *added_to_worklist)
+warn_uninitialized_phi (gphi *phi, unsigned uninit_opnds, int *bb_to_rpo)
 {
-  /* Don't look at virtual operands.  */
-  if (virtual_operand_p (gimple_phi_result (phi)))
-    return;
-
-  unsigned uninit_opnds = compute_uninit_opnds_pos (phi);
-  if (MASK_EMPTY (uninit_opnds))
-    return;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Examining phi: ");
       print_gimple_stmt (dump_file, phi, 0);
     }
 
-  gimple *uninit_use_stmt = find_uninit_use (phi, uninit_opnds,
-					     worklist, added_to_worklist);
+  gimple *uninit_use_stmt = find_uninit_use (phi, uninit_opnds, bb_to_rpo);
 
-  /* All uses are properly guarded but a new PHI may have been added
-     to WORKLIST.  */
+  /* All uses are properly guarded.  */
   if (!uninit_use_stmt)
     return;
 
@@ -1341,10 +1380,6 @@ public:
 static void
 execute_late_warn_uninitialized (function *fun)
 {
-  basic_block bb;
-  gphi_iterator gsi;
-  vec<gphi *> worklist = vNULL;
-
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
@@ -1352,6 +1387,11 @@ execute_late_warn_uninitialized (function *fun)
      unreachable blocks.  */
   set_all_edges_as_executable (fun);
   mark_dfs_back_edges (fun);
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun));
+  int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  for (int i = 0; i < n; ++i)
+    bb_to_rpo[rpo[i]] = i;
 
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally
@@ -1360,12 +1400,19 @@ execute_late_warn_uninitialized (function *fun)
 
   timevar_push (TV_TREE_UNINIT);
 
-  possibly_undefined_names = new hash_set<tree>;
-  hash_set<gphi *> added_to_worklist;
+  /* Avoid quadratic beahvior when looking up case labels for edges.  */
+  start_recording_case_labels ();
 
-  /* Initialize worklist  */
-  FOR_EACH_BB_FN (bb, fun)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  possibly_undefined_names = new hash_set<tree>;
+  defined_args = new hash_map<gphi *, uninit_analysis::func_t::phi_arg_set_t>;
+
+  /* Walk the CFG in RPO order so we visit PHIs with defs that are
+     possibly uninitialized from other PHIs after those.  The uninit
+     predicate analysis will then expand the PHIs predicate with
+     the predicates of the edges from such PHI defs.  */
+  for (int i = 0; i < n; ++i)
+    for (auto gsi = gsi_start_phis (BASIC_BLOCK_FOR_FN (fun, rpo[i]));
+	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gphi *phi = gsi.phi ();
 
@@ -1373,35 +1420,20 @@ execute_late_warn_uninitialized (function *fun)
 	if (virtual_operand_p (gimple_phi_result (phi)))
 	  continue;
 
-	unsigned n = gimple_phi_num_args (phi);
-	for (unsigned i = 0; i < n; ++i)
-	  {
-	    tree op = gimple_phi_arg_def (phi, i);
-	    if (TREE_CODE (op) == SSA_NAME && uninit_undefined_value_p (op))
-	      {
-		worklist.safe_push (phi);
-		added_to_worklist.add (phi);
-		if (dump_file && (dump_flags & TDF_DETAILS))
-		  {
-		    fprintf (dump_file, "[WORKLIST]: add to initial list "
-			     "for operand %u of: ", i);
-		    print_gimple_stmt (dump_file, phi, 0);
-		  }
-		break;
-	      }
-	  }
+	unsigned uninit_opnds = compute_uninit_opnds_pos (phi);
+	if (MASK_EMPTY (uninit_opnds))
+	  continue;
+
+	warn_uninitialized_phi (phi, uninit_opnds, bb_to_rpo);
       }
 
-  while (worklist.length () != 0)
-    {
-      gphi *cur_phi = 0;
-      cur_phi = worklist.pop ();
-      warn_uninitialized_phi (cur_phi, &worklist, &added_to_worklist);
-    }
-
-  worklist.release ();
+  free (rpo);
+  free (bb_to_rpo);
   delete possibly_undefined_names;
   possibly_undefined_names = NULL;
+  delete defined_args;
+  defined_args = NULL;
+  end_recording_case_labels ();
   free_dominance_info (CDI_POST_DOMINATORS);
   timevar_pop (TV_TREE_UNINIT);
 }
@@ -1436,10 +1468,7 @@ execute_early_warn_uninitialized (struct function *fun)
      elimination to compute edge reachability.  Don't bother when
      we only warn for unconditionally executed code though.  */
   if (!optimize)
-    {
-      do_rpo_vn (fun, NULL, NULL, false, false, VN_NOWALK);
-      free_rpo_vn ();
-    }
+    do_rpo_vn (fun, NULL, NULL, false, false, VN_NOWALK);
   else
     set_all_edges_as_executable (fun);
 

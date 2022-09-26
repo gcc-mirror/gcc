@@ -189,14 +189,19 @@ package System.Tasking.Protected_Objects.Entries is
    --  Lock a protected object for write access. Upon return, the caller owns
    --  the lock to this object, and no other call to Lock or Lock_Read_Only
    --  with the same argument will return until the corresponding call to
-   --  Unlock has been made by the caller. Program_Error is raised in case of
-   --  ceiling violation.
+   --  Unlock has been made by the caller. Program_Error is raised in case
+   --  of ceiling violation, or if the protected object has already been
+   --  finalized, or if Detect_Blocking is true and the protected object
+   --  is already locked by the current task. In the Program_Error cases,
+   --  the object is not locked.
 
    procedure Lock_Entries_With_Status
      (Object            : Protection_Entries_Access;
       Ceiling_Violation : out Boolean);
    --  Same as above, but return the ceiling violation status instead of
-   --  raising Program_Error.
+   --  raising Program_Error. This raises Program_Error in the other
+   --  cases mentioned for Lock_Entries. In the Program_Error cases,
+   --  the object is not locked.
 
    procedure Lock_Read_Only_Entries (Object : Protection_Entries_Access);
    --  Lock a protected object for read access. Upon return, the caller owns

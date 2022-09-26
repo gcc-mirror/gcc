@@ -5529,6 +5529,7 @@ generate_coarray_sym_init (gfc_symbol *sym)
 
   if (sym->attr.dummy || sym->attr.allocatable || !sym->attr.codimension
       || sym->attr.use_assoc || !sym->attr.referenced
+      || sym->attr.associate_var
       || sym->attr.select_type_temporary)
     return;
 

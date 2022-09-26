@@ -324,7 +324,7 @@ ctf_add_string (ctf_container_ref ctfc, const char * name,
   return ctfc_strtable_add_str (str_table, name, name_offset);
 }
 
-/* Add the compilation unit (CU) name string to the the CTF string table.  The
+/* Add the compilation unit (CU) name string to the CTF string table.  The
    CU name has a prepended pwd string if it is a relative path.  Also set the
    CU name offset in the CTF container.  */
 
