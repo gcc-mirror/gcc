@@ -30,6 +30,7 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
+with Exp_Ch6;        use Exp_Ch6;
 with Exp_Prag;       use Exp_Prag;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
@@ -1609,7 +1610,7 @@ package body Contracts is
       --  preserving the result for the purpose of evaluating postconditions,
       --  contracts, type invariants, etc.
 
-      --  In the case of a function, generate:
+      --  In the case of a regular function, generate:
       --
       --  function Original_Func (X : in out Integer) return Typ is
       --     <prologue renamings>
@@ -1641,7 +1642,27 @@ package body Contracts is
       --  Note that an extended return statement does not yield the same result
       --  because the copy of the return object is not elided by GNAT for now.
 
-      --  Or, in the case of a procedure:
+      --  Or else, in the case of a BIP function, generate:
+
+      --  function Original_Func (X : in out Integer) return Typ is
+      --     <prologue renamings>
+      --     <preconditions>
+      --
+      --     function _Wrapped_Statements return Typ is
+      --        <original declarations>
+      --     begin
+      --        <original statements>
+      --     end;
+      --
+      --  begin
+      --     return
+      --        Result_Obj : constant Typ := _Wrapped_Statements
+      --     do
+      --        <postconditions statments>
+      --     end return;
+      --  end;
+
+      --  Or else, in the case of a procedure, generate:
       --
       --  procedure Original_Proc (X : in out Integer) is
       --     <prologue renamings>
@@ -1657,7 +1678,6 @@ package body Contracts is
       --     _Wrapped_Statements;
       --     <postconditions statments>
       --  end;
-      --
 
       --  Create Identifier
 
@@ -1715,6 +1735,26 @@ package body Contracts is
              Name => New_Occurrence_Of (Wrapper_Id, Loc)));
          Set_Statements
            (Handled_Statement_Sequence (Body_Decl), Stmts);
+
+      --  Generate the post-execution statements and the extended return
+      --  when the subprogram being wrapped is a BIP function.
+
+      elsif Is_Build_In_Place_Result_Type (Ret_Type) then
+         Set_Statements (Handled_Statement_Sequence (Body_Decl), New_List (
+           Make_Extended_Return_Statement (Loc,
+             Return_Object_Declarations => New_List (
+                Make_Object_Declaration (Loc,
+                  Defining_Identifier => Result,
+                  Constant_Present    => True,
+                  Object_Definition   =>
+                    New_Occurrence_Of (Ret_Type, Loc),
+                  Expression          =>
+                    Make_Function_Call (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (Wrapper_Id, Loc)))),
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Stmts))));
 
       --  Declare a renaming of the result of the call to the wrapper and
       --  append a return of the result of the call when the subprogram is
