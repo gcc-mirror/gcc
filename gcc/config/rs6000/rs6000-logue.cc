@@ -4920,7 +4920,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	 a REG_CFA_DEF_CFA note, but that's OK;  A duplicate is
 	 discarded by dwarf2cfi.cc/dwarf2out.cc, and in any case would
 	 be harmless if emitted.  */
-      if (frame_pointer_needed)
+      if (frame_pointer_needed_indeed)
 	{
 	  insn = get_last_insn ();
 	  add_reg_note (insn, REG_CFA_DEF_CFA,

@@ -1,3 +1,7 @@
+2022-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* README: Replace gcc-bugs email address with Bugzilla URL.
+
 2022-08-25  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

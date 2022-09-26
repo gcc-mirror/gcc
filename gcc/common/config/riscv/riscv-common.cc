@@ -1224,7 +1224,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
    dependent mask bits, in case more than one -march string is passed.  */
 
-static void
+void
 riscv_parse_arch_string (const char *isa,
 			 struct gcc_options *opts,
 			 location_t loc)

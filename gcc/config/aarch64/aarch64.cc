@@ -534,7 +534,7 @@ static const struct cpu_addrcost_table neoversen2_addrcost_table =
   0 /* imm_offset  */
 };
 
-static const struct cpu_addrcost_table demeter_addrcost_table =
+static const struct cpu_addrcost_table neoversev2_addrcost_table =
 {
     {
       1, /* hi  */
@@ -677,7 +677,7 @@ static const struct cpu_regmove_cost neoversev1_regmove_cost =
   2 /* FP2FP  */
 };
 
-static const struct cpu_regmove_cost demeter_regmove_cost =
+static const struct cpu_regmove_cost neoversev2_regmove_cost =
 {
   1, /* GP2GP  */
   /* Spilling to int<->fp instead of memory is recommended so set
@@ -2426,7 +2426,7 @@ static const struct tune_params neoversen2_tunings =
   &generic_prefetch_tune
 };
 
-static const advsimd_vec_cost demeter_advsimd_vector_cost =
+static const advsimd_vec_cost neoversev2_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
   2, /* fp_stmt_cost  */
@@ -2457,7 +2457,7 @@ static const advsimd_vec_cost demeter_advsimd_vector_cost =
   1  /* store_cost  */
 };
 
-static const sve_vec_cost demeter_sve_vector_cost =
+static const sve_vec_cost neoversev2_sve_vector_cost =
 {
   {
     2, /* int_stmt_cost  */
@@ -2514,7 +2514,7 @@ static const sve_vec_cost demeter_sve_vector_cost =
   3 /* scatter_store_elt_cost  */
 };
 
-static const aarch64_scalar_vec_issue_info demeter_scalar_issue_info =
+static const aarch64_scalar_vec_issue_info neoversev2_scalar_issue_info =
 {
   3, /* loads_stores_per_cycle  */
   2, /* stores_per_cycle  */
@@ -2523,7 +2523,7 @@ static const aarch64_scalar_vec_issue_info demeter_scalar_issue_info =
   1 /* fp_simd_store_general_ops  */
 };
 
-static const aarch64_advsimd_vec_issue_info demeter_advsimd_issue_info =
+static const aarch64_advsimd_vec_issue_info neoversev2_advsimd_issue_info =
 {
   {
     3, /* loads_stores_per_cycle  */
@@ -2537,7 +2537,7 @@ static const aarch64_advsimd_vec_issue_info demeter_advsimd_issue_info =
   3 /* ld4_st4_general_ops  */
 };
 
-static const aarch64_sve_vec_issue_info demeter_sve_issue_info =
+static const aarch64_sve_vec_issue_info neoversev2_sve_issue_info =
 {
   {
     {
@@ -2559,15 +2559,15 @@ static const aarch64_sve_vec_issue_info demeter_sve_issue_info =
   1 /* gather_scatter_pair_pred_ops  */
 };
 
-static const aarch64_vec_issue_info demeter_vec_issue_info =
+static const aarch64_vec_issue_info neoversev2_vec_issue_info =
 {
-  &demeter_scalar_issue_info,
-  &demeter_advsimd_issue_info,
-  &demeter_sve_issue_info
+  &neoversev2_scalar_issue_info,
+  &neoversev2_advsimd_issue_info,
+  &neoversev2_sve_issue_info
 };
 
 /* Demeter costs for vector insn classes.  */
-static const struct cpu_vector_cost demeter_vector_cost =
+static const struct cpu_vector_cost neoversev2_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
   2, /* scalar_fp_stmt_cost  */
@@ -2575,17 +2575,17 @@ static const struct cpu_vector_cost demeter_vector_cost =
   1, /* scalar_store_cost  */
   1, /* cond_taken_branch_cost  */
   1, /* cond_not_taken_branch_cost  */
-  &demeter_advsimd_vector_cost, /* advsimd  */
-  &demeter_sve_vector_cost, /* sve  */
-  &demeter_vec_issue_info /* issue_info  */
+  &neoversev2_advsimd_vector_cost, /* advsimd  */
+  &neoversev2_sve_vector_cost, /* sve  */
+  &neoversev2_vec_issue_info /* issue_info  */
 };
 
-static const struct tune_params demeter_tunings =
+static const struct tune_params neoversev2_tunings =
 {
   &cortexa76_extra_costs,
-  &demeter_addrcost_table,
-  &demeter_regmove_cost,
-  &demeter_vector_cost,
+  &neoversev2_addrcost_table,
+  &neoversev2_regmove_cost,
+  &neoversev2_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_128, /* sve_width  */
@@ -15566,7 +15566,7 @@ aarch64_vec_op_count::rename_cycles_per_iter () const
 {
   if (sve_issue_info () == &neoverse512tvb_sve_issue_info
       || sve_issue_info () == &neoversen2_sve_issue_info
-      || sve_issue_info () == &demeter_sve_issue_info)
+      || sve_issue_info () == &neoversev2_sve_issue_info)
     /* + 1 for an addition.  We've already counted a general op for each
        store, so we don't need to account for stores separately.  The branch
        reads no registers and so does not need to be counted either.

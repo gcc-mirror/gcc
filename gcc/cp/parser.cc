@@ -5922,6 +5922,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_CONSTRUCTIBLE:
 	case RID_IS_NOTHROW_ASSIGNABLE:
 	case RID_IS_NOTHROW_CONSTRUCTIBLE:
+	case RID_IS_CONVERTIBLE:
+	case RID_IS_NOTHROW_CONVERTIBLE:
 	case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
 	case RID_REF_CONVERTS_FROM_TEMPORARY:
 	  return cp_parser_trait_expr (parser, token->keyword);
@@ -11007,6 +11009,14 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case RID_IS_NOTHROW_CONSTRUCTIBLE:
       kind = CPTK_IS_NOTHROW_CONSTRUCTIBLE;
       variadic = true;
+      break;
+    case RID_IS_CONVERTIBLE:
+      kind = CPTK_IS_CONVERTIBLE;
+      binary = true;
+      break;
+    case RID_IS_NOTHROW_CONVERTIBLE:
+      kind = CPTK_IS_NOTHROW_CONVERTIBLE;
+      binary = true;
       break;
     case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
       kind = CPTK_REF_CONSTRUCTS_FROM_TEMPORARY;

@@ -1323,9 +1323,9 @@
 
 (define_insn "mov<mode>_internal"
   [(set (match_operand:VMOVE 0 "nonimmediate_operand"
-	 "=v,v ,v ,m")
+	 "=v,v ,v,v ,m")
 	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
-	 " C,<sseconstm1>,vm,v"))]
+	 " C,<sseconstm1>,BH,vm,v"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))
@@ -1343,7 +1343,7 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "sselog1,sselog1,ssemov,ssemov")
+  [(set_attr "type" "sselog1,sselog1,sselog1,ssemov,ssemov")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
 	(cond [(match_test "TARGET_AVX")
@@ -1354,7 +1354,7 @@
 	       (and (match_test "<MODE>mode == V2DFmode")
 		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
 		 (const_string "V4SF")
-	       (and (eq_attr "alternative" "3")
+	       (and (eq_attr "alternative" "4")
 		    (match_test "TARGET_SSE_TYPELESS_STORES"))
 		 (const_string "V4SF")
 	       (and (eq_attr "alternative" "0")

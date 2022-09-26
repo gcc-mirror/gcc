@@ -1416,6 +1416,7 @@ OBJS = \
 	gimple-range-fold.o \
 	gimple-range-gori.o \
 	gimple-range-infer.o \
+	gimple-range-op.o \
 	gimple-range-trace.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-isolate-paths.o \

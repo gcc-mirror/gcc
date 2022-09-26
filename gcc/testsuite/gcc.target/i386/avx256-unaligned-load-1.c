@@ -14,6 +14,6 @@ avx_test (void)
     c[i] = a[i] * b[i+3];
 }
 
-/* { dg-final { scan-assembler-not "vmovups\[^\n\r]*movv8sf_internal/2" } } */
-/* { dg-final { scan-assembler "movv4sf_internal/2" } } */
+/* { dg-final { scan-assembler-not "vmovups\[^\n\r]*movv8sf_internal/3" } } */
+/* { dg-final { scan-assembler "movv4sf_internal/3" } } */
 /* { dg-final { scan-assembler "vinsertf128" } } */

@@ -131,3 +131,9 @@
 #if !__has_builtin (__builtin_is_pointer_interconvertible_with_class)
 # error "__has_builtin (__builtin_is_pointer_interconvertible_with_class) failed"
 #endif
+#if !__has_builtin (__is_convertible)
+# error "__has_builtin (__is_convertible) failed"
+#endif
+#if !__has_builtin (__is_nothrow_convertible)
+# error "__has_builtin (__is_nothrow_convertible) failed"
+#endif

@@ -1676,7 +1676,7 @@
 (define_expand "floorv2sf2"
   [(set (match_operand:V2SF 0 "register_operand")
 	(unspec:V2SF
-	  [(match_operand:V2SF 1 "vector_operand")
+	  [(match_operand:V2SF 1 "register_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
   "TARGET_SSE4_1 && !flag_trapping_math

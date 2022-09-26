@@ -258,15 +258,6 @@ frange::accept (const vrange_visitor &v) const
   v.visit (*this);
 }
 
-// Helper function to compare floats.  Returns TRUE if op1 .CODE. op2
-// is nonzero.
-
-static inline bool
-tree_compare (tree_code code, tree op1, tree op2)
-{
-  return !integer_zerop (fold_build2 (code, integer_type_node, op1, op2));
-}
-
 // Flush denormal endpoints to the appropriate 0.0.
 
 void
@@ -290,7 +281,9 @@ frange::flush_denormals_to_zero ()
 // Setter for franges.
 
 void
-frange::set (tree min, tree max, value_range_kind kind)
+frange::set (tree type,
+	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
+	     value_range_kind kind)
 {
   switch (kind)
     {
@@ -299,7 +292,7 @@ frange::set (tree min, tree max, value_range_kind kind)
       return;
     case VR_VARYING:
     case VR_ANTI_RANGE:
-      set_varying (TREE_TYPE (min));
+      set_varying (type);
       return;
     case VR_RANGE:
       break;
@@ -308,20 +301,23 @@ frange::set (tree min, tree max, value_range_kind kind)
     }
 
   // Handle NANs.
-  if (real_isnan (TREE_REAL_CST_PTR (min)) || real_isnan (TREE_REAL_CST_PTR (max)))
+  if (real_isnan (&min) || real_isnan (&max))
     {
-      gcc_checking_assert (real_identical (TREE_REAL_CST_PTR (min),
-					   TREE_REAL_CST_PTR (max)));
-      tree type = TREE_TYPE (min);
-      bool sign = real_isneg (TREE_REAL_CST_PTR (min));
-      set_nan (type, sign);
+      gcc_checking_assert (real_identical (&min, &max));
+      if (HONOR_NANS (type))
+	{
+	  bool sign = real_isneg (&min);
+	  set_nan (type, sign);
+	}
+      else
+	set_undefined ();
       return;
     }
 
   m_kind = kind;
-  m_type = TREE_TYPE (min);
-  m_min = *TREE_REAL_CST_PTR (min);
-  m_max = *TREE_REAL_CST_PTR (max);
+  m_type = type;
+  m_min = min;
+  m_max = max;
   if (HONOR_NANS (m_type))
     {
       m_pos_nan = true;
@@ -333,8 +329,20 @@ frange::set (tree min, tree max, value_range_kind kind)
       m_neg_nan = false;
     }
 
+  // For -ffinite-math-only we can drop ranges outside the
+  // representable numbers to min/max for the type.
+  if (flag_finite_math_only)
+    {
+      REAL_VALUE_TYPE min_repr = frange_val_min (m_type);
+      REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
+      if (real_less (&m_min, &min_repr))
+	m_min = min_repr;
+      if (real_less (&max_repr, &m_max))
+	m_max = max_repr;
+    }
+
   // Check for swapped ranges.
-  gcc_checking_assert (tree_compare (LE_EXPR, min, max));
+  gcc_checking_assert (real_compare (LE_EXPR, &min, &max));
 
   normalize_kind ();
 
@@ -344,14 +352,11 @@ frange::set (tree min, tree max, value_range_kind kind)
     verify_range ();
 }
 
-// Setter for frange from REAL_VALUE_TYPE endpoints.
-
 void
-frange::set (tree type,
-	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
-	     value_range_kind kind)
+frange::set (tree min, tree max, value_range_kind kind)
 {
-  set (build_real (type, min), build_real (type, max), kind);
+  set (TREE_TYPE (min),
+       *TREE_REAL_CST_PTR (min), *TREE_REAL_CST_PTR (max), kind);
 }
 
 // Normalize range to VARYING or UNDEFINED, or vice versa.  Return
@@ -366,8 +371,8 @@ bool
 frange::normalize_kind ()
 {
   if (m_kind == VR_RANGE
-      && real_isinf (&m_min, 1)
-      && real_isinf (&m_max, 0))
+      && frange_val_is_min (m_min, m_type)
+      && frange_val_is_max (m_max, m_type))
     {
       if (m_pos_nan && m_neg_nan)
 	{
@@ -380,8 +385,8 @@ frange::normalize_kind ()
       if (!m_pos_nan || !m_neg_nan)
 	{
 	  m_kind = VR_RANGE;
-	  m_min = dconstninf;
-	  m_max = dconstinf;
+	  m_min = frange_val_min (m_type);
+	  m_max = frange_val_max (m_type);
 	  return true;
 	}
     }
@@ -422,7 +427,7 @@ frange::combine_zeros (const frange &r, bool union_p)
       if (maybe_isnan ())
 	m_kind = VR_NAN;
       else
-	m_kind = VR_UNDEFINED;
+	set_undefined ();
       changed = true;
     }
   return changed;
@@ -506,7 +511,7 @@ frange::intersect_nans (const frange &r)
   if (maybe_isnan ())
     m_kind = VR_NAN;
   else
-    m_kind = VR_UNDEFINED;
+    set_undefined ();
   if (flag_checking)
     verify_range ();
   return true;
@@ -558,7 +563,7 @@ frange::intersect (const vrange &v)
       if (maybe_isnan ())
 	m_kind = VR_NAN;
       else
-	m_kind = VR_UNDEFINED;
+	set_undefined ();
       if (flag_checking)
 	verify_range ();
       return true;
@@ -696,13 +701,13 @@ frange::verify_range ()
   switch (m_kind)
     {
     case VR_UNDEFINED:
-      // m_type is ignored.
+      gcc_checking_assert (!m_type);
       return;
     case VR_VARYING:
       gcc_checking_assert (m_type);
       gcc_checking_assert (m_pos_nan && m_neg_nan);
-      gcc_checking_assert (real_isinf (&m_min, 1));
-      gcc_checking_assert (real_isinf (&m_max, 0));
+      gcc_checking_assert (frange_val_is_min (m_min, m_type));
+      gcc_checking_assert (frange_val_is_max (m_max, m_type));
       return;
     case VR_RANGE:
       gcc_checking_assert (m_type);
@@ -727,7 +732,8 @@ frange::verify_range ()
   // If all the properties are clear, we better not span the entire
   // domain, because that would make us varying.
   if (m_pos_nan && m_neg_nan)
-    gcc_checking_assert (!real_isinf (&m_min, 1) || !real_isinf (&m_max, 0));
+    gcc_checking_assert (!frange_val_is_min (m_min, m_type)
+			 || !frange_val_is_max (m_max, m_type));
 }
 
 // We can't do much with nonzeros yet.
@@ -774,7 +780,11 @@ frange::zero_p () const
 void
 frange::set_nonnegative (tree type)
 {
-  set (type, dconst0, dconstinf);
+  set (type, dconst0, frange_val_max (type));
+
+  // Set +NAN as the only possibility.
+  if (HONOR_NANS (type))
+    update_nan (/*sign=*/0);
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -3823,6 +3833,11 @@ range_tests_signed_zeros ()
   r1.update_nan ();
   r0.intersect (r1);
   ASSERT_TRUE (r0.known_isnan ());
+
+  r0.set_nonnegative (float_type_node);
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.maybe_isnan ());
 }
 
 static void
@@ -3871,23 +3886,6 @@ range_tests_floats ()
   // ...unless it has some special property...
   r0.clear_nan ();
   ASSERT_FALSE (r0.varying_p ());
-
-  // The endpoints of a VARYING are +-INF.
-  r0.set_varying (float_type_node);
-  ASSERT_TRUE (real_identical (&r0.lower_bound (), &dconstninf));
-  ASSERT_TRUE (real_identical (&r0.upper_bound (), &dconstinf));
-
-  // The maximum representable range for a type is still a subset of VARYING.
-  REAL_VALUE_TYPE q, r;
-  real_min_representable (&q, float_type_node);
-  real_max_representable (&r, float_type_node);
-  r0 = frange (float_type_node, q, r);
-  // r0 is not a varying, because it does not include -INF/+INF.
-  ASSERT_FALSE (r0.varying_p ());
-  // The upper bound of r0 must be less than +INF.
-  ASSERT_TRUE (real_less (&r0.upper_bound (), &dconstinf));
-  // The lower bound of r0 must be greater than -INF.
-  ASSERT_TRUE (real_less (&dconstninf, &r0.lower_bound ()));
 
   // For most architectures, where float and double are different
   // sizes, having the same endpoints does not necessarily mean the

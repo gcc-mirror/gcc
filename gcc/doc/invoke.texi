@@ -11077,12 +11077,11 @@ location views are enabled.
 Produce compressed debug sections in DWARF format, if that is supported.
 If @var{type} is not given, the default type depends on the capabilities
 of the assembler and linker used.  @var{type} may be one of
-@samp{none} (don't compress debug sections), @samp{zlib} (use zlib
-compression in ELF gABI format), or @samp{zlib-gnu} (use zlib
-compression in traditional GNU format).  If the linker doesn't support
-writing compressed debug sections, the option is rejected.  Otherwise,
-if the assembler does not support them, @option{-gz} is silently ignored
-when producing object files.
+@samp{none} (don't compress debug sections), or @samp{zlib} (use zlib
+compression in ELF gABI format).  If the linker doesn't support writing
+compressed debug sections, the option is rejected.  Otherwise, if the
+assembler does not support them, @option{-gz} is silently ignored when
+producing object files.
 
 @item -femit-struct-debug-baseonly
 @opindex femit-struct-debug-baseonly
@@ -19682,6 +19681,9 @@ and the features that they enable by default:
 @item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+ls64}
 @item @samp{armv8.8-a} @tab Armv8.8-a @tab @samp{armv8.7-a}, @samp{+mops}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
+@item @samp{armv9.1-a} @tab Armv9.1-A @tab @samp{armv9-a}, @samp{+bf16}, @samp{+i8mm}
+@item @samp{armv9.2-a} @tab Armv9.2-A @tab @samp{armv9.1-a}, @samp{+ls64}
+@item @samp{armv9.3-a} @tab Armv9.3-A @tab @samp{armv9.2-a}, @samp{+mops}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
@@ -19712,7 +19714,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
-@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{qdf24xx},
+@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{qdf24xx},
 @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}

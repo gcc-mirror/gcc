@@ -505,7 +505,7 @@ package body Sem_Ch6 is
          --  this because it is not part of the original source.
          --  If this is an ignored Ghost entity, analysis of the generated
          --  body is needed to hide external references (as is done in
-         --  Analyze_Subprogram_Body) after which the the subprogram profile
+         --  Analyze_Subprogram_Body) after which the subprogram profile
          --  can be frozen, which is needed to expand calls to such an ignored
          --  Ghost subprogram.
 

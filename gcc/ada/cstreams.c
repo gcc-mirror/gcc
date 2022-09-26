@@ -97,14 +97,6 @@ extern "C" {
 #undef fileno
 #endif
 
-/* The _IONBF value in MINGW32 stdio.h is wrong.  */
-#if defined (WINNT) || defined (_WINNT)
-#if OLD_MINGW
-#undef _IONBF
-#define _IONBF 0004
-#endif
-#endif
-
 int
 __gnat_feof (FILE *stream)
 {

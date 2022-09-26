@@ -40,7 +40,7 @@ subroutine s0 (x)
 
   call g (x, 1)
   call f (x, 1)  ! { dg-error "Type mismatch" }
-  call h (x, 1)  ! { dg-error "Rank mismatch" }
+  call h (x, 1)  ! Scalar to type(*),dimension(*): Invalid in TS29113 but valid since F2018
 end subroutine
 
 ! Check that you can't use an assumed-type array variable in an array

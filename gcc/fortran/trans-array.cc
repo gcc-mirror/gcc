@@ -10378,7 +10378,7 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   /* An allocatable class variable with no reference.  */
   if (sym->ts.type == BT_CLASS
-      && !sym->attr.associate_var
+      && (!sym->attr.associate_var || sym->attr.select_rank_temporary)
       && CLASS_DATA (sym)->attr.allocatable
       && expr->ref
       && ((expr->ref->type == REF_ARRAY && expr->ref->u.ar.type == AR_FULL
@@ -10393,7 +10393,7 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   /* An allocatable variable.  */
   if (sym->attr.allocatable
-      && !sym->attr.associate_var
+      && (!sym->attr.associate_var || sym->attr.select_rank_temporary)
       && expr->ref
       && expr->ref->type == REF_ARRAY
       && expr->ref->u.ar.type == AR_FULL)

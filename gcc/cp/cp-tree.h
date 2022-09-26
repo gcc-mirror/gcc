@@ -1407,6 +1407,8 @@ enum cp_trait_kind
   CPTK_IS_CONSTRUCTIBLE,
   CPTK_IS_NOTHROW_ASSIGNABLE,
   CPTK_IS_NOTHROW_CONSTRUCTIBLE,
+  CPTK_IS_CONVERTIBLE,
+  CPTK_IS_NOTHROW_CONVERTIBLE,
   CPTK_REF_CONSTRUCTS_FROM_TEMPORARY,
   CPTK_REF_CONVERTS_FROM_TEMPORARY
 };
@@ -7116,6 +7118,8 @@ extern tree forward_parm			(tree);
 extern bool is_trivially_xible			(enum tree_code, tree, tree);
 extern bool is_nothrow_xible			(enum tree_code, tree, tree);
 extern bool is_xible				(enum tree_code, tree, tree);
+extern bool is_convertible			(tree, tree);
+extern bool is_nothrow_convertible		(tree, tree);
 extern bool ref_xes_from_temporary		(tree, tree, bool);
 extern tree get_defaulted_eh_spec		(tree, tsubst_flags_t = tf_warning_or_error);
 extern bool maybe_explain_implicit_delete	(tree);

@@ -97,10 +97,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 12.1.0\n"
+"Project-Id-Version: gcc 12.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-08-17 22:17+0000\n"
-"PO-Revision-Date: 2022-05-09 10:26+0200\n"
+"PO-Revision-Date: 2022-09-16 06:43+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -58941,10 +58941,9 @@ msgid "redeclared here as %q#D"
 msgstr "redéclaré ici comme %q#D"
 
 #: cp/pt.cc:6321
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid "redeclared here"
-msgstr "déclaré ici"
+msgstr "redéclaré ici"
 
 #: cp/pt.cc:6332
 #, gcc-internal-format
@@ -62308,10 +62307,9 @@ msgid "toHash() must be declared as extern (D) size_t toHash() const nothrow @sa
 msgstr "toHash() doit être déclaré comme extern (D) size_t toHash() const nothrow @safe et non comme %s"
 
 #: d/typeinfo.cc:1415
-#, fuzzy, gcc-internal-format
-#| msgid "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>"
+#, gcc-internal-format
 msgid "expression %qs requires %<object.TypeInfo%> and cannot be used with %<-fno-rtti%>"
-msgstr "%<object.TypeInfo%> ne peut pas être utilisé avec %<-fno-rtti%>"
+msgstr "l'expression %qs requiert %<object.TypeInfo%> et ne peut pas être utilisée avec %<-fno-rtti%>"
 
 #: d/typeinfo.cc:1419
 #, gcc-internal-format
@@ -64958,10 +64956,9 @@ msgid "BIND(C) statement at %C"
 msgstr "Instruction BIND(C) à %C"
 
 #: fortran/decl.cc:6268
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "CLASS variable %qs at %L cannot have the PARAMETER attribute"
+#, gcc-internal-format, gfc-internal-format
 msgid "CLASS entity at %C cannot have the PARAMETER attribute"
-msgstr "La variable CLASS %qs à %L ne peut pas avoir l'attribut PARAMETER"
+msgstr "L'entité CLASS à %C ne peut pas avoir l'attribut PARAMETER"
 
 #: fortran/decl.cc:6300
 #, gcc-internal-format, gfc-internal-format
