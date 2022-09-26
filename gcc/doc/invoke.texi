@@ -9901,7 +9901,7 @@ security-sensitive value is written to an output file
 
 See @uref{https://cwe.mitre.org/data/definitions/532.html, CWE-532: Information Exposure Through Log Files}.
 
-@item Wanalyzer-exposure-through-uninit-copy
+@item -Wanalyzer-exposure-through-uninit-copy
 @opindex Wanalyzer-exposure-through-uninit-copy
 @opindex Wno-analyzer-exposure-through-uninit-copy
 This warning requires both @option{-fanalyzer} and the use of a plugin
