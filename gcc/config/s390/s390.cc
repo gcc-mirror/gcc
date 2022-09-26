@@ -3648,7 +3648,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
       *total = 0;
       return true;
       case SET: {
-	rtx dest = SET_DEST (x);
+	rtx dst = SET_DEST (x);
 	rtx src = SET_SRC (x);
 
 	switch (GET_CODE (src))
@@ -3669,7 +3669,6 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		 slightly more expensive than a normal load.  */
 	      *total = COSTS_N_INSNS (1) + 2;
 
-	      rtx dst = SET_DEST (src);
 	      rtx then = XEXP (src, 1);
 	      rtx els = XEXP (src, 2);
 
@@ -3696,25 +3695,25 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    break;
 	  }
 
-	switch (GET_CODE (dest))
+	switch (GET_CODE (dst))
 	  {
 	  case SUBREG:
-	    if (!REG_P (SUBREG_REG (dest)))
+	    if (!REG_P (SUBREG_REG (dst)))
 	      *total += rtx_cost (SUBREG_REG (src), VOIDmode, SET, 0, speed);
 	    /* fallthrough */
 	  case REG:
 	    /* If this is a VR -> VR copy, count the number of
 	       registers.  */
-	    if (VECTOR_MODE_P (GET_MODE (dest)) && REG_P (src))
+	    if (VECTOR_MODE_P (GET_MODE (dst)) && REG_P (src))
 	      {
-		int nregs = s390_hard_regno_nregs (VR0_REGNUM, GET_MODE (dest));
+		int nregs = s390_hard_regno_nregs (VR0_REGNUM, GET_MODE (dst));
 		*total = COSTS_N_INSNS (nregs);
 	      }
 	    /* Same for GPRs.  */
 	    else if (REG_P (src))
 	      {
 		int nregs
-		  = s390_hard_regno_nregs (GPR0_REGNUM, GET_MODE (dest));
+		  = s390_hard_regno_nregs (GPR0_REGNUM, GET_MODE (dst));
 		*total = COSTS_N_INSNS (nregs);
 	      }
 	    else
@@ -3722,7 +3721,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	      *total += rtx_cost (src, mode, SET, 1, speed);
 	    return true;
 	    case MEM: {
-	      rtx address = XEXP (dest, 0);
+	      rtx address = XEXP (dst, 0);
 	      rtx tmp;
 	      HOST_WIDE_INT tmp2;
 	      if (s390_loadrelative_operand_p (address, &tmp, &tmp2))
