@@ -1475,7 +1475,7 @@
   [(match_operand:VEC_L 0 "vlogical_operand")
    (match_operand:VEC_L 1 "vlogical_operand")
    (match_operand:QI 2 "reg_or_short_operand")]
-  "TARGET_ALTIVEC"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   rtx bitshift = operands[2];
   rtx shift;
