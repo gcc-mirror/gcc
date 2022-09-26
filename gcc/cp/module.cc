@@ -8185,13 +8185,18 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
-      if (mk & MK_template_mask
-	  || mk == MK_partial)
+      /* Add to specialization tables now that constraints etc are
+	 added.  */
+      if (mk == MK_partial)
 	{
-	  /* Add to specialization tables now that constraints etc are
-	     added.  */
-	  bool is_type = mk == MK_partial || !(mk & MK_tmpl_decl_mask);
-
+	  bool is_type = TREE_CODE (inner) == TYPE_DECL;
+	  spec.spec = is_type ? type : inner;
+	  add_mergeable_specialization (!is_type, false,
+					&spec, decl, spec_flags);
+	}
+      else if (mk & MK_template_mask)
+	{
+	  bool is_type = !(mk & MK_tmpl_decl_mask);
 	  spec.spec = is_type ? type : mk & MK_tmpl_tmpl_mask ? inner : decl;
 	  add_mergeable_specialization (!is_type,
 					!is_type && mk & MK_tmpl_alias_mask,
