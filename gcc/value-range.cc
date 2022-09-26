@@ -258,15 +258,6 @@ frange::accept (const vrange_visitor &v) const
   v.visit (*this);
 }
 
-// Helper function to compare floats.  Returns TRUE if op1 .CODE. op2
-// is nonzero.
-
-static inline bool
-tree_compare (tree_code code, tree op1, tree op2)
-{
-  return !integer_zerop (fold_build2 (code, integer_type_node, op1, op2));
-}
-
 // Flush denormal endpoints to the appropriate 0.0.
 
 void
