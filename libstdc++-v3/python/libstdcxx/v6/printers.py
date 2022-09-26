@@ -1857,7 +1857,7 @@ class Printer(object):
     # Add a name using _GLIBCXX_BEGIN_NAMESPACE_VERSION.
     def add_version(self, base, name, function):
         self.add(base + name, function)
-        if _versioned_namespace:
+        if _versioned_namespace and not '__cxx11' in base:
             vbase = re.sub('^(std|__gnu_cxx)::', r'\g<0>%s' % _versioned_namespace, base)
             self.add(vbase + name, function)
 
@@ -2026,7 +2026,7 @@ def add_one_template_type_printer(obj, name, defargs):
     printer = TemplateTypePrinter('std::__debug::'+name, defargs)
     gdb.types.register_type_printer(obj, printer)
 
-    if _versioned_namespace:
+    if _versioned_namespace and not '__cxx11' in name:
         # Add second type printer for same type in versioned namespace:
         ns = 'std::' + _versioned_namespace
         # PR 86112 Cannot use dict comprehension here:
@@ -2084,6 +2084,21 @@ class FilteringTypePrinter(object):
                     pass
             if self.type_obj == type_obj:
                 return strip_inline_namespaces(self.name)
+
+            if self.type_obj is None:
+                return None
+
+            # Workaround ambiguous typedefs matching both std:: and std::__cxx11:: symbols.
+            ambiguous = False
+            for ch in ('', 'w', 'u8', 'u16', 'u32'):
+                if self.name == 'std::' + ch + 'string':
+                    ambiguous = True
+                    break
+
+            if ambiguous:
+                if self.type_obj.tag.replace('__cxx11::', '') == type_obj.tag.replace('__cxx11::', ''):
+                    return strip_inline_namespaces(self.name)
+
             return None
 
     def instantiate(self):
@@ -2093,7 +2108,7 @@ class FilteringTypePrinter(object):
 def add_one_type_printer(obj, match, name):
     printer = FilteringTypePrinter('std::' + match, 'std::' + name)
     gdb.types.register_type_printer(obj, printer)
-    if _versioned_namespace:
+    if _versioned_namespace and not '__cxx11' in match:
         ns = 'std::' + _versioned_namespace
         printer = FilteringTypePrinter(ns + match, ns + name)
         gdb.types.register_type_printer(obj, printer)
