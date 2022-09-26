@@ -1,3 +1,7 @@
+2022-09-25  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi: Fix chapter level.
+
 2022-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/107001
