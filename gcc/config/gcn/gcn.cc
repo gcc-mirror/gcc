@@ -4674,8 +4674,6 @@ gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node
 					    tree base_type,
 					    int ARG_UNUSED (num))
 {
-  unsigned int elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
-
   if (known_eq (clonei->simdlen, 0U))
     clonei->simdlen = 64;
   else if (maybe_ne (clonei->simdlen, 64U))
