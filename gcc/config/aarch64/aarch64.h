@@ -239,6 +239,15 @@
 /* Armv8.8-a architecture extensions.  */
 #define AARCH64_FL_V8_8       (1ULL << 45)
 
+/* Armv9.1-A.  */
+#define AARCH64_FL_V9_1       (1ULL << 46)
+
+/* Armv9.2-A.  */
+#define AARCH64_FL_V9_2       (1ULL << 47)
+
+/* Armv9.3-A.  */
+#define AARCH64_FL_V9_3       (1ULL << 48)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -273,6 +282,12 @@
 #define AARCH64_FL_FOR_ARCH9       \
   (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
    | AARCH64_FL_F16)
+#define AARCH64_FL_FOR_ARCH9_1	\
+  (AARCH64_FL_FOR_ARCH9 | AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V9_1)
+#define AARCH64_FL_FOR_ARCH9_2	\
+  (AARCH64_FL_FOR_ARCH9_1 | AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V9_2)
+#define AARCH64_FL_FOR_ARCH9_3	\
+  (AARCH64_FL_FOR_ARCH9_2 | AARCH64_FL_FOR_ARCH8_8 | AARCH64_FL_V9_3)
 
 /* Macros to test ISA flags.  */
 
@@ -312,6 +327,9 @@
 #define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
 #define AARCH64_ISA_V9		   (aarch64_isa_flags & AARCH64_FL_V9)
+#define AARCH64_ISA_V9_1           (aarch64_isa_flags & AARCH64_FL_V9_1)
+#define AARCH64_ISA_V9_2           (aarch64_isa_flags & AARCH64_FL_V9_2)
+#define AARCH64_ISA_V9_3           (aarch64_isa_flags & AARCH64_FL_V9_3)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
