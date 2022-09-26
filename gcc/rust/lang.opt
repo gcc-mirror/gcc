@@ -113,6 +113,48 @@ Rust Joined RejectNegative
 
 o
 Rust Joined Separate
+
+frust-compile-until=
+Rust Joined RejectNegative Enum(frust_compile_until) Var(flag_rust_compile_until)
+-frust-compile-until=[ast|attributecheck|expansion|nameresolution|lowering|typecheck|privacy|unsafety|const|copimlation|end]             When to stop in the pipeline when compiling Rust code
+
+Enum
+Name(frust_compile_until) Type(int) UnknownError(unknown rust compile-until %qs)
+
+EnumValue
+Enum(frust_compile_until) String(ast) Value(0)
+
+EnumValue
+Enum(frust_compile_until) String(attributecheck) Value(1)
+
+EnumValue
+Enum(frust_compile_until) String(expansion) Value(2)
+
+EnumValue
+Enum(frust_compile_until) String(nameresolution) Value(3)
+
+EnumValue
+Enum(frust_compile_until) String(lowering) Value(4)
+
+EnumValue
+Enum(frust_compile_until) String(typecheck) Value(5)
+
+EnumValue
+Enum(frust_compile_until) String(privacy) Value(6)
+
+EnumValue
+Enum(frust_compile_until) String(unsafety) Value(7)
+
+EnumValue
+Enum(frust_compile_until) String(const) Value(8)
+
+EnumValue
+Enum(frust_compile_until) String(compilation) Value(9)
+
+EnumValue
+Enum(frust_compile_until) String(end) Value(10)
+
+
 ; Documented in common.opt
 
 ; This comment is to ensure we retain the blank line above.
