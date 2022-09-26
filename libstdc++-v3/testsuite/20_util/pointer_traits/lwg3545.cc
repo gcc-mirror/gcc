@@ -99,3 +99,20 @@ static_assert( is_same<pointer<Ctraits>, clever_ptr<char>>::value, "" );
 static_assert( is_same<difference_type<Ctraits>, std::ptrdiff_t>::value, "" );
 static_assert( is_same<rebind<Ctraits>, clever_ptr<short>>::value, "" );
 static_assert( is_same<pointer_to<Ctraits>, clever_ptr<char>>::value, "" );
+
+#ifdef __cpp_concepts
+struct ptr_base { };
+
+// Program-defined specialization must not be ambiguous with primary template.
+template<typename P> requires std::derived_from<P, ptr_base>
+struct std::pointer_traits<P>
+{
+  using element_type = int;
+  using difference_type = long;
+  using pointer = P;
+};
+
+struct Ptr : ptr_base { using element_type = int; };
+
+using E = std::pointer_traits<Ptr>::element_type;
+#endif

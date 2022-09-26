@@ -73,25 +73,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __replace_first_arg<_SomeTemplate<_Tp, _Types...>, _Up>
     { using type = _SomeTemplate<_Up, _Types...>; };
 
-#if __cpp_concepts
-  // When concepts are supported detection of _Ptr::element_type is done
-  // by a requires-clause, so __ptr_traits_elem_t only needs to do this:
-  template<typename _Ptr>
-    using __ptr_traits_elem_t = typename __get_first_arg<_Ptr>::type;
-#else
   // Detect the element type of a pointer-like type.
   template<typename _Ptr, typename = void>
     struct __ptr_traits_elem : __get_first_arg<_Ptr>
     { };
 
   // Use _Ptr::element_type if is a valid type.
+#if __cpp_concepts
+  template<typename _Ptr> requires requires { typename _Ptr::element_type; }
+    struct __ptr_traits_elem<_Ptr, void>
+    { using type = typename _Ptr::element_type; };
+#else
   template<typename _Ptr>
     struct __ptr_traits_elem<_Ptr, __void_t<typename _Ptr::element_type>>
     { using type = typename _Ptr::element_type; };
+#endif
 
   template<typename _Ptr>
     using __ptr_traits_elem_t = typename __ptr_traits_elem<_Ptr>::type;
-#endif
 
   /// @endcond
 
@@ -181,13 +180,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr>
     struct pointer_traits : __ptr_traits_impl<_Ptr, __ptr_traits_elem_t<_Ptr>>
     { };
-
-#if __cpp_concepts
-  template<typename _Ptr> requires requires { typename _Ptr::element_type; }
-    struct pointer_traits<_Ptr>
-    : __ptr_traits_impl<_Ptr, typename _Ptr::element_type>
-    { };
-#endif
 
   /**
    * @brief  Partial specialization for built-in pointers.
