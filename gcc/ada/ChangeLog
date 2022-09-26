@@ -66,7 +66,7 @@
 
 2022-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* contracts.adb (uild_Subprogram_Contract_Wrapper): Remove useless
+	* contracts.adb (Build_Subprogram_Contract_Wrapper): Remove useless
 	local variable. In the case of a function, replace the extended
 	return statement by a block statement declaring a renaming of the
 	call to the local subprogram after removing side effects manually.
@@ -1179,14 +1179,14 @@
 
 2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* exp_util.adb (Expand_Subtype_From_Expr): Be prepared for
-	rewritten aggregates as expressions.
+	* exp_util.adb (Expand_Subtype_From_Expr): Be prepared for rewritten
+	aggregates as expressions.
 
 2022-09-02  Gary Dismukes  <dismukes@adacore.com>
 
-	* exp_ch6.adb (Expand_Simple_Function_Return) Bypass creation of an actual
-	subtype and unchecked conversion to that subtype when the underlying type
-	of the expression has discriminants without defaults.
+	* exp_ch6.adb (Expand_Simple_Function_Return) Bypass creation of an
+	actual subtype and unchecked conversion to that subtype when the
+	underlying type of the expression has discriminants without defaults.
 
 2022-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
