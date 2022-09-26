@@ -18,10 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// GDB can't find global variables using the abi_tag attribute.
-// https://sourceware.org/bugzilla/show_bug.cgi?id=19436
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <string>
 #include <iostream>
 #include <regex>

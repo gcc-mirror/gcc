@@ -18,9 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Type printers only recognize the old std::string for now.
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <filesystem>
 #include <any>
 #include <optional>
