@@ -235,7 +235,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	}
 
       TyTy::BaseType *lookup = nullptr;
-      if (!context->lookup_type (ref, &lookup))
+      if (!query_type (ref, &lookup))
 	{
 	  if (is_root)
 	    {
@@ -383,7 +383,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  HirId impl_ty_id
 	    = associated_impl_block->get_type ()->get_mappings ().get_hirid ();
 	  TyTy::BaseType *impl_block_ty = nullptr;
-	  bool ok = context->lookup_type (impl_ty_id, &impl_block_ty);
+	  bool ok = query_type (impl_ty_id, &impl_block_ty);
 	  rust_assert (ok);
 
 	  if (impl_block_ty->needs_generic_substitutions ())
@@ -460,6 +460,11 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	     resolved_node_id))
     {
       resolver->insert_resolved_type (expr_mappings.get_nodeid (),
+				      resolved_node_id);
+    }
+  else
+    {
+      resolver->insert_resolved_misc (expr_mappings.get_nodeid (),
 				      resolved_node_id);
     }
 

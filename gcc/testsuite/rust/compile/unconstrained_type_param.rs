@@ -9,4 +9,6 @@ impl<X, Y> Foo<X> {
 
 fn main() {
     let a = Foo::test();
+    // { dg-error "Failed to resolve expression of function call" "" { target *-*-* } .-1 }
+    // { dg-error "failed to type resolve expression" "" { target *-*-* } .-2 }
 }

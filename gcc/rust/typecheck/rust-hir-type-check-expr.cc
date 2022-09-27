@@ -188,6 +188,9 @@ TypeCheckExpr::visit (HIR::CallExpr &expr)
       return;
     }
 
+  rust_debug_loc (expr.get_locus (), "resolved_call_expr to: {%s}",
+		  function_tyty->get_name ().c_str ());
+
   TyTy::VariantDef &variant = TyTy::VariantDef::get_error_node ();
   if (function_tyty->get_kind () == TyTy::TypeKind::ADT)
     {

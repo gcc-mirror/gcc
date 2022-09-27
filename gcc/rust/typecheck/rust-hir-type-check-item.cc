@@ -16,59 +16,466 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-hir-type-check-item.h"
 #include "rust-hir-full.h"
+#include "rust-hir-type-check-item.h"
+#include "rust-hir-type-check-enumitem.h"
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-stmt.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-pattern.h"
 #include "rust-hir-trait-resolve.h"
 
 namespace Rust {
 namespace Resolver {
 
-TypeCheckItem::TypeCheckItem () : TypeCheckBase () {}
+TypeCheckItem::TypeCheckItem () : TypeCheckBase (), infered (nullptr) {}
 
-void
+TyTy::BaseType *
 TypeCheckItem::Resolve (HIR::Item &item)
 {
+  // is it already resolved?
+  auto context = TypeCheckContext::get ();
+  TyTy::BaseType *resolved = nullptr;
+  bool already_resolved
+    = context->lookup_type (item.get_mappings ().get_hirid (), &resolved);
+  if (already_resolved)
+    return resolved;
+
   rust_assert (item.get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM);
   HIR::VisItem &vis_item = static_cast<HIR::VisItem &> (item);
 
   TypeCheckItem resolver;
   vis_item.accept_vis (resolver);
+  return resolver.infered;
+}
+
+TyTy::BaseType *
+TypeCheckItem::ResolveImplItem (HIR::ImplBlock &impl_block, HIR::ImplItem &item)
+{
+  TypeCheckItem resolver;
+  return resolver.resolve_impl_item (impl_block, item);
+}
+
+TyTy::BaseType *
+TypeCheckItem::ResolveImplBlockSelf (HIR::ImplBlock &impl_block)
+{
+  TypeCheckItem resolver;
+
+  bool failed_flag = false;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions
+    = resolver.resolve_impl_block_substitutions (impl_block, failed_flag);
+  if (failed_flag)
+    {
+      return new TyTy::ErrorType (impl_block.get_mappings ().get_hirid ());
+    }
+
+  return resolver.resolve_impl_block_self (impl_block);
+}
+
+void
+TypeCheckItem::visit (HIR::TypeAlias &alias)
+{
+  TyTy::BaseType *actual_type
+    = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
+
+  context->insert_type (alias.get_mappings (), actual_type);
+
+  for (auto &where_clause_item : alias.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+    }
+  infered = actual_type;
+}
+
+void
+TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
+{
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (struct_decl.has_generics ())
+    resolve_generic_params (struct_decl.get_generic_params (), substitutions);
+
+  for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+    }
+
+  std::vector<TyTy::StructFieldType *> fields;
+  size_t idx = 0;
+  for (auto &field : struct_decl.get_fields ())
+    {
+      TyTy::BaseType *field_type
+	= TypeCheckType::Resolve (field.get_field_type ().get ());
+      TyTy::StructFieldType *ty_field
+	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				     std::to_string (idx), field_type,
+				     field.get_locus ());
+      fields.push_back (ty_field);
+      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
+      idx++;
+    }
+
+  // get the path
+  const CanonicalPath *canonical_path = nullptr;
+  bool ok = mappings->lookup_canonical_path (
+    struct_decl.get_mappings ().get_nodeid (), &canonical_path);
+  rust_assert (ok);
+  RustIdent ident{*canonical_path, struct_decl.get_locus ()};
+
+  // its a single variant ADT
+  std::vector<TyTy::VariantDef *> variants;
+  variants.push_back (new TyTy::VariantDef (
+    struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+    ident, TyTy::VariantDef::VariantType::TUPLE, nullptr, std::move (fields)));
+
+  // Process #[repr(X)] attribute, if any
+  const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
+  TyTy::ADTType::ReprOptions repr
+    = parse_repr_options (attrs, struct_decl.get_locus ());
+
+  TyTy::BaseType *type
+    = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
+			 mappings->get_next_hir_id (),
+			 struct_decl.get_identifier (), ident,
+			 TyTy::ADTType::ADTKind::TUPLE_STRUCT,
+			 std::move (variants), std::move (substitutions), repr);
+
+  context->insert_type (struct_decl.get_mappings (), type);
+  infered = type;
+}
+
+void
+TypeCheckItem::visit (HIR::StructStruct &struct_decl)
+{
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (struct_decl.has_generics ())
+    resolve_generic_params (struct_decl.get_generic_params (), substitutions);
+
+  for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+    }
+
+  std::vector<TyTy::StructFieldType *> fields;
+  for (auto &field : struct_decl.get_fields ())
+    {
+      TyTy::BaseType *field_type
+	= TypeCheckType::Resolve (field.get_field_type ().get ());
+      TyTy::StructFieldType *ty_field
+	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				     field.get_field_name (), field_type,
+				     field.get_locus ());
+      fields.push_back (ty_field);
+      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
+    }
+
+  // get the path
+  const CanonicalPath *canonical_path = nullptr;
+  bool ok = mappings->lookup_canonical_path (
+    struct_decl.get_mappings ().get_nodeid (), &canonical_path);
+  rust_assert (ok);
+  RustIdent ident{*canonical_path, struct_decl.get_locus ()};
+
+  // its a single variant ADT
+  std::vector<TyTy::VariantDef *> variants;
+  variants.push_back (new TyTy::VariantDef (
+    struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+    ident, TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
+
+  // Process #[repr(X)] attribute, if any
+  const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
+  TyTy::ADTType::ReprOptions repr
+    = parse_repr_options (attrs, struct_decl.get_locus ());
+
+  TyTy::BaseType *type
+    = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
+			 mappings->get_next_hir_id (),
+			 struct_decl.get_identifier (), ident,
+			 TyTy::ADTType::ADTKind::STRUCT_STRUCT,
+			 std::move (variants), std::move (substitutions), repr);
+
+  context->insert_type (struct_decl.get_mappings (), type);
+  infered = type;
+}
+
+void
+TypeCheckItem::visit (HIR::Enum &enum_decl)
+{
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (enum_decl.has_generics ())
+    resolve_generic_params (enum_decl.get_generic_params (), substitutions);
+
+  std::vector<TyTy::VariantDef *> variants;
+  int64_t discriminant_value = 0;
+  for (auto &variant : enum_decl.get_variants ())
+    {
+      TyTy::VariantDef *field_type
+	= TypeCheckEnumItem::Resolve (variant.get (), discriminant_value);
+
+      discriminant_value++;
+      variants.push_back (field_type);
+    }
+
+  // get the path
+  const CanonicalPath *canonical_path = nullptr;
+  bool ok
+    = mappings->lookup_canonical_path (enum_decl.get_mappings ().get_nodeid (),
+				       &canonical_path);
+  rust_assert (ok);
+  RustIdent ident{*canonical_path, enum_decl.get_locus ()};
+
+  // multi variant ADT
+  TyTy::BaseType *type
+    = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
+			 mappings->get_next_hir_id (),
+			 enum_decl.get_identifier (), ident,
+			 TyTy::ADTType::ADTKind::ENUM, std::move (variants),
+			 std::move (substitutions));
+
+  context->insert_type (enum_decl.get_mappings (), type);
+  infered = type;
+}
+
+void
+TypeCheckItem::visit (HIR::Union &union_decl)
+{
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (union_decl.has_generics ())
+    resolve_generic_params (union_decl.get_generic_params (), substitutions);
+
+  for (auto &where_clause_item : union_decl.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+    }
+
+  std::vector<TyTy::StructFieldType *> fields;
+  for (auto &variant : union_decl.get_variants ())
+    {
+      TyTy::BaseType *variant_type
+	= TypeCheckType::Resolve (variant.get_field_type ().get ());
+      TyTy::StructFieldType *ty_variant
+	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
+				     variant.get_field_name (), variant_type,
+				     variant.get_locus ());
+      fields.push_back (ty_variant);
+      context->insert_type (variant.get_mappings (),
+			    ty_variant->get_field_type ());
+    }
+
+  // get the path
+  const CanonicalPath *canonical_path = nullptr;
+  bool ok
+    = mappings->lookup_canonical_path (union_decl.get_mappings ().get_nodeid (),
+				       &canonical_path);
+  rust_assert (ok);
+  RustIdent ident{*canonical_path, union_decl.get_locus ()};
+
+  // there is only a single variant
+  std::vector<TyTy::VariantDef *> variants;
+  variants.push_back (new TyTy::VariantDef (
+    union_decl.get_mappings ().get_hirid (), union_decl.get_identifier (),
+    ident, TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
+
+  TyTy::BaseType *type
+    = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),
+			 mappings->get_next_hir_id (),
+			 union_decl.get_identifier (), ident,
+			 TyTy::ADTType::ADTKind::UNION, std::move (variants),
+			 std::move (substitutions));
+
+  context->insert_type (union_decl.get_mappings (), type);
+  infered = type;
+}
+
+void
+TypeCheckItem::visit (HIR::StaticItem &var)
+{
+  TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
+
+  TyTy::BaseType *unified
+    = coercion_site (var.get_mappings ().get_hirid (),
+		     TyTy::TyWithLocation (type, var.get_type ()->get_locus ()),
+		     TyTy::TyWithLocation (expr_type,
+					   var.get_expr ()->get_locus ()),
+		     var.get_locus ());
+  context->insert_type (var.get_mappings (), unified);
+  infered = unified;
+}
+
+void
+TypeCheckItem::visit (HIR::ConstantItem &constant)
+{
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+
+  TyTy::BaseType *unified = unify_site (
+    constant.get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
+    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
+    constant.get_locus ());
+  context->insert_type (constant.get_mappings (), unified);
+  infered = unified;
 }
 
 void
 TypeCheckItem::visit (HIR::ImplBlock &impl_block)
 {
+  bool failed_flag = false;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions
+    = resolve_impl_block_substitutions (impl_block, failed_flag);
+  if (failed_flag)
+    {
+      infered = new TyTy::ErrorType (impl_block.get_mappings ().get_hirid ());
+      return;
+    }
+
+  TyTy::BaseType *self = resolve_impl_block_self (impl_block);
+
+  // resolve each impl_item
+  for (auto &impl_item : impl_block.get_impl_items ())
+    {
+      TypeCheckImplItem::Resolve (&impl_block, impl_item.get (), self,
+				  substitutions);
+    }
+
+  // validate the impl items
+  validate_trait_impl_block (impl_block, self, substitutions);
+}
+
+TyTy::BaseType *
+TypeCheckItem::resolve_impl_item (HIR::ImplBlock &impl_block,
+				  HIR::ImplItem &item)
+{
+  bool failed_flag = false;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions
+    = resolve_impl_block_substitutions (impl_block, failed_flag);
+  if (failed_flag)
+    {
+      return new TyTy::ErrorType (impl_block.get_mappings ().get_hirid ());
+    }
+
+  TyTy::BaseType *self = resolve_impl_block_self (impl_block);
+
+  return TypeCheckImplItem::Resolve (&impl_block, &item, self, substitutions);
+}
+
+void
+TypeCheckItem::visit (HIR::Function &function)
+{
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (function.has_generics ())
+    resolve_generic_params (function.get_generic_params (), substitutions);
+
+  for (auto &where_clause_item : function.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+    }
+
+  TyTy::BaseType *ret_type = nullptr;
+  if (!function.has_function_return_type ())
+    ret_type
+      = TyTy::TupleType::get_unit_type (function.get_mappings ().get_hirid ());
+  else
+    {
+      auto resolved
+	= TypeCheckType::Resolve (function.get_return_type ().get ());
+      if (resolved->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (function.get_locus (),
+			 "failed to resolve return type");
+	  return;
+	}
+
+      ret_type = resolved->clone ();
+      ret_type->set_ref (
+	function.get_return_type ()->get_mappings ().get_hirid ());
+    }
+
+  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *>> params;
+  for (auto &param : function.get_function_params ())
+    {
+      // get the name as well required for later on
+      auto param_tyty = TypeCheckType::Resolve (param.get_type ());
+      params.push_back (
+	std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
+						     param_tyty));
+
+      context->insert_type (param.get_mappings (), param_tyty);
+      TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
+    }
+
+  const CanonicalPath *canonical_path = nullptr;
+  bool ok
+    = mappings->lookup_canonical_path (function.get_mappings ().get_nodeid (),
+				       &canonical_path);
+  rust_assert (ok);
+
+  RustIdent ident{*canonical_path, function.get_locus ()};
+  auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
+				  function.get_mappings ().get_defid (),
+				  function.get_function_name (), ident,
+				  TyTy::FnType::FNTYPE_DEFAULT_FLAGS, ABI::RUST,
+				  std::move (params), ret_type,
+				  std::move (substitutions));
+
+  context->insert_type (function.get_mappings (), fnType);
+
+  // need to get the return type from this
+  TyTy::FnType *resolved_fn_type = fnType;
+  auto expected_ret_tyty = resolved_fn_type->get_return_type ();
+  context->push_return_type (TypeCheckContextItem (&function),
+			     expected_ret_tyty);
+
+  auto block_expr_ty
+    = TypeCheckExpr::Resolve (function.get_definition ().get ());
+
+  Location fn_return_locus = function.has_function_return_type ()
+			       ? function.get_return_type ()->get_locus ()
+			       : function.get_locus ();
+  coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
+		 TyTy::TyWithLocation (block_expr_ty),
+		 function.get_definition ()->get_locus ());
+
+  context->pop_return_type ();
+
+  infered = fnType;
+}
+
+void
+TypeCheckItem::visit (HIR::Module &module)
+{
+  for (auto &item : module.get_items ())
+    TypeCheckItem::Resolve (*item.get ());
+}
+
+void
+TypeCheckItem::visit (HIR::Trait &trait)
+{
+  TraitResolver::Resolve (trait);
+}
+
+void
+TypeCheckItem::visit (HIR::ExternBlock &extern_block)
+{
+  for (auto &item : extern_block.get_extern_items ())
+    {
+      TypeCheckTopLevelExternItem::Resolve (item.get (), extern_block);
+    }
+}
+
+std::vector<TyTy::SubstitutionParamMapping>
+TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
+						 bool &failure_flag)
+{
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (impl_block.has_generics ())
-    {
-      for (auto &generic_param : impl_block.get_generic_params ())
-	{
-	  switch (generic_param.get ()->get_kind ())
-	    {
-	    case HIR::GenericParam::GenericKind::LIFETIME:
-	    case HIR::GenericParam::GenericKind::CONST:
-	      // FIXME: Skipping Lifetime and Const completely until better
-	      // handling.
-	      break;
+    resolve_generic_params (impl_block.get_generic_params (), substitutions);
 
-	      case HIR::GenericParam::GenericKind::TYPE: {
-		TyTy::BaseType *l = nullptr;
-		bool ok = context->lookup_type (
-		  generic_param->get_mappings ().get_hirid (), &l);
-		if (ok && l->get_kind () == TyTy::TypeKind::PARAM)
-		  {
-		    substitutions.push_back (TyTy::SubstitutionParamMapping (
-		      static_cast<HIR::TypeParam &> (*generic_param),
-		      static_cast<TyTy::ParamType *> (l)));
-		  }
-	      }
-	      break;
-	    }
-	}
+  for (auto &where_clause_item : impl_block.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
     }
 
   auto specified_bound = TyTy::TypeBoundPredicate::error ();
@@ -84,14 +491,7 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
       specified_bound = get_predicate_from_bound (*ref.get ());
     }
 
-  TyTy::BaseType *self = nullptr;
-  if (!context->lookup_type (
-	impl_block.get_type ()->get_mappings ().get_hirid (), &self))
-    {
-      rust_error_at (impl_block.get_locus (),
-		     "failed to resolve Self for ImplBlock");
-      return;
-    }
+  TyTy::BaseType *self = TypeCheckType::Resolve (impl_block.get_type ().get ());
 
   // inherit the bounds
   if (!specified_bound.is_error ())
@@ -103,20 +503,35 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
   const TyTy::SubstitutionArgumentMappings impl_constraints
     = GetUsedSubstArgs::From (self);
 
-  bool impl_block_has_unconstrained_typarams
-    = check_for_unconstrained (substitutions, trait_constraints,
-			       impl_constraints, self);
-  if (impl_block_has_unconstrained_typarams)
-    return;
+  failure_flag = check_for_unconstrained (substitutions, trait_constraints,
+					  impl_constraints, self);
 
-  // validate the impl items
+  return substitutions;
+}
+
+void
+TypeCheckItem::validate_trait_impl_block (
+  HIR::ImplBlock &impl_block, TyTy::BaseType *self,
+  std::vector<TyTy::SubstitutionParamMapping> &substitutions)
+{
+  auto specified_bound = TyTy::TypeBoundPredicate::error ();
+  TraitReference *trait_reference = &TraitReference::error_node ();
+  if (impl_block.has_trait_ref ())
+    {
+      std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
+      trait_reference = TraitResolver::Resolve (*ref.get ());
+      rust_assert (!trait_reference->is_error ());
+
+      // we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
+      // for example
+      specified_bound = get_predicate_from_bound (*ref.get ());
+    }
+
   bool is_trait_impl_block = !trait_reference->is_error ();
   std::vector<const TraitItemReference *> trait_item_refs;
   for (auto &impl_item : impl_block.get_impl_items ())
     {
-      if (!is_trait_impl_block)
-	TypeCheckImplItem::Resolve (&impl_block, impl_item.get (), self);
-      else
+      if (!specified_bound.is_error ())
 	{
 	  auto trait_item_ref
 	    = TypeCheckImplItemWithTrait::Resolve (&impl_block,
@@ -128,7 +543,7 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
     }
 
   bool impl_block_missing_trait_items
-    = is_trait_impl_block
+    = !specified_bound.is_error ()
       && trait_reference->size () != trait_item_refs.size ();
   if (impl_block_missing_trait_items)
     {
@@ -187,55 +602,10 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
     }
 }
 
-void
-TypeCheckItem::visit (HIR::Function &function)
+TyTy::BaseType *
+TypeCheckItem::resolve_impl_block_self (HIR::ImplBlock &impl_block)
 {
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
-    {
-      rust_error_at (function.get_locus (), "failed to lookup function type");
-      return;
-    }
-
-  if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
-    {
-      rust_error_at (function.get_locus (),
-		     "found invalid type for function [%s]",
-		     lookup->as_string ().c_str ());
-      return;
-    }
-
-  // need to get the return type from this
-  TyTy::FnType *resolved_fn_type = static_cast<TyTy::FnType *> (lookup);
-  auto expected_ret_tyty = resolved_fn_type->get_return_type ();
-  context->push_return_type (TypeCheckContextItem (&function),
-			     expected_ret_tyty);
-
-  auto block_expr_ty
-    = TypeCheckExpr::Resolve (function.get_definition ().get ());
-
-  Location fn_return_locus = function.has_function_return_type ()
-			       ? function.get_return_type ()->get_locus ()
-			       : function.get_locus ();
-  coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
-		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
-		 TyTy::TyWithLocation (block_expr_ty),
-		 function.get_definition ()->get_locus ());
-
-  context->pop_return_type ();
-}
-
-void
-TypeCheckItem::visit (HIR::Module &module)
-{
-  for (auto &item : module.get_items ())
-    TypeCheckItem::Resolve (*item.get ());
-}
-
-void
-TypeCheckItem::visit (HIR::Trait &trait)
-{
-  TraitResolver::Resolve (trait);
+  return TypeCheckType::Resolve (impl_block.get_type ().get ());
 }
 
 } // namespace Resolver

@@ -123,6 +123,7 @@ public:
 
   void insert_hir_impl_block (HIR::ImplBlock *item);
   HIR::ImplBlock *lookup_hir_impl_block (HirId id);
+  bool lookup_impl_block_type (HirId id, HIR::ImplBlock **impl_block);
 
   void insert_module (HIR::Module *module);
   HIR::Module *lookup_module (HirId id);
@@ -314,6 +315,7 @@ private:
   std::map<HirId, HIR::SelfParam *> hirSelfParamMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockMappings;
+  std::map<HirId, HIR::ImplBlock *> hirImplBlockTypeMappings;
   std::map<HirId, HIR::TraitItem *> hirTraitItemMappings;
   std::map<HirId, HIR::ExternBlock *> hirExternBlockMappings;
   std::map<HirId, std::pair<HIR::ExternalItem *, HirId>> hirExternItemMappings;

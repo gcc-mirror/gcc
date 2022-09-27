@@ -499,5 +499,25 @@ Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
   return true;
 }
 
+void
+Resolver::insert_resolved_misc (NodeId refId, NodeId defId)
+{
+  auto it = misc_resolved_items.find (refId);
+  rust_assert (it == misc_resolved_items.end ());
+
+  misc_resolved_items[refId] = defId;
+}
+
+bool
+Resolver::lookup_resolved_misc (NodeId refId, NodeId *defId)
+{
+  auto it = misc_resolved_items.find (refId);
+  if (it == misc_resolved_items.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
 } // namespace Resolver
 } // namespace Rust

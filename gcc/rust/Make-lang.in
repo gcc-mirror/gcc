@@ -111,7 +111,6 @@ GRS_OBJS = \
     rust/rust-tyty-bounds.o \
     rust/rust-hir-type-check-util.o \
     rust/rust-hir-trait-resolve.o \
-    rust/rust-hir-type-check-toplevel.o \
     rust/rust-hir-type-check-item.o \
     rust/rust-hir-type-check-type.o \
     rust/rust-hir-type-check-struct.o \
@@ -121,6 +120,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-enumitem.o \
     rust/rust-hir-type-check-implitem.o \
     rust/rust-hir-dot-operator.o \
+    rust/rust-hir-path-probe.o \
     rust/rust-coercion.o \
     rust/rust-casts.o \
     rust/rust-hir-type-check-base.o \

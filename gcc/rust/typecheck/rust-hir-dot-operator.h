@@ -37,7 +37,7 @@ struct MethodCandidate
   bool is_error () const { return candidate.is_error (); }
 };
 
-class MethodResolver : protected AutoderefCycle
+class MethodResolver : private TypeCheckBase, protected AutoderefCycle
 {
 public:
   struct predicate_candidate
@@ -63,10 +63,6 @@ protected:
   bool select (const TyTy::BaseType &receiver) override;
 
 private:
-  // context info
-  Analysis::Mappings *mappings;
-  TypeCheckContext *context;
-
   // search
   const HIR::PathIdentSegment &segment_name;
   std::vector<MethodResolver::predicate_candidate> predicate_items;

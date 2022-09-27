@@ -148,7 +148,8 @@ public:
   }
 
   bool lookup_function_decl (HirId id, tree *fn, DefId dId = UNKNOWN_DEFID,
-			     const TyTy::BaseType *ref = nullptr)
+			     const TyTy::BaseType *ref = nullptr,
+			     const std::string &asm_name = std::string ())
   {
     // for for any monomorphized fns
     if (ref != nullptr)
@@ -163,10 +164,28 @@ public:
 	  {
 	    const TyTy::BaseType *r = e.first;
 	    tree f = e.second;
+
 	    if (ref->is_equal (*r))
 	      {
 		*fn = f;
 		return true;
+	      }
+
+	    if (DECL_ASSEMBLER_NAME_SET_P (f) && !asm_name.empty ())
+	      {
+		tree raw = DECL_ASSEMBLER_NAME_RAW (f);
+		const char *rptr = IDENTIFIER_POINTER (raw);
+
+		bool lengths_match_p
+		  = IDENTIFIER_LENGTH (raw) == asm_name.size ();
+		if (lengths_match_p
+		    && strncmp (rptr, asm_name.c_str (),
+				IDENTIFIER_LENGTH (raw))
+			 == 0)
+		  {
+		    *fn = f;
+		    return true;
+		  }
 	      }
 	  }
 	return false;

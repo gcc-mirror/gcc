@@ -126,6 +126,9 @@ public:
   void insert_resolved_macro (NodeId refId, NodeId defId);
   bool lookup_resolved_macro (NodeId refId, NodeId *defId);
 
+  void insert_resolved_misc (NodeId refId, NodeId defId);
+  bool lookup_resolved_misc (NodeId refId, NodeId *defId);
+
   // proxy for scoping
   Scope &get_name_scope () { return name_scope; }
   Scope &get_type_scope () { return type_scope; }
@@ -201,6 +204,9 @@ private:
   std::map<NodeId, NodeId> resolved_types;
   std::map<NodeId, NodeId> resolved_labels;
   std::map<NodeId, NodeId> resolved_macros;
+
+  // misc
+  std::map<NodeId, NodeId> misc_resolved_items;
 
   // keep track of the current module scope ids
   std::vector<NodeId> current_module_stack;

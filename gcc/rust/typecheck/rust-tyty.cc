@@ -208,9 +208,6 @@ void
 BaseType::inherit_bounds (
   const std::vector<TyTy::TypeBoundPredicate> &specified_bounds)
 {
-  // FIXME
-  // 1. This needs to union the bounds
-  // 2. Do some checking for trait polarity to ensure compatibility
   for (auto &bound : specified_bounds)
     {
       add_bound (bound);
@@ -752,6 +749,40 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
     }
 
   return SubstitutionArgumentMappings (mappings, args.get_locus ());
+}
+
+BaseType *
+SubstitutionRef::infer_substitions (Location locus)
+{
+  std::vector<SubstitutionArg> args;
+  std::map<std::string, BaseType *> argument_mappings;
+  for (auto &p : get_substs ())
+    {
+      if (p.needs_substitution ())
+	{
+	  const std::string &symbol = p.get_param_ty ()->get_symbol ();
+	  auto it = argument_mappings.find (symbol);
+	  bool have_mapping = it != argument_mappings.end ();
+
+	  if (have_mapping)
+	    {
+	      args.push_back (SubstitutionArg (&p, it->second));
+	    }
+	  else
+	    {
+	      TyVar infer_var = TyVar::get_implicit_infer_var (locus);
+	      args.push_back (SubstitutionArg (&p, infer_var.get_tyty ()));
+	      argument_mappings[symbol] = infer_var.get_tyty ();
+	    }
+	}
+      else
+	{
+	  args.push_back (SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
+	}
+    }
+
+  SubstitutionArgumentMappings infer_arguments (std::move (args), locus);
+  return handle_substitions (std::move (infer_arguments));
 }
 
 SubstitutionArgumentMappings
@@ -2479,7 +2510,13 @@ ParamType::resolve () const
 	break;
 
       TyVar v (rr->get_ty_ref ());
-      r = v.get_tyty ();
+      BaseType *n = v.get_tyty ();
+
+      // fix infinite loop
+      if (r == n)
+	break;
+
+      r = n;
     }
 
   if (r->get_kind () == TypeKind::PARAM && (r->get_ref () == r->get_ty_ref ()))
