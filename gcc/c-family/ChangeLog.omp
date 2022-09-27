@@ -1,3 +1,23 @@
+2022-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ASSUME,
+	PRAGMA_OMP_ASSUMES and PRAGMA_OMP_BEGIN.  Rename
+	PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	* c-pragma.cc (omp_pragmas): Add assumes and begin.
+	For end rename PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	(omp_pragmas_simd): Add assume.
+	* c-common.h (c_omp_directives): Declare.
+	* c-omp.cc (omp_directives): Rename to ...
+	(c_omp_directives): ... this.  No longer static.  Uncomment
+	assume, assumes, begin assumes and end assumes entries.
+	In end declare target entry rename PRAGMA_OMP_END_DECLARE_TARGET
+	to PRAGMA_OMP_END.
+	(c_omp_categorize_directive): Adjust for omp_directives to
+	c_omp_directives renaming.
+
 2022-07-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

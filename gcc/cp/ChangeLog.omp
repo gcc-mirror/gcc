@@ -1,3 +1,26 @@
+2022-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct omp_begin_assumes_data): New type.
+	(struct saved_scope): Add omp_begin_assumes member.
+	* parser.cc: Include bitmap.h.
+	(cp_parser_omp_assumption_clauses, cp_parser_omp_assume,
+	cp_parser_omp_assumes, cp_parser_omp_begin): New functions.
+	(cp_parser_omp_end_declare_target): Rename to ...
+	(cp_parser_omp_end): ... this.  Handle also end assumes.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_ASSUME.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ASSUME, PRAGMA_OMP_ASSUMES
+	and PRAGMA_OMP_BEGIN.  Handle PRAGMA_OMP_END rather than
+	PRAGMA_OMP_END_DECLARE_TARGET and call cp_parser_omp_end
+	for it rather than cp_parser_omp_end_declare_target.
+	* pt.cc (apply_late_template_attributes): Also temporarily clear
+	omp_begin_assumes.
+	* semantics.cc (finish_translation_unit): Also diagnose
+	#pragma omp begin assumes without corresponding
+	#pragma omp end assumes.
+
 2022-09-09  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	Backport from mainline:

@@ -1,3 +1,29 @@
+2022-09-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/assume-1.c: New test.
+	* c-c++-common/gomp/assume-2.c: New test.
+	* c-c++-common/gomp/assume-3.c: New test.
+	* c-c++-common/gomp/assumes-1.c: New test.
+	* c-c++-common/gomp/assumes-2.c: New test.
+	* c-c++-common/gomp/assumes-3.c: New test.
+	* c-c++-common/gomp/assumes-4.c: New test.
+	* c-c++-common/gomp/begin-assumes-1.c: New test.
+	* c-c++-common/gomp/begin-assumes-2.c: New test.
+	* c-c++-common/gomp/begin-assumes-3.c: New test.
+	* c-c++-common/gomp/begin-assumes-4.c: New test.
+	* c-c++-common/gomp/declare-target-6.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add n1 and n2 arguments, add
+	tests for assume directive.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* g++.dg/gomp/attrs-9.C: Add n1 and n2 variables, add tests for
+	begin assumes directive.
+	* g++.dg/gomp/attrs-15.C: New test.
+	* g++.dg/gomp/attrs-16.C: New test.
+	* g++.dg/gomp/attrs-17.C: New test.
+
 2022-09-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
