@@ -3348,6 +3348,15 @@ else
   GLIBCXX_IS_NATIVE=true
 fi
 
+# In the case that we're building without headers, we won't have <stdio.h>
+# available. In these cases, we have to instruct autotools to never include
+# <stdio.h> as a part of default headers.
+
+if test "x$with_headers" = "xno"; then
+  ac_includes_default=`echo "$ac_includes_default" | sed '/^#include <stdio.h>$/d'`
+fi
+
+
 # Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
 # following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
 #  1.x:  minimum required version
@@ -12191,7 +12200,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12194 "configure"
+#line 12203 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12297,7 +12306,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12300 "configure"
+#line 12309 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15981,7 +15990,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15984 "configure"
+#line 15993 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16016,7 +16025,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16019 "configure"
+#line 16028 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16051,7 +16060,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16054 "configure"
+#line 16063 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16087,7 +16096,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16090 "configure"
+#line 16099 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16243,7 +16252,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16246 "configure"
+#line 16255 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16285,7 +16294,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16288 "configure"
+#line 16297 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
