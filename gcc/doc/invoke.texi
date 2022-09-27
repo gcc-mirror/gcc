@@ -2928,9 +2928,16 @@ change in version 12.
 Version 14, which first appeared in G++ 10, corrects the mangling of
 the nullptr expression.
 
-Version 15, which first appeared in G++ 11, changes the mangling of
+Version 15, which first appeared in G++ 10.3, corrects G++ 10 ABI
+tag regression.
+
+Version 16, which first appeared in G++ 11, changes the mangling of
 @code{__alignof__} to be distinct from that of @code{alignof}, and
 dependent operator names.
+
+Version 17, which first appeared in G++ 12, fixes layout of classes
+that inherit from aggregate classes with default member initializers
+in C++14 and up.
 
 See also @option{-Wabi}.
 
@@ -2941,7 +2948,7 @@ works around mangling changes by creating an alias with the correct
 mangled name when defining a symbol with an incorrect mangled name.
 This switch specifies which ABI version to use for the alias.
 
-With @option{-fabi-version=0} (the default), this defaults to 11 (GCC 7
+With @option{-fabi-version=0} (the default), this defaults to 13 (GCC 8.2
 compatibility).  If another ABI version is explicitly selected, this
 defaults to 0.  For compatibility with GCC versions 3.2 through 4.9,
 use @option{-fabi-compat-version=2}.
