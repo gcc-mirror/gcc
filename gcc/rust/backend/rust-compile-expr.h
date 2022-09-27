@@ -68,23 +68,30 @@ public:
   void visit (HIR::RangeFullExpr &expr) override;
   void visit (HIR::RangeFromToInclExpr &expr) override;
 
-  // Empty visit for unused Expression HIR nodes.
+  // TODO
   void visit (HIR::ClosureExprInner &) override {}
   void visit (HIR::ClosureExprInnerTyped &) override {}
-  void visit (HIR::StructExprFieldIdentifier &) override {}
-  void visit (HIR::StructExprFieldIdentifierValue &) override {}
-  void visit (HIR::StructExprFieldIndexValue &) override {}
   void visit (HIR::ErrorPropagationExpr &) override {}
   void visit (HIR::RangeToInclExpr &) override {}
-  void visit (HIR::WhileLetLoopExpr &) override {}
   void visit (HIR::ForLoopExpr &) override {}
+
+  // TODO
+  // these need to be sugared in the HIR to if statements and a match
+  void visit (HIR::WhileLetLoopExpr &) override {}
   void visit (HIR::IfExprConseqIfLet &) override {}
   void visit (HIR::IfLetExpr &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::IfLetExprConseqIf &) override {}
   void visit (HIR::IfLetExprConseqIfLet &) override {}
+
+  // lets not worry about async yet....
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
+
+  // nothing to do for these
+  void visit (HIR::StructExprFieldIdentifier &) override {}
+  void visit (HIR::StructExprFieldIdentifierValue &) override {}
+  void visit (HIR::StructExprFieldIndexValue &) override {}
 
 protected:
   tree get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
