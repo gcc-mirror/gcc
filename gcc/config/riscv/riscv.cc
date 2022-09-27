@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tm-constrs.h"
 #include "rtl-iter.h"
+#include "riscv-vector-builtins.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -374,6 +375,11 @@ static const struct attribute_spec riscv_attribute_table[] =
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
   { "interrupt", 0, 1, false, true, true, false,
     riscv_handle_type_attribute, NULL },
+
+  /* The following two are used for the built-in properties of the Vector type
+     and are not used externally */
+  {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
 
   /* The last attribute spec is set to be NULL.  */
   { NULL,	0,  0, false, false, false, false, NULL, NULL }
@@ -942,7 +948,37 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
 static bool
 riscv_v_ext_vector_mode_p (machine_mode mode)
 {
-  return VECTOR_MODE_P (mode);
+#define ENTRY(MODE, REQUIREMENT)                                               \
+  case MODE##mode:                                                             \
+    return true;
+  switch (mode)
+    {
+#include "riscv-vector-switch.def"
+    default:
+      return false;
+    }
+
+  return false;
+}
+
+/* Return true if mode is the RVV enabled mode.
+   For example: 'VNx1DI' mode is disabled if MIN_VLEN == 32.
+   'VNx1SI' mode is enabled if MIN_VLEN == 32.  */
+
+bool
+riscv_v_ext_enabled_vector_mode_p (machine_mode mode)
+{
+#define ENTRY(MODE, REQUIREMENT)                                               \
+  case MODE##mode:                                                             \
+    return REQUIREMENT;
+  switch (mode)
+    {
+#include "riscv-vector-switch.def"
+    default:
+      return false;
+    }
+
+  return false;
 }
 
 /* Return true if X is a valid address for machine mode MODE.  If it is,
@@ -6180,6 +6216,16 @@ riscv_mangle_type (const_tree type)
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
     return "DF16_";
 
+  /* Mangle all vector type for vector extension.  */
+  /* The mangle name follows the rule of RVV LLVM
+     that is "u" + length of (abi_name) + abi_name. */
+  if (TYPE_NAME (type) != NULL)
+    {
+      const char *res = riscv_vector::mangle_builtin_type (type);
+      if (res)
+	return res;
+    }
+
   /* Use the default mangling.  */
   return NULL;
 }
@@ -6289,6 +6335,44 @@ riscv_reinit (void)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::riscv_run_selftests
 #endif /* #if CHECKING_P */
+
+/* Implement TARGET_VECTOR_MODE_SUPPORTED_P.  */
+
+static bool
+riscv_vector_mode_supported_p (machine_mode mode)
+{
+  if (TARGET_VECTOR)
+    return riscv_v_ext_enabled_vector_mode_p (mode);
+
+  return false;
+}
+
+/* Implement TARGET_VERIFY_TYPE_CONTEXT.  */
+
+static bool
+riscv_verify_type_context (location_t loc, type_context_kind context,
+			   const_tree type, bool silent_p)
+{
+  return riscv_vector::verify_type_context (loc, context, type, silent_p);
+}
+
+/* Implement TARGET_VECTOR_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+riscv_vector_alignment (const_tree type)
+{
+  /* ??? Checking the mode isn't ideal, but VECTOR_BOOLEAN_TYPE_P can
+     be set for non-predicate vectors of booleans.  Modes are the most
+     direct way we have of identifying real RVV predicate types.  */
+  /* FIXME: RVV didn't mention the alignment of bool, we uses
+     one byte align.  */
+  if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_BOOL)
+    return 8;
+
+  widest_int min_size
+    = constant_lower_bound (wi::to_poly_widest (TYPE_SIZE (type)));
+  return wi::umin (min_size, 128).to_uhwi ();
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -6501,6 +6585,15 @@ riscv_reinit (void)
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
 #endif
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P riscv_vector_mode_supported_p
+
+#undef TARGET_VERIFY_TYPE_CONTEXT
+#define TARGET_VERIFY_TYPE_CONTEXT riscv_verify_type_context
+
+#undef TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT riscv_vector_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
