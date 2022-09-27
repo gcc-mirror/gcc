@@ -462,6 +462,11 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
       resolver->insert_resolved_type (expr_mappings.get_nodeid (),
 				      resolved_node_id);
     }
+  else
+    {
+      resolver->insert_resolved_misc (expr_mappings.get_nodeid (),
+				      resolved_node_id);
+    }
 
   infered = tyseg;
 }
