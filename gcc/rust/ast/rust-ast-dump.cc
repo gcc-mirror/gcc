@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-dump.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace AST {
@@ -51,7 +52,7 @@ Dump::go (AST::Crate &crate)
     {
       stream << indentation;
       item->accept_vis (*this);
-      stream << "\n";
+      stream << '\n';
     }
 }
 
@@ -72,8 +73,7 @@ Dump::format_function_param (FunctionParam &param)
 void
 Dump::emit_attrib (const Attribute &attrib)
 {
-  stream << "#";
-  stream << "[";
+  stream << "#[";
 
   for (size_t i = 0; i < attrib.get_path ().get_segments ().size (); i++)
     {
@@ -109,6 +109,38 @@ Dump::emit_attrib (const Attribute &attrib)
 }
 
 void
+Dump::emit_visibility (const Visibility &vis)
+{
+  switch (vis.get_vis_type ())
+    {
+    case Visibility::PUB:
+      stream << "pub ";
+      break;
+    case Visibility::PUB_CRATE:
+      stream << "pub(crate) ";
+      break;
+    case Visibility::PUB_SELF:
+      stream << "pub(self) ";
+      break;
+    case Visibility::PUB_SUPER:
+      stream << "pub(super) ";
+      break;
+    case Visibility::PUB_IN_PATH:
+      stream << "pub(in " << vis.get_path ().as_string () << ") ";
+      break;
+    case Visibility::PRIV:
+      break;
+    }
+}
+
+std::ostream &
+Dump::emit_indented_string (const std::string &value,
+			    const std::string &comment)
+{
+  return stream << indentation << value << comment;
+}
+
+void
 Dump::visit (Token &tok)
 {}
 
@@ -141,7 +173,9 @@ Dump::visit (ConstGenericParam &lifetime_param)
 // rust-path.h
 void
 Dump::visit (PathInExpression &path)
-{}
+{
+  stream << path.as_string ();
+}
 
 void
 Dump::visit (TypePathSegment &segment)
@@ -163,7 +197,9 @@ Dump::visit (TypePath &path)
 
 void
 Dump::visit (QualifiedPathInExpression &path)
-{}
+{
+  stream << path.as_string ();
+}
 
 void
 Dump::visit (QualifiedPathInType &path)
@@ -207,53 +243,52 @@ Dump::visit (NegationExpr &expr)
 void
 Dump::visit (ArithmeticOrLogicalExpr &expr)
 {
-  expr.get_left_expr ()->accept_vis (*this);
-  stream << " ";
-
+  auto op = "";
   switch (expr.get_expr_type ())
     {
     case ArithmeticOrLogicalOperator::ADD:
-      stream << "+";
+      op = "+";
       break;
 
     case ArithmeticOrLogicalOperator::SUBTRACT:
-      stream << "-";
+      op = "-";
       break;
 
     case ArithmeticOrLogicalOperator::MULTIPLY:
-      stream << "*";
+      op = "*";
       break;
 
     case ArithmeticOrLogicalOperator::DIVIDE:
-      stream << "/";
+      op = "/";
       break;
 
     case ArithmeticOrLogicalOperator::MODULUS:
-      stream << "%";
+      op = "%";
       break;
 
     case ArithmeticOrLogicalOperator::BITWISE_AND:
-      stream << "&";
+      op = "&";
       break;
 
     case ArithmeticOrLogicalOperator::BITWISE_OR:
-      stream << "|";
+      op = "|";
       break;
 
     case ArithmeticOrLogicalOperator::BITWISE_XOR:
-      stream << "^";
+      op = "^";
       break;
 
     case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-      stream << "<<";
+      op = "<<";
       break;
 
     case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
-      stream << ">>";
+      op = ">>";
       break;
     }
 
-  stream << " ";
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << " ";
   expr.get_right_expr ()->accept_vis (*this);
 }
 
@@ -331,7 +366,23 @@ Dump::visit (StructExprStructBase &expr)
 
 void
 Dump::visit (CallExpr &expr)
-{}
+{
+  expr.get_function_expr ()->accept_vis (*this);
+  stream << '(';
+
+  indentation.increment ();
+
+  for (auto &arg : expr.get_params ())
+    {
+      stream << '\n' << indentation;
+      arg->accept_vis (*this);
+      stream << ',';
+    }
+
+  indentation.decrement ();
+
+  stream << '\n' << indentation << ')';
+}
 
 void
 Dump::visit (MethodCallExpr &expr)
@@ -355,13 +406,14 @@ Dump::visit (BlockExpr &expr)
     {
       stream << indentation;
       stmt->accept_vis (*this);
-      stream << ";\n";
+      stream << "; /* stmt */\n";
     }
 
   if (expr.has_tail_expr ())
     {
       stream << indentation;
       expr.get_tail_expr ()->accept_vis (*this);
+      stream << " /* tail expr */";
     }
 
   indentation.decrement ();
@@ -495,7 +547,10 @@ Dump::visit (TypeBoundWhereClauseItem &item)
 void
 Dump::visit (Method &method)
 {
-  stream << indentation << "fn " << method.get_method_name () << '(';
+  // FIXME: Do we really need to dump the indentation here?
+  stream << indentation;
+  emit_visibility (method.get_visibility ());
+  stream << "fn " << method.get_method_name () << '(';
 
   auto &self = method.get_self_param ();
   stream << self.as_string ();
@@ -552,6 +607,7 @@ Dump::visit (UseDeclaration &use_decl)
 void
 Dump::visit (Function &function)
 {
+  emit_visibility (function.get_visibility ());
   stream << "fn " << function.get_function_name ();
 
   if (function.has_generics ())
@@ -647,6 +703,7 @@ void
 Dump::format_function_common (std::unique_ptr<Type> &return_type,
 			      std::unique_ptr<BlockExpr> &block)
 {
+  // FIXME: This should format the `<vis> fn <name> ( [args] )` as well
   if (return_type)
     {
       stream << "-> ";
@@ -656,8 +713,10 @@ Dump::format_function_common (std::unique_ptr<Type> &return_type,
   if (block)
     {
       if (return_type)
-	stream << ' ';
-      block->accept_vis (*this);
+	{
+	  stream << ' ';
+	  block->accept_vis (*this);
+	}
     }
   else
     stream << ";\n";
@@ -685,7 +744,13 @@ void
 Dump::visit (TraitItemMethod &item)
 {
   auto method = item.get_trait_method_decl ();
-  stream << indentation << "fn " << method.get_identifier () << '(';
+
+  // FIXME: Do we really need to dump the indentation here?
+  stream << indentation;
+
+  // FIXME: Can we have visibility here?
+  // emit_visibility (method.get_visibility ());
+  stream << "fn " << method.get_identifier () << '(';
 
   auto &self = method.get_self_param ();
   stream << self.as_string ();
@@ -724,6 +789,8 @@ Dump::visit (Trait &trait)
       emit_attrib (attr);
       stream << "\n" << indentation;
     }
+
+  emit_visibility (trait.get_visibility ());
 
   stream << "trait " << trait.get_identifier ();
 
@@ -784,12 +851,15 @@ Dump::visit (TraitImpl &impl)
   impl.get_trait_path ().accept_vis (*this);
   stream << " for ";
   impl.get_type ()->accept_vis (*this);
-
   stream << " {\n";
+
   indentation.increment ();
 
   for (auto &item : impl.get_impl_items ())
-    item->accept_vis (*this);
+    {
+      stream << indentation;
+      item->accept_vis (*this);
+    }
 
   indentation.decrement ();
   stream << "\n}\n";
@@ -802,6 +872,8 @@ Dump::visit (ExternalStaticItem &item)
 void
 Dump::visit (ExternalFunctionItem &function)
 {
+  emit_visibility (function.get_visibility ());
+
   stream << "fn " << function.get_identifier () << '(';
 
   for (size_t i = 0; i < function.get_function_params ().size (); i++)
@@ -830,11 +902,7 @@ Dump::visit (ExternBlock &block)
   stream << "extern ";
 
   if (block.has_abi ())
-    {
-      stream << "\"";
-      stream << block.get_abi ();
-      stream << "\" ";
-    }
+    stream << "\"" << block.get_abi () << "\" ";
 
   stream << "{\n";
   indentation.increment ();
@@ -1014,11 +1082,15 @@ Dump::visit (LetStmt &stmt)
 
 void
 Dump::visit (ExprStmtWithoutBlock &stmt)
-{}
+{
+  stmt.get_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ExprStmtWithBlock &stmt)
-{}
+{
+  stmt.get_expr ()->accept_vis (*this);
+}
 
 // rust-type.h
 void

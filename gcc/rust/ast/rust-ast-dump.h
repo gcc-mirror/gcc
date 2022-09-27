@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -80,7 +80,22 @@ private:
    * Format a function's definition parameter
    */
   void format_function_param (FunctionParam &param);
+
+  /**
+   * Emit an attribute
+   */
   void emit_attrib (const Attribute &attrib);
+
+  /**
+   * Emit an item's visibility
+   */
+  void emit_visibility (const Visibility &vis);
+
+  /**
+   * Emit an indented string with an optional extra comment
+   */
+  std::ostream &emit_indented_string (const std::string &value,
+				      const std::string &comment = "");
 
   // rust-ast.h
   void visit (Token &tok);
