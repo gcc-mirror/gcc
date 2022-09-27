@@ -1660,6 +1660,15 @@ package body Exp_Ch5 is
          return False;
       end Volatile_Or_Independent;
 
+      function Slice_Of_Packed_Component (L : Node_Id) return Boolean is
+        (Nkind (L) = N_Slice
+         and then Nkind (Prefix (L)) = N_Indexed_Component
+         and then Is_Bit_Packed_Array (Etype (Prefix (Prefix (L)))));
+      --  L is the left-hand side Name. Returns True if L is a slice of a
+      --  component of a bit-packed array. The optimization is disabled in
+      --  that case, because Expand_Assign_Array_Bitfield_Fast cannot
+      --  currently handle that case correctly.
+
       L : constant Node_Id := Name (N);
       R : constant Node_Id := Expression (N);
       --  Left- and right-hand sides of the assignment statement
@@ -1681,6 +1690,7 @@ package body Exp_Ch5 is
         and then not Reverse_Storage_Order (R_Type)
         and then Ndim = 1
         and then Slices
+        and then not Slice_Of_Packed_Component (L)
         and then not Volatile_Or_Independent (L, L_Type)
         and then not Volatile_Or_Independent (R, R_Type)
       then
