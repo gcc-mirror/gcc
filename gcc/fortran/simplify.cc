@@ -8458,9 +8458,16 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
     {
       if (mask_ctor->expr->value.logical)
 	{
-	  gcc_assert (vector_ctor);
-	  e = gfc_copy_expr (vector_ctor->expr);
-	  vector_ctor = gfc_constructor_next (vector_ctor);
+	  if (vector_ctor)
+	    {
+	      e = gfc_copy_expr (vector_ctor->expr);
+	      vector_ctor = gfc_constructor_next (vector_ctor);
+	    }
+	  else
+	    {
+	      gfc_free_expr (result);
+	      return NULL;
+	    }
 	}
       else if (field->expr_type == EXPR_ARRAY)
 	e = gfc_copy_expr (field_ctor->expr);
