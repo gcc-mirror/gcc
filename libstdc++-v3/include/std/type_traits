@@ -2864,7 +2864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_invocable_impl
     : false_type
     {
-      using __nothrow_type = false_type; // For is_nothrow_invocable_r
+      using __nothrow_conv = false_type; // For is_nothrow_invocable_r
     };
 
   // Used for valid INVOKE and INVOKE<void> expressions.
@@ -2874,7 +2874,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       __void_t<typename _Result::type>>
     : true_type
     {
-      using __nothrow_type = true_type; // For is_nothrow_invocable_r
+      using __nothrow_conv = true_type; // For is_nothrow_invocable_r
     };
 
 #pragma GCC diagnostic push
@@ -2887,18 +2887,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     private:
       // The type of the INVOKE expression.
+      using _Res_t = typename _Result::type;
+
       // Unlike declval, this doesn't add_rvalue_reference, so it respects
       // guaranteed copy elision.
-      static typename _Result::type _S_get() noexcept;
+      static _Res_t _S_get() noexcept;
 
+      // Used to check if _Res_t can implicitly convert to _Tp.
       template<typename _Tp>
-	static void _S_conv(_Tp) noexcept;
+	static void _S_conv(__type_identity_t<_Tp>) noexcept;
 
       // This overload is viable if INVOKE(f, args...) can convert to _Tp.
-      template<typename _Tp, bool _Check_Noex = false,
+      template<typename _Tp,
+	       bool _Nothrow = noexcept(_S_conv<_Tp>(_S_get())),
 	       typename = decltype(_S_conv<_Tp>(_S_get())),
-	       bool _Noex = noexcept(_S_conv<_Tp>(_S_get()))>
-	static __bool_constant<_Check_Noex ? _Noex : true>
+	       bool _Dangle = __reference_converts_from_temporary(_Tp, _Res_t)>
+	static __bool_constant<_Nothrow && !_Dangle>
 	_S_test(int);
 
       template<typename _Tp, bool = false>
@@ -2907,10 +2911,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // For is_invocable_r
-      using type = decltype(_S_test<_Ret>(1));
+      using type = decltype(_S_test<_Ret, /* Nothrow = */ true>(1));
 
       // For is_nothrow_invocable_r
-      using __nothrow_type = decltype(_S_test<_Ret, true>(1));
+      using __nothrow_conv = decltype(_S_test<_Ret>(1));
     };
 #pragma GCC diagnostic pop
 
@@ -3041,9 +3045,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// @cond undocumented
+  // This checks that the INVOKE<R> expression is well-formed and that the
+  // conversion to R does not throw. It does *not* check whether the INVOKE
+  // expression itself can throw. That is done by __call_is_nothrow_ instead.
   template<typename _Result, typename _Ret>
     using __is_nt_invocable_impl
-      = typename __is_invocable_impl<_Result, _Ret>::__nothrow_type;
+      = typename __is_invocable_impl<_Result, _Ret>::__nothrow_conv;
   /// @endcond
 
   /// std::is_nothrow_invocable_r

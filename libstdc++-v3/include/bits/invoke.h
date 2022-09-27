@@ -115,29 +115,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_Callable>(__fn),
 					  std::forward<_Args>(__args)...);
     }
-#else // C++11
-  template<typename _Res, typename _Callable, typename... _Args>
-    using __can_invoke_as_void = __enable_if_t<
-      __and_<is_void<_Res>, __is_invocable<_Callable, _Args...>>::value,
-      _Res
-    >;
-
-  template<typename _Res, typename _Callable, typename... _Args>
-    using __can_invoke_as_nonvoid = __enable_if_t<
-      __and_<__not_<is_void<_Res>>,
-	     is_convertible<typename __invoke_result<_Callable, _Args...>::type,
-			    _Res>
-      >::value,
-      _Res
-    >;
+#else // C++11 or C++14
+  // This is a non-SFINAE-friendly std::invoke_r<R>(fn, args...) for C++11/14.
+  // It's used in std::function, std::bind, and std::packaged_task. Only
+  // std::function is constrained on is_invocable_r, but that is checked on
+  // construction so doesn't need to be checked again when calling __invoke_r.
+  // Consequently, these __invoke_r overloads do not check for invocable
+  // arguments, nor check that the invoke result is convertible to R.
 
   // INVOKE<R>: Invoke a callable object and convert the result to R.
   template<typename _Res, typename _Callable, typename... _Args>
-    constexpr __can_invoke_as_nonvoid<_Res, _Callable, _Args...>
+    constexpr __enable_if_t<!is_void<_Res>::value, _Res>
     __invoke_r(_Callable&& __fn, _Args&&... __args)
     {
       using __result = __invoke_result<_Callable, _Args...>;
       using __type = typename __result::type;
+      static_assert(!__reference_converts_from_temporary(_Res, __type),
+		    "INVOKE<R> must not create a dangling reference");
       using __tag = typename __result::__invoke_type;
       return std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
 					std::forward<_Args>(__args)...);
@@ -145,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // INVOKE<R> when R is cv void
   template<typename _Res, typename _Callable, typename... _Args>
-    _GLIBCXX14_CONSTEXPR __can_invoke_as_void<_Res, _Callable, _Args...>
+    _GLIBCXX14_CONSTEXPR __enable_if_t<is_void<_Res>::value, _Res>
     __invoke_r(_Callable&& __fn, _Args&&... __args)
     {
       using __result = __invoke_result<_Callable, _Args...>;
@@ -154,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
 				 std::forward<_Args>(__args)...);
     }
-#endif // C++11
+#endif // C++11 or C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
