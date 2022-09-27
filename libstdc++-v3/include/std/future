@@ -1649,8 +1649,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename... _ArgTypes>
     packaged_task(_Res(*)(_ArgTypes...)) -> packaged_task<_Res(_ArgTypes...)>;
 
-  template<typename _Fun, typename _Signature = typename
-	   __function_guide_helper<decltype(&_Fun::operator())>::type>
+  template<typename _Fun, typename _Signature
+	     = __function_guide_t<_Fun, decltype(&_Fun::operator())>>
     packaged_task(_Fun) -> packaged_task<_Signature>;
 #endif
 
