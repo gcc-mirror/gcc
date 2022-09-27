@@ -2021,7 +2021,7 @@ fix = {
  */
 fix = {
     hackname  = glibc_cxx_floatn_1;
-    files     = bits/floatn.h, bits/floatn-common.h;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
     select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
 		"(([ \t]*/\\*[^\n]*\\*/\n)?"
 		"([ \t]*#[ \t]*if[^\n]*\n)?"
@@ -2059,7 +2059,7 @@ fix = {
 
 fix = {
     hackname  = glibc_cxx_floatn_2;
-    files     = bits/floatn.h, bits/floatn-common.h;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
     select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
 		"(([ \t]*/\\*[^\n]*\\*/\n)?"
 		"[ \t]*typedef[ \t]+[^\n]*[ \t]+_Float(16|32|64|128)x?([ \t]+__attribute__ \\(\\(__mode__ \\(__HF__\\)\\)\\))?;)";
@@ -2077,7 +2077,7 @@ fix = {
 
 fix = {
     hackname  = glibc_cxx_floatn_3;
-    files     = bits/floatn.h, bits/floatn-common.h;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
     select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
 		"(([ \t]*/\\*[^\n]*\n?[^\n]*\\*/\n)?"
 		"([ \t]*#[ \t]*if[^\n]*\n)?"
