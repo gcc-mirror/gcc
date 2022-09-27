@@ -11729,9 +11729,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     {
       LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
       quals = TYPE_UNQUALIFIED;
-      if (lambda_specs.conflicting_specifiers_p)
-	error_at (lambda_specs.locations[ds_storage_class],
-		  "duplicate %<mutable%>");
     }
 
   tx_qual = cp_parser_tx_qualifier_opt (parser);
@@ -15731,6 +15728,13 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   return decl;
 }
 
+/* Names of storage classes.  */
+
+static const char *const
+cp_storage_class_name[] = {
+  "", "auto", "register", "static", "extern", "mutable"
+};
+
 /* Parse a decl-specifier-seq.
 
    decl-specifier-seq:
@@ -15952,8 +15956,18 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	     may as well commit at this point.  */
 	  cp_parser_commit_to_tentative_parse (parser);
 
-          if (decl_specs->storage_class != sc_none)
-            decl_specs->conflicting_specifiers_p = true;
+	  if (decl_specs->storage_class != sc_none)
+	    {
+	      if (decl_specs->conflicting_specifiers_p)
+		break;
+	      gcc_rich_location richloc (token->location);
+	      location_t oloc = decl_specs->locations[ds_storage_class];
+	      richloc.add_location_if_nearby (oloc);
+	      error_at (&richloc,
+			"%<typedef%> specifier conflicts with %qs",
+			cp_storage_class_name[decl_specs->storage_class]);
+	      decl_specs->conflicting_specifiers_p = true;
+	    }
 	  break;
 
 	  /* storage-class-specifier:
@@ -32845,26 +32859,6 @@ cp_parser_set_storage_class (cp_parser *parser,
 {
   cp_storage_class storage_class;
 
-  if (parser->in_unbraced_linkage_specification_p)
-    {
-      error_at (token->location, "invalid use of %qD in linkage specification",
-		ridpointers[keyword]);
-      return;
-    }
-  else if (decl_specs->storage_class != sc_none)
-    {
-      decl_specs->conflicting_specifiers_p = true;
-      return;
-    }
-
-  if ((keyword == RID_EXTERN || keyword == RID_STATIC)
-      && decl_spec_seq_has_spec_p (decl_specs, ds_thread)
-      && decl_specs->gnu_thread_keyword_p)
-    {
-      pedwarn (decl_specs->locations[ds_thread], 0,
-		"%<__thread%> before %qD", ridpointers[keyword]);
-    }
-
   switch (keyword)
     {
     case RID_AUTO:
@@ -32885,6 +32879,38 @@ cp_parser_set_storage_class (cp_parser *parser,
     default:
       gcc_unreachable ();
     }
+
+  if (parser->in_unbraced_linkage_specification_p)
+    {
+      error_at (token->location, "invalid use of %qD in linkage specification",
+		ridpointers[keyword]);
+      return;
+    }
+  else if (decl_specs->storage_class != sc_none)
+    {
+      if (decl_specs->conflicting_specifiers_p)
+	return;
+      gcc_rich_location richloc (token->location);
+      richloc.add_location_if_nearby (decl_specs->locations[ds_storage_class]);
+      if (decl_specs->storage_class == storage_class)
+	error_at (&richloc, "duplicate %qD specifier", ridpointers[keyword]);
+      else
+	error_at (&richloc,
+		  "%qD specifier conflicts with %qs",
+		  ridpointers[keyword],
+		  cp_storage_class_name[decl_specs->storage_class]);
+      decl_specs->conflicting_specifiers_p = true;
+      return;
+    }
+
+  if ((keyword == RID_EXTERN || keyword == RID_STATIC)
+      && decl_spec_seq_has_spec_p (decl_specs, ds_thread)
+      && decl_specs->gnu_thread_keyword_p)
+    {
+      pedwarn (decl_specs->locations[ds_thread], 0,
+		"%<__thread%> before %qD", ridpointers[keyword]);
+    }
+
   decl_specs->storage_class = storage_class;
   set_and_check_decl_spec_loc (decl_specs, ds_storage_class, token);
 
@@ -32892,8 +32918,16 @@ cp_parser_set_storage_class (cp_parser *parser,
      specifier. If there is a typedef specifier present then set
      conflicting_specifiers_p which will trigger an error later
      on in grokdeclarator. */
-  if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef))
-    decl_specs->conflicting_specifiers_p = true;
+  if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef)
+      && !decl_specs->conflicting_specifiers_p)
+    {
+      gcc_rich_location richloc (token->location);
+      richloc.add_location_if_nearby (decl_specs->locations[ds_typedef]);
+      error_at (&richloc,
+		"%qD specifier conflicts with %<typedef%>",
+		ridpointers[keyword]);
+      decl_specs->conflicting_specifiers_p = true;
+    }
 }
 
 /* Update the DECL_SPECS to reflect the TYPE_SPEC.  If TYPE_DEFINITION_P

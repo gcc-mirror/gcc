@@ -12095,12 +12095,7 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (declspecs->conflicting_specifiers_p)
-    {
-      error_at (min_location (declspecs->locations[ds_typedef],
-			      declspecs->locations[ds_storage_class]),
-		"conflicting specifiers in declaration of %qs", name);
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   /* Extract the basic type from the decl-specifier-seq.  */
   type = declspecs->type;
