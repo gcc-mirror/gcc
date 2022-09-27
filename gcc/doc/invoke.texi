@@ -204,7 +204,7 @@ in the following sections.
 -flax-vector-conversions  -fms-extensions @gol
 -foffload=@var{arg}  -foffload-options=@var{arg} -foffload-memory=@var{arg} @gol
 -fopenacc  -fopenacc-dim=@var{geom} @gol
--fopenmp  -fopenmp-simd @gol
+-fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone @gol
 -fpermitted-flt-eval-methods=@var{standard} @gol
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields @gol
 -fsigned-char  -funsigned-char  -fsso-struct=@var{endianness}}
@@ -2761,6 +2761,16 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
 in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
 are ignored.
+
+@item -fopenmp-target-simd-clone
+@opindex fopenmp-target-simd-clone
+@cindex OpenMP target SIMD clone
+In addition to generating SIMD clones for functions marked with the
+@code{declare simd} directive, GCC also generates clones
+for functions marked with the OpenMP @code{declare target} directive
+that are suitable for vectorization when this option is in effect.
+It is enabled by default at @option{-O2} and higher (but not @option{-Os}
+or @option{-Og}).
 
 @item -fpermitted-flt-eval-methods=@var{style}
 @opindex fpermitted-flt-eval-methods
