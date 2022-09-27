@@ -1996,7 +1996,7 @@ enum
      constexpr.  */
   CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR = 0x8,
   /* When parsing a decl-specifier-seq, only allow mutable, constexpr or
-     for C++20 consteval.  */
+     for C++20 consteval or for C++23 static.  */
   CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR = 0x10,
   /* When parsing a decl-specifier-seq, allow missing typename.  */
   CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20,
@@ -11731,6 +11731,18 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
       quals = TYPE_UNQUALIFIED;
     }
+  else if (lambda_specs.storage_class == sc_static)
+    {
+      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
+	  || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr))
+	error_at (lambda_specs.locations[ds_storage_class],
+		  "%<static%> lambda specifier with lambda capture");
+      else
+	{
+	  LAMBDA_EXPR_STATIC_P (lambda_expr) = 1;
+	  quals = TYPE_UNQUALIFIED;
+	}
+    }
 
   tx_qual = cp_parser_tx_qualifier_opt (parser);
   if (omitted_parms_loc && tx_qual)
@@ -11816,6 +11828,12 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     if (lambda_specs.locations[ds_consteval])
       return_type_specs.locations[ds_consteval]
 	= lambda_specs.locations[ds_consteval];
+    if (LAMBDA_EXPR_STATIC_P (lambda_expr))
+      {
+	return_type_specs.storage_class = sc_static;
+	return_type_specs.locations[ds_storage_class]
+	  = lambda_specs.locations[ds_storage_class];
+      }
 
     p = obstack_alloc (&declarator_obstack, 0);
 
@@ -11839,8 +11857,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
-	/* Give the object parameter a different name.  */
-	DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
+	if (!LAMBDA_EXPR_STATIC_P (lambda_expr))
+	  /* Give the object parameter a different name.  */
+	  DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
 	DECL_SET_LAMBDA_FUNCTION (fco, true);
       }
     if (template_param_list)
@@ -16034,8 +16053,15 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  && token->keyword != RID_MUTABLE
 	  && token->keyword != RID_CONSTEXPR
 	  && token->keyword != RID_CONSTEVAL)
-	error_at (token->location, "%qD invalid in lambda",
-		  ridpointers[token->keyword]);
+	{
+	  if (token->keyword != RID_STATIC)
+	    error_at (token->location, "%qD invalid in lambda",
+		      ridpointers[token->keyword]);
+	  else if (cxx_dialect < cxx23)
+	    pedwarn (token->location, OPT_Wc__23_extensions,
+		     "%qD only valid in lambda with %<-std=c++23%> or "
+		     "%<-std=gnu++23%>", ridpointers[token->keyword]);
+	}
 
       if (ds != ds_last)
 	set_and_check_decl_spec_loc (decl_specs, ds, token);

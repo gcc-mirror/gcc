@@ -12261,10 +12261,14 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
   len = cand1->num_convs;
   if (len != cand2->num_convs)
     {
-      int static_1 = DECL_STATIC_FUNCTION_P (cand1->fn);
-      int static_2 = DECL_STATIC_FUNCTION_P (cand2->fn);
+      int static_1 = (TREE_CODE (cand1->fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (cand1->fn));
+      int static_2 = (TREE_CODE (cand2->fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (cand2->fn));
 
-      if (DECL_CONSTRUCTOR_P (cand1->fn)
+      if (TREE_CODE (cand1->fn) == FUNCTION_DECL
+	  && TREE_CODE (cand2->fn) == FUNCTION_DECL
+	  && DECL_CONSTRUCTOR_P (cand1->fn)
 	  && is_list_ctor (cand1->fn) != is_list_ctor (cand2->fn))
 	/* We're comparing a near-match list constructor and a near-match
 	   non-list constructor.  Just treat them as unordered.  */
@@ -12273,9 +12277,20 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       gcc_assert (static_1 != static_2);
 
       if (static_1)
-	off2 = 1;
+	{
+	  /* C++23 [over.best.ics.general] says:
+	     When the parameter is the implicit object parameter of a static
+	     member function, the implicit conversion sequence is a standard
+	     conversion sequence that is neither better nor worse than any
+	     other standard conversion sequence.  */
+	  if (CONVERSION_RANK (cand2->convs[0]) >= cr_user)
+	    winner = 1;
+	  off2 = 1;
+	}
       else
 	{
+	  if (CONVERSION_RANK (cand1->convs[0]) >= cr_user)
+	    winner = -1;
 	  off1 = 1;
 	  --len;
 	}
