@@ -2015,6 +2015,102 @@ fix = {
 	EOT;
 };
 
+/*  glibc-2.27 to 2.36 assume GCC 7 or later supports some or all
+ *  of _Float{16,32,64,128} and _Float{32,64,128}x keywords for C,
+ *  but doesn't for C++.
+ */
+fix = {
+    hackname  = glibc_cxx_floatn_1;
+    files     = bits/floatn.h, bits/floatn-common.h;
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\\*/\n)?"
+		"([ \t]*#[ \t]*if[^\n]*\n)?"
+		"[ \t]*#[ \t]*define __f(16|32|64|128)x?\\()";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	/* The literal suffix f128 exists only since GCC 7.0.  */
+	#   define __f128(x) x##l
+	#  else
+	#   define __f128(x) x##f128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	/* The literal suffix (f128) exist for powerpc only since GCC 7.0.  */
+	#   if __LDBL_MANT_DIG__ == 113
+	#    define __f128(x) x##l
+	#   else
+	#    define __f128(x) x##q
+	#   endif
+	#  else
+	#   define __f128(x) x##f128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   ifdef __NO_LONG_DOUBLE_MATH
+	#    define __f64(x) x##l
+	#   else
+	#    define __f64(x) x
+	#   endif
+	#  else
+	#   define __f64(x) x##f64
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_2;
+    files     = bits/floatn.h, bits/floatn-common.h;
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\\*/\n)?"
+		"[ \t]*typedef[ \t]+[^\n]*[ \t]+_Float(16|32|64|128)x?([ \t]+__attribute__ \\(\\(__mode__ \\(__HF__\\)\\)\\))?;)";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	typedef float _Float16 __attribute__ ((__mode__ (__HF__)));
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	typedef __float128 _Float128;
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_3;
+    files     = bits/floatn.h, bits/floatn-common.h;
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\n?[^\n]*\\*/\n)?"
+		"([ \t]*#[ \t]*if[^\n]*\n)?"
+		"([ \t]*typedef[ \t]+[^\n]*;\n)?"
+		"[ \t]*#[ \t]*define __CFLOAT(16|32|64|128)X?[ \t]+)";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   define __CFLOAT128 _Complex long double
+	#  else
+	#   define __CFLOAT128 _Complex _Float128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	/* Add a typedef for older GCC compilers which don't natively support
+	   _Complex _Float128.  */
+	typedef _Complex float __cfloat128 __attribute__ ((__mode__ (__TC__)));
+	#   define __CFLOAT128 __cfloat128
+	#  else
+	#   define __CFLOAT128 _Complex _Float128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   ifdef __NO_LONG_DOUBLE_MATH
+	#    define __CFLOAT64 _Complex long double
+	#   else
+	#    define __CFLOAT64 _Complex double
+	#   endif
+	#  else
+	#   define __CFLOAT64 _Complex _Float64
+	#  endif
+	EOT;
+};
+
 /*  glibc-2.3.5 defines pthread mutex initializers incorrectly,
  *  so we replace them with versions that correspond to the
  *  definition.

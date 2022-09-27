@@ -1246,6 +1246,14 @@ c_cpp_builtins (cpp_reader *pfile)
     {
       if (FLOATN_NX_TYPE_NODE (i) == NULL_TREE)
 	continue;
+      if (c_dialect_cxx ()
+	  && cxx_dialect > cxx20
+	  && !floatn_nx_types[i].extended)
+	{
+	  char name[sizeof ("__STDCPP_FLOAT128_T__=1")];
+	  sprintf (name, "__STDCPP_FLOAT%d_T__=1", floatn_nx_types[i].n);
+	  cpp_define (pfile, name);
+	}
       char prefix[20], csuffix[20];
       sprintf (prefix, "FLT%d%s", floatn_nx_types[i].n,
 	       floatn_nx_types[i].extended ? "X" : "");

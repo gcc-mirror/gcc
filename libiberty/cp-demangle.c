@@ -648,6 +648,13 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
       printf ("builtin type %s\n", dc->u.s_builtin.type->name);
       return;
+    case DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE:
+      {
+	char suffix[2] = { dc->u.s_extended_builtin.type->suffix, 0 };
+	printf ("builtin type %s%d%s\n", dc->u.s_extended_builtin.type->name,
+		dc->u.s_extended_builtin.type->arg, suffix);
+      }
+      return;
     case DEMANGLE_COMPONENT_OPERATOR:
       printf ("operator %s\n", dc->u.s_operator.op->name);
       return;
@@ -770,11 +777,6 @@ d_dump (struct demangle_component *dc, int indent)
       break;
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
       printf ("pointer to member type\n");
-      break;
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
-      printf ("fixed-point type, accum? %d, sat? %d\n",
-              dc->u.s_fixed.accum, dc->u.s_fixed.sat);
-      d_dump (dc->u.s_fixed.length, indent + 2);
       break;
     case DEMANGLE_COMPONENT_ARGLIST:
       printf ("argument list\n");
@@ -1105,6 +1107,28 @@ d_make_builtin_type (struct d_info *di,
     {
       p->type = DEMANGLE_COMPONENT_BUILTIN_TYPE;
       p->u.s_builtin.type = type;
+    }
+  return p;
+}
+
+/* Add a new extended builtin type component.  */
+
+static struct demangle_component *
+d_make_extended_builtin_type (struct d_info *di,
+			      const struct demangle_builtin_type_info *type,
+			      short arg, char suffix)
+{
+  struct demangle_component *p;
+
+  if (type == NULL)
+    return NULL;
+  p = d_make_empty (di);
+  if (p != NULL)
+    {
+      p->type = DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE;
+      p->u.s_extended_builtin.type = type;
+      p->u.s_extended_builtin.arg = arg;
+      p->u.s_extended_builtin.suffix = suffix;
     }
   return p;
 }
@@ -2464,6 +2488,7 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* 32 */ { NL ("char32_t"),	NL ("char32_t"),	D_PRINT_DEFAULT },
   /* 33 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
 	     D_PRINT_DEFAULT },
+  /* 34 */ { NL ("_Float"),	NL ("_Float"),		D_PRINT_FLOAT },
 };
 
 CP_STATIC_IF_GLIBCPP_V3
@@ -2727,19 +2752,26 @@ cplus_demangle_type (struct d_info *di)
 	  break;
 
 	case 'F':
-	  /* Fixed point types. DF<int bits><length><fract bits><sat>  */
-	  ret = d_make_empty (di);
-	  ret->type = DEMANGLE_COMPONENT_FIXED_TYPE;
-	  if ((ret->u.s_fixed.accum = IS_DIGIT (d_peek_char (di))))
-	    /* For demangling we don't care about the bits.  */
-	    d_number (di);
-	  ret->u.s_fixed.length = cplus_demangle_type (di);
-	  if (ret->u.s_fixed.length == NULL)
-	    return NULL;
-	  d_number (di);
-	  peek = d_next_char (di);
-	  ret->u.s_fixed.sat = (peek == 's');
-	  break;
+	  /* DF<number>_ - _Float<number>.
+	     DF<number>x - _Float<number>x.  */
+	  {
+	    int arg = d_number (di);
+	    char buf[12];
+	    char suffix = 0;
+	    if (d_peek_char (di) == 'x')
+	      suffix = 'x';
+	    if (!suffix && d_peek_char (di) != '_')
+	      return NULL;
+	    ret
+	      = d_make_extended_builtin_type (di,
+					      &cplus_demangle_builtin_types[34],
+					      arg, suffix);
+	    d_advance (di, 1);
+	    sprintf (buf, "%d", arg);
+	    di->expansion += ret->u.s_extended_builtin.type->len
+			     + strlen (buf) + (suffix != 0);
+	    break;
+	  }
 
 	case 'v':
 	  ret = d_vector_type (di);
@@ -4202,6 +4234,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
     case DEMANGLE_COMPONENT_SUB_STD:
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
+    case DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE:
     case DEMANGLE_COMPONENT_OPERATOR:
     case DEMANGLE_COMPONENT_CHARACTER:
     case DEMANGLE_COMPONENT_NUMBER:
@@ -4210,6 +4243,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_MODULE_NAME:
     case DEMANGLE_COMPONENT_MODULE_PARTITION:
     case DEMANGLE_COMPONENT_MODULE_INIT:
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
       break;
 
     case DEMANGLE_COMPONENT_TEMPLATE:
@@ -4307,10 +4341,6 @@ d_count_templates_scopes (struct d_print_info *dpi,
 
     case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
       d_count_templates_scopes (dpi, dc->u.s_extended_operator.name);
-      break;
-
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
-      d_count_templates_scopes (dpi, dc->u.s_fixed.length);
       break;
 
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
@@ -4580,11 +4610,11 @@ d_find_pack (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_TAGGED_NAME:
     case DEMANGLE_COMPONENT_OPERATOR:
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
+    case DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE:
     case DEMANGLE_COMPONENT_SUB_STD:
     case DEMANGLE_COMPONENT_CHARACTER:
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
     case DEMANGLE_COMPONENT_UNNAMED_TYPE:
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
     case DEMANGLE_COMPONENT_DEFAULT_ARG:
     case DEMANGLE_COMPONENT_NUMBER:
       return NULL;
@@ -5387,6 +5417,14 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 			 dc->u.s_builtin.type->java_len);
       return;
 
+    case DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE:
+      d_append_buffer (dpi, dc->u.s_extended_builtin.type->name,
+		       dc->u.s_extended_builtin.type->len);
+      d_append_num (dpi, dc->u.s_extended_builtin.arg);
+      if (dc->u.s_extended_builtin.suffix)
+	d_append_buffer (dpi, &dc->u.s_extended_builtin.suffix, 1);
+      return;
+
     case DEMANGLE_COMPONENT_VENDOR_TYPE:
       d_print_comp (dpi, options, d_left (dc));
       return;
@@ -5524,22 +5562,6 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 
 	return;
       }
-
-    case DEMANGLE_COMPONENT_FIXED_TYPE:
-      if (dc->u.s_fixed.sat)
-	d_append_string (dpi, "_Sat ");
-      /* Don't print "int _Accum".  */
-      if (dc->u.s_fixed.length->u.s_builtin.type
-	  != &cplus_demangle_builtin_types['i'-'a'])
-	{
-	  d_print_comp (dpi, options, dc->u.s_fixed.length);
-	  d_append_char (dpi, ' ');
-	}
-      if (dc->u.s_fixed.accum)
-	d_append_string (dpi, "_Accum");
-      else
-	d_append_string (dpi, "_Fract");
-      return;
 
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:

@@ -1129,6 +1129,7 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_UNSIGNED:
     case RID_FLOAT:
     case RID_DOUBLE:
+    CASE_RID_FLOATN_NX:
     case RID_VOID:
       /* CV qualifiers.  */
     case RID_CONST:
@@ -19715,6 +19716,14 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
     case RID_DOUBLE:
       type = double_type_node;
+      break;
+    CASE_RID_FLOATN_NX:
+      type = FLOATN_NX_TYPE_NODE (token->keyword - RID_FLOATN_NX_FIRST);
+      if (type == NULL_TREE)
+	error ("%<_Float%d%s%> is not supported on this target",
+	       floatn_nx_types[token->keyword - RID_FLOATN_NX_FIRST].n,
+	       floatn_nx_types[token->keyword - RID_FLOATN_NX_FIRST].extended
+	       ? "x" : "");
       break;
     case RID_VOID:
       type = void_type_node;

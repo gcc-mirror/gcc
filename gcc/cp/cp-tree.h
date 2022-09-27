@@ -7946,6 +7946,7 @@ extern tree require_complete_type		(tree,
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern tree complete_type_or_maybe_complain	(tree, tree, tsubst_flags_t);
+extern int cp_compare_floating_point_conversion_ranks (tree, tree);
 inline bool type_unknown_p			(const_tree);
 enum { ce_derived, ce_type, ce_normal, ce_exact };
 extern bool comp_except_specs			(const_tree, const_tree, int);
@@ -8687,6 +8688,18 @@ struct push_access_scope_guard
       pop_access_scope (decl);
   }
 };
+
+/* True if TYPE is an extended floating-point type.  */
+
+inline bool
+extended_float_type_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  for (int i = 0; i < NUM_FLOATN_NX_TYPES; ++i)
+    if (type == FLOATN_TYPE_NODE (i))
+      return true;
+  return false;
+}
 
 #if CHECKING_P
 namespace selftest {
