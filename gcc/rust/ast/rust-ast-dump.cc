@@ -709,6 +709,7 @@ void
 Dump::visit (Function &function)
 {
   emit_visibility (function.get_visibility ());
+
   stream << "fn " << function.get_function_name ();
 
   if (function.has_generics ())
