@@ -407,6 +407,7 @@ public:
   Location get_locus () const { return locus; }
 
   DelimTokenTree &get_token_tree () { return token_tree; }
+  const DelimTokenTree &get_token_tree () const { return token_tree; }
 };
 
 // A macro rule? Matcher and transcriber pair?
