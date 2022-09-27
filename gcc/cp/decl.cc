@@ -12095,12 +12095,7 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (declspecs->conflicting_specifiers_p)
-    {
-      error_at (min_location (declspecs->locations[ds_typedef],
-			      declspecs->locations[ds_storage_class]),
-		"conflicting specifiers in declaration of %qs", name);
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   /* Extract the basic type from the decl-specifier-seq.  */
   type = declspecs->type;
@@ -15305,8 +15300,25 @@ grok_op_properties (tree decl, bool complain)
      an enumeration, or a reference to an enumeration.  13.4.0.6 */
   if (! methodp || DECL_STATIC_FUNCTION_P (decl))
     {
+      if (operator_code == CALL_EXPR)
+	{
+	  if (! DECL_STATIC_FUNCTION_P (decl))
+	    {
+	      error_at (loc, "%qD must be a member function", decl);
+	      return false;
+	    }
+	  if (cxx_dialect < cxx23
+	      /* For lambdas we diagnose static lambda specifier elsewhere.  */
+	      && ! LAMBDA_FUNCTION_P (decl)
+	      /* For instantiations, we have diagnosed this already.  */
+	      && ! DECL_USE_TEMPLATE (decl))
+	    pedwarn (loc, OPT_Wc__23_extensions, "%qD may be a static member "
+	      "function only with %<-std=c++23%> or %<-std=gnu++23%>", decl);
+	  /* There are no further restrictions on the arguments to an
+	     overloaded "operator ()".  */
+	  return true;
+	}
       if (operator_code == TYPE_EXPR
-	  || operator_code == CALL_EXPR
 	  || operator_code == COMPONENT_REF
 	  || operator_code == ARRAY_REF
 	  || operator_code == NOP_EXPR)

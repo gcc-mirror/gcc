@@ -2599,7 +2599,7 @@ trivially_empty_bb_p (basic_block bb)
    return value.  Fill in *RET and *USE with the return and use insns
    if any found, otherwise NULL.  All CLOBBERs are ignored.  */
 
-static bool
+bool
 bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
 {
   *ret = *use = NULL;

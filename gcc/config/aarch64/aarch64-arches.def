@@ -41,5 +41,8 @@ AARCH64_ARCH("armv8.7-a",     generic,       8_7A,      8,  AARCH64_FL_FOR_ARCH8
 AARCH64_ARCH("armv8.8-a",     generic,       8_8A,      8,  AARCH64_FL_FOR_ARCH8_8)
 AARCH64_ARCH("armv8-r",       generic,	     8R  ,	8,  AARCH64_FL_FOR_ARCH8_R)
 AARCH64_ARCH("armv9-a",       generic,	     9A  ,	9,  AARCH64_FL_FOR_ARCH9)
+AARCH64_ARCH("armv9.1-a",     generic,       9_1A,      9,  AARCH64_FL_FOR_ARCH9_1)
+AARCH64_ARCH("armv9.2-a",     generic,       9_2A,      9,  AARCH64_FL_FOR_ARCH9_2)
+AARCH64_ARCH("armv9.3-a",     generic,       9_3A,      9,  AARCH64_FL_FOR_ARCH9_3)
 
 #undef AARCH64_ARCH

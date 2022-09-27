@@ -2429,13 +2429,9 @@ package body Sem_Ch5 is
 
       if not Is_Entity_Name (Iter_Name)
 
-        --  When the context is a quantified expression, the renaming
-        --  declaration is delayed until the expansion phase if we are
-        --  doing expansion.
+        --  Do not perform this expansion in preanalysis
 
-        and then (Nkind (Parent (N)) /= N_Quantified_Expression
-                   or else (Operating_Mode = Check_Semantics
-                            and then not GNATprove_Mode))
+        and then Full_Analysis
 
         --  Do not perform this expansion when expansion is disabled, where the
         --  temporary may hide the transformation of a selected component into

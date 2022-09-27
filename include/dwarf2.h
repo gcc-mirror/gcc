@@ -373,6 +373,16 @@ enum dwarf_source_language
     DW_LANG_Fortran03 = 0x0022,
     DW_LANG_Fortran08 = 0x0023,
     DW_LANG_RenderScript = 0x0024,
+    DW_LANG_BLISS = 0x0025,
+    DW_LANG_Kotlin = 0x0026,
+    DW_LANG_Zig = 0x0027,
+    DW_LANG_Crystal = 0x0028,
+    DW_LANG_C_plus_plus_17 = 0x002a,
+    DW_LANG_C_plus_plus_20 = 0x002b,
+    DW_LANG_C17 = 0x002c,
+    DW_LANG_Fortran18 = 0x002d,
+    DW_LANG_Ada2005 = 0x002e,
+    DW_LANG_Ada2012 = 0x002f,
 
     DW_LANG_lo_user = 0x8000,	/* Implementation-defined range start.  */
     DW_LANG_hi_user = 0xffff,	/* Implementation-defined range start.  */

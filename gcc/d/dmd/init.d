@@ -167,6 +167,7 @@ extern (C++) final class ArrayInitializer : Initializer
     uint dim;               // length of array being initialized
     Type type;              // type that array will be used to initialize
     bool sem;               // true if semantic() is run
+    bool isCarray;          // C array semantics
 
     extern (D) this(const ref Loc loc)
     {

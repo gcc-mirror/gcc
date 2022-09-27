@@ -1,3 +1,28 @@
+2022-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106656
+	* typeck2.cc (array_string_literal_compatible_p): Allow
+	initializing arrays of char or unsigned char by a UTF-8 string literal.
+
+2022-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* method.cc (is_convertible_helper): New.
+	(is_convertible): Use it.
+	(is_nothrow_convertible): Likewise.
+
+2022-09-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107033
+	* module.cc (trees_in::decl_value): In the MK_partial case for
+	a variable template partial specialization, pass decl_p=true to
+	add_mergeable_specialization, and set spec to the VAR_DECL not
+	the TEMPLATE_DECL.
+	* pt.cc (add_mergeable_specialization): For a variable template
+	partial specialization, set the TREE_TYPE of the new
+	DECL_TEMPLATE_SPECIALIZATIONS node to the TREE_TYPE of the
+	VAR_DECL not the VAR_DECL itself.
+
 2022-09-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106784

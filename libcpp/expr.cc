@@ -215,7 +215,6 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	case 'f': case 'F':
 	  f++;
 	  if (len > 0
-	      && !CPP_OPTION (pfile, cplusplus)
 	      && s[1] >= '1'
 	      && s[1] <= '9'
 	      && fn_bits == 0)

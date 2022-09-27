@@ -1124,8 +1124,8 @@ public:
  *
  * References: "On Enclosing Simple Roots of Nonlinear Equations",
  * G. Alefeld, F.A. Potra, Yixun Shi, Mathematics of Computation 61,
- * pp733-744 (1993).  Fortran code available from $(HTTP
- * www.netlib.org,www.netlib.org) as algorithm TOMS478.
+ * pp733-744 (1993).  Fortran code available from
+ * $(HTTP www.netlib.org,www.netlib.org) as algorithm TOMS478.
  *
  */
 T findRoot(T, DF, DT)(scope DF f, const T a, const T b,

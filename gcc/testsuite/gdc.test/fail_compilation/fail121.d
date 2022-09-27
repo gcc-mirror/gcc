@@ -3,8 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail121.d(23): Error: no property `typeinfo` for type `fail121.myobject`
-fail_compilation/fail121.d(23): Error: no property `typeinfo` for type `int`
+fail_compilation/fail121.d(23): Error: no property `typeinfo` for `list[1]` of type `fail121.myobject`
+fail_compilation/fail121.d(23): Error: no property `typeinfo` for `i` of type `int`
 ---
 */
 

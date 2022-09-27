@@ -22735,7 +22735,10 @@ ix86_mangle_type (const_tree type)
       return "DF16_";
     case E_TFmode:
       /* __float128 is "g".  */
-      return "g";
+      if (type == float128t_type_node)
+	return "g";
+      /* _Float128 should mangle as "DF128_" done in generic code.  */
+      return NULL;
     case E_XFmode:
       /* "long double" or __float80 is "e".  */
       return "e";

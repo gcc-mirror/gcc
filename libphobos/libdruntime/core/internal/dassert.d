@@ -518,7 +518,7 @@ private auto assumeFakeAttributes(T)(T t) @trusted
 }
 
 /// Wrapper for `miniFormat` which assumes that the implementation is `@safe`, `@nogc`, ...
-/// s.t. it does not violate the constraints of the the function containing the `assert`.
+/// s.t. it does not violate the constraints of the function containing the `assert`.
 private string miniFormatFakeAttributes(T)(const scope ref T t)
 {
     alias miniT = miniFormat!T;

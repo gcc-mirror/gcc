@@ -105,8 +105,7 @@ FuncDeclaration hasIdentityOpAssign(AggregateDeclaration ad, Scope* sc)
         scope er = new NullExp(ad.loc, ad.type);    // dummy rvalue
         scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
         el.type = ad.type;
-        Expressions a;
-        a.setDim(1);
+        auto a = Expressions(1);
         const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it.
         sc = sc.push();
         sc.tinst = null;
@@ -465,8 +464,7 @@ private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
          */
         scope er = new NullExp(ad.loc, null); // dummy rvalue
         scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
-        Expressions a;
-        a.setDim(1);
+        auto a = Expressions(1);
 
         bool hasIt(Type tthis)
         {

@@ -3608,13 +3608,13 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	tree type2 = NULL_TREE;
 	bool strict_overflow_p = false;
 	candidates.truncate (0);
-	if (POINTER_TYPE_P (type1))
+	if (POINTER_TYPE_P (type1) || TREE_CODE (type1) == OFFSET_TYPE)
 	  type1 = pointer_sized_int_node;
 	for (j = i; j; j = chains[j - 1])
 	  {
 	    tree type = TREE_TYPE (ranges[j - 1].exp);
 	    strict_overflow_p |= ranges[j - 1].strict_overflow_p;
-	    if (POINTER_TYPE_P (type))
+	    if (POINTER_TYPE_P (type) || TREE_CODE (type) == OFFSET_TYPE)
 	      type = pointer_sized_int_node;
 	    if ((b % 4) == 3)
 	      {
@@ -3646,7 +3646,7 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    tree type = TREE_TYPE (ranges[j - 1].exp);
 	    if (j == k)
 	      continue;
-	    if (POINTER_TYPE_P (type))
+	    if (POINTER_TYPE_P (type) || TREE_CODE (type) == OFFSET_TYPE)
 	      type = pointer_sized_int_node;
 	    if ((b % 4) == 3)
 	      {
@@ -3677,10 +3677,20 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 		op = r->exp;
 		continue;
 	      }
-	    if (id == l || POINTER_TYPE_P (TREE_TYPE (op)))
+	    if (id == l
+		|| POINTER_TYPE_P (TREE_TYPE (op))
+		|| TREE_CODE (TREE_TYPE (op)) == OFFSET_TYPE)
 	      {
 		code = (b % 4) == 3 ? BIT_NOT_EXPR : NOP_EXPR;
 		tree type3 = id >= l ? type1 : pointer_sized_int_node;
+		if (code == BIT_NOT_EXPR
+		    && TREE_CODE (TREE_TYPE (op)) == OFFSET_TYPE)
+		  {
+		    g = gimple_build_assign (make_ssa_name (type3),
+					     NOP_EXPR, op);
+		    gimple_seq_add_stmt_without_update (&seq, g);
+		    op = gimple_assign_lhs (g);
+		  }
 		g = gimple_build_assign (make_ssa_name (type3), code, op);
 		gimple_seq_add_stmt_without_update (&seq, g);
 		op = gimple_assign_lhs (g);
@@ -3688,6 +3698,7 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    tree type = TREE_TYPE (r->exp);
 	    tree exp = r->exp;
 	    if (POINTER_TYPE_P (type)
+		|| TREE_CODE (type) == OFFSET_TYPE
 		|| (id >= l && !useless_type_conversion_p (type1, type)))
 	      {
 		tree type3 = id >= l ? type1 : pointer_sized_int_node;
@@ -3705,7 +3716,7 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    op = gimple_assign_lhs (g);
 	  }
 	type1 = TREE_TYPE (ranges[k - 1].exp);
-	if (POINTER_TYPE_P (type1))
+	if (POINTER_TYPE_P (type1) || TREE_CODE (type1) == OFFSET_TYPE)
 	  {
 	    gimple *g
 	      = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, op);

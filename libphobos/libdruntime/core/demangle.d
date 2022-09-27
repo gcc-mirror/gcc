@@ -82,7 +82,7 @@ pure @safe:
 
     static class ParseException : Exception
     {
-        @safe pure nothrow this( string msg )
+        this(string msg) @safe pure nothrow
         {
             super( msg );
         }
@@ -91,14 +91,14 @@ pure @safe:
 
     static class OverflowException : Exception
     {
-        @safe pure nothrow this( string msg )
+        this(string msg) @safe pure nothrow
         {
             super( msg );
         }
     }
 
 
-    static void error( string msg = "Invalid symbol" ) @trusted /* exception only used in module */
+    static noreturn error( string msg = "Invalid symbol" ) @trusted /* exception only used in module */
     {
         pragma(inline, false); // tame dmd inliner
 
@@ -110,7 +110,7 @@ pure @safe:
     }
 
 
-    static void overflow( string msg = "Buffer overflow" ) @trusted /* exception only used in module */
+    static noreturn overflow( string msg = "Buffer overflow" ) @trusted /* exception only used in module */
     {
         pragma(inline, false); // tame dmd inliner
 
@@ -156,7 +156,6 @@ pure @safe:
         if (val >= '0' && val <= '9')
             return cast(ubyte)(val - '0');
         error();
-        return 0;
     }
 
 
@@ -253,23 +252,22 @@ pure @safe:
             put(", ");
     }
 
-    char[] put(char c) return scope
+    void put(char c) return scope
     {
         char[1] val = c;
-        return put(val[]);
+        put(val[]);
     }
 
-    char[] put( scope const(char)[] val ) return scope
+    void put(scope const(char)[] val) return scope
     {
         pragma(inline, false); // tame dmd inliner
 
-        if ( val.length )
-        {
-            if ( !contains( dst[0 .. len], val ) )
-                return append( val );
-            return shift( val );
-        }
-        return null;
+        if (!val.length) return;
+
+        if (!contains(dst[0 .. len], val))
+            append(val);
+        else
+            shift(val);
     }
 
 
@@ -948,18 +946,19 @@ pure @safe:
             return dst[beg .. len];
         case 'D': // TypeDelegate (D TypeFunction)
             popFront();
-            auto modbeg = len;
-            parseModifier();
-            auto modend = len;
+            auto modifiers = parseModifier();
             if ( front == 'Q' )
                 parseBackrefType( () => parseTypeFunction( name, IsDelegate.yes ) );
             else
                 parseTypeFunction( name, IsDelegate.yes );
-            if (modend > modbeg)
+            if (modifiers)
             {
-                // move modifiers behind the function arguments
-                shift(dst[modend-1 .. modend]); // trailing space
-                shift(dst[modbeg .. modend-1]);
+                // write modifiers behind the function arguments
+                while (auto str = typeCtors.toStringConsume(modifiers))
+                {
+                    put(' ');
+                    put(str);
+                }
             }
             return dst[beg .. len];
         case 'n': // TypeNone (n)
@@ -1009,7 +1008,6 @@ pure @safe:
                 }
             }
             error();
-            return null;
         }
     }
 
@@ -1110,43 +1108,44 @@ pure @safe:
         }
     }
 
-    void parseModifier()
+    /// Returns: Flags of `TypeCtor`
+    ushort parseModifier()
     {
+        TypeCtor res = TypeCtor.None;
         switch ( front )
         {
         case 'y':
             popFront();
-            put( "immutable " );
-            break;
+            return TypeCtor.Immutable;
         case 'O':
             popFront();
-            put( "shared " );
-            if ( front == 'x' )
+            res |= TypeCtor.Shared;
+            if (front == 'x')
                 goto case 'x';
-            if ( front == 'N' )
+            if (front == 'N')
                 goto case 'N';
-            break;
+            return TypeCtor.Shared;
         case 'N':
-            if ( peek( 1 ) != 'g' )
-                break;
+            if (peek( 1 ) != 'g')
+                return res;
             popFront();
             popFront();
-            put( "inout " );
+            res |= TypeCtor.InOut;
             if ( front == 'x' )
                 goto case 'x';
-            break;
+            return res;
         case 'x':
             popFront();
-            put( "const " );
-            break;
-        default: break;
+            res |= TypeCtor.Const;
+            return res;
+        default: return TypeCtor.None;
         }
     }
 
-    void parseFuncAttr()
+    ushort parseFuncAttr()
     {
         // FuncAttrs
-        breakFuncAttrs:
+        ushort result;
         while ('N' == front)
         {
             popFront();
@@ -1154,27 +1153,27 @@ pure @safe:
             {
             case 'a': // FuncAttrPure
                 popFront();
-                put( "pure " );
+                result |= FuncAttributes.Pure;
                 continue;
             case 'b': // FuncAttrNoThrow
                 popFront();
-                put( "nothrow " );
+                result |= FuncAttributes.Nothrow;
                 continue;
             case 'c': // FuncAttrRef
                 popFront();
-                put( "ref " );
+                result |= FuncAttributes.Ref;
                 continue;
             case 'd': // FuncAttrProperty
                 popFront();
-                put( "@property " );
+                result |= FuncAttributes.Property;
                 continue;
             case 'e': // FuncAttrTrusted
                 popFront();
-                put( "@trusted " );
+                result |= FuncAttributes.Trusted;
                 continue;
             case 'f': // FuncAttrSafe
                 popFront();
-                put( "@safe " );
+                result |= FuncAttributes.Safe;
                 continue;
             case 'g':
             case 'h':
@@ -1188,27 +1187,42 @@ pure @safe:
                 //       if we see these, then we know we're really in
                 //       the parameter list.  Rewind and break.
                 pos--;
-                break breakFuncAttrs;
+                return result;
             case 'i': // FuncAttrNogc
                 popFront();
-                put( "@nogc " );
+                result |= FuncAttributes.NoGC;
                 continue;
             case 'j': // FuncAttrReturn
                 popFront();
-                put( "return " );
+                if (this.peek(0) == 'N' && this.peek(1) == 'l')
+                {
+                    result |= FuncAttributes.ReturnScope;
+                    popFront();
+                    popFront();
+                } else {
+                    result |= FuncAttributes.Return;
+                }
                 continue;
             case 'l': // FuncAttrScope
                 popFront();
-                put( "scope " );
+                if (this.peek(0) == 'N' && this.peek(1) == 'j')
+                {
+                    result |= FuncAttributes.ScopeReturn;
+                    popFront();
+                    popFront();
+                } else {
+                    result |= FuncAttributes.Scope;
+                }
                 continue;
             case 'm': // FuncAttrLive
                 popFront();
-                put( "@live " );
+                result |= FuncAttributes.Live;
                 continue;
             default:
                 error();
             }
         }
+        return result;
     }
 
     void parseFuncArguments() scope
@@ -1346,19 +1360,20 @@ pure @safe:
         auto beg = len;
 
         parseCallConvention();
-        auto attrbeg = len;
-        parseFuncAttr();
+        auto attributes = parseFuncAttr();
 
         auto argbeg = len;
         put( '(' );
         parseFuncArguments();
         put( ')' );
-        if (attrbeg < argbeg)
+        if (attributes)
         {
-            // move function attributes behind arguments
-            shift( dst[argbeg - 1 .. argbeg] ); // trailing space
-            shift( dst[attrbeg .. argbeg - 1] ); // attributes
-            argbeg = attrbeg;
+            // write function attributes behind arguments
+            while (auto str = funcAttrs.toStringConsume(attributes))
+            {
+                put(' ');
+                put(str);
+            }
         }
         auto retbeg = len;
         parseType();
@@ -1900,20 +1915,25 @@ pure @safe:
             {
                 // do not emit "needs this"
                 popFront();
-                parseModifier();
+                auto modifiers = parseModifier();
+                while (auto str = typeCtors.toStringConsume(modifiers))
+                {
+                    put(str);
+                    put(' ');
+                }
             }
             if ( isCallConvention( front ) )
             {
                 // we don't want calling convention and attributes in the qualified name
                 parseCallConvention();
-                parseFuncAttr();
-                if ( keepAttr )
-                {
+                auto attributes = parseFuncAttr();
+                if (keepAttr) {
+                    while (auto str = funcAttrs.toStringConsume(attributes))
+                    {
+                        put(str);
+                        put(' ');
+                    }
                     attr = dst[prevlen .. len];
-                }
-                else
-                {
-                    len = prevlen;
                 }
 
                 put( '(' );
@@ -2637,6 +2657,12 @@ else
         ["_D4test4rrs1FNkMJPiZv", "void test.rrs1(return scope out int*)"],
         ["_D4test4rrs1FNkMKPiZv", "void test.rrs1(return scope ref int*)"],
         ["_D4test4rrs1FNkMPiZv",  "void test.rrs1(return scope int*)"],
+
+        // `scope` and `return` combinations
+        ["_D3foo3Foo3barMNgFNjNlNfZNgPv", "inout return scope @safe inout(void*) foo.Foo.bar()"],
+        ["_D3foo3FooQiMNgFNlNfZv",        "inout scope @safe void foo.Foo.foo()"],
+        ["_D3foo3Foo4foorMNgFNjNfZv",     "inout return @safe void foo.Foo.foor()"],
+        ["_D3foo3Foo3rabMNgFNlNjNfZv",    "inout scope return @safe void foo.Foo.rab()"],
     ];
 
 
@@ -2720,7 +2746,12 @@ unittest
 }
 
 /*
+ * Expand an OMF, DMD-generated compressed identifier into its full form
  *
+ * This function only has a visible effect for OMF binaries (Win32),
+ * as compression is otherwise not used.
+ *
+ * See_Also: `compiler/src/dmd/backend/compress.d`
  */
 string decodeDmdString( const(char)[] ln, ref size_t p ) nothrow pure @safe
 {
@@ -2780,4 +2811,93 @@ extern (C) private
         snprintf(nptr.ptr, nptr.length, "%#Lg", val);
         errno = err;
     }
+}
+
+private struct ManglingFlagInfo
+{
+    /// The flag value to use
+    ushort flag;
+
+    /// Human-readable representation
+    string value;
+}
+
+private enum TypeCtor : ushort {
+    None      = 0,
+    //// 'x'
+    Const     = (1 << 1),
+    /// 'y'
+    Immutable = (1 << 2),
+    /// 'O'
+    Shared    = (1 << 3),
+    ///
+    InOut     = (1 << 4),
+}
+
+private immutable ManglingFlagInfo[] typeCtors = [
+    ManglingFlagInfo(TypeCtor.Immutable, "immutable"),
+    ManglingFlagInfo(TypeCtor.Shared,    "shared"),
+    ManglingFlagInfo(TypeCtor.InOut,     "inout"),
+    ManglingFlagInfo(TypeCtor.Const,     "const"),
+];
+
+private enum FuncAttributes : ushort {
+    None      = 0,
+    //// 'a'
+    Pure     = (1 << 1),
+    //// 'b'
+    Nothrow  = (1 << 2),
+    //// 'c'
+    Ref      = (1 << 3),
+    //// 'd'
+    Property = (1 << 4),
+    //// 'e'
+    Trusted  = (1 << 5),
+    //// 'f'
+    Safe     = (1 << 6),
+    //// 'i'
+    NoGC     = (1 << 7),
+    //// 'j'
+    Return   = (1 << 8),
+    //// 'l'
+    Scope    = (1 << 9),
+    //// 'm'
+    Live     = (1 << 10),
+
+    /// Their order matter
+    ReturnScope   = (1 << 11),
+    ScopeReturn   = (1 << 12),
+}
+
+// The order in which we process is the same as in compiler/dmd/src/dmangle.d
+private immutable ManglingFlagInfo[] funcAttrs = [
+    ManglingFlagInfo(FuncAttributes.Pure,     "pure"),
+    ManglingFlagInfo(FuncAttributes.Nothrow,  "nothrow"),
+    ManglingFlagInfo(FuncAttributes.Ref,      "ref"),
+    ManglingFlagInfo(FuncAttributes.Property, "@property"),
+    ManglingFlagInfo(FuncAttributes.NoGC,     "@nogc"),
+
+    ManglingFlagInfo(FuncAttributes.ReturnScope, "return scope"),
+    ManglingFlagInfo(FuncAttributes.ScopeReturn, "scope return"),
+
+    ManglingFlagInfo(FuncAttributes.Return,   "return"),
+    ManglingFlagInfo(FuncAttributes.Scope,    "scope"),
+
+    ManglingFlagInfo(FuncAttributes.Live,     "@live"),
+    ManglingFlagInfo(FuncAttributes.Trusted,  "@trusted"),
+    ManglingFlagInfo(FuncAttributes.Safe,     "@safe"),
+];
+
+private string toStringConsume (immutable ManglingFlagInfo[] infos, ref ushort base)
+    @safe pure nothrow @nogc
+{
+    foreach (const ref info; infos)
+    {
+        if ((base & info.flag) == info.flag)
+        {
+            base &= ~info.flag;
+            return info.value;
+        }
+    }
+    return null;
 }

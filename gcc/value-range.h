@@ -117,6 +117,8 @@ class GTY((user)) irange : public vrange
 public:
   // In-place setters.
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
+  void set (tree type, const wide_int_ref &, const wide_int_ref &,
+	    value_range_kind = VR_RANGE);
   virtual void set_nonzero (tree type) override;
   virtual void set_zero (tree type) override;
   virtual void set_nonnegative (tree type) override;
@@ -685,6 +687,13 @@ irange::varying_compatible_p () const
     return (wi::to_wide (l) == 0
 	    && wi::to_wide (u) == wi::max_value (prec, sign));
   return true;
+}
+
+inline void
+irange::set (tree type, const wide_int_ref &min, const wide_int_ref &max,
+	     value_range_kind kind)
+{
+  set (wide_int_to_tree (type, min), wide_int_to_tree (type, max), kind);
 }
 
 inline bool

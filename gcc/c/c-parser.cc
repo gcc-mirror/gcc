@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "memmodel.h"
 #include "c-family/known-headers.h"
+#include "bitmap.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1594,10 +1595,13 @@ enum pragma_context { pragma_external, pragma_struct, pragma_param,
 static bool c_parser_pragma (c_parser *, enum pragma_context, bool *);
 static bool c_parser_omp_cancellation_point (c_parser *, enum pragma_context);
 static bool c_parser_omp_target (c_parser *, enum pragma_context, bool *);
-static void c_parser_omp_end_declare_target (c_parser *);
+static void c_parser_omp_begin (c_parser *);
+static void c_parser_omp_end (c_parser *);
 static bool c_parser_omp_declare (c_parser *, enum pragma_context);
 static void c_parser_omp_requires (c_parser *);
 static bool c_parser_omp_error (c_parser *, enum pragma_context);
+static void c_parser_omp_assumption_clauses (c_parser *, bool);
+static void c_parser_omp_assumes (c_parser *);
 static bool c_parser_omp_ordered (c_parser *, enum pragma_context, bool *);
 static void c_parser_oacc_routine (c_parser *, enum pragma_context);
 
@@ -1677,6 +1681,13 @@ c_parser_translation_unit (c_parser *parser)
         error ("%<#pragma omp declare target%> without corresponding "
 	       "%<#pragma omp end declare target%>");
       current_omp_declare_target_attribute = 0;
+    }
+  if (current_omp_begin_assumes)
+    {
+      if (!errorcount)
+	error ("%<#pragma omp begin assumes%> without corresponding "
+	       "%<#pragma omp end assumes%>");
+      current_omp_begin_assumes = 0;
     }
 }
 
@@ -12594,8 +12605,12 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_TARGET:
       return c_parser_omp_target (parser, context, if_p);
 
-    case PRAGMA_OMP_END_DECLARE_TARGET:
-      c_parser_omp_end_declare_target (parser);
+    case PRAGMA_OMP_BEGIN:
+      c_parser_omp_begin (parser);
+      return false;
+
+    case PRAGMA_OMP_END:
+      c_parser_omp_end (parser);
       return false;
 
     case PRAGMA_OMP_SCAN:
@@ -12619,11 +12634,24 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       if (context != pragma_external)
 	{
 	  error_at (c_parser_peek_token (parser)->location,
-		    "%<#pragma omp requires%> may only be used at file scope");
+		    "%<#pragma %s%> may only be used at file scope",
+		    "omp requires");
 	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
 	  return false;
 	}
       c_parser_omp_requires (parser);
+      return false;
+
+    case PRAGMA_OMP_ASSUMES:
+      if (context != pragma_external)
+	{
+	  error_at (c_parser_peek_token (parser)->location,
+		    "%<#pragma %s%> may only be used at file scope",
+		    "omp assumes");
+	  c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+	  return false;
+	}
+      c_parser_omp_assumes (parser);
       return false;
 
     case PRAGMA_OMP_NOTHING:
@@ -22405,14 +22433,44 @@ c_parser_omp_declare_target (c_parser *parser)
 		"directive with only %<device_type%> clauses ignored");
 }
 
+/* OpenMP 5.1
+   #pragma omp begin assumes clauses[optseq] new-line  */
+
 static void
-c_parser_omp_end_declare_target (c_parser *parser)
+c_parser_omp_begin (c_parser *parser)
+{
+  const char *p = "";
+  c_parser_consume_pragma (parser);
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+  if (strcmp (p, "assumes") == 0)
+    {
+      c_parser_consume_token (parser);
+      c_parser_omp_assumption_clauses (parser, false);
+      current_omp_begin_assumes++;
+    }
+  else
+    {
+      c_parser_error (parser, "expected %<assumes%>");
+      c_parser_skip_to_pragma_eol (parser);
+    }
+}
+
+/* OpenMP 4.0
+   #pragma omp end declare target
+
+   OpenMP 5.1
+   #pragma omp end assumes  */
+
+static void
+c_parser_omp_end (c_parser *parser)
 {
   location_t loc = c_parser_peek_token (parser)->location;
+  const char *p = "";
   c_parser_consume_pragma (parser);
-  if (c_parser_next_token_is (parser, CPP_NAME)
-      && strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
-		 "declare") == 0)
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+  if (strcmp (p, "declare") == 0)
     {
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_NAME)
@@ -22425,21 +22483,29 @@ c_parser_omp_end_declare_target (c_parser *parser)
 	  c_parser_skip_to_pragma_eol (parser);
 	  return;
 	}
+      c_parser_skip_to_pragma_eol (parser);
+      if (!current_omp_declare_target_attribute)
+	error_at (loc, "%<#pragma omp end declare target%> without "
+		       "corresponding %<#pragma omp declare target%>");
+      else
+	current_omp_declare_target_attribute--;
+    }
+  else if (strcmp (p, "assumes") == 0)
+    {
+      c_parser_consume_token (parser);
+      c_parser_skip_to_pragma_eol (parser);
+      if (!current_omp_begin_assumes)
+	error_at (loc, "%<#pragma omp end assumes%> without "
+		       "corresponding %<#pragma omp begin assumes%>");
+      else
+	current_omp_begin_assumes--;
     }
   else
     {
-      c_parser_error (parser, "expected %<declare%>");
+      c_parser_error (parser, "expected %<declare%> or %<assumes%>");
       c_parser_skip_to_pragma_eol (parser);
-      return;
     }
-  c_parser_skip_to_pragma_eol (parser);
-  if (!current_omp_declare_target_attribute)
-    error_at (loc, "%<#pragma omp end declare target%> without corresponding "
-		   "%<#pragma omp declare target%>");
-  else
-    current_omp_declare_target_attribute--;
 }
-
 
 /* OpenMP 4.0
    #pragma omp declare reduction (reduction-id : typename-list : expression) \
@@ -23299,6 +23365,211 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
   return false;
 }
 
+/* Assumption clauses:
+   OpenMP 5.1
+   absent (directive-name-list)
+   contains (directive-name-list)
+   holds (expression)
+   no_openmp
+   no_openmp_routines
+   no_parallelism  */
+
+static void
+c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
+{
+  bool first = true;
+  bool no_openmp = false;
+  bool no_openmp_routines = false;
+  bool no_parallelism = false;
+  bitmap_head absent_head, contains_head;
+
+  bitmap_obstack_initialize (NULL);
+  bitmap_initialize (&absent_head, &bitmap_default_obstack);
+  bitmap_initialize (&contains_head, &bitmap_default_obstack);
+
+  if (c_parser_next_token_is (parser, CPP_PRAGMA_EOL))
+    error_at (c_parser_peek_token (parser)->location,
+	      "expected at least one assumption clause");
+
+  while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
+    {
+      if (!first
+	  && c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	c_parser_consume_token (parser);
+
+      first = false;
+
+      if (!c_parser_next_token_is (parser, CPP_NAME))
+	break;
+
+      const char *p
+	= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      location_t cloc = c_parser_peek_token (parser)->location;
+
+      if (!strcmp (p, "no_openmp"))
+	{
+	  c_parser_consume_token (parser);
+	  if (no_openmp)
+	    error_at (cloc, "too many %qs clauses", "no_openmp");
+	  no_openmp = true;
+	}
+      else if (!strcmp (p, "no_openmp_routines"))
+	{
+	  c_parser_consume_token (parser);
+	  if (no_openmp_routines)
+	    error_at (cloc, "too many %qs clauses", "no_openmp_routines");
+	  no_openmp_routines = true;
+	}
+      else if (!strcmp (p, "no_parallelism"))
+	{
+	  c_parser_consume_token (parser);
+	  if (no_parallelism)
+	    error_at (cloc, "too many %qs clauses", "no_parallelism");
+	  no_parallelism = true;
+	}
+      else if (!strcmp (p, "holds"))
+	{
+	  c_parser_consume_token (parser);
+	  matching_parens parens;
+	  if (parens.require_open (parser))
+	    {
+	      location_t eloc = c_parser_peek_token (parser)->location;
+	      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	      tree t = convert_lvalue_to_rvalue (eloc, expr, true, true).value;
+	      t = c_objc_common_truthvalue_conversion (eloc, t);
+	      t = c_fully_fold (t, false, NULL);
+	      if (is_assume)
+		{
+		  /* FIXME: Emit .ASSUME (t) call here.  */
+		  (void) t;
+		}
+	      parens.skip_until_found_close (parser);
+	    }
+	}
+      else if (!strcmp (p, "absent") || !strcmp (p, "contains"))
+	{
+	  c_parser_consume_token (parser);
+	  matching_parens parens;
+	  if (parens.require_open (parser))
+	    {
+	      do
+		{
+		  const char *directive[3] = {};
+		  int i;
+		  location_t dloc = c_parser_peek_token (parser)->location;
+		  for (i = 0; i < 3; i++)
+		    {
+		      tree id;
+		      if (c_parser_peek_nth_token (parser, i + 1)->type
+			  == CPP_NAME)
+			id = c_parser_peek_nth_token (parser, i + 1)->value;
+		      else if (c_parser_peek_nth_token (parser, i + 1)->keyword
+			       != RID_MAX)
+			{
+			  enum rid rid
+			    = c_parser_peek_nth_token (parser, i + 1)->keyword;
+			  id = ridpointers[rid];
+			}
+		      else
+			break;
+		      directive[i] = IDENTIFIER_POINTER (id);
+		    }
+		  if (i == 0)
+		    error_at (dloc, "expected directive name");
+		  else
+		    {
+		      const struct c_omp_directive *dir
+			= c_omp_categorize_directive (directive[0],
+						      directive[1],
+						      directive[2]);
+		      if (dir == NULL
+			  || dir->kind == C_OMP_DIR_DECLARATIVE
+			  || dir->kind == C_OMP_DIR_INFORMATIONAL
+			  || dir->id == PRAGMA_OMP_END
+			  || (!dir->second && directive[1])
+			  || (!dir->third && directive[2]))
+			error_at (dloc, "unknown OpenMP directive name in "
+					"%qs clause argument", p);
+		      else
+			{
+			  int id = dir - c_omp_directives;
+			  if (bitmap_bit_p (p[0] == 'a' ? &contains_head
+							: &absent_head, id))
+			    error_at (dloc, "%<%s%s%s%s%s%> directive "
+					    "mentioned in both %<absent%> and "
+					    "%<contains%> clauses",
+				      directive[0],
+				      directive[1] ? " " : "",
+				      directive[1] ? directive[1] : "",
+				      directive[2] ? " " : "",
+				      directive[2] ? directive[2] : "");
+			  else if (!bitmap_set_bit (p[0] == 'a'
+						    ? &absent_head
+						    : &contains_head, id))
+			    error_at (dloc, "%<%s%s%s%s%s%> directive "
+					    "mentioned multiple times in %qs "
+					    "clauses",
+				      directive[0],
+				      directive[1] ? " " : "",
+				      directive[1] ? directive[1] : "",
+				      directive[2] ? " " : "",
+				      directive[2] ? directive[2] : "", p);
+			}
+		      for (; i; --i)
+			c_parser_consume_token (parser);
+		    }
+		  if (c_parser_next_token_is (parser, CPP_COMMA))
+		    c_parser_consume_token (parser);
+		  else
+		    break;
+		}
+	      while (1);
+	      parens.skip_until_found_close (parser);
+	    }
+	}
+      else if (startswith (p, "ext_"))
+	{
+	  warning_at (cloc, 0, "unknown assumption clause %qs", p);
+	  c_parser_consume_token (parser);
+	  if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+	    {
+	      matching_parens parens;
+	      parens.consume_open (parser);
+	      c_parser_balanced_token_sequence (parser);
+	      parens.require_close (parser);
+	    }
+	}
+      else
+	{
+	  c_parser_consume_token (parser);
+	  error_at (cloc, "expected assumption clause");
+	  break;
+	}
+    }
+  c_parser_skip_to_pragma_eol (parser);
+}
+
+/* OpenMP 5.1
+   #pragma omp assume clauses[optseq] new-line  */
+
+static void
+c_parser_omp_assume (c_parser *parser, bool *if_p)
+{
+  c_parser_omp_assumption_clauses (parser, true);
+  add_stmt (c_parser_omp_structured_block (parser, if_p));
+}
+
+/* OpenMP 5.1
+   #pragma omp assumes clauses[optseq] new-line  */
+
+static void
+c_parser_omp_assumes (c_parser *parser)
+{
+  c_parser_consume_pragma (parser);
+  c_parser_omp_assumption_clauses (parser, false);
+}
+
 /* Main entry point to parsing most OpenMP pragmas.  */
 
 static void
@@ -23404,6 +23675,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       strcpy (p_name, "#pragma omp");
       stmt = c_parser_omp_teams (loc, parser, p_name, mask, NULL, if_p);
       break;
+    case PRAGMA_OMP_ASSUME:
+      c_parser_omp_assume (parser, if_p);
+      return;
     default:
       gcc_unreachable ();
     }

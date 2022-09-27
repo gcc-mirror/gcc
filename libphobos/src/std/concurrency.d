@@ -257,9 +257,12 @@ private
 
     @property ref ThreadInfo thisInfo() nothrow
     {
-        if (scheduler is null)
+        import core.atomic : atomicLoad;
+
+        auto localScheduler = atomicLoad(scheduler);
+        if (localScheduler is null)
             return ThreadInfo.thisInfo;
-        return scheduler.thisInfo;
+        return localScheduler.thisInfo;
     }
 }
 

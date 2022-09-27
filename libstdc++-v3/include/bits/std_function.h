@@ -697,12 +697,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     >
     { using type = _Res(_Args...); };
 
+#if __cpp_static_call_operator >= 202207L && __cpp_concepts >= 202002L
+  template<typename _StaticCallOp>
+    struct __function_guide_static_helper
+    { };
+
+  template<typename _Res, bool _Nx, typename... _Args>
+    struct __function_guide_static_helper<_Res (*) (_Args...) noexcept(_Nx)>
+    { using type = _Res(_Args...); };
+
+  template<typename _Fn, typename _Op>
+    using __function_guide_t = typename __conditional_t<
+      requires (_Fn& __f) { (void) __f.operator(); },
+      __function_guide_static_helper<_Op>,
+      __function_guide_helper<_Op>>::type;
+#else
+  template<typename _Fn, typename _Op>
+    using __function_guide_t = typename __function_guide_helper<_Op>::type;
+#endif
+
   template<typename _Res, typename... _ArgTypes>
     function(_Res(*)(_ArgTypes...)) -> function<_Res(_ArgTypes...)>;
 
-  template<typename _Functor, typename _Signature = typename
-	   __function_guide_helper<decltype(&_Functor::operator())>::type>
-    function(_Functor) -> function<_Signature>;
+  template<typename _Fn, typename _Signature
+	     = __function_guide_t<_Fn, decltype(&_Fn::operator())>>
+    function(_Fn) -> function<_Signature>;
 #endif
 
   // [20.7.15.2.6] null pointer comparisons

@@ -258,15 +258,6 @@ frange::accept (const vrange_visitor &v) const
   v.visit (*this);
 }
 
-// Helper function to compare floats.  Returns TRUE if op1 .CODE. op2
-// is nonzero.
-
-static inline bool
-tree_compare (tree_code code, tree op1, tree op2)
-{
-  return !integer_zerop (fold_build2 (code, integer_type_node, op1, op2));
-}
-
 // Flush denormal endpoints to the appropriate 0.0.
 
 void
@@ -2938,6 +2929,19 @@ irange::set_nonzero_bits (const wide_int_ref &bits)
     {
       set_nonzero_bits (NULL);
       return;
+    }
+  // If we have only one bit set in the mask, we can figure out the
+  // range immediately.
+  if (wi::popcount (bits) == 1)
+    {
+      bool has_zero = contains_p (build_zero_cst (type ()));
+      set (type (), bits, bits);
+      if (has_zero)
+	{
+	  int_range<2> zero;
+	  zero.set_zero (type ());
+	  union_ (zero);
+	}
     }
   set_nonzero_bits (wide_int_to_tree (type (), bits));
 }

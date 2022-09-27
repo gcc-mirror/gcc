@@ -84,13 +84,10 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
 
             case TOK.string_:
                 constraint = p.parsePrimaryExp();
-                // @@@DEPRECATED_2.101@@@
-                // Old parser allowed omitting parentheses around the expression.
-                // Deprecated in 2.091. Can be made permanent error after 2.100
                 if (p.token.value != TOK.leftParenthesis)
                 {
                     arg = p.parseAssignExp();
-                    deprecation(arg.loc, "`%s` must be surrounded by parentheses", arg.toChars());
+                    error(arg.loc, "`%s` must be surrounded by parentheses", arg.toChars());
                 }
                 else
                 {
@@ -527,6 +524,9 @@ unittest
         // Found ',' when expecting ':'
         q{ asm { "", "";
         } },
+
+        // https://issues.dlang.org/show_bug.cgi?id=20593
+        q{ asm { "instruction" : : "operand" 123; } },
     ];
 
     foreach (test; passAsmTests)

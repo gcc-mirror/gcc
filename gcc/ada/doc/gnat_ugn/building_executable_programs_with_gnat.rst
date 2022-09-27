@@ -1719,6 +1719,7 @@ Alphabetical List of All Switches
     Float_Words_BE             : Nat; -- Float words stored big-endian?
     Int_Size                   : Pos; -- Standard.Integer'Size
     Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+    Long_Long_Long_Size        : Pos; -- Standard.Long_Long_Long_Integer'Size
     Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
     Long_Size                  : Pos; -- Standard.Long_Integer'Size
     Maximum_Alignment          : Pos; -- Maximum permitted alignment
@@ -1816,6 +1817,7 @@ Alphabetical List of All Switches
     Float_Words_BE                0
     Int_Size                     64
     Long_Double_Size            128
+    Long_Long_Long_Size         128
     Long_Long_Size               64
     Long_Size                    64
     Maximum_Alignment            16
@@ -6229,10 +6231,32 @@ Linker switches can be specified after :switch:`-largs` builder switch.
 .. index:: -fuse-ld=name
 
 :switch:`-fuse-ld={name}`
-  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`,
-  the alternative being ``gold`` for :file:`ld.gold`. The later is
-  a more recent and faster linker, but only available on GNU/Linux
+  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`; ``gold``
+  (for :file:`ld.gold`) and ``mold`` (for :file:`ld.mold`) are more
+  recent and faster alternatives, but only available on GNU/Linux
   platforms.
+
+  .. only:: PRO
+
+    The GNAT distribution for native Linux platforms includes ``mold``,
+    compiled against OpenSSL version 1.1; however, the distribution does
+    not include OpenSSL.  In order to use this linker, you may either:
+
+    * use your system's OpenSSL library, if the version matches: in this
+      situation, you need not do anything beside using the
+      :switch:`-fuse-ld=mold` switch,
+
+    * obtain a source distribution for OpenSSL 1.1, compile the
+      :file:`libcrypto.so` library and install it in the directory of
+      your choice, then include this directory in the
+      :envvar:`LD_LIBRARY_PATH` environment variable,
+
+    * install another copy of ``mold`` by other means in the directory
+      of your choice, and include this directory in the :envvar:`PATH`
+      environment variable; you may find this alternative preferable if
+      the copy of ``mold`` included in GNAT does not suit your needs
+      (e.g. being able to link against your system's OpenSSL, or using
+      another version of ``mold``).
 
 .. _Binding_with_gnatbind:
 

@@ -352,13 +352,13 @@ const struct c_common_resword c_common_reswords[] =
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
-  { "_Float16",         RID_FLOAT16,   D_CONLY },
-  { "_Float32",         RID_FLOAT32,   D_CONLY },
-  { "_Float64",         RID_FLOAT64,   D_CONLY },
-  { "_Float128",        RID_FLOAT128,  D_CONLY },
-  { "_Float32x",        RID_FLOAT32X,  D_CONLY },
-  { "_Float64x",        RID_FLOAT64X,  D_CONLY },
-  { "_Float128x",       RID_FLOAT128X, D_CONLY },
+  { "_Float16",         RID_FLOAT16,    0 },
+  { "_Float32",         RID_FLOAT32,    0 },
+  { "_Float64",         RID_FLOAT64,    0 },
+  { "_Float128",        RID_FLOAT128,   0 },
+  { "_Float32x",        RID_FLOAT32X,   0 },
+  { "_Float64x",        RID_FLOAT64X,   0 },
+  { "_Float128x",       RID_FLOAT128X,  0 },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY },
   { "_Decimal128",      RID_DFLOAT128, D_CONLY },
@@ -1431,8 +1431,11 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 	  == TYPE_PRECISION (TREE_TYPE (arg0)))
       && unsigned0 == unsigned1
       && (unsigned0 || !uns))
-    return c_common_signed_or_unsigned_type
-      (unsigned0, common_type (TREE_TYPE (arg0), TREE_TYPE (arg1)));
+    {
+      tree ctype = common_type (TREE_TYPE (arg0), TREE_TYPE (arg1));
+      if (ctype != error_mark_node)
+	return c_common_signed_or_unsigned_type (unsigned0, ctype);
+    }
 
   else if (TREE_CODE (arg0) == INTEGER_CST
 	   && (unsigned1 || !uns)
@@ -3204,9 +3207,10 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 
   else if (unsignedp0 == unsignedp1 && real1 == real2
 	   && TYPE_PRECISION (TREE_TYPE (primop0)) < TYPE_PRECISION (*restype_ptr)
-	   && TYPE_PRECISION (TREE_TYPE (primop1)) < TYPE_PRECISION (*restype_ptr))
+	   && TYPE_PRECISION (TREE_TYPE (primop1)) < TYPE_PRECISION (*restype_ptr)
+	   && (type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1)))
+	      != error_mark_node)
     {
-      type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
       type = c_common_signed_or_unsigned_type (unsignedp0
 					       || TYPE_UNSIGNED (*restype_ptr),
 					       type);
@@ -4380,11 +4384,18 @@ c_common_nodes_and_builtins (void)
   record_builtin_type (RID_DOUBLE, NULL, double_type_node);
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
-  if (!c_dialect_cxx ())
-    for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    {
       if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE)
 	record_builtin_type ((enum rid) (RID_FLOATN_NX_FIRST + i), NULL,
 			     FLOATN_NX_TYPE_NODE (i));
+    }
+
+  /* For C, let float128t_type_node (__float128 in some backends) be the
+     same type as float128_type_node (_Float128), for C++ let those
+     be distinct types that mangle and behave differently.  */
+  if (c_dialect_cxx ())
+    float128t_type_node = NULL_TREE;
 
   /* Only supported decimal floating point extension if the target
      actually supports underlying modes. */

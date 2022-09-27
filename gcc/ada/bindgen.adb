@@ -134,9 +134,6 @@ package body Bindgen is
    --  Text for aspect specifications (if any) given as part of the
    --  Adainit and Adafinal spec declarations.
 
-   function Aspect_Text return String is
-     (if Enable_CUDA_Device_Expansion then " with CUDA_Global" else "");
-
    ----------------------------------
    -- Interface_State Pragma Table --
    ----------------------------------
@@ -2644,10 +2641,11 @@ package body Bindgen is
       end if;
 
       WBI ("");
-      WBI ("   procedure " & Ada_Init_Name.all & Aspect_Text & ";");
+      WBI ("   procedure " & Ada_Init_Name.all & ";");
       if Enable_CUDA_Device_Expansion then
          WBI ("   pragma Export (C, " & Ada_Init_Name.all &
                 ", Link_Name => """ & Device_Ada_Init_Link_Name & """);");
+         WBI ("   pragma CUDA_Global (" & Ada_Init_Name.all & ");");
       else
          WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
               Ada_Init_Name.all & """);");
@@ -2662,11 +2660,12 @@ package body Bindgen is
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          WBI ("");
-         WBI ("   procedure " & Ada_Final_Name.all & Aspect_Text & ";");
+         WBI ("   procedure " & Ada_Final_Name.all & ";");
 
          if Enable_CUDA_Device_Expansion then
             WBI ("   pragma Export (C, " & Ada_Final_Name.all &
                    ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
+            WBI ("   pragma CUDA_Global (" & Ada_Final_Name.all & ");");
          else
             WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
                  Ada_Final_Name.all & """);");

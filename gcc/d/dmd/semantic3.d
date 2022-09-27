@@ -167,11 +167,18 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
         sc = sc.push(tmix.argsym);
         sc = sc.push(tmix);
+
+        uint olderrors = global.errors;
+
         for (size_t i = 0; i < tmix.members.dim; i++)
         {
             Dsymbol s = (*tmix.members)[i];
             s.semantic3(sc);
         }
+
+        if (global.errors != olderrors)
+            errorSupplemental(tmix.loc, "parent scope from here: `mixin %s`", tmix.toChars());
+
         sc = sc.pop();
         sc.pop();
     }
@@ -969,6 +976,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             /* Do the semantic analysis on the [in] preconditions and
              * [out] postconditions.
              */
+            immutable bool isnothrow = f.isnothrow && !(funcdecl.flags & FUNCFLAG.nothrowInprocess);
             if (freq)
             {
                 /* frequire is composed of the [in] contracts
@@ -980,10 +988,22 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 sc2.flags = (sc2.flags & ~SCOPE.contract) | SCOPE.require;
 
                 // BUG: need to error if accessing out parameters
-                // BUG: need to disallow returns and throws
+                // BUG: need to disallow returns
                 // BUG: verify that all in and ref parameters are read
                 freq = freq.statementSemantic(sc2);
-                freq.blockExit(funcdecl, false);
+
+                // @@@DEPRECATED_2.111@@@ - pass `isnothrow` instead of `false` to print a more detailed error msg`
+                const blockExit = freq.blockExit(funcdecl, false);
+                if (blockExit & BE.throw_)
+                {
+                    if (isnothrow)
+                        // @@@DEPRECATED_2.111@@@
+                        // Deprecated in 2.101, can be made an error in 2.111
+                        deprecation(funcdecl.loc, "`%s`: `in` contract may throw but function is marked as `nothrow`",
+                            funcdecl.toPrettyChars());
+                    else if (funcdecl.flags & FUNCFLAG.nothrowInprocess)
+                        f.isnothrow = false;
+                }
 
                 funcdecl.flags &= ~FUNCFLAG.noEH;
 
@@ -992,6 +1012,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 if (global.params.useIn == CHECKENABLE.off)
                     freq = null;
             }
+
             if (fens)
             {
                 /* fensure is composed of the [out] contracts
@@ -1017,7 +1038,19 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     funcdecl.buildResultVar(scout, f.next);
 
                 fens = fens.statementSemantic(sc2);
-                fens.blockExit(funcdecl, false);
+
+                // @@@DEPRECATED_2.111@@@ - pass `isnothrow` instead of `false` to print a more detailed error msg`
+                const blockExit = fens.blockExit(funcdecl, false);
+                if (blockExit & BE.throw_)
+                {
+                    if (isnothrow)
+                        // @@@DEPRECATED_2.111@@@
+                        // Deprecated in 2.101, can be made an error in 2.111
+                        deprecation(funcdecl.loc, "`%s`: `out` contract may throw but function is marked as `nothrow`",
+                            funcdecl.toPrettyChars());
+                    else if (funcdecl.flags & FUNCFLAG.nothrowInprocess)
+                        f.isnothrow = false;
+                }
 
                 funcdecl.flags &= ~FUNCFLAG.noEH;
 
@@ -1144,7 +1177,6 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
                             s = s.statementSemantic(sc2);
 
-                            immutable bool isnothrow = f.isnothrow && !(funcdecl.flags & FUNCFLAG.nothrowInprocess);
                             const blockexit = s.blockExit(funcdecl, isnothrow);
                             if (blockexit & BE.throw_)
                             {

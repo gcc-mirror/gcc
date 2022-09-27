@@ -302,3 +302,151 @@ Tarr _d_arrayassign_r(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @tru
     assert(!didThrow);
     assert(counter == 0);
 }
+
+/**
+ * Sets all elements of an array to a single value. Takes into account postblits,
+ * copy constructors and destructors. For Plain Old Data elements,`rt/memset.d`
+ * is used.
+ *
+ * ---
+ * struct S
+ * {
+ *     ~this() {} // destructor, so not Plain Old Data
+ * }
+ *
+ * void main()
+ * {
+ *   S[3] arr;
+ *   S value;
+ *
+ *   arr = value;
+ *   // Generates:
+ *   // _d_arraysetassign(arr[], value), arr;
+ * }
+ * ---
+ *
+ * Params:
+ *     to = destination array
+ *     value = the element to set
+ * Returns:
+ *     `to`
+ */
+Tarr _d_arraysetassign(Tarr : T[], T)(return scope Tarr to, scope ref T value) @trusted
+{
+    import core.internal.traits : Unqual;
+    import core.lifetime : copyEmplace;
+    import core.stdc.string : memcpy;
+
+    enum elemSize = T.sizeof;
+    void[elemSize] tmp = void;
+
+    foreach (ref dst; to)
+    {
+        memcpy(&tmp, cast(void*) &dst, elemSize);
+        // Use `memcpy` if `T` has a `@disable`d postblit.
+        static if (__traits(isCopyable, T))
+            copyEmplace(value, dst);
+        else
+            memcpy(cast(void*) &value, cast(void*) &dst, elemSize);
+        auto elem = cast(Unqual!T*) &tmp;
+        destroy(*elem);
+    }
+
+    return to;
+}
+
+// postblit and destructor
+@safe unittest
+{
+    string ops;
+    struct S
+    {
+        int val;
+        this(this) { ops ~= "="; }
+        ~this() { ops ~= "~"; }
+    }
+
+    S[4] arr;
+    S s = S(1234);
+    _d_arraysetassign(arr[], s);
+    assert(ops == "=~=~=~=~");
+    assert(arr == [S(1234), S(1234), S(1234), S(1234)]);
+}
+
+// copy constructor
+@safe unittest
+{
+    string ops;
+    struct S
+    {
+        int val;
+        this(const scope ref S rhs)
+        {
+            val = rhs.val;
+            ops ~= "=";
+        }
+        ~this() { ops ~= "~"; }
+    }
+
+    S[4] arr;
+    S s = S(1234);
+    _d_arraysetassign(arr[], s);
+    assert(ops == "=~=~=~=~");
+    assert(arr == [S(1234), S(1234), S(1234), S(1234)]);
+}
+
+// throwing and `nothrow`
+@safe nothrow unittest
+{
+    // Test that throwing works
+    bool didThrow;
+    int counter;
+    struct Throw
+    {
+        int val;
+        this(this)
+        {
+            counter++;
+            if (counter == 2)
+                throw new Exception("Oh no.");
+        }
+    }
+
+    try
+    {
+        Throw[4] a;
+        Throw b = Throw(1);
+        _d_arraysetassign(a[], b);
+    }
+    catch (Exception)
+    {
+        didThrow = true;
+    }
+    assert(didThrow);
+    assert(counter == 2);
+
+    // Test that `nothrow` works
+    didThrow = false;
+    counter = 0;
+    struct NoThrow
+    {
+        int val;
+        this(this) { counter++; }
+    }
+
+    try
+    {
+        NoThrow[4] a;
+        NoThrow b = NoThrow(1);
+        _d_arraysetassign(a[], b);
+        foreach (ref e; a)
+            assert(e == NoThrow(1));
+    }
+    catch (Exception)
+    {
+        didThrow = true;
+    }
+    assert(!didThrow);
+    // The array `a` is destroyed when the `try` block ends.
+    assert(counter == 4);
+}

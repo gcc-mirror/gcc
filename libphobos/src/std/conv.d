@@ -4894,7 +4894,7 @@ if (isOctalLiteral(num))
 template octal(alias decimalInteger)
 if (is(typeof(decimalInteger)) && isIntegral!(typeof(decimalInteger)))
 {
-    enum octal = octal!(typeof(decimalInteger))(to!string(decimalInteger));
+    enum octal = convertToOctal(decimalInteger);
 }
 
 ///
@@ -4908,6 +4908,19 @@ if (is(typeof(decimalInteger)) && isIntegral!(typeof(decimalInteger)))
     auto c = octal!"1_000_000u";
     // Leading zeros are allowed when converting from a string
     auto d = octal!"0001_200_000";
+}
+
+/*************************************
+ * Convert a decimal integer to an octal integer with the same digits.
+ * Params:
+ *    i = integer to convert
+ * Returns:
+ *    octal integer with the same type and same digits
+ */
+private T convertToOctal(T)(T i)
+{
+    assert((i % 10) < 8);
+    return i ? convertToOctal(i / 10) * 8 + i % 10 : 0;
 }
 
 /*

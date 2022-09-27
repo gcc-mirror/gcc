@@ -1431,7 +1431,7 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
         if (auto sc = _scope)
         {
             _scope = null;
-            arrayExpressionSemantic(atts, sc);
+            arrayExpressionSemantic(atts.peekSlice(), sc);
         }
         auto exps = new Expressions();
         if (userAttribDecl && userAttribDecl !is this)
@@ -1554,7 +1554,7 @@ int foreachUda(Dsymbol sym, Scope* sc, int delegate(Expression) dg)
         return 0;
 
     auto udas = sym.userAttribDecl.getAttributes();
-    arrayExpressionSemantic(udas, sc, true);
+    arrayExpressionSemantic(udas.peekSlice(), sc, true);
 
     return udas.each!((uda) {
         if (!uda.isTupleExp())
