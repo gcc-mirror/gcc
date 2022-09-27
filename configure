@@ -800,6 +800,7 @@ ac_user_opts='
 enable_option_checking
 with_build_libsubdir
 with_system_zlib
+with_zstd
 enable_as_accelerator_for
 enable_offload_targets
 enable_offload_defaulted
@@ -1589,6 +1590,8 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
   --with-system-zlib      use installed libz
+  --with-zstd             Support zstd compressed debug sections
+                          (default=auto)
   --with-mpc=PATH         specify prefix directory for installed MPC package.
                           Equivalent to --with-mpc-include=PATH/include plus
                           --with-mpc-lib=PATH/lib
@@ -2961,6 +2964,13 @@ fi
 if test x$with_system_readline = xyes ; then
   noconfigdirs="$noconfigdirs readline"
 fi
+
+
+# Check whether --with-zstd was given.
+if test "${with_zstd+set}" = set; then :
+  withval=$with_zstd;
+fi
+
 
 # some tools are so dependent upon X11 that if we're not building with X,
 # it's not even worth trying to configure, much less build, that tool.

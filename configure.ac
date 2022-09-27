@@ -254,6 +254,9 @@ if test x$with_system_readline = xyes ; then
   noconfigdirs="$noconfigdirs readline"
 fi
 
+AC_ARG_WITH(zstd,
+[AS_HELP_STRING([--with-zstd], [Support zstd compressed debug sections (default=auto)])])
+
 # some tools are so dependent upon X11 that if we're not building with X, 
 # it's not even worth trying to configure, much less build, that tool.
 
