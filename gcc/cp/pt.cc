@@ -11945,6 +11945,7 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
   auto o3 = make_temp_override (current_target_pragma, NULL_TREE);
   auto o4 = make_temp_override (scope_chain->omp_declare_target_attribute,
 				NULL);
+  auto o5 = make_temp_override (scope_chain->omp_begin_assumes, NULL);
 
   cplus_decl_attributes (decl_p, late_attrs, attr_flags);
 

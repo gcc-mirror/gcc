@@ -1834,6 +1834,10 @@ struct GTY(()) omp_declare_target_attr {
   bool attr_syntax;
 };
 
+struct GTY(()) omp_begin_assumes_data {
+  bool attr_syntax;
+};
+
 /* Global state.  */
 
 struct GTY(()) saved_scope {
@@ -1881,6 +1885,7 @@ struct GTY(()) saved_scope {
 
   hash_map<tree, tree> *GTY((skip)) x_local_specializations;
   vec<omp_declare_target_attr, va_gc> *omp_declare_target_attribute;
+  vec<omp_begin_assumes_data, va_gc> *omp_begin_assumes;
 
   struct saved_scope *prev;
 };
