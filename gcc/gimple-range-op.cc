@@ -397,6 +397,14 @@ public:
   {
     if (lh.undefined_p ())
       return false;
+    // Calculating the popcount of a singleton is trivial.
+    if (lh.singleton_p ())
+      {
+	wide_int nz = lh.get_nonzero_bits ();
+	wide_int pop = wi::shwi (wi::popcount (nz), TYPE_PRECISION (type));
+	r.set (type, pop, pop);
+	return true;
+      }
     // __builtin_ffs* and __builtin_popcount* return [0, prec].
     int prec = TYPE_PRECISION (lh.type ());
     // If arg is non-zero, then ffs or popcount are non-zero.
