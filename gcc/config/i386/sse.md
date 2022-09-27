@@ -24127,7 +24127,7 @@
 
   for (i = 4; i < 7; i++)
     XVECEXP (operands[2], 0, i)
-      = gen_rtx_SET (xmm_regs[i], CONST0_RTX (V2DImode));
+      = gen_rtx_CLOBBER (VOIDmode, xmm_regs[i]);
 
   XVECEXP (operands[2], 0, 7)
     = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
@@ -24184,7 +24184,7 @@
 
   for (i = 4; i < 7; i++)
     XVECEXP (operands[2], 0, i + 1)
-      = gen_rtx_SET (xmm_regs[i], CONST0_RTX (V2DImode));
+      = gen_rtx_CLOBBER (VOIDmode, xmm_regs[i]);
 
   XVECEXP (operands[2], 0, 8)
     = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
