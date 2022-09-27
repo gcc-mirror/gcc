@@ -1481,6 +1481,8 @@ operator_minus::op2_range (irange &r, tree type,
 			   const irange &op1,
 			   relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   return fold_range (r, type, op1, lhs);
 }
 
@@ -1650,6 +1652,8 @@ operator_mult::op1_range (irange &r, tree type,
 			  relation_kind rel ATTRIBUTE_UNUSED) const
 {
   tree offset;
+  if (lhs.undefined_p ())
+    return false;
 
   // We can't solve 0 = OP1 * N by dividing by N with a wrapping type.
   // For example: For 0 = OP1 * 2, OP1 could be 0, or MAXINT, whereas
@@ -1902,6 +1906,8 @@ operator_exact_divide::op1_range (irange &r, tree type,
 				  const irange &op2,
 				  relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   tree offset;
   // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
   // remainders in the endpoints, so op1 = [2,4] * [3,3] = [6,12].
@@ -2111,6 +2117,8 @@ operator_lshift::op1_range (irange &r,
 			    const irange &op2,
 			    relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   tree shift_amount;
 
   if (!lhs.contains_p (build_zero_cst (type)))
@@ -2183,6 +2191,8 @@ operator_rshift::op1_range (irange &r,
 			    relation_kind rel ATTRIBUTE_UNUSED) const
 {
   tree shift;
+  if (lhs.undefined_p ())
+    return false;
   if (op2.singleton_p (&shift))
     {
       // Ignore nonsensical shifts.
@@ -2401,6 +2411,8 @@ operator_cast::op1_range (irange &r, tree type,
 			  const irange &op2,
 			  relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   tree lhs_type = lhs.type ();
   gcc_checking_assert (types_compatible_p (op2.type(), type));
 
@@ -2936,6 +2948,8 @@ operator_bitwise_and::op1_range (irange &r, tree type,
 				 const irange &op2,
 				 relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
@@ -3121,6 +3135,8 @@ operator_bitwise_or::op1_range (irange &r, tree type,
 				const irange &op2,
 				relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_or.op1_range (r, type, lhs, op2);
@@ -3370,6 +3386,8 @@ operator_trunc_mod::op1_range (irange &r, tree type,
 			       const irange &,
 			       relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   // PR 91029.
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
@@ -3394,6 +3412,8 @@ operator_trunc_mod::op2_range (irange &r, tree type,
 			       const irange &,
 			       relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   // PR 91029.
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
@@ -3522,6 +3542,8 @@ operator_bitwise_not::op1_range (irange &r, tree type,
 				 const irange &op2,
 				 relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_not.op1_range (r, type, lhs, op2);
 
@@ -4008,6 +4030,8 @@ pointer_or_operator::op1_range (irange &r, tree type,
 				const irange &op2 ATTRIBUTE_UNUSED,
 				relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   if (lhs.zero_p ())
     {
       tree zero = build_zero_cst (type);
@@ -4239,6 +4263,9 @@ range_op_handler::op1_range (vrange &r, tree type,
 			     relation_kind rel) const
 {
   gcc_checking_assert (m_valid);
+
+  if (lhs.undefined_p ())
+    return false;
   if (m_int)
     return m_int->op1_range (as_a <irange> (r), type,
 			     as_a <irange> (lhs),
@@ -4260,6 +4287,8 @@ range_op_handler::op2_range (vrange &r, tree type,
 			     relation_kind rel) const
 {
   gcc_checking_assert (m_valid);
+  if (lhs.undefined_p ())
+    return false;
   if (m_int)
     return m_int->op2_range (as_a <irange> (r), type,
 			     as_a <irange> (lhs),
