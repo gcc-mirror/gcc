@@ -118,6 +118,7 @@ struct unswitch_predicate
     if (!false_range.varying_p ()
 	&& !false_range.undefined_p ())
       false_range.invert ();
+    count = e->count ();
     num = predicates->length ();
     predicates->safe_push (this);
   }
@@ -126,7 +127,8 @@ struct unswitch_predicate
   unswitch_predicate (gcond *stmt)
     : switch_p (false)
   {
-    if (EDGE_SUCC (gimple_bb (stmt), 0)->flags & EDGE_TRUE_VALUE)
+    basic_block bb = gimple_bb (stmt);
+    if (EDGE_SUCC (bb, 0)->flags & EDGE_TRUE_VALUE)
       edge_index = 0;
     else
       edge_index = 1;
@@ -134,6 +136,7 @@ struct unswitch_predicate
     tree rhs = gimple_cond_rhs (stmt);
     enum tree_code code = gimple_cond_code (stmt);
     condition = build2 (code, boolean_type_node, lhs, rhs);
+    count = EDGE_SUCC (bb, 0)->count ().max (EDGE_SUCC (bb, 1)->count ());
     if (irange::supports_p (TREE_TYPE (lhs)))
       {
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
@@ -180,6 +183,9 @@ struct unswitch_predicate
   /* Index of the edge the predicate belongs to in the successor vector.  */
   int edge_index;
 
+  /* The profile count of this predicate.  */
+  profile_count count;
+
   /* Whether the predicate was created from a switch statement.  */
   bool switch_p;
 
@@ -206,10 +212,14 @@ static class loop *tree_unswitch_loop (class loop *, edge, tree);
 static bool tree_unswitch_single_loop (class loop *, dump_user_location_t,
 				       predicate_vector &predicate_path,
 				       unsigned loop_size, unsigned &budget,
-				       int ignored_edge_flag, bitmap);
+				       int ignored_edge_flag, bitmap,
+				       unswitch_predicate * = NULL,
+				       basic_block = NULL);
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
-				    vec<unswitch_predicate *> &candidates);
+				    vec<unswitch_predicate *> &candidates,
+				    unswitch_predicate *&hottest,
+				    basic_block &hottest_bb);
 static bool tree_unswitch_outer_loop (class loop *);
 static edge find_loop_guard (class loop *, vec<gimple *>&);
 static bool empty_bb_without_guard_p (class loop *, basic_block,
@@ -242,7 +252,8 @@ set_predicates_for_bb (basic_block bb, vec<unswitch_predicate *> predicates)
    Return total number of instructions in the loop.  */
 
 static unsigned
-init_loop_unswitch_info (class loop *loop)
+init_loop_unswitch_info (class loop *loop, unswitch_predicate *&hottest,
+			 basic_block &hottest_bb)
 {
   unsigned total_insns = 0;
 
@@ -259,13 +270,16 @@ init_loop_unswitch_info (class loop *loop)
       total_insns += insns;
     }
 
+  hottest = NULL;
+  hottest_bb = NULL;
   /* Find all unswitching candidates.  */
   for (unsigned i = 0; i != loop->num_nodes; i++)
     {
       /* Find a bb to unswitch on.  */
       vec<unswitch_predicate *> candidates;
       candidates.create (1);
-      find_unswitching_predicates_for_bb (bbs[i], loop, candidates);
+      find_unswitching_predicates_for_bb (bbs[i], loop, candidates,
+					  hottest, hottest_bb);
       if (!candidates.is_empty ())
 	set_predicates_for_bb (bbs[i], candidates);
       else
@@ -329,7 +343,10 @@ tree_ssa_unswitch_loops (function *fun)
 	  unswitch_predicate::predicates = new vec<unswitch_predicate *> ();
 
 	  /* Unswitch innermost loop.  */
-	  unsigned int loop_size = init_loop_unswitch_info (loop);
+	  unswitch_predicate *hottest;
+	  basic_block hottest_bb;
+	  unsigned int loop_size = init_loop_unswitch_info (loop, hottest,
+							    hottest_bb);
 	  unsigned int budget = loop_size + param_max_unswitch_insns;
 
 	  predicate_vector predicate_path;
@@ -338,7 +355,8 @@ tree_ssa_unswitch_loops (function *fun)
 	  changed_unswitch
 	    |= tree_unswitch_single_loop (loop, loc, predicate_path,
 					  loop_size, budget,
-					  ignored_edge_flag, handled);
+					  ignored_edge_flag, handled,
+					  hottest, hottest_bb);
 	  predicate_path.release ();
 
 	  for (auto predlist : bb_predicates)
@@ -449,7 +467,9 @@ is_maybe_undefined (const tree name, gimple *stmt, class loop *loop)
 
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
-				    vec<unswitch_predicate *> &candidates)
+				    vec<unswitch_predicate *> &candidates,
+				    unswitch_predicate *&hottest,
+				    basic_block &hottest_bb)
 {
   gimple *last, *def;
   tree use;
@@ -489,6 +509,14 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 
       unswitch_predicate *predicate = new unswitch_predicate (stmt);
       candidates.safe_push (predicate);
+      /* If we unswitch on this predicate we isolate both paths, so
+	 pick the highest count for updating of the hottest predicate
+	 to unswitch on first.  */
+      if (!hottest || predicate->count > hottest->count)
+	{
+	  hottest = predicate;
+	  hottest_bb = bb;
+	}
     }
   else if (gswitch *stmt = safe_dyn_cast <gswitch *> (last))
     {
@@ -561,6 +589,11 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 					  edge_index, e,
 					  edge_range[edge_index]);
 	      candidates.safe_push (predicate);
+	      if (!hottest || predicate->count > hottest->count)
+		{
+		  hottest = predicate;
+		  hottest_bb = bb;
+		}
 	    }
 	}
     }
@@ -888,13 +921,15 @@ evaluate_loop_insns_for_predicate (class loop *loop,
 
 /* Unswitch single LOOP.  PREDICATE_PATH contains so far used predicates
    for unswitching.  BUDGET is number of instruction for which we can increase
-   the loop and is updated when unswitching occurs.  */
+   the loop and is updated when unswitching occurs.  If HOTTEST is not
+   NULL then pick this candidate as the one to unswitch on.  */
 
 static bool
 tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 			   predicate_vector &predicate_path,
 			   unsigned loop_size, unsigned &budget,
-			   int ignored_edge_flag, bitmap handled)
+			   int ignored_edge_flag, bitmap handled,
+			   unswitch_predicate *hottest, basic_block hottest_bb)
 {
   class loop *nloop;
   bool changed = false;
@@ -939,8 +974,15 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 	}
       return false;
     };
-  /* Check predicates of reachable blocks.  */
-  evaluate_bbs (loop, NULL, ignored_edge_flag, check_predicates);
+
+  if (hottest)
+    {
+      predicate = hottest;
+      predicate_bb = hottest_bb;
+    }
+  else
+    /* Check predicates of reachable blocks.  */
+    evaluate_bbs (loop, NULL, ignored_edge_flag, check_predicates);
 
   if (predicate != NULL)
     {
