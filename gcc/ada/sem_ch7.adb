@@ -319,8 +319,9 @@ package body Sem_Ch7 is
             function Set_Referencer_Of_Non_Subprograms return Boolean is
             begin
                --  An inlined subprogram body acts as a referencer
-               --  unless we generate C code since inlining is then
-               --  handled by the C compiler.
+               --  unless we generate C code without -gnatn where we want
+               --  to favor generating static inline functions as much as
+               --  possible.
 
                --  Note that we test Has_Pragma_Inline here in addition
                --  to Is_Inlined. We are doing this for a client, since
@@ -329,7 +330,9 @@ package body Sem_Ch7 is
                --  should occur, so we need to catch all cases where the
                --  subprogram may be inlined by the client.
 
-               if (not CCG_Mode or else Has_Pragma_Inline_Always (Decl_Id))
+               if (not CCG_Mode
+                     or else Has_Pragma_Inline_Always (Decl_Id)
+                     or else Inline_Active)
                  and then (Is_Inlined (Decl_Id)
                             or else Has_Pragma_Inline (Decl_Id))
                then
