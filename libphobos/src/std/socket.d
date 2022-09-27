@@ -2942,7 +2942,7 @@ public:
      * Calling `shutdown` before `close` is recommended
      * for connection-oriented sockets.
      */
-    void close() @trusted nothrow @nogc
+    void close() scope @trusted nothrow @nogc
     {
         _close(sock);
         sock = socket_t.init;
@@ -3641,7 +3641,7 @@ class UdpSocket: Socket
             {
                 checkAttributes!q{nothrow @nogc @trusted};
             }
-            nothrow @nogc @trusted void close()
+            nothrow @nogc @trusted scope void close()
             {
                 checkAttributes!q{nothrow @nogc @trusted};
             }

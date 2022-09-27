@@ -3793,7 +3793,27 @@ Params:
                 sink.formatValue(_value, fmt);
             }
         }
+
+        void toString()(scope void delegate(const(char)[]) sink, scope const ref FormatSpec!char fmt) const
+        {
+            if (isNull)
+            {
+                sink.formatValue("Nullable.null", fmt);
+            }
+            else
+            {
+                sink.formatValue(_value, fmt);
+            }
+        }
     }
+
+@system unittest
+{
+    import std.conv : to;
+
+    const Nullable!(ulong, 0) x = 1;
+    assert(x.to!string == "1");
+}
 
 /**
 Check if `this` is in the null state.
@@ -4320,7 +4340,27 @@ Params:
                 sink.formatValue(*_value, fmt);
             }
         }
+
+        void toString()(scope void delegate(const(char)[]) sink, scope const ref FormatSpec!char fmt) const
+        {
+            if (isNull)
+            {
+                sink.formatValue("Nullable.null", fmt);
+            }
+            else
+            {
+                sink.formatValue(*_value, fmt);
+            }
+        }
     }
+
+@system unittest
+{
+    import std.conv : to;
+
+    const NullableRef!(ulong) x = new ulong(1);
+    assert(x.to!string == "1");
+}
 
 /**
 Binds the internal state to `value`.

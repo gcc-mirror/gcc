@@ -189,7 +189,7 @@ public:
     virtual const char *toPrettyCharsHelper(); // helper to print fully qualified (template) arguments
     Loc getLoc();
     const char *locToChars();
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     bool isAnonymous() const;
     void error(const Loc &loc, const char *format, ...);
     void error(const char *format, ...);

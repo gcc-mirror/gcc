@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice12174.d(12): Error: no property `sum` for type `int[]`
+fail_compilation/ice12174.d(12): Error: no property `sum` for `[1, 2, 3]` of type `int[]`
 fail_compilation/ice12174.d(20): Error: CTFE failed because of previous errors in `this`
 fail_compilation/ice12174.d(13):        called from here: `filter([1, 2, 3])`
 ---

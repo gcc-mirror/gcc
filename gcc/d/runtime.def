@@ -115,10 +115,6 @@ DEF_D_RUNTIME (ALLOCMEMORY, "_d_allocmemory", RT(VOIDPTR), P1(SIZE_T),
 DEF_D_RUNTIME (ARRAYCOPY, "_d_arraycopy", RT(ARRAY_VOID),
 	       P3(SIZE_T, ARRAY_VOID, ARRAY_VOID), 0)
 
-/* Used for array assignments from a single element.  */
-DEF_D_RUNTIME (ARRAYSETASSIGN, "_d_arraysetassign", RT(VOIDPTR),
-	       P4(VOIDPTR, VOIDPTR, SIZE_T, CONST_TYPEINFO), 0)
-
 /* Used for concatenating two or more arrays together.  Then `n' variant is
    for when there is more than two arrays to handle.  */
 DEF_D_RUNTIME (ARRAYCATT, "_d_arraycatT", RT(ARRAY_BYTE),
@@ -140,6 +136,7 @@ DEF_D_RUNTIME (ARRAYAPPENDWD, "_d_arrayappendwd", RT(ARRAY_VOID),
 /* Used for allocating a new associative array.  */
 DEF_D_RUNTIME (ASSOCARRAYLITERALTX, "_d_assocarrayliteralTX", RT(VOIDPTR),
 	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
+DEF_D_RUNTIME (AANEW, "_aaNew", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 
 /* Used for value equality of two associative arrays.  */
 DEF_D_RUNTIME (AAEQUAL, "_aaEqual", RT(INT),

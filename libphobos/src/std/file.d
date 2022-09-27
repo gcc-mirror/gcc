@@ -3714,7 +3714,7 @@ assert(!de2.isFile);
         @property bool isSymlink() scope;
 
         /++
-            Returns the size of the the file represented by this `DirEntry`
+            Returns the size of the file represented by this `DirEntry`
             in bytes.
           +/
         @property ulong size() scope;

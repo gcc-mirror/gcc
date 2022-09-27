@@ -2830,7 +2830,7 @@ public:
                         (*exps)[i] = ex;
                     }
                 }
-                sd.fill(e.loc, exps, false);
+                sd.fill(e.loc, *exps, false);
 
                 auto se = ctfeEmplaceExp!StructLiteralExp(e.loc, sd, exps, e.newtype);
                 se.origin = se;
@@ -4778,12 +4778,6 @@ public:
             // If `_d_HookTraceImpl` is found, resolve the underlying hook and replace `e` and `fd` with it.
             removeHookTraceImpl(e, fd);
 
-            bool isArrayConstructionOrAssign(FuncDeclaration fd)
-            {
-                return fd.ident == Id._d_arrayctor || fd.ident == Id._d_arraysetctor ||
-                fd.ident == Id._d_arrayassign_l || fd.ident == Id._d_arrayassign_r;
-            }
-
             if (fd.ident == Id.__ArrayPostblit || fd.ident == Id.__ArrayDtor)
             {
                 assert(e.arguments.dim == 1);
@@ -4837,11 +4831,11 @@ public:
                 result = interpretRegion(ae, istate);
                 return;
             }
-            else if (isArrayConstructionOrAssign(fd))
+            else if (isArrayConstructionOrAssign(fd.ident))
             {
                 // In expressionsem.d, the following lowerings were performed:
                 // * `T[x] ea = eb;` to `_d_array{,set}ctor(ea[], eb[]);`.
-                // * `ea = eb` (ea and eb are arrays) to `_d_arrayassign_{l,r}(ea[], eb[])`.
+                // * `ea = eb` to `_d_array{,setassign,assign_l,assign_r}(ea[], eb)`.
                 // The following code will rewrite them back to `ea = eb` and
                 // then interpret that expression.
 

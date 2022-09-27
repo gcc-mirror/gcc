@@ -2335,7 +2335,7 @@ layout_struct_initializer (StructDeclaration *sd)
 {
   StructLiteralExp *sle = StructLiteralExp::create (sd->loc, sd, NULL);
 
-  if (!sd->fill (sd->loc, sle->elements, true))
+  if (!sd->fill (sd->loc, *sle->elements, true))
     gcc_unreachable ();
 
   sle->type = sd->type;

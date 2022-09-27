@@ -2979,10 +2979,10 @@ Lagain:
             return Lret(t);
 
         if (t1n.ty == Tvoid) // pointers to void are always compatible
-            return Lret(t2);
+            return Lret(t1);
 
         if (t2n.ty == Tvoid)
-            return Lret(t);
+            return Lret(t2);
 
         if (t1.implicitConvTo(t2))
             return convert(e1, t2);

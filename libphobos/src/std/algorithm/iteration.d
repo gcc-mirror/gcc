@@ -771,6 +771,23 @@ private struct MapResult(alias fun, Range)
     assert(dd.length == 4);
 }
 
+// Verify fix for: https://issues.dlang.org/show_bug.cgi?id=16034
+@safe unittest
+{
+    struct One
+    {
+        int entry = 1;
+        @disable this(this);
+    }
+
+    One[] ones = [One(), One()];
+
+    import std.algorithm.comparison : equal;
+
+    assert(ones.map!`a.entry + 1`.equal([2, 2]));
+}
+
+
 @safe unittest
 {
     import std.algorithm.comparison : equal;

@@ -111,13 +111,9 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
                     auto ts = tbNext.baseElemOf().isTypeStruct();
                     if (ts)
                     {
-                        import dmd.id : Id;
-
                         auto sd = ts.sym;
                         const id = ce.f.ident;
-                        if (sd.postblit &&
-                            (id == Id._d_arrayctor || id == Id._d_arraysetctor ||
-                            id == Id._d_arrayassign_l || id == Id._d_arrayassign_r))
+                        if (sd.postblit && isArrayConstructionOrAssign(id))
                         {
                             checkFuncThrows(ce, sd.postblit);
                             return;

@@ -7197,6 +7197,26 @@ extern(D) Modifiable checkModifiable(Expression exp, Scope* sc, ModifyFlags flag
     }
 }
 
+/**
+ * Verify if the given identifier is any of
+ * _d_array{ctor,setctor,setassign,assign_l, assign_r}.
+ *
+ * Params:
+ *  id = the identifier to verify
+ *
+ * Returns:
+ *  `true` if the identifier corresponds to a construction of assignement
+ *  runtime hook, `false` otherwise.
+ */
+bool isArrayConstructionOrAssign(const Identifier id)
+{
+    import dmd.id : Id;
+
+    return id == Id._d_arrayctor || id == Id._d_arraysetctor ||
+        id == Id._d_arrayassign_l || id == Id._d_arrayassign_r ||
+        id == Id._d_arraysetassign;
+}
+
 /******************************
  * Provide efficient way to implement isUnaExp(), isBinExp(), isBinAssignExp()
  */
