@@ -182,13 +182,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX14_CONSTEXPR void
       _M_do_reset() _GLIBCXX_NOEXCEPT
       {
+#if __cplusplus >= 201402L
 	if (__builtin_is_constant_evaluated())
 	  {
 	    for (_WordT& __w : _M_w)
 	      __w = 0;
 	    return;
 	  }
-
+#endif
 	__builtin_memset(_M_w, 0, _Nw * sizeof(_WordT));
       }
 
@@ -1680,7 +1681,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // C++11
 
-#ifdef _GLIBCXX_DEBUG && _GLIBCXX_HOSTED
+#if defined _GLIBCXX_DEBUG && _GLIBCXX_HOSTED
 # include <debug/bitset>
 #endif
 

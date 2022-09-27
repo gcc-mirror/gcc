@@ -323,11 +323,7 @@ __gnat_ttyname (int filedes ATTRIBUTE_UNUSED)
   || defined (__QNX__)
 
 # ifdef __MINGW32__
-#  if OLD_MINGW
-#   include <termios.h>
-#  else
-#   include <conio.h>  /* for getch(), kbhit() */
-#  endif
+#  include <conio.h>  /* for getch(), kbhit() */
 # else
 #  include <termios.h>
 # endif

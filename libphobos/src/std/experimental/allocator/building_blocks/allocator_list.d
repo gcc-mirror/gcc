@@ -679,8 +679,8 @@ version (Posix) @system unittest
 {
     // Create an allocator based upon 4MB regions, fetched from the GC heap.
     import std.algorithm.comparison : max;
-    import std.experimental.allocator.building_blocks.region : Region;
-    AllocatorList!((n) => Region!()(new ubyte[max(n, 1024 * 4096)])) a;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
+    AllocatorList!((n) => BorrowedRegion!()(new ubyte[max(n, 1024 * 4096)])) a;
     auto b1 = a.alignedAllocate(1024 * 8192, 1024);
     assert(b1 !is null); // still works due to overdimensioning
     assert(b1.length == 1024 * 8192);
@@ -707,8 +707,8 @@ version (Posix) @system unittest
 
     // Create an allocator based upon 4MB regions, fetched from the GC heap.
     import std.algorithm.comparison : max;
-    import std.experimental.allocator.building_blocks.region : Region;
-    AllocatorList!((n) => Region!()(new ubyte[max(n, 1024 * 4096)])) a;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
+    AllocatorList!((n) => BorrowedRegion!()(new ubyte[max(n, 1024 * 4096)])) a;
     auto b1 = a.alignedAllocate(0, 1);
     assert(b1 is null);
 
@@ -728,8 +728,8 @@ version (Posix) @system unittest
 
     // Create an allocator based upon 4MB regions, fetched from the GC heap.
     import std.algorithm.comparison : max;
-    import std.experimental.allocator.building_blocks.region : Region;
-    AllocatorList!((n) => Region!()(new ubyte[max(n, 1024 * 4096)])) a;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
+    AllocatorList!((n) => BorrowedRegion!()(new ubyte[max(n, 1024 * 4096)])) a;
     auto b0 = a.alignedAllocate(1, 1024);
     assert(b0.length == 1);
     assert(b0.ptr.alignedAt(1024));
@@ -765,8 +765,8 @@ version (Posix) @system unittest
 {
     // Create an allocator based upon 4MB regions, fetched from the GC heap.
     import std.algorithm.comparison : max;
-    import std.experimental.allocator.building_blocks.region : Region;
-    AllocatorList!((n) => Region!()(new ubyte[max(n, 1024 * 4096)])) a;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
+    AllocatorList!((n) => BorrowedRegion!()(new ubyte[max(n, 1024 * 4096)])) a;
     auto b1 = a.allocate(1024 * 8192);
     assert(b1 !is null); // still works due to overdimensioning
     b1 = a.allocate(1024 * 10);
@@ -779,10 +779,10 @@ version (Posix) @system unittest
 @system unittest
 {
     import std.algorithm.comparison : max;
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
     import std.experimental.allocator.mallocator : Mallocator;
     import std.typecons : Ternary;
-    AllocatorList!((n) => Region!()(new ubyte[max(n, 1024 * 4096)]), Mallocator) a;
+    AllocatorList!((n) => BorrowedRegion!()(new ubyte[max(n, 1024 * 4096)]), Mallocator) a;
     auto b1 = a.allocate(1024 * 8192);
     assert(b1 !is null);
     b1 = a.allocate(1024 * 10);

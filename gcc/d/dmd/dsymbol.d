@@ -1544,6 +1544,12 @@ public:
 
                         if (flags & IgnoreAmbiguous) // if return NULL on ambiguity
                             return null;
+
+                        /* If two imports from C import files, pick first one, as C has global name space
+                         */
+                        if (s.isCsymbol() && s2.isCsymbol())
+                            continue;
+
                         if (!(flags & IgnoreErrors))
                             ScopeDsymbol.multiplyDefined(loc, s, s2);
                         break;

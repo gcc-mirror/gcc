@@ -15,7 +15,7 @@ module __builtins;
 /* gcc relies on internal __builtin_xxxx functions and templates to
  * accomplish <stdarg.h>. D does the same thing with templates in core.stdc.stdarg.
  * Here, we redirect the gcc builtin declarations to the equivalent
- * ones in core.stdc.stdarg, thereby avoiding having to hardware them
+ * ones in core.stdc.stdarg, thereby avoiding having to hardwire them
  * into the D compiler.
  */
 

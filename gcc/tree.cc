@@ -9461,6 +9461,7 @@ build_common_tree_nodes (bool signed_char)
       layout_type (FLOATN_NX_TYPE_NODE (i));
       SET_TYPE_MODE (FLOATN_NX_TYPE_NODE (i), mode);
     }
+  float128t_type_node = float128_type_node;
 
   float_ptr_type_node = build_pointer_type (float_type_node);
   double_ptr_type_node = build_pointer_type (double_type_node);

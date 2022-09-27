@@ -1,3 +1,69 @@
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	* trans-expr.cc (gfc_conv_procedure_call): Allow strictly
+	matching derived types.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/99169
+	* trans-expr.cc (gfc_conv_procedure_call): Remove conditions
+	on ALLOCATABLE and POINTER attributes guarding clobber
+	generation.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/87401
+	* trans-expr.cc (gfc_conv_procedure_call): Remove condition
+	disabling clobber generation for ASSOCIATE variables.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/87395
+	* trans-expr.cc (gfc_conv_procedure_call): Remove condition
+	on SAVE attribute guarding clobber generation.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/41453
+	PR fortran/87395
+	* trans-expr.cc (gfc_conv_procedure_call): Remove condition
+	disabling clobber generation for dummy variables.  Remove
+	obsolete comment.
+
+2022-09-25  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* trans-expr.cc (gfc_conv_procedure_call): Use dummy
+	information from associated_dummy if there is no information
+	from the procedure interface.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106817
+	* trans-expr.cc (gfc_conv_procedure_call): Collect all clobbers
+	to their own separate block.  Append the block of clobbers to
+	the procedure preliminary block after the argument evaluation
+	codes for all the arguments.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* trans-expr.cc (gfc_conv_procedure_call): Retrieve variable
+	from the just calculated variable reference.
+
+2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_conv_expr_reference): Remove add_clobber
+	argument.
+	* trans-expr.cc (gfc_conv_expr_reference): Ditto. Inline code
+	depending on add_clobber and conditions controlling it ...
+	(gfc_conv_procedure_call): ... to here.
+
 2022-09-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100103

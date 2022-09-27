@@ -4302,6 +4302,10 @@ tree_strip_any_location_wrapper (tree exp)
 #define float64x_type_node		global_trees[TI_FLOAT64X_TYPE]
 #define float128x_type_node		global_trees[TI_FLOAT128X_TYPE]
 
+/* Type used by certain backends for __float128, which in C++ should be
+   distinct type from _Float128 for backwards compatibility reasons.  */
+#define float128t_type_node		global_trees[TI_FLOAT128T_TYPE]
+
 #define float_ptr_type_node		global_trees[TI_FLOAT_PTR_TYPE]
 #define double_ptr_type_node		global_trees[TI_DOUBLE_PTR_TYPE]
 #define long_double_ptr_type_node	global_trees[TI_LONG_DOUBLE_PTR_TYPE]

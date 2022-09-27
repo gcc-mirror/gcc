@@ -78,6 +78,7 @@ public:
     unsigned dim;       // length of array being initialized
     Type *type;         // type that array will be used to initialize
     bool sem;           // true if semantic() is run
+    bool isCarray;      // C array semantics
 
     bool isAssociativeArray() const;
     Expression *toAssocArrayLiteral();

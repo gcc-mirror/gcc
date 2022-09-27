@@ -1227,29 +1227,30 @@ void
 dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
 {
   edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
-
   if (!pred_e)
     return;
 
   gimple *stmt = last_stmt (pred_e->src);
-  tree name;
-  if (stmt
-      && gimple_code (stmt) == GIMPLE_COND
-      && (name = gimple_cond_lhs (stmt))
-      && TREE_CODE (name) == SSA_NAME
-      && assert_unreachable_fallthru_edge_p (pred_e)
-      && all_uses_feed_or_dominated_by_stmt (name, stmt))
-    {
-      Value_Range r (TREE_TYPE (name));
+  if (!stmt
+      || gimple_code (stmt) != GIMPLE_COND
+      || !assert_unreachable_fallthru_edge_p (pred_e))
+    return;
 
-      if (m_ranger->range_on_edge (r, pred_e, name)
-	  && !r.varying_p ()
-	  && !r.undefined_p ())
-	{
-	  set_range_info (name, r);
-	  maybe_set_nonzero_bits (pred_e, name);
-	}
-    }
+  tree name;
+  gori_compute &gori = m_ranger->gori ();
+  FOR_EACH_GORI_EXPORT_NAME (gori, pred_e->src, name)
+    if (all_uses_feed_or_dominated_by_stmt (name, stmt))
+      {
+	Value_Range r (TREE_TYPE (name));
+
+	if (m_ranger->range_on_edge (r, pred_e, name)
+	    && !r.varying_p ()
+	    && !r.undefined_p ())
+	  {
+	    set_range_info (name, r);
+	    maybe_set_nonzero_bits (pred_e, name);
+	  }
+      }
 }
 
 /* Record any equivalences created by the incoming edge to BB into

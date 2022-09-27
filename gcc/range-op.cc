@@ -2951,6 +2951,15 @@ operator_bitwise_and::op1_range (irange &r, tree type,
     }
   if (r.undefined_p ())
     set_nonzero_range_from_mask (r, type, lhs);
+
+  // For 0 = op1 & MASK, op1 is ~MASK.
+  if (lhs.zero_p () && op2.singleton_p ())
+    {
+      wide_int nz = wi::bit_not (op2.get_nonzero_bits ());
+      int_range<2> tmp (type);
+      tmp.set_nonzero_bits (nz);
+      r.intersect (tmp);
+    }
   return true;
 }
 
@@ -4611,6 +4620,15 @@ range_op_bitwise_and_tests ()
   i1 = int_range<1> (integer_type_node);
   op_bitwise_and.op1_range (res, integer_type_node, i1, i2);
   ASSERT_TRUE (res == int_range<1> (integer_type_node));
+
+  // For 0 = x & MASK, x is ~MASK.
+  {
+    int_range<2> zero (integer_zero_node, integer_zero_node);
+    int_range<2> mask = int_range<2> (INT (7), INT (7));
+    op_bitwise_and.op1_range (res, integer_type_node, zero, mask);
+    wide_int inv = wi::shwi (~7U, TYPE_PRECISION (integer_type_node));
+    ASSERT_TRUE (res.get_nonzero_bits () == inv);
+  }
 
   // (NONZERO | X) is nonzero.
   i1.set_nonzero (integer_type_node);

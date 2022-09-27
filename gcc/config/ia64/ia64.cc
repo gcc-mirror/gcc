@@ -10466,11 +10466,19 @@ ia64_init_builtins (void)
 	= build_pointer_type (build_qualified_type
 			      (char_type_node, TYPE_QUAL_CONST));
 
-      (*lang_hooks.types.register_builtin_type) (float128_type_node,
+      if (float128t_type_node == NULL_TREE)
+	{
+	  float128t_type_node = make_node (REAL_TYPE);
+	  TYPE_PRECISION (float128t_type_node)
+	    = TYPE_PRECISION (float128_type_node);
+	  layout_type (float128t_type_node);
+	  SET_TYPE_MODE (float128t_type_node, TYPE_MODE (float128_type_node));
+	}
+      (*lang_hooks.types.register_builtin_type) (float128t_type_node,
 						 "__float128");
 
       /* TFmode support builtins.  */
-      ftype = build_function_type_list (float128_type_node, NULL_TREE);
+      ftype = build_function_type_list (float128t_type_node, NULL_TREE);
       decl = add_builtin_function ("__builtin_infq", ftype,
 				   IA64_BUILTIN_INFQ, BUILT_IN_MD,
 				   NULL, NULL_TREE);
@@ -10481,7 +10489,7 @@ ia64_init_builtins (void)
 				   NULL, NULL_TREE);
       ia64_builtins[IA64_BUILTIN_HUGE_VALQ] = decl;
 
-      ftype = build_function_type_list (float128_type_node,
+      ftype = build_function_type_list (float128t_type_node,
 					const_string_type,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_nanq", ftype,
@@ -10496,8 +10504,8 @@ ia64_init_builtins (void)
       TREE_READONLY (decl) = 1;
       ia64_builtins[IA64_BUILTIN_NANSQ] = decl;
 
-      ftype = build_function_type_list (float128_type_node,
-					float128_type_node,
+      ftype = build_function_type_list (float128t_type_node,
+					float128t_type_node,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_fabsq", ftype,
 				   IA64_BUILTIN_FABSQ, BUILT_IN_MD,
@@ -10505,9 +10513,9 @@ ia64_init_builtins (void)
       TREE_READONLY (decl) = 1;
       ia64_builtins[IA64_BUILTIN_FABSQ] = decl;
 
-      ftype = build_function_type_list (float128_type_node,
-					float128_type_node,
-					float128_type_node,
+      ftype = build_function_type_list (float128t_type_node,
+					float128t_type_node,
+					float128t_type_node,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_copysignq", ftype,
 				   IA64_BUILTIN_COPYSIGNQ, BUILT_IN_MD,

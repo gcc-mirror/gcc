@@ -567,17 +567,22 @@ ubyte codeLength(C)(dchar c)
 
 /***********************************
 Checks to see if string is well formed or not. $(D S) can be an array
- of $(D char), $(D wchar), or $(D dchar). Throws a $(D UtfException)
- if it is not. Use to check all untrusted input for correctness.
+ of $(D char), $(D wchar), or $(D dchar). Returns $(D false) if it is not.
+ Use to check all untrusted input for correctness.
  */
-@safe pure
-void validate(S)(const scope S s)
+@safe pure nothrow
+bool isValidString(S)(const scope S s)
 {
     auto len = s.length;
     for (size_t i = 0; i < len; )
     {
-        decode(s, i);
+        try
+            decode(s, i);
+        catch (Exception e)
+            return false;
     }
+
+    return true;
 }
 
 /* =================== Conversion to UTF8 ======================= */
@@ -626,7 +631,7 @@ char[] toUTF8(return scope char[] buf, dchar c)
 string toUTF8(return scope string s)
     in
     {
-        validate(s);
+        assert(isValidString(s));
     }
     do
     {
@@ -787,7 +792,7 @@ wptr toUTF16z(const scope char[] s)
 wstring toUTF16(return scope wstring s)
     in
     {
-        validate(s);
+        assert(isValidString(s));
     }
     do
     {
@@ -867,7 +872,7 @@ dstring toUTF32(const scope wchar[] s)
 dstring toUTF32(return scope dstring s)
     in
     {
-        validate(s);
+        assert(isValidString(s));
     }
     do
     {

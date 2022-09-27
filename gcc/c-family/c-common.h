@@ -1286,6 +1286,7 @@ struct c_omp_directive {
   bool simd;
 };
 
+extern const struct c_omp_directive c_omp_directives[];
 extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
 								 const char *,
 								 const char *);

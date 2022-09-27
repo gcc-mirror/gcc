@@ -223,7 +223,9 @@ template <typename _Tp, unsigned _Idx = 0>
 
 // See C++14 20.10.6, type relations
 template <typename _Tp, typename _Up>
-  constexpr bool is_same_v = is_same<_Tp, _Up>::value;
+  constexpr bool is_same_v = false;
+template <typename _Tp>
+  constexpr bool is_same_v<_Tp, _Tp> = true;
 template <typename _Base, typename _Derived>
   constexpr bool is_base_of_v = is_base_of<_Base, _Derived>::value;
 template <typename _From, typename _To>
@@ -266,22 +268,20 @@ struct nonesuch : private __nonesuchbase
 };
 #pragma GCC diagnostic pop
 
-template<template<typename...> class _Op, typename... _Args>
-  using is_detected
-    = typename std::__detector<nonesuch, void, _Op, _Args...>::value_t;
-
-template<template<typename...> class _Op, typename... _Args>
-  constexpr bool is_detected_v = is_detected<_Op, _Args...>::value;
-
-template<template<typename...> class _Op, typename... _Args>
-  using detected_t
-    = typename std::__detector<nonesuch, void, _Op, _Args...>::type;
-
 template<typename _Default, template<typename...> class _Op, typename... _Args>
   using detected_or = std::__detected_or<_Default, _Op, _Args...>;
 
 template<typename _Default, template<typename...> class _Op, typename... _Args>
   using detected_or_t = typename detected_or<_Default, _Op, _Args...>::type;
+
+template<template<typename...> class _Op, typename... _Args>
+  using detected_t = detected_or_t<nonesuch, _Op, _Args...>;
+
+template<template<typename...> class _Op, typename... _Args>
+  using is_detected = typename detected_or<void, _Op, _Args...>::__is_detected;
+
+template<template<typename...> class _Op, typename... _Args>
+  constexpr bool is_detected_v = is_detected<_Op, _Args...>::value;
 
 template<typename _Expected, template<typename...> class _Op, typename... _Args>
   using is_detected_exact = is_same<_Expected, detected_t<_Op, _Args...>>;

@@ -1409,9 +1409,18 @@ ix86_init_builtin_types (void)
   lang_hooks.types.register_builtin_type (float80_type_node, "__float80");
 
   /* The __float128 type.  The node has already been created as
-     _Float128, so we only need to register the __float128 name for
-     it.  */
-  lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
+     _Float128, so for C we only need to register the __float128 name for
+     it.  For C++, we create a distinct type which will mangle differently
+     (g) vs. _Float128 (DF128_) and behave backwards compatibly.  */
+  if (float128t_type_node == NULL_TREE)
+    {
+      float128t_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (float128t_type_node)
+	= TYPE_PRECISION (float128_type_node);
+      SET_TYPE_MODE (float128t_type_node, TYPE_MODE (float128_type_node));
+      layout_type (float128t_type_node);
+    }
+  lang_hooks.types.register_builtin_type (float128t_type_node, "__float128");
 
   ix86_register_float16_builtin_type ();
 

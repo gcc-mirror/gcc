@@ -42,17 +42,13 @@
 #include "adaint.h"
 #include <sys/types.h>
 
-#ifdef __MINGW32__
-# if OLD_MINGW
-#  include <sys/wait.h>
-# endif
-#elif defined (__vxworks) && defined (__RTP__)
+#if defined (__vxworks) && defined (__RTP__)
 # include <wait.h>
 #elif defined (__Lynx__)
   /* ??? See comment in adaint.c.  */
 # define GCC_RESOURCE_H
 # include <sys/wait.h>
-#elif defined (__PikeOS__)
+#elif defined (__PikeOS__) || defined (__MINGW32__)
   /* No wait.h available */
 #else
 #include <sys/wait.h>

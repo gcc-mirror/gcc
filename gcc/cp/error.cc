@@ -1692,7 +1692,13 @@ dump_lambda_function (cxx_pretty_printer *pp,
 {
   /* A lambda's signature is essentially its "type".  */
   dump_type (pp, DECL_CONTEXT (fn), flags);
-  if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn))) & TYPE_QUAL_CONST))
+  if (TREE_CODE (TREE_TYPE (fn)) == FUNCTION_TYPE)
+    {
+      pp->padding = pp_before;
+      pp_c_ws_string (pp, "static");
+    }
+  else if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn)))
+	     & TYPE_QUAL_CONST))
     {
       pp->padding = pp_before;
       pp_c_ws_string (pp, "mutable");

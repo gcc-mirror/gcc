@@ -631,7 +631,7 @@ enum real BETA_BIGINV = 1.084202172485504434007e-19L;
  * betaIncomplete(a, b, x) = &Gamma;(a+b)/(&Gamma;(a) &Gamma;(b)) *
  * $(INTEGRATE 0, x) $(POWER t, a-1)$(POWER (1-t),b-1) dt
  *
- * and is the same as the the cumulative distribution function.
+ * and is the same as the cumulative distribution function.
  *
  * The domain of definition is 0 <= x <= 1.  In this
  * implementation a and b are restricted to positive values.

@@ -62,6 +62,7 @@ import dmd.opover;
 import dmd.optimize;
 import dmd.parse;
 import dmd.printast;
+import dmd.root.array;
 import dmd.root.ctfloat;
 import dmd.root.file;
 import dmd.root.filename;
@@ -336,22 +337,18 @@ Expression resolveOpDollar(Scope* sc, ArrayExp ae, IntervalExp ie, Expression* p
 /******************************
  * Perform semantic() on an array of Expressions.
  */
-bool arrayExpressionSemantic(Expressions* exps, Scope* sc, bool preserveErrors = false)
+extern(D) bool arrayExpressionSemantic(
+    Expression[] exps, Scope* sc, bool preserveErrors = false)
 {
     bool err = false;
-    if (exps)
+    foreach (ref e; exps)
     {
-        foreach (ref e; *exps)
-        {
-            if (e)
-            {
-                auto e2 = e.expressionSemantic(sc);
-                if (e2.op == EXP.error)
-                    err = true;
-                if (preserveErrors || e2.op != EXP.error)
-                    e = e2;
-            }
-        }
+        if (e is null) continue;
+        auto e2 = e.expressionSemantic(sc);
+        if (e2.op == EXP.error)
+            err = true;
+        if (preserveErrors || e2.op != EXP.error)
+            e = e2;
     }
     return err;
 }
@@ -443,7 +440,7 @@ private Expression searchUFCS(Scope* sc, UnaExp ue, Identifier ident)
     }
 
     if (!s)
-        return ue.e1.type.getProperty(sc, loc, ident, 0);
+        return ue.e1.type.getProperty(sc, loc, ident, 0, ue.e1);
 
     FuncDeclaration f = s.isFuncDeclaration();
     if (f)
@@ -550,7 +547,7 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
                     if (!global.endGagging(errors))
                         return e;
 
-                    if (arrayExpressionSemantic(originalArguments, sc))
+                    if (arrayExpressionSemantic(originalArguments.peekSlice(), sc))
                         return ErrorExp.get();
 
                     /* fall down to UFCS */
@@ -3111,7 +3108,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         if (e.basis)
             e.basis = e.basis.expressionSemantic(sc);
-        if (arrayExpressionSemantic(e.elements, sc) || (e.basis && e.basis.op == EXP.error))
+        if (arrayExpressionSemantic(e.elements.peekSlice(), sc) || (e.basis && e.basis.op == EXP.error))
             return setError();
 
         expandTuples(e.elements);
@@ -3154,8 +3151,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
 
         // Run semantic() on each element
-        bool err_keys = arrayExpressionSemantic(e.keys, sc);
-        bool err_vals = arrayExpressionSemantic(e.values, sc);
+        bool err_keys = arrayExpressionSemantic(e.keys.peekSlice(), sc);
+        bool err_vals = arrayExpressionSemantic(e.values.peekSlice(), sc);
         if (err_keys || err_vals)
             return setError();
 
@@ -3201,7 +3198,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
 
         // run semantic() on each element
-        if (arrayExpressionSemantic(e.elements, sc))
+        if (arrayExpressionSemantic(e.elements.peekSlice(), sc))
             return setError();
 
         expandTuples(e.elements);
@@ -3213,7 +3210,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         /* Fill out remainder of elements[] with default initializers for fields[]
          */
-        if (!e.sd.fill(e.loc, e.elements, false))
+        if (!e.sd.fill(e.loc, *e.elements, false))
         {
             /* An error in the initializer needs to be recorded as an error
              * in the enclosing function or template, since the initializer
@@ -3524,7 +3521,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         exp.newtype = exp.type; // in case type gets cast to something else
         Type tb = exp.type.toBasetype();
         //printf("tb: %s, deco = %s\n", tb.toChars(), tb.deco);
-        if (arrayExpressionSemantic(exp.arguments, sc))
+        if (arrayExpressionSemantic(exp.arguments.peekSlice(), sc))
         {
             return setError();
         }
@@ -3672,7 +3669,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 }
             }
 
-            if (cd.disableNew)
+            if (cd.disableNew && !exp.onstack)
             {
                 exp.error("cannot allocate `class %s` with `new` because it is annotated with `@disable new()`",
                           originalNewtype.toChars());
@@ -3807,7 +3804,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 if (!sd.fit(exp.loc, sc, exp.arguments, tb))
                     return setError();
 
-                if (!sd.fill(exp.loc, exp.arguments, false))
+                if (!sd.fill(exp.loc, *exp.arguments, false))
                     return setError();
 
                 if (checkFrameAccess(exp.loc, sc, sd, exp.arguments ? exp.arguments.dim : 0))
@@ -4259,7 +4256,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         if (FuncExp fe = exp.e1.isFuncExp())
         {
-            if (arrayExpressionSemantic(exp.arguments, sc) || preFunctionParameters(sc, exp.arguments))
+            if (arrayExpressionSemantic(exp.arguments.peekSlice(), sc) ||
+                preFunctionParameters(sc, exp.arguments))
                 return setError();
 
             // Run e1 semantic even if arguments have any errors
@@ -4497,7 +4495,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             result = exp.e1;
             return;
         }
-        if (arrayExpressionSemantic(exp.arguments, sc) || preFunctionParameters(sc, exp.arguments))
+        if (arrayExpressionSemantic(exp.arguments.peekSlice(), sc) ||
+            preFunctionParameters(sc, exp.arguments))
             return setError();
 
         // Check for call operator overload
@@ -4543,7 +4542,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         goto Lx;
 
                     auto sle = new StructLiteralExp(exp.loc, sd, null, exp.e1.type);
-                    if (!sd.fill(exp.loc, sle.elements, true))
+                    if (!sd.fill(exp.loc, *sle.elements, true))
                         return setError();
                     if (checkFrameAccess(exp.loc, sc, sd, sle.elements.dim))
                         return setError();
@@ -4614,7 +4613,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             {
                 Expression e;
 
-                // Make sure to use the the enum type itself rather than its
+                // Make sure to use the enum type itself rather than its
                 // base type
                 // https://issues.dlang.org/show_bug.cgi?id=16346
                 if (exp.e1.type.ty == Tenum)
@@ -8661,7 +8660,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (sd.isNested())
         {
             auto sle = new StructLiteralExp(loc, sd, null, t);
-            if (!sd.fill(loc, sle.elements, true))
+            if (!sd.fill(loc, *sle.elements, true))
                 return ErrorExp.get();
             if (checkFrameAccess(loc, sc, sd, sle.elements.dim))
                 return ErrorExp.get();
@@ -9991,15 +9990,15 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
     }
 
     /***************************************
-     * Lower AssignExp to `_d_arrayassign_{l,r}` if needed.
+     * Lower AssignExp to `_d_array{setassign,assign_l,assign_r}` if needed.
      *
      * Params:
      *      ae = the AssignExp to be lowered
      *      fromCommaExp = indicates whether `ae` is part of a CommaExp or not,
      *                     so no unnecessary temporay variable is created.
      * Returns:
-     *      a CommaExp contiaining call a to `_d_arrayassign_{l,r}` if needed or
-     *      `ae` otherwise
+     *      a CommaExp contiaining call a to `_d_array{setassign,assign_l,assign_r}`
+     *      if needed or `ae` otherwise
      */
     private Expression lowerArrayAssign(AssignExp ae, bool fromCommaExp = false)
     {
@@ -10007,12 +10006,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (t1b.ty != Tsarray && t1b.ty != Tarray)
             return ae;
 
-        const isArrayAssign =
-            (ae.e1.isSliceExp || ae.e1.type.ty == Tsarray) &&
+        const isArrayAssign = (ae.e1.isSliceExp() || ae.e1.type.ty == Tsarray) &&
             (ae.e2.type.ty == Tsarray || ae.e2.type.ty == Tarray) &&
-            (ae.e1.type.nextOf && ae.e2.type.nextOf && ae.e1.type.nextOf.mutableOf.equals(ae.e2.type.nextOf.mutableOf));
+            (ae.e1.type.nextOf() && ae.e2.type.nextOf() && ae.e1.type.nextOf.mutableOf.equals(ae.e2.type.nextOf.mutableOf()));
 
-        if (!isArrayAssign)
+        const isArraySetAssign = (ae.e1.isSliceExp() || ae.e1.type.ty == Tsarray) &&
+            (ae.e1.type.nextOf() && ae.e2.type.implicitConvTo(ae.e1.type.nextOf()));
+
+        if (!isArrayAssign && !isArraySetAssign)
             return ae;
 
         const ts = t1b.nextOf().baseElemOf().isTypeStruct();
@@ -10020,9 +10021,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return ae;
 
         Expression res;
-        auto func = ae.e2.isLvalue || ae.e2.isSliceExp ? Id._d_arrayassign_l : Id._d_arrayassign_r;
+        Identifier func = isArraySetAssign ? Id._d_arraysetassign :
+            ae.e2.isLvalue() || ae.e2.isSliceExp() ? Id._d_arrayassign_l : Id._d_arrayassign_r;
 
-        // Lower to `.object._d_arrayassign_l{r}(e1, e2)``
+        // Lower to `.object._d_array{setassign,assign_l,assign_r}(e1, e2)``
         Expression id = new IdentifierExp(ae.loc, Id.empty);
         id = new DotIdExp(ae.loc, id, Id.object);
         id = new DotIdExp(ae.loc, id, func);
@@ -10032,10 +10034,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             .expressionSemantic(sc));
 
         Expression eValue2, value2 = ae.e2;
-        if (ae.e2.isLvalue)
-            value2 = new CastExp(ae.loc, ae.e2, ae.e2.type.nextOf.arrayOf)
+        if (isArrayAssign && value2.isLvalue())
+            value2 = new CastExp(ae.loc, ae.e2, ae.e2.type.nextOf.arrayOf())
                 .expressionSemantic(sc);
-        else if (!fromCommaExp)
+        else if (!fromCommaExp &&
+            (isArrayAssign || (isArraySetAssign && !value2.isLvalue())))
         {
             // Rvalues from CommaExps were introduced in `visit(AssignExp)`
             // and are temporary variables themselves. Rvalues from trivial
@@ -10044,7 +10047,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             // `__assigntmp` will be destroyed together with the array `ae.e1`.
             // When `ae.e2` is a variadic arg array, it is also `scope`, so
             // `__assigntmp` may also be scope.
-            auto vd = copyToTemp(STC.rvalue | STC.nodtor | STC.scope_, "__assigntmp", ae.e2);
+            StorageClass stc = STC.nodtor;
+            if (isArrayAssign)
+                stc |= STC.rvalue | STC.scope_;
+
+            auto vd = copyToTemp(stc, "__assigntmp", ae.e2);
             eValue2 = new DeclarationExp(vd.loc, vd).expressionSemantic(sc);
             value2 = new VarExp(vd.loc, vd).expressionSemantic(sc);
         }
@@ -10052,7 +10059,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         Expression ce = new CallExp(ae.loc, id, arguments);
         res = Expression.combine(eValue2, ce).expressionSemantic(sc);
-        res = Expression.combine(res, ae.e1).expressionSemantic(sc);
+        if (isArrayAssign)
+            res = Expression.combine(res, ae.e1).expressionSemantic(sc);
 
         if (global.params.verbose)
             message("lowered   %s =>\n          %s", ae.toChars(), res.toChars());

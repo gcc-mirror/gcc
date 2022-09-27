@@ -355,23 +355,22 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
      *      false if any errors occur.
      *      Otherwise, returns true and the missing arguments will be pushed in elements[].
      */
-    final bool fill(const ref Loc loc, Expressions* elements, bool ctorinit)
+    final bool fill(const ref Loc loc, ref Expressions elements, bool ctorinit)
     {
         //printf("AggregateDeclaration::fill() %s\n", toChars());
         assert(sizeok == Sizeok.done);
-        assert(elements);
         const nfields = nonHiddenFields();
         bool errors = false;
 
         size_t dim = elements.dim;
         elements.setDim(nfields);
         foreach (size_t i; dim .. nfields)
-            (*elements)[i] = null;
+            elements[i] = null;
 
         // Fill in missing any elements with default initializers
         foreach (i; 0 .. nfields)
         {
-            if ((*elements)[i])
+            if (elements[i])
                 continue;
 
             auto vd = fields[i];
@@ -389,7 +388,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                 if (!vd.isOverlappedWith(v2))
                     continue;
 
-                if ((*elements)[j])
+                if (elements[j])
                 {
                     vx = null;
                     break;
@@ -489,10 +488,10 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                     else
                         e = telem.defaultInitLiteral(loc);
                 }
-                (*elements)[fieldi] = e;
+                elements[fieldi] = e;
             }
         }
-        foreach (e; *elements)
+        foreach (e; elements)
         {
             if (e && e.op == EXP.error)
                 return false;

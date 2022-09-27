@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 09, 2022
+GNAT Reference Manual , Sep 23, 2022
 
 AdaCore
 
@@ -433,7 +433,7 @@ Implementation Defined Attributes
 * Attribute Universal_Literal_String:: 
 * Attribute Unrestricted_Access:: 
 * Attribute Update:: 
-* Attribute Valid_Image:: 
+* Attribute Valid_Value:: 
 * Attribute Valid_Scalars:: 
 * Attribute VADS_Size:: 
 * Attribute Value_Size:: 
@@ -10295,7 +10295,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Universal_Literal_String:: 
 * Attribute Unrestricted_Access:: 
 * Attribute Update:: 
-* Attribute Valid_Image:: 
+* Attribute Valid_Value:: 
 * Attribute Valid_Scalars:: 
 * Attribute VADS_Size:: 
 * Attribute Value_Size:: 
@@ -12040,7 +12040,7 @@ In general this is a risky approach. It may appear to “work” but such uses o
 @code{Unrestricted_Access} are potentially non-portable, even from one version
 of GNAT to another, so are best avoided if possible.
 
-@node Attribute Update,Attribute Valid_Image,Attribute Unrestricted_Access,Implementation Defined Attributes
+@node Attribute Update,Attribute Valid_Value,Attribute Unrestricted_Access,Implementation Defined Attributes
 @anchor{gnat_rm/implementation_defined_attributes attribute-update}@anchor{1ac}
 @section Attribute Update
 
@@ -12121,19 +12121,19 @@ A := A'Update ((1, 2) => 20, (3, 4) => 30);
 
 which changes element (1,2) to 20 and (3,4) to 30.
 
-@node Attribute Valid_Image,Attribute Valid_Scalars,Attribute Update,Implementation Defined Attributes
-@anchor{gnat_rm/implementation_defined_attributes attribute-valid-image}@anchor{1ad}
-@section Attribute Valid_Image
+@node Attribute Valid_Value,Attribute Valid_Scalars,Attribute Update,Implementation Defined Attributes
+@anchor{gnat_rm/implementation_defined_attributes attribute-valid-value}@anchor{1ad}
+@section Attribute Valid_Value
 
 
-@geindex Valid_Image
+@geindex Valid_Value
 
-The @code{'Valid_Image} attribute is defined for enumeration types other than
+The @code{'Valid_Value} attribute is defined for enumeration types other than
 those in package Standard. This attribute is a function that takes
-a String, and returns Boolean. @code{T'Valid_Image (S)} returns True
+a String, and returns Boolean. @code{T'Valid_Value (S)} returns True
 if and only if @code{T'Value (S)} would not raise Constraint_Error.
 
-@node Attribute Valid_Scalars,Attribute VADS_Size,Attribute Valid_Image,Implementation Defined Attributes
+@node Attribute Valid_Scalars,Attribute VADS_Size,Attribute Valid_Value,Implementation Defined Attributes
 @anchor{gnat_rm/implementation_defined_attributes attribute-valid-scalars}@anchor{1ae}
 @section Attribute Valid_Scalars
 

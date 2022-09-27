@@ -833,6 +833,23 @@ public:
                 printf("  parent = %s %s", s.parent.kind(), s.parent.toChars());
             printf("\n");
         }
+        if (s.parent && s.ident)
+        {
+            if (auto m = s.parent.isModule())
+            {
+                if (m.filetype == FileType.c)
+                {
+                    /* C types at global level get mangled into the __C global namespace
+                     * to get the same mangling regardless of which module it
+                     * is declared in. This works because types are the same if the mangling
+                     * is the same.
+                     */
+                    mangleIdentifier(Id.ImportC, s); // parent
+                    mangleIdentifier(s.ident, s);
+                    return;
+                }
+            }
+        }
         mangleParent(s);
         if (s.ident)
             mangleIdentifier(s.ident, s);

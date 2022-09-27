@@ -483,7 +483,7 @@ else version (CRuntime_UClibc)
 
         alias fexcept_t = ushort;
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         struct fenv_t
         {

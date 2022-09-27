@@ -237,9 +237,6 @@ int counter = 0;
 #define CST(name,comment) C(#name,String,name,comment)
 /* String constant */
 
-#define STR(x) STR1(x)
-#define STR1(x) #x
-
 #ifdef __MINGW32__
 unsigned int _CRT_fmode = _O_BINARY;
 #endif

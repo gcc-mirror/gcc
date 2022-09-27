@@ -250,7 +250,7 @@ public:
 
     static IntegerExp *create(const Loc &loc, dinteger_t value, Type *type);
     static void emplace(UnionExp *pue, const Loc &loc, dinteger_t value, Type *type);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     dinteger_t toInteger() override;
     real_t toReal() override;
     real_t toImaginary() override;
@@ -280,7 +280,7 @@ public:
 
     static RealExp *create(const Loc &loc, real_t value, Type *type);
     static void emplace(UnionExp *pue, const Loc &loc, real_t value, Type *type);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     dinteger_t toInteger() override;
     uinteger_t toUInteger() override;
     real_t toReal() override;
@@ -297,7 +297,7 @@ public:
 
     static ComplexExp *create(const Loc &loc, complex_t value, Type *type);
     static void emplace(UnionExp *pue, const Loc &loc, complex_t value, Type *type);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     dinteger_t toInteger() override;
     uinteger_t toUInteger() override;
     real_t toReal() override;
@@ -358,7 +358,7 @@ public:
 class NullExp final : public Expression
 {
 public:
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     Optional<bool> toBool() override;
     StringExp *toStringExp() override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -377,7 +377,7 @@ public:
     static StringExp *create(const Loc &loc, const char *s);
     static StringExp *create(const Loc &loc, const void *s, d_size_t len);
     static void emplace(UnionExp *pue, const Loc &loc, const char *s);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     char32_t getCodeUnit(d_size_t i) const;
     void setCodeUnit(d_size_t i, char32_t c);
     StringExp *toStringExp() override;
@@ -408,7 +408,7 @@ public:
 
     static TupleExp *create(const Loc &loc, Expressions *exps);
     TupleExp *syntaxCopy() override;
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -423,7 +423,7 @@ public:
     static ArrayLiteralExp *create(const Loc &loc, Expressions *elements);
     static void emplace(UnionExp *pue, const Loc &loc, Expressions *elements);
     ArrayLiteralExp *syntaxCopy() override;
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     Expression *getElement(d_size_t i); // use opIndex instead
     Expression *opIndex(d_size_t i);
     Optional<bool> toBool() override;
@@ -439,7 +439,7 @@ public:
     Expressions *values;
     OwnedBy ownedByCtfe;
 
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     AssocArrayLiteralExp *syntaxCopy() override;
     Optional<bool> toBool() override;
 
@@ -477,7 +477,7 @@ public:
     OwnedBy ownedByCtfe;
 
     static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = NULL);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
     Expression *getField(Type *type, unsigned offset);
     int getFieldIndex(Type *type, unsigned offset);
@@ -583,7 +583,7 @@ class VarExp final : public SymbolExp
 public:
     bool delegateWasExtracted;
     static VarExp *create(const Loc &loc, Declaration *var, bool hasOverloads = true);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     bool isLvalue() override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
     Expression *modifiableLvalue(Scope *sc, Expression *e) override;
@@ -612,7 +612,7 @@ public:
     TemplateDeclaration *td;
     TOK tok;
 
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     FuncExp *syntaxCopy() override;
     const char *toChars() const override;
     bool checkType() override;

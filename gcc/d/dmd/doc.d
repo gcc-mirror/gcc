@@ -3294,7 +3294,7 @@ private struct MarkdownLink
      * Params:
      *  buf   = an OutBuffer containing the DDoc
      *  i     = the index within `buf` that points to the first character of the URL.
-     *          If this function succeeds `i` will point just after the the end of the URL.
+     *          If this function succeeds `i` will point just after the end of the URL.
      * Returns: whether a URL was found and parsed
      */
     private bool parseHref(ref OutBuffer buf, ref size_t i)
@@ -3362,7 +3362,7 @@ private struct MarkdownLink
      * Params:
      *  buf   = an OutBuffer containing the DDoc
      *  i     = the index within `buf` that points to the first character of the title.
-     *          If this function succeeds `i` will point just after the the end of the title.
+     *          If this function succeeds `i` will point just after the end of the title.
      * Returns: whether a title was found and parsed
      */
     private bool parseTitle(ref OutBuffer buf, ref size_t i)

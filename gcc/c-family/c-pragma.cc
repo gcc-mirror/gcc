@@ -1546,14 +1546,16 @@ static const struct omp_pragma_def oacc_pragmas[] = {
 };
 static const struct omp_pragma_def omp_pragmas[] = {
   { "allocate", PRAGMA_OMP_ALLOCATE },
+  { "assumes", PRAGMA_OMP_ASSUMES },
   { "atomic", PRAGMA_OMP_ATOMIC },
   { "barrier", PRAGMA_OMP_BARRIER },
+  { "begin", PRAGMA_OMP_BEGIN },
   { "cancel", PRAGMA_OMP_CANCEL },
   { "cancellation", PRAGMA_OMP_CANCELLATION_POINT },
   { "critical", PRAGMA_OMP_CRITICAL },
   { "depobj", PRAGMA_OMP_DEPOBJ },
   { "error", PRAGMA_OMP_ERROR },
-  { "end", PRAGMA_OMP_END_DECLARE_TARGET },
+  { "end", PRAGMA_OMP_END },
   { "flush", PRAGMA_OMP_FLUSH },
   { "nothing", PRAGMA_OMP_NOTHING },
   { "requires", PRAGMA_OMP_REQUIRES },
@@ -1568,6 +1570,7 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "threadprivate", PRAGMA_OMP_THREADPRIVATE }
 };
 static const struct omp_pragma_def omp_pragmas_simd[] = {
+  { "assume", PRAGMA_OMP_ASSUME },
   { "declare", PRAGMA_OMP_DECLARE },
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
