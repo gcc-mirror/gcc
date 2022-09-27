@@ -2933,7 +2933,6 @@ static const token_t c_keywords[] =
    NAME ("noinline", NULL),
    NAME ("nonnull", NULL),
    NAME ("noreturn", NULL),
-   NAME ("nothrow", NULL),
    NAME ("offsetof", NULL),
    NAME ("readonly", "read-only"),
    NAME ("readwrite", "read-write"),
