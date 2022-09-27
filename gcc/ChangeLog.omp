@@ -1,3 +1,11 @@
+2022-09-27  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (math_unop_insn): New attribute.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>, <math_unop><mode>2,
+	<math_unop><mode>2<exec>, *<math_unop><mode>2_insn,
+	*<math_unop><mode>2<exec>_insn): Use math_unop_insn to generate
+	assembler output.
+
 2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
