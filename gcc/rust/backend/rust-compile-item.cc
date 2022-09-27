@@ -134,11 +134,18 @@ CompileItem::visit (HIR::Function &function)
 	}
     }
 
+  const Resolver::CanonicalPath *canonical_path = nullptr;
+  bool ok = ctx->get_mappings ()->lookup_canonical_path (
+    function.get_mappings ().get_nodeid (), &canonical_path);
+  rust_assert (ok);
+
+  const std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
+
   // items can be forward compiled which means we may not need to invoke this
   // code. We might also have already compiled this generic function as well.
   tree lookup = NULL_TREE;
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
-				 fntype->get_id (), fntype))
+				 fntype->get_id (), fntype, asm_name))
     {
       // has this been added to the list then it must be finished
       if (ctx->function_completed (lookup))
@@ -159,11 +166,6 @@ CompileItem::visit (HIR::Function &function)
       // override the Hir Lookups for the substituions in this context
       fntype->override_context ();
     }
-
-  const Resolver::CanonicalPath *canonical_path = nullptr;
-  bool ok = ctx->get_mappings ()->lookup_canonical_path (
-    function.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
 
   if (function.get_qualifiers ().is_const ())
     ctx->push_const_context ();
