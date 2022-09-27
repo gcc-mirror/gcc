@@ -683,7 +683,23 @@ Dump::visit (Method &method)
 
 void
 Dump::visit (Module &module)
-{}
+{
+  indentation.increment ();
+
+  stream << indentation;
+  emit_visibility (module.get_visibility ());
+  stream << "mod" << module.get_name () << " {\n";
+
+  for (auto &item : module.get_items ())
+    {
+      stream << indentation;
+      item->accept_vis (*this);
+      stream << '\n';
+    }
+
+  indentation.decrement ();
+  stream << indentation << "}\n";
+}
 
 void
 Dump::visit (ExternCrate &crate)
