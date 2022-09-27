@@ -17,8 +17,10 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-base.h"
+#include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-implitem.h"
 #include "rust-coercion.h"
 #include "rust-casts.h"
 
@@ -37,6 +39,13 @@ TypeCheckBase::check_for_unconstrained (
   const TyTy::SubstitutionArgumentMappings &constraint_b,
   const TyTy::BaseType *reference)
 {
+  bool check_result = false;
+  bool check_completed
+    = context->have_checked_for_unconstrained (reference->get_ref (),
+					       &check_result);
+  if (check_completed)
+    return check_result;
+
   std::set<HirId> symbols_to_constrain;
   std::map<HirId, Location> symbol_to_location;
   for (const auto &p : params_to_constrain)
@@ -86,6 +95,10 @@ TypeCheckBase::check_for_unconstrained (
 	  unconstrained = true;
 	}
     }
+
+  context->insert_unconstrained_check_marker (reference->get_ref (),
+					      unconstrained);
+
   return unconstrained;
 }
 
@@ -477,6 +490,69 @@ TypeCheckBase::resolve_generic_params (
 	  break;
 	}
     }
+}
+
+bool
+TypeCheckBase::query_type (HirId reference, TyTy::BaseType **result)
+{
+  if (context->lookup_type (reference, result))
+    return true;
+
+  HIR::Item *item = mappings->lookup_hir_item (reference);
+  if (item != nullptr)
+    {
+      rust_debug_loc (item->get_locus (), "resolved item {%u} to", reference);
+      *result = TypeCheckItem::Resolve (*item);
+      return true;
+    }
+
+  HirId parent_impl_id = UNKNOWN_HIRID;
+  HIR::ImplItem *impl_item
+    = mappings->lookup_hir_implitem (reference, &parent_impl_id);
+  if (impl_item != nullptr)
+    {
+      HIR::ImplBlock *impl_block
+	= mappings->lookup_hir_impl_block (parent_impl_id);
+      rust_assert (impl_block != nullptr);
+
+      // found an impl item
+      rust_debug_loc (impl_item->get_locus (), "resolved impl-item {%u} to",
+		      reference);
+
+      *result = TypeCheckItem::ResolveImplItem (*impl_block, *impl_item);
+      return true;
+    }
+
+  // is it an impl_type?
+  HIR::ImplBlock *impl_block_by_type = nullptr;
+  bool found_impl_block_type
+    = mappings->lookup_impl_block_type (reference, &impl_block_by_type);
+  if (found_impl_block_type)
+    {
+      *result = TypeCheckItem::ResolveImplBlockSelf (*impl_block_by_type);
+      return true;
+    }
+
+  // is it an extern item?
+  HirId parent_extern_block_id = UNKNOWN_HIRID;
+  HIR::ExternalItem *extern_item
+    = mappings->lookup_hir_extern_item (reference, &parent_extern_block_id);
+  if (extern_item != nullptr)
+    {
+      HIR::ExternBlock *block
+	= mappings->lookup_hir_extern_block (parent_extern_block_id);
+      rust_assert (block != nullptr);
+
+      *result = TypeCheckTopLevelExternItem::Resolve (extern_item, *block);
+      return true;
+    }
+
+  // more?
+  Location possible_locus = mappings->lookup_location (reference);
+  rust_debug_loc (possible_locus, "query system failed to resolve: [%u]",
+		  reference);
+
+  return false;
 }
 
 } // namespace Resolver

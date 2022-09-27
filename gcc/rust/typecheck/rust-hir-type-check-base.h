@@ -69,6 +69,8 @@ protected:
     const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
     std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 
+  bool query_type (HirId reference, TyTy::BaseType **result);
+
   Analysis::Mappings *mappings;
   Resolver *resolver;
   TypeCheckContext *context;

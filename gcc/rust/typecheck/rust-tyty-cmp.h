@@ -1358,6 +1358,8 @@ public:
   // generic arguments
   void visit (const ParamType &) override { ok = true; }
 
+  void visit (const TupleType &) override { ok = true; }
+
   void visit (const InferType &) override { ok = true; }
 
   void visit (const FnType &) override { ok = true; }

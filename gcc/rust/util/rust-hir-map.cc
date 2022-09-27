@@ -419,7 +419,9 @@ Mappings::insert_hir_impl_block (HIR::ImplBlock *item)
   auto id = item->get_mappings ().get_hirid ();
   rust_assert (lookup_hir_impl_block (id) == nullptr);
 
+  HirId impl_type_id = item->get_type ()->get_mappings ().get_hirid ();
   hirImplBlockMappings[id] = item;
+  hirImplBlockTypeMappings[impl_type_id] = item;
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
@@ -431,6 +433,17 @@ Mappings::lookup_hir_impl_block (HirId id)
     return nullptr;
 
   return it->second;
+}
+
+bool
+Mappings::lookup_impl_block_type (HirId id, HIR::ImplBlock **impl_block)
+{
+  auto it = hirImplBlockTypeMappings.find (id);
+  if (it == hirImplBlockTypeMappings.end ())
+    return false;
+
+  *impl_block = it->second;
+  return true;
 }
 
 void

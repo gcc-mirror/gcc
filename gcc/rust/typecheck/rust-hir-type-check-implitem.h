@@ -28,7 +28,8 @@ class TypeCheckTopLevelExternItem : public TypeCheckBase,
 				    public HIR::HIRExternalItemVisitor
 {
 public:
-  static void Resolve (HIR::ExternalItem *item, const HIR::ExternBlock &parent);
+  static TyTy::BaseType *Resolve (HIR::ExternalItem *item,
+				  const HIR::ExternBlock &parent);
 
   void visit (HIR::ExternalStaticItem &item) override;
   void visit (HIR::ExternalFunctionItem &function) override;
@@ -37,47 +38,33 @@ private:
   TypeCheckTopLevelExternItem (const HIR::ExternBlock &parent);
 
   const HIR::ExternBlock &parent;
-};
-
-class TypeCheckTopLevelImplItem : public TypeCheckBase,
-				  public HIR::HIRImplVisitor
-{
-public:
-  static void
-  Resolve (HIR::ImplItem *item, TyTy::BaseType *self,
-	   std::vector<TyTy::SubstitutionParamMapping> substitutions);
-
-  void visit (HIR::TypeAlias &alias) override;
-  void visit (HIR::ConstantItem &constant) override;
-  void visit (HIR::Function &function) override;
-
-private:
-  TypeCheckTopLevelImplItem (
-    TyTy::BaseType *self,
-    std::vector<TyTy::SubstitutionParamMapping> substitutions);
-
-  TyTy::BaseType *self;
-  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  TyTy::BaseType *resolved;
 };
 
 class TypeCheckImplItem : public TypeCheckBase, public HIR::HIRImplVisitor
 {
 public:
-  static void Resolve (HIR::ImplBlock *parent, HIR::ImplItem *item,
-		       TyTy::BaseType *self);
+  static TyTy::BaseType *
+  Resolve (HIR::ImplBlock *parent, HIR::ImplItem *item, TyTy::BaseType *self,
+	   std::vector<TyTy::SubstitutionParamMapping> substitutions);
 
   void visit (HIR::Function &function) override;
   void visit (HIR::ConstantItem &const_item) override;
   void visit (HIR::TypeAlias &type_alias) override;
 
 protected:
-  TypeCheckImplItem (HIR::ImplBlock *parent, TyTy::BaseType *self);
+  TypeCheckImplItem (HIR::ImplBlock *parent, TyTy::BaseType *self,
+		     std::vector<TyTy::SubstitutionParamMapping> substitutions);
 
   HIR::ImplBlock *parent;
   TyTy::BaseType *self;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+
+  TyTy::BaseType *result;
 };
 
-class TypeCheckImplItemWithTrait : public TypeCheckImplItem
+class TypeCheckImplItemWithTrait : public TypeCheckBase,
+				   public HIR::HIRImplVisitor
 {
 public:
   static TyTy::TypeBoundPredicateItem
@@ -105,6 +92,9 @@ private:
 
   TyTy::TypeBoundPredicate &trait_reference;
   TyTy::TypeBoundPredicateItem resolved_trait_item;
+
+  HIR::ImplBlock *parent;
+  TyTy::BaseType *self;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 

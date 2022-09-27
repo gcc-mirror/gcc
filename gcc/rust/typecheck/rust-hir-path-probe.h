@@ -195,7 +195,7 @@ public:
       {
 	HirId tyid = alias.get_mappings ().get_hirid ();
 	TyTy::BaseType *ty = nullptr;
-	bool ok = context->lookup_type (tyid, &ty);
+	bool ok = query_type (tyid, &ty);
 	rust_assert (ok);
 
 	PathProbeCandidate::ImplItemCandidate impl_item_candidate{&alias,
@@ -214,7 +214,7 @@ public:
       {
 	HirId tyid = constant.get_mappings ().get_hirid ();
 	TyTy::BaseType *ty = nullptr;
-	bool ok = context->lookup_type (tyid, &ty);
+	bool ok = query_type (tyid, &ty);
 	rust_assert (ok);
 
 	PathProbeCandidate::ImplItemCandidate impl_item_candidate{&constant,
@@ -233,7 +233,7 @@ public:
       {
 	HirId tyid = function.get_mappings ().get_hirid ();
 	TyTy::BaseType *ty = nullptr;
-	bool ok = context->lookup_type (tyid, &ty);
+	bool ok = query_type (tyid, &ty);
 	rust_assert (ok);
 
 	PathProbeCandidate::ImplItemCandidate impl_item_candidate{&function,
@@ -272,23 +272,7 @@ protected:
   }
 
   void process_impl_item_candidate (HirId id, HIR::ImplItem *item,
-				    HIR::ImplBlock *impl)
-  {
-    current_impl = impl;
-    HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
-    TyTy::BaseType *impl_block_ty = nullptr;
-    if (!context->lookup_type (impl_ty_id, &impl_block_ty))
-      return;
-
-    if (!receiver->can_eq (impl_block_ty, false))
-      {
-	if (!impl_block_ty->can_eq (receiver, false))
-	  return;
-      }
-
-    // lets visit the impl_item
-    item->accept_vis (*this);
-  }
+				    HIR::ImplBlock *impl);
 
   void
   process_associated_trait_for_candidates (const TraitReference *trait_ref,

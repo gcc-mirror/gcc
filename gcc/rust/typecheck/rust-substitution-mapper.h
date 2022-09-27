@@ -102,7 +102,7 @@ public:
     if (!have_generic_args ())
       {
 	TyTy::BaseType *substs = type.infer_substitions (locus);
-	rust_assert (substs->get_kind () == TyTy::TypeKind::ADT);
+	rust_assert (substs->get_kind () == TyTy::TypeKind::PROJECTION);
 	concrete = static_cast<TyTy::ProjectionType *> (substs);
       }
     else
