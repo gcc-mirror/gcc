@@ -72,7 +72,9 @@ private:
   std::ostream &stream;
   Indent indentation;
 
-  // Format together common items of functions: Parameters, return type, block
+  /**
+   * Format together common items of functions: Parameters, return type, block
+   */
   void format_function_common (std::unique_ptr<Type> &return_type,
 			       std::unique_ptr<BlockExpr> &block);
 
@@ -97,13 +99,19 @@ private:
   std::ostream &emit_indented_string (const std::string &value,
 				      const std::string &comment = "");
 
-  // Emit formatted string for generic parameters.
+  /**
+   * Emit formatted string for generic parameters
+   */
   void emit_generic_params (std::vector<std::unique_ptr<GenericParam>> &params);
 
-  // Format a single field of a tuple.
+  /**
+   * Format a single field of a tuple
+   */
   void format_tuple_field (TupleField &field);
 
-  // Format a single field of a struct.
+  /**
+   * Format a single field of a struct
+   */
   void format_struct_field (StructField &field);
 
   // rust-ast.h
