@@ -1,3 +1,11 @@
+2022-09-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106986
+	* gfortran.dg/pr106986.f90: New test.
+
 2022-09-24  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:
