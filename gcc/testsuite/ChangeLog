@@ -1,3 +1,67 @@
+2022-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106656
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust.
+	* g++.dg/cpp2a/feat-cxx2a.C: Likewise.
+	* g++.dg/ext/char8_t-feature-test-macro-2.C: Likewise.
+	* g++.dg/ext/char8_t-init-2.C: Likewise.
+	* g++.dg/cpp2a/char8_t3.C: New test.
+	* g++.dg/cpp2a/char8_t4.C: New test.
+
+2022-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* g++.dg/ext/is_convertible3.C: New test.
+	* g++.dg/ext/is_nothrow_convertible3.C: New test.
+
+2022-09-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107033
+	* g++.dg/modules/partial-2.cc, g++.dg/modules/partial-2.h: New
+	files, factored out from ...
+	* g++.dg/modules/partial-2_a.C, g++.dg/modules/partial-2_b.C: ...
+	these.
+	* g++.dg/modules/partial-2_c.H: New test.
+	* g++.dg/modules/partial-2_d.C: New test.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* gcc.dg/tree-ssa/pr107009.c: New test.
+
+2022-09-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/ret-1.c: New test.
+
+2022-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106982
+	* c-c++-common/goacc/reduction-7.c: New test.
+	* c-c++-common/goacc/reduction-8.c: New test.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* gcc.target/powerpc/pr96072.c: New test.
+
+2022-09-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/94962
+	* gcc.target/i386/avx256-unaligned-store-3.c: Add -mno-avx512f
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* gcc.target/powerpc/pr100645.c: New test.
+
+2022-09-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Liwei Xu  <liwei.xu@intel.com>
+
+	* gcc.target/i386/pr53346-1.c: New test.
+	* gcc.target/i386/pr53346-2.c: New test.
+	* gcc.target/i386/pr53346-3.c: New test.
+	* gcc.target/i386/pr53346-4.c: New test.
+
 2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/41453

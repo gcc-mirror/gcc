@@ -1,3 +1,8 @@
+2022-09-26  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Introduce a constant for in_shutdown
+	for the non-fast-path case. Drop destructor priority.
+
 2022-09-22  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* unwind-dw2-fde.c: (release_register_frames) Remember

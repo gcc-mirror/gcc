@@ -1,3 +1,26 @@
+2022-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h (__ptr_traits_elem) [__cpp_concepts]:
+	Also define the __ptr_traits_elem class template for the
+	concepts case.
+	(pointer_traits<Ptr>): Remove constrained partial
+	specialization.
+	* testsuite/20_util/pointer_traits/lwg3545.cc: Check for
+	ambiguitiy with program-defined partial specialization.
+
+2022-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_convertible, is_convertible_v):
+	Define using new built-in.
+	(is_nothrow_convertible is_nothrow_convertible_v): Likewise.
+
+2022-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107037
+	* include/std/bitset (_Base_bitset::_M_do_reset): Use
+	preprocessor conditional around non-C++03 code.
+	* testsuite/20_util/bitset/107037.cc: New test.
+
 2022-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (allocator_traits::is_always_equal):

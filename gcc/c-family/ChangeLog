@@ -1,3 +1,9 @@
+2022-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106656
+	* c-cppbuiltin.cc (c_cpp_builtins): Update value of __cpp_char8_t
+	for C++20.
+
 2022-09-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106784

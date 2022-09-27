@@ -1,3 +1,111 @@
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing dash for
+	  Wanalyzer-exposure-through-uninit-copy.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* range-op.cc (operator_bitwise_and::op1_range): Optimize 0 = x & MASK.
+	(range_op_bitwise_and_tests): New test.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges):
+	Iterate over exports.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (with_arch) [nvptx]: Allow '--with-arch' to override
+	the default.
+	* config/nvptx/gen-multilib-matches.sh: New.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle this.
+	* doc/install.texi (Specific) <nvptx-*-none>: Document this.
+	* doc/invoke.texi (Nvidia PTX Options): Likewise.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (TM_MULTILIB_CONFIG) [nvptx]: Set to '$with_arch'.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle it.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (with_arch) [nvptx]: Set to 'sm_30'.
+	* config/nvptx/nvptx.cc (nvptx_option_override): Assert that
+	'-misa' appeared.
+	* config/nvptx/nvptx.h (OPTION_DEFAULT_SPECS): Define.
+	* config/nvptx/nvptx.opt (misa=): Remove 'Init'.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Define.
+
+2022-09-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* cfgcleanup.cc (bb_is_just_return): No longer static.
+	* cfgcleanup.h (bb_is_just_return): Add prototype.
+	* cfgrtl.cc (fixup_reorder_chain): Do not create an
+	unconditional jump to a return block.  Conditionally
+	remove unreachable blocks.
+
+2022-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106982
+	* omp-low.cc (lower_oacc_reductions): Add some unshare_expr.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc (s390_rtx_costs): Remove dest variable
+	and use only dst.
+
+2022-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv9.1-a): Define.
+	(armv9.2-a): Likewise.
+	(armv9.3-a): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_FL_V9_1): Likewise.
+	(AARCH64_FL_V9_2): Likewise.
+	(AARCH64_FL_V9_3): Likewise.
+	(AARCH64_FL_FOR_ARCH9_1): Likewise.
+	(AARCH64_FL_FOR_ARCH9_2): Likewise.
+	(AARCH64_FL_FOR_ARCH9_3): Likewise.
+	(AARCH64_ISA_V9_1): Likewise.
+	(AARCH64_ISA_V9_2): Likewise.
+	(AARCH64_ISA_V9_3): Likewise.
+	* doc/invoke.texi (AArch64 Options): Document armv9.1-a, armv9.2-a,
+	armv9.3-a values to -march.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* value-range.cc (tree_compare): Remove unused function.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): Update the
+	condition for adding REG_CFA_DEF_CFA reg note with
+	frame_pointer_needed_indeed.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* config/rs6000/vector.md (vec_shr_<mode>): Replace condition
+	TARGET_ALTIVEC with VECTOR_UNIT_ALTIVEC_OR_VSX_P.
+
+2022-09-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Liwei Xu  <liwei.xu@intel.com>
+
+	PR target/53346
+	* config/i386/i386-expand.cc (expand_vec_perm_shufps_shufps):
+	New function.
+	(ix86_expand_vec_perm_const_1): Insert
+	expand_vec_perm_shufps_shufps at the end of 2-instruction
+	expand sequence.
+
 2022-09-25  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* doc/sourcebuild.texi: Fix chapter level.
