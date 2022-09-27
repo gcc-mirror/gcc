@@ -2246,6 +2246,7 @@ is_convertible_helper (tree from, tree to)
     return integer_one_node;
   cp_unevaluated u;
   tree expr = build_stub_object (from);
+  deferring_access_check_sentinel acs (dk_no_deferred);
   return perform_implicit_conversion (to, expr, tf_none);
 }
 
