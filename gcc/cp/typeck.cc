@@ -10697,21 +10697,12 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 	  tree t = convert_for_initialization (NULL_TREE, type,
 					       moved,
 					       (LOOKUP_NORMAL
-						| LOOKUP_ONLYCONVERTING
-						| LOOKUP_PREFER_RVALUE),
+						| LOOKUP_ONLYCONVERTING),
 					       ICR_RETURN, NULL_TREE, 0,
 					       tf_none);
 	  /* If this worked, implicit rvalue would work, so the call to
 	     std::move is redundant.  */
-	  if (t != error_mark_node
-	      /* Trying to move something const will never succeed unless
-		 there's T(const T&&), which it almost never is, and if
-		 so, T wouldn't be error_mark_node now: the above convert_
-		 call with LOOKUP_PREFER_RVALUE returns an error if a const T&
-		 overload is selected.  */
-	      || (CP_TYPE_CONST_P (TREE_TYPE (arg))
-		  && same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (arg), type)))
+	  if (t != error_mark_node)
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (loc, OPT_Wredundant_move,
@@ -11054,23 +11045,10 @@ check_return_expr (tree retval, bool *no_warning)
 	     ? CLASS_TYPE_P (functype)
 	     : !SCALAR_TYPE_P (functype) || !SCALAR_TYPE_P (TREE_TYPE (retval)))
 	    && (moved = treat_lvalue_as_rvalue_p (retval, /*return*/true)))
-	{
-	  if (cxx_dialect < cxx20)
-	    {
-	      moved = convert_for_initialization
-		(NULL_TREE, functype, moved, flags|LOOKUP_PREFER_RVALUE,
-		 ICR_RETURN, NULL_TREE, 0, tf_none);
-	      if (moved != error_mark_node)
-		{
-		  retval = moved;
-		  converted = true;
-		}
-	    }
-	  else
-	    /* In C++20 we just treat the return value as an rvalue that
-	       can bind to lvalue refs.  */
-	    retval = moved;
-	}
+	  /* In C++20 and earlier we treat the return value as an rvalue
+	     that can bind to lvalue refs.  In C++23, such an expression is just
+	     an xvalue (see reference_binding).  */
+	  retval = moved;
 
       /* The call in a (lambda) thunk needs no conversions.  */
       if (TREE_CODE (retval) == CALL_EXPR

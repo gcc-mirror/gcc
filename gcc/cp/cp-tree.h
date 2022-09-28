@@ -5874,12 +5874,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_DESTRUCTOR (1 << 5)
 /* Do not permit references to bind to temporaries.  */
 #define LOOKUP_NO_TEMP_BIND (1 << 6)
-/* We're trying to treat an lvalue as an rvalue.  */
-/* FIXME remove when we extend the P1825 semantics to all standard modes, the
-   C++20 approach uses IMPLICIT_RVALUE_P instead.  */
-#define LOOKUP_PREFER_RVALUE (LOOKUP_NO_TEMP_BIND << 1)
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
-#define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)
+#define LOOKUP_NO_NARROWING (LOOKUP_NO_TEMP_BIND << 1)
 /* We're looking up a constructor for list-initialization.  */
 #define LOOKUP_LIST_INIT_CTOR (LOOKUP_NO_NARROWING << 1)
 /* This is the first parameter of a copy constructor.  */

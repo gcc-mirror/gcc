@@ -1272,9 +1272,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	    }
 	}
       conv = build_conv (ck_rvalue, from, conv);
-      if (flags & LOOKUP_PREFER_RVALUE)
-	/* Tell convert_like to set LOOKUP_PREFER_RVALUE.  */
-	conv->rvaluedness_matches_p = true;
       /* If we're performing copy-initialization, remember to skip
 	 explicit constructors.  */
       if (flags & LOOKUP_ONLYCONVERTING)
@@ -1572,9 +1569,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	 type.  A temporary object is created to hold the result of
 	 the conversion unless we're binding directly to a reference.  */
       conv->need_temporary_p = !(flags & LOOKUP_NO_TEMP_BIND);
-      if (flags & LOOKUP_PREFER_RVALUE)
-	/* Tell convert_like to set LOOKUP_PREFER_RVALUE.  */
-	conv->rvaluedness_matches_p = true;
       /* If we're performing copy-initialization, remember to skip
 	 explicit constructors.  */
       if (flags & LOOKUP_ONLYCONVERTING)
@@ -1883,7 +1877,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	  /* Unless it's really a C++20 lvalue being treated as an xvalue.
 	     But in C++23, such an expression is just an xvalue, not a special
 	     lvalue, so the binding is once again ill-formed.  */
-	  && !(cxx_dialect == cxx20
+	  && !(cxx_dialect <= cxx20
 	       && (gl_kind & clk_implicit_rval))
 	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
 	      || (flags & LOOKUP_NO_RVAL_BIND))
@@ -2044,9 +2038,8 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
   /* Other flags only apply to the primary function in overload
      resolution, or after we've chosen one.  */
   flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
-	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
-	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL
-	    |LOOKUP_SHORTCUT_BAD_CONVS);
+	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_NO_NARROWING
+	    |LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL|LOOKUP_SHORTCUT_BAD_CONVS);
 
   /* FIXME: actually we don't want warnings either, but we can't just
      have 'complain &= ~(tf_warning|tf_error)' because it would cause
@@ -4450,14 +4443,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   conv->cand = cand;
   if (cand->viable == -1)
     conv->bad_p = true;
-
-  /* We're performing the maybe-rvalue overload resolution and
-     a conversion function is in play.  Reject converting the return
-     value of the conversion function to a base class.  */
-  if ((flags & LOOKUP_PREFER_RVALUE) && !DECL_CONSTRUCTOR_P (cand->fn))
-    for (conversion *t = cand->second_conv; t; t = next_conversion (t))
-      if (t->kind == ck_base)
-	return NULL;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
@@ -8292,9 +8277,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	 explicit constructors.  */
       if (convs->copy_init_p)
 	flags |= LOOKUP_ONLYCONVERTING;
-      if (convs->rvaluedness_matches_p)
-	/* standard_conversion got LOOKUP_PREFER_RVALUE.  */
-	flags |= LOOKUP_PREFER_RVALUE;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && complain)
 	{
@@ -9559,23 +9541,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  argarray[j++] = (*args)[arg_index];
 	  ++arg_index;
 	  parm = TREE_CHAIN (parm);
-	}
-
-      if (cxx_dialect < cxx20
-	  && (cand->flags & LOOKUP_PREFER_RVALUE))
-	{
-	  /* The implicit move specified in 15.8.3/3 fails "...if the type of
-	     the first parameter of the selected constructor is not an rvalue
-	     reference to the object's type (possibly cv-qualified)...." */
-	  gcc_assert (!(complain & tf_error));
-	  tree ptype = convs[0]->type;
-	  /* Allow calling a by-value converting constructor even though it
-	     isn't permitted by the above, because we've allowed it since GCC 5
-	     (PR58051) and it's allowed in C++20.  But don't call a copy
-	     constructor.  */
-	  if ((TYPE_REF_P (ptype) && !TYPE_REF_IS_RVALUE (ptype))
-	      || CONVERSION_RANK (convs[0]) > cr_exact)
-	    return error_mark_node;
 	}
     }
   /* Bypass access control for 'this' parameter.  */

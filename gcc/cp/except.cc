@@ -715,25 +715,10 @@ build_throw (location_t loc, tree exp)
 	     treated as an rvalue for the purposes of overload resolution
 	     to favor move constructors over copy constructors.  */
 	  if (tree moved = treat_lvalue_as_rvalue_p (exp, /*return*/false))
-	    {
-	      if (cxx_dialect < cxx20)
-		{
-		  releasing_vec exp_vec (make_tree_vector_single (moved));
-		  moved = (build_special_member_call
-			   (object, complete_ctor_identifier, &exp_vec,
-			    TREE_TYPE (object), flags|LOOKUP_PREFER_RVALUE,
-			    tf_none));
-		  if (moved != error_mark_node)
-		    {
-		      exp = moved;
-		      converted = true;
-		    }
-		}
-	      else
-		/* In C++20 we just treat the return value as an rvalue that
-		   can bind to lvalue refs.  */
-		exp = moved;
-	    }
+	    /* In C++20 we treat the return value as an rvalue that
+	       can bind to lvalue refs.  In C++23, such an expression is just
+	       an xvalue.  */
+	    exp = moved;
 
 	  /* Call the copy constructor.  */
 	  if (!converted)
