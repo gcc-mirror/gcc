@@ -40,5 +40,13 @@ compiled.",
  void, (void),
  hook_void_void)
 
+/* Environmental OS info relating to the target OS.  */
+DEFHOOK
+(rust_os_info,
+ "Similar to @code{TARGET_RUST_CPU_INFO}, but is used for configuration info\n\
+relating to the target operating system.",
+ void, (void),
+ hook_void_void)
+
 /* Close the 'struct gcc_targetrustm' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

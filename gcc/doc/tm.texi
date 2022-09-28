@@ -10975,6 +10975,11 @@ Configuration pairs predefined by this hook apply to all files that are being
 compiled.
 @end deftypefn
 
+@deftypefn {Rust Target Hook} void TARGET_RUST_OS_INFO (void)
+Similar to @code{TARGET_RUST_CPU_INFO}, but is used for configuration info
+relating to the target operating system.
+@end deftypefn
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces

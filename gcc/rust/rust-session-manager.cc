@@ -140,6 +140,7 @@ Session::init ()
 {
   // initialize target hooks
   targetrustm.rust_cpu_info ();
+  targetrustm.rust_os_info ();
 
   // target-independent values that should exist in all targets
   options.target_data.insert_key_value_pair ("target_pointer_width",

@@ -7150,6 +7150,8 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_RUST_CPU_INFO
 
+@hook TARGET_RUST_OS_INFO
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
