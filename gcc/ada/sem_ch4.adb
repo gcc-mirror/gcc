@@ -1467,12 +1467,17 @@ package body Sem_Ch4 is
       end if;
 
       --  Check the accessibility level for actuals for explicitly aliased
-      --  formals.
+      --  formals when a function call appears within a return statement.
+      --  This is only checked if the enclosing subprogram Comes_From_Source,
+      --  to avoid issuing errors on calls occurring in wrapper subprograms
+      --  (for example, where the call is part of an expression of an aspect
+      --  associated with a wrapper, such as Pre'Class).
 
       if Nkind (N) = N_Function_Call
         and then Comes_From_Source (N)
         and then Present (Nam_Ent)
         and then In_Return_Value (N)
+        and then Comes_From_Source (Current_Subprogram)
       then
          declare
             Form : Node_Id;
