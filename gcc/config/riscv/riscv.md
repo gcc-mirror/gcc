@@ -2864,7 +2864,7 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
 
-(define_insn "*slt<u>_<X:mode><GPR:mode>"
+(define_insn "@slt<u>_<X:mode><GPR:mode>3"
   [(set (match_operand:GPR           0 "register_operand" "= r")
 	(any_lt:GPR (match_operand:X 1 "register_operand" "  r")
 		    (match_operand:X 2 "arith_operand"    " rI")))]
@@ -3509,6 +3509,48 @@
 		   (sign_extend:SI (match_operand:HI 2 "register_operand")))))]
   "TARGET_XTHEADMAC"
 )
+
+;; String compare with length insn.
+;; Argument 0 is the target (result)
+;; Argument 1 is the source1
+;; Argument 2 is the source2
+;; Argument 3 is the length
+;; Argument 4 is the alignment
+
+(define_expand "cmpstrnsi"
+  [(parallel [(set (match_operand:SI 0)
+	      (compare:SI (match_operand:BLK 1)
+			  (match_operand:BLK 2)))
+	      (use (match_operand:SI 3))
+	      (use (match_operand:SI 4))])]
+  "riscv_inline_strncmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+{
+  if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
+                           operands[3], operands[4]))
+    DONE;
+  else
+    FAIL;
+})
+
+;; String compare insn.
+;; Argument 0 is the target (result)
+;; Argument 1 is the source1
+;; Argument 2 is the source2
+;; Argument 3 is the alignment
+
+(define_expand "cmpstrsi"
+  [(parallel [(set (match_operand:SI 0)
+	      (compare:SI (match_operand:BLK 1)
+			  (match_operand:BLK 2)))
+	      (use (match_operand:SI 3))])]
+  "riscv_inline_strcmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+{
+  if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
+                           NULL_RTX, operands[3]))
+    DONE;
+  else
+    FAIL;
+})
 
 ;; Search character in string (generalization of strlen).
 ;; Argument 0 is the resulting offset

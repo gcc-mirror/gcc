@@ -281,9 +281,21 @@ minline-atomics
 Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.
 
+minline-strcmp
+Target Bool Var(riscv_inline_strcmp) Init(0)
+Inline strcmp calls if possible.
+
+minline-strncmp
+Target Bool Var(riscv_inline_strncmp) Init(0)
+Inline strncmp calls if possible.
+
 minline-strlen
 Target Bool Var(riscv_inline_strlen) Init(0)
 Inline strlen calls if possible.
+
+-param=riscv-strcmp-inline-limit=
+Target RejectNegative Joined UInteger Var(riscv_strcmp_inline_limit) Init(64)
+Max number of bytes to compare as part of inlined strcmp/strncmp routines (default: 64).
 
 Enum
 Name(riscv_autovec_preference) Type(enum riscv_autovec_preference_enum)

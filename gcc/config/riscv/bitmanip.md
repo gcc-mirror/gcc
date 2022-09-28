@@ -206,7 +206,7 @@
 	(popcount:GPR (match_operand:GPR 1 "register_operand")))]
   "TARGET_ZBB")
 
-(define_insn "*<optab>_not<mode>"
+(define_insn "<optab>_not<mode>3"
   [(set (match_operand:X 0 "register_operand" "=r")
         (bitmanip_bitwise:X (not:X (match_operand:X 1 "register_operand" "r"))
                             (match_operand:X 2 "register_operand" "r")))]

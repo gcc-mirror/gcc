@@ -518,6 +518,7 @@ const unsigned int RISCV_BUILTIN_SHIFT = 1;
 const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
 
 /* Routines implemented in riscv-string.cc.  */
+extern bool riscv_expand_strcmp (rtx, rtx, rtx, rtx, rtx);
 extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
 
 /* Routines implemented in thead.cc.  */

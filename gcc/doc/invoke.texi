@@ -1237,7 +1237,9 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-offset=@var{offset}
 -mcsr-check -mno-csr-check
 -minline-atomics  -mno-inline-atomics
--minline-strlen  -mno-inline-strlen}
+-minline-strlen  -mno-inline-strlen
+-minline-strcmp  -mno-inline-strcmp
+-minline-strncmp  -mno-inline-strncmp}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
@@ -29367,6 +29369,22 @@ Do or do not attempt to inline strlen calls if possible.
 Inlining will only be done if the string is properly aligned
 and instructions for accelerated processing are available.
 The default is to not inline strlen calls.
+
+@opindex minline-strcmp
+@item -minline-strcmp
+@itemx -mno-inline-strcmp
+Do or do not attempt to inline strcmp calls if possible.
+Inlining will only be done if the strings are properly aligned
+and instructions for accelerated processing are available.
+The default is to not inline strcmp calls.
+
+@opindex minline-strncmp
+@item -minline-strncmp
+@itemx -mno-inline-strncmp
+Do or do not attempt to inline strncmp calls if possible.
+Inlining will only be done if the strings are properly aligned
+and instructions for accelerated processing are available.
+The default is to not inline strncmp calls.
 
 @opindex mshorten-memrefs
 @item -mshorten-memrefs
