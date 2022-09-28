@@ -444,6 +444,7 @@ available}.
 @menu
 * Example usage::         Example compile and link.
 * Compiler options::      GNU Modula-2 compiler options.
+* Linking::               Linking options in more detail.
 * Elementary data types:: Data types supported by GNU Modula-2.
 * Standard procedures::   Permanently accessible base procedures.
 * Dialect::               GNU Modula-2 supported dialects.
