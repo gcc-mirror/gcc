@@ -1632,7 +1632,10 @@ package body Exp_Ch5 is
          end if;
 
          if Is_Array_Type (Typ) then
-            return Volatile_Or_Independent (Empty, Component_Type (Typ));
+            if Volatile_Or_Independent (Empty, Component_Type (Typ)) then
+               return True;
+            end if;
+
          elsif Is_Record_Type (Typ) then
             declare
                Comp : Entity_Id := First_Component (Typ);
@@ -1688,7 +1691,6 @@ package body Exp_Ch5 is
         and then Is_Bit_Packed_Array (R_Type)
         and then not Reverse_Storage_Order (L_Type)
         and then not Reverse_Storage_Order (R_Type)
-        and then Ndim = 1
         and then Slices
         and then not Slice_Of_Packed_Component (L)
         and then not Volatile_Or_Independent (L, L_Type)
