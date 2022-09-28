@@ -1062,7 +1062,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       #define/#undef).
    </para>
 
-   <para> <acronym>ABI</acronym> means that changing from the default value may
+   <para> <acronym>ABI</acronym>-changing means that changing from the default value may
   mean changing the <acronym>ABI</acronym> of compiled code. In other words,
   these choices control code which has already been compiled (i.e., in a
   binary such as libstdc++.a/.so).  If you explicitly #define or
@@ -1077,7 +1077,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     <varlistentry><term><code>_GLIBCXX_USE_DEPRECATED</code></term>
     <listitem>
       <para>
-	Defined by default. Not configurable. ABI-changing. Turning this off
+	Defined to the value <literal>1</literal> by default.
+	Not configurable. ABI-changing. Turning this off
 	removes older ARM-style iostreams code, and other anachronisms
 	from the API.  This macro is dependent on the version of the
 	standard being tracked, and as a result may give different results for
