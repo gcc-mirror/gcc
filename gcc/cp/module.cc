@@ -2737,6 +2737,7 @@ enum tree_tag {
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_ptrmem_type,	/* Pointer to member type.  */
+  tt_nttp_var,		/* NTTP_OBJECT VAR_DECL.  */
 
   tt_parm,		/* Function parameter or result.  */
   tt_enum_value,	/* An enum value.  */
@@ -8548,6 +8549,21 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    }
 	  return false;
 	}
+
+      if (DECL_NTTP_OBJECT_P (decl))
+	{
+	  /* A NTTP parm object.  */
+	  if (streaming_p ())
+	    i (tt_nttp_var);
+	  tree_node (tparm_object_argument (decl));
+	  tree_node (DECL_NAME (decl));
+	  int tag = insert (decl);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Wrote nttp object:%d %N", tag, DECL_NAME (decl));
+	  return false;
+	}
+
       break;
 
     case TYPE_DECL:
@@ -9624,6 +9640,21 @@ trees_in::tree_node (bool is_use)
 	  }
 	else
 	  set_overrun ();
+      }
+      break;
+
+    case tt_nttp_var:
+      /* An NTTP object. */
+      {
+	tree init = tree_node ();
+	tree name = tree_node ();
+	if (!get_overrun ())
+	  {
+	    res = get_template_parm_object (init, name);
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Created nttp object:%d %N", tag, name);
+	  }
       }
       break;
 
@@ -12758,6 +12789,10 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	   || TREE_CODE (decl) == TYPE_DECL)
 	  && DECL_TINFO_P (decl))
 	/* Ignore TINFO things.  */
+	return false;
+
+      if (TREE_CODE (decl) == VAR_DECL && DECL_NTTP_OBJECT_P (decl))
+	/* Ignore NTTP objects.  */
 	return false;
 
       if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)
