@@ -524,6 +524,12 @@
        </em></span>
     </span></dt><dd><p>Avoid using <code class="code">dynamic_cast</code> when it would be
     ill-formed.
+    </p></dd><dt><a id="manual.bugs.dr2487"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2487" target="_top">2487</a>:
+       <span class="emphasis"><em><code class="code">bind()</code> should be <code class="code">const</code>-overloaded
+      not cv-overloaded
+       </em></span>
+    </span></dt><dd><p>Deprecate volatile-qualified <code class="code">operator()</code>
+    for C++17, make it ill-formed for C++20.
     </p></dd><dt><a id="manual.bugs.dr2499"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2499" target="_top">2499</a>:
        <span class="emphasis"><em><code class="code">operator&gt;&gt;(basic_istream&amp;, CharT*)</code> makes it hard to avoid buffer overflows
        </em></span>

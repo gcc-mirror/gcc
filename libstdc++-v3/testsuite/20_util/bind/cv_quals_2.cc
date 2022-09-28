@@ -15,7 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target c++11 } }
+// { dg-options "-Wdeprecated-declarations" }
+// { dg-do run { target { c++11 && c++17_down } } }
+// { dg-do compile { target c++20 } }
 
 #include <functional>
 #include <testsuite_hooks.h>
@@ -33,13 +35,13 @@ void test01()
   const auto b0 = std::bind(X());
   VERIFY( b0() == 0 );
 
-#if __cplusplus <= 201402L
   volatile auto b1 = std::bind(X());
-  VERIFY( b1() == 1 );
+  VERIFY( b1() == 1 ); // { dg-warning "deprecated" "" { target c++17_only } }
+		       // { dg-error "no match" "" { target c++20 } 39 }
 
   const volatile auto b2 = std::bind(X());
-  VERIFY( b2() == 2 );
-#endif
+  VERIFY( b2() == 2 ); // { dg-warning "deprecated" "" { target c++17_only } }
+		       // { dg-error "no match" "" { target c++20 } 43 }
 }
 
 int main()
