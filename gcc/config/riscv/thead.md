@@ -121,7 +121,7 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
-(define_insn "*th_rev<mode>2"
+(define_insn "th_rev<mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(bswap:GPR (match_operand:GPR 1 "register_operand" "r")))]
   "TARGET_XTHEADBB && (TARGET_64BIT || <MODE>mode == SImode)"
@@ -131,6 +131,13 @@
   }
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "th_tstnbz<mode>2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
+  "TARGET_XTHEADBB"
+  "th.tstnbz\t%0,%1"
+  [(set_attr "type" "bitmanip")])
 
 ;; XTheadBs
 

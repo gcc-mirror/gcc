@@ -1236,7 +1236,8 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
 -mcsr-check -mno-csr-check
--minline-atomics  -mno-inline-atomics}
+-minline-atomics  -mno-inline-atomics
+-minline-strlen  -mno-inline-strlen}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
@@ -29358,6 +29359,14 @@ epilogues.
 Do or don't use smaller but slower subword atomic emulation code that uses
 libatomic function calls.  The default is to use fast inline subword atomics
 that do not require libatomic.
+
+@opindex minline-strlen
+@item -minline-strlen
+@itemx -mno-inline-strlen
+Do or do not attempt to inline strlen calls if possible.
+Inlining will only be done if the string is properly aligned
+and instructions for accelerated processing are available.
+The default is to not inline strlen calls.
 
 @opindex mshorten-memrefs
 @item -mshorten-memrefs

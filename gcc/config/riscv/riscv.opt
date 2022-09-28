@@ -281,6 +281,10 @@ minline-atomics
 Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.
 
+minline-strlen
+Target Bool Var(riscv_inline_strlen) Init(0)
+Inline strlen calls if possible.
+
 Enum
 Name(riscv_autovec_preference) Type(enum riscv_autovec_preference_enum)
 Valid arguments to -param=riscv-autovec-preference=:

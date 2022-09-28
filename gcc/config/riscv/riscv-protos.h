@@ -517,6 +517,9 @@ const unsigned int RISCV_BUILTIN_SHIFT = 1;
 /* Mask that selects the riscv_builtin_class part of a function code.  */
 const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
 
+/* Routines implemented in riscv-string.cc.  */
+extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
+
 /* Routines implemented in thead.cc.  */
 extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);
 extern void th_mempair_order_operands (rtx[4], bool, machine_mode);

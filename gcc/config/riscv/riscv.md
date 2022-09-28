@@ -82,6 +82,9 @@
 
   ;; the calling convention of callee
   UNSPEC_CALLEE_CC
+
+  ;; String unspecs
+  UNSPEC_STRLEN
 ])
 
 (define_c_enum "unspecv" [
@@ -3506,6 +3509,31 @@
 		   (sign_extend:SI (match_operand:HI 2 "register_operand")))))]
   "TARGET_XTHEADMAC"
 )
+
+;; Search character in string (generalization of strlen).
+;; Argument 0 is the resulting offset
+;; Argument 1 is the string
+;; Argument 2 is the search character
+;; Argument 3 is the alignment
+
+(define_expand "strlen<mode>"
+  [(set (match_operand:X 0 "register_operand")
+	(unspec:X [(match_operand:BLK 1 "general_operand")
+		     (match_operand:SI 2 "const_int_operand")
+		     (match_operand:SI 3 "const_int_operand")]
+		  UNSPEC_STRLEN))]
+  "riscv_inline_strlen && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+{
+  rtx search_char = operands[2];
+
+  if (search_char != const0_rtx)
+    FAIL;
+
+  if (riscv_expand_strlen (operands[0], operands[1], operands[2], operands[3]))
+    DONE;
+  else
+    FAIL;
+})
 
 (include "bitmanip.md")
 (include "crypto.md")
