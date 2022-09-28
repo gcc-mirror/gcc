@@ -52,9 +52,10 @@
 # include <string>
 # include <iosfwd>
 # include <bits/cxxabi_forced.h>
-# if __cplusplus >= 201103L
-#  include <bits/functional_hash.h>
-# endif
+#endif
+
+#if __cplusplus >= 201103L
+# include <bits/functional_hash.h>
 #endif
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
@@ -1664,7 +1665,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
 #undef _GLIBCXX_BITSET_BITS_PER_ULL
 
-#if __cplusplus >= 201103L && _GLIBCXX_HOSTED
+#if __cplusplus >= 201103L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
