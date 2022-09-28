@@ -1,3 +1,23 @@
+2022-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/107049
+	* testsuite/20_util/is_convertible/requirements/access.cc: New
+	test.
+
+2022-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106651
+	* include/bits/std_function.h (__function_guide_t): New alias
+	template.
+	[__cpp_static_call_operator] (__function_guide_static_helper):
+	New class template.
+	(function): Use __function_guide_t in deduction guide.
+	* include/std/future (packaged_task): Use __function_guide_t in
+	deduction guide.
+	* testsuite/20_util/function/cons/deduction_c++23.cc: New test.
+	* testsuite/30_threads/packaged_task/cons/deduction_c++23.cc:
+	New test.
+
 2022-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ptr_traits.h (__ptr_traits_elem) [__cpp_concepts]:

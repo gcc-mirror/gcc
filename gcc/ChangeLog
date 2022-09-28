@@ -1,3 +1,65 @@
+2022-09-27  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* ipa-cp.cc (good_cloning_opportunity_p): Fix profile count comparison.
+
+2022-09-27  Kim Kuparinen  <kim.kuparinen@rightware.com>
+
+	* doc/invoke.texi: Update ABI version info.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (cfn_popcount): Calculate the popcount of a
+	singleton.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set_nonzero_bits): Set range when known.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (irange::set): New version taking wide_int_ref.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107029
+	* tree-ssa-reassoc.cc (optimize_range_tests_cmp_bitwise): Treat
+	OFFSET_TYPE like POINTER_TYPE, except that OFFSET_TYPE may be
+	signed and so can trigger even the (b % 4) == 3 case.
+
+2022-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* cfgrtl.cc (fixup_reorder_chain): Verify that simple_return
+	and return are available before trying to use them.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* tree-core.h (enum tree_index): Add TI_FLOAT128T_TYPE
+	enumerator.
+	* tree.h (float128t_type_node): Define.
+	* tree.cc (build_common_tree_nodes): Initialize float128t_type_node.
+	* builtins.def (DEF_FLOATN_BUILTIN): Adjust comment now that
+	_Float<N> is supported in C++ too.
+	* config/i386/i386.cc (ix86_mangle_type): Only mangle as "g"
+	float128t_type_node.
+	* config/i386/i386-builtins.cc (ix86_init_builtin_types): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+	* config/i386/avx512fp16intrin.h (_mm_setzero_ph, _mm256_setzero_ph,
+	_mm512_setzero_ph, _mm_set_sh, _mm_load_sh): Use 0.0f16 instead of
+	0.0f.
+	* config/ia64/ia64.cc (ia64_init_builtins): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+	* config/rs6000/rs6000-c.cc (is_float128_p): Also return true
+	for float128t_type_node if non-NULL.
+	* config/rs6000/rs6000.cc (rs6000_mangle_type): Don't mangle
+	float128_type_node as "u9__ieee128".
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+
 2022-09-26  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Add missing dash for

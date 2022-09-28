@@ -1,3 +1,25 @@
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* cp-demangle.c (d_dump): Handle
+	DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.  Don't handle
+	DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_make_extended_builtin_type): New function.
+	(cplus_demangle_builtin_types): Add _Float entry.
+	(cplus_demangle_type): For DF demangle it as _Float<N> or
+	_Float<N>x rather than fixed point which conflicts with it.
+	(d_count_templates_scopes): Handle
+	DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.  Just break; for
+	DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_find_pack): Handle DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.
+	Don't handle DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_print_comp_inner): Likewise.
+	* cp-demangle.h (D_BUILTIN_TYPE_COUNT): Bump.
+	* testsuite/demangle-expected: Replace _Z3xxxDFyuVb test
+	with _Z3xxxDF16_DF32_DF64_DF128_CDF16_Vb.  Add
+	_Z3xxxDF32xDF64xDF128xCDF32xVb test.
+
 2022-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* README: Replace gcc-bugs email address with Bugzilla URL.

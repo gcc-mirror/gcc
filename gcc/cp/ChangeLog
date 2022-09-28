@@ -1,3 +1,117 @@
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101165
+	PR c++/106882
+	* call.cc (reference_binding): Check clk_implicit_rval in C++20 only.
+	* cp-tree.h (unparenthesized_id_or_class_member_access_p): Declare.
+	* pt.cc (unparenthesized_id_or_class_member_access_p): New function,
+	broken out of...
+	(do_auto_deduction): ...here.  Use it.  In C++23, maybe call
+	treat_lvalue_as_rvalue_p.
+	* tree.cc (xvalue_p): Check & clk_rvalueref, not == clk_rvalueref.
+	* typeck.cc (check_return_expr): Allow implicit move for functions
+	returning a reference as well, or when the return value type is not
+	a scalar type.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Say "nothrow" without quotes
+	rather than in quotes.
+
+2022-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/107049
+	* method.cc (is_convertible_helper): Use access check sentinel.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106651
+	* cp-tree.h (LAMBDA_EXPR_STATIC_P): Implement C++23
+	P1169R4 - static operator().  Define.
+	* parser.cc (CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR): Document
+	that it also allows static.
+	(cp_parser_lambda_declarator_opt): Handle static lambda specifier.
+	(cp_parser_decl_specifier_seq): Allow RID_STATIC for
+	CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+	* decl.cc (grok_op_properties): If operator() isn't a method,
+	use a different error wording, if it is static member function,
+	allow it (for C++20 and older with a pedwarn unless it is
+	a lambda function or template instantiation).
+	* call.cc (joust): Don't ICE if one candidate is static member
+	function and the other is an indirect call.  If the parameter
+	conversion on the other candidate is user defined conversion,
+	ellipsis or bad conversion, make static member function candidate
+	a winner for that parameter.
+	* lambda.cc (maybe_add_lambda_conv_op): Handle static lambdas.
+	* error.cc (dump_lambda_function): Print static for static lambdas.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct omp_begin_assumes_data): New type.
+	(struct saved_scope): Add omp_begin_assumes member.
+	* parser.cc: Include bitmap.h.
+	(cp_parser_omp_assumption_clauses, cp_parser_omp_assume,
+	cp_parser_omp_assumes, cp_parser_omp_begin): New functions.
+	(cp_parser_omp_end_declare_target): Rename to ...
+	(cp_parser_omp_end): ... this.  Handle also end assumes.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_ASSUME.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ASSUME, PRAGMA_OMP_ASSUMES
+	and PRAGMA_OMP_BEGIN.  Handle PRAGMA_OMP_END rather than
+	PRAGMA_OMP_END_DECLARE_TARGET and call cp_parser_omp_end
+	for it rather than cp_parser_omp_end_declare_target.
+	* pt.cc (apply_late_template_attributes): Also temporarily clear
+	omp_begin_assumes.
+	* semantics.cc (finish_translation_unit): Also diagnose
+	#pragma omp begin assumes without corresponding
+	#pragma omp end assumes.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_lambda_declarator_opt): Don't diagnose
+	conflicting specifiers here.
+	(cp_storage_class_name): New variable.
+	(cp_parser_decl_specifier_seq): When setting conflicting_specifiers_p
+	for the first time, diagnose which exact specifiers conflict.
+	(cp_parser_set_storage_class): Likewise.  Move storage_class
+	computation earlier.
+	* decl.cc (grokdeclarator): Don't diagnose conflicting specifiers
+	here, just return error_mark_node.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* cp-tree.h (cp_compare_floating_point_conversion_ranks): Implement
+	P1467R9 - Extended floating-point types and standard names except
+	for std::bfloat16_t for now.  Declare.
+	(extended_float_type_p): New inline function.
+	* mangle.cc (write_builtin_type): Mangle float{16,32,64,128}_type_node
+	as DF{16,32,64,128}_.  Mangle float{32,64,128}x_type_node as
+	DF{32,64,128}x.  Remove FIXED_POINT_TYPE mangling that conflicts
+	with that.
+	* typeck2.cc (check_narrowing): If one of ftype or type is extended
+	floating-point type, compare floating-point conversion ranks.
+	* parser.cc (cp_keyword_starts_decl_specifier_p): Handle
+	CASE_RID_FLOATN_NX.
+	(cp_parser_simple_type_specifier): Likewise and diagnose missing
+	_Float<N> or _Float<N>x support if not supported by target.
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): New function.
+	(cp_common_type): If both types are REAL_TYPE and one or both are
+	extended floating-point types, select common type based on comparison
+	of floating-point conversion ranks and subranks.
+	(cp_build_binary_op): Diagnose operation with floating point arguments
+	with unordered conversion ranks.
+	* call.cc (standard_conversion): For floating-point conversion, if
+	either from or to are extended floating-point types, set conv->bad_p
+	for implicit conversion from larger to smaller conversion rank or
+	with unordered conversion ranks.
+	(convert_like_internal): Emit a pedwarn on such conversions.
+	(build_conditional_expr): Diagnose operation with floating point
+	arguments with unordered conversion ranks.
+	(convert_arg_to_ellipsis): Don't promote extended floating-point types
+	narrower than double to double.
+	(compare_ics): Implement P1467R9 [over.ics.rank]/4 changes.
+
 2022-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106656

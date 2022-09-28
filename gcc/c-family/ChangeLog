@@ -1,3 +1,55 @@
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101165
+	PR c++/106882
+	* c-cppbuiltin.cc (c_cpp_builtins): Define __cpp_implicit_move.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-format.cc (c_keywords): Drop nothrow.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106651
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_static_call_operator=202207L for C++23.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ASSUME,
+	PRAGMA_OMP_ASSUMES and PRAGMA_OMP_BEGIN.  Rename
+	PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	* c-pragma.cc (omp_pragmas): Add assumes and begin.
+	For end rename PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	(omp_pragmas_simd): Add assume.
+	* c-common.h (c_omp_directives): Declare.
+	* c-omp.cc (omp_directives): Rename to ...
+	(c_omp_directives): ... this.  No longer static.  Uncomment
+	assume, assumes, begin assumes and end assumes entries.
+	In end declare target entry rename PRAGMA_OMP_END_DECLARE_TARGET
+	to PRAGMA_OMP_END.
+	(c_omp_categorize_directive): Adjust for omp_directives to
+	c_omp_directives renaming.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* c-common.cc (c_common_reswords): Change _Float{16,32,64,128} and
+	_Float{32,64,128}x flags from D_CONLY to 0.
+	(shorten_binary_op): Punt if common_type returns error_mark_node.
+	(shorten_compare): Likewise.
+	(c_common_nodes_and_builtins): For C++ record _Float{16,32,64,128}
+	and _Float{32,64,128}x builtin types if available.  For C++
+	clear float128t_type_node.
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__STDCPP_FLOAT{16,32,64,128}_T__ for C++23 if supported.
+	* c-lex.cc (interpret_float): For q/Q suffixes prefer
+	float128t_type_node over float128_type_node.  Allow
+	{f,F}{16,32,64,128} suffixes for C++ if supported with pedwarn
+	for C++20 and older.  Allow {f,F}{32,64,128}x suffixes for C++
+	with pedwarn.  Don't call excess_precision_type for C++.
+
 2022-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106656

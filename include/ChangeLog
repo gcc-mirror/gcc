@@ -1,3 +1,16 @@
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.
+	(struct demangle_component): Add u.s_extended_builtin member.
+
+2022-09-27  Meghan Denny  <hello@nektro.net>
+
+	* dwarf2.h: Update with additional languages from dwarf
+	standard.
+
 2022-07-12  Martin Liska  <mliska@suse.cz>
 
 	* plugin-api.h (enum linker_api_version): New enum.

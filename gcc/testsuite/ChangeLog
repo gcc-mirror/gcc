@@ -1,3 +1,118 @@
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101165
+	PR c++/106882
+	* g++.dg/conversion/pr41426.C: Add dg-error for C++23.
+	* g++.dg/cpp0x/elision_weak.C: Likewise.
+	* g++.dg/cpp0x/move-return3.C: Only link in c++20_down.
+	* g++.dg/cpp1y/decltype-auto2.C: Add dg-error for C++23.
+	* g++.dg/cpp1y/lambda-generic-89419.C: Likewise.
+	* g++.dg/cpp23/feat-cxx2b.C: Test __cpp_implicit_move.
+	* g++.dg/gomp/pr56217.C: Only compile in c++20_down.
+	* g++.dg/warn/Wno-return-local-addr.C: Add dg-error for C++23.
+	* g++.dg/warn/Wreturn-local-addr.C: Adjust dg-error.
+	* g++.old-deja/g++.brendan/crash55.C: Add dg-error for C++23.
+	* g++.old-deja/g++.jason/temporary2.C: Likewise.
+	* g++.old-deja/g++.mike/p2846b.C: Adjust.
+	* g++.dg/cpp1y/decltype-auto6.C: New test.
+	* g++.dg/cpp23/decltype1.C: New test.
+	* g++.dg/cpp23/decltype2.C: New test.
+	* g++.dg/cpp23/elision1.C: New test.
+	* g++.dg/cpp23/elision2.C: New test.
+	* g++.dg/cpp23/elision3.C: New test.
+	* g++.dg/cpp23/elision4.C: New test.
+	* g++.dg/cpp23/elision5.C: New test.
+	* g++.dg/cpp23/elision6.C: New test.
+	* g++.dg/cpp23/elision7.C: New test.
+
+2022-09-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107054
+	* gfortran.dg/pr107054.f90: New test.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/popcount6b.c: New test.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/concepts-traits3.C: Adjust expected diagnostics.
+
+2022-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/107049
+	* g++.dg/ext/is_convertible4.C: New test.
+	* g++.dg/ext/is_nothrow_convertible4.C: New test.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/popcount6.c: New test.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106651
+	* g++.dg/template/error30.C: Adjust expected diagnostics.
+	* g++.dg/cpp1z/constexpr-lambda13.C: Likewise.
+	* g++.dg/cpp23/feat-cxx2b.C: Test __cpp_static_call_operator.
+	* g++.dg/cpp23/static-operator-call1.C: New test.
+	* g++.dg/cpp23/static-operator-call2.C: New test.
+	* g++.old-deja/g++.jason/operator.C: Adjust expected diagnostics.
+	* g++.dg/cpp23/static-operator-call3.C: New file.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107029
+	* g++.dg/torture/pr107029.C: New test.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/assume-1.c: New test.
+	* c-c++-common/gomp/assume-2.c: New test.
+	* c-c++-common/gomp/assume-3.c: New test.
+	* c-c++-common/gomp/assumes-1.c: New test.
+	* c-c++-common/gomp/assumes-2.c: New test.
+	* c-c++-common/gomp/assumes-3.c: New test.
+	* c-c++-common/gomp/assumes-4.c: New test.
+	* c-c++-common/gomp/begin-assumes-1.c: New test.
+	* c-c++-common/gomp/begin-assumes-2.c: New test.
+	* c-c++-common/gomp/begin-assumes-3.c: New test.
+	* c-c++-common/gomp/begin-assumes-4.c: New test.
+	* c-c++-common/gomp/declare-target-6.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add n1 and n2 arguments, add
+	tests for assume directive.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* g++.dg/gomp/attrs-9.C: Add n1 and n2 variables, add tests for
+	begin assumes directive.
+	* g++.dg/gomp/attrs-15.C: New test.
+	* g++.dg/gomp/attrs-16.C: New test.
+	* g++.dg/gomp/attrs-17.C: New test.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/diagnostic/conflicting-specifiers-1.C: Adjust expected
+	diagnostics.
+	* g++.dg/parse/typedef8.C: Likewise.
+	* g++.dg/parse/crash39.C: Likewise.
+	* g++.dg/other/mult-stor1.C: Likewise.
+	* g++.dg/cpp2a/constinit3.C: Likewise.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* g++.dg/cpp23/ext-floating1.C: New test.
+	* g++.dg/cpp23/ext-floating2.C: New test.
+	* g++.dg/cpp23/ext-floating3.C: New test.
+	* g++.dg/cpp23/ext-floating4.C: New test.
+	* g++.dg/cpp23/ext-floating5.C: New test.
+	* g++.dg/cpp23/ext-floating6.C: New test.
+	* g++.dg/cpp23/ext-floating7.C: New test.
+	* g++.dg/cpp23/ext-floating8.C: New test.
+	* g++.dg/cpp23/ext-floating9.C: New test.
+	* g++.dg/cpp23/ext-floating10.C: New test.
+	* g++.dg/cpp23/ext-floating.h: New file.
+	* g++.target/i386/float16-1.C: Adjust expected diagnostics.
+
 2022-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106656

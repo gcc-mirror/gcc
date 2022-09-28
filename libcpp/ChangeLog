@@ -1,3 +1,10 @@
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* expr.cc (interpret_float_suffix): Allow {f,F}{16,32,64,128} and
+	{f,F}{32,64,128}x suffixes for C++.
+
 2022-09-08  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* line-map.cc (location_adhoc_data_update): Remove reliance on
