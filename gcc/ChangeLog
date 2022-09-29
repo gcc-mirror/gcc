@@ -1,3 +1,9 @@
+2022-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-v2): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document neoverse-v2.
+
 2022-09-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
