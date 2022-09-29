@@ -1,3 +1,11 @@
+2022-09-28  Lulu Cheng  <chenglulu@loongson.cn>
+	    Yang Yujie  <yangyujie@loongson.cn>
+
+	* configure.tgt: Add loongarch support.
+	* config/loongarch/asm.h: New file.
+	* config/loongarch/sjlj.S: New file.
+	* config/loongarch/target.h: New file.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

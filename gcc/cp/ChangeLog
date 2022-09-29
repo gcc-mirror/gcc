@@ -1,3 +1,20 @@
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* module.cc (write_location): Write discriminator.
+	(read_location): Read discriminator.
+
+2022-09-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_NTTP_OBJECT_P): New.
+	(template_parm_object_p): Delete.
+	(build_template_parm_object): Declare.
+	* cxx-pretty-print.cc (pp_cx_template_argument_list): Use DECL_NTTP_OBJECT_P.
+	* error.cc (dump_simple_decl): Likewise.
+	* mangle.cc (write_template_arg): Likewise.
+	* pt.cc (template_parm_object_p): Delete.
+	(create_template_parm_object): Separated out checking from ...
+	(get_template_parm_object): ... this, new external entry point.
+
 2022-09-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101165

@@ -1,3 +1,109 @@
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* basic-block.h: Remove discriminator from basic blocks.
+	* cfghooks.cc (split_block_1): Remove discriminator from basic blocks.
+	* final.cc (final_start_function_1): Switch from per-bb to per statement
+	discriminator.
+	(final_scan_insn_1): Don't keep track of basic block discriminators.
+	(compute_discriminator): Switch from basic block discriminators to
+	instruction discriminators.
+	(insn_discriminator): New function to return instruction discriminator.
+	(notice_source_line): Use insn_discriminator.
+	* gimple-pretty-print.cc (dump_gimple_bb_header): Remove dumping of
+	basic block discriminators.
+	* gimple-streamer-in.cc (input_bb): Remove reading of basic block
+	discriminators.
+	* gimple-streamer-out.cc (output_bb): Remove writing of basic block
+	discriminators.
+	* input.cc (make_location): Pass 0 discriminator to COMBINE_LOCATION_DATA.
+	(location_with_discriminator): New function to combine locus with
+	a discriminator.
+	(has_discriminator): New function to check if a location has a discriminator.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+	* input.h: Declarations of new functions.
+	* lto-streamer-in.cc (cmp_loc): Use discriminators in location comparison.
+	(apply_location_cache): Keep track of current discriminator.
+	(input_location_and_block): Read discriminator from stream.
+	* lto-streamer-out.cc (clear_line_info): Set current discriminator to
+	UINT_MAX.
+	(lto_output_location_1): Write discriminator to stream.
+	* lto-streamer.h: Add discriminator to cached_location.
+	Add current_discr to lto_location_cache.
+	Add current_discr to output_block.
+	* print-rtl.cc (print_rtx_operand_code_i): Print discriminator.
+	* rtl.h: Add extern declaration of insn_discriminator.
+	* tree-cfg.cc (assign_discriminator): New function to assign a unique
+	discriminator value to all statements in a basic block that have the given
+	line number.
+	(assign_discriminators): Assign discriminators to statement locations.
+	* tree-pretty-print.cc (dump_location): Dump discriminators.
+	* tree.cc (set_block): Preserve discriminator when setting block.
+	(set_source_range): Preserve discriminator when setting source range.
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* config/i386/predicates.md (encodekey128_operation): Check
+	XMM4-XMM6 as clobbered.
+	(encodekey256_operation): Likewise.
+	* config/i386/sse.md (encodekey128u32): Clobber XMM4-XMM6.
+	(encodekey256u32): Likewise.
+
+2022-09-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add riscv-vector-builtins.o.
+	* config/riscv/riscv-builtins.cc (riscv_init_builtins): Add RVV builtin function.
+	* config/riscv/riscv-protos.h (riscv_v_ext_enabled_vector_mode_p): New function.
+	* config/riscv/riscv.cc (ENTRY): New macro.
+	(riscv_v_ext_enabled_vector_mode_p): New function.
+	(riscv_mangle_type): Add RVV mangle.
+	(riscv_vector_mode_supported_p): Adjust RVV machine mode.
+	(riscv_verify_type_context): Add context check for RVV.
+	(riscv_vector_alignment): Add RVV alignment target hook support.
+	(TARGET_VECTOR_MODE_SUPPORTED_P): New target hook support.
+	(TARGET_VERIFY_TYPE_CONTEXT): Ditto.
+	(TARGET_VECTOR_ALIGNMENT): Ditto.
+	* config/riscv/t-riscv: Add riscv-vector-builtins.o
+	* config/riscv/riscv-vector-builtins.cc: New file.
+	* config/riscv/riscv-vector-builtins.def: New file.
+	* config/riscv/riscv-vector-builtins.h: New file.
+	* config/riscv/riscv-vector-switch.def: New file.
+
+2022-09-28  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* var-tracking.cc (vt_add_function_parameter): Add entry values
+	up to maximal register mode.
+
+2022-09-28  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* cselib.cc (new_cselib_val): Keep track of further subvalue
+	relations.
+
+2022-09-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm-c.cc (arm_cpu_builtins): Define
+	__ARM_FEATURE_AES and __ARM_FEATURE_SHA2.
+
+2022-09-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/105414
+	* config/loongarch/loongarch.md (UNSPEC_FMAX): New unspec.
+	(UNSPEC_FMIN): Likewise.
+	(fmax<mode>3): Use UNSPEC_FMAX instead of smax.
+	(fmin<mode>3): Use UNSPEC_FMIN instead of smin.
+
+2022-09-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_asan_shadow_offset):
+	Fixed typo in "asan_mapping.h".
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/58245
+	* calls.cc: Include "tree-eh.h".
+	(expand_call): Check stack canary before throwing exception.
+
 2022-09-27  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* ipa-cp.cc (good_cloning_opportunity_p): Fix profile count comparison.

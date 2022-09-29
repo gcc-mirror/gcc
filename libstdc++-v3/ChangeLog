@@ -1,3 +1,44 @@
+2022-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document std::bind API
+	changes.
+	* doc/xml/manual/intro.xml: Document LWG 2487 status.
+	* doc/xml/manual/using.xml: Clarify default value of
+	_GLIBCXX_USE_DEPRECATED.
+	* doc/html/*: Regenerate.
+	* include/std/functional (_Bind::operator()(Args&&...) volatile)
+	(_Bind::operator()(Args&&...) const volatile)
+	(_Bind_result::operator()(Args&&...) volatile)
+	(_Bind_result::operator()(Args&&...) const volatile): Replace
+	with deleted overload for C++20 and later.
+	* testsuite/20_util/bind/cv_quals.cc: Check for deprecated
+	warnings in C++17.
+	* testsuite/20_util/bind/cv_quals_2.cc: Likewise, and check for
+	ill-formed in C++20.
+
+2022-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70692
+	* include/bits/invoke.h [__cplusplus < 201703] (__invoke_r):
+	Remove is_invocable and is_convertible constraints.
+	* include/std/type_traits (__is_invocable_impl::_S_conv): Use
+	non-deduced context for parameter.
+	(__is_invocable_impl::_S_test): Remove _Check_noex template
+	parameter and use deduced noexcept value in its place. Add bool
+	parameter to detect dangling references.
+	(__is_invocable_impl::type): Adjust call to _S_test to avoid
+	deducing unnecessary noexcept property..
+	(__is_invocable_impl::__nothrow_type): Rename to ...
+	(__is_invocable_impl::__nothrow_conv): ... this. Adjust call
+	to _S_test to deduce noexcept property.
+	* testsuite/20_util/bind/dangling_ref.cc: New test.
+	* testsuite/20_util/function/cons/70692.cc: New test.
+	* testsuite/20_util/function_objects/invoke/dangling_ref.cc:
+	New test.
+	* testsuite/20_util/is_invocable/dangling_ref.cc: New test.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc:
+	New test.
+
 2022-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/107049

@@ -1,3 +1,54 @@
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* c-c++-common/ubsan/pr85213.c: Pass -gno-statement-frontiers.
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* gcc.target/i386/keylocker-encodekey128.c: Don't check
+	XMM4-XMM6.
+	* gcc.target/i386/keylocker-encodekey256.c: Likewise.
+
+2022-09-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/abi-1.c: New test.
+	* gcc.target/riscv/rvv/base/abi-2.c: New test.
+	* gcc.target/riscv/rvv/base/abi-3.c: New test.
+	* gcc.target/riscv/rvv/base/abi-4.c: New test.
+	* gcc.target/riscv/rvv/base/abi-5.c: New test.
+	* gcc.target/riscv/rvv/base/abi-6.c: New test.
+	* gcc.target/riscv/rvv/base/abi-7.c: New test.
+	* gcc.target/riscv/rvv/rvv.exp: New test.
+
+2022-09-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/attr-crypto.c: Update test.
+
+2022-09-28  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: Rephrase
+	to unimplemented.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x2.c: Replace
+	dg-xfail-if with dg-skip-if.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x4.c: Likewise.
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/58245
+	* g++.dg/fstack-protector-strong.C: Adjusted.
+	* g++.dg/pr58245-1.C: New test.
+
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* gcc.dg/tree-prof/cold_partition_label.c: Don't check for hot/cold splitting with AutoFDO.
+	* gcc.dg/tree-prof/section-attr-1.c: Don't check for hot/cold splitting with AutoFDO.
+	* gcc.dg/tree-prof/section-attr-2.c: Don't check for hot/cold splitting with AutoFDO.
+	* gcc.dg/tree-prof/section-attr-3.c: Don't check for hot/cold splitting with AutoFDO.
+
 2022-09-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101165

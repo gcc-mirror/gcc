@@ -1,3 +1,28 @@
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* include/line-map.h: Add discriminator to location_adhoc_data.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): Add external declaration.
+	(get_discriminator_from_loc): Add external declaration.
+	(COMBINE_LOCATION_DATA): Add discriminator parameter.
+	* lex.cc (get_location_for_byte_range_in_cur_line) Pass 0 discriminator
+	in a call to COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	(_cpp_lex_direct): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	* line-map.cc (location_adhoc_data_hash): Use discriminator compute
+	location_adhoc_data hash.
+	(location_adhoc_data_eq): Use discriminator when comparing
+	location_adhoc_data.
+	(can_be_stored_compactly_p): Check discriminator to determine
+	compact storage.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): New function to get the discriminator
+	from an ad-hoc location.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+
 2022-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106652

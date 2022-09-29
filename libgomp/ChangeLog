@@ -1,3 +1,8 @@
+2022-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark 'assume' as implemented
+	for C/C++. Remove duplicated 'begin declare target' entry.
+
 2022-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/106981
