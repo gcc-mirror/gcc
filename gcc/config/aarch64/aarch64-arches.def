@@ -28,7 +28,7 @@
    ARCH_REV is an integer specifying the architecture major revision.
    FLAGS are the flags implied by the architecture.
    Due to the assumptions about the positions of these fields in config.gcc,
-   the NAME should be kept as the first argument and FLAGS as the last.  */
+   NAME should be kept as the first argument.  */
 
 AARCH64_ARCH("armv8-a",	      generic,	     V8A,	8,  AARCH64_FL_FOR_V8A)
 AARCH64_ARCH("armv8.1-a",     generic,	     V8_1A,	8,  AARCH64_FL_FOR_V8_1A)

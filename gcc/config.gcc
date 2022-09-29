@@ -4100,14 +4100,6 @@ case "${target}" in
 			  options_parsed="`$ac_cv_prog_CPP -D"$opt_macro" -x c \
 				${srcdir}/config/aarch64/aarch64-option-extensions.def`"
 
-			  # Match one element inside AARCH64_OPT_EXTENSION, we
-			  # consume anything that's not a ,.
-			  elem="[ 	]*\([^,]\+\)[ 	]*"
-
-			  # Repeat the pattern for the number of entries in the
-			  # AARCH64_OPT_EXTENSION, currently 6 times.
-			  sed_patt="^$elem,$elem,$elem,$elem,$elem,$elem"
-
 			  while [ x"$ext_val" != x ]
 			  do
 				ext_val=`echo $ext_val | sed -e 's/\+//'`
