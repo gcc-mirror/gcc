@@ -29161,9 +29161,10 @@ finish_concept_definition (cp_expr id, tree init)
 static tree
 listify (tree arg)
 {
-  tree std_init_list = get_namespace_binding (std_node, init_list_identifier);
+  tree std_init_list = lookup_qualified_name (std_node, init_list_identifier);
 
-  if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
+  if (std_init_list == error_mark_node
+      || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {
       gcc_rich_location richloc (input_location);
       maybe_add_include_fixit (&richloc, "<initializer_list>", false);
