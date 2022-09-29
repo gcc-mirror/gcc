@@ -128,9 +128,9 @@ aarch64_handle_option (struct gcc_options *opts,
 struct aarch64_option_extension
 {
   const char *name;
-  uint64_t flag_canonical;
-  uint64_t flags_on;
-  uint64_t flags_off;
+  aarch64_feature_flags flag_canonical;
+  aarch64_feature_flags flags_on;
+  aarch64_feature_flags flags_off;
 };
 
 /* ISA extensions in AArch64.  */
@@ -149,14 +149,14 @@ struct processor_name_to_arch
 {
   const char *processor_name;
   aarch64_arch arch;
-  uint64_t flags;
+  aarch64_feature_flags flags;
 };
 
 struct arch_to_arch_name
 {
   aarch64_arch arch;
   const char *arch_name;
-  uint64_t flags;
+  aarch64_feature_flags flags;
 };
 
 /* Map processor names to the architecture revision they implement and
@@ -186,7 +186,7 @@ static constexpr arch_to_arch_name all_architectures[] =
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
 enum aarch64_parse_opt_result
-aarch64_parse_extension (const char *str, uint64_t *isa_flags,
+aarch64_parse_extension (const char *str, aarch64_feature_flags *isa_flags,
 			 std::string *invalid_extension)
 {
   /* The extension string is parsed left to right.  */
@@ -266,8 +266,9 @@ aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
    that all the "+" flags come before the "+no" flags.  */
 
 std::string
-aarch64_get_extension_string_for_isa_flags (uint64_t isa_flags,
-					    uint64_t default_arch_flags)
+aarch64_get_extension_string_for_isa_flags
+  (aarch64_feature_flags isa_flags,
+   aarch64_feature_flags default_arch_flags)
 {
   std::string outstr = "";
 
@@ -375,7 +376,7 @@ aarch64_rewrite_selected_cpu (const char *name)
       || a_to_an->arch == aarch64_no_arch)
     fatal_error (input_location, "unknown value %qs for %<-mcpu%>", name);
 
-  uint64_t extensions = p_to_a->flags;
+  aarch64_feature_flags extensions = p_to_a->flags;
   aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
   std::string outstr = a_to_an->arch_name

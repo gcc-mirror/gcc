@@ -31,7 +31,7 @@
 struct aarch64_arch_extension
 {
   const char *ext;
-  uint64_t flag;
+  aarch64_feature_flags flag;
   const char *feat_string;
 };
 
@@ -50,7 +50,7 @@ struct aarch64_core_data
   unsigned char implementer_id; /* Exactly 8 bits */
   unsigned int part_no; /* 12 bits + 12 bits */
   unsigned variant;
-  uint64_t flags;
+  aarch64_feature_flags flags;
 };
 
 #define AARCH64_BIG_LITTLE(BIG, LITTLE) \
@@ -75,7 +75,7 @@ struct aarch64_arch_driver_info
 {
   const char* id;
   const char* name;
-  uint64_t flags;
+  aarch64_feature_flags flags;
 };
 
 /* Skip the leading "V" in the architecture name.  */
@@ -261,8 +261,8 @@ host_detect_local_cpu (int argc, const char **argv)
   unsigned int variants[2] = { ALL_VARIANTS, ALL_VARIANTS };
   unsigned int n_variants = 0;
   bool processed_exts = false;
-  uint64_t extension_flags = 0;
-  uint64_t default_flags = 0;
+  aarch64_feature_flags extension_flags = 0;
+  aarch64_feature_flags default_flags = 0;
   std::string buf;
   size_t sep_pos = -1;
   char *fcpu_info;

@@ -28,7 +28,7 @@ TargetVariable
 enum aarch64_arch selected_arch = aarch64_no_arch
 
 TargetVariable
-uint64_t aarch64_isa_flags = 0
+aarch64_feature_flags aarch64_isa_flags = 0
 
 TargetVariable
 unsigned aarch64_enable_bti = 2

@@ -1034,10 +1034,11 @@ bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
-						       uint64_t *,
+						       aarch64_feature_flags *,
 						       std::string *);
 void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
-std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
+std::string aarch64_get_extension_string_for_isa_flags (aarch64_feature_flags,
+							aarch64_feature_flags);
 
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);
