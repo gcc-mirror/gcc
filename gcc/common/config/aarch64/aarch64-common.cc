@@ -127,14 +127,14 @@ aarch64_handle_option (struct gcc_options *opts,
 /* An ISA extension in the co-processor and main instruction set space.  */
 struct aarch64_option_extension
 {
-  const char *const name;
-  const uint64_t flag_canonical;
-  const uint64_t flags_on;
-  const uint64_t flags_off;
+  const char *name;
+  uint64_t flag_canonical;
+  uint64_t flags_on;
+  uint64_t flags_off;
 };
 
 /* ISA extensions in AArch64.  */
-static const struct aarch64_option_extension all_extensions[] =
+static constexpr aarch64_option_extension all_extensions[] =
 {
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, F) \
   {NAME, AARCH64_FL_##IDENT, \
@@ -147,21 +147,21 @@ static const struct aarch64_option_extension all_extensions[] =
 
 struct processor_name_to_arch
 {
-  const char *const processor_name;
-  const enum aarch64_arch arch;
-  const uint64_t flags;
+  const char *processor_name;
+  aarch64_arch arch;
+  uint64_t flags;
 };
 
 struct arch_to_arch_name
 {
-  const enum aarch64_arch arch;
-  const char *const arch_name;
-  const uint64_t flags;
+  aarch64_arch arch;
+  const char *arch_name;
+  uint64_t flags;
 };
 
 /* Map processor names to the architecture revision they implement and
    the default set of architectural feature flags they support.  */
-static const struct processor_name_to_arch all_cores[] =
+static constexpr processor_name_to_arch all_cores[] =
 {
 #define AARCH64_CORE(NAME, CORE_IDENT, C, ARCH_IDENT, E, F, G, H, I) \
   {NAME, AARCH64_ARCH_##ARCH_IDENT, feature_deps::cpu_##CORE_IDENT},
@@ -171,7 +171,7 @@ static const struct processor_name_to_arch all_cores[] =
 };
 
 /* Map architecture revisions to their string representation.  */
-static const struct arch_to_arch_name all_architectures[] =
+static constexpr arch_to_arch_name all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, B, ARCH_IDENT, D, E)	\
   {AARCH64_ARCH_##ARCH_IDENT, NAME, feature_deps::ARCH_IDENT ().enable},

@@ -50,7 +50,7 @@ struct aarch64_core_data
   unsigned char implementer_id; /* Exactly 8 bits */
   unsigned int part_no; /* 12 bits + 12 bits */
   unsigned variant;
-  const uint64_t flags;
+  uint64_t flags;
 };
 
 #define AARCH64_BIG_LITTLE(BIG, LITTLE) \
@@ -64,7 +64,7 @@ struct aarch64_core_data
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   { CORE_NAME, #ARCH, IMP, PART, VARIANT, feature_deps::cpu_##CORE_IDENT },
 
-static struct aarch64_core_data aarch64_cpu_data[] =
+static constexpr aarch64_core_data aarch64_cpu_data[] =
 {
 #include "aarch64-cores.def"
   { NULL, NULL, INVALID_IMP, INVALID_CORE, ALL_VARIANTS, 0 }
@@ -75,14 +75,14 @@ struct aarch64_arch_driver_info
 {
   const char* id;
   const char* name;
-  const uint64_t flags;
+  uint64_t flags;
 };
 
 /* Skip the leading "V" in the architecture name.  */
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
   { #ARCH_IDENT + 1, NAME, feature_deps::ARCH_IDENT ().enable },
 
-static struct aarch64_arch_driver_info aarch64_arches[] =
+static constexpr aarch64_arch_driver_info aarch64_arches[] =
 {
 #include "aarch64-arches.def"
   {NULL, NULL, 0}
@@ -92,7 +92,7 @@ static struct aarch64_arch_driver_info aarch64_arches[] =
 /* Return an aarch64_arch_driver_info for the architecture described
    by ID, or NULL if ID describes something we don't know about.  */
 
-static struct aarch64_arch_driver_info*
+static const aarch64_arch_driver_info *
 get_arch_from_id (const char* id)
 {
   unsigned int i = 0;
@@ -396,8 +396,7 @@ host_detect_local_cpu (int argc, const char **argv)
 
       if (aarch64_cpu_data[i].name == NULL)
 	{
-	  aarch64_arch_driver_info* arch_info
-	    = get_arch_from_id (DEFAULT_ARCH);
+	  auto arch_info = get_arch_from_id (DEFAULT_ARCH);
 
 	  gcc_assert (arch_info);
 
@@ -407,7 +406,7 @@ host_detect_local_cpu (int argc, const char **argv)
       else if (arch)
 	{
 	  const char *arch_id = aarch64_cpu_data[i].arch;
-	  aarch64_arch_driver_info* arch_info = get_arch_from_id (arch_id);
+	  auto arch_info = get_arch_from_id (arch_id);
 
 	  /* We got some arch indentifier that's not in aarch64-arches.def?  */
 	  if (!arch_info)

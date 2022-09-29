@@ -2671,16 +2671,16 @@ aarch64_tuning_override_functions[] =
 /* A processor implementing AArch64.  */
 struct processor
 {
-  const char *const name;
-  enum aarch64_processor ident;
-  enum aarch64_processor sched_core;
-  enum aarch64_arch arch;
-  const uint64_t flags;
-  const struct tune_params *const tune;
+  const char *name;
+  aarch64_processor ident;
+  aarch64_processor sched_core;
+  aarch64_arch arch;
+  uint64_t flags;
+  const tune_params *tune;
 };
 
 /* Architectures implementing AArch64.  */
-static const struct processor all_architectures[] =
+static constexpr processor all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, D, E) \
   {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, \
