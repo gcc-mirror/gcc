@@ -6415,6 +6415,18 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      if (*sysroot_hdrs_suffix_spec)
 		info.append = concat (info.append, dir_separator_str,
 				      multilib_dir, NULL);
+	      else if (multiarch_dir)
+		{
+		  /* For multiarch, search include-fixed/<multiarch-dir>
+		     before include-fixed.  */
+		  info.append = concat (info.append, dir_separator_str,
+					multiarch_dir, NULL);
+		  info.append_len = strlen (info.append);
+		  for_each_path (&include_prefixes, false, info.append_len,
+				 spec_path, &info);
+
+		  info.append = "include-fixed";
+		}
 	      info.append_len = strlen (info.append);
 	      for_each_path (&include_prefixes, false, info.append_len,
 			     spec_path, &info);
