@@ -12240,6 +12240,16 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
     {
     case CPTK_UNDERLYING_TYPE:
       return finish_underlying_type (type1);
+    case CPTK_REMOVE_CV:
+      return cv_unqualified (type1);
+    case CPTK_REMOVE_REFERENCE:
+      if (TYPE_REF_P (type1))
+	type1 = TREE_TYPE (type1);
+      return type1;
+    case CPTK_REMOVE_CVREF:
+      if (TYPE_REF_P (type1))
+	type1 = TREE_TYPE (type1);
+      return cv_unqualified (type1);
     default:
       gcc_unreachable ();
     }

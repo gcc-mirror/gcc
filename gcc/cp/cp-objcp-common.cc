@@ -467,6 +467,9 @@ names_builtin_p (const char *name)
     case RID_IS_NOTHROW_CONVERTIBLE:
     case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
     case RID_REF_CONVERTS_FROM_TEMPORARY:
+    case RID_REMOVE_CV:
+    case RID_REMOVE_REFERENCE:
+    case RID_REMOVE_CVREF:
       return true;
     default:
       break;

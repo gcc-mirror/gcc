@@ -547,6 +547,9 @@ const struct c_common_resword c_common_reswords[] =
 					D_CXXONLY },
   { "__reference_converts_from_temporary", RID_REF_CONVERTS_FROM_TEMPORARY,
 					D_CXXONLY },
+  { "__remove_cv", RID_REMOVE_CV, D_CXXONLY },
+  { "__remove_reference", RID_REMOVE_REFERENCE, D_CXXONLY },
+  { "__remove_cvref", RID_REMOVE_CVREF, D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },

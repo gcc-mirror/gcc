@@ -1147,6 +1147,9 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
       /* C++11 extensions.  */
     case RID_DECLTYPE:
     case RID_UNDERLYING_TYPE:
+    case RID_REMOVE_CV:
+    case RID_REMOVE_REFERENCE:
+    case RID_REMOVE_CVREF:
     case RID_CONSTEXPR:
       /* C++20 extensions.  */
     case RID_CONSTINIT:
@@ -11027,6 +11030,18 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
       kind = CPTK_REF_CONVERTS_FROM_TEMPORARY;
       binary = true;
       break;
+    case RID_REMOVE_CV:
+      kind = CPTK_REMOVE_CV;
+      type = true;
+      break;
+    case RID_REMOVE_REFERENCE:
+      kind = CPTK_REMOVE_REFERENCE;
+      type = true;
+      break;
+    case RID_REMOVE_CVREF:
+      kind = CPTK_REMOVE_CVREF;
+      type = true;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -19867,6 +19882,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       return type;
 
     case RID_UNDERLYING_TYPE:
+    case RID_REMOVE_CV:
+    case RID_REMOVE_REFERENCE:
+    case RID_REMOVE_CVREF:
       type = cp_parser_trait (parser, token->keyword);
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,

@@ -2728,6 +2728,15 @@ pp_cxx_trait (cxx_pretty_printer *pp, tree t)
     case CPTK_UNDERLYING_TYPE:
       pp_cxx_ws_string (pp, "__underlying_type");
       break;
+    case CPTK_REMOVE_CV:
+      pp_cxx_ws_string (pp, "__remove_cv");
+      break;
+    case CPTK_REMOVE_REFERENCE:
+      pp_cxx_ws_string (pp, "__remove_reference");
+      break;
+    case CPTK_REMOVE_CVREF:
+      pp_cxx_ws_string (pp, "__remove_cvref");
+      break;
     default:
       gcc_unreachable ();
     }
