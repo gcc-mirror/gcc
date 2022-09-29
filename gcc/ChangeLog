@@ -1,3 +1,27 @@
+2022-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2022-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-v2): New entry.
+	(demeter): Update tunings to neoversev2.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc (demeter_addrcost_table): Rename to
+	neoversev2_addrcost_table.
+	(demeter_regmove_cost): Rename to neoversev2_addrcost_table.
+	(demeter_advsimd_vector_cost): Rename to neoversev2_advsimd_vector_cost.
+	(demeter_sve_vector_cost): Rename to neoversev2_sve_vector_cost.
+	(demeter_scalar_issue_info): Rename to neoversev2_scalar_issue_info.
+	(demeter_advsimd_issue_info): Rename to neoversev2_advsimd_issue_info.
+	(demeter_sve_issue_info): Rename to neoversev2_sve_issue_info.
+	(demeter_vec_issue_info): Rename to neoversev2_vec_issue_info.
+	Update references to above.
+	(demeter_vector_cost): Rename to neoversev2_vector_cost.
+	(demeter_tunings): Rename to neoversev2_tunings.
+	(aarch64_vec_op_count::rename_cycles_per_iter): Use
+	neoversev2_sve_issue_info instead of demeter_sve_issue_info.
+	* doc/invoke.texi (AArch64 Options): Document neoverse-v2.
+
 2022-09-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
