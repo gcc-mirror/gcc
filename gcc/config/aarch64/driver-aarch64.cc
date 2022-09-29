@@ -26,6 +26,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "aarch64-protos.h"
+#include "aarch64-feature-deps.h"
 
 struct aarch64_arch_extension
 {
@@ -34,9 +35,8 @@ struct aarch64_arch_extension
   const char *feat_string;
 };
 
-#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
-			      SYNTHETIC, FEATURE_STRING) \
-  { EXT_NAME, FLAG_CANONICAL, FEATURE_STRING },
+#define AARCH64_OPT_EXTENSION(EXT_NAME, IDENT, C, D, E, FEATURE_STRING) \
+  { EXT_NAME, AARCH64_FL_##IDENT, FEATURE_STRING },
 static struct aarch64_arch_extension aarch64_extensions[] =
 {
 #include "aarch64-option-extensions.def"
@@ -62,7 +62,7 @@ struct aarch64_core_data
 #define DEFAULT_ARCH "8A"
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
-  { CORE_NAME, #ARCH, IMP, PART, VARIANT, AARCH64_FL_FOR_##ARCH | FLAGS },
+  { CORE_NAME, #ARCH, IMP, PART, VARIANT, feature_deps::cpu_##CORE_IDENT },
 
 static struct aarch64_core_data aarch64_cpu_data[] =
 {
@@ -80,7 +80,7 @@ struct aarch64_arch_driver_info
 
 /* Skip the leading "V" in the architecture name.  */
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  { #ARCH_IDENT + 1, NAME, FLAGS },
+  { #ARCH_IDENT + 1, NAME, feature_deps::ARCH_IDENT ().enable },
 
 static struct aarch64_arch_driver_info aarch64_arches[] =
 {

@@ -701,9 +701,8 @@ check_required_extensions (location_t location, tree fndecl,
     return check_required_registers (location, fndecl);
 
   static const struct { uint64_t flag; const char *name; } extensions[] = {
-#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
-			      SYNTHETIC, FEATURE_STRING) \
-    { FLAG_CANONICAL, EXT_NAME },
+#define AARCH64_OPT_EXTENSION(EXT_NAME, IDENT, C, D, E, F) \
+    { AARCH64_FL_##IDENT, EXT_NAME },
 #include "aarch64-option-extensions.def"
   };
 

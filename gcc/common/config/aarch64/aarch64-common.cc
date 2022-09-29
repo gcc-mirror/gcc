@@ -30,6 +30,7 @@
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "config/aarch64/aarch64-feature-deps.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -138,9 +139,12 @@ struct aarch64_option_extension
 /* ISA extensions in AArch64.  */
 static const struct aarch64_option_extension all_extensions[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
-			      SYNTHETIC, Z) \
-  {NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, SYNTHETIC},
+#define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, F) \
+  {NAME, AARCH64_FL_##IDENT, \
+   feature_deps::IDENT ().explicit_on & ~AARCH64_FL_##IDENT, \
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT) \
+   & ~AARCH64_FL_##IDENT, \
+   AARCH64_FL_##IDENT == AARCH64_FL_CRYPTO},
 #include "config/aarch64/aarch64-option-extensions.def"
   {NULL, 0, 0, 0, false}
 };
@@ -149,9 +153,12 @@ static const struct aarch64_option_extension all_extensions[] =
    bits and extension turned on.  Cached for efficiency.  */
 static struct aarch64_option_extension all_extensions_by_on[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
-			      SYNTHETIC, Z) \
-  {NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, SYNTHETIC},
+#define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, F) \
+  {NAME, AARCH64_FL_##IDENT, \
+   feature_deps::IDENT ().explicit_on & ~AARCH64_FL_##IDENT, \
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT) \
+   & ~AARCH64_FL_##IDENT, \
+   AARCH64_FL_##IDENT == AARCH64_FL_CRYPTO},
 #include "config/aarch64/aarch64-option-extensions.def"
   {NULL, 0, 0, 0, false}
 };
@@ -174,18 +181,18 @@ struct arch_to_arch_name
    the default set of architectural feature flags they support.  */
 static const struct processor_name_to_arch all_cores[] =
 {
-#define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART, VARIANT) \
-  {NAME, AARCH64_ARCH_##ARCH_IDENT, AARCH64_FL_FOR_##ARCH_IDENT | FLAGS},
+#define AARCH64_CORE(NAME, CORE_IDENT, C, ARCH_IDENT, E, F, G, H, I) \
+  {NAME, AARCH64_ARCH_##ARCH_IDENT, feature_deps::cpu_##CORE_IDENT},
 #include "config/aarch64/aarch64-cores.def"
-  {"generic", AARCH64_ARCH_V8A, AARCH64_FL_FOR_V8A},
+  {"generic", AARCH64_ARCH_V8A, feature_deps::V8A ().enable},
   {"", aarch64_no_arch, 0}
 };
 
 /* Map architecture revisions to their string representation.  */
 static const struct arch_to_arch_name all_architectures[] =
 {
-#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH, FLAGS) \
-  {AARCH64_ARCH_##ARCH_IDENT, NAME, FLAGS},
+#define AARCH64_ARCH(NAME, B, ARCH_IDENT, D, E)	\
+  {AARCH64_ARCH_##ARCH_IDENT, NAME, feature_deps::ARCH_IDENT ().enable},
 #include "config/aarch64/aarch64-arches.def"
   {aarch64_no_arch, "", 0}
 };
