@@ -147,7 +147,7 @@ static const struct aarch64_option_extension all_extensions[] =
 
 struct processor_name_to_arch
 {
-  const std::string processor_name;
+  const char *const processor_name;
   const enum aarch64_arch arch;
   const uint64_t flags;
 };
@@ -155,7 +155,7 @@ struct processor_name_to_arch
 struct arch_to_arch_name
 {
   const enum aarch64_arch arch;
-  const std::string arch_name;
+  const char *const arch_name;
   const uint64_t flags;
 };
 
