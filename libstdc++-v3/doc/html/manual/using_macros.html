@@ -43,7 +43,7 @@
       <a class="link" href="configure.html" title="Configure">Configure</a>),
       with the various --enable/--disable choices being translated to
       #define/#undef).
-   </p><p> <acronym class="acronym">ABI</acronym> means that changing from the default value may
+   </p><p> <acronym class="acronym">ABI</acronym>-changing means that changing from the default value may
   mean changing the <acronym class="acronym">ABI</acronym> of compiled code. In other words,
   these choices control code which has already been compiled (i.e., in a
   binary such as libstdc++.a/.so).  If you explicitly #define or
@@ -53,7 +53,8 @@
   consistent linkage requires changing the config headers before
   building/installing the library.
    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">_GLIBCXX_USE_DEPRECATED</code></span></dt><dd><p>
-	Defined by default. Not configurable. ABI-changing. Turning this off
+	Defined to the value <code class="literal">1</code> by default.
+	Not configurable. ABI-changing. Turning this off
 	removes older ARM-style iostreams code, and other anachronisms
 	from the API.  This macro is dependent on the version of the
 	standard being tracked, and as a result may give different results for
