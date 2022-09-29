@@ -2695,7 +2695,7 @@ static const struct processor all_cores[] =
   FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
   {"generic", generic, cortexa53, AARCH64_ARCH_8A,
-    AARCH64_FL_FOR_ARCH8, &generic_tunings},
+    AARCH64_FL_FOR_V8A, &generic_tunings},
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 

@@ -177,7 +177,7 @@ static const struct processor_name_to_arch all_cores[] =
 #define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART, VARIANT) \
   {NAME, AARCH64_ARCH_##ARCH_IDENT, FLAGS},
 #include "config/aarch64/aarch64-cores.def"
-  {"generic", AARCH64_ARCH_8A, AARCH64_FL_FOR_ARCH8},
+  {"generic", AARCH64_ARCH_8A, AARCH64_FL_FOR_V8A},
   {"", aarch64_no_arch, 0}
 };
 
