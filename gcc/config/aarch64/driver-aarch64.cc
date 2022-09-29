@@ -78,8 +78,9 @@ struct aarch64_arch_driver_info
   const uint64_t flags;
 };
 
+/* Skip the leading "V" in the architecture name.  */
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  { #ARCH_IDENT, NAME, FLAGS },
+  { #ARCH_IDENT + 1, NAME, FLAGS },
 
 static struct aarch64_arch_driver_info aarch64_arches[] =
 {
