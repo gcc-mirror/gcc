@@ -483,7 +483,7 @@ cxx_pretty_printer::primary_expression (tree t)
       break;
 
     case TRAIT_EXPR:
-      pp_cxx_trait_expression (this, t);
+      pp_cxx_trait (this, t);
       break;
 
     case VA_ARG_EXPR:
@@ -1240,7 +1240,7 @@ cxx_pretty_printer::expression (tree t)
       break;
 
     case TRAIT_EXPR:
-      pp_cxx_trait_expression (this, t);
+      pp_cxx_trait (this, t);
       break;
 
     case ATOMIC_CONSTR:
@@ -1383,6 +1383,10 @@ cxx_pretty_printer::simple_type_specifier (tree t)
 
     case NULLPTR_TYPE:
       pp_cxx_ws_string (this, "std::nullptr_t");
+      break;
+
+    case TRAIT_TYPE:
+      pp_cxx_trait (this, t);
       break;
 
     default:
@@ -1876,7 +1880,7 @@ cxx_pretty_printer::type_id (tree t)
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_DECL:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
     case DECLTYPE_TYPE:
     case NULLPTR_TYPE:
     case TEMPLATE_ID_EXPR:
@@ -2594,9 +2598,22 @@ pp_cxx_binary_fold_expression (cxx_pretty_printer *pp, tree t)
 }
 
 void
-pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
+pp_cxx_trait (cxx_pretty_printer *pp, tree t)
 {
-  cp_trait_kind kind = TRAIT_EXPR_KIND (t);
+  cp_trait_kind kind;
+  tree type1, type2;
+  if (TREE_CODE (t) == TRAIT_EXPR)
+    {
+      kind = TRAIT_EXPR_KIND (t);
+      type1 = TRAIT_EXPR_TYPE1 (t);
+      type2 = TRAIT_EXPR_TYPE2 (t);
+    }
+  else
+    {
+      kind = TRAIT_TYPE_KIND (t);
+      type1 = TRAIT_TYPE_TYPE1 (t);
+      type2 = TRAIT_TYPE_TYPE2 (t);
+    }
 
   switch (kind)
     {
@@ -2708,23 +2725,29 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
       pp_cxx_ws_string (pp, "__reference_converts_from_temporary");
       break;
-
+    case CPTK_UNDERLYING_TYPE:
+      pp_cxx_ws_string (pp, "__underlying_type");
+      break;
     default:
       gcc_unreachable ();
     }
 
   pp_cxx_left_paren (pp);
-  pp->type_id (TRAIT_EXPR_TYPE1 (t));
-
-  if (kind == CPTK_IS_BASE_OF
-      || kind == CPTK_IS_SAME_AS
-      || kind == CPTK_IS_LAYOUT_COMPATIBLE
-      || kind == CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF)
+  pp->type_id (type1);
+  if (type2)
     {
-      pp_cxx_separate_with (pp, ',');
-      pp->type_id (TRAIT_EXPR_TYPE2 (t));
+      if (TREE_CODE (type2) != TREE_LIST)
+	{
+	  pp_cxx_separate_with (pp, ',');
+	  pp->type_id (type2);
+	}
+      else
+	for (tree arg = type2; arg; arg = TREE_CHAIN (arg))
+	  {
+	    pp_cxx_separate_with (pp, ',');
+	    pp->type_id (TREE_VALUE (arg));
+	  }
     }
-
   pp_cxx_right_paren (pp);
 }
 

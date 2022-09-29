@@ -10617,13 +10617,21 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
-    case UNDERLYING_TYPE:
       if (pfd->include_nondeduced_p
 	  && for_each_template_parm (TYPE_VALUES_RAW (t), fn, data,
 				     pfd->visited,
 				     pfd->include_nondeduced_p,
 				     pfd->any_fn))
 	return error_mark_node;
+      *walk_subtrees = false;
+      break;
+
+    case TRAIT_TYPE:
+      if (pfd->include_nondeduced_p)
+	{
+	  WALK_SUBTREE (TRAIT_TYPE_TYPE1 (t));
+	  WALK_SUBTREE (TRAIT_TYPE_TYPE2 (t));
+	}
       *walk_subtrees = false;
       break;
 
@@ -16513,11 +16521,14 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					complain | tf_ignore_bad_quals);
       }
 
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
       {
-	tree type = tsubst (UNDERLYING_TYPE_TYPE (t), args,
-			    complain, in_decl);
-	return finish_underlying_type (type);
+	tree type1 = tsubst (TRAIT_TYPE_TYPE1 (t), args, complain, in_decl);
+	tree type2 = tsubst (TRAIT_TYPE_TYPE2 (t), args, complain, in_decl);
+	type = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2);
+	return cp_build_qualified_type (type,
+					cp_type_quals (t) | cp_type_quals (type),
+					complain | tf_ignore_bad_quals);
       }
 
     case TYPE_ARGUMENT_PACK:
@@ -24927,9 +24938,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
       /* Cannot deduce anything from TYPEOF_TYPE, DECLTYPE_TYPE,
-	 or UNDERLYING_TYPE nodes.  */
+	 or TRAIT_TYPE nodes.  */
       return unify_success (explain_p);
 
     case ERROR_MARK:
@@ -27504,12 +27515,12 @@ dependent_type_p_r (tree type)
 	       (INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type)))))
     return true;
 
-  /* All TYPEOF_TYPEs, DECLTYPE_TYPEs, and UNDERLYING_TYPEs are
+  /* All TYPEOF_TYPEs, DECLTYPE_TYPEs, and TRAIT_TYPEs are
      dependent; if the argument of the `typeof' expression is not
      type-dependent, then it should already been have resolved.  */
   if (TREE_CODE (type) == TYPEOF_TYPE
       || TREE_CODE (type) == DECLTYPE_TYPE
-      || TREE_CODE (type) == UNDERLYING_TYPE)
+      || TREE_CODE (type) == TRAIT_TYPE)
     return true;
 
   /* A template argument pack is dependent if any of its packed

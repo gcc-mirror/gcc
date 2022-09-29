@@ -698,12 +698,8 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_paren (pp);
       break;
 
-    case UNDERLYING_TYPE:
-      pp_cxx_ws_string (pp, "__underlying_type");
-      pp_cxx_whitespace (pp);
-      pp_cxx_left_paren (pp);
-      dump_expr (pp, UNDERLYING_TYPE_TYPE (t), flags & ~TFF_EXPR_IN_PARENS);
-      pp_cxx_right_paren (pp);
+    case TRAIT_TYPE:
+      pp_cxx_trait (pp, t);
       break;
 
     case TYPE_PACK_EXPANSION:
@@ -971,7 +967,7 @@ dump_type_prefix (cxx_pretty_printer *pp, tree t, int flags)
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
     case DECLTYPE_TYPE:
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
@@ -1095,7 +1091,7 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
     case DECLTYPE_TYPE:
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
@@ -2956,7 +2952,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case TRAIT_EXPR:
-      pp_cxx_trait_expression (pp, t);
+      pp_cxx_trait (pp, t);
       break;
 
     case VA_ARG_EXPR:

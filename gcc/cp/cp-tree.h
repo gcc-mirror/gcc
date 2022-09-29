@@ -1437,6 +1437,22 @@ struct GTY (()) tree_trait_expr {
   enum cp_trait_kind kind;
 };
 
+/* An INTEGER_CST containing the kind of the trait type NODE.  */
+#define TRAIT_TYPE_KIND_RAW(NODE) \
+  TYPE_VALUES_RAW (TRAIT_TYPE_CHECK (NODE))
+
+/* The kind of the trait type NODE.  */
+#define TRAIT_TYPE_KIND(NODE) \
+  ((enum cp_trait_kind) TREE_INT_CST_LOW (TRAIT_TYPE_KIND_RAW (NODE)))
+
+/* The first argument of the trait type NODE.  */
+#define TRAIT_TYPE_TYPE1(NODE) \
+  TYPE_MIN_VALUE_RAW (TRAIT_TYPE_CHECK (NODE))
+
+/* The rest of the arguments of the trait type NODE.  */
+#define TRAIT_TYPE_TYPE2(NODE) \
+  TYPE_MAX_VALUE_RAW (TRAIT_TYPE_CHECK (NODE))
+
 /* Identifiers used for lambda types are almost anonymous.  Use this
    spare flag to distinguish them (they also have the anonymous flag).  */
 #define IDENTIFIER_LAMBDA_P(NODE) \
@@ -2226,6 +2242,7 @@ enum languages { lang_c, lang_cplusplus };
    || TREE_CODE (T) == TYPEOF_TYPE			\
    || TREE_CODE (T) == BOUND_TEMPLATE_TEMPLATE_PARM	\
    || TREE_CODE (T) == DECLTYPE_TYPE			\
+   || TREE_CODE (T) == TRAIT_TYPE			\
    || TREE_CODE (T) == DEPENDENT_OPERATOR_TYPE)
 
 /* Nonzero if T is a class (or struct or union) type.  Also nonzero
@@ -7736,6 +7753,7 @@ extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
+extern tree finish_trait_type			(enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
 extern tree build_lambda_object			(tree);
 extern tree begin_lambda_type                   (tree);

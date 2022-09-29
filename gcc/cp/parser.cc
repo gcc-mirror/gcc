@@ -2783,7 +2783,7 @@ static void cp_parser_late_parsing_default_args
   (cp_parser *, tree);
 static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
-static cp_expr cp_parser_trait_expr
+static cp_expr cp_parser_trait
   (cp_parser *, enum rid);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
@@ -5928,7 +5928,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_NOTHROW_CONVERTIBLE:
 	case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
 	case RID_REF_CONVERTS_FROM_TEMPORARY:
-	  return cp_parser_trait_expr (parser, token->keyword);
+	  return cp_parser_trait (parser, token->keyword);
 
 	// C++ concepts
 	case RID_REQUIRES:
@@ -10882,18 +10882,16 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   return expr;
 }
 
-/* Parse a trait expression.
-
-   Returns a representation of the expression, the underlying type
-   of the type at issue when KEYWORD is RID_UNDERLYING_TYPE.  */
+/* Parse a builtin trait expression or type.  */
 
 static cp_expr
-cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
+cp_parser_trait (cp_parser* parser, enum rid keyword)
 {
   cp_trait_kind kind;
   tree type1, type2 = NULL_TREE;
   bool binary = false;
   bool variadic = false;
+  bool type = false;
 
   switch (keyword)
     {
@@ -10989,6 +10987,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_UNDERLYING_TYPE:
       kind = CPTK_UNDERLYING_TYPE;
+      type = true;
       break;
     case RID_BASES:
       kind = CPTK_BASES;
@@ -11092,14 +11091,15 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
      the trait expr now or saving it for template instantiation.  */
   switch (kind)
     {
-    case CPTK_UNDERLYING_TYPE:
-      return cp_expr (finish_underlying_type (type1), trait_loc);
     case CPTK_BASES:
       return cp_expr (finish_bases (type1, false), trait_loc);
     case CPTK_DIRECT_BASES:
       return cp_expr (finish_bases (type1, true), trait_loc);
     default:
-      return finish_trait_expr (trait_loc, kind, type1, type2);
+      if (type)
+	return finish_trait_type (kind, type1, type2);
+      else
+	return finish_trait_expr (trait_loc, kind, type1, type2);
     }
 }
 
@@ -19867,7 +19867,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       return type;
 
     case RID_UNDERLYING_TYPE:
-      type = cp_parser_trait_expr (parser, RID_UNDERLYING_TYPE);
+      type = cp_parser_trait (parser, token->keyword);
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token,
@@ -19877,7 +19877,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
     case RID_BASES:
     case RID_DIRECT_BASES:
-      type = cp_parser_trait_expr (parser, token->keyword);
+      type = cp_parser_trait (parser, token->keyword);
       if (decl_specs)
        cp_parser_set_decl_spec_type (decl_specs, type,
                                      token,

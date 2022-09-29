@@ -4397,17 +4397,6 @@ finish_typeof (tree expr)
 tree
 finish_underlying_type (tree type)
 {
-  tree underlying_type;
-
-  if (processing_template_decl)
-    {
-      underlying_type = cxx_make_type (UNDERLYING_TYPE);
-      UNDERLYING_TYPE_TYPE (underlying_type) = type;
-      SET_TYPE_STRUCTURAL_EQUALITY (underlying_type);
-
-      return underlying_type;
-    }
-
   if (!complete_type_or_else (type, NULL_TREE))
     return error_mark_node;
 
@@ -4417,7 +4406,7 @@ finish_underlying_type (tree type)
       return error_mark_node;
     }
 
-  underlying_type = ENUM_UNDERLYING_TYPE (type);
+  tree underlying_type = ENUM_UNDERLYING_TYPE (type);
 
   /* Fixup necessary in this case because ENUM_UNDERLYING_TYPE
      includes TYPE_MIN_VALUE and TYPE_MAX_VALUE information.
@@ -12222,6 +12211,38 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
   tree val = (trait_expr_value (kind, type1, type2)
 	      ? boolean_true_node : boolean_false_node);
   return maybe_wrap_with_location (val, loc);
+}
+
+/* Process a trait type.  */
+
+tree
+finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
+{
+  if (type1 == error_mark_node
+      || type2 == error_mark_node)
+    return error_mark_node;
+
+  if (processing_template_decl)
+    {
+      tree type = cxx_make_type (TRAIT_TYPE);
+      TRAIT_TYPE_TYPE1 (type) = type1;
+      TRAIT_TYPE_TYPE2 (type) = type2;
+      TRAIT_TYPE_KIND_RAW (type) = build_int_cstu (integer_type_node, kind);
+      /* These traits are intended to be used in the definition of the ::type
+	 member of the corresponding standard library type trait and aren't
+	 mangleable (and thus won't appear directly in template signatures),
+	 so structural equality should suffice.  */
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
+      return type;
+    }
+
+  switch (kind)
+    {
+    case CPTK_UNDERLYING_TYPE:
+      return finish_underlying_type (type1);
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Do-nothing variants of functions to handle pragma FLOAT_CONST_DECIMAL64,

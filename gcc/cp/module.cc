@@ -8926,7 +8926,6 @@ trees_out::type_node (tree type)
 
     case DECLTYPE_TYPE:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
     case DEPENDENT_OPERATOR_TYPE:
       tree_node (TYPE_VALUES_RAW (type));
       if (TREE_CODE (type) == DECLTYPE_TYPE)
@@ -8934,6 +8933,12 @@ trees_out::type_node (tree type)
 	   flags.  */
 	if (streaming_p ())
 	  tree_node_bools (type);
+      break;
+
+    case TRAIT_TYPE:
+      tree_node (TRAIT_TYPE_KIND_RAW (type));
+      tree_node (TRAIT_TYPE_TYPE1 (type));
+      tree_node (TRAIT_TYPE_TYPE2 (type));
       break;
 
     case TYPE_ARGUMENT_PACK:
@@ -9450,7 +9455,6 @@ trees_in::tree_node (bool is_use)
 
 	  case DECLTYPE_TYPE:
 	  case TYPEOF_TYPE:
-	  case UNDERLYING_TYPE:
 	  case DEPENDENT_OPERATOR_TYPE:
 	    {
 	      tree expr = tree_node ();
@@ -9460,6 +9464,22 @@ trees_in::tree_node (bool is_use)
 		  TYPE_VALUES_RAW (res) = expr;
 		  if (code == DECLTYPE_TYPE)
 		    tree_node_bools (res);
+		  SET_TYPE_STRUCTURAL_EQUALITY (res);
+		}
+	    }
+	    break;
+
+	  case TRAIT_TYPE:
+	    {
+	      tree kind = tree_node ();
+	      tree type1 = tree_node ();
+	      tree type2 = tree_node ();
+	      if (!get_overrun ())
+		{
+		  res = cxx_make_type (TRAIT_TYPE);
+		  TRAIT_TYPE_KIND_RAW (res) = kind;
+		  TRAIT_TYPE_TYPE1 (res) = type1;
+		  TRAIT_TYPE_TYPE2 (res) = type2;
 		  SET_TYPE_STRUCTURAL_EQUALITY (res);
 		}
 	    }
