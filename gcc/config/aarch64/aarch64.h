@@ -297,7 +297,7 @@
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
 #define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_RDMA)
-#define AARCH64_ISA_V8_2	   (aarch64_isa_flags & AARCH64_FL_V8_2)
+#define AARCH64_ISA_V8_2A	   (aarch64_isa_flags & AARCH64_FL_V8_2)
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
 #define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
@@ -305,31 +305,31 @@
 #define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
 #define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
 #define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
-#define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
+#define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
 #define AARCH64_ISA_SHA2	   (aarch64_isa_flags & AARCH64_FL_SHA2)
-#define AARCH64_ISA_V8_4	   (aarch64_isa_flags & AARCH64_FL_V8_4)
+#define AARCH64_ISA_V8_4A	   (aarch64_isa_flags & AARCH64_FL_V8_4)
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
 #define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
 #define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
-#define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
+#define AARCH64_ISA_V8_5A	   (aarch64_isa_flags & AARCH64_FL_V8_5)
 #define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
 #define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
-#define AARCH64_ISA_V8_6	   (aarch64_isa_flags & AARCH64_FL_V8_6)
+#define AARCH64_ISA_V8_6A	   (aarch64_isa_flags & AARCH64_FL_V8_6)
 #define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
 #define AARCH64_ISA_F32MM	   (aarch64_isa_flags & AARCH64_FL_F32MM)
 #define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
-#define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
+#define AARCH64_ISA_V8R		   (aarch64_isa_flags & AARCH64_FL_V8_R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
-#define AARCH64_ISA_V9		   (aarch64_isa_flags & AARCH64_FL_V9)
-#define AARCH64_ISA_V9_1           (aarch64_isa_flags & AARCH64_FL_V9_1)
-#define AARCH64_ISA_V9_2           (aarch64_isa_flags & AARCH64_FL_V9_2)
-#define AARCH64_ISA_V9_3           (aarch64_isa_flags & AARCH64_FL_V9_3)
+#define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9)
+#define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1)
+#define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2)
+#define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
@@ -383,16 +383,16 @@
 #define TARGET_SVE2_SM4 (TARGET_SVE2 && AARCH64_ISA_SVE2_SM4)
 
 /* ARMv8.3-A features.  */
-#define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
+#define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)
 
 /* Javascript conversion instruction from Armv8.3-a.  */
-#define TARGET_JSCVT	(TARGET_FLOAT && AARCH64_ISA_V8_3)
+#define TARGET_JSCVT	(TARGET_FLOAT && AARCH64_ISA_V8_3A)
 
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
 
 /* Floating-point rounding instructions from Armv8.5-a.  */
-#define TARGET_FRINT (AARCH64_ISA_V8_5 && TARGET_FLOAT)
+#define TARGET_FRINT (AARCH64_ISA_V8_5A && TARGET_FLOAT)
 
 /* TME instructions are enabled.  */
 #define TARGET_TME (AARCH64_ISA_TME)
@@ -401,7 +401,7 @@
 #define TARGET_RNG (AARCH64_ISA_RNG)
 
 /* Memory Tagging instructions optional to Armv8.5 enabled through +memtag.  */
-#define TARGET_MEMTAG (AARCH64_ISA_V8_5 && AARCH64_ISA_MEMTAG)
+#define TARGET_MEMTAG (AARCH64_ISA_V8_5A && AARCH64_ISA_MEMTAG)
 
 /* I8MM instructions are enabled through +i8mm.  */
 #define TARGET_I8MM (AARCH64_ISA_I8MM)

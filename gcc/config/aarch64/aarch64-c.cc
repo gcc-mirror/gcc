@@ -64,7 +64,7 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__ARM_ARCH_8A");
 
   builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
-      AARCH64_ISA_V8_R ? 'R' : 'A');
+      AARCH64_ISA_V8R ? 'R' : 'A');
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");
@@ -82,7 +82,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 {
   aarch64_def_or_undef (flag_unsafe_math_optimizations, "__ARM_FP_FAST", pfile);
 
-  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9 ? 9 : 8);
+  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9A ? 9 : 8);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);

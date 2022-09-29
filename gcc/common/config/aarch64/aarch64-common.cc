@@ -429,7 +429,7 @@ aarch64_get_extension_string_for_isa_flags (uint64_t isa_flags,
 
       Note that assemblers with Armv8-R AArch64 support should not have this
       issue, so we don't need this fix when targeting Armv8-R.  */
-  if ((isa_flags & AARCH64_ISA_CRC) && !AARCH64_ISA_V8_R)
+  if ((isa_flags & AARCH64_ISA_CRC) && !AARCH64_ISA_V8R)
     isa_flag_bits |= AARCH64_ISA_CRC;
 
   /* Pass Two:
