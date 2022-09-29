@@ -76,16 +76,6 @@ AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, \
 		      AARCH64_FL_I8MM | AARCH64_FL_F32MM | AARCH64_FL_F64MM, \
 		      false, "asimd")
 
-/* Enabling "crypto" also enables "fp", "simd", "aes" and "sha2".
-   Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4",
-   "sve2-aes", "sve2-sha3", "sve2-sm4".  */
-AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | \
-		      AARCH64_FL_SIMD | AARCH64_FL_AES | AARCH64_FL_SHA2, \
-		      AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | \
-		      AARCH64_FL_SM4 | AARCH64_FL_SVE2_AES | \
-		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4, true, \
-		      "aes pmull sha1 sha2")
-
 /* Enabling or disabling "crc" only changes "crc".  */
 AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, false, "crc32")
 
@@ -126,6 +116,16 @@ AARCH64_OPT_EXTENSION("aes", AARCH64_FL_AES, AARCH64_FL_FPSIMD, \
 AARCH64_OPT_EXTENSION("sha2", AARCH64_FL_SHA2, AARCH64_FL_FPSIMD, \
 		      AARCH64_FL_CRYPTO | AARCH64_FL_SHA3 | \
 		      AARCH64_FL_SVE2_SHA3, false, "sha1 sha2")
+
+/* Enabling "crypto" also enables "fp", "simd", "aes" and "sha2".
+   Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4",
+   "sve2-aes", "sve2-sha3", "sve2-sm4".  */
+AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | \
+		      AARCH64_FL_SIMD | AARCH64_FL_AES | AARCH64_FL_SHA2, \
+		      AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | \
+		      AARCH64_FL_SM4 | AARCH64_FL_SVE2_AES | \
+		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4, true, \
+		      "aes pmull sha1 sha2")
 
 /* Enabling "sha3" enables "simd" and "sha2".
    Disabling "sha3" disables "sha3" and "sve2-sha3".  */
