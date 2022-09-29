@@ -62,7 +62,7 @@ struct aarch64_core_data
 #define DEFAULT_ARCH "8A"
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
-  { CORE_NAME, #ARCH, IMP, PART, VARIANT, FLAGS },
+  { CORE_NAME, #ARCH, IMP, PART, VARIANT, AARCH64_FL_FOR_##ARCH | FLAGS },
 
 static struct aarch64_core_data aarch64_cpu_data[] =
 {

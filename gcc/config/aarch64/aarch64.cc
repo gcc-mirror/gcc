@@ -2692,7 +2692,7 @@ static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
-  FLAGS, &COSTS##_tunings},
+  AARCH64_FL_FOR_##ARCH | FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
   {"generic", generic, cortexa53, AARCH64_ARCH_V8A,
     AARCH64_FL_FOR_V8A, &generic_tunings},
