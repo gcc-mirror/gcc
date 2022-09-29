@@ -2901,7 +2901,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp,
 	       bool _Nothrow = noexcept(_S_conv<_Tp>(_S_get())),
 	       typename = decltype(_S_conv<_Tp>(_S_get())),
-	       bool _Dangle = __reference_converts_from_temporary(_Tp, _Res_t)>
+#if __has_builtin(__reference_converts_from_temporary)
+	       bool _Dangle = __reference_converts_from_temporary(_Tp, _Res_t)
+#else
+	       bool _Dangle = false
+#endif
+	      >
 	static __bool_constant<_Nothrow && !_Dangle>
 	_S_test(int);
 
