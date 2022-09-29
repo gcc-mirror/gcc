@@ -222,19 +222,19 @@ enum class aarch64_feature : unsigned char {
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
 /* Crypto is an optional extension to AdvSIMD.  */
-#define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
+#define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
 
 /* SHA2 is an optional extension to AdvSIMD.  */
-#define TARGET_SHA2 ((TARGET_SIMD && AARCH64_ISA_SHA2) || TARGET_CRYPTO)
+#define TARGET_SHA2 (AARCH64_ISA_SHA2)
 
 /* SHA3 is an optional extension to AdvSIMD.  */
-#define TARGET_SHA3 (TARGET_SIMD && AARCH64_ISA_SHA3)
+#define TARGET_SHA3 (AARCH64_ISA_SHA3)
 
 /* AES is an optional extension to AdvSIMD.  */
-#define TARGET_AES ((TARGET_SIMD && AARCH64_ISA_AES) || TARGET_CRYPTO)
+#define TARGET_AES (AARCH64_ISA_AES)
 
 /* SM is an optional extension to AdvSIMD.  */
-#define TARGET_SM4 (TARGET_SIMD && AARCH64_ISA_SM4)
+#define TARGET_SM4 (AARCH64_ISA_SM4)
 
 /* FP16FML is an optional extension to AdvSIMD.  */
 #define TARGET_F16FML (TARGET_SIMD && AARCH64_ISA_F16FML && TARGET_FP_F16INST)
@@ -246,29 +246,29 @@ enum class aarch64_feature : unsigned char {
 #define TARGET_LSE (AARCH64_ISA_LSE)
 
 /* ARMv8.2-A FP16 support that can be enabled through the +fp16 extension.  */
-#define TARGET_FP_F16INST (TARGET_FLOAT && AARCH64_ISA_F16)
+#define TARGET_FP_F16INST (AARCH64_ISA_F16)
 #define TARGET_SIMD_F16INST (TARGET_SIMD && AARCH64_ISA_F16)
 
 /* Dot Product is an optional extension to AdvSIMD enabled through +dotprod.  */
-#define TARGET_DOTPROD (TARGET_SIMD && AARCH64_ISA_DOTPROD)
+#define TARGET_DOTPROD (AARCH64_ISA_DOTPROD)
 
 /* SVE instructions, enabled through +sve.  */
 #define TARGET_SVE (AARCH64_ISA_SVE)
 
 /* SVE2 instructions, enabled through +sve2.  */
-#define TARGET_SVE2 (TARGET_SVE && AARCH64_ISA_SVE2)
+#define TARGET_SVE2 (AARCH64_ISA_SVE2)
 
 /* SVE2 AES instructions, enabled through +sve2-aes.  */
-#define TARGET_SVE2_AES (TARGET_SVE2 && AARCH64_ISA_SVE2_AES)
+#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES)
 
 /* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
-#define TARGET_SVE2_BITPERM (TARGET_SVE2 && AARCH64_ISA_SVE2_BITPERM)
+#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM)
 
 /* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
-#define TARGET_SVE2_SHA3 (TARGET_SVE2 && AARCH64_ISA_SVE2_SHA3)
+#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3)
 
 /* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
-#define TARGET_SVE2_SM4 (TARGET_SVE2 && AARCH64_ISA_SVE2_SM4)
+#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)
@@ -296,12 +296,10 @@ enum class aarch64_feature : unsigned char {
 #define TARGET_SVE_I8MM (TARGET_SVE && AARCH64_ISA_I8MM)
 
 /* F32MM instructions are enabled through +f32mm.  */
-#define TARGET_F32MM (AARCH64_ISA_F32MM)
-#define TARGET_SVE_F32MM (TARGET_SVE && AARCH64_ISA_F32MM)
+#define TARGET_SVE_F32MM (AARCH64_ISA_F32MM)
 
 /* F64MM instructions are enabled through +f64mm.  */
-#define TARGET_F64MM (AARCH64_ISA_F64MM)
-#define TARGET_SVE_F64MM (TARGET_SVE && AARCH64_ISA_F64MM)
+#define TARGET_SVE_F64MM (AARCH64_ISA_F64MM)
 
 /* BF16 instructions are enabled through +bf16.  */
 #define TARGET_BF16_FP (AARCH64_ISA_BF16)

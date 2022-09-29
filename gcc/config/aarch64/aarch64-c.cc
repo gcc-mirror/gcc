@@ -92,7 +92,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_FLOAT, "__ARM_FEATURE_FMA", pfile);
 
-  if (TARGET_FLOAT || TARGET_SIMD)
+  if (TARGET_FLOAT)
     {
       builtin_define_with_int_value ("__ARM_FP", 0x0E);
       builtin_define ("__ARM_FP16_FORMAT_IEEE");
