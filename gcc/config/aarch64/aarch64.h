@@ -173,7 +173,6 @@
 #define AARCH64_FL_SM4	      (1 << 17)  /* Has ARMv8.4-A SM3 and SM4.  */
 #define AARCH64_FL_SHA3	      (1 << 18)  /* Has ARMv8.4-a SHA3 and SHA512.  */
 #define AARCH64_FL_F16FML     (1 << 19)  /* Has ARMv8.4-a FP16 extensions.  */
-#define AARCH64_FL_RCPC8_4    (1 << 20)  /* Has ARMv8.4-a RCPC extensions.  */
 
 /* Statistical Profiling extensions.  */
 #define AARCH64_FL_PROFILE    (1 << 21)
@@ -265,7 +264,7 @@
   (AARCH64_FL_FOR_V8_2A | AARCH64_FL_V8_3A | AARCH64_FL_PAUTH)
 #define AARCH64_FL_FOR_V8_4A			\
   (AARCH64_FL_FOR_V8_3A | AARCH64_FL_V8_4A | AARCH64_FL_F16FML \
-   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4 | AARCH64_FL_FLAGM)
+   | AARCH64_FL_DOTPROD | AARCH64_FL_FLAGM)
 #define AARCH64_FL_FOR_V8_5A			\
   (AARCH64_FL_FOR_V8_4A | AARCH64_FL_V8_5A	\
    | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)
@@ -313,7 +312,7 @@
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
-#define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
+#define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_V8_4A)
 #define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
 #define AARCH64_ISA_V8_5A	   (aarch64_isa_flags & AARCH64_FL_V8_5A)
 #define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
