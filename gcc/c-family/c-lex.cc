@@ -389,6 +389,9 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		result = 202003;
 	      else if (is_attribute_p ("maybe_unused", attr_name))
 		result = 202106;
+	      else if (is_attribute_p ("noreturn", attr_name)
+		       || is_attribute_p ("_Noreturn", attr_name))
+		result = 202202;
 	    }
 	  if (result)
 	    attr_name = NULL_TREE;

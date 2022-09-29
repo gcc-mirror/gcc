@@ -4480,11 +4480,34 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
     }
   return NULL_TREE;
 }
+
+/* Handle the standard [[noreturn]] attribute.  */
+
+static tree
+handle_std_noreturn_attribute (tree *node, tree name, tree args,
+			       int flags, bool *no_add_attrs)
+{
+  /* Unlike GNU __attribute__ ((noreturn)), the standard [[noreturn]]
+     only applies to functions, not function pointers.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    return handle_noreturn_attribute (node, name, args, flags, no_add_attrs);
+  else
+    {
+      pedwarn (input_location, OPT_Wattributes,
+	       "standard %qE attribute can only be applied to functions",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+}
+
 /* Table of supported standard (C2x) attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "_Noreturn", 0, 0, false, false, false, false,
+    handle_std_noreturn_attribute, NULL },
   { "deprecated", 0, 1, false, false, false, false,
     handle_deprecated_attribute, NULL },
   { "fallthrough", 0, 0, false, false, false, false,
@@ -4493,6 +4516,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_unused_attribute, NULL },
   { "nodiscard", 0, 1, false, false, false, false,
     handle_nodiscard_attribute, NULL },
+  { "noreturn", 0, 0, false, false, false, false,
+    handle_std_noreturn_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
