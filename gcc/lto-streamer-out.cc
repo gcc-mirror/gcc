@@ -67,6 +67,7 @@ clear_line_info (struct output_block *ob)
      so that the first location with block in a function etc.
      always streams a change_block bit and the first block.  */
   ob->current_block = void_node;
+  ob->current_discr = UINT_MAX;
 }
 
 
@@ -194,6 +195,7 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
   if (loc >= RESERVED_LOCATION_COUNT)
     {
       expanded_location xloc = expand_location (loc);
+      unsigned discr = get_discriminator_from_loc (orig_loc);
 
       if (ob->reset_locus)
 	{
@@ -216,6 +218,7 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
 
       bp_pack_value (bp, ob->current_line != xloc.line, 1);
       bp_pack_value (bp, ob->current_col != xloc.column, 1);
+      bp_pack_value (bp, ob->current_discr != discr, 1);
 
       if (ob->current_file != xloc.file)
 	{
@@ -242,6 +245,10 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
       if (ob->current_col != xloc.column)
 	bp_pack_var_len_unsigned (bp, xloc.column);
       ob->current_col = xloc.column;
+
+      if (ob->current_discr != discr)
+	bp_pack_var_len_unsigned (bp, discr);
+      ob->current_discr = discr;
     }
   else
     bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT + 1, loc);

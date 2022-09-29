@@ -3357,8 +3357,10 @@ in
 {
     // Verify that pattern[] is valid
     import std.algorithm.searching : balancedParens;
-    assert(balancedParens(pattern, '[', ']', 0));
-    assert(balancedParens(pattern, '{', '}', 0));
+    import std.utf : byUTF;
+
+    assert(balancedParens(pattern.byUTF!C, '[', ']', 0));
+    assert(balancedParens(pattern.byUTF!C, '{', '}', 0));
 }
 do
 {
@@ -3959,7 +3961,7 @@ string expandTilde(string inputPath) @safe nothrow
     version (Posix)
     {
         import core.exception : onOutOfMemoryError;
-        import core.stdc.errno : errno, ERANGE;
+        import core.stdc.errno : errno, EBADF, ENOENT, EPERM, ERANGE, ESRCH;
         import core.stdc.stdlib : malloc, free, realloc;
 
         /*  Joins a path from a C string to the remainder of path.
@@ -4065,7 +4067,7 @@ string expandTilde(string inputPath) @safe nothrow
                 char[] extra_memory;
 
                 passwd result;
-                while (1)
+                loop: while (1)
                 {
                     extra_memory.length += extra_memory_size;
 
@@ -4088,10 +4090,23 @@ string expandTilde(string inputPath) @safe nothrow
                         break;
                     }
 
-                    if (errno != ERANGE &&
+                    switch (errno)
+                    {
+                        case ERANGE:
                         // On BSD and OSX, errno can be left at 0 instead of set to ERANGE
-                        errno != 0)
-                        onOutOfMemoryError();
+                        case 0:
+                            break;
+
+                        case ENOENT:
+                        case ESRCH:
+                        case EBADF:
+                        case EPERM:
+                            // The given name or uid was not found.
+                            break loop;
+
+                        default:
+                            onOutOfMemoryError();
+                    }
 
                     // extra_memory isn't large enough
                     import core.checkedint : mulu;

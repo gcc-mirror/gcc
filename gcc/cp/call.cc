@@ -1541,6 +1541,22 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	   || (underlying_type && same_type_p (to, underlying_type)))
 	  && next_conversion (conv)->rank <= cr_promotion)
 	conv->rank = cr_promotion;
+
+      /* A prvalue of floating-point type can be converted to a prvalue of
+	 another floating-point type with a greater or equal conversion
+	 rank ([conv.rank]).  A prvalue of standard floating-point type can
+	 be converted to a prvalue of another standard floating-point type.
+	 For backwards compatibility with handling __float128 and other
+	 non-standard floating point types, allow all implicit floating
+	 point conversions if neither type is extended floating-point
+	 type and if at least one of them is, fail if they have unordered
+	 conversion rank or from has higher conversion rank.  */
+      if (fcode == REAL_TYPE
+	  && tcode == REAL_TYPE
+	  && (extended_float_type_p (from)
+	      || extended_float_type_p (to))
+	  && cp_compare_floating_point_conversion_ranks (from, to) >= 2)
+	conv->bad_p = true;
     }
   else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
 	   && vector_types_convertible_p (from, to, false))
@@ -1864,8 +1880,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
       /* Nor the reverse.  */
       if (!is_lvalue && !TYPE_REF_IS_RVALUE (rto)
-	  /* Unless it's really an lvalue.  */
-	  && !(cxx_dialect >= cxx20
+	  /* Unless it's really a C++20 lvalue being treated as an xvalue.
+	     But in C++23, such an expression is just an xvalue, not a special
+	     lvalue, so the binding is once again ill-formed.  */
+	  && !(cxx_dialect == cxx20
 	       && (gl_kind & clk_implicit_rval))
 	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
 	      || (flags & LOOKUP_NO_RVAL_BIND))
@@ -5842,6 +5860,21 @@ build_conditional_expr (const op_location_t &loc,
       /* In this case, there is always a common type.  */
       result_type = type_after_usual_arithmetic_conversions (arg2_type,
 							     arg3_type);
+      if (result_type == error_mark_node
+	  && TREE_CODE (arg2_type) == REAL_TYPE
+	  && TREE_CODE (arg3_type) == REAL_TYPE
+	  && (extended_float_type_p (arg2_type)
+	      || extended_float_type_p (arg3_type))
+	  && cp_compare_floating_point_conversion_ranks (arg2_type,
+							 arg3_type) == 3)
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "operands to %<?:%> of types %qT and %qT "
+			   "have unordered conversion rank",
+		      arg2_type, arg3_type);
+	  return error_mark_node;
+	}
+
       if (complain & tf_warning)
 	do_warn_double_promotion (result_type, arg2_type, arg3_type,
 				  "implicit conversion from %qH to %qI to "
@@ -7906,6 +7939,27 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				"direct-initialization",
 				totype, TREE_TYPE (expr));
 
+      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+	  && TREE_CODE (totype) == REAL_TYPE
+	  && (extended_float_type_p (TREE_TYPE (expr))
+	      || extended_float_type_p (totype)))
+	switch (cp_compare_floating_point_conversion_ranks (TREE_TYPE (expr),
+							    totype))
+	  {
+	  case 2:
+	    pedwarn (loc, 0, "converting to %qH from %qI with greater "
+			     "conversion rank", totype, TREE_TYPE (expr));
+	    complained = true;
+	    break;
+	  case 3:
+	    pedwarn (loc, 0, "converting to %qH from %qI with unordered "
+			     "conversion ranks", totype, TREE_TYPE (expr));
+	    complained = true;
+	    break;
+	  default:
+	    break;
+	  }
+
       for (; t ; t = next_conversion (t))
 	{
 	  if (t->kind == ck_user && t->cand->reason)
@@ -8531,7 +8585,8 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
   if (TREE_CODE (arg_type) == REAL_TYPE
       && (TYPE_PRECISION (arg_type)
 	  < TYPE_PRECISION (double_type_node))
-      && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (arg_type)))
+      && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (arg_type))
+      && !extended_float_type_p (arg_type))
     {
       if ((complain & tf_warning)
 	  && warn_double_promotion && !c_inhibit_evaluation_warnings)
@@ -11719,6 +11774,81 @@ compare_ics (conversion *ics1, conversion *ics2)
 	return 1;
     }
 
+  {
+    /* A conversion in either direction between floating-point type FP1 and
+       floating-point type FP2 is better than a conversion in the same
+       direction between FP1 and arithmetic type T3 if
+       - the floating-point conversion rank of FP1 is equal to the rank of
+	 FP2, and
+       - T3 is not a floating-point type, or T3 is a floating-point type
+	 whose rank is not equal to the rank of FP1, or the floating-point
+	 conversion subrank of FP2 is greater than the subrank of T3.  */
+    tree fp1 = from_type1;
+    tree fp2 = to_type1;
+    tree fp3 = from_type2;
+    tree t3 = to_type2;
+    int ret = 1;
+    if (TYPE_MAIN_VARIANT (fp2) == TYPE_MAIN_VARIANT (t3))
+      {
+	std::swap (fp1, fp2);
+	std::swap (fp3, t3);
+      }
+    if (TYPE_MAIN_VARIANT (fp1) == TYPE_MAIN_VARIANT (fp3)
+	&& TREE_CODE (fp1) == REAL_TYPE
+	/* Only apply this rule if at least one of the 3 types is
+	   extended floating-point type, otherwise keep them as
+	   before for compatibility reasons with types like __float128.
+	   float, double and long double alone have different conversion
+	   ranks and so when just those 3 types are involved, this
+	   rule doesn't trigger.  */
+	&& (extended_float_type_p (fp1)
+	    || (TREE_CODE (fp2) == REAL_TYPE && extended_float_type_p (fp2))
+	    || (TREE_CODE (t3) == REAL_TYPE && extended_float_type_p (t3))))
+      {
+	if (TREE_CODE (fp2) != REAL_TYPE)
+	  {
+	    ret = -ret;
+	    std::swap (fp2, t3);
+	  }
+	if (TREE_CODE (fp2) == REAL_TYPE)
+	  {
+	    /* cp_compare_floating_point_conversion_ranks returns -1, 0 or 1
+	       if the conversion rank is equal (-1 or 1 if the subrank is
+	       different).  */
+	    if (IN_RANGE (cp_compare_floating_point_conversion_ranks (fp1,
+								      fp2),
+			  -1, 1))
+	      {
+		/* Conversion ranks of FP1 and FP2 are equal.  */
+		if (TREE_CODE (t3) != REAL_TYPE
+		    || !IN_RANGE (cp_compare_floating_point_conversion_ranks
+								(fp1, t3),
+				  -1, 1))
+		  /* FP1 <-> FP2 conversion is better.  */
+		  return ret;
+		int c = cp_compare_floating_point_conversion_ranks (fp2, t3);
+		gcc_assert (IN_RANGE (c, -1, 1));
+		if (c == 1)
+		  /* Conversion subrank of FP2 is greater than subrank of T3.
+		     FP1 <-> FP2 conversion is better.  */
+		  return ret;
+		else if (c == -1)
+		  /* Conversion subrank of FP2 is less than subrank of T3.
+		     FP1 <-> T3 conversion is better.  */
+		  return -ret;
+	      }
+	    else if (TREE_CODE (t3) == REAL_TYPE
+		     && IN_RANGE (cp_compare_floating_point_conversion_ranks
+								(fp1, t3),
+				  -1, 1))
+	      /* Conversion ranks of FP1 and FP2 are not equal, conversion
+		 ranks of FP1 and T3 are equal.
+		 FP1 <-> T3 conversion is better.  */
+	      return -ret;
+	  }
+      }
+  }
+
   if (TYPE_PTR_P (from_type1)
       && TYPE_PTR_P (from_type2)
       && TYPE_PTR_P (to_type1)
@@ -12133,10 +12263,14 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
   len = cand1->num_convs;
   if (len != cand2->num_convs)
     {
-      int static_1 = DECL_STATIC_FUNCTION_P (cand1->fn);
-      int static_2 = DECL_STATIC_FUNCTION_P (cand2->fn);
+      int static_1 = (TREE_CODE (cand1->fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (cand1->fn));
+      int static_2 = (TREE_CODE (cand2->fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (cand2->fn));
 
-      if (DECL_CONSTRUCTOR_P (cand1->fn)
+      if (TREE_CODE (cand1->fn) == FUNCTION_DECL
+	  && TREE_CODE (cand2->fn) == FUNCTION_DECL
+	  && DECL_CONSTRUCTOR_P (cand1->fn)
 	  && is_list_ctor (cand1->fn) != is_list_ctor (cand2->fn))
 	/* We're comparing a near-match list constructor and a near-match
 	   non-list constructor.  Just treat them as unordered.  */
@@ -12145,9 +12279,20 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       gcc_assert (static_1 != static_2);
 
       if (static_1)
-	off2 = 1;
+	{
+	  /* C++23 [over.best.ics.general] says:
+	     When the parameter is the implicit object parameter of a static
+	     member function, the implicit conversion sequence is a standard
+	     conversion sequence that is neither better nor worse than any
+	     other standard conversion sequence.  */
+	  if (CONVERSION_RANK (cand2->convs[0]) >= cr_user)
+	    winner = 1;
+	  off2 = 1;
+	}
       else
 	{
+	  if (CONVERSION_RANK (cand1->convs[0]) >= cr_user)
+	    winner = -1;
 	  off1 = 1;
 	  --len;
 	}

@@ -8558,6 +8558,50 @@ vect_update_nonlinear_iv (gimple_seq* stmts, tree vectype,
   return vec_def;
 
 }
+
+/* Return true if vectorizer can peel for nonlinear iv.  */
+bool
+vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
+			      enum vect_induction_op_type induction_type)
+{
+  tree niters_skip;
+  /* Init_expr will be update by vect_update_ivs_after_vectorizer,
+     if niters is unkown:
+     For shift, when shift mount >= precision, there would be UD.
+     For mult, don't known how to generate
+     init_expr * pow (step, niters) for variable niters.
+     For neg, it should be ok, since niters of vectorized main loop
+     will always be multiple of 2.  */
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && induction_type != vect_step_op_neg)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Peeling for epilogue is not supported"
+			 " for nonlinear induction except neg"
+			 " when iteration count is unknown.\n");
+      return false;
+    }
+
+  /* Also doens't support peel for neg when niter is variable.
+     ??? generate something like niter_expr & 1 ? init_expr : -init_expr?  */
+  niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+  if ((niters_skip != NULL_TREE
+       && TREE_CODE (niters_skip) != INTEGER_CST)
+      || (!vect_use_loop_mask_for_alignment_p (loop_vinfo)
+	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Peeling for alignement is not supported"
+			 " for nonlinear induction when niters_skip"
+			 " is not constant.\n");
+      return false;
+    }
+
+  return true;
+}
+
 /* Function vectorizable_induction
 
    Check if STMT_INFO performs an nonlinear induction computation that can be
@@ -8628,42 +8672,9 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       return false;
     }
 
-  /* Init_expr will be update by vect_update_ivs_after_vectorizer,
-     if niters is unkown:
-     For shift, when shift mount >= precision, there would be UD.
-     For mult, don't known how to generate
-     init_expr * pow (step, niters) for variable niters.
-     For neg, it should be ok, since niters of vectorized main loop
-     will always be multiple of 2.  */
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && induction_type != vect_step_op_neg)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Peeling for epilogue is not supported"
-			 " for nonlinear induction except neg"
-			 " when iteration count is unknown.\n");
-      return false;
-    }
+  if (!vect_can_peel_nonlinear_iv_p (loop_vinfo, induction_type))
+    return false;
 
-  /* Also doens't support peel for neg when niter is variable.
-     ??? generate something like niter_expr & 1 ? init_expr : -init_expr?  */
-  niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
-  if ((niters_skip != NULL_TREE
-       && TREE_CODE (niters_skip) != INTEGER_CST)
-      || (!vect_use_loop_mask_for_alignment_p (loop_vinfo)
-	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Peeling for alignement is not supported"
-			 " for nonlinear induction when niters_skip"
-			 " is not constant.\n");
-      return false;
-    }
-
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && induction_type == vect_step_op_mul)
   if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
     {
       if (dump_enabled_p ())
@@ -8799,6 +8810,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
 
   gimple_seq stmts = NULL;
 
+  niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
   /* If we are using the loop mask to "peel" for alignment then we need
      to adjust the start value here.  */
   if (niters_skip != NULL_TREE)

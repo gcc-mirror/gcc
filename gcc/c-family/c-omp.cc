@@ -3097,21 +3097,21 @@ c_omp_adjust_map_clauses (tree clauses, bool is_target)
     }
 }
 
-static const struct c_omp_directive omp_directives[] = {
+const struct c_omp_directive c_omp_directives[] = {
   /* Keep this alphabetically sorted by the first word.  Non-null second/third
      if any should precede null ones.  */
   { "allocate", nullptr, nullptr, PRAGMA_OMP_ALLOCATE,
     C_OMP_DIR_DECLARATIVE, false },
-  /* { "assume", nullptr, nullptr, PRAGMA_OMP_ASSUME,
-    C_OMP_DIR_INFORMATIONAL, false }, */
-  /* { "assumes", nullptr, nullptr, PRAGMA_OMP_ASSUMES,
-    C_OMP_DIR_INFORMATIONAL, false }, */
+  { "assume", nullptr, nullptr, PRAGMA_OMP_ASSUME,
+    C_OMP_DIR_INFORMATIONAL, false },
+  { "assumes", nullptr, nullptr, PRAGMA_OMP_ASSUMES,
+    C_OMP_DIR_INFORMATIONAL, false },
   { "atomic", nullptr, nullptr, PRAGMA_OMP_ATOMIC,
     C_OMP_DIR_CONSTRUCT, false },
   { "barrier", nullptr, nullptr, PRAGMA_OMP_BARRIER,
     C_OMP_DIR_STANDALONE, false },
-  /* { "begin", "assumes", nullptr, PRAGMA_OMP_BEGIN,
-    C_OMP_DIR_INFORMATIONAL, false }, */
+  { "begin", "assumes", nullptr, PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_INFORMATIONAL, false },
   /* { "begin", "declare", "target", PRAGMA_OMP_BEGIN,
     C_OMP_DIR_DECLARATIVE, false }, */
   /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
@@ -3140,9 +3140,9 @@ static const struct c_omp_directive omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, false },  */
   { "distribute", nullptr, nullptr, PRAGMA_OMP_DISTRIBUTE,
     C_OMP_DIR_CONSTRUCT, true },
-  /* { "end", "assumes", nullptr, PRAGMA_OMP_END,
-    C_OMP_DIR_INFORMATIONAL, false }, */
-  { "end", "declare", "target", PRAGMA_OMP_END_DECLARE_TARGET,
+  { "end", "assumes", nullptr, PRAGMA_OMP_END,
+    C_OMP_DIR_INFORMATIONAL, false },
+  { "end", "declare", "target", PRAGMA_OMP_END,
     C_OMP_DIR_DECLARATIVE, false },
   /* { "end", "declare", "variant", PRAGMA_OMP_END,
     C_OMP_DIR_DECLARATIVE, false }, */
@@ -3224,26 +3224,26 @@ const struct c_omp_directive *
 c_omp_categorize_directive (const char *first, const char *second,
 			    const char *third)
 {
-  const size_t n_omp_directives = ARRAY_SIZE (omp_directives);
+  const size_t n_omp_directives = ARRAY_SIZE (c_omp_directives);
   for (size_t i = 0; i < n_omp_directives; i++)
     {
-      if ((unsigned char) omp_directives[i].first[0]
+      if ((unsigned char) c_omp_directives[i].first[0]
 	  < (unsigned char) first[0])
 	continue;
-      if ((unsigned char) omp_directives[i].first[0]
+      if ((unsigned char) c_omp_directives[i].first[0]
 	  > (unsigned char) first[0])
 	break;
-      if (strcmp (omp_directives[i].first, first))
+      if (strcmp (c_omp_directives[i].first, first))
 	continue;
-      if (!omp_directives[i].second)
-	return &omp_directives[i];
-      if (!second || strcmp (omp_directives[i].second, second))
+      if (!c_omp_directives[i].second)
+	return &c_omp_directives[i];
+      if (!second || strcmp (c_omp_directives[i].second, second))
 	continue;
-      if (!omp_directives[i].third)
-	return &omp_directives[i];
-      if (!third || strcmp (omp_directives[i].third, third))
+      if (!c_omp_directives[i].third)
+	return &c_omp_directives[i];
+      if (!third || strcmp (c_omp_directives[i].third, third))
 	continue;
-      return &omp_directives[i];
+      return &c_omp_directives[i];
     }
   return NULL;
 }

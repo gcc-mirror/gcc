@@ -37,7 +37,7 @@ public:
 
     const char *kind() const override;
 
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
 
     Package *isPackage() override final { return this; }
 

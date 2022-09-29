@@ -15777,6 +15777,8 @@ module_state::write_location (bytes_out &sec, location_t loc)
 	range.m_start = UNKNOWN_LOCATION;
       write_location (sec, range.m_start);
       write_location (sec, range.m_finish);
+      unsigned discriminator = get_discriminator_from_adhoc_loc (line_table, loc);
+      sec.u (discriminator);
     }
   else if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
     {
@@ -15902,8 +15904,9 @@ module_state::read_location (bytes_in &sec) const
 	if (range.m_start == UNKNOWN_LOCATION)
 	  range.m_start = locus;
 	range.m_finish = read_location (sec);
+	unsigned discriminator = sec.u ();
 	if (locus != loc && range.m_start != loc && range.m_finish != loc)
-	  locus = get_combined_adhoc_loc (line_table, locus, range, NULL);
+	  locus = get_combined_adhoc_loc (line_table, locus, range, NULL, discriminator);
       }
       break;
 

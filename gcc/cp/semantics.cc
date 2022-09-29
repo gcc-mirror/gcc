@@ -3363,6 +3363,13 @@ finish_translation_unit (void)
 	       "%<#pragma omp end declare target%>");
       vec_safe_truncate (scope_chain->omp_declare_target_attribute, 0);
     }
+  if (vec_safe_length (scope_chain->omp_begin_assumes))
+    {
+      if (!errorcount)
+	error ("%<#pragma omp begin assumes%> without corresponding "
+	       "%<#pragma omp end assumes%>");
+      vec_safe_truncate (scope_chain->omp_begin_assumes, 0);
+    }
 }
 
 /* Finish a template type parameter, specified as AGGR IDENTIFIER.

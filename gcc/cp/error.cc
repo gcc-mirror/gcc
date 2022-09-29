@@ -1129,7 +1129,7 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
-  if (template_parm_object_p (t))
+  if (TREE_CODE (t) == VAR_DECL && DECL_NTTP_OBJECT_P (t))
     return dump_expr (pp, DECL_INITIAL (t), flags);
 
   if (flags & TFF_DECL_SPECIFIERS)
@@ -1692,7 +1692,13 @@ dump_lambda_function (cxx_pretty_printer *pp,
 {
   /* A lambda's signature is essentially its "type".  */
   dump_type (pp, DECL_CONTEXT (fn), flags);
-  if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn))) & TYPE_QUAL_CONST))
+  if (TREE_CODE (TREE_TYPE (fn)) == FUNCTION_TYPE)
+    {
+      pp->padding = pp_before;
+      pp_c_ws_string (pp, "static");
+    }
+  else if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn)))
+	     & TYPE_QUAL_CONST))
     {
       pp->padding = pp_before;
       pp_c_ws_string (pp, "mutable");

@@ -817,6 +817,10 @@ now defaults to zero.
   <classname>has_trivial_copy_assign</classname> removed.
 </para>
 
+<para>
+Calling a <code>std::bind</code> result as volatile was deprecated for C++17.
+</para>
+
 <para> Profile Mode was deprecated. </para>
 
 <section xml:id="api.rel_72"><info><title><constant>7.2</constant></title></info>
@@ -1063,6 +1067,15 @@ they both derive from <classname>std::__new_allocator</classname> instead.
 <code>noexcept(false)</code> to allow thread cancellation exceptions to
 be thrown from <function>pthread_cond_wait</function> without aborting
 the process.
+</para>
+
+</section>
+
+
+<section xml:id="api.rel_123"><info><title><constant>12.3</constant></title></info>
+<para>
+Calling a <code>std::bind</code> result as volatile is ill-formed for C++20
+and later.
 </para>
 
 </section>

@@ -1973,7 +1973,7 @@ private mixin template Protocol()
     }
 
     /**
-     * The network interface to use in form of the the IP of the interface.
+     * The network interface to use in form of the IP of the interface.
      *
      * Example:
      * ----
@@ -2706,7 +2706,7 @@ struct HTTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -3486,7 +3486,7 @@ struct FTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -3912,7 +3912,7 @@ struct SMTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----

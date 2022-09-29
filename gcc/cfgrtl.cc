@@ -4049,7 +4049,8 @@ fixup_reorder_chain (void)
       rtx_insn *ret, *use;
       basic_block dest;
       if (bb_is_just_return (e_fall->dest, &ret, &use)
-	  && (PATTERN (ret) == simple_return_rtx || PATTERN (ret) == ret_rtx))
+	  && ((PATTERN (ret) == simple_return_rtx && targetm.have_simple_return ())
+	      || (PATTERN (ret) == ret_rtx && targetm.have_return ())))
 	{
 	  ret_label = PATTERN (ret);
 	  dest = EXIT_BLOCK_PTR_FOR_FN (cfun);

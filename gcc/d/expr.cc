@@ -908,21 +908,12 @@ public:
 
 	    if ((postblit || destructor) && e->op != EXP::blit)
 	      {
-		/* Need to call postblit/destructor as part of assignment.
-		   Construction has already been handled by the front-end.  */
-		gcc_assert (e->op != EXP::construct);
-
-		/* So we can call postblits on const/immutable objects.  */
-		Type *tm = etype->unSharedOf ()->mutableOf ();
-		tree ti = build_typeinfo (e, tm);
-
-		/* Generate: _d_arraysetassign (t1.ptr, &t2, t1.length, ti);  */
-		result = build_libcall (LIBCALL_ARRAYSETASSIGN, Type::tvoid, 4,
-					d_array_ptr (t1),
-					build_address (t2),
-					d_array_length (t1), ti);
+		/* This case should have been rewritten to `_d_arraysetassign`
+		   in the semantic phase.  */
+		gcc_unreachable ();
 	      }
-	    else if (integer_zerop (t2))
+
+	    if (integer_zerop (t2))
 	      {
 		tree size = size_mult_expr (d_array_length (t1),
 					    size_int (etype->size ()));
@@ -2472,6 +2463,20 @@ public:
 
 	if (e->argprefix)
 	  result = compound_expr (build_expr (e->argprefix), result);
+      }
+    else if (tb->ty == TY::Taarray)
+      {
+	/* Allocating memory for a new associative array.  */
+	tree arg = build_typeinfo (e, e->newtype);
+	tree mem = build_libcall (LIBCALL_AANEW, Type::tvoidptr, 1, arg);
+
+	/* Return an associative array pointed to by MEM.  */
+	tree aatype = build_ctype (tb);
+	vec <constructor_elt, va_gc> *ce = NULL;
+	CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
+
+	result = build_nop (build_ctype (e->type),
+			    build_constructor (aatype, ce));
       }
     else
       gcc_unreachable ();

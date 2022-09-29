@@ -287,7 +287,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
 @item device-specific ICV settings with environment variables @tab Y @tab
-@item @code{assume} directive @tab N @tab
+@item @code{assume} directive @tab P @tab Only C/C++
 @item @code{nothing} directive @tab Y @tab
 @item @code{error} directive @tab Y @tab
 @item @code{masked} construct @tab Y @tab
@@ -348,7 +348,6 @@ The OpenMP 4.5 specification is fully supported.
 @item Support @code{begin/end declare target} syntax in C/C++ @tab N @tab
 @item Pointer predetermined firstprivate getting initialized
 to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
-@item @code{begin declare target} directive @tab N @tab
 @item For Fortran, diagnose placing declarative before/between @code{USE},
       @code{IMPORT}, and @code{IMPLICIT} as invalid @tab N @tab
 @end multitable

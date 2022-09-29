@@ -3338,9 +3338,9 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
-  if (count_sum > profile_count::zero ())
+  if (count_sum.nonzero_p ())
     {
-      gcc_assert (base_count > profile_count::zero ());
+      gcc_assert (base_count.nonzero_p ());
       sreal factor = count_sum.probability_in (base_count).to_sreal ();
       sreal evaluation = (time_benefit * factor) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);

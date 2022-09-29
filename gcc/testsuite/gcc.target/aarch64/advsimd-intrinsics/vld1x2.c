@@ -1,6 +1,6 @@
 /* We haven't implemented these intrinsics for arm yet.  */
 /* { dg-do run } */
-/* { dg-skip-if "unsupported" { arm*-*-* } } */
+/* { dg-skip-if "unimplemented" { arm*-*-* } } */
 /* { dg-options "-O3" } */
 
 #include <arm_neon.h>

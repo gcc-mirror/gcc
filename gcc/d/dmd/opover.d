@@ -1247,13 +1247,10 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 args2[0] = e.e2;
                 expandTuples(&args2);
                 MatchAccumulator m;
-                if (s)
+                functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
+                if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 {
-                    functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
-                    {
-                        return ErrorExp.get();
-                    }
+                    return ErrorExp.get();
                 }
                 if (m.count > 1)
                 {

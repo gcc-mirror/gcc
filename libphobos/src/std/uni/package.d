@@ -426,7 +426,7 @@ $(TR $(TD Building blocks) $(TD
     $(SECTION Construction of lookup tables)
     $(P The Unicode standard describes a set of algorithms that
         depend on having the ability to quickly look up various properties
-        of a code point. Given the the codespace of about 1 million $(CODEPOINTS),
+        of a code point. Given the codespace of about 1 million $(CODEPOINTS),
         it is not a trivial task to provide a space-efficient solution for
         the multitude of properties.
     )

@@ -1,3 +1,21 @@
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (current_omp_begin_assumes): Declare.
+	* c-parser.cc: Include bitmap.h.
+	(c_parser_omp_end_declare_target): Rename to ...
+	(c_parser_omp_end): ... this.  Handle also end assumes.
+	(c_parser_omp_begin, c_parser_omp_assumption_clauses,
+	c_parser_omp_assumes, c_parser_omp_assume): New functions.
+	(c_parser_translation_unit): Also diagnose #pragma omp begin assumes
+	without corresponding #pragma omp end assumes.
+	(c_parser_pragma): Use %s in may only be used at file scope
+	diagnostics to decrease number of translatable messages.  Handle
+	PRAGMA_OMP_BEGIN and PRAGMA_OMP_ASSUMES.  Handle PRAGMA_OMP_END
+	rather than PRAGMA_OMP_END_DECLARE_TARGET and call c_parser_omp_end
+	for it rather than c_parser_omp_end_declare_target.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_ASSUME.
+	* c-decl.cc (current_omp_begin_assumes): Define.
+
 2022-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/106981

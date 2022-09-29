@@ -259,10 +259,10 @@ version (StdUnittest)
 // Test that deallocateAll infers from parent
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
 
-    ScopedAllocator!(Region!()) a;
-    a.parent.parent = Region!()(new ubyte[1024 * 64]);
+    ScopedAllocator!(BorrowedRegion!()) a;
+    a.parent.parent = BorrowedRegion!()(new ubyte[1024 * 64]);
     auto b = a.allocate(42);
     assert(b.length == 42);
     assert((() pure nothrow @safe @nogc => a.expand(b, 22))());

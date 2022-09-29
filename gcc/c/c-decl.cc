@@ -156,6 +156,10 @@ static bool undef_nested_function;
 /* If non-zero, implicit "omp declare target" attribute is added into the
    attribute lists.  */
 int current_omp_declare_target_attribute;
+
+/* If non-zero, we are inside of
+   #pragma omp begin assumes ... #pragma omp end assumes region.  */
+int current_omp_begin_assumes;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are

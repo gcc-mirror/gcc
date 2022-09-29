@@ -180,7 +180,7 @@ d_advance (struct d_info *di, int i)
 extern const struct demangle_operator_info cplus_demangle_operators[];
 #endif
 
-#define D_BUILTIN_TYPE_COUNT (34)
+#define D_BUILTIN_TYPE_COUNT (35)
 
 CP_STATIC_IF_GLIBCPP_V3
 const struct demangle_builtin_type_info

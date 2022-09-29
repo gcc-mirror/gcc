@@ -172,7 +172,7 @@ Returns:
 enum bool isInputRange(R) =
     is(typeof(R.init) == R)
     && is(ReturnType!((R r) => r.empty) == bool)
-    && is(typeof((return ref R r) => r.front))
+    && (is(typeof((return ref R r) => r.front)) || is(typeof(ref (return ref R r) => r.front)))
     && !is(ReturnType!((R r) => r.front) == void)
     && is(typeof((R r) => r.popFront));
 
@@ -226,6 +226,17 @@ enum bool isInputRange(R) =
         void front();
     }
     static assert(!isInputRange!VoidFront);
+}
+// https://issues.dlang.org/show_bug.cgi?id=16034
+@safe unittest
+{
+    struct One
+    {
+        int entry = 1;
+        @disable this(this);
+    }
+
+    assert(isInputRange!(One[]));
 }
 
 @safe unittest

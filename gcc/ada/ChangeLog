@@ -1,3 +1,102 @@
+2022-09-26  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst: Rename Valid_Image.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Build_Instance_Compilation_Unit_Nodes): Relocate
+	auxiliary declarations from the original compilation unit to the
+	newly created compilation unit for the spec.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* rtsfind.ads
+	(RTU_Id): Remove unreferenced packages; fix whitespace.
+	(RE_Id): Remove unreferenced entities; add comment about entity
+	that is only used by GNATprove and not by GNAT.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* s-oscons-tmplt.c (STR, STR1): Remove.
+
+2022-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-gnateT): Document new parameter Long_Long_Long_Size.
+	* gnat_ugn.texi: Regenerate.
+
+2022-09-26  Steve Baird  <baird@adacore.com>
+
+	* bindgen.adb: When the binder is invoked for the device, specify
+	the CUDA_Global aspect for the adainit and adafinal procedures via
+	a pragma instead of via an aspect_specification.
+
+2022-09-26  Kévin Le Gouguec  <legouguec@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Linker Switches): Document support for mold along with gold; add some
+	advice regarding OpenSSL in the Pro version.
+	* gnat_ugn.texi: Regenerate.
+
+2022-09-26  Tucker Taft  <taft@adacore.com>
+
+	* sem_util.adb (Original_Aspect_Pragma_Name): Check for Check
+	pragmas.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Delay expansion
+	based on Full_Analysis flag.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Delay expansion of
+	for iterated component association just like it is done within
+	quantified expression.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Analyze_Object_Contract): Check SPARK_Mode before
+	applying SPARK rule.
+
+2022-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb
+	(Accessibility_Level): Modify indexed and selected components case
+	by reducing the scope where Original_Node gets used.
+
+2022-09-26  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Remove documentation for
+	gnatmetric.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gsocket.h: Remove redefinition of _WIN32_WINNT.
+	* mingw32.h: Remove conditional definition of _WIN32_WINNT.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* mingw32.h: Remove condition definition of MAXPATHLEN; the include
+	directive for stdlib.h was most likely intended to provide the
+	MAX_PATH.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* adaint.c: Remove conditional #include directives for old MinGW.
+	* cal.c: Always include winsock.h, since it is part of modern
+	MinGW.
+	* cstreams.c: Remove workaround for old MinGW.
+	* expect.c: Remove conditional #include directive for old MinGW.
+	* mingw32.h: Remove STD_MINGW and OLD_MINGW declarations.
+	* sysdep.c: Remove conditional #include directive for old MinGW.
+
+2022-09-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.ads (Has_Junk_Name): Reword comment.
+
 2022-09-20  Martin Liska  <mliska@suse.cz>
 
 	* exp_ch6.adb: Replace "the the" with "the".

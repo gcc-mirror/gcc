@@ -2930,6 +2930,19 @@ irange::set_nonzero_bits (const wide_int_ref &bits)
       set_nonzero_bits (NULL);
       return;
     }
+  // If we have only one bit set in the mask, we can figure out the
+  // range immediately.
+  if (wi::popcount (bits) == 1)
+    {
+      bool has_zero = contains_p (build_zero_cst (type ()));
+      set (type (), bits, bits);
+      if (has_zero)
+	{
+	  int_range<2> zero;
+	  zero.set_zero (type ());
+	  union_ (zero);
+	}
+    }
   set_nonzero_bits (wide_int_to_tree (type (), bits));
 }
 

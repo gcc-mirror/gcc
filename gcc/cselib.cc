@@ -1569,6 +1569,26 @@ new_cselib_val (unsigned int hash, machine_mode mode, rtx x)
   e->locs = 0;
   e->next_containing_mem = 0;
 
+  scalar_int_mode int_mode;
+  if (REG_P (x) && is_int_mode (mode, &int_mode)
+      && REG_VALUES (REGNO (x)) != NULL
+      && (!cselib_current_insn || !DEBUG_INSN_P (cselib_current_insn)))
+    {
+      rtx copy = shallow_copy_rtx (x);
+      scalar_int_mode narrow_mode_iter;
+      FOR_EACH_MODE_UNTIL (narrow_mode_iter, int_mode)
+	{
+	  PUT_MODE_RAW (copy, narrow_mode_iter);
+	  cselib_val *v = cselib_lookup (copy, narrow_mode_iter, 0, VOIDmode);
+	  if (v)
+	    {
+	      rtx sub = lowpart_subreg (narrow_mode_iter, e->val_rtx, int_mode);
+	      if (sub)
+		new_elt_loc_list (v, sub);
+	    }
+	}
+    }
+
   if (dump_file && (dump_flags & TDF_CSELIB))
     {
       fprintf (dump_file, "cselib value %u:%u ", e->uid, hash);

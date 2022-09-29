@@ -465,6 +465,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @endcond
 
+#if __cplusplus == 201703L && _GLIBCXX_USE_DEPRECATED
+# define _GLIBCXX_VOLATILE_BIND
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 2487. bind() should be const-overloaded, not cv-overloaded
+# define _GLIBCXX_DEPR_BIND \
+      [[deprecated("std::bind does not support volatile in C++17")]]
+#elif __cplusplus < 201703L
+# define _GLIBCXX_VOLATILE_BIND
+# define _GLIBCXX_DEPR_BIND
+#endif
+
   /// Type of the function object returned from bind().
   template<typename _Signature>
     class _Bind;
@@ -501,6 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      );
 	}
 
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename _Result, typename... _Args, std::size_t... _Indexes>
 	_Result
@@ -522,6 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _Mu<_Bound_args>()(__volget<_Indexes>(_M_bound_args), __args)...
 	      );
 	}
+#endif // volatile
 
       template<typename _BoundArg, typename _CallArgs>
 	using _Mu_type = decltype(
@@ -585,12 +598,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _Bound_indexes());
 	}
 
-#if __cplusplus > 201402L
-# define _GLIBCXX_DEPR_BIND \
-      [[deprecated("std::bind does not support volatile in C++17")]]
-#else
-# define _GLIBCXX_DEPR_BIND
-#endif
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename... _Args,
 	       typename _Result = _Res_type_cv<tuple<_Args...>, add_volatile>>
@@ -614,6 +622,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::forward_as_tuple(std::forward<_Args>(__args)...),
 	      _Bound_indexes());
 	}
+#endif // volatile
     };
 
   /// Type of the function object returned from bind<R>().
@@ -649,9 +658,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_GLIBCXX20_CONSTEXPR
 	_Res
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) volatile
 	{
@@ -661,7 +670,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Call as const volatile
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_GLIBCXX20_CONSTEXPR
 	_Res
 	__call(tuple<_Args...>&& __args,
 	       _Index_tuple<_Indexes...>) const volatile
@@ -669,6 +677,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::__invoke_r<_Res>(_M_f, _Mu<_Bound_args>()
 		      (__volget<_Indexes>(_M_bound_args), __args)...);
 	}
+#endif // volatile
 
     public:
       typedef _Result result_type;
@@ -710,6 +719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _Bound_indexes());
 	}
 
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename... _Args>
 	_GLIBCXX_DEPR_BIND
@@ -731,7 +741,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::forward_as_tuple(std::forward<_Args>(__args)...),
 	      _Bound_indexes());
 	}
+#else
+      template<typename... _Args>
+	void operator()(_Args&&...) const volatile = delete;
+#endif // volatile
     };
+
+#undef _GLIBCXX_VOLATILE_BIND
 #undef _GLIBCXX_DEPR_BIND
 
   /**

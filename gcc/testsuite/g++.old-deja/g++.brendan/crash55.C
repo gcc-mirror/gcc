@@ -8,5 +8,6 @@
 
           local = x+2;
       
-          return local; // { dg-warning "reference to local" }
+          return local; // { dg-warning "reference to local" "" { target c++20_down } }
+// { dg-error "non-const lvalue" "" { target c++23 } .-1 }
       }

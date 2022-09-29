@@ -63,5 +63,8 @@ struct GTY(()) language_function {
 /* If non-zero, implicit "omp declare target" attribute is added into the
    attribute lists.  */
 extern GTY(()) int current_omp_declare_target_attribute;
+/* Similarly whether we are in between #pragma omp begin assumes and
+   #pragma omp end assumes (and how many times when nested).  */
+extern GTY(()) int current_omp_begin_assumes;
 
 #endif /* ! GCC_C_LANG_H */

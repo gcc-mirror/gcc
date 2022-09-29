@@ -1,3 +1,279 @@
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* basic-block.h: Remove discriminator from basic blocks.
+	* cfghooks.cc (split_block_1): Remove discriminator from basic blocks.
+	* final.cc (final_start_function_1): Switch from per-bb to per statement
+	discriminator.
+	(final_scan_insn_1): Don't keep track of basic block discriminators.
+	(compute_discriminator): Switch from basic block discriminators to
+	instruction discriminators.
+	(insn_discriminator): New function to return instruction discriminator.
+	(notice_source_line): Use insn_discriminator.
+	* gimple-pretty-print.cc (dump_gimple_bb_header): Remove dumping of
+	basic block discriminators.
+	* gimple-streamer-in.cc (input_bb): Remove reading of basic block
+	discriminators.
+	* gimple-streamer-out.cc (output_bb): Remove writing of basic block
+	discriminators.
+	* input.cc (make_location): Pass 0 discriminator to COMBINE_LOCATION_DATA.
+	(location_with_discriminator): New function to combine locus with
+	a discriminator.
+	(has_discriminator): New function to check if a location has a discriminator.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+	* input.h: Declarations of new functions.
+	* lto-streamer-in.cc (cmp_loc): Use discriminators in location comparison.
+	(apply_location_cache): Keep track of current discriminator.
+	(input_location_and_block): Read discriminator from stream.
+	* lto-streamer-out.cc (clear_line_info): Set current discriminator to
+	UINT_MAX.
+	(lto_output_location_1): Write discriminator to stream.
+	* lto-streamer.h: Add discriminator to cached_location.
+	Add current_discr to lto_location_cache.
+	Add current_discr to output_block.
+	* print-rtl.cc (print_rtx_operand_code_i): Print discriminator.
+	* rtl.h: Add extern declaration of insn_discriminator.
+	* tree-cfg.cc (assign_discriminator): New function to assign a unique
+	discriminator value to all statements in a basic block that have the given
+	line number.
+	(assign_discriminators): Assign discriminators to statement locations.
+	* tree-pretty-print.cc (dump_location): Dump discriminators.
+	* tree.cc (set_block): Preserve discriminator when setting block.
+	(set_source_range): Preserve discriminator when setting source range.
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* config/i386/predicates.md (encodekey128_operation): Check
+	XMM4-XMM6 as clobbered.
+	(encodekey256_operation): Likewise.
+	* config/i386/sse.md (encodekey128u32): Clobber XMM4-XMM6.
+	(encodekey256u32): Likewise.
+
+2022-09-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add riscv-vector-builtins.o.
+	* config/riscv/riscv-builtins.cc (riscv_init_builtins): Add RVV builtin function.
+	* config/riscv/riscv-protos.h (riscv_v_ext_enabled_vector_mode_p): New function.
+	* config/riscv/riscv.cc (ENTRY): New macro.
+	(riscv_v_ext_enabled_vector_mode_p): New function.
+	(riscv_mangle_type): Add RVV mangle.
+	(riscv_vector_mode_supported_p): Adjust RVV machine mode.
+	(riscv_verify_type_context): Add context check for RVV.
+	(riscv_vector_alignment): Add RVV alignment target hook support.
+	(TARGET_VECTOR_MODE_SUPPORTED_P): New target hook support.
+	(TARGET_VERIFY_TYPE_CONTEXT): Ditto.
+	(TARGET_VECTOR_ALIGNMENT): Ditto.
+	* config/riscv/t-riscv: Add riscv-vector-builtins.o
+	* config/riscv/riscv-vector-builtins.cc: New file.
+	* config/riscv/riscv-vector-builtins.def: New file.
+	* config/riscv/riscv-vector-builtins.h: New file.
+	* config/riscv/riscv-vector-switch.def: New file.
+
+2022-09-28  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* var-tracking.cc (vt_add_function_parameter): Add entry values
+	up to maximal register mode.
+
+2022-09-28  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* cselib.cc (new_cselib_val): Keep track of further subvalue
+	relations.
+
+2022-09-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm-c.cc (arm_cpu_builtins): Define
+	__ARM_FEATURE_AES and __ARM_FEATURE_SHA2.
+
+2022-09-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/105414
+	* config/loongarch/loongarch.md (UNSPEC_FMAX): New unspec.
+	(UNSPEC_FMIN): Likewise.
+	(fmax<mode>3): Use UNSPEC_FMAX instead of smax.
+	(fmin<mode>3): Use UNSPEC_FMIN instead of smin.
+
+2022-09-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_asan_shadow_offset):
+	Fixed typo in "asan_mapping.h".
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/58245
+	* calls.cc: Include "tree-eh.h".
+	(expand_call): Check stack canary before throwing exception.
+
+2022-09-27  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* ipa-cp.cc (good_cloning_opportunity_p): Fix profile count comparison.
+
+2022-09-27  Kim Kuparinen  <kim.kuparinen@rightware.com>
+
+	* doc/invoke.texi: Update ABI version info.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (cfn_popcount): Calculate the popcount of a
+	singleton.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set_nonzero_bits): Set range when known.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (irange::set): New version taking wide_int_ref.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107029
+	* tree-ssa-reassoc.cc (optimize_range_tests_cmp_bitwise): Treat
+	OFFSET_TYPE like POINTER_TYPE, except that OFFSET_TYPE may be
+	signed and so can trigger even the (b % 4) == 3 case.
+
+2022-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* cfgrtl.cc (fixup_reorder_chain): Verify that simple_return
+	and return are available before trying to use them.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* tree-core.h (enum tree_index): Add TI_FLOAT128T_TYPE
+	enumerator.
+	* tree.h (float128t_type_node): Define.
+	* tree.cc (build_common_tree_nodes): Initialize float128t_type_node.
+	* builtins.def (DEF_FLOATN_BUILTIN): Adjust comment now that
+	_Float<N> is supported in C++ too.
+	* config/i386/i386.cc (ix86_mangle_type): Only mangle as "g"
+	float128t_type_node.
+	* config/i386/i386-builtins.cc (ix86_init_builtin_types): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+	* config/i386/avx512fp16intrin.h (_mm_setzero_ph, _mm256_setzero_ph,
+	_mm512_setzero_ph, _mm_set_sh, _mm_load_sh): Use 0.0f16 instead of
+	0.0f.
+	* config/ia64/ia64.cc (ia64_init_builtins): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+	* config/rs6000/rs6000-c.cc (is_float128_p): Also return true
+	for float128t_type_node if non-NULL.
+	* config/rs6000/rs6000.cc (rs6000_mangle_type): Don't mangle
+	float128_type_node as "u9__ieee128".
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing dash for
+	  Wanalyzer-exposure-through-uninit-copy.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* range-op.cc (operator_bitwise_and::op1_range): Optimize 0 = x & MASK.
+	(range_op_bitwise_and_tests): New test.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges):
+	Iterate over exports.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (with_arch) [nvptx]: Allow '--with-arch' to override
+	the default.
+	* config/nvptx/gen-multilib-matches.sh: New.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle this.
+	* doc/install.texi (Specific) <nvptx-*-none>: Document this.
+	* doc/invoke.texi (Nvidia PTX Options): Likewise.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (TM_MULTILIB_CONFIG) [nvptx]: Set to '$with_arch'.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle it.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (with_arch) [nvptx]: Set to 'sm_30'.
+	* config/nvptx/nvptx.cc (nvptx_option_override): Assert that
+	'-misa' appeared.
+	* config/nvptx/nvptx.h (OPTION_DEFAULT_SPECS): Define.
+	* config/nvptx/nvptx.opt (misa=): Remove 'Init'.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Define.
+
+2022-09-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* cfgcleanup.cc (bb_is_just_return): No longer static.
+	* cfgcleanup.h (bb_is_just_return): Add prototype.
+	* cfgrtl.cc (fixup_reorder_chain): Do not create an
+	unconditional jump to a return block.  Conditionally
+	remove unreachable blocks.
+
+2022-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106982
+	* omp-low.cc (lower_oacc_reductions): Add some unshare_expr.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc (s390_rtx_costs): Remove dest variable
+	and use only dst.
+
+2022-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv9.1-a): Define.
+	(armv9.2-a): Likewise.
+	(armv9.3-a): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_FL_V9_1): Likewise.
+	(AARCH64_FL_V9_2): Likewise.
+	(AARCH64_FL_V9_3): Likewise.
+	(AARCH64_FL_FOR_ARCH9_1): Likewise.
+	(AARCH64_FL_FOR_ARCH9_2): Likewise.
+	(AARCH64_FL_FOR_ARCH9_3): Likewise.
+	(AARCH64_ISA_V9_1): Likewise.
+	(AARCH64_ISA_V9_2): Likewise.
+	(AARCH64_ISA_V9_3): Likewise.
+	* doc/invoke.texi (AArch64 Options): Document armv9.1-a, armv9.2-a,
+	armv9.3-a values to -march.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* value-range.cc (tree_compare): Remove unused function.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): Update the
+	condition for adding REG_CFA_DEF_CFA reg note with
+	frame_pointer_needed_indeed.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* config/rs6000/vector.md (vec_shr_<mode>): Replace condition
+	TARGET_ALTIVEC with VECTOR_UNIT_ALTIVEC_OR_VSX_P.
+
+2022-09-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Liwei Xu  <liwei.xu@intel.com>
+
+	PR target/53346
+	* config/i386/i386-expand.cc (expand_vec_perm_shufps_shufps):
+	New function.
+	(ix86_expand_vec_perm_const_1): Insert
+	expand_vec_perm_shufps_shufps at the end of 2-instruction
+	expand sequence.
+
 2022-09-25  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* doc/sourcebuild.texi: Fix chapter level.

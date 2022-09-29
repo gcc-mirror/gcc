@@ -1,3 +1,10 @@
+2022-09-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107054
+	* simplify.cc (gfc_simplify_unpack): Replace assert by condition
+	that terminates simplification when there are not enough elements
+	in the constructor of argument VECTOR.
+
 2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/41453
