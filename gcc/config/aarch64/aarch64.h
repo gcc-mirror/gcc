@@ -154,22 +154,22 @@
 /* ARMv8.1-A architecture extensions.  */
 #define AARCH64_FL_LSE	      (1 << 4)  /* Has Large System Extensions.  */
 #define AARCH64_FL_RDMA       (1 << 5)  /* Has Round Double Multiply Add.  */
-#define AARCH64_FL_V8_1       (1 << 6)  /* Has ARMv8.1-A extensions.  */
+#define AARCH64_FL_V8_1A      (1 << 6)  /* Has ARMv8.1-A extensions.  */
 /* Armv8-R.  */
-#define AARCH64_FL_V8_R       (1 << 7)  /* Armv8-R AArch64.  */
+#define AARCH64_FL_V8R        (1 << 7)  /* Armv8-R AArch64.  */
 /* ARMv8.2-A architecture extensions.  */
-#define AARCH64_FL_V8_2       (1 << 8)  /* Has ARMv8.2-A features.  */
+#define AARCH64_FL_V8_2A      (1 << 8)  /* Has ARMv8.2-A features.  */
 #define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
 #define AARCH64_FL_SVE        (1 << 10) /* Has Scalable Vector Extensions.  */
 /* ARMv8.3-A architecture extensions.  */
-#define AARCH64_FL_V8_3       (1 << 11)  /* Has ARMv8.3-A features.  */
+#define AARCH64_FL_V8_3A      (1 << 11)  /* Has ARMv8.3-A features.  */
 #define AARCH64_FL_RCPC       (1 << 12)  /* Has support for RCpc model.  */
 #define AARCH64_FL_DOTPROD    (1 << 13)  /* Has ARMv8.2-A Dot Product ins.  */
 /* New flags to split crypto into aes and sha2.  */
 #define AARCH64_FL_AES	      (1 << 14)  /* Has Crypto AES.  */
 #define AARCH64_FL_SHA2	      (1 << 15)  /* Has Crypto SHA2.  */
 /* ARMv8.4-A architecture extensions.  */
-#define AARCH64_FL_V8_4	      (1 << 16)  /* Has ARMv8.4-A features.  */
+#define AARCH64_FL_V8_4A      (1 << 16)  /* Has ARMv8.4-A features.  */
 #define AARCH64_FL_SM4	      (1 << 17)  /* Has ARMv8.4-A SM3 and SM4.  */
 #define AARCH64_FL_SHA3	      (1 << 18)  /* Has ARMv8.4-a SHA3 and SHA512.  */
 #define AARCH64_FL_F16FML     (1 << 19)  /* Has ARMv8.4-a FP16 extensions.  */
@@ -179,7 +179,7 @@
 #define AARCH64_FL_PROFILE    (1 << 21)
 
 /* ARMv8.5-A architecture extensions.  */
-#define AARCH64_FL_V8_5	      (1 << 22)  /* Has ARMv8.5-A features.  */
+#define AARCH64_FL_V8_5A      (1 << 22)  /* Has ARMv8.5-A features.  */
 #define AARCH64_FL_RNG	      (1 << 23)  /* ARMv8.5-A Random Number Insns.  */
 #define AARCH64_FL_MEMTAG     (1 << 24)  /* ARMv8.5-A Memory Tagging
 					    Extensions.  */
@@ -204,7 +204,7 @@
 #define AARCH64_FL_TME	      (1ULL << 33)  /* Has TME instructions.  */
 
 /* Armv8.6-A architecture extensions.  */
-#define AARCH64_FL_V8_6	      (1ULL << 34)
+#define AARCH64_FL_V8_6A      (1ULL << 34)
 
 /* 8-bit Integer Matrix Multiply (I8MM) extensions.  */
 #define AARCH64_FL_I8MM	      (1ULL << 35)
@@ -225,28 +225,28 @@
 #define AARCH64_FL_PAUTH      (1ULL << 40)
 
 /* Armv9.0-A.  */
-#define AARCH64_FL_V9         (1ULL << 41)  /* Armv9.0-A Architecture.  */
+#define AARCH64_FL_V9A        (1ULL << 41)  /* Armv9.0-A Architecture.  */
 
 /* 64-byte atomic load/store extensions.  */
 #define AARCH64_FL_LS64      (1ULL << 42)
 
 /* Armv8.7-a architecture extensions.  */
-#define AARCH64_FL_V8_7       (1ULL << 43)
+#define AARCH64_FL_V8_7A      (1ULL << 43)
 
 /* Hardware memory operation instructions.  */
 #define AARCH64_FL_MOPS       (1ULL << 44)
 
 /* Armv8.8-a architecture extensions.  */
-#define AARCH64_FL_V8_8       (1ULL << 45)
+#define AARCH64_FL_V8_8A      (1ULL << 45)
 
 /* Armv9.1-A.  */
-#define AARCH64_FL_V9_1       (1ULL << 46)
+#define AARCH64_FL_V9_1A      (1ULL << 46)
 
 /* Armv9.2-A.  */
-#define AARCH64_FL_V9_2       (1ULL << 47)
+#define AARCH64_FL_V9_2A      (1ULL << 47)
 
 /* Armv9.3-A.  */
-#define AARCH64_FL_V9_3       (1ULL << 48)
+#define AARCH64_FL_V9_3A      (1ULL << 48)
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -258,36 +258,36 @@
 #define AARCH64_FL_FOR_ARCH8       (AARCH64_FL_FPSIMD)
 #define AARCH64_FL_FOR_ARCH8_1			       \
   (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_CRC \
-   | AARCH64_FL_RDMA | AARCH64_FL_V8_1)
+   | AARCH64_FL_RDMA | AARCH64_FL_V8_1A)
 #define AARCH64_FL_FOR_ARCH8_2			\
-  (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2)
+  (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2A)
 #define AARCH64_FL_FOR_ARCH8_3			\
-  (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3 | AARCH64_FL_PAUTH)
+  (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3A | AARCH64_FL_PAUTH)
 #define AARCH64_FL_FOR_ARCH8_4			\
-  (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
+  (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4A | AARCH64_FL_F16FML \
    | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4 | AARCH64_FL_FLAGM)
 #define AARCH64_FL_FOR_ARCH8_5			\
-  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5	\
+  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5A	\
    | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)
 #define AARCH64_FL_FOR_ARCH8_6			\
-  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_V8_6 | AARCH64_FL_FPSIMD \
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_V8_6A | AARCH64_FL_FPSIMD \
    | AARCH64_FL_I8MM | AARCH64_FL_BF16)
 #define AARCH64_FL_FOR_ARCH8_7			\
-  (AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V8_7 | AARCH64_FL_LS64)
+  (AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V8_7A | AARCH64_FL_LS64)
 #define AARCH64_FL_FOR_ARCH8_8			\
-  (AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V8_8 | AARCH64_FL_MOPS)
+  (AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V8_8A | AARCH64_FL_MOPS)
 
 #define AARCH64_FL_FOR_ARCH8_R     \
-  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
+  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8R)
 #define AARCH64_FL_FOR_ARCH9       \
-  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9A \
    | AARCH64_FL_F16)
 #define AARCH64_FL_FOR_ARCH9_1	\
-  (AARCH64_FL_FOR_ARCH9 | AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V9_1)
+  (AARCH64_FL_FOR_ARCH9 | AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V9_1A)
 #define AARCH64_FL_FOR_ARCH9_2	\
-  (AARCH64_FL_FOR_ARCH9_1 | AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V9_2)
+  (AARCH64_FL_FOR_ARCH9_1 | AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V9_2A)
 #define AARCH64_FL_FOR_ARCH9_3	\
-  (AARCH64_FL_FOR_ARCH9_2 | AARCH64_FL_FOR_ARCH8_8 | AARCH64_FL_V9_3)
+  (AARCH64_FL_FOR_ARCH9_2 | AARCH64_FL_FOR_ARCH8_8 | AARCH64_FL_V9_3A)
 
 /* Macros to test ISA flags.  */
 
@@ -297,7 +297,7 @@
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
 #define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_RDMA)
-#define AARCH64_ISA_V8_2A	   (aarch64_isa_flags & AARCH64_FL_V8_2)
+#define AARCH64_ISA_V8_2A	   (aarch64_isa_flags & AARCH64_FL_V8_2A)
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
 #define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
@@ -305,31 +305,31 @@
 #define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
 #define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
 #define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
-#define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3)
+#define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3A)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
 #define AARCH64_ISA_SHA2	   (aarch64_isa_flags & AARCH64_FL_SHA2)
-#define AARCH64_ISA_V8_4A	   (aarch64_isa_flags & AARCH64_FL_V8_4)
+#define AARCH64_ISA_V8_4A	   (aarch64_isa_flags & AARCH64_FL_V8_4A)
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
 #define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
 #define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
-#define AARCH64_ISA_V8_5A	   (aarch64_isa_flags & AARCH64_FL_V8_5)
+#define AARCH64_ISA_V8_5A	   (aarch64_isa_flags & AARCH64_FL_V8_5A)
 #define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
 #define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
-#define AARCH64_ISA_V8_6A	   (aarch64_isa_flags & AARCH64_FL_V8_6)
+#define AARCH64_ISA_V8_6A	   (aarch64_isa_flags & AARCH64_FL_V8_6A)
 #define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
 #define AARCH64_ISA_F32MM	   (aarch64_isa_flags & AARCH64_FL_F32MM)
 #define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
-#define AARCH64_ISA_V8R		   (aarch64_isa_flags & AARCH64_FL_V8_R)
+#define AARCH64_ISA_V8R		   (aarch64_isa_flags & AARCH64_FL_V8R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
-#define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9)
-#define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1)
-#define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2)
-#define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3)
+#define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9A)
+#define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1A)
+#define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2A)
+#define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3A)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
