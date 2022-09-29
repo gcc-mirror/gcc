@@ -747,7 +747,7 @@ public:
   ~aarch64_simd_switcher ();
 
 private:
-  unsigned long m_old_isa_flags;
+  unsigned long m_old_asm_isa_flags;
   bool m_old_general_regs_only;
 };
 
@@ -1029,7 +1029,10 @@ extern bool aarch64_classify_address (struct aarch64_address_info *, rtx,
 				      machine_mode, bool,
 				      aarch64_addr_query_type = ADDR_QUERY_M);
 
+void aarch64_set_asm_isa_flags (aarch64_feature_flags);
+
 /* Defined in common/config/aarch64-common.cc.  */
+void aarch64_set_asm_isa_flags (gcc_options *, aarch64_feature_flags);
 bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
 const char *aarch64_rewrite_selected_cpu (const char *name);

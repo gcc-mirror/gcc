@@ -22,6 +22,17 @@
 #ifndef GCC_AARCH64_H
 #define GCC_AARCH64_H
 
+/* Make these flags read-only so that all uses go via
+   aarch64_set_asm_isa_flags.  */
+#ifndef GENERATOR_FILE
+#undef aarch64_asm_isa_flags
+#define aarch64_asm_isa_flags \
+  ((aarch64_feature_flags) global_options.x_aarch64_asm_isa_flags)
+#undef aarch64_isa_flags
+#define aarch64_isa_flags \
+  ((aarch64_feature_flags) global_options.x_aarch64_isa_flags)
+#endif
+
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()	\
   aarch64_cpu_cpp_builtins (pfile)
@@ -51,8 +62,8 @@
 
 /* AdvSIMD is supported in the default configuration, unless disabled by
    -mgeneral-regs-only or by the +nosimd extension.  */
-#define TARGET_SIMD (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_SIMD)
-#define TARGET_FLOAT (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_FP)
+#define TARGET_SIMD (AARCH64_ISA_SIMD)
+#define TARGET_FLOAT (AARCH64_ISA_FP)
 
 #define UNITS_PER_WORD		8
 
@@ -242,7 +253,7 @@ enum class aarch64_feature : unsigned char {
 #define TARGET_DOTPROD (TARGET_SIMD && AARCH64_ISA_DOTPROD)
 
 /* SVE instructions, enabled through +sve.  */
-#define TARGET_SVE (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_SVE)
+#define TARGET_SVE (AARCH64_ISA_SVE)
 
 /* SVE2 instructions, enabled through +sve2.  */
 #define TARGET_SVE2 (TARGET_SVE && AARCH64_ISA_SVE2)

@@ -696,7 +696,7 @@ static bool
 check_required_extensions (location_t location, tree fndecl,
 			   aarch64_feature_flags required_extensions)
 {
-  auto missing_extensions = required_extensions & ~aarch64_isa_flags;
+  auto missing_extensions = required_extensions & ~aarch64_asm_isa_flags;
   if (missing_extensions == 0)
     return check_required_registers (location, fndecl);
 

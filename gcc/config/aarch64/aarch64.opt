@@ -28,6 +28,9 @@ TargetVariable
 enum aarch64_arch selected_arch = aarch64_no_arch
 
 TargetVariable
+aarch64_feature_flags aarch64_asm_isa_flags = 0
+
+TargetVariable
 aarch64_feature_flags aarch64_isa_flags = 0
 
 TargetVariable
