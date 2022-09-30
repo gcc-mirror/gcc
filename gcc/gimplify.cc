@@ -9245,6 +9245,7 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
     case GOMP_MAP_RELEASE:
     case GOMP_MAP_DELETE:
     case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_IF_PRESENT:
       if (node == grp->grp_end)
 	return node;
 
@@ -9323,7 +9324,6 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
     case GOMP_MAP_FORCE_DEVICEPTR:
     case GOMP_MAP_DEVICE_RESIDENT:
     case GOMP_MAP_LINK:
-    case GOMP_MAP_IF_PRESENT:
     case GOMP_MAP_FIRSTPRIVATE:
     case GOMP_MAP_FIRSTPRIVATE_INT:
     case GOMP_MAP_USE_DEVICE_PTR:
