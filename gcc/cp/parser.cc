@@ -1146,14 +1146,16 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_TYPEOF:
       /* C++11 extensions.  */
     case RID_DECLTYPE:
-    case RID_UNDERLYING_TYPE:
-    case RID_REMOVE_CV:
-    case RID_REMOVE_REFERENCE:
-    case RID_REMOVE_CVREF:
     case RID_CONSTEXPR:
       /* C++20 extensions.  */
     case RID_CONSTINIT:
     case RID_CONSTEVAL:
+      return true;
+
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case RID_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
       return true;
 
     default:
@@ -5895,42 +5897,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_OFFSETOF:
 	  return cp_parser_builtin_offsetof (parser);
 
-	case RID_HAS_NOTHROW_ASSIGN:
-	case RID_HAS_NOTHROW_CONSTRUCTOR:
-	case RID_HAS_NOTHROW_COPY:
-	case RID_HAS_TRIVIAL_ASSIGN:
-	case RID_HAS_TRIVIAL_CONSTRUCTOR:
-	case RID_HAS_TRIVIAL_COPY:
-	case RID_HAS_TRIVIAL_DESTRUCTOR:
-	case RID_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-	case RID_HAS_VIRTUAL_DESTRUCTOR:
-	case RID_IS_ABSTRACT:
-	case RID_IS_AGGREGATE:
-	case RID_IS_BASE_OF:
-	case RID_IS_CLASS:
-	case RID_IS_EMPTY:
-	case RID_IS_ENUM:
-	case RID_IS_FINAL:
-	case RID_IS_LAYOUT_COMPATIBLE:
-	case RID_IS_LITERAL_TYPE:
-	case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
-	case RID_IS_POD:
-	case RID_IS_POLYMORPHIC:
-	case RID_IS_SAME_AS:
-	case RID_IS_STD_LAYOUT:
-	case RID_IS_TRIVIAL:
-	case RID_IS_TRIVIALLY_ASSIGNABLE:
-	case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
-	case RID_IS_TRIVIALLY_COPYABLE:
-	case RID_IS_UNION:
-	case RID_IS_ASSIGNABLE:
-	case RID_IS_CONSTRUCTIBLE:
-	case RID_IS_NOTHROW_ASSIGNABLE:
-	case RID_IS_NOTHROW_CONSTRUCTIBLE:
-	case RID_IS_CONVERTIBLE:
-	case RID_IS_NOTHROW_CONVERTIBLE:
-	case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
-	case RID_REF_CONVERTS_FROM_TEMPORARY:
+#define DEFTRAIT_EXPR(CODE, NAME, ARITY) \
+	case RID_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_EXPR
 	  return cp_parser_trait (parser, token->keyword);
 
 	// C++ concepts
@@ -10898,150 +10868,15 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
 
   switch (keyword)
     {
-    case RID_HAS_NOTHROW_ASSIGN:
-      kind = CPTK_HAS_NOTHROW_ASSIGN;
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+    case RID_##CODE:			 \
+      kind = CPTK_##CODE;		 \
+      binary = (ARITY == 2);		 \
+      variadic = (ARITY == -1);		 \
+      type = (TCC == tcc_type);		 \
       break;
-    case RID_HAS_NOTHROW_CONSTRUCTOR:
-      kind = CPTK_HAS_NOTHROW_CONSTRUCTOR;
-      break;
-    case RID_HAS_NOTHROW_COPY:
-      kind = CPTK_HAS_NOTHROW_COPY;
-      break;
-    case RID_HAS_TRIVIAL_ASSIGN:
-      kind = CPTK_HAS_TRIVIAL_ASSIGN;
-      break;
-    case RID_HAS_TRIVIAL_CONSTRUCTOR:
-      kind = CPTK_HAS_TRIVIAL_CONSTRUCTOR;
-      break;
-    case RID_HAS_TRIVIAL_COPY:
-      kind = CPTK_HAS_TRIVIAL_COPY;
-      break;
-    case RID_HAS_TRIVIAL_DESTRUCTOR:
-      kind = CPTK_HAS_TRIVIAL_DESTRUCTOR;
-      break;
-    case RID_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-      kind = CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS;
-      break;
-    case RID_HAS_VIRTUAL_DESTRUCTOR:
-      kind = CPTK_HAS_VIRTUAL_DESTRUCTOR;
-      break;
-    case RID_IS_ABSTRACT:
-      kind = CPTK_IS_ABSTRACT;
-      break;
-    case RID_IS_AGGREGATE:
-      kind = CPTK_IS_AGGREGATE;
-      break;
-    case RID_IS_BASE_OF:
-      kind = CPTK_IS_BASE_OF;
-      binary = true;
-      break;
-    case RID_IS_CLASS:
-      kind = CPTK_IS_CLASS;
-      break;
-    case RID_IS_EMPTY:
-      kind = CPTK_IS_EMPTY;
-      break;
-    case RID_IS_ENUM:
-      kind = CPTK_IS_ENUM;
-      break;
-    case RID_IS_FINAL:
-      kind = CPTK_IS_FINAL;
-      break;
-    case RID_IS_LAYOUT_COMPATIBLE:
-      kind = CPTK_IS_LAYOUT_COMPATIBLE;
-      binary = true;
-      break;
-    case RID_IS_LITERAL_TYPE:
-      kind = CPTK_IS_LITERAL_TYPE;
-      break;
-    case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
-      kind = CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF;
-      binary = true;
-      break;
-    case RID_IS_POD:
-      kind = CPTK_IS_POD;
-      break;
-    case RID_IS_POLYMORPHIC:
-      kind = CPTK_IS_POLYMORPHIC;
-      break;
-    case RID_IS_SAME_AS:
-      kind = CPTK_IS_SAME_AS;
-      binary = true;
-      break;
-    case RID_IS_STD_LAYOUT:
-      kind = CPTK_IS_STD_LAYOUT;
-      break;
-    case RID_IS_TRIVIAL:
-      kind = CPTK_IS_TRIVIAL;
-      break;
-    case RID_IS_TRIVIALLY_ASSIGNABLE:
-      kind = CPTK_IS_TRIVIALLY_ASSIGNABLE;
-      binary = true;
-      break;
-    case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
-      kind = CPTK_IS_TRIVIALLY_CONSTRUCTIBLE;
-      variadic = true;
-      break;
-    case RID_IS_TRIVIALLY_COPYABLE:
-      kind = CPTK_IS_TRIVIALLY_COPYABLE;
-      break;
-    case RID_IS_UNION:
-      kind = CPTK_IS_UNION;
-      break;
-    case RID_UNDERLYING_TYPE:
-      kind = CPTK_UNDERLYING_TYPE;
-      type = true;
-      break;
-    case RID_BASES:
-      kind = CPTK_BASES;
-      break;
-    case RID_DIRECT_BASES:
-      kind = CPTK_DIRECT_BASES;
-      break;
-    case RID_IS_ASSIGNABLE:
-      kind = CPTK_IS_ASSIGNABLE;
-      binary = true;
-      break;
-    case RID_IS_CONSTRUCTIBLE:
-      kind = CPTK_IS_CONSTRUCTIBLE;
-      variadic = true;
-      break;
-    case RID_IS_NOTHROW_ASSIGNABLE:
-      kind = CPTK_IS_NOTHROW_ASSIGNABLE;
-      binary = true;
-      break;
-    case RID_IS_NOTHROW_CONSTRUCTIBLE:
-      kind = CPTK_IS_NOTHROW_CONSTRUCTIBLE;
-      variadic = true;
-      break;
-    case RID_IS_CONVERTIBLE:
-      kind = CPTK_IS_CONVERTIBLE;
-      binary = true;
-      break;
-    case RID_IS_NOTHROW_CONVERTIBLE:
-      kind = CPTK_IS_NOTHROW_CONVERTIBLE;
-      binary = true;
-      break;
-    case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
-      kind = CPTK_REF_CONSTRUCTS_FROM_TEMPORARY;
-      binary = true;
-      break;
-    case RID_REF_CONVERTS_FROM_TEMPORARY:
-      kind = CPTK_REF_CONVERTS_FROM_TEMPORARY;
-      binary = true;
-      break;
-    case RID_REMOVE_CV:
-      kind = CPTK_REMOVE_CV;
-      type = true;
-      break;
-    case RID_REMOVE_REFERENCE:
-      kind = CPTK_REMOVE_REFERENCE;
-      type = true;
-      break;
-    case RID_REMOVE_CVREF:
-      kind = CPTK_REMOVE_CVREF;
-      type = true;
-      break;
+#include "cp-trait.def"
+#undef DEFTRAIT
     default:
       gcc_unreachable ();
     }
@@ -19881,10 +19716,10 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       return type;
 
-    case RID_UNDERLYING_TYPE:
-    case RID_REMOVE_CV:
-    case RID_REMOVE_REFERENCE:
-    case RID_REMOVE_CVREF:
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case RID_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
       type = cp_parser_trait (parser, token->keyword);
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
@@ -19893,14 +19728,6 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       return type;
 
-    case RID_BASES:
-    case RID_DIRECT_BASES:
-      type = cp_parser_trait (parser, token->keyword);
-      if (decl_specs)
-       cp_parser_set_decl_spec_type (decl_specs, type,
-                                     token,
-                                     /*type_definition_p=*/false);
-      return type;
     default:
       break;
     }

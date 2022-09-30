@@ -3711,13 +3711,11 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not a reference that binds to a temporary "
 	      "object of type %qT (copy-initialization)", t1, t2);
       break;
-    case CPTK_BASES:
-    case CPTK_DIRECT_BASES:
-    case CPTK_UNDERLYING_TYPE:
-    case CPTK_REMOVE_CV:
-    case CPTK_REMOVE_REFERENCE:
-    case CPTK_REMOVE_CVREF:
-      /* We shouldn't see these non-expression traits.  */
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case CPTK_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
+      /* Type-yielding traits aren't expressions.  */
       gcc_unreachable ();
     /* We deliberately omit the default case so that when adding a new
        trait we'll get reminded (by way of a warning) to handle it here.  */
