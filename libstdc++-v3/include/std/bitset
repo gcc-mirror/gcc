@@ -1321,42 +1321,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return to_string<char, std::char_traits<char>,
 	                 std::allocator<char> >(__zero, __one);
       }
-
-      // Helper functions for string operations.
-      template<class _CharT, class _Traits>
-	_GLIBCXX23_CONSTEXPR
-        void
-        _M_copy_from_ptr(const _CharT*, size_t, size_t, size_t,
-			 _CharT, _CharT);
-
-      template<class _CharT, class _Traits, class _Alloc>
-	_GLIBCXX23_CONSTEXPR
-	void
-	_M_copy_from_string(const std::basic_string<_CharT,
-			    _Traits, _Alloc>& __s, size_t __pos, size_t __n,
-			    _CharT __zero, _CharT __one)
-	{ _M_copy_from_ptr<_CharT, _Traits>(__s.data(), __s.size(), __pos, __n,
-					    __zero, __one); }
-
-      template<class _CharT, class _Traits, class _Alloc>
-	_GLIBCXX23_CONSTEXPR
-	void
-        _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>&,
-			  _CharT, _CharT) const;
-
-      // NB: Backward compat.
-      template<class _CharT, class _Traits, class _Alloc>
-	_GLIBCXX23_CONSTEXPR
-	void
-	_M_copy_from_string(const std::basic_string<_CharT,
-			    _Traits, _Alloc>& __s, size_t __pos, size_t __n)
-	{ _M_copy_from_string(__s, __pos, __n, _CharT('0'), _CharT('1')); }
-
-      template<class _CharT, class _Traits, class _Alloc>
-	_GLIBCXX23_CONSTEXPR
-	void
-        _M_copy_to_string(std::basic_string<_CharT, _Traits,_Alloc>& __s) const
-	{ _M_copy_to_string(__s, _CharT('0'), _CharT('1')); }
 #endif // HOSTED
 
       /// Returns the number of bits which are set.
@@ -1463,6 +1427,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_t
       _Find_next(size_t __prev) const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_next(__prev, _Nb); }
+
+    private:
+      // Helper functions for string operations.
+      template<class _CharT, class _Traits>
+	_GLIBCXX23_CONSTEXPR
+        void
+        _M_copy_from_ptr(const _CharT*, size_t, size_t, size_t,
+			 _CharT, _CharT);
+
+#if _GLIBCXX_HOSTED
+      template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
+	void
+	_M_copy_from_string(const std::basic_string<_CharT,
+			    _Traits, _Alloc>& __s, size_t __pos, size_t __n,
+			    _CharT __zero, _CharT __one)
+	{ _M_copy_from_ptr<_CharT, _Traits>(__s.data(), __s.size(), __pos, __n,
+					    __zero, __one); }
+
+      template<class _CharT, class _Traits, class _Alloc>
+	_GLIBCXX23_CONSTEXPR
+	void
+        _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>&,
+			  _CharT, _CharT) const;
+
+      template<class _CharT, class _Traits, size_t _Nb2>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>&, bitset<_Nb2>&);
+
+      template <class _CharT, class _Traits, size_t _Nb2>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>&, const bitset<_Nb2>&);
+#endif
     };
 
 #if _GLIBCXX_HOSTED
