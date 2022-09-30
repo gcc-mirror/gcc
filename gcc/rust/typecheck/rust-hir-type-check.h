@@ -372,6 +372,15 @@ public:
     return true;
   }
 
+  void insert_query (HirId id) { querys_in_progress.insert (id); }
+
+  void query_completed (HirId id) { querys_in_progress.erase (id); }
+
+  bool query_in_progress (HirId id) const
+  {
+    return querys_in_progress.find (id) != querys_in_progress.end ();
+  }
+
 private:
   TypeCheckContext ();
 
@@ -406,6 +415,9 @@ private:
 
   // predicates
   std::map<HirId, TyTy::TypeBoundPredicate> predicates;
+
+  // query context lookups
+  std::set<HirId> querys_in_progress;
 };
 
 class TypeResolution

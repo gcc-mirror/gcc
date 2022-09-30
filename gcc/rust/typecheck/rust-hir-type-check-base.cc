@@ -495,14 +495,20 @@ TypeCheckBase::resolve_generic_params (
 bool
 TypeCheckBase::query_type (HirId reference, TyTy::BaseType **result)
 {
+  if (context->query_in_progress (reference))
+    return false;
+
   if (context->lookup_type (reference, result))
     return true;
+
+  context->insert_query (reference);
 
   HIR::Item *item = mappings->lookup_hir_item (reference);
   if (item != nullptr)
     {
       rust_debug_loc (item->get_locus (), "resolved item {%u} to", reference);
       *result = TypeCheckItem::Resolve (*item);
+      context->query_completed (reference);
       return true;
     }
 
@@ -520,6 +526,7 @@ TypeCheckBase::query_type (HirId reference, TyTy::BaseType **result)
 		      reference);
 
       *result = TypeCheckItem::ResolveImplItem (*impl_block, *impl_item);
+      context->query_completed (reference);
       return true;
     }
 
@@ -530,6 +537,7 @@ TypeCheckBase::query_type (HirId reference, TyTy::BaseType **result)
   if (found_impl_block_type)
     {
       *result = TypeCheckItem::ResolveImplBlockSelf (*impl_block_by_type);
+      context->query_completed (reference);
       return true;
     }
 
@@ -544,6 +552,7 @@ TypeCheckBase::query_type (HirId reference, TyTy::BaseType **result)
       rust_assert (block != nullptr);
 
       *result = TypeCheckTopLevelExternItem::Resolve (extern_item, *block);
+      context->query_completed (reference);
       return true;
     }
 
@@ -551,6 +560,7 @@ TypeCheckBase::query_type (HirId reference, TyTy::BaseType **result)
   Location possible_locus = mappings->lookup_location (reference);
   rust_debug_loc (possible_locus, "query system failed to resolve: [%u]",
 		  reference);
+  context->query_completed (reference);
 
   return false;
 }
