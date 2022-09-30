@@ -3608,16 +3608,19 @@ GNAT User’s Guide.
 Syntax:
 
 @example
-pragma Extensions_Allowed (On | Off);
+pragma Extensions_Allowed (On | Off | All);
 @end example
 
-This configuration pragma enables or disables the implementation
-extension mode (the use of Off as a parameter cancels the effect
-of the `-gnatX' command switch).
+This configuration pragma enables (via the “On” or “All” argument) or disables
+(via the “Off” argument) the implementation extension mode; the pragma takes
+precedence over the `-gnatX' and `-gnatX0' command switches.
 
-In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2022), and in addition a number
-of GNAT specific extensions are recognized as follows:
+If an argument of “All” is specified, the latest version of the Ada language
+is implemented (currently Ada 2022) and, in addition, a number
+of GNAT specific extensions are recognized. These extensions are listed
+below. An argument of “On” has the same effect except that only
+some, not all, of the listed extensions are enabled; those extensions
+are identified below.
 
 
 @itemize *
@@ -3635,12 +3638,6 @@ is constrained.
 The Ada 202x @code{Static} aspect can be specified on Intrinsic imported
 functions and the compiler will evaluate some of these intrinsic statically,
 in particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
-
-@item 
-@code{'Reduce} attribute
-
-This attribute part of the Ada 202x language definition is provided for
-now under -gnatX to confirm and potentially refine its usage and syntax.
 
 @item 
 @code{[]} aggregates
@@ -3785,6 +3782,8 @@ define the same set of bindings and the component subtypes for
 for a given identifer must all statically match. Currently, the case
 of a binding for a nondiscrete component is not implemented.
 
+An Extensions_Allowed pragma argument of “On” enables this extension.
+
 @item 
 Fixed lower bounds for array types and subtypes
 
@@ -3833,6 +3832,8 @@ improve the efficiency of indexing operations, since the compiler statically
 knows the lower bound of unconstrained array formals when the formal’s
 subtype has index ranges with static fixed lower bounds.
 
+An Extensions_Allowed pragma argument of “On” enables this extension.
+
 @item 
 Prefixed-view notation for calls to primitive subprograms of untagged types
 
@@ -3850,6 +3851,8 @@ simple name as one of the type’s primitive subprograms, where the
 component is visible at the point of a selected_component using that
 name, preference is given to the component in a selected_component
 (as is currently the case for tagged types with such component names).
+
+An Extensions_Allowed pragma argument of “On” enables this extension.
 
 @item 
 Expression defaults for generic formal functions

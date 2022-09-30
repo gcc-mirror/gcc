@@ -7918,7 +7918,7 @@ package body Sem_Ch8 is
 
          if Is_Type (P_Type)
            and then (Has_Components (P_Type)
-                      or else (Extensions_Allowed
+                      or else (Core_Extensions_Allowed
                                 and then not Is_Concurrent_Type (P_Type)))
            and then not Is_Overloadable (P_Name)
            and then not Is_Type (P_Name)
@@ -8173,7 +8173,7 @@ package body Sem_Ch8 is
                        ("prefixed call is only allowed for objects of a "
                         & "tagged type unless -gnatX is used", N);
 
-                     if not Extensions_Allowed
+                     if not Core_Extensions_Allowed
                        and then
                          Try_Object_Operation (N, Allow_Extensions => True)
                      then

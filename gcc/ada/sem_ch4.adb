@@ -5423,7 +5423,8 @@ package body Sem_Ch4 is
          --  untagged record types.
 
          if Ada_Version >= Ada_2005
-           and then (Is_Tagged_Type (Prefix_Type) or else Extensions_Allowed)
+           and then (Is_Tagged_Type (Prefix_Type)
+                       or else Core_Extensions_Allowed)
            and then not Is_Concurrent_Type (Prefix_Type)
          then
             if Nkind (Parent (N)) = N_Generic_Association
@@ -5499,7 +5500,7 @@ package body Sem_Ch4 is
          --  Extension feature: Also support calls with prefixed views for
          --  untagged private types.
 
-         if Extensions_Allowed then
+         if Core_Extensions_Allowed then
             if Try_Object_Operation (N) then
                return;
             end if;
@@ -5760,7 +5761,7 @@ package body Sem_Ch4 is
       --  Extension feature: Also support calls with prefixed views for
       --  untagged types.
 
-      elsif Extensions_Allowed
+      elsif Core_Extensions_Allowed
         and then Try_Object_Operation (N)
       then
          return;
@@ -9862,7 +9863,7 @@ package body Sem_Ch4 is
 
          if (not Is_Tagged_Type (Obj_Type)
               and then
-                (not (Extensions_Allowed or Allow_Extensions)
+                (not (Core_Extensions_Allowed or Allow_Extensions)
                   or else not Present (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
@@ -9891,7 +9892,7 @@ package body Sem_Ch4 is
                --  have homographic prefixed-view operations that could result
                --  in an ambiguity, but handling properly may be tricky. ???)
 
-               if (Extensions_Allowed or Allow_Extensions)
+               if (Core_Extensions_Allowed or Allow_Extensions)
                  and then not Prim_Result
                  and then Is_Named_Access_Type (Prev_Obj_Type)
                  and then Present (Direct_Primitive_Operations (Prev_Obj_Type))

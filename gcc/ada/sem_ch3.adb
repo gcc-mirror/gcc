@@ -3519,7 +3519,7 @@ package body Sem_Ch3 is
       --  Initialize the list of primitive operations to an empty list,
       --  to cover tagged types as well as untagged types. For untagged
       --  types this is used either to analyze the call as legal when
-      --  Extensions_Allowed is True, or to issue a better error message
+      --  Core_Extensions_Allowed is True, or to issue a better error message
       --  otherwise.
 
       Set_Direct_Primitive_Operations (T, New_Elmt_List);
@@ -5730,7 +5730,7 @@ package body Sem_Ch3 is
                   --  operations to an empty list.
 
                   if Is_Tagged_Type (Id)
-                    or else Extensions_Allowed
+                    or else Core_Extensions_Allowed
                   then
                      Set_Direct_Primitive_Operations (Id, New_Elmt_List);
                   end if;

@@ -1614,7 +1614,7 @@ package body Sem_Ch5 is
       --  out non-discretes may resolve the ambiguity.
       --  But GNAT extensions allow casing on non-discretes.
 
-      elsif Extensions_Allowed and then Is_Overloaded (Exp) then
+      elsif Core_Extensions_Allowed and then Is_Overloaded (Exp) then
 
          --  It would be nice if we could generate all the right error
          --  messages by calling "Resolve (Exp, Any_Type);" in the
@@ -1632,7 +1632,7 @@ package body Sem_Ch5 is
       --  Check for a GNAT-extension "general" case statement (i.e., one where
       --  the type of the selecting expression is not discrete).
 
-      elsif Extensions_Allowed
+      elsif Core_Extensions_Allowed
          and then not Is_Discrete_Type (Etype (Exp))
       then
          Resolve (Exp, Etype (Exp));
@@ -1670,7 +1670,7 @@ package body Sem_Ch5 is
            ("(Ada 83) case expression cannot be of a generic type", Exp);
          return;
 
-      elsif not Extensions_Allowed
+      elsif not Core_Extensions_Allowed
         and then not Is_Discrete_Type (Exp_Type)
       then
          Error_Msg_N

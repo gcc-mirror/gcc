@@ -3888,7 +3888,7 @@ package body Sem_Attr is
 
             elsif (Is_Generic_Type (P_Type)
                     or else Is_Generic_Actual_Type (P_Type))
-              and then Extensions_Allowed
+              and then All_Extensions_Allowed
             then
                return;
             end if;

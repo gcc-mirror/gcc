@@ -9881,7 +9881,17 @@ Suppress generation of cross-reference information.
 
 @item @code{-gnatX}
 
-Enable GNAT implementation extensions and latest Ada version.
+Enable core GNAT implementation extensions and latest Ada version.
+@end table
+
+@geindex -gnatX0 (gcc)
+
+
+@table @asis
+
+@item @code{-gnatX0}
+
+Enable all GNAT implementation extensions and latest Ada version.
 @end table
 
 @geindex -gnaty (gcc)
@@ -14416,6 +14426,23 @@ This switch directs the compiler to implement the Ada 2022 version of the
 language.
 @end table
 
+@geindex -gnatX0 (gcc)
+
+@geindex Ada language extensions
+
+@geindex GNAT extensions
+
+
+@table @asis
+
+@item @code{-gnatX0} (Enable GNAT Extensions)
+
+This switch directs the compiler to implement the latest version of the
+language (currently Ada 2022) and also to enable certain GNAT implementation
+extensions that are not part of any Ada standard. For a full list of these
+extensions, see the GNAT reference manual, @code{Pragma Extensions_Allowed}.
+@end table
+
 @geindex -gnatX (gcc)
 
 @geindex Ada language extensions
@@ -14425,12 +14452,13 @@ language.
 
 @table @asis
 
-@item @code{-gnatX} (Enable GNAT Extensions)
+@item @code{-gnatX} (Enable core GNAT Extensions)
 
-This switch directs the compiler to implement the latest version of the
-language (currently Ada 2022) and also to enable certain GNAT implementation
-extensions that are not part of any Ada standard. For a full list of these
-extensions, see the GNAT reference manual, @code{Pragma Extensions_Allowed}.
+This switch is similar to -gnatX0 except that only some, not all, of the
+GNAT-defined language extensions are enabled. For a list of the
+extensions enabled by this switch, see the GNAT reference manual
+@code{Pragma Extensions_Allowed} and the description of that pragma’s
+“On” (as opposed to “All”) argument.
 @end table
 
 @node Character Set Control,File Naming Control,Compiling Different Versions of Ada,Compiler Switches

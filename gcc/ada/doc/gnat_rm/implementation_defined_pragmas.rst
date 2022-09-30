@@ -2174,16 +2174,19 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Extensions_Allowed (On | Off);
+  pragma Extensions_Allowed (On | Off | All);
 
 
-This configuration pragma enables or disables the implementation
-extension mode (the use of Off as a parameter cancels the effect
-of the *-gnatX* command switch).
+This configuration pragma enables (via the "On" or "All" argument) or disables
+(via the "Off" argument) the implementation extension mode; the pragma takes
+precedence over the *-gnatX* and *-gnatX0* command switches.
 
-In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2022), and in addition a number
-of GNAT specific extensions are recognized as follows:
+If an argument of "All" is specified, the latest version of the Ada language
+is implemented (currently Ada 2022) and, in addition, a number
+of GNAT specific extensions are recognized. These extensions are listed
+below. An argument of "On" has the same effect except that only
+some, not all, of the listed extensions are enabled; those extensions
+are identified below.
 
 * Constrained attribute for generic objects
 
@@ -2196,11 +2199,6 @@ of GNAT specific extensions are recognized as follows:
   The Ada 202x ``Static`` aspect can be specified on Intrinsic imported
   functions and the compiler will evaluate some of these intrinsic statically,
   in particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
-
-* ``'Reduce`` attribute
-
-  This attribute part of the Ada 202x language definition is provided for
-  now under -gnatX to confirm and potentially refine its usage and syntax.
 
 * ``[]`` aggregates
 
@@ -2334,6 +2332,8 @@ of GNAT specific extensions are recognized as follows:
   for a given identifer must all statically match. Currently, the case
   of a binding for a nondiscrete component is not implemented.
 
+  An Extensions_Allowed pragma argument of "On" enables this extension.
+
 * Fixed lower bounds for array types and subtypes
 
   Unconstrained array types and subtypes can be specified with a lower bound
@@ -2378,6 +2378,8 @@ of GNAT specific extensions are recognized as follows:
   knows the lower bound of unconstrained array formals when the formal's
   subtype has index ranges with static fixed lower bounds.
 
+  An Extensions_Allowed pragma argument of "On" enables this extension.
+
 * Prefixed-view notation for calls to primitive subprograms of untagged types
 
   Since Ada 2005, calls to primitive subprograms of a tagged type that
@@ -2394,6 +2396,8 @@ of GNAT specific extensions are recognized as follows:
   component is visible at the point of a selected_component using that
   name, preference is given to the component in a selected_component
   (as is currently the case for tagged types with such component names).
+
+  An Extensions_Allowed pragma argument of "On" enables this extension.
 
 * Expression defaults for generic formal functions
 

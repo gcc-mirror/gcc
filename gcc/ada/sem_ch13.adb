@@ -2399,9 +2399,9 @@ package body Sem_Ch13 is
 
                if not Is_Expression_Function (E)
                  and then
-                   not (Extensions_Allowed and then Is_Imported_Intrinsic)
+                   not (All_Extensions_Allowed and then Is_Imported_Intrinsic)
                then
-                  if Extensions_Allowed then
+                  if All_Extensions_Allowed then
                      Error_Msg_N
                        ("aspect % requires intrinsic or expression function",
                         Aspect);
@@ -4212,7 +4212,7 @@ package body Sem_Ch13 is
                   goto Continue;
 
                when Aspect_Designated_Storage_Model =>
-                  if not Extensions_Allowed then
+                  if not All_Extensions_Allowed then
                      Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
@@ -4227,7 +4227,7 @@ package body Sem_Ch13 is
                   goto Continue;
 
                when Aspect_Storage_Model_Type =>
-                  if not Extensions_Allowed then
+                  if not All_Extensions_Allowed then
                      Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)

@@ -16595,16 +16595,18 @@ package body Sem_Prag is
          -- Extensions_Allowed --
          ------------------------
 
-         --  pragma Extensions_Allowed (ON | OFF);
+         --  pragma Extensions_Allowed (ON | OFF | ALL);
 
          when Pragma_Extensions_Allowed =>
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_All);
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
-               Ada_Version := Ada_With_Extensions;
+               Ada_Version := Ada_With_Core_Extensions;
+            elsif Chars (Get_Pragma_Arg (Arg1)) = Name_All then
+               Ada_Version := Ada_With_All_Extensions;
             else
                Ada_Version := Ada_Version_Explicit;
                Ada_Version_Pragma := Empty;

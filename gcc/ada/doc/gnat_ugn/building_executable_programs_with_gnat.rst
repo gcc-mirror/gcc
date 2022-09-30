@@ -2180,7 +2180,13 @@ Alphabetical List of All Switches
 .. index:: -gnatX  (gcc)
 
 :switch:`-gnatX`
-  Enable GNAT implementation extensions and latest Ada version.
+  Enable core GNAT implementation extensions and latest Ada version.
+
+
+.. index:: -gnatX0  (gcc)
+
+:switch:`-gnatX0`
+  Enable all GNAT implementation extensions and latest Ada version.
 
 
 .. index:: -gnaty  (gcc)
@@ -5585,15 +5591,26 @@ indicate Ada 83 compatibility mode.
   language.
 
 
-.. index:: -gnatX  (gcc)
+.. index:: -gnatX0  (gcc)
 .. index:: Ada language extensions
 .. index:: GNAT extensions
 
-:switch:`-gnatX` (Enable GNAT Extensions)
+:switch:`-gnatX0` (Enable GNAT Extensions)
   This switch directs the compiler to implement the latest version of the
   language (currently Ada 2022) and also to enable certain GNAT implementation
   extensions that are not part of any Ada standard. For a full list of these
   extensions, see the GNAT reference manual, ``Pragma Extensions_Allowed``.
+
+.. index:: -gnatX  (gcc)
+.. index:: Ada language extensions
+.. index:: GNAT extensions
+
+:switch:`-gnatX` (Enable core GNAT Extensions)
+  This switch is similar to -gnatX0 except that only some, not all, of the
+  GNAT-defined language extensions are enabled. For a list of the
+  extensions enabled by this switch, see the GNAT reference manual
+  ``Pragma Extensions_Allowed`` and the description of that pragma's
+  "On" (as opposed to "All") argument.
 
 
 .. _Character_Set_Control:

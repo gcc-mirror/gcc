@@ -2859,7 +2859,7 @@ package body Sem_Eval is
       --  Intrinsic calls as part of a static function is a language extension.
 
       if Checking_Potentially_Static_Expression
-        and then not Extensions_Allowed
+        and then not All_Extensions_Allowed
       then
          return;
       end if;
