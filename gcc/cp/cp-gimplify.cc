@@ -1589,6 +1589,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case CONVERT_EXPR:
+      gcc_checking_assert (!AGGREGATE_TYPE_P (TREE_TYPE (stmt)));
       gcc_assert (!CONVERT_EXPR_VBASE_PATH (stmt));
       break;
 

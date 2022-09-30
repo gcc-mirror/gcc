@@ -1728,7 +1728,10 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
     }
   else
     {
-      r = build1_loc (loc, CONVERT_EXPR, void_coro_handle_type, suspend);
+      r = suspend;
+      if (!same_type_ignoring_top_level_qualifiers_p (susp_type,
+						      void_coro_handle_type))
+	r = build1_loc (loc, VIEW_CONVERT_EXPR, void_coro_handle_type, r);
       r = build2_loc (loc, INIT_EXPR, void_coro_handle_type, data->conthand, r);
       r = build1 (CONVERT_EXPR, void_type_node, r);
       append_to_statement_list (r, &body_list);
