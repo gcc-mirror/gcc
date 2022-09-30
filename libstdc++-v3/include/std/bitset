@@ -1563,8 +1563,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef std::basic_istream<_CharT, _Traits>  __istream_type;
       typedef typename __istream_type::ios_base    __ios_base;
 
-      std::basic_string<_CharT, _Traits> __tmp;
-      __tmp.reserve(_Nb);
+      struct _Buffer
+      {
+	_Buffer()
+	: _M_base(_Nb > 256 ? new _CharT[_Nb] : (_CharT*)__builtin_alloca(_Nb))
+	{ }
+
+	~_Buffer()
+	{
+	  if _GLIBCXX17_CONSTEXPR (_Nb > 256)
+	    delete[] _M_base;
+	}
+
+	_CharT* const _M_base;
+      };
+      _Buffer __buf;
+      _CharT* __ptr = __buf._M_base;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 303. Bitset input operator underspecified
@@ -1591,9 +1605,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    {
 		      const char_type __c2 = _Traits::to_char_type(__c1);
 		      if (_Traits::eq(__c2, __zero))
-			__tmp.push_back(__zero);
+			*__ptr++ = __zero;
 		      else if (_Traits::eq(__c2, __one))
-			__tmp.push_back(__one);
+			*__ptr++ = __one;
 		      else if (_Traits::
 			       eq_int_type(__is.rdbuf()->sputbackc(__c2),
 					   __eof))
@@ -1613,11 +1627,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    { __is._M_setstate(__ios_base::badbit); }
 	}
 
-      if (__tmp.empty() && _Nb)
-	__state |= __ios_base::failbit;
-      else if _GLIBCXX17_CONSTEXPR (_Nb)
-	__x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb,
-				__zero, __one);
+      if _GLIBCXX17_CONSTEXPR (_Nb)
+      {
+	if (size_t __len = __ptr - __buf._M_base)
+	  __x.template _M_copy_from_ptr<_CharT, _Traits>(__buf._M_base, __len,
+							 0, __len,
+							 __zero, __one);
+	else
+	  __state |= __ios_base::failbit;
+      }
       if (__state)
 	__is.setstate(__state);
       return __is;
