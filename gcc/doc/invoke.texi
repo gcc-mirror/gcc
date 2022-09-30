@@ -16884,9 +16884,13 @@ the area size or to remove it completely on a single function.
 If @code{N=0}, no pad location is recorded.
 
 The NOP instructions are inserted at---and maybe before, depending on
-@var{M}---the function entry address, even before the prologue.
+@var{M}---the function entry address, even before the prologue.  On
+PowerPC with the ELFv2 ABI, for a function with dual entry points,
+the local entry point is this function entry address.
 
-The maximum value of @var{N} and @var{M} is 65535.
+The maximum value of @var{N} and @var{M} is 65535.  On PowerPC with the
+ELFv2 ABI, for a function with dual entry points, the supported values
+for @var{M} are 0, 2, 6 and 14.
 @end table
 
 
