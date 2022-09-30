@@ -1,3 +1,14 @@
+2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/105318
+	PR fortran/105318
+	* gfortran.dg/gomp/is_device_ptr-1.f90: Remove dg-error.
+	* gfortran.dg/gomp/is_device_ptr-2.f90: Likewise.
+	* gfortran.dg/gomp/is_device_ptr-3.f90: Update tree-scan-dump.
+
 2022-09-28  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	* gfortran.dg/gomp/metadirective-1.f90: Match !$OMP END METADIRECTIVE.
