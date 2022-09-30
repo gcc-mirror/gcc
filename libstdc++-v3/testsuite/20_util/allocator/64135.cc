@@ -1,5 +1,6 @@
 // { dg-do compile { target std_allocator_new } }
 // { dg-add-options no_pch }
+// { dg-require-effective-target hosted }
 
 // PR libstdc++/64135
 

@@ -18,6 +18,9 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
 
+// std::stable_partition is not freestanding.
+// { dg-require-effective-target hosted }
+
 #include <algorithm>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>

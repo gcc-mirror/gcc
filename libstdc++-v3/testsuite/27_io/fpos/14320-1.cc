@@ -20,6 +20,7 @@
 // 27.4.3 fpos
 
 // { dg-do compile }
+// { dg-require-effective-target hosted }
 
 #include <limits>
 #include <iterator>

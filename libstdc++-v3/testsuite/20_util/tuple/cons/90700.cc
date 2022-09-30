@@ -16,6 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+// FIXME [!HOSTED]: avoidable std::allocator usage
+// { dg-require-effective-target hosted }
 
 #include <tuple>
 #include <memory>

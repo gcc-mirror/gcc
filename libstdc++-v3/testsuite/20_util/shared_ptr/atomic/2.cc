@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++11 } }
 // { dg-require-gthreads "" }
+// { dg-require-effective-target hosted }
 
 #include <memory>
 

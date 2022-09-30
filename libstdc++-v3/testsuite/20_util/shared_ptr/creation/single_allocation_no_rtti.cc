@@ -17,6 +17,7 @@
 
 // { dg-options "-fno-rtti" }
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
 
 #include <memory>
 #include <testsuite_hooks.h>

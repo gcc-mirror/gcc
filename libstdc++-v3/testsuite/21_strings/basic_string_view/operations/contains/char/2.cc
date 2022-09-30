@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2021-2022 Free Software Foundation, Inc.
 //

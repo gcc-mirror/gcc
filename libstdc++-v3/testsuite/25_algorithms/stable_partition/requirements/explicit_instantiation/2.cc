@@ -1,5 +1,6 @@
 // { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
+// { dg-require-effective-target hosted }
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
 

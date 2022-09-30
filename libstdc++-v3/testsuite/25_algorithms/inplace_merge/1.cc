@@ -17,6 +17,9 @@
 
 // 25.3.4 [lib.alg.merge]
 
+// <testsuite_new_operators.h> requires malloc/free.
+// { dg-require-effective-target hosted }
+
 #include <algorithm>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>

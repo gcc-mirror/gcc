@@ -17,6 +17,9 @@
 
 // 25.3.1.2 [lib.stable.sort]
 
+// testsuite_new_operators.h requires malloc/free.
+// { dg-require-effective-target hosted }
+
 #include <algorithm>
 #include <testsuite_new_operators.h>
 #include <testsuite_hooks.h>

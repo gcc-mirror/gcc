@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // PR libstdc++/60401
 

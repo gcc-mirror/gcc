@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
