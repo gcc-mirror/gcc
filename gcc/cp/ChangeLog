@@ -1,3 +1,7 @@
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_methods): Call constraints_satisfied_p.
+
 2022-09-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93259

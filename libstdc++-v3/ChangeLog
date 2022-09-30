@@ -1,3 +1,24 @@
+2022-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document std::bind API
+	changes.
+	* doc/xml/manual/intro.xml: Document LWG 2487 status.
+	* doc/xml/manual/using.xml: Clarify default value of
+	_GLIBCXX_USE_DEPRECATED.
+	* doc/html/*: Regenerate.
+	* include/std/functional (_Bind::operator()(Args&&...) volatile)
+	(_Bind::operator()(Args&&...) const volatile)
+	(_Bind_result::operator()(Args&&...) volatile)
+	(_Bind_result::operator()(Args&&...) const volatile): Replace
+	with deleted overload for C++20 and later.
+	* testsuite/20_util/bind/cv_quals.cc: Check for deprecated
+	warnings in C++17.
+	* testsuite/20_util/bind/cv_quals_2.cc: Likewise, and check for
+	ill-formed in C++20.
+
 2022-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Document GLIBCXX_3.4.30 version.

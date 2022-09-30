@@ -1,3 +1,50 @@
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/cond-triv3.C: New test.
+
+2022-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107054
+	* gfortran.dg/pr107054.f90: New test.
+
+2022-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82868
+	* gfortran.dg/associate_26a.f90: New test.
+
+2022-09-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* gfortran.dg/pr106985.f90: New test.
+
+2022-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* gcc.target/i386/keylocker-encodekey128.c: Don't check
+	XMM4-XMM6.
+	* gcc.target/i386/keylocker-encodekey256.c: Likewise.
+
+2022-09-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106982
+	* c-c++-common/goacc/reduction-7.c: New test.
+	* c-c++-common/goacc/reduction-8.c: New test.
+
 2022-09-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
