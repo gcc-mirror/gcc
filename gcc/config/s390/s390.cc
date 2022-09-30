@@ -7642,8 +7642,7 @@ s390_mangle_type (const_tree type)
   if (type == s390_builtin_types[BT_BV4SI]) return "U6__booli";
   if (type == s390_builtin_types[BT_BV2DI]) return "U6__booll";
 
-  if (TYPE_MAIN_VARIANT (type) == long_double_type_node
-      && TARGET_LONG_DOUBLE_128)
+  if (type == long_double_type_node && TARGET_LONG_DOUBLE_128)
     return "g";
 
   /* For all other types, use normal C++ mangling.  */

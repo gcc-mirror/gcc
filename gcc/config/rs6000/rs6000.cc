@@ -20276,13 +20276,12 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_int_type_node) return "U6__booli";
   if (type == bool_long_long_type_node) return "U6__boolx";
 
+  if (type == float128_type_node || type == float64x_type_node)
+    return NULL;
+
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
-  if (SCALAR_FLOAT_TYPE_P (type)
-      && FLOAT128_IEEE_P (TYPE_MODE (type))
-      /* _Float128 should mangle as DF128_ (done in generic code)
-	 rather than u9__ieee128 (used for __ieee128 and __float128).  */
-      && type != float128_type_node)
+  if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
     return "u9__ieee128";
 
   if (type == vector_pair_type_node)
