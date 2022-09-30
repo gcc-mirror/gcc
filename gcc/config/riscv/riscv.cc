@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "target.h"
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
@@ -45,8 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "reload.h"
 #include "tm_p.h"
-#include "target.h"
-#include "target-def.h"
 #include "basic-block.h"
 #include "expr.h"
 #include "optabs.h"
@@ -59,7 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tm-constrs.h"
 #include "rtl-iter.h"
-#include "riscv-vector-builtins.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
