@@ -697,7 +697,38 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_do_sanitize_val(unsigned long long __val)
       { return __val & ~((~static_cast<unsigned long long>(0)) << _Nb); }
     };
-#endif
+
+  namespace __bitset
+  {
+#if _GLIBCXX_HOSTED
+    template<typename _CharT>
+      using __string = std::basic_string<_CharT>;
+#else
+    template<typename _CharT>
+      struct __string
+      {
+	using size_type = size_t;
+	static constexpr size_type npos = size_type(-1);
+
+	struct traits_type
+	{
+	  static _GLIBCXX14_CONSTEXPR size_t
+	  length(const _CharT* __s) noexcept
+	  {
+	    size_t __n = 0;
+	    while (__s[__n])
+	      __n++;
+	    return __n;
+	  }
+
+	  static constexpr bool
+	  eq(_CharT __l, _CharT __r) noexcept
+	  { return __l == __r; }
+	};
+      };
+#endif // HOSTED
+  } // namespace __bitset
+#endif // C++11
 
   /**
    *  @brief The %bitset class represents a @e fixed-size sequence of bits.
@@ -963,6 +994,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_check_initial_position(__s, __position);
 	  _M_copy_from_string(__s, __position, __n, __zero, __one);
 	}
+#endif // HOSTED
 
 #if __cplusplus >= 201103L
       /**
@@ -978,23 +1010,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	[[__gnu__::__nonnull__]]
 	_GLIBCXX23_CONSTEXPR
         explicit
-        bitset(const _CharT* __str,
-	       typename std::basic_string<_CharT>::size_type __n
-	       = std::basic_string<_CharT>::npos,
+	bitset(const _CharT* __str,
+	       typename __bitset::__string<_CharT>::size_type __n
+		 = __bitset::__string<_CharT>::npos,
 	       _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
         : _Base()
         {
+#if _GLIBCXX_HOSTED
 	  if (!__str)
 	    __throw_logic_error(__N("bitset::bitset(const _CharT*, ...)"));
+#endif
+	  using _Traits = typename __bitset::__string<_CharT>::traits_type;
 
-	  if (__n == std::basic_string<_CharT>::npos)
-	    __n = std::char_traits<_CharT>::length(__str);
-	  _M_copy_from_ptr<_CharT, std::char_traits<_CharT>>(__str, __n, 0,
-							     __n, __zero,
-							     __one);
+	  if (__n == __bitset::__string<_CharT>::npos)
+	    __n = _Traits::length(__str);
+	  _M_copy_from_ptr<_CharT, _Traits>(__str, __n, 0, __n, __zero, __one);
 	}
 #endif // C++11
-#endif // HOSTED
 
       // 23.3.5.2 bitset operations:
       ///@{
@@ -1463,7 +1495,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
     };
 
-#if _GLIBCXX_HOSTED
   // Definitions of non-inline member functions.
   template<size_t _Nb>
     template<class _CharT, class _Traits>
@@ -1483,10 +1514,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    else if (_Traits::eq(__c, __one))
 	      _Unchecked_set(__i - 1);
 	    else
-	      __throw_invalid_argument(__N("bitset::_M_copy_from_ptr"));
+	      {
+#if _GLIBCXX_HOSTED
+		__throw_invalid_argument(__N("bitset::_M_copy_from_ptr"));
+#else
+		__builtin_abort();
+#endif
+	      }
 	  }
       }
 
+#if _GLIBCXX_HOSTED
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
       _GLIBCXX23_CONSTEXPR
