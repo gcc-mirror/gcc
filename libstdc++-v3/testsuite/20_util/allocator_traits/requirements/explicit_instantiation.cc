@@ -36,6 +36,8 @@ template<typename T>
 
 namespace std
 {
+#if __STDC_HOSTED__
   template struct allocator_traits<std::allocator<test_type>>;
+#endif
   template struct allocator_traits<minimal_allocator<test_type>>;
 }
