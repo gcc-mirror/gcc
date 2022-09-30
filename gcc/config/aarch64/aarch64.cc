@@ -20664,6 +20664,8 @@ aarch64_mangle_type (const_tree type)
   /* Half-precision floating point types.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
     {
+      if (TYPE_MAIN_VARIANT (type) == float16_type_node)
+	return NULL;
       if (TYPE_MODE (type) == BFmode)
 	return "u6__bf16";
       else
