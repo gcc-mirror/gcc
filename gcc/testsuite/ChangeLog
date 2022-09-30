@@ -1,3 +1,13 @@
+2022-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* gcc.target/i386/keylocker-encodekey128.c: Don't check
+	XMM4-XMM6.
+	* gcc.target/i386/keylocker-encodekey256.c: Likewise.
+
 2022-09-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

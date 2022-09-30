@@ -1,3 +1,15 @@
+2022-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* config/i386/predicates.md (encodekey128_operation): Check
+	XMM4-XMM6 as clobbered.
+	(encodekey256_operation): Likewise.
+	* config/i386/sse.md (encodekey128u32): Clobber XMM4-XMM6.
+	(encodekey256u32): Likewise.
+
 2022-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (neoverse-v2): New entry.
