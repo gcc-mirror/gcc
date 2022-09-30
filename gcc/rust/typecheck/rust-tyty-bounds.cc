@@ -34,8 +34,9 @@ TypeBoundsProbe::scan ()
       if (!impl->has_trait_ref ())
 	return true;
 
-      TyTy::BaseType *impl_type = TypeCheckItem::ResolveImplBlockSelf (*impl);
-      if (impl_type->get_kind () == TyTy::TypeKind::ERROR)
+      HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
+      TyTy::BaseType *impl_type = nullptr;
+      if (!query_type (impl_ty_id, &impl_type))
 	return true;
 
       if (!receiver->can_eq (impl_type, false))
