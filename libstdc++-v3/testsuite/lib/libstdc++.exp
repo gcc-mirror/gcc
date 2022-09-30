@@ -1376,7 +1376,7 @@ proc check_effective_target_std_allocator_new { } {
 # Return 1 if libstdc++ was built as --enable-libstdcxx-backtrace
 proc check_effective_target_stacktrace { } {
     return [check_v3_target_prop_cached et_stacktrace {
-	set cond "_GLIBCXX_HAVE_STACKTRACE"
+	set cond "_GLIBCXX_HAVE_STACKTRACE && _GLIBCXX_HOSTED"
 	return [v3_check_preprocessor_condition stacktrace $cond]
     }]
 }
@@ -1386,6 +1386,14 @@ proc check_effective_target_rtti { } {
     return [check_v3_target_prop_cached et_rtti {
 	set cond "__cpp_rtti"
 	return [v3_check_preprocessor_condition rtti $cond]
+    }]
+}
+
+# Return 1 if a hosted implementation is available (i.e. not freestanding).
+proc check_effective_target_hosted { } {
+    return [check_v3_target_prop_cached et_hosted {
+	set cond "_GLIBCXX_HOSTED"
+	return [v3_check_preprocessor_condition hosted $cond]
     }]
 }
 
