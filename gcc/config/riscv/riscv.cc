@@ -396,12 +396,9 @@ static const unsigned gpr_save_reg_order[] = {
 
 /* A table describing all the processors GCC knows about.  */
 static const struct riscv_tune_info riscv_tune_info_table[] = {
-  { "rocket", generic, &rocket_tune_info },
-  { "sifive-3-series", generic, &rocket_tune_info },
-  { "sifive-5-series", generic, &rocket_tune_info },
-  { "sifive-7-series", sifive_7, &sifive_7_tune_info },
-  { "thead-c906", generic, &thead_c906_tune_info },
-  { "size", generic, &optimize_size_tune_info },
+#define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO)	\
+  { TUNE_NAME, PIPELINE_MODEL, & TUNE_INFO},
+#include "riscv-cores.def"
 };
 
 void riscv_frame_info::reset(void)
