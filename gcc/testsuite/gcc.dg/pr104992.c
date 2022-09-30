@@ -54,4 +54,5 @@ __attribute__((noipa)) unsigned waldo (unsigned x, unsigned y, unsigned z) {
     return x / y * z == x;
 }
 
-/* { dg-final {scan-tree-dump-times " % " 9 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " % " 9 "optimized" { target { ! vect_int_mod } } } } */
+/* { dg-final { scan-tree-dump-times " % " 6 "optimized" { target vect_int_mod } } } */
