@@ -1,3 +1,8 @@
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (handle_std_noreturn_attribute): New function.
+	(std_attribute_table): Add _Noreturn and noreturn.
+
 2022-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lang.h (current_omp_begin_assumes): Declare.

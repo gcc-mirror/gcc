@@ -1,3 +1,413 @@
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (plus_minus_ranges): New.
+	(adjust_op1_for_overflow): New.
+	(operator_plus::op1_range): Use new adjustment.
+	(operator_plus::op2_range): Ditto.
+	(operator_minus::op1_range): Ditto.
+	* value-relation.h (relation_lt_le_gt_ge_p): New.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::refine_using_relation): New.
+	(gori_compute::compute_operand1_range): Invoke
+	refine_using_relation when applicable.
+	(gori_compute::compute_operand2_range): Ditto.
+	* gimple-range-gori.h (class gori_compute): Adjust prototypes.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (ori_compute::compute_operand_range):
+	Create a relation record and pass it along when possible.
+	(gori_compute::compute_operand1_range): Pass relation along.
+	(gori_compute::compute_operand2_range): Ditto.
+	(gori_compute::compute_operand1_and_operand2_range): Ditto.
+	* gimple-range-gori.h (class gori_compute): Adjust prototypes.
+	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Pass
+	relation to op1_range call.
+	(gimple_range_op_handler::calc_op2): Pass relation to op2_range call.
+	* gimple-range-op.h (class gimple_range_op_handler): Adjust
+	prototypes.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (class value_relation): Move to .h file.
+	(value_relation::set_relation): Ditto.
+	(value_relation::value_relation): ditto.
+	* value-relation.h (class value_relation): Move from .cc file.
+	(value_relation::set_relation): Ditto
+	(value_relation::value_relation): Ditto.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_minus::op2_range): Check for undefined.
+	(operator_mult::op1_range): Ditto.
+	(operator_exact_divide::op1_range): Ditto.
+	(operator_lshift::op1_range): Ditto.
+	(operator_rshift::op1_range): Ditto.
+	(operator_cast::op1_range): Ditto.
+	(operator_bitwise_and::op1_range): Ditto.
+	(operator_bitwise_or::op1_range): Ditto.
+	(operator_trunc_mod::op1_range): Ditto.
+	(operator_trunc_mod::op2_range): Ditto.
+	(operator_bitwise_not::op1_range): Ditto.
+	(pointer_or_operator::op1_range): Ditto.
+	(range_op_handler::op1_range): Ditto.
+	(range_op_handler::op2_range): Ditto.
+
+2022-09-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_simd_clone_compute_vecsize_and_simdlen):
+	Remove unused elt_bits variable.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h: Add comment on our use of
+	HAVE_INITFINI_ARRAY_SUPPORT.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/aarch64/t-aarch64-vxworks: Request multilib
+	variants for mcmodel=large.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (TARGET_FLOAT128_ENABLE_TYPE): Remove
+	resetting to 0.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (DWARF2_UNWIND_INFO): #define to 0
+	when ARM_UNWIND_INFO is set.
+
+2022-09-29  Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/107028
+	* gimplify.cc (omp_check_mapping_compatibility,
+	oacc_resolve_clause_dependencies): New functions.
+	(omp_accumulate_sibling_list): Remove redundant duplicate clause
+	detection for OpenACC.
+	(build_struct_sibling_lists): Skip deleted groups.  Don't build sibling
+	list for struct variables that are fully mapped on the same directive
+	for OpenACC.
+	(gimplify_scan_omp_clauses): Call oacc_resolve_clause_dependencies.
+
+2022-09-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR middle-end/25521
+	* varasm.cc (categorize_decl_for_section): Place `const volatile'
+	objects in read-only sections.
+	(default_select_section): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-data-ref.cc (dr_may_alias_p): Use to_poly_widest instead
+	of to_widest.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_CRYPTO, TARGET_SHA3, TARGET_SM4)
+	(TARGET_DOTPROD): Don't depend on TARGET_SIMD.
+	(TARGET_AES, TARGET_SHA2): Likewise.  Remove TARGET_CRYPTO test.
+	(TARGET_FP_F16INST): Don't depend on TARGET_FLOAT.
+	(TARGET_SVE2, TARGET_SVE_F32MM, TARGET_SVE_F64MM): Don't depend
+	on TARGET_SVE.
+	(TARGET_SVE2_AES, TARGET_SVE2_BITPERM, TARGET_SVE2_SHA3)
+	(TARGET_SVE2_SM4): Don't depend on TARGET_SVE2.
+	(TARGET_F32MM, TARGET_F64MM): Delete.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Guard
+	float macros with just TARGET_FLOAT rather than TARGET_FLOAT
+	|| TARGET_SIMD.
+	* config/aarch64/aarch64-simd.md (copysign<mode>3): Depend
+	only on TARGET_SIMD, rather than TARGET_FLOAT && TARGET_SIMD.
+	(aarch64_crypto_aes<aes_op>v16qi): Depend only on TARGET_AES,
+	rather than TARGET_SIMD && TARGET_AES.
+	(aarch64_crypto_aes<aesmc_op>v16qi): Likewise.
+	(*aarch64_crypto_aese_fused): Likewise.
+	(*aarch64_crypto_aesd_fused): Likewise.
+	(aarch64_crypto_pmulldi): Likewise.
+	(aarch64_crypto_pmullv2di): Likewise.
+	(aarch64_crypto_sha1hsi): Likewise TARGET_SHA2.
+	(aarch64_crypto_sha1hv4si): Likewise.
+	(aarch64_be_crypto_sha1hv4si): Likewise.
+	(aarch64_crypto_sha1su1v4si): Likewise.
+	(aarch64_crypto_sha1<sha1_op>v4si): Likewise.
+	(aarch64_crypto_sha1su0v4si): Likewise.
+	(aarch64_crypto_sha256h<sha256_op>v4si): Likewise.
+	(aarch64_crypto_sha256su0v4si): Likewise.
+	(aarch64_crypto_sha256su1v4si): Likewise.
+	(aarch64_crypto_sha512h<sha512_op>qv2di): Likewise TARGET_SHA3.
+	(aarch64_crypto_sha512su0qv2di): Likewise.
+	(aarch64_crypto_sha512su1qv2di, eor3q<mode>4): Likewise.
+	(aarch64_rax1qv2di, aarch64_xarqv2di, bcaxq<mode>4): Likewise.
+	(aarch64_sm3ss1qv4si): Likewise TARGET_SM4.
+	(aarch64_sm3tt<sm3tt_op>qv4si): Likewise.
+	(aarch64_sm3partw<sm3part_op>qv4si): Likewise.
+	(aarch64_sm4eqv4si, aarch64_sm4ekeyqv4si): Likewise.
+	* config/aarch64/aarch64.md (<FLOATUORS:optab>dihf2)
+	(copysign<GPF:mode>3, copysign<GPF:mode>3_insn)
+	(xorsign<mode>3): Remove redundant TARGET_FLOAT condition.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.opt (aarch64_asm_isa_flags): New variable.
+	* config/aarch64/aarch64.h (aarch64_asm_isa_flags)
+	(aarch64_isa_flags): Redefine as read-only macros.
+	(TARGET_SIMD, TARGET_FLOAT, TARGET_SVE): Don't depend on
+	!TARGET_GENERAL_REGS_ONLY.
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_set_asm_isa_flags): New function.
+	(aarch64_handle_option): Call it when updating -mgeneral-regs.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): Replace
+	m_old_isa_flags with m_old_asm_isa_flags.
+	(aarch64_set_asm_isa_flags): Declare.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_simd_switcher::aarch64_simd_switcher)
+	(aarch64_simd_switcher::~aarch64_simd_switcher): Save and restore
+	aarch64_asm_isa_flags instead of aarch64_isa_flags.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(check_required_extensions): Use aarch64_asm_isa_flags instead
+	of aarch64_isa_flags.
+	* config/aarch64/aarch64.cc (aarch64_set_asm_isa_flags): New function.
+	(aarch64_override_options, aarch64_handle_attr_arch)
+	(aarch64_handle_attr_cpu, aarch64_handle_attr_isa_flags): Use
+	aarch64_set_asm_isa_flags to set the ISA flags.
+	(aarch64_option_print, aarch64_declare_function_name)
+	(aarch64_start_file): Use aarch64_asm_isa_flags instead
+	of aarch64_isa_flags.
+	(aarch64_can_inline_p): Check aarch64_asm_isa_flags as well as
+	aarch64_isa_flags.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc (all_extensions):
+	Include the feature flag in flags_on and flags_off.
+	(aarch64_parse_extension): Update accordingly.
+	(aarch64_get_extension_string_for_isa_flags): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc: Use aarch64_feature_flags
+	for feature flags throughout.
+	* config/aarch64/aarch64-protos.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: Likewise.
+	* config/aarch64/aarch64.cc: Likewise.
+	* config/aarch64/aarch64.opt: Likewise.
+	* config/aarch64/driver-aarch64.cc: Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc (aarch64_option_extension)
+	(processor_name_to_arch, arch_to_arch_name): Remove const from
+	member variables.
+	(all_extensions, all_cores, all_architectures): Make a constexpr.
+	* config/aarch64/aarch64.cc (processor): Remove const from
+	member variables.
+	(all_architectures): Make a constexpr.
+	* config/aarch64/driver-aarch64.cc (aarch64_core_data)
+	(aarch64_arch_driver_info): Remove const from member variables.
+	(aarch64_cpu_data, aarch64_arches): Make a constexpr.
+	(get_arch_from_id): Return a pointer to const.
+	(host_detect_local_cpu): Update accordingly.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc (processor_name_to_arch)
+	(arch_to_arch_name): Use const char * instead of std::string.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(TARGET_OPTION_INIT_STRUCT): Delete.
+	(aarch64_option_extension): Remove is_synthetic_flag.
+	(all_extensions): Update accordingly.
+	(all_extensions_by_on, opt_ext, opt_ext_cmp): Delete.
+	(aarch64_option_init_struct, aarch64_contains_opt): Delete.
+	(aarch64_get_extension_string_for_isa_flags): Rewrite to use
+	all_extensions instead of all_extensions_on.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Switch to a new format.
+	* config/aarch64/aarch64-cores.def: Use the same format to specify
+	lists of features.
+	* config/aarch64/aarch64-arches.def: Likewise, moving that information
+	from aarch64.h.
+	* config/aarch64/aarch64-opts.h (aarch64_feature_flags): New typedef.
+	* config/aarch64/aarch64.h (aarch64_feature): New class enum.
+	Turn AARCH64_FL_* macros into constexprs, getting the definitions
+	from aarch64-option-extensions.def.  Remove AARCH64_FL_FOR_* macros.
+	* common/config/aarch64/aarch64-common.cc: Include
+	aarch64-feature-deps.h.
+	(all_extensions): Update for new .def format.
+	(all_extensions_by_on, all_cores, all_architectures): Likewise.
+	* config/aarch64/driver-aarch64.cc: Include aarch64-feature-deps.h.
+	(aarch64_extensions): Update for new .def format.
+	(aarch64_cpu_data, aarch64_arches): Likewise.
+	* config/aarch64/aarch64.cc: Include aarch64-feature-deps.h.
+	(all_architectures, all_cores): Update for new .def format.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(check_required_extensions): Likewise.
+	* config/aarch64/aarch64-feature-deps.h: New file.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Move crypto
+	after sha2.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (dotprod): Depend
+	on fp as well as simd.
+	(sha3): Likewise.
+	(aes): Likewise.  Make +noaes disable crypto.
+	(sha2): Likewise +nosha2.  Also make +nosha2 disable sha3 and
+	sve2-sha3.
+	(sve2-sha3): Depend on sha2 as well as sha3.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/107025
+	* config/aarch64/aarch64.h (oAARCH64_FL_RCPC8_4): Delete.
+	(AARCH64_FL_FOR_V8_4A): Update accordingly.
+	(AARCH64_ISA_RCPC8_4): Use AARCH64_FL_V8_4A directly.
+	* config/aarch64/aarch64-cores.def (thunderx3t110): Remove
+	AARCH64_FL_RCPC8_4.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Remove AARCH64_FL_FOR_<ARCH>
+	from the flags field.
+	* common/config/aarch64/aarch64-common.cc (all_cores): Add it
+	here instead.
+	* config/aarch64/aarch64.cc (all_cores): Likewise.
+	* config/aarch64/driver-aarch64.cc (all_cores): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config.gcc: Remove dead aarch64-option-extensions.def code.
+	* config/aarch64/aarch64-arches.def: Update comment.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Add a leading "V" to the
+	ARCH_IDENT fields.
+	* config/aarch64/aarch64-cores.def: Update accordingly.
+	* common/config/aarch64/aarch64-common.cc (all_cores): Likewise.
+	* config/aarch64/aarch64.cc (all_cores): Likewise.
+	* config/aarch64/driver-aarch64.cc (aarch64_arches): Skip the
+	leading "V".
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_FOR_ARCH8): Rename to...
+	(AARCH64_FL_FOR_V8A): ...this.
+	(AARCH64_FL_FOR_ARCH8_1): Rename to...
+	(AARCH64_FL_FOR_V8_1A): ...this.
+	(AARCH64_FL_FOR_ARCH8_2): Rename to...
+	(AARCH64_FL_FOR_V8_2A): ...this.
+	(AARCH64_FL_FOR_ARCH8_3): Rename to...
+	(AARCH64_FL_FOR_V8_3A): ...this.
+	(AARCH64_FL_FOR_ARCH8_4): Rename to...
+	(AARCH64_FL_FOR_V8_4A): ...this.
+	(AARCH64_FL_FOR_ARCH8_5): Rename to...
+	(AARCH64_FL_FOR_V8_5A): ...this.
+	(AARCH64_FL_FOR_ARCH8_6): Rename to...
+	(AARCH64_FL_FOR_V8_6A): ...this.
+	(AARCH64_FL_FOR_ARCH8_7): Rename to...
+	(AARCH64_FL_FOR_V8_7A): ...this.
+	(AARCH64_FL_FOR_ARCH8_8): Rename to...
+	(AARCH64_FL_FOR_V8_8A): ...this.
+	(AARCH64_FL_FOR_ARCH8_R): Rename to...
+	(AARCH64_FL_FOR_V8R): ...this.
+	(AARCH64_FL_FOR_ARCH9): Rename to...
+	(AARCH64_FL_FOR_V9A): ...this.
+	(AARCH64_FL_FOR_ARCH9_1): Rename to...
+	(AARCH64_FL_FOR_V9_1A): ...this.
+	(AARCH64_FL_FOR_ARCH9_2): Rename to...
+	(AARCH64_FL_FOR_V9_2A): ...this.
+	(AARCH64_FL_FOR_ARCH9_3): Rename to...
+	(AARCH64_FL_FOR_V9_3A): ...this.
+	* common/config/aarch64/aarch64-common.cc (all_cores): Update
+	accordingly.
+	* config/aarch64/aarch64-arches.def: Likewise.
+	* config/aarch64/aarch64-cores.def: Likewise.
+	* config/aarch64/aarch64.cc (all_cores): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_1, AARCH64_FL_V8_2)
+	(AARCH64_FL_V8_3, AARCH64_FL_V8_4, AARCH64_FL_V8_5, AARCH64_FL_V8_6)
+	(AARCH64_FL_V9, AARCH64_FL_V8_7, AARCH64_FL_V8_8, AARCH64_FL_V9_1)
+	(AARCH64_FL_V9_2, AARCH64_FL_V9_3): Add "A" to the end of the name.
+	(AARCH64_FL_V8_R): Rename to AARCH64_FL_V8R.
+	(AARCH64_FL_FOR_ARCH8_1, AARCH64_FL_FOR_ARCH8_2): Update accordingly.
+	(AARCH64_FL_FOR_ARCH8_3, AARCH64_FL_FOR_ARCH8_4): Likewise.
+	(AARCH64_FL_FOR_ARCH8_5, AARCH64_FL_FOR_ARCH8_6): Likewise.
+	(AARCH64_FL_FOR_ARCH8_7, AARCH64_FL_FOR_ARCH8_8): Likewise.
+	(AARCH64_FL_FOR_ARCH8_R, AARCH64_FL_FOR_ARCH9): Likewise.
+	(AARCH64_FL_FOR_ARCH9_1, AARCH64_FL_FOR_ARCH9_2): Likewise.
+	(AARCH64_FL_FOR_ARCH9_3, AARCH64_ISA_V8_2A, AARCH64_ISA_V8_3A)
+	(AARCH64_ISA_V8_4A, AARCH64_ISA_V8_5A, AARCH64_ISA_V8_6A): Likewise.
+	(AARCH64_ISA_V8R, AARCH64_ISA_V9A, AARCH64_ISA_V9_1A): Likewise.
+	(AARCH64_ISA_V9_2A, AARCH64_ISA_V9_3A): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_ISA_V8_2, AARCH64_ISA_V8_3)
+	(AARCH64_ISA_V8_4, AARCH64_ISA_V8_5, AARCH64_ISA_V8_6)
+	(AARCH64_ISA_V9, AARCH64_ISA_V9_1, AARCH64_ISA_V9_2)
+	(AARCH64_ISA_V9_3): Add "A" to the end of the name.
+	(AARCH64_ISA_V8_R): Rename to AARCH64_ISA_V8R.
+	(TARGET_ARMV8_3, TARGET_JSCVT, TARGET_FRINT, TARGET_MEMTAG): Update
+	accordingly.
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_extension_string_for_isa_flags): Likewise.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_define_unconditional_macros): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (GTFILES): Add OPTIONS_H_EXTRA.
+
+2022-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* cppdefault.cc (cpp_include_defaults): If SYSROOT_HEADERS_SUFFIX_SPEC
+	isn't defined, add FIXED_INCLUDE_DIR entry with multilib flag 2
+	before FIXED_INCLUDE_DIR entry with multilib flag 0.
+	* gcc.cc (do_spec_1): If multiarch_dir, add
+	include-fixed/multiarch_dir paths before include-fixed paths.
+
+2022-09-29  Martin Liska  <mliska@suse.cz>
+
+	PR driver/106897
+	* common.opt: Add -gz=zstd value.
+	* configure.ac: Detect --compress-debug-sections=zstd
+	for both linker and assembler.
+	* configure: Regenerate.
+	* gcc.cc (LINK_COMPRESS_DEBUG_SPEC): Handle -gz=zstd.
+	(ASM_COMPRESS_DEBUG_SPEC): Likewise.
+
+2022-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105646
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Pre-compute
+	the set of fallthru reachable blocks from function entry
+	and use that to determine wlims.always_executed.
+
+2022-09-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/107055
+	* tree-vect-loop-manip.cc (vect_can_advance_ivs_p): Check for
+	nonlinear induction variables.
+	* tree-vect-loop.cc (vect_can_peel_nonlinear_iv_p): New
+	functions.
+	(vectorizable_nonlinear_induction): Put part codes into
+	vect_can_peel_nonlinear_iv_p.
+	* tree-vectorizer.h (vect_can_peel_nonlinear_iv_p): Declare.
+
 2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* basic-block.h: Remove discriminator from basic blocks.

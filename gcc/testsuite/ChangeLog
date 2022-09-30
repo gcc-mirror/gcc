@@ -1,3 +1,122 @@
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-noreturn-1.c, gcc.dg/c2x-attr-noreturn-2.c,
+	gcc.dg/c2x-attr-noreturn-3.c: New tests.
+	* gcc.dg/c2x-has-c-attribute-2.c: Also test __has_c_attribute for
+	noreturn attribute.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr79095.c: Test evrp pass rather than vrp1.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102892
+	* gcc.dg/pr102892-1.c: Remove undefined behaviour.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102576
+	* g++.dg/modules/pr102576_a.H: New test.
+	* g++.dg/modules/pr102576_b.C: New test.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/cond-triv3.C: New test.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-local4.C: Expect error sooner.
+	* g++.dg/cpp2a/consteval24.C: Likewise.
+	* g++.dg/cpp2a/consteval7.C: Likewise.
+	* g++.dg/cpp2a/inline-asm3.C: Likewise.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93046
+	* g++.dg/ext/cond4.C: Add runtime test.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/tree-ssa/cond-temp1.C: New test.
+
+2022-09-29  Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/107028
+	* c-c++-common/goacc/struct-component-kind-1.c: New test.
+	* g++.dg/goacc/pr107028-1.C: New test.
+	* g++.dg/goacc/pr107028-2.C: New test.
+	* gfortran.dg/goacc/mapping-tests-5.f90: New test.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __remove_cv,
+	__remove_reference and __remove_cvref.
+	* g++.dg/ext/remove_cv.C: New test.
+	* g++.dg/ext/remove_reference.C: New test.
+	* g++.dg/ext/remove_cvref.C: New test.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/alias-decl-59.C: Adjust expected error message.
+	* g++.dg/ext/underlying_type7.C: Likewise.
+	* g++.dg/ext/underlying_type13.C: New test.
+	* g++.dg/ext/underlying_type14.C: New test.
+
+2022-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/100616
+	* g++.dg/modules/100616_a.H: New.
+	* g++.dg/modules/100616_b.C: New.
+	* g++.dg/modules/100616_c.C: New.
+	* g++.dg/modules/100616_d.C: New.
+
+2022-09-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR middle-end/25521
+	* lib/target-supports.exp (check_effective_target_elf): Define.
+	* gcc.dg/pr25521.c: New test.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_8: Add all dependencies of sve.
+	* gcc.target/aarch64/cpunative/info_9: Likewise svesm4.
+	* gcc.target/aarch64/cpunative/info_15: Likewise.
+	* gcc.target/aarch64/cpunative/info_16: Likewise sve2.
+	* gcc.target/aarch64/cpunative/info_17: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_2.c: Expect just +nofp
+	rather than +nofp+nosimd.
+	* gcc.target/aarch64/cpunative/native_cpu_10.c: Likewise.
+	* gcc.target/aarch64/target_attr_15.c: Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_0.c: Expect +crypto
+	to come after +crc.
+	* gcc.target/aarch64/cpunative/native_cpu_13.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_16.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_17.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_6.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_7.c: Likewise.
+	* gcc.target/aarch64/options_set_2.c: Likewise.
+	* gcc.target/aarch64/options_set_3.c: Likewise.
+	* gcc.target/aarch64/options_set_4.c: Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/options_set_6.c: Expect +crypto+nosha2 to
+	disable crypto but keep aes.
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: New test.
+
+2022-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105646
+	* g++.dg/uninit-pr105646.C: New testcase.
+
+2022-09-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107055.c: New test.
+
 2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* c-c++-common/ubsan/pr85213.c: Pass -gno-statement-frontiers.

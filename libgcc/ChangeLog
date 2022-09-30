@@ -1,3 +1,9 @@
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxcrtstuff.c: Improve the comment attached to the use
+	of auto-host.h and of __dso_handle.  Remove redundant guard on
+	HAVE_INITFINI_ARRAY_SUPPORT within a USE_INITFINI_ARRAY section.
+
 2022-09-26  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* unwind-dw2-fde.c: Introduce a constant for in_shutdown

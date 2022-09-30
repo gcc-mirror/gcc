@@ -1,3 +1,15 @@
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.cc (c_common_has_attribute): Handle noreturn attribute for
+	C.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Add __remove_cv,
+	__remove_reference and __remove_cvref.
+	* c-common.h (enum rid): Add RID_REMOVE_CV, RID_REMOVE_REFERENCE
+	and RID_REMOVE_CVREF.
+
 2022-09-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101165

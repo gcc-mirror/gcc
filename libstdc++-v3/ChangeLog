@@ -1,3 +1,20 @@
+2022-09-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (add_one_template_type_printer): Register
+	printer for types in std::__debug namespace with template parameters in std::__8
+	namespace.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/unique_ptr.h (unique_ptr<_Tp[], _Dp>): Remove
+	__remove_cv and use __remove_cv_t instead.
+
+2022-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_invocable_impl): Check
+	__has_builtin(__reference_converts_from_temporary) before using
+	built-in.
+
 2022-09-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/evolution.xml: Document std::bind API

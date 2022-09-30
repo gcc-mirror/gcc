@@ -1,3 +1,107 @@
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102576
+	* pt.cc (listify): Use lookup_qualified_name instead of
+	get_namespace_binding.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_methods): Call constraints_satisfied_p.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1): Look into
+	DECL_INITIAL.  Use location wrappers.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93046
+	* call.cc (build_conditional_expr): For a?:c extension, treat
+	a reused class prvalue as an xvalue.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (build_conditional_expr): Set TARGET_EXPR_NO_ELIDE on the
+	outer TARGET_EXPR.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_REMOVE_CV,
+	CPTK_REMOVE_REFERENCE and CPTK_REMOVE_CVREF.
+	* cp-objcp-common.cc (names_builtin_p): Likewise.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_REMOVE_CV,
+	CPTK_REMOVE_REFERENCE and CPTK_REMOVE_CVREF.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle CPTK_REMOVE_CV,
+	CPTK_REMOVE_REFERENCE and CPTK_REMOVE_CVREF.
+	* parser.cc (cp_keyword_starts_decl_specifier_p): Return true
+	for RID_REMOVE_CV, RID_REMOVE_REFERENCE and RID_REMOVE_CVREF.
+	(cp_parser_trait): Handle RID_REMOVE_CV, RID_REMOVE_REFERENCE
+	and RID_REMOVE_CVREF.
+	(cp_parser_simple_type_specifier): Likewise.
+	* semantics.cc (finish_trait_type): Likewise.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-objcp-common.cc (cp_common_init_ts): Replace
+	UNDERLYING_TYPE with TRAIT_TYPE.
+	* cp-tree.def (TRAIT_TYPE): Define.
+	(UNDERLYING_TYPE): Remove.
+	* cp-tree.h (TRAIT_TYPE_KIND_RAW): Define.
+	(TRAIT_TYPE_KIND): Define.
+	(TRAIT_TYPE_TYPE1): Define.
+	(TRAIT_TYPE_TYPE2): Define.
+	(WILDCARD_TYPE_P): Return true for TRAIT_TYPE.
+	(finish_trait_type): Declare.
+	* cxx-pretty-print.cc (cxx_pretty_printer::primary_expression):
+	Adjust after renaming pp_cxx_trait_expression.
+	(cxx_pretty_printer::simple_type_specifier) <case TRAIT_TYPE>:
+	New.
+	(cxx_pretty_printer::type_id): Replace UNDERLYING_TYPE with
+	TRAIT_TYPE.
+	(pp_cxx_trait_expression): Rename to ...
+	(pp_cxx_trait): ... this.  Handle TRAIT_TYPE as well.  Correct
+	pretty printing of the trailing arguments.
+	* cxx-pretty-print.h (pp_cxx_trait_expression): Rename to ...
+	(pp_cxx_trait_type): ... this.
+	* error.cc (dump_type) <case UNDERLYING_TYPE>: Remove.
+	<case TRAIT_TYPE>: New.
+	(dump_type_prefix): Replace UNDERLYING_WITH with TRAIT_TYPE.
+	(dump_type_suffix): Likewise.
+	* mangle.cc (write_type) <case UNDERLYING_TYPE>: Remove.
+	<case TRAIT_TYPE>: New.
+	* module.cc (trees_out::type_node) <case UNDERLYING_TYPE>:
+	Remove.
+	<case TRAIT_TYPE>: New.
+	(trees_in::tree_node): Likewise.
+	* parser.cc (cp_parser_primary_expression): Adjust after
+	renaming cp_parser_trait_expr.
+	(cp_parser_trait_expr): Rename to ...
+	(cp_parser_trait): ... this.  Call finish_trait_type for traits
+	that yield a type.
+	(cp_parser_simple_type_specifier): Adjust after renaming
+	cp_parser_trait_expr.
+	* pt.cc (for_each_template_parm_r) <case UNDERLYING_TYPE>:
+	Remove.
+	<case TRAIT_TYPE>: New.
+	(tsubst): Likewise.
+	(unify): Replace UNDERLYING_TYPE with TRAIT_TYPE.
+	(dependent_type_p_r): Likewise.
+	* semantics.cc (finish_underlying_type): Don't return
+	UNDERLYING_TYPE anymore when processing_template_decl.
+	(finish_trait_type): Define.
+	* tree.cc (strip_typedefs) <case UNDERLYING_TYPE>: Remove.
+	<case TRAIT_TYPE>: New.
+	(cp_walk_subtrees): Likewise.
+	* typeck.cc (structural_comptypes): Likewise.
+
+2022-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/100616
+	* module.cc (enum tree_tag): Add tt_nttp_var.
+	(trees_out::decl_node): Handle NTTP objects.
+	(trees_in::tree_node): Handle tt_nttp_var.
+	(depset::hash::add_binding_entry): Skip NTTP objects.
+
 2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* module.cc (write_location): Write discriminator.
