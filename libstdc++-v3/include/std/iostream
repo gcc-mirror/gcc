@@ -59,16 +59,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  manual linked to above.
   */
   ///@{
-  extern istream cin;		/// Linked to standard input
-  extern ostream cout;		/// Linked to standard output
-  extern ostream cerr;		/// Linked to standard error (unbuffered)
-  extern ostream clog;		/// Linked to standard error (buffered)
+  extern istream cin;		///< Linked to standard input
+  extern ostream cout;		///< Linked to standard output
+  extern ostream cerr;		///< Linked to standard error (unbuffered)
+  extern ostream clog;		///< Linked to standard error (buffered)
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  extern wistream wcin;		/// Linked to standard input
-  extern wostream wcout;	/// Linked to standard output
-  extern wostream wcerr;	/// Linked to standard error (unbuffered)
-  extern wostream wclog;	/// Linked to standard error (buffered)
+  extern wistream wcin;		///< Linked to standard input
+  extern wostream wcout;	///< Linked to standard output
+  extern wostream wcerr;	///< Linked to standard error (unbuffered)
+  extern wostream wclog;	///< Linked to standard error (buffered)
 #endif
   ///@}
 

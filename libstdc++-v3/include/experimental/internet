@@ -2139,7 +2139,7 @@ namespace ip
     using resolver = basic_resolver<tcp>;	 ///< A TCP resolver.
     using socket = basic_stream_socket<tcp>;	 ///< A TCP socket.
     using acceptor = basic_socket_acceptor<tcp>; ///< A TCP acceptor.
-    using iostream = basic_socket_iostream<tcp>; /// A TCP iostream.
+    using iostream = basic_socket_iostream<tcp>; ///< A TCP iostream.
 
 #ifdef TCP_NODELAY
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).
