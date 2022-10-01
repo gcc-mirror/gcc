@@ -1260,6 +1260,9 @@ irange::operator== (const irange &other) const
   if (m_num_ranges != other.m_num_ranges)
     return false;
 
+  if (m_num_ranges == 0)
+    return true;
+
   for (unsigned i = 0; i < m_num_ranges; ++i)
     {
       tree lb = tree_lower_bound (i);
