@@ -1,3 +1,39 @@
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107054
+	* simplify.c (gfc_simplify_unpack): Replace assert by condition
+	that terminates simplification when there are not enough elements
+	in the constructor of argument VECTOR.
+
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82868
+	* trans-decl.c (generate_coarray_sym_init): Skip symbol
+	if attr.associate_var.
+
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* expr.c (gfc_simplify_expr): Avoid NULL pointer dereference.
+
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103694
+	* simplify.c (simplify_size): The size expression of an array cannot
+	be simplified if an error occurs while resolving the array spec.
+
 2022-09-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
