@@ -1,3 +1,35 @@
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107054
+	* gfortran.dg/pr107054.f90: New test.
+
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82868
+	* gfortran.dg/associate_26a.f90: New test.
+
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106985
+	* gfortran.dg/pr106985.f90: New test.
+
+2022-09-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103694
+	* gfortran.dg/pr103694.f90: New test.
+
 2022-09-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
