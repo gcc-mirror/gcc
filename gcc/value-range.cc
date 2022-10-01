@@ -1233,10 +1233,7 @@ irange::legacy_equal_p (const irange &other) const
   if (m_kind == VR_UNDEFINED)
     return true;
   if (m_kind == VR_VARYING)
-    {
-      return (range_compatible_p (type (), other.type ())
-	      && vrp_operand_equal_p (m_nonzero_mask, other.m_nonzero_mask));
-    }
+    return range_compatible_p (type (), other.type ());
   return (vrp_operand_equal_p (tree_lower_bound (0),
 			       other.tree_lower_bound (0))
 	  && vrp_operand_equal_p (tree_upper_bound (0),
