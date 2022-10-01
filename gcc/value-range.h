@@ -207,14 +207,15 @@ private:
 
   void irange_set_1bit_anti_range (tree, tree);
   bool varying_compatible_p () const;
-  void set_nonzero_bits (tree mask);
   bool intersect_nonzero_bits (const irange &r);
   bool union_nonzero_bits (const irange &r);
+  wide_int get_nonzero_bits_from_range () const;
+  bool set_range_from_nonzero_bits ();
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
   unsigned char m_max_ranges;
-  tree m_nonzero_mask;
+  wide_int m_nonzero_mask;
   tree *m_base;
 };
 
@@ -682,10 +683,11 @@ irange::varying_compatible_p () const
   if (INTEGRAL_TYPE_P (t))
     return (wi::to_wide (l) == wi::min_value (prec, sign)
 	    && wi::to_wide (u) == wi::max_value (prec, sign)
-	    && !m_nonzero_mask);
+	    && m_nonzero_mask == -1);
   if (POINTER_TYPE_P (t))
     return (wi::to_wide (l) == 0
-	    && wi::to_wide (u) == wi::max_value (prec, sign));
+	    && wi::to_wide (u) == wi::max_value (prec, sign)
+	    && m_nonzero_mask == -1);
   return true;
 }
 
@@ -752,8 +754,6 @@ gt_ggc_mx (irange *x)
       gt_ggc_mx (x->m_base[i * 2]);
       gt_ggc_mx (x->m_base[i * 2 + 1]);
     }
-  if (x->m_nonzero_mask)
-    gt_ggc_mx (x->m_nonzero_mask);
 }
 
 inline void
@@ -764,8 +764,6 @@ gt_pch_nx (irange *x)
       gt_pch_nx (x->m_base[i * 2]);
       gt_pch_nx (x->m_base[i * 2 + 1]);
     }
-  if (x->m_nonzero_mask)
-    gt_pch_nx (x->m_nonzero_mask);
 }
 
 inline void
@@ -776,8 +774,6 @@ gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
       op (&x->m_base[i * 2], NULL, cookie);
       op (&x->m_base[i * 2 + 1], NULL, cookie);
     }
-  if (x->m_nonzero_mask)
-    op (&x->m_nonzero_mask, NULL, cookie);
 }
 
 template<unsigned N>
@@ -872,7 +868,6 @@ irange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
   m_num_ranges = 0;
-  m_nonzero_mask = NULL;
 }
 
 inline void
@@ -880,7 +875,11 @@ irange::set_varying (tree type)
 {
   m_kind = VR_VARYING;
   m_num_ranges = 1;
-  m_nonzero_mask = NULL;
+
+  if (type == error_mark_node)
+    m_nonzero_mask = wi::shwi (-1, 1);
+  else
+    m_nonzero_mask = wi::shwi (-1, TYPE_PRECISION (type));
 
   if (INTEGRAL_TYPE_P (type))
     {
@@ -1002,8 +1001,6 @@ irange::normalize_kind ()
 	m_kind = VR_VARYING;
       else if (m_kind == VR_ANTI_RANGE)
 	set_undefined ();
-      else
-	gcc_unreachable ();
     }
 }
 
