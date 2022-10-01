@@ -1,3 +1,101 @@
+2022-09-30  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* tree-ssa-dom.cc (single_block_loop_p): New function.
+	(record_edge_info): Also record equivalences for the outgoing
+	edge of a single block loop where the condition is an invariant.
+
+2022-09-30  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* tree-ssa-dom.cc (free_dom_edge_info): Clear e->aux too.
+	(free_all_edge_infos): Do not clear e->aux here.
+
+2022-09-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	* target.def (TARGET_C_EXCESS_PRECISION): Document
+	-fexcess-precision=16.
+
+2022-09-30  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/tm.texi (TARGET_C_EXCESS_PRECISION): Add 16.
+
+2022-09-30  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	PR target/106815
+	* config/riscv/riscv.cc (riscv_excess_precision): Add support
+	for EXCESS_PRECISION_TYPE_FLOAT16.
+
+2022-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107080
+	* config/arm/arm.cc (arm_mangle_type): Mangle just __fp16 as Dh
+	and _Float16 as DF16_.
+	* config/csky/csky.cc (csky_init_builtins): Fix a comment typo.
+	(csky_mangle_type): Mangle __fp16 as Dh and _Float16 as DF16_
+	rather than mangling __fp16 as __fp16.
+
+2022-09-30  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/69543
+	* tree-ssa-uninit.cc (warn_uninit): Stop stripping macro tracking
+	information away from the diagnostic location.
+	(maybe_warn_read_write_only): Likewise.
+	(maybe_warn_operand): Likewise.
+
+2022-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107080
+	* config/aarch64/aarch64.cc (aarch64_mangle_type): Mangle just __fp16
+	as Dh and _Float16 as DF16_.
+
+2022-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107080
+	* config/i386/i386.cc (ix86_mangle_type): Always return NULL
+	for float128_type_node or float64x_type_node, don't check
+	float128t_type_node later on.
+	* config/ia64/ia64.cc (ia64_mangle_type): Always return NULL
+	for float128_type_node or float64x_type_node.
+	* config/rs6000/rs6000.cc (rs6000_mangle_type): Likewise.
+	Don't check float128_type_node later on.
+	* config/s390/s390.cc (s390_mangle_type): Don't use
+	TYPE_MAIN_VARIANT on type which was set to TYPE_MAIN_VARIANT
+	a few lines earlier.
+
+2022-09-30  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* doc/sourcebuild.texi: Document new vma_equals_lma effective
+	target check.
+
+2022-09-30  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_file_start): New .option.
+	* config/riscv/riscv.opt: New options.
+	* doc/invoke.texi: New definations.
+
+2022-09-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/99888
+	PR target/105649
+	* doc/invoke.texi (option -fpatchable-function-entry): Adjust the
+	documentation for PowerPC ELFv2 ABI dual entry points.
+	* config/rs6000/rs6000-internal.h
+	(rs6000_print_patchable_function_entry): New function declaration.
+	* config/rs6000/rs6000-logue.cc (rs6000_output_function_prologue):
+	Support patchable-function-entry by emitting nops before and after
+	local entry for the function that needs global entry.
+	* config/rs6000/rs6000.cc (rs6000_print_patchable_function_entry): Skip
+	the function that needs global entry till global entry has been
+	emitted.
+	* config/rs6000/rs6000.h (struct machine_function): New bool member
+	global_entry_emitted.
+
+2022-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107095
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Use data arg
+	for .MASK_STORE size.
+
 2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* range-op.cc (plus_minus_ranges): New.

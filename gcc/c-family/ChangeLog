@@ -1,3 +1,9 @@
+2022-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use cp/cp-trait.def to handle
+	C++ traits.
+	* c-common.h (enum rid): Likewise.
+
 2022-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-lex.cc (c_common_has_attribute): Handle noreturn attribute for

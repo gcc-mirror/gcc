@@ -1,3 +1,11 @@
+2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/105318
+	* openmp.cc (resolve_omp_clauses): Update is_device_ptr restrictions
+	for OpenMP 5.1 and map to has_device_addr where applicable; map
+	use_device_ptr to use_device_addr where applicable.
+	Silence integer-range warning for device(omp_{initial,invalid}_device).
+
 2022-09-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107054

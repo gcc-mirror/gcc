@@ -1,3 +1,10 @@
+2022-09-30  Olivier Hainque  <hainque@adacore.com>
+
+	* configure.ac (*vxworks*): If enable_shared is not
+	set, set to "no" and add --disable-shared to target and
+	host_configargs.
+	* configure: Regenerate.
+
 2022-09-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	* MAINTAINERS: Update my email address and DCO entry.

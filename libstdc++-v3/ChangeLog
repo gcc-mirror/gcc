@@ -1,3 +1,35 @@
+2022-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/bitset/access/to_ulong.cc: Construct bitset
+	from binary literal instead of using stringstream.
+
+2022-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (operator>>): Use a simple buffer instead
+	of std::basic_string.
+
+2022-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (_M_copy_from_ptr, _M_copy_from_string)
+	(_M_copy_to_string): Change access to private.
+	(_M_copy_from_string(const basic_string&, size_t, size_t)):
+	Remove.
+	(_M_copy_to_string(const basic_string&)): Remove.
+
+2022-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/bind/ref_neg.cc: Fix dg-prune-output
+	directive.
+
+2022-09-30  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* testsuite/20_util/bind/ref_neg.cc: Prune Windows paths too.
+
+2022-09-30  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/bitset: Include <bits/stl_algobase.h>.
+
 2022-09-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* python/libstdcxx/v6/printers.py (add_one_template_type_printer): Register
