@@ -12052,10 +12052,15 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
       return ref_xes_from_temporary (type1, type2, /*direct_init=*/false);
 
-    default:
-      gcc_unreachable ();
-      return false;
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case CPTK_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
+      /* Type-yielding traits are handled in finish_trait_type.  */
+      break;
     }
+
+  gcc_unreachable ();
 }
 
 /* Returns true if TYPE meets the requirements for the specified KIND,
@@ -12204,7 +12209,11 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 	return error_mark_node;
       break;
 
-    default:
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case CPTK_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
+      /* Type-yielding traits are handled in finish_trait_type.  */
       gcc_unreachable ();
     }
 
@@ -12250,9 +12259,19 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
       if (TYPE_REF_P (type1))
 	type1 = TREE_TYPE (type1);
       return cv_unqualified (type1);
-    default:
-      gcc_unreachable ();
+
+#define DEFTRAIT_EXPR(CODE, NAME, ARITY) \
+    case CPTK_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_EXPR
+      /* Expression-yielding traits are handled in finish_trait_expr.  */
+    case CPTK_BASES:
+    case CPTK_DIRECT_BASES:
+      /* BASES and DIRECT_BASES are handled in finish_bases.  */
+      break;
     }
+
+  gcc_unreachable ();
 }
 
 /* Do-nothing variants of functions to handle pragma FLOAT_CONST_DECIMAL64,
