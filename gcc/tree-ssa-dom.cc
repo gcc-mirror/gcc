@@ -684,11 +684,6 @@ record_edge_info (basic_block bb)
 		       !gsi_end_p (gsi);
 		       gsi_next (&gsi))
 		    {
-		      /* If the other alternative is the same as the result,
-			 then this is a degenerate and can be ignored.  */
-		      if (dst == PHI_ARG_DEF (phi, !alternative))
-			continue;
-
 		      /* Now get the EDGE_INFO class so we can append
 			 it to our list.  We want the successor edge
 			 where the destination is not the source of
@@ -696,6 +691,11 @@ record_edge_info (basic_block bb)
 		      gphi *phi = gsi.phi ();
 		      tree src = PHI_ARG_DEF (phi, alternative);
 		      tree dst = PHI_RESULT (phi);
+
+		      /* If the other alternative is the same as the result,
+			 then this is a degenerate and can be ignored.  */
+		      if (dst == PHI_ARG_DEF (phi, !alternative))
+			continue;
 
 		      if (EDGE_SUCC (bb, 0)->dest
 			  != EDGE_PRED (bb, !alternative)->src)
