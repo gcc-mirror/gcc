@@ -1,3 +1,20 @@
+2022-10-01  Patrick Palka  <ppalka@redhat.com>
+
+	* semantics.cc (trait_expr_value): Make cp_trait_kind switch
+	statement exhaustive.
+	(finish_trait_expr): Likewise.
+	(finish_trait_type): Likewise.
+
+2022-10-01  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_vec_init): Clear from_array for CONSTRUCTOR
+	initializer.
+
+2022-10-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.cc (cp_genericize_init): Also convert the result of
+	split_nonconstant_init to void.
+
 2022-09-30  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (diagnose_trait_expr): Likewise.

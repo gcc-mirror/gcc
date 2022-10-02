@@ -1,3 +1,33 @@
+2022-10-01  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.cc (TARGET_HAVE_TLS): Only define if
+	HAVE_AS_TLS is defined.
+
+2022-10-01  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_group_base): Fix IF_PRESENT (no_create)
+	handling.
+
+2022-10-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.md (HSI2): New iterator.
+	(eqne_invert): Similarly.
+	* config/h8300/testcompare.md (testhi_upper_z): New pattern.
+	(cmpqi_z, cmphi_z, cmpsi_z): Likewise.
+	(store_z_qi, store_z_i_qi, store_z_hi, store_z_hi_sb): New
+	define_insn_and_splits and/or define_insns.
+	(store_z_hi_neg, store_z_hi_and, store_z_<mode>): Likewise.
+	(store_z_<mode>_neg, store_z_<mode>_and, store_z): Likewise.
+
+2022-10-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* tree-ssa-dom.cc (record_edge_info): Install correct version of
+	patch.
+
+2022-10-01  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* dwarf2out.cc (add_call_src_coords_attributes): Emit discriminators for inlined call sites.
+
 2022-09-30  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* tree-ssa-dom.cc (single_block_loop_p): New function.
