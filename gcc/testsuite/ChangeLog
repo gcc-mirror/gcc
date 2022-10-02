@@ -1,3 +1,19 @@
+2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100103
+	* gfortran.dg/PR100103.f90: New test.
+
+2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* gfortran.dg/PR100132.f90: New test.
+
 2022-09-29  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/cond-triv3.C: New test.

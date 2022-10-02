@@ -1,3 +1,22 @@
+2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100103
+	* trans-array.cc (gfc_is_reallocatable_lhs): Add select rank
+	temporary associate names as possible targets of automatic
+	reallocation.
+
+2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* trans-types.cc (create_fn_spec): Fix function attributes when
+	passing polymorphic pointers.
+
 2022-09-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
