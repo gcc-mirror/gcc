@@ -1,3 +1,12 @@
+2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-09-20  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100132
+	* trans-types.c (create_fn_spec): Fix function attributes when
+	passing polymorphic pointers.
+
 2022-09-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
