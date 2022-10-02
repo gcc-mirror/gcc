@@ -1370,6 +1370,8 @@ static void
 adjust_op1_for_overflow (irange &r, const irange &op2, relation_kind rel,
 			 bool add_p)
 {
+  if (r.undefined_p ())
+    return;
   tree type = r.type ();
   // Check for unsigned overflow and calculate the overflow part.
   signop s = TYPE_SIGN (type);
