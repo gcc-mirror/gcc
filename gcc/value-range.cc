@@ -2934,6 +2934,14 @@ irange::set_nonzero_bits (const wide_int_ref &bits)
   // range immediately.
   if (wi::popcount (bits) == 1)
     {
+      // Make sure we don't pessimize the range.
+      tree tbits = wide_int_to_tree (type (), bits);
+      if (!contains_p (tbits))
+	{
+	  set_nonzero_bits (tbits);
+	  return;
+	}
+
       bool has_zero = contains_p (build_zero_cst (type ()));
       set (type (), bits, bits);
       if (has_zero)
@@ -3628,6 +3636,11 @@ range_tests_nonzero_bits ()
   r1.set_nonzero_bits (0xff);
   r0.union_ (r1);
   ASSERT_TRUE (r0.varying_p ());
+
+  // Test that setting a nonzero bit of 1 does not pessimize the range.
+  r0.set_zero (integer_type_node);
+  r0.set_nonzero_bits (1);
+  ASSERT_TRUE (r0.zero_p ());
 }
 
 // Build an frange from string endpoints.
