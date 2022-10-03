@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream&, const X&) = delete;
 
 struct Y {};
 std::ostream& operator<<(std::ostream& os, const Y&) {return os;}
-std::ostream& operator<<(std::ostream&& os, const Y&) {return os;}
+std::ostream& operator<<(std::ostream&& os, const Y&) {throw 1;} // not used
 
 struct Z{};
 
