@@ -178,8 +178,6 @@ package body Sem_Ch9 is
                elsif Nkind (Decl) = N_Subprogram_Declaration
                  and then
                    Nkind (Specification (Decl)) = N_Procedure_Specification
-                 and then
-                   Present (Parameter_Specifications (Specification (Decl)))
                then
                   declare
                      Par_Specs : constant List_Id   :=
@@ -477,7 +475,7 @@ package body Sem_Ch9 is
                         --  Prohibit references to non-constant entities
                         --  outside the protected subprogram scope.
 
-                        if Ekind (Id) in Assignable_Kind
+                        if Is_Assignable (Id)
                           and then not
                             Scope_Within_Or_Same (Scope (Id), Sub_Id)
                           and then not
@@ -487,8 +485,8 @@ package body Sem_Ch9 is
                         then
                            if Lock_Free_Given then
                               Error_Msg_NE
-                                ("reference to global variable& not " &
-                                 "allowed", N, Id);
+                                ("reference to global variable& not allowed",
+                                 N, Id);
                               return Skip;
                            end if;
 

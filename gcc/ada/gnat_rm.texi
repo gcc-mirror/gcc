@@ -5243,14 +5243,14 @@ May reference only one protected component
 
 @item 
 May not reference nonconstant entities outside the protected subprogram
-scope.
+scope
 
 @item 
 May not contain address representation items, allocators, or quantified
-expressions.
+expressions
 
 @item 
-May not contain delay, goto, loop, or procedure-call statements.
+May not contain delay, goto, loop, or procedure-call statements
 
 @item 
 May not contain exported and imported entities
