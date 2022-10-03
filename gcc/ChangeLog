@@ -1,3 +1,22 @@
+2022-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107121
+	* tree-cfg.cc (verify_gimple_call): Fix a typo in diagnostics,
+	DEFFERED_INIT -> DEFERRED_INIT.
+
+2022-10-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* config/vxworks-driver.cc: New.
+	* config.gcc (*vxworks*): Add vxworks-driver.o in extra_gcc_objs.
+	* config/t-vxworks: Add vxworks-driver.o.
+	* config/vxworks.h (GCC_DRIVER_HOST_INITIALIZATION): New.
+
+2022-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VX_CRTBEGIN_SPEC, VX_CRTEND_SPEC): If
+	HAVE_INITFINI_ARRAY_SUPPORT, pick crtstuff objects regardless
+	of ENABLE_SHARED_LIBGCC.
+
 2022-10-01  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/or1k.cc (TARGET_HAVE_TLS): Only define if

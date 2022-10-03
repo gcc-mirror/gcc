@@ -1,3 +1,14 @@
+2022-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDE): Augment comment.  Move
+	-I options for gcc/include and gcc/include-fixed at the end
+	and make them -isystem.
+
+2022-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h: Prevent Wpragma warning for the
+	pragma diagnostics on Wstrict-prototypes.
+
 2022-09-29  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxcrtstuff.c: Improve the comment attached to the use
