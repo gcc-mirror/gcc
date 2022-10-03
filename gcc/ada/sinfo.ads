@@ -440,7 +440,7 @@ package Sinfo is
    --  documents the restriction.
 
    --  Note that most of these restrictions apply only to trees generated when
-   --  code is being generated, since they involved expander actions that
+   --  code is being generated, since they involve expander actions that
    --  destroy the tree.
 
    ----------------
@@ -528,7 +528,7 @@ package Sinfo is
    --  function.
    --
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
-   --  as source entities are marked as ignored Ghost. In additon, the marking
+   --  as source entities are marked as ignored Ghost. In addition, the marking
    --  process signals all enclosing scopes that an ignored Ghost node resides
    --  within. The compilation unit where the node resides is also added to an
    --  auxiliary table for post processing.
@@ -715,9 +715,9 @@ package Sinfo is
    --    This flag is set if the node comes directly from an explicit construct
    --    in the source. It is normally on for any nodes built by the scanner or
    --    parser from the source program, with the exception that in a few cases
-   --    the parser adds nodes to normalize the representation (in particular
+   --    the parser adds nodes to normalize the representation (in particular,
    --    a null statement is added to a package body if there is no begin/end
-   --    initialization section.
+   --    initialization section).
    --
    --    Most nodes inserted by the analyzer or expander are not considered
    --    as coming from source, so the flag is off for such nodes. In a few
