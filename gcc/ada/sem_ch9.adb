@@ -453,7 +453,7 @@ package body Sem_Ch9 is
 
                   --  Goto statements restricted
 
-                  elsif Kind = N_Goto_Statement then
+                  elsif Kind in N_Goto_Statement | N_Goto_When_Statement then
                      if Lock_Free_Given then
                         Error_Msg_N ("goto statement not allowed", N);
                         return Skip;
