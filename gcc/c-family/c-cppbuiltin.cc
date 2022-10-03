@@ -279,7 +279,7 @@ builtin_define_float_constants (const char *name_prefix,
   /* The difference between 1 and the least value greater than 1 that is
      representable in the given floating point type, b**(1-p).  */
   sprintf (name, "__%s_EPSILON__", name_prefix);
-  if (fmt->pnan < fmt->p)
+  if (fmt->pnan < fmt->p && (c_dialect_cxx () || !flag_isoc2x))
     /* This is an IBM extended double format, so 1.0 + any double is
        representable precisely.  */
       sprintf (buf, "0x1p%d", fmt->emin - fmt->p);
