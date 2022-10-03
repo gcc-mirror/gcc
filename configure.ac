@@ -418,6 +418,12 @@ AC_ARG_ENABLE(compressed_debug_sections,
   fi
 ], [enable_compressed_debug_sections=])
 
+# Select default compression algorithm.
+AC_ARG_ENABLE(default_compressed_debug_sections_algorithm,
+[AS_HELP_STRING([--enable-default-compressed-debug-sections-algorithm={zlib,zstd}],
+		[Default compression algorithm for --enable-compressed-debug-sections.])],
+[], [default_compressed_debug_sections_algorithm=])
+
 # Configure extra directories which are host specific
 
 case "${host}" in

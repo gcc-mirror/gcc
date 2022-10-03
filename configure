@@ -807,6 +807,7 @@ enable_offload_defaulted
 enable_gold
 enable_ld
 enable_compressed_debug_sections
+enable_default_compressed_debug_sections_algorithm
 enable_libquadmath
 enable_libquadmath_support
 enable_libada
@@ -1546,6 +1547,9 @@ Optional Features:
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
                           Enable compressed debug sections for gas, gold or ld
                           by default
+  --enable-default-compressed-debug-sections-algorithm={zlib,zstd}
+                          Default compression algorithm for
+                          --enable-compressed-debug-sections.
   --disable-libquadmath   do not build libquadmath directory
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
@@ -3139,6 +3143,15 @@ if test "${enable_compressed_debug_sections+set}" = set; then :
 
 else
   enable_compressed_debug_sections=
+fi
+
+
+# Select default compression algorithm.
+# Check whether --enable-default_compressed_debug_sections_algorithm was given.
+if test "${enable_default_compressed_debug_sections_algorithm+set}" = set; then :
+  enableval=$enable_default_compressed_debug_sections_algorithm;
+else
+  default_compressed_debug_sections_algorithm=
 fi
 
 
