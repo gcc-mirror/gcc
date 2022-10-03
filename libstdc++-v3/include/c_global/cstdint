@@ -37,7 +37,11 @@
 
 #include <bits/c++config.h>
 
-#if _GLIBCXX_HAVE_STDINT_H
+#if ! _GLIBCXX_HOSTED && __has_include(<stdint-gcc.h>)
+// For --disable-hosted-libstdcxx we want GCC's own stdint-gcc.h header
+// even when -ffreestanding isn't used.
+# include <stdint-gcc.h>
+#elif __has_include(<stdint.h>)
 # include <stdint.h>
 #endif
 
@@ -80,9 +84,60 @@ namespace std
   using ::uintmax_t;
   using ::uintptr_t;
 #else // !_GLIBCXX_USE_C99_STDINT_TR1
-  // Define the minimum needed for <ratio>, <chrono> etc.
+
   using intmax_t = __INTMAX_TYPE__;
   using uintmax_t = __UINTMAX_TYPE__;
+
+#ifdef __INT8_TYPE__
+  using int8_t = __INT8_TYPE__;
+#endif
+#ifdef __INT16_TYPE__
+  using int16_t = __INT16_TYPE__;
+#endif
+#ifdef __INT32_TYPE__
+  using int32_t = __INT32_TYPE__;
+#endif
+#ifdef __INT64_TYPE__
+  using int64_t = __INT64_TYPE__;
+#endif
+
+  using int_least8_t = __INT_LEAST8_TYPE__;
+  using int_least16_t = __INT_LEAST16_TYPE__;
+  using int_least32_t = __INT_LEAST32_TYPE__;
+  using int_least64_t = __INT_LEAST64_TYPE__;
+  using int_fast8_t = __INT_FAST8_TYPE__;
+  using int_fast16_t = __INT_FAST16_TYPE__;
+  using int_fast32_t = __INT_FAST32_TYPE__;
+  using int_fast64_t = __INT_FAST64_TYPE__;
+
+#ifdef __INTPTR_TYPE__
+  using intptr_t = __INTPTR_TYPE__;
+#endif
+
+#ifdef __UINT8_TYPE__
+  using uint8_t = __UINT8_TYPE__;
+#endif
+#ifdef __UINT16_TYPE__
+  using uint16_t = __UINT16_TYPE__;
+#endif
+#ifdef __UINT32_TYPE__
+  using uint32_t = __UINT32_TYPE__;
+#endif
+#ifdef __UINT64_TYPE__
+  using uint64_t = __UINT64_TYPE__;
+#endif
+  using uint_least8_t = __UINT_LEAST8_TYPE__;
+  using uint_least16_t = __UINT_LEAST16_TYPE__;
+  using uint_least32_t = __UINT_LEAST32_TYPE__;
+  using uint_least64_t = __UINT_LEAST64_TYPE__;
+  using uint_fast8_t = __UINT_FAST8_TYPE__;
+  using uint_fast16_t = __UINT_FAST16_TYPE__;
+  using uint_fast32_t = __UINT_FAST32_TYPE__;
+  using uint_fast64_t = __UINT_FAST64_TYPE__;
+#ifdef __UINTPTR_TYPE__
+  using uintptr_t = __UINTPTR_TYPE__;
+#endif
+
 #endif // _GLIBCXX_USE_C99_STDINT_TR1
 } // namespace std
 
