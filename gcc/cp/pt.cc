@@ -30029,7 +30029,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	      /* FIXME this should mean they don't compare as equivalent.  */
 	      || dependent_alias_template_spec_p (atype, nt_opaque))
 	    {
-	      tree same = finish_trait_expr (loc, CPTK_IS_SAME_AS, atype, ret);
+	      tree same = finish_trait_expr (loc, CPTK_IS_SAME, atype, ret);
 	      ci = append_constraint (ci, same);
 	    }
 

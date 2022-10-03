@@ -509,7 +509,7 @@ const struct c_common_resword c_common_reswords[] =
 #include "cp/cp-trait.def"
 #undef DEFTRAIT
   /* An alias for __is_same.  */
-  { "__is_same_as",	RID_IS_SAME_AS, D_CXXONLY },
+  { "__is_same_as",	RID_IS_SAME,	D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },

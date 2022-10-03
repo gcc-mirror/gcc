@@ -12007,7 +12007,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_POLYMORPHIC:
       return CLASS_TYPE_P (type1) && TYPE_POLYMORPHIC_P (type1);
 
-    case CPTK_IS_SAME_AS:
+    case CPTK_IS_SAME:
       return same_type_p (type1, type2);
 
     case CPTK_IS_STD_LAYOUT:
@@ -12193,7 +12193,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_CLASS:
     case CPTK_IS_ENUM:
     case CPTK_IS_UNION:
-    case CPTK_IS_SAME_AS:
+    case CPTK_IS_SAME:
       break;
 
     case CPTK_IS_LAYOUT_COMPATIBLE:
