@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Oct 04, 2022
+GNAT Reference Manual , Oct 27, 2022
 
 AdaCore
 
@@ -8407,7 +8407,7 @@ pragma Thread_Local_Storage ([Entity =>] LOCAL_NAME);
 This pragma specifies that the specified entity, which must be
 a variable declared in a library-level package, is to be marked as
 “Thread Local Storage” (@code{TLS}). On systems supporting this (which
-include Windows, Solaris, GNU/Linux, and VxWorks 6), this causes each
+include Windows, Solaris, GNU/Linux, and VxWorks), this causes each
 thread (and hence each Ada task) to see a distinct copy of the variable.
 
 The variable must not have default initialization, and if there is

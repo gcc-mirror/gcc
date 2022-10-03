@@ -6869,7 +6869,7 @@ Syntax:
 This pragma specifies that the specified entity, which must be
 a variable declared in a library-level package, is to be marked as
 "Thread Local Storage" (``TLS``). On systems supporting this (which
-include Windows, Solaris, GNU/Linux, and VxWorks 6), this causes each
+include Windows, Solaris, GNU/Linux, and VxWorks), this causes each
 thread (and hence each Ada task) to see a distinct copy of the variable.
 
 The variable must not have default initialization, and if there is
