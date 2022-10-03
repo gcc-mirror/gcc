@@ -1077,7 +1077,7 @@ jit_langhook_init (void)
 					      *gcc::jit::active_playback_ctxt);
   global_dc->set_output_format (std::move (sink));
 
-  build_common_tree_nodes (false);
+  build_common_tree_nodes (flag_signed_char);
 
   build_common_builtin_nodes ();
 

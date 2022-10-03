@@ -373,6 +373,13 @@
 /* test-setting-alignment.c: This can't be in the testcases array as it
    is target-specific.  */
 
+/* test-signed-char.c */
+#define create_code create_code_signed_char
+#define verify_code verify_code_signed_char
+#include "test-signed-char.c"
+#undef create_code
+#undef verify_code
+
 /* test-sizeof.c */
 #define create_code create_code_sizeof
 #define verify_code verify_code_sizeof
@@ -586,6 +593,9 @@ const struct testcase testcases[] = {
   {"reflection",
    create_code_reflection ,
    verify_code_reflection },
+  {"signed-char",
+   create_code_signed_char,
+   verify_code_signed_char},
   {"sizeof",
    create_code_sizeof,
    verify_code_sizeof},
