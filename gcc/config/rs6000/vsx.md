@@ -3466,8 +3466,9 @@
   [(set (match_operand:<VEC_base> 0 "memory_operand" "=m,Z,wY")
 	(vec_select:<VEC_base>
 	 (match_operand:VSX_D 1 "register_operand" "d,v,v")
-	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
+	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "n,n,n")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 0 : 1)"
   "@
    stfd%U0%X0 %1,%0
    stxsdx %x1,%y0
