@@ -1761,6 +1761,8 @@ begin_compound_stmt (unsigned int flags)
 	sk = sk_try;
       else if (flags & BCS_TRANSACTION)
 	sk = sk_transaction;
+      else if (flags & BCS_STMT_EXPR)
+	sk = sk_stmt_expr;
       r = do_pushlevel (sk);
     }
 
