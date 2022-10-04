@@ -1,3 +1,48 @@
+2022-10-03  Sergei Trofimovich  <siarheit@google.com>
+
+	* config/i386/t-i386: Add build-time dependencies against
+	i386-builtin-types.inc to i386-builtins.o, i386-expand.o,
+	i386-features.o.
+
+2022-10-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (while_ultsidi): Limit mask length using
+	operand 3.
+	* doc/md.texi (while_ult): Document new operand 3 usage.
+	* internal-fn.cc (expand_while_optab_fn): Set operand 3 when lhs_type
+	maps to a non-vector mode.
+
+2022-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107109
+	* range-op.cc (adjust_op1_for_overflow): Don't process undefined.
+
+2022-10-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vrev64q_m_<supf><mode>): Add early
+	clobber.
+	(mve_vrev64q_m_f<mode>): Likewise.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set_nonzero_bits): Do not pessimize range.
+	(range_tests_nonzero_bits): New test.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::operator==): Early bail on m_num_ranges
+	equal to 0.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::legacy_equal_p): Remove nonozero mask
+	check when comparing VR_VARYING ranges.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (struct ipa_vr_ggc_hash_traits): Do not compare
+	incompatible ranges in ipa-prop.
+
 2022-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/107121

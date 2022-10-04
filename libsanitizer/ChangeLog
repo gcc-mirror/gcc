@@ -1,3 +1,9 @@
+2022-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/105531
+	* sanitizer_common/sanitizer_procmaps_solaris.cpp: Cherry-pick
+	llvm-project revision 1cd4d63fb9ab0f04c7151911dde0d58b673823de.
+
 2022-09-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* LOCAL_PATCHES: Update.

@@ -1,3 +1,669 @@
+2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update C++20 status.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-10-03  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR libstdc++/103626
+	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc:
+	Require ET hosted.
+	* testsuite/18_support/aligned_alloc/aligned_alloc.cc: Likewise.
+	* testsuite/18_support/new_nothrow.cc: Likewise.
+	* testsuite/20_util/allocator/105975.cc: Likewise.
+	* testsuite/20_util/allocator/14176.cc: Likewise.
+	* testsuite/20_util/allocator/64135.cc: Likewise.
+	* testsuite/20_util/allocator/89510.cc: Likewise.
+	* testsuite/20_util/allocator/lwg3190.cc: Likewise.
+	* testsuite/20_util/allocator/overaligned.cc: Likewise.
+	* testsuite/20_util/allocator/rebind_c++20.cc: Likewise.
+	* testsuite/20_util/allocator/requirements/constexpr.cc:
+	Likewise.
+	* testsuite/20_util/allocator/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/allocator/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/allocator/requirements/typedefs_c++20.cc:
+	Likewise.
+	* testsuite/20_util/allocator/void.cc: Likewise.
+	* testsuite/20_util/allocator_traits/header-2.cc: Likewise.
+	* testsuite/20_util/allocator_traits/header.cc: Likewise.
+	* testsuite/20_util/allocator_traits/members/92878_92947.cc:
+	Likewise.
+	* testsuite/20_util/allocator_traits/members/pointers.cc:
+	Likewise.
+	* testsuite/20_util/allocator_traits/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/bad_function_call/cons_virtual_derivation.cc:
+	Likewise.
+	* testsuite/20_util/bind/42593.cc: Likewise.
+	* testsuite/20_util/bitset/access/dr396.cc: Likewise.
+	* testsuite/20_util/bitset/access/to_string.cc: Likewise.
+	* testsuite/20_util/bitset/cons/16020.cc: Likewise.
+	* testsuite/20_util/bitset/cons/dr1325-2.cc: Likewise.
+	* testsuite/20_util/bitset/cons/dr396.cc: Likewise.
+	* testsuite/20_util/bitset/debug/invalidation/1.cc: Likewise.
+	* testsuite/20_util/bitset/ext/15361.cc: Likewise.
+	* testsuite/20_util/bitset/operations/13838.cc: Likewise.
+	* testsuite/20_util/bitset/operations/96303.cc: Likewise.
+	* testsuite/20_util/bitset/version.cc: Likewise.
+	* testsuite/20_util/enable_shared_from_this/56383.cc: Likewise.
+	* testsuite/20_util/enable_shared_from_this/89303.cc: Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/assign.cc:
+	Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/const.cc:
+	Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/reinit.cc:
+	Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/unique_ptr.cc:
+	Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:
+	Likewise.
+	* testsuite/20_util/enable_shared_from_this/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/forward/1.cc: Likewise.
+	* testsuite/20_util/forward/1_neg.cc: Likewise.
+	* testsuite/20_util/function/1.cc: Likewise.
+	* testsuite/20_util/function/10.cc: Likewise.
+	* testsuite/20_util/function/2.cc: Likewise.
+	* testsuite/20_util/function/3.cc: Likewise.
+	* testsuite/20_util/function/4.cc: Likewise.
+	* testsuite/20_util/function/43397.cc: Likewise.
+	* testsuite/20_util/function/48541.cc: Likewise.
+	* testsuite/20_util/function/5.cc: Likewise.
+	* testsuite/20_util/function/58569.cc: Likewise.
+	* testsuite/20_util/function/6.cc: Likewise.
+	* testsuite/20_util/function/60594.cc: Likewise.
+	* testsuite/20_util/function/65760.cc: Likewise.
+	* testsuite/20_util/function/69222.cc: Likewise.
+	* testsuite/20_util/function/7.cc: Likewise.
+	* testsuite/20_util/function/77322.cc: Likewise.
+	* testsuite/20_util/function/8.cc: Likewise.
+	* testsuite/20_util/function/9.cc: Likewise.
+	* testsuite/20_util/function/91456.cc: Likewise.
+	* testsuite/20_util/function/assign/move.cc: Likewise.
+	* testsuite/20_util/function/assign/move_target.cc: Likewise.
+	* testsuite/20_util/function/cmp/cmp_neg.cc: Likewise.
+	* testsuite/20_util/function/cons/55320.cc: Likewise.
+	* testsuite/20_util/function/cons/57465.cc: Likewise.
+	* testsuite/20_util/function/cons/72820.cc: Likewise.
+	* testsuite/20_util/function/cons/addressof.cc: Likewise.
+	* testsuite/20_util/function/cons/callable.cc: Likewise.
+	* testsuite/20_util/function/cons/deduction.cc: Likewise.
+	* testsuite/20_util/function/cons/lwg2774.cc: Likewise.
+	* testsuite/20_util/function/cons/move.cc: Likewise.
+	* testsuite/20_util/function/cons/move_target.cc: Likewise.
+	* testsuite/20_util/function/cons/noexcept.cc: Likewise.
+	* testsuite/20_util/function/cons/non_copyconstructible.cc:
+	Likewise.
+	* testsuite/20_util/function/cons/refqual.cc: Likewise.
+	* testsuite/20_util/function/cons/70692.cc: Likewise.
+	* testsuite/20_util/function/cons/deduction_c++23.cc: Likewise.
+	* testsuite/20_util/function/invoke/forwarding.cc: Likewise.
+	* testsuite/20_util/function/invoke/move_only.cc: Likewise.
+	* testsuite/20_util/function/null_pointer_comparisons.cc:
+	Likewise.
+	* testsuite/20_util/function/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/function/target_no_rtti.cc: Likewise.
+	* testsuite/20_util/function_objects/83607.cc: Likewise.
+	* testsuite/20_util/function_objects/mem_fn/adl.cc: Likewise.
+	* testsuite/20_util/headers/cstdlib/functions_std.cc: Likewise.
+	* testsuite/20_util/headers/functional/types_std_c++0x.cc:
+	Likewise.
+	* testsuite/20_util/headers/memory/types_std_c++0x.cc: Likewise.
+	* testsuite/20_util/is_function/35637.cc: Likewise.
+	* testsuite/20_util/move/1.cc: Likewise.
+	* testsuite/20_util/move_only_function/call.cc: Likewise.
+	* testsuite/20_util/move_only_function/cons.cc: Likewise.
+	* testsuite/20_util/move_only_function/move.cc: Likewise.
+	* testsuite/20_util/move_only_function/version.cc: Likewise.
+	* testsuite/20_util/owner_less/cmp.cc: Likewise.
+	* testsuite/20_util/owner_less/noexcept.cc: Likewise.
+	* testsuite/20_util/owner_less/void.cc: Likewise.
+	* testsuite/20_util/pointer_safety/1.cc: Likewise.
+	* testsuite/20_util/scoped_allocator/65279.cc: Likewise.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Likewise.
+	* testsuite/20_util/scoped_allocator/construct_pair.cc:
+	Likewise.
+	* testsuite/20_util/scoped_allocator/dr2586.cc: Likewise.
+	* testsuite/20_util/scoped_allocator/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/assign/assign.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/assign/dr541.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/move.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/sfinae.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/shared_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_lvalue_neg.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_rvalue.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/atomic/1.cc: Likewise.
+	* testsuite/20_util/shared_ptr/atomic/2.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/1.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/reinterpret.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/rval.cc: Likewise.
+	* testsuite/20_util/shared_ptr/comparison/42925.cc: Likewise.
+	* testsuite/20_util/shared_ptr/comparison/86537.cc: Likewise.
+	* testsuite/20_util/shared_ptr/comparison/cmp.cc: Likewise.
+	* testsuite/20_util/shared_ptr/comparison/cmp_c++20.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/comparison/dr1401.cc: Likewise.
+	* testsuite/20_util/shared_ptr/comparison/less.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/39405.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/46910.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/51365.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/52924.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/55123.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/58659.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/58839.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/61036.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/79467.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/80229.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/alias-rval.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/alias.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/array.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/copy.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/deduction.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/default.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/lwg2802.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/lwg3548.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/move.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/nullptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/pointer.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_array.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref_1.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref_2.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/weak_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/36949.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/58594-no-rtti.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/58594.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/87278.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/92878_92947.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/99006.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr402.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr925.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/make.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/no_rtti.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/overwrite.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/private.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/single_allocation.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/single_allocation_no_rtti.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/version.cc: Likewise.
+	* testsuite/20_util/shared_ptr/dest/dest.cc: Likewise.
+	* testsuite/20_util/shared_ptr/hash/1.cc: Likewise.
+	* testsuite/20_util/shared_ptr/misc/24595.cc: Likewise.
+	* testsuite/20_util/shared_ptr/misc/42019.cc: Likewise.
+	* testsuite/20_util/shared_ptr/misc/get_deleter.cc: Likewise.
+	* testsuite/20_util/shared_ptr/misc/swap.cc: Likewise.
+	* testsuite/20_util/shared_ptr/modifiers/reset.cc: Likewise.
+	* testsuite/20_util/shared_ptr/modifiers/reset_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/modifiers/reset_sfinae.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/modifiers/swap.cc: Likewise.
+	* testsuite/20_util/shared_ptr/modifiers/swap_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/observers/array.cc: Likewise.
+	* testsuite/20_util/shared_ptr/observers/bool_conv.cc: Likewise.
+	* testsuite/20_util/shared_ptr/observers/get.cc: Likewise.
+	* testsuite/20_util/shared_ptr/observers/owner_before.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/observers/unique.cc: Likewise.
+	* testsuite/20_util/shared_ptr/observers/use_count.cc: Likewise.
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/requirements/weak_type.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/construct_at/95788.cc:
+	Likewise.
+	* testsuite/20_util/temporary_buffer.cc: Likewise.
+	* testsuite/20_util/tuple/48476.cc: Likewise.
+	* testsuite/20_util/tuple/cons/90700.cc: Likewise.
+	* testsuite/20_util/tuple/cons/96803.cc: Likewise.
+	* testsuite/20_util/tuple/cons/allocator_with_any.cc: Likewise.
+	* testsuite/20_util/tuple/cons/allocators.cc: Likewise.
+	* testsuite/20_util/tuple/cons/constexpr_allocator_arg_t.cc:
+	Likewise.
+	* testsuite/20_util/tuple/cons/explicit_construct.cc: Likewise.
+	* testsuite/20_util/tuple/p2321r2.cc: Likewise.
+	* testsuite/20_util/unique_ptr/creation/92878_92947.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/creation/array.cc: Likewise.
+	* testsuite/20_util/unique_ptr/creation/array_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/creation/constexpr.cc: Likewise.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite__neg.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/creation/single.cc: Likewise.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/92878_92947.cc: Likewise.
+	* testsuite/20_util/uses_allocator/uninitialized_construct.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+	* testsuite/20_util/weak_ptr/cons/deduction.cc: Likewise.
+	* testsuite/20_util/weak_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/lock/1.cc: Likewise.
+	* testsuite/20_util/weak_ptr/observers/owner_before.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/version.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/c_strings/char/69626.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/version.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/version.cc:
+	Likewise.
+	* testsuite/24_iterators/back_insert_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/front_insert_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/insert_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/istream_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/92285.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/cons/sentinel.cc:
+	Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/dr445.cc:
+	Likewise.
+	* testsuite/24_iterators/ostream_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/25_algorithms/constexpr_macro.cc: Likewise.
+	* testsuite/25_algorithms/equal/constrained.cc: Likewise.
+	* testsuite/25_algorithms/headers/cstdlib/functions_std.cc:
+	Likewise.
+	* testsuite/25_algorithms/inplace_merge/1.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/make_heap/movable.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test-4.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/sort/35588.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/1.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_partition/mem_check.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_partition/moveable.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_partition/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_partition/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_sort/1.cc: Likewise.
+	* testsuite/26_numerics/complex/2.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/13943.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/2190.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/60401.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/dr2192.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/dr2192_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/dr2735.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/functions_std.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cstdlib/macros.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/types_std.cc: Likewise.
+	* testsuite/26_numerics/headers/cstdlib/types_std_c++0x.cc:
+	Likewise.
+	* testsuite/26_numerics/lerp/version.cc: Likewise.
+	* testsuite/26_numerics/midpoint/version.cc: Likewise.
+	* testsuite/27_io/basic_syncbuf/2.cc: Likewise.
+	* testsuite/27_io/basic_syncstream/2.cc: Likewise.
+	* testsuite/27_io/fpos/14320-1.cc: Likewise.
+	* testsuite/27_io/fpos/14320-2.cc: Likewise.
+	* testsuite/27_io/fpos/14320-3.cc: Likewise.
+	* testsuite/27_io/fpos/14320-4.cc: Likewise.
+	* testsuite/27_io/spanstream/version.cc: Likewise.
+	* testsuite/29_atomics/atomic/lwg3220.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/51811.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/102994.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/2.cc: Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/version.cc: Likewise.
+	* testsuite/30_threads/barrier/2.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/stop_token/2.cc:
+	Likewise.
+	* testsuite/30_threads/jthread/version.cc: Likewise.
+	* testsuite/30_threads/latch/2.cc: Likewise.
+	* testsuite/30_threads/semaphore/2.cc: Likewise.
+	* testsuite/30_threads/stop_token/2.cc: Likewise.
+	* testsuite/abi/pr42230.cc: Likewise.
+	* testsuite/ext/shared_ptr/1.cc: Likewise.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: Likewise.
+	* testsuite/std/ranges/adaptors/lazy_split_neg.cc: Likewise.
+	* testsuite/std/ranges/adaptors/p1739.cc: Likewise.
+	* testsuite/std/ranges/iota/lwg3292_neg.cc: Likewise.
+	* testsuite/std/ranges/p2325.cc: Likewise.
+
+2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (bitset(const C*, size_type n, C, C))
+	[!_GLIBCXX_HOSTED]: Remove std::basic_string dependency.
+	(_M_copy_from_ptr) [!_GLIBCXX_HOSTED]: Abort instead of
+	throwing.
+
+2022-10-03  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR libstdc++/103626
+	* include/std/bitset [!_GLIBCXX_HOSTED]: Re-enable std::hash.
+	* testsuite/20_util/bitset/cons/constexpr_c++23.cc: Require ET
+	hosted.
+	* testsuite/20_util/bitset/ext/constexpr.cc: Likewise.
+
+2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103626
+	* testsuite/lib/libstdc++.exp (check_effective_target_stacktrace):
+	Also require hosted.
+	(check_effective_target_hosted): New proc.
+
+2022-10-03  Arsen Arsenović  <arsen@aarsen.me>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103626
+	* testsuite/17_intro/headers/c++1998/stdc++.cc [!__STDC_HOSTED__]:
+	Do not include C headers that aren't valid for freestanding.
+	* testsuite/17_intro/tag_type_explicit_ctor.cc [!__STDC_HOSTED__]:
+	Do not test tag types that aren't defined for freestanding.
+	* testsuite/18_support/headers/cstdlib/functions_std.cc: Do not
+	check for std::getenv and std::system for freestanding.
+	* testsuite/17_intro/using_namespace_std_exp_neg.cc [!__STDC_HOSTED__]:
+	Do not test hosted parts of the standard library.
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc [!__STDC_HOSTED__]:
+	Likewise.
+	* testsuite/20_util/allocator_traits/members/rebind_alloc.cc [!__STDC_HOSTED__]:
+	Likewise.
+	* testsuite/20_util/allocator_traits/requirements/explicit_instantiation.cc [!HOSTED]:
+	Likewise.
+	* testsuite/20_util/headers/bitset/synopsis.cc [!__STDC_HOSTED__]: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc [!__STDC_HOSTED__]:
+	Likewise.
+	* testsuite/20_util/pointer_traits/requirements/typedefs.cc [!__STDC_HOSTED__]:
+	Likewise.
+	* testsuite/20_util/tuple/cons/deduction.cc [!__STDC_HOSTED__]: Likewise.
+	* testsuite/25_algorithms/move/93872.cc [!__STDC_HOSTED__]: Likewise.
+	* testsuite/std/ranges/adaptors/100577.cc [!__STDC_HOSTED__]: Likewise.
+
+2022-10-03  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR libstdc++/106953
+	* include/Makefile.am [!_GLIBCXX_HOSTED]: Remove
+	install-freestanding-headers, unifying it with the usual
+	install-headers
+	* include/Makefile.in: Regenerate.
+
+2022-10-03  Arsen Arsenović  <arsen@aarsen.me>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103626
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/requires_hosted.h: New header.
+	* include/experimental/algorithm: Include
+	<bits/requires_hosted.h>.
+	* include/experimental/any: Likewise.
+	* include/experimental/array: Likewise.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/deque: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/filesystem: Likewise.
+	* include/experimental/forward_list: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/memory_resource: Likewise.
+	* include/experimental/net: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/numeric: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/random: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/scope: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/simd: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/timer: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/utility: Likewise.
+	* include/experimental/vector: Likewise.
+	* include/std/barrier: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/execution: Likewise.
+	* include/std/filesystem: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/future: Likewise.
+	* include/std/iomanip: Likewise.
+	* include/std/ios: Likewise.
+	* include/std/iosfwd: Likewise.
+	* include/std/iostream: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/latch: Likewise.
+	* include/std/list: Likewise.
+	* include/std/locale: Likewise.
+	* include/std/map: Likewise.
+	* include/std/memory_resource: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/ostream: Likewise.
+	* include/std/queue: Likewise.
+	* include/std/random: Likewise.
+	* include/std/regex: Likewise.
+	* include/std/semaphore: Likewise.
+	* include/std/set: Likewise.
+	* include/std/shared_mutex: Likewise.
+	* include/std/spanstream: Likewise.
+	* include/std/sstream: Likewise.
+	* include/std/stack: Likewise.
+	* include/std/stacktrace: Likewise.
+	* include/std/stop_token: Likewise.
+	* include/std/streambuf: Likewise.
+	* include/std/string: Likewise.
+	* include/std/syncstream: Likewise.
+	* include/std/system_error: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/valarray: Likewise.
+	* include/std/vector: Likewise.
+	* include/tr1/array: Likewise.
+	* include/tr1/ccomplex: Likewise.
+	* include/tr1/cctype: Likewise.
+	* include/tr1/cfenv: Likewise.
+	* include/tr1/cfloat: Likewise.
+	* include/tr1/cinttypes: Likewise.
+	* include/tr1/climits: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/complex: Likewise.
+	* include/tr1/complex.h: Likewise.
+	* include/tr1/cstdarg: Likewise.
+	* include/tr1/cstdbool: Likewise.
+	* include/tr1/cstdint: Likewise.
+	* include/tr1/cstdio: Likewise.
+	* include/tr1/cstdlib: Likewise.
+	* include/tr1/ctgmath: Likewise.
+	* include/tr1/ctime: Likewise.
+	* include/tr1/ctype.h: Likewise.
+	* include/tr1/cwchar: Likewise.
+	* include/tr1/cwctype: Likewise.
+	* include/tr1/fenv.h: Likewise.
+	* include/tr1/float.h: Likewise.
+	* include/tr1/functional: Likewise.
+	* include/tr1/inttypes.h: Likewise.
+	* include/tr1/limits.h: Likewise.
+	* include/tr1/math.h: Likewise.
+	* include/tr1/memory: Likewise.
+	* include/tr1/random: Likewise.
+	* include/tr1/regex: Likewise.
+	* include/tr1/stdarg.h: Likewise.
+	* include/tr1/stdbool.h: Likewise.
+	* include/tr1/stdint.h: Likewise.
+	* include/tr1/stdio.h: Likewise.
+	* include/tr1/stdlib.h: Likewise.
+	* include/tr1/tgmath.h: Likewise.
+	* include/tr1/tuple: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/unordered_map: Likewise.
+	* include/tr1/unordered_set: Likewise.
+	* include/tr1/utility: Likewise.
+	* include/tr1/wchar.h: Likewise.
+	* include/tr1/wctype.h: Likewise.
+	* include/c_global/cmath: Likewise.
+	* include/ext/algorithm: Include <bits/requires_hosted.h>.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/cmath: Likewise.
+	* include/ext/codecvt_specializations.h: Likewise.
+	* include/ext/debug_allocator.h: Likewise.
+	* include/ext/enc_filebuf.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* include/ext/functional: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/memory: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/numeric: Likewise.
+	* include/ext/pod_char_traits.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/random: Likewise.
+	* include/ext/random.tcc: Likewise.
+	* include/ext/rb_tree: Likewise.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/ext/slist: Likewise.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/ext/stdio_filebuf.h: Likewise.
+	* include/ext/stdio_sync_filebuf.h: Likewise.
+	* include/ext/string_conversions.h: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/ext/vstring.tcc: Likewise.
+	* include/ext/vstring_fwd.h: Likewise.
+	* include/ext/vstring_util.h: Likewise.
+	* include/std/charconv: Likewise.
+	(__cpp_lib_to_chars): Do not define for freestanding.
+	* include/std/version: Adjust which macros get defined in
+	freestanding.
+	* include/ext/pointer.h [!_GLIBCXX_HOSTED]: Omit iostream
+	functionality from freestanding.
+	* include/std/algorithm [!_GLIBCXX_HOSTED]: Omit PSTL algos.
+	* include/std/memory [!_GLIBCXX_HOSTED]: Omit
+	<bits/stl_tempbuf.h> in freestanding
+	* include/bits/algorithmfwd.h [!_GLIBCXX_HOSTED]: Omit leftover
+	random_shuffle and stable_partition definition.
+	* include/bits/stl_algo.h [!_GLIBCXX_HOSTED]: Omit
+	random_shuffle and stable_partition from freestanding.
+	* include/bits/ranges_algo.h [!_GLIBCXX_HOSTED]: Omit
+	stable_partition from freestanding.
+	* include/bits/concept_check.h: Remove needless HOSTED check.
+	* include/std/iterator: Include <bits/ranges_base.h>.
+	* include/std/numeric (__cpp_lib_parallel_algorithms): Do not
+	define for freestanding.
+	* include/std/functional (__cpp_lib_boyer_moore_searcher):
+	Likewise.
+	* testsuite/lib/prune.exp: Match error for hosted-only libstdc++
+	tests.
+
+2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
+	    Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/precompiled/extc++.h [!_GLIBCXX_HOSTED]: Do not
+	include headers that aren't valid for freestanding.
+	* include/precompiled/stdc++.h [!_GLIBCXX_HOSTED]: Likewise.
+
+2022-10-03  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac: Remove any lines that unconditionally include
+	<stdio.h> from ac_includes_default, when running Autoconf <2.70.
+	* configure: Regenerate.
+
+2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103626
+	* acinclude.m4 (GLIBCXX_ENABLE_HOSTED): Define _GLIBCXX_HOSTED
+	to __STDC_HOSTED__ for non-freestanding installations.
+	* configure: Regenerate.
+	* include/Makefile.am (${host_builddir}/c++config.h): Adjust
+	grep pattern.
+	* include/Makefile.in: Regenerate.
+	* testsuite/lib/libstdc++.exp (v3-build_support): Use
+	-fno-freestanding.
+	* testsuite/libstdc++-abi/abi.exp: Likewise.
+
+2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ostream/inserters_other/char/6.cc:
+	Change body of unused operator<< overload to throw if called.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/6.cc:
+	Likewise.
+
+2022-10-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (Printer.add_version): Do not add version
+	namespace for __cxx11 symbols.
+	(add_one_template_type_printer): Likewise.
+	(add_one_type_printer): Likewise.
+	(FilteringTypePrinter._recognizer.recognize): Add a workaround for std::string & al
+	ambiguous typedef matching both std:: and std::__cxx11:: symbols.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Remove obsolete
+	\#define _GLIBCXX_USE_CXX11_ABI 0.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise. Adapt test to accept
+	std::__cxx11::list.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Likewise and remove xfail for c++20
+	and debug mode.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+
 2022-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/bitset/access/to_ulong.cc: Construct bitset

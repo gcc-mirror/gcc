@@ -1,3 +1,30 @@
+2022-10-03  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.target/arm/cmse/cmse-15.c: Align with -Os improvements.
+
+2022-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/stmtexpr24.C: New test.
+
+2022-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr107109.c: New.
+
+2022-10-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vrev64q_m_s16-clobber.c: New test.
+
+2022-10-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-7.c, gcc.dg/c2x-float-12.c: New tests.
+
+2022-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/107062
+	* gfortran.dg/ieee/fma_1.f90: Fix test.
+	* gfortran.dg/ieee/modes_1.f90: Fix test.
+
 2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100029

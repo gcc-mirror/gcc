@@ -1,3 +1,28 @@
+2022-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (BCS_STMT_EXPR): New enumerator.
+	* name-lookup.h (enum scope_kind): Add sk_stmt_expr.
+	* name-lookup.cc (begin_scope): Handle sk_stmt_expr like sk_block.
+	* semantics.cc (begin_compound_stmt): For BCS_STMT_EXPR use
+	sk_stmt_expr.
+	* parser.cc (cp_parser_statement_expr): Use BCS_STMT_EXPR instead of
+	BCS_NORMAL.
+	* decl.cc (struct named_label_entry): Add in_stmt_expr.
+	(poplevel_named_label_1): Handle sk_stmt_expr.
+	(check_previous_goto_1): Diagnose entering of statement expression.
+	(check_goto): Likewise.
+
+2022-10-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Use CPTK_IS_SAME instead
+	of CPTK_IS_SAME_AS.
+	* cp-trait.def (IS_SAME_AS): Rename to ...
+	(IS_SAME): ... this.
+	* pt.cc (alias_ctad_tweaks): Use CPTK_IS_SAME instead of
+	CPTK_IS_SAME_AS.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
 2022-10-01  Patrick Palka  <ppalka@redhat.com>
 
 	* semantics.cc (trait_expr_value): Make cp_trait_kind switch

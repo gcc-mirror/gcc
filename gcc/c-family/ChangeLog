@@ -1,3 +1,13 @@
+2022-10-03  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use RID_IS_SAME instead of
+	RID_IS_SAME_AS.
+
+2022-10-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not
+	special-case __*_EPSILON__ setting for IBM long double for C2x.
+
 2022-09-30  Patrick Palka  <ppalka@redhat.com>
 
 	* c-common.cc (c_common_reswords): Use cp/cp-trait.def to handle
