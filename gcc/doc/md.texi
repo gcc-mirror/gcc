@@ -3267,9 +3267,6 @@ Like @code{b}, if @option{-mpowerpc64} is used; otherwise, @code{NO_REGS}.
 @item wB
 Signed 5-bit constant integer that can be loaded into an Altivec register.
 
-@item wD
-Int constant that is the element number of the 64-bit scalar in a vector.
-
 @item wE
 Vector constant that can be loaded with the XXSPLTIB instruction.
 
