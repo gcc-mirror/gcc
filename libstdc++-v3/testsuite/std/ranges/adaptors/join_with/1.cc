@@ -3,8 +3,7 @@
 
 #include <ranges>
 #include <algorithm>
-#include <sstream>
-#include <string_view>
+#include <string>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -73,7 +72,10 @@ test03()
   return true;
 }
 
-constexpr bool
+#if _GLIBCXX_USE_CXX11_ABI
+constexpr
+#endif
+bool
 test04()
 {
   std::string rs[] = {"a", "", "b", "", "c"};
@@ -93,5 +95,9 @@ main()
   static_assert(test01());
   static_assert(test02());
   static_assert(test03());
+#if _GLIBCXX_USE_CXX11_ABI
   static_assert(test04());
+#else
+  VERIFY(test04());
+#endif
 }
