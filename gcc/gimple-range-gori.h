@@ -153,6 +153,8 @@ private:
 //
 // The remaining routines are internal use only.
 
+class value_relation;
+
 class gori_compute : public gori_map
 {
 public:
@@ -164,20 +166,27 @@ public:
   bool has_edge_range_p (tree name, edge e);
   void dump (FILE *f);
 private:
+  bool refine_using_relation (tree op1, vrange &op1_range,
+			      tree op2, vrange &op2_range,
+			      fur_source &src, relation_kind k);
   bool may_recompute_p (tree name, edge e);
   bool may_recompute_p (tree name, basic_block bb = NULL);
   bool compute_operand_range (vrange &r, gimple *stmt, const vrange &lhs,
-			      tree name, class fur_source &src);
+			      tree name, class fur_source &src,
+			      value_relation *rel = NULL);
   bool compute_operand_range_switch (vrange &r, gswitch *s, const vrange &lhs,
 				     tree name, fur_source &src);
   bool compute_operand1_range (vrange &r, gimple_range_op_handler &handler,
-			       const vrange &lhs, tree name, fur_source &src);
+			       const vrange &lhs, tree name, fur_source &src,
+			       value_relation *rel = NULL);
   bool compute_operand2_range (vrange &r, gimple_range_op_handler &handler,
-			       const vrange &lhs, tree name, fur_source &src);
+			       const vrange &lhs, tree name, fur_source &src,
+			       value_relation *rel = NULL);
   bool compute_operand1_and_operand2_range (vrange &r,
 					    gimple_range_op_handler &handler,
 					    const vrange &lhs, tree name,
-					    fur_source &src);
+					    fur_source &src,
+					    value_relation *rel = NULL);
   void compute_logical_operands (vrange &true_range, vrange &false_range,
 				 gimple_range_op_handler &handler,
 				 const irange &lhs, tree name, fur_source &src,

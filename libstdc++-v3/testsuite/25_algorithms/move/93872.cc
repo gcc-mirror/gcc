@@ -18,6 +18,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
+#include <iterator>
 #include <algorithm>
 #include <functional>
 

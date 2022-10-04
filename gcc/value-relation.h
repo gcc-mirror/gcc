@@ -78,6 +78,8 @@ relation_kind relation_union (relation_kind r1, relation_kind r2);
 relation_kind relation_intersect (relation_kind r1, relation_kind r2);
 relation_kind relation_negate (relation_kind r);
 relation_kind relation_swap (relation_kind r);
+inline bool relation_lt_le_gt_ge_p (relation_kind r)
+				    { return (r >= VREL_LT && r <= VREL_GE); }
 void print_relation (FILE *f, relation_kind rel);
 
 class relation_oracle
@@ -256,4 +258,61 @@ private:
   bitmap_obstack m_bitmaps;
   struct obstack m_chain_obstack;
 };
+
+// The value-relation class is used to encapsulate the represention of an
+// individual relation between 2 ssa-names, and to facilitate operating on
+// the relation.
+
+class value_relation
+{
+public:
+  value_relation ();
+  value_relation (relation_kind kind, tree n1, tree n2);
+  void set_relation (relation_kind kind, tree n1, tree n2);
+
+  inline relation_kind kind () const { return related; }
+  inline tree op1 () const { return name1; }
+  inline tree op2 () const { return name2; }
+
+  bool union_ (value_relation &p);
+  bool intersect (value_relation &p);
+  void negate ();
+  bool apply_transitive (const value_relation &rel);
+
+  void dump (FILE *f) const;
+private:
+  relation_kind related;
+  tree name1, name2;
+};
+
+// Set relation R between ssa_name N1 and N2.
+
+inline void
+value_relation::set_relation (relation_kind r, tree n1, tree n2)
+{
+  gcc_checking_assert (TREE_CODE (n1) == SSA_NAME
+		       && TREE_CODE (n2) == SSA_NAME);
+  related = r;
+  name1 = n1;
+  name2 = n2;
+}
+
+// Default constructor.
+
+inline
+value_relation::value_relation ()
+{
+  related = VREL_VARYING;
+  name1 = NULL_TREE;
+  name2 = NULL_TREE;
+}
+
+// Constructor for relation R between SSA version N1 nd N2.
+
+inline
+value_relation::value_relation (relation_kind kind, tree n1, tree n2)
+{
+  set_relation (kind, n1, n2);
+}
+
 #endif  /* GCC_VALUE_RELATION_H */

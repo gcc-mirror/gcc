@@ -1675,18 +1675,22 @@ c_parser_translation_unit (c_parser *parser)
     if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node)
       error ("storage size of %q+D isn%'t known", decl);
 
-  if (current_omp_declare_target_attribute)
+  if (vec_safe_length (current_omp_declare_target_attribute))
     {
+      c_omp_declare_target_attr
+	a = current_omp_declare_target_attribute->pop ();
       if (!errorcount)
-        error ("%<#pragma omp declare target%> without corresponding "
-	       "%<#pragma omp end declare target%>");
-      current_omp_declare_target_attribute = 0;
+	error ("%qs without corresponding %qs",
+	       a.device_type >= 0 ? "#pragma omp begin declare target"
+				  : "#pragma omp declare target",
+	       "#pragma omp end declare target");
+      vec_safe_truncate (current_omp_declare_target_attribute, 0);
     }
   if (current_omp_begin_assumes)
     {
       if (!errorcount)
-	error ("%<#pragma omp begin assumes%> without corresponding "
-	       "%<#pragma omp end assumes%>");
+	error ("%qs without corresponding %qs",
+	       "#pragma omp begin assumes", "#pragma omp end assumes");
       current_omp_begin_assumes = 0;
     }
 }
@@ -16818,8 +16822,8 @@ c_parser_omp_clause_device_type (c_parser *parser, tree list)
   else
     goto invalid_kind;
 
-  /* check_no_duplicate_clause (list, OMP_CLAUSE_DEVICE_TYPE,
-				"device_type");  */
+  check_no_duplicate_clause (list, OMP_CLAUSE_DEVICE_TYPE,
+			     "device_type");
   c_parser_consume_token (parser);
   parens.skip_until_found_close (parser);
   c = build_omp_clause (clause_loc, OMP_CLAUSE_DEVICE_TYPE);
@@ -22351,7 +22355,8 @@ c_parser_omp_declare_target (c_parser *parser)
   else
     {
       c_parser_skip_to_pragma_eol (parser);
-      current_omp_declare_target_attribute++;
+      c_omp_declare_target_attr attr = { -1 };
+      vec_safe_push (current_omp_declare_target_attribute, attr);
       return;
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
@@ -22429,12 +22434,17 @@ c_parser_omp_declare_target (c_parser *parser)
 	}
     }
   if (device_type && only_device_type)
-    warning_at (OMP_CLAUSE_LOCATION (clauses), 0,
-		"directive with only %<device_type%> clauses ignored");
+    error_at (OMP_CLAUSE_LOCATION (clauses),
+	      "directive with only %<device_type%> clause");
 }
 
 /* OpenMP 5.1
-   #pragma omp begin assumes clauses[optseq] new-line  */
+   #pragma omp begin assumes clauses[optseq] new-line
+
+   #pragma omp begin declare target clauses[optseq] new-line  */
+
+#define OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK			\
+	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)
 
 static void
 c_parser_omp_begin (c_parser *parser)
@@ -22443,7 +22453,33 @@ c_parser_omp_begin (c_parser *parser)
   c_parser_consume_pragma (parser);
   if (c_parser_next_token_is (parser, CPP_NAME))
     p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
-  if (strcmp (p, "assumes") == 0)
+  if (strcmp (p, "declare") == 0)
+    {
+      c_parser_consume_token (parser);
+      p = "";
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (strcmp (p, "target") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  tree clauses
+	    = c_parser_omp_all_clauses (parser,
+					OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK,
+					"#pragma omp begin declare target");
+	  int device_type = 0;
+	  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
+	      device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+	  c_omp_declare_target_attr attr = { device_type };
+	  vec_safe_push (current_omp_declare_target_attribute, attr);
+	}
+      else
+	{
+	  c_parser_error (parser, "expected %<target%>");
+	  c_parser_skip_to_pragma_eol (parser);
+	}
+    }
+  else if (strcmp (p, "assumes") == 0)
     {
       c_parser_consume_token (parser);
       c_parser_omp_assumption_clauses (parser, false);
@@ -22451,7 +22487,7 @@ c_parser_omp_begin (c_parser *parser)
     }
   else
     {
-      c_parser_error (parser, "expected %<assumes%>");
+      c_parser_error (parser, "expected %<declare target%> or %<assumes%>");
       c_parser_skip_to_pragma_eol (parser);
     }
 }
@@ -22484,19 +22520,20 @@ c_parser_omp_end (c_parser *parser)
 	  return;
 	}
       c_parser_skip_to_pragma_eol (parser);
-      if (!current_omp_declare_target_attribute)
+      if (!vec_safe_length (current_omp_declare_target_attribute))
 	error_at (loc, "%<#pragma omp end declare target%> without "
-		       "corresponding %<#pragma omp declare target%>");
+		       "corresponding %<#pragma omp declare target%> or "
+		       "%<#pragma omp begin declare target%>");
       else
-	current_omp_declare_target_attribute--;
+	current_omp_declare_target_attribute->pop ();
     }
   else if (strcmp (p, "assumes") == 0)
     {
       c_parser_consume_token (parser);
       c_parser_skip_to_pragma_eol (parser);
       if (!current_omp_begin_assumes)
-	error_at (loc, "%<#pragma omp end assumes%> without "
-		       "corresponding %<#pragma omp begin assumes%>");
+	error_at (loc, "%qs without corresponding %qs",
+		  "#pragma omp end assumes", "#pragma omp begin assumes");
       else
 	current_omp_begin_assumes--;
     }

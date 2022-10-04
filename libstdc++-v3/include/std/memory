@@ -63,10 +63,10 @@
 #include <bits/memoryfwd.h>
 #if _GLIBCXX_HOSTED
 # include <bits/allocator.h>
+# include <bits/stl_tempbuf.h>
 #endif
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
-#include <bits/stl_tempbuf.h>
 #include <bits/stl_raw_storage_iter.h>
 
 #if __cplusplus >= 201103L

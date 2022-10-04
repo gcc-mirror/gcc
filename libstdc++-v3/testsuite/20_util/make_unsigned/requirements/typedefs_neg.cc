@@ -20,9 +20,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_character.h>
 
 enum test_enum { first_selection };
+struct pod_class { };
 
 void test01()
 {
@@ -31,7 +31,7 @@ void test01()
   // Negative tests.
   typedef make_unsigned<bool>::type     	test1_type;
 
-  typedef make_unsigned<__gnu_test::pod_uint>::type     	test2_type;
+  typedef make_unsigned<pod_class>::type     	test2_type;
 
   typedef make_unsigned<int[4]>::type     test3_type;
 

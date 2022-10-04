@@ -8065,8 +8065,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       if (TREE_CODE (t) == TARGET_EXPR
 	  && TARGET_EXPR_INITIAL (t) == r)
 	return t;
-      else if (TREE_CODE (t) == CONSTRUCTOR)
-	;
+      else if (TREE_CODE (t) == CONSTRUCTOR || TREE_CODE (t) == CALL_EXPR)
+	/* Don't add a TARGET_EXPR if our argument didn't have one.  */;
       else if (TREE_CODE (t) == TARGET_EXPR && TARGET_EXPR_CLEANUP (t))
 	r = get_target_expr (r);
       else
@@ -8892,7 +8892,10 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       {
         tree from = TREE_OPERAND (t, 0);
 	if (location_wrapper_p (t))
-	  return (RECUR (from, want_rval));
+	  {
+	    iloc_sentinel ils = loc;
+	    return (RECUR (from, want_rval));
+	  }
 	if (INDIRECT_TYPE_P (TREE_TYPE (t)))
 	  {
 	    STRIP_ANY_LOCATION_WRAPPER (from);
@@ -9348,7 +9351,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		   (tmp, /*constexpr_context_p=*/true, flags))
 	    return false;
 	}
-      return RECUR (tmp, want_rval);
+      return RECUR (DECL_INITIAL (tmp), want_rval);
 
     case TRY_FINALLY_EXPR:
       return (RECUR (TREE_OPERAND (t, 0), want_rval)

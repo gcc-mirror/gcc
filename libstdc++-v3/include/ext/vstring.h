@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif

@@ -1,5 +1,8 @@
 // { dg-do compile { target c++11 } }
 
+// Math-related cstdlib bits are not freestanding.
+// { dg-require-effective-target hosted }
+
 // Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

@@ -1,3 +1,24 @@
+2022-09-29  Ronan Desplanques  <desplanques@adacore.com>
+
+	* einfo.ads: remove documentation duplicate
+
+2022-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* contracts.adb (Build_Subprogram_Contract_Wrapper): Put back the
+	extended return statement if the result type is built-in-place.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Also expect an
+	extended return statement.
+
+2022-09-29  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb
+	(Expand_Assign_Array_Loop_Or_Bitfield): Make the checks for
+	volatile and independent objects more precise.
+
+2022-09-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Collect_Visible_States): Ignore package renamings.
+
 2022-09-26  Ghjuvan Lacambre  <lacambre@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_attributes.rst: Rename Valid_Image.

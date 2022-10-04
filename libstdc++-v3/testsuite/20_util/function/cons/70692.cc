@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
 // PR libstdc++/70692
 // No warning when function<const int&(...)> binds a reference to a temporary
 #include <functional>

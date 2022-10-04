@@ -4394,6 +4394,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
     }
 
+  /* from_array doesn't apply to initialization from CONSTRUCTOR.  */
+  if (init && TREE_CODE (init) == CONSTRUCTOR)
+    from_array = 0;
+
   /* If we have a braced-init-list or string constant, make sure that the array
      is big enough for all the initializers.  */
   bool length_check = (init
@@ -4493,7 +4497,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   /* If initializing one array from another, initialize element by
      element.  We rely upon the below calls to do the argument
      checking.  Evaluate the initializer before entering the try block.  */
-  if (from_array && init && TREE_CODE (init) != CONSTRUCTOR)
+  if (from_array)
     {
       if (lvalue_kind (init) & clk_rvalueref)
 	xvalue = true;

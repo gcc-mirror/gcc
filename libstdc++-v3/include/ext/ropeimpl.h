@@ -1227,6 +1227,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__result = _S_concat(__forest[__i], __result);
 		__forest[__i]->_M_unref_nonnil();
 #if !defined(__GC) && __cpp_exceptions
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 		__forest[__i] = 0;
 #endif
 	      }

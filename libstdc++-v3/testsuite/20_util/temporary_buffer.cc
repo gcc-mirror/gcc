@@ -19,6 +19,8 @@
 
 // 20.4.3 temporary buffers
 
+// { dg-require-effective-target hosted }
+
 #include <memory>
 #include <testsuite_hooks.h>
 

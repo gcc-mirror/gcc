@@ -29,6 +29,8 @@
 #ifndef _EXT_ENC_FILEBUF_H
 #define _EXT_ENC_FILEBUF_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <fstream>
 #include <locale>
 #include <ext/codecvt_specializations.h>

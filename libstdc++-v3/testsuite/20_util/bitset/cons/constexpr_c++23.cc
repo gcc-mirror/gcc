@@ -1,5 +1,7 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
+// This test relies on std::string.
+// { dg-require-effective-target hosted }
 
 #include <bitset>
 

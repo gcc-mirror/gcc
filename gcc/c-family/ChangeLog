@@ -1,3 +1,31 @@
+2022-10-03  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use RID_IS_SAME instead of
+	RID_IS_SAME_AS.
+
+2022-10-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not
+	special-case __*_EPSILON__ setting for IBM long double for C2x.
+
+2022-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use cp/cp-trait.def to handle
+	C++ traits.
+	* c-common.h (enum rid): Likewise.
+
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.cc (c_common_has_attribute): Handle noreturn attribute for
+	C.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Add __remove_cv,
+	__remove_reference and __remove_cvref.
+	* c-common.h (enum rid): Add RID_REMOVE_CV, RID_REMOVE_REFERENCE
+	and RID_REMOVE_CVREF.
+
 2022-09-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101165

@@ -370,6 +370,55 @@ proc check_weak_override_available { } {
     return [check_weak_available]
 }
 
+# Return 1 if VMA is equal to LMA for the .data section, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_vma_equals_lma { } {
+    global tool
+
+    return [check_cached_effective_target vma_equals_lma {
+	set src vma_equals_lma[pid].c
+	set exe vma_equals_lma[pid].exe
+	verbose "check_effective_target_vma_equals_lma  compiling testfile $src" 2
+	set f [open $src "w"]
+	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif\n"
+	puts $f "int foo = 42; void main() {}"
+	close $f
+	set lines [${tool}_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error messages
+
+            set objdump_name [find_binutils_prog objdump]
+            set output [remote_exec host "$objdump_name" "--section-headers --section=.data $exe"]
+            set output [lindex $output 1]
+
+            remote_file build delete $exe
+
+            # Example output of objdump:
+            #vma_equals_lma9059.exe:     file format elf32-littlearm
+            #
+            #Sections:
+            #Idx Name          Size      VMA       LMA       File off  Algn
+            #  6 .data         00000558  20000000  08002658  00020000  2**3
+            #                  CONTENTS, ALLOC, LOAD, DATA
+
+            # Capture LMA and VMA columns for .data section
+            if ![ regexp {\d*\d+\s+\.data\s+\d+\s+(\d+)\s+(\d+)} $output dummy vma lma ] {
+                verbose "Could not parse objdump output" 2
+                return 0
+            } else {
+                return [string equal $vma $lma]
+            }
+	} else {
+            remote_file build delete $exe
+            verbose "Could not determine if VMA is equal to LMA. Assuming not equal." 2
+            return 0
+	}
+    }]
+}
+
 # The "noinit" attribute is only supported by some targets.
 # This proc returns 1 if it's supported, 0 if it's not.
 
@@ -474,6 +523,16 @@ proc check_effective_target_alias { } {
 	return 0
     } else {
 	return 1
+    }
+}
+
+# Returns 1 if the target uses the ELF object format, 0 otherwise.
+
+proc check_effective_target_elf { } {
+    if { [gcc_target_object_format] == "elf" } {
+	return 1;
+    } else {
+	return 0;
     }
 }
 
@@ -8251,6 +8310,14 @@ proc check_effective_target_vect_long_mult { } {
 
     verbose "check_effective_target_vect_long_mult: returning $answer" 2
     return $answer
+}
+
+# Return 1 if the target supports vector int modulus, 0 otherwise.
+
+proc check_effective_target_vect_int_mod { } {
+    return [check_cached_effective_target_indexed vect_int_mod {
+      expr { [istarget powerpc*-*-*]
+	     && [check_effective_target_has_arch_pwr10] }}]
 }
 
 # Return 1 if the target supports vector even/odd elements extraction, 0 otherwise.

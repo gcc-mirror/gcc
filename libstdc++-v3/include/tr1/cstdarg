@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_CSTDARG
 #define _GLIBCXX_TR1_CSTDARG 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <cstdarg>
 
 #endif // _GLIBCXX_TR1_CSTDARG

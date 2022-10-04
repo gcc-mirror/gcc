@@ -1,4 +1,6 @@
 // { dg-do compile }
+// { dg-require-effective-target hosted }
+
 // 2001-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001-2022 Free Software Foundation, Inc.

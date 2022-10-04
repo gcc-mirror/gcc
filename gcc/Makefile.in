@@ -2661,6 +2661,7 @@ s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 
 GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
+  $(OPTIONS_H_EXTRA) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
   $(srcdir)/wide-int.h $(srcdir)/alias.h \
   $(srcdir)/coverage.cc  $(srcdir)/rtl.h \

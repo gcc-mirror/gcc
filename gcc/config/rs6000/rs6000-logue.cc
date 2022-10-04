@@ -4009,11 +4009,43 @@ rs6000_output_function_prologue (FILE *file)
 	  fprintf (file, "\tadd 2,2,12\n");
 	}
 
+      unsigned short patch_area_size = crtl->patch_area_size;
+      unsigned short patch_area_entry = crtl->patch_area_entry;
+      /* Need to emit the patching area.  */
+      if (patch_area_size > 0)
+	{
+	  cfun->machine->global_entry_emitted = true;
+	  /* As ELFv2 ABI shows, the allowable bytes between the global
+	     and local entry points are 0, 4, 8, 16, 32 and 64 when
+	     there is a local entry point.  Considering there are two
+	     non-prefixed instructions for global entry point prologue
+	     (8 bytes), the count for patchable nops before local entry
+	     point would be 2, 6 and 14.  It's possible to support those
+	     other counts of nops by not making a local entry point, but
+	     we don't have clear use cases for them, so leave them
+	     unsupported for now.  */
+	  if (patch_area_entry > 0)
+	    {
+	      if (patch_area_entry != 2
+		  && patch_area_entry != 6
+		  && patch_area_entry != 14)
+		error ("unsupported number of nops before function entry (%u)",
+		       patch_area_entry);
+	      rs6000_print_patchable_function_entry (file, patch_area_entry,
+						     true);
+	      patch_area_size -= patch_area_entry;
+	    }
+	}
+
       fputs ("\t.localentry\t", file);
       assemble_name (file, name);
       fputs (",.-", file);
       assemble_name (file, name);
       fputs ("\n", file);
+      /* Emit the nops after local entry.  */
+      if (patch_area_size > 0)
+	rs6000_print_patchable_function_entry (file, patch_area_size,
+					       patch_area_entry == 0);
     }
 
   else if (rs6000_pcrel_p ())

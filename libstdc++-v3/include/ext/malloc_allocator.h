@@ -29,6 +29,8 @@
 #ifndef _MALLOC_ALLOCATOR_H
 #define _MALLOC_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // malloc
+
 #include <cstdlib>
 #include <cstddef>
 #include <new>

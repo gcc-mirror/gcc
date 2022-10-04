@@ -1188,6 +1188,7 @@ See RS/6000 and PowerPC Options.
 -mbig-endian  -mlittle-endian @gol
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset}}
+-mcsr-check -mno-csr-check @gol
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -16846,9 +16847,13 @@ the area size or to remove it completely on a single function.
 If @code{N=0}, no pad location is recorded.
 
 The NOP instructions are inserted at---and maybe before, depending on
-@var{M}---the function entry address, even before the prologue.
+@var{M}---the function entry address, even before the prologue.  On
+PowerPC with the ELFv2 ABI, for a function with dual entry points,
+the local entry point is this function entry address.
 
-The maximum value of @var{N} and @var{M} is 65535.
+The maximum value of @var{N} and @var{M} is 65535.  On PowerPC with the
+ELFv2 ABI, for a function with dual entry points, the supported values
+for @var{M} are 0, 2, 6 and 14.
 @end table
 
 
@@ -28558,6 +28563,11 @@ linker relaxations.
 @opindex mriscv-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
+
+@item -mcsr-check
+@itemx -mno-csr-check
+@opindex mcsr-check
+Enables or disables the CSR checking.
 
 @item -malign-data=@var{type}
 @opindex malign-data

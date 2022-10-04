@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Type printers only recognize the old std::string for now.
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <string>
 #include <deque>
 #include <bitset>
@@ -65,7 +62,7 @@ main()
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
-// { dg-final { regexp-test lst {std::(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
+// { dg-final { regexp-test lst {std::(__cxx11::)?(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
 
   std::list<int>::iterator lstiter0;
 // { dg-final { note-test lstiter0 {non-dereferenceable iterator for std::list} } }

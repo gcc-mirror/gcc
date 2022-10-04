@@ -5402,6 +5402,11 @@ build_conditional_expr (const op_location_t &loc,
 	  arg1 = cp_stabilize_reference (arg1);
 	  arg2 = arg1 = prevent_lifetime_extension (arg1);
 	}
+      else if (TREE_CODE (arg1) == TARGET_EXPR)
+	/* arg1 can't be a prvalue result of the conditional
+	   expression, since it needs to be materialized for the
+	   conversion to bool, so treat it as an xvalue in arg2.  */
+	arg2 = move (TARGET_EXPR_SLOT (arg1));
       else
 	arg2 = arg1 = cp_save_expr (arg1);
     }
@@ -6009,7 +6014,13 @@ build_conditional_expr (const op_location_t &loc,
 	 but now we sometimes wrap them in NOP_EXPRs so the test would
 	 fail.  */
       if (CLASS_TYPE_P (TREE_TYPE (result)))
-	result = get_target_expr (result, complain);
+	{
+	  result = get_target_expr (result, complain);
+	  /* Tell gimplify_modify_expr_rhs not to strip this in
+	     assignment context: we want both arms to initialize
+	     the same temporary.  */
+	  TARGET_EXPR_NO_ELIDE (result) = true;
+	}
       /* If this expression is an rvalue, but might be mistaken for an
 	 lvalue, we must add a NON_LVALUE_EXPR.  */
       result = rvalue (result);

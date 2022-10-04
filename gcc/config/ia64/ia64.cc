@@ -11225,6 +11225,9 @@ ia64_mangle_type (const_tree type)
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
     return NULL;
 
+  if (type == float128_type_node || type == float64x_type_node)
+    return NULL;
+
   /* On HP-UX, "long double" is mangled as "e" so __float128 is
      mangled as "e".  */
   if (!TARGET_HPUX && TYPE_MODE (type) == TFmode)

@@ -10263,6 +10263,17 @@ case "${target}" in
   mep*)
     FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
     ;;
+  # The VxWorks support for shared libraries is getting in
+  # incrementally.  Make sure it doesn't get activated implicitly:
+  *vxworks*)
+    if test "${enable_shared-unset}" = unset ; then
+      enable_shared=no
+      # So the build of libraries knows ...
+      target_configargs="${target_configargs} --disable-shared"
+      # So gcc knows ...
+      host_configargs="${host_configargs} --disable-shared"
+    fi
+    ;;
 esac
 
 # Makefile fragments.

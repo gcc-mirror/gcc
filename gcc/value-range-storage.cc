@@ -150,11 +150,7 @@ irange_storage_slot::set_irange (const irange &r)
 {
   gcc_checking_assert (fits_p (r));
 
-  // Avoid calling unsupported get_nonzero_bits on legacy.
-  if (r.legacy_mode_p ())
-    m_ints[0] = -1;
-  else
-    m_ints[0] = r.get_nonzero_bits ();
+  m_ints[0] = r.get_nonzero_bits ();
 
   unsigned pairs = r.num_pairs ();
   for (unsigned i = 0; i < pairs; ++i)

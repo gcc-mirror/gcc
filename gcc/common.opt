@@ -3419,7 +3419,10 @@ EnumValue
 Enum(compressed_debug_sections) String(zlib) Value(1)
 
 EnumValue
-Enum(compressed_debug_sections) String(zlib-gnu) Value(2)
+Enum(compressed_debug_sections) String(zstd) Value(2)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib-gnu) Value(3)
 
 gz
 Common Driver

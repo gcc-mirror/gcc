@@ -33,6 +33,10 @@ proc libstdc++-dg-prune { system text } {
 
 #    send_user "Before:$text\n"
 
+    if { [string match "*This header is not available in freestanding mode.*" $text] } {
+      return "::unsupported::hosted C++ headers not supported"
+    }
+
     # Ignore caret diagnostics. Unfortunately dejaGNU trims leading
     # spaces, so one cannot rely on them being present.
     regsub -all "(^|\n)\[^\n\]+\n *\\^\n" $text "\n" text

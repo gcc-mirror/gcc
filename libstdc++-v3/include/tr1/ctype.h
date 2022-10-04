@@ -29,6 +29,8 @@
 #ifndef _TR1_CTYPE_H
 #define _TR1_CTYPE_H 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <tr1/cctype>
 
 #endif

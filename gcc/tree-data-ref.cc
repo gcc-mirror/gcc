@@ -2979,10 +2979,10 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	  && operand_equal_p (DR_OFFSET (a), DR_OFFSET (b))
 	  && poly_int_tree_p (tree_size_a)
 	  && poly_int_tree_p (tree_size_b)
-	  && !ranges_maybe_overlap_p (wi::to_widest (DR_INIT (a)),
-				      wi::to_widest (tree_size_a),
-				      wi::to_widest (DR_INIT (b)),
-				      wi::to_widest (tree_size_b)))
+	  && !ranges_maybe_overlap_p (wi::to_poly_widest (DR_INIT (a)),
+				      wi::to_poly_widest (tree_size_a),
+				      wi::to_poly_widest (DR_INIT (b)),
+				      wi::to_poly_widest (tree_size_b)))
 	{
 	  gcc_assert (integer_zerop (DR_STEP (a))
 		      && integer_zerop (DR_STEP (b)));

@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_CTIME
 #define _GLIBCXX_TR1_CTIME 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <ctime>
 
 #endif // _GLIBCXX_TR1_CTIME

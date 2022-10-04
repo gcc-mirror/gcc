@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++17 } }
+// { dg-require-effective-target hosted }
 
 // PR 91456
 // std::function and std::is_invocable_r do not understand guaranteed elision

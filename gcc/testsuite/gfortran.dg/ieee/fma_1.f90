@@ -38,7 +38,6 @@
   print *, sx1 * sx2 + sx3
   print *, ieee_fma(sx1, sx2, sx3)
   if (ieee_fma(sx1, sx2, sx3) /= real(3, kind(sx1)) / 2) stop 4
-  !if (ieee_fma(sx1, sx2, sx3) == sx1 * sx2 + sx3) stop 5
 
   ! Double
 
@@ -57,7 +56,6 @@
   print *, dx1 * dx2 + dx3
   print *, ieee_fma(dx1, dx2, dx3)
   if (ieee_fma(dx1, dx2, dx3) /= real(3, kind(dx1)) / 2) stop 4
-  !if (ieee_fma(dx1, dx2, dx3) == dx1 * dx2 + dx3) stop 5
 
   ! Large kind 1
 
@@ -76,7 +74,6 @@
   print *, lx1 * lx2 + lx3
   print *, ieee_fma(lx1, lx2, lx3)
   if (ieee_fma(lx1, lx2, lx3) /= real(3, kind(lx1)) / 2) stop 4
-  if (ieee_fma(lx1, lx2, lx3) == lx1 * lx2 + lx3) stop 5
 
   ! Large kind 2
 
@@ -95,6 +92,5 @@
   print *, wx1 * wx2 + wx3
   print *, ieee_fma(wx1, wx2, wx3)
   if (ieee_fma(wx1, wx2, wx3) /= real(3, kind(wx1)) / 2) stop 4
-  if (ieee_fma(wx1, wx2, wx3) == wx1 * wx2 + wx3) stop 5
 
 end

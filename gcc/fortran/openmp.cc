@@ -6511,7 +6511,7 @@ static void
 resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		     gfc_namespace *ns, bool openacc = false)
 {
-  gfc_omp_namelist *n;
+  gfc_omp_namelist *n, *last;
   gfc_expr_list *el;
   int list;
   int ifc;
@@ -7369,30 +7369,58 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		}
 	    break;
 	  case OMP_LIST_IS_DEVICE_PTR:
-	    for (n = omp_clauses->lists[list]; n != NULL; n = n->next)
+	    last = NULL;
+	    for (n = omp_clauses->lists[list]; n != NULL; )
 	      {
-		if (!n->sym->attr.dummy)
-		  gfc_error ("Non-dummy object %qs in %s clause at %L",
-			     n->sym->name, name, &n->where);
-		if (n->sym->attr.allocatable
-		    || (n->sym->ts.type == BT_CLASS
-			&& CLASS_DATA (n->sym)->attr.allocatable))
-		  gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
-			     n->sym->name, name, &n->where);
-		if (n->sym->attr.pointer
-		    || (n->sym->ts.type == BT_CLASS
-			&& CLASS_DATA (n->sym)->attr.pointer))
-		  gfc_error ("POINTER object %qs in %s clause at %L",
-			     n->sym->name, name, &n->where);
-		if (n->sym->attr.value)
-		  gfc_error ("VALUE object %qs in %s clause at %L",
-			     n->sym->name, name, &n->where);
+		if (n->sym->ts.type == BT_DERIVED
+		    && n->sym->ts.u.derived->ts.is_iso_c
+		    && code->op != EXEC_OMP_TARGET)
+		  /* Non-TARGET (i.e. DISPATCH) requires a C_PTR.  */
+		  gfc_error ("List item %qs in %s clause at %L must be of "
+			     "TYPE(C_PTR)", n->sym->name, name, &n->where);
+		else if (n->sym->ts.type != BT_DERIVED
+			 || !n->sym->ts.u.derived->ts.is_iso_c)
+		  {
+		    /* For TARGET, non-C_PTR are deprecated and handled as
+		       has_device_addr.  */
+		    gfc_omp_namelist *n2 = n;
+		    n = n->next;
+		    if (last)
+		      last->next = n;
+		    else
+		      omp_clauses->lists[list] = n;
+		    n2->next = omp_clauses->lists[OMP_LIST_HAS_DEVICE_ADDR];
+		    omp_clauses->lists[OMP_LIST_HAS_DEVICE_ADDR] = n2;
+		    continue;
+		  }
+		last = n;
+		n = n->next;
 	      }
 	    break;
 	  case OMP_LIST_HAS_DEVICE_ADDR:
-	  case OMP_LIST_USE_DEVICE_PTR:
 	  case OMP_LIST_USE_DEVICE_ADDR:
-	    /* FIXME: Handle OMP_LIST_USE_DEVICE_PTR.  */
+	    break;
+	  case OMP_LIST_USE_DEVICE_PTR:
+	    /* Non-C_PTR are deprecated and handled as use_device_ADDR.  */
+	    last = NULL;
+	    for (n = omp_clauses->lists[list]; n != NULL; )
+	      {
+		gfc_omp_namelist *n2 = n;
+		if (n->sym->ts.type != BT_DERIVED
+		    || !n->sym->ts.u.derived->ts.is_iso_c)
+		  {
+		    n = n->next;
+		    if (last)
+		      last->next = n;
+		    else
+		      omp_clauses->lists[list] = n;
+		    n2->next = omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR];
+		    omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR] = n2;
+		    continue;
+		  }
+		last = n;
+		n = n->next;
+	      }
 	    break;
 	  default:
 	    for (; n != NULL; n = n->next)
@@ -7758,7 +7786,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		 &omp_clauses->num_teams_lower->where,
 		 &omp_clauses->num_teams_upper->where);
   if (omp_clauses->device)
-    resolve_nonnegative_int_expr (omp_clauses->device, "DEVICE");
+    resolve_scalar_int_expr (omp_clauses->device, "DEVICE");
   if (omp_clauses->filter)
     resolve_nonnegative_int_expr (omp_clauses->filter, "FILTER");
   if (omp_clauses->hint)

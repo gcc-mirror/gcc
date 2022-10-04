@@ -1105,7 +1105,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // Searchers
-#define __cpp_lib_boyer_moore_searcher 201603L
 
   template<typename _ForwardIterator1, typename _BinaryPredicate = equal_to<>>
     class default_searcher
@@ -1138,6 +1137,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if _GLIBCXX_HOSTED
+#define __cpp_lib_boyer_moore_searcher 201603L
+
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
     struct __boyer_moore_map_base
     {

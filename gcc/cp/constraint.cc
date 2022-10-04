@@ -3649,7 +3649,7 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_POLYMORPHIC:
       inform (loc, "  %qT is not a polymorphic type", t1);
       break;
-    case CPTK_IS_SAME_AS:
+    case CPTK_IS_SAME:
       inform (loc, "  %qT is not the same as %qT", t1, t2);
       break;
     case CPTK_IS_STD_LAYOUT:
@@ -3711,10 +3711,11 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not a reference that binds to a temporary "
 	      "object of type %qT (copy-initialization)", t1, t2);
       break;
-    case CPTK_BASES:
-    case CPTK_DIRECT_BASES:
-    case CPTK_UNDERLYING_TYPE:
-      /* We shouldn't see these non-expression traits.  */
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case CPTK_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
+      /* Type-yielding traits aren't expressions.  */
       gcc_unreachable ();
     /* We deliberately omit the default case so that when adding a new
        trait we'll get reminded (by way of a warning) to handle it here.  */

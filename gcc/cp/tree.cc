@@ -1776,10 +1776,17 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
 		   DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t),
 		   tf_none));
       break;
-    case UNDERLYING_TYPE:
-      type = strip_typedefs (UNDERLYING_TYPE_TYPE (t),
-			     remove_attributes, flags);
-      result = finish_underlying_type (type);
+    case TRAIT_TYPE:
+      {
+	tree type1 = strip_typedefs (TRAIT_TYPE_TYPE1 (t),
+				     remove_attributes, flags);
+	tree type2 = strip_typedefs (TRAIT_TYPE_TYPE2 (t),
+				     remove_attributes, flags);
+	if (type1 == TRAIT_TYPE_TYPE1 (t) && type2 == TRAIT_TYPE_TYPE2 (t))
+	  result = NULL_TREE;
+	else
+	  result = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2);
+      }
       break;
     case TYPE_PACK_EXPANSION:
       {
@@ -5383,7 +5390,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
       /* None of these have subtrees other than those already walked
 	 above.  */
       *walk_subtrees_p = 0;
@@ -5469,6 +5475,12 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case TRAIT_EXPR:
       WALK_SUBTREE (TRAIT_EXPR_TYPE1 (*tp));
       WALK_SUBTREE (TRAIT_EXPR_TYPE2 (*tp));
+      *walk_subtrees_p = 0;
+      break;
+
+    case TRAIT_TYPE:
+      WALK_SUBTREE (TRAIT_TYPE_TYPE1 (*tp));
+      WALK_SUBTREE (TRAIT_TYPE_TYPE2 (*tp));
       *walk_subtrees_p = 0;
       break;
 

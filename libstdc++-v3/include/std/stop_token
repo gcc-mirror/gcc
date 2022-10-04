@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_STOP_TOKEN
 #define _GLIBCXX_STOP_TOKEN
 
+#include <bits/requires_hosted.h> // concurrency
+
 #if __cplusplus > 201703L
 
 #include <atomic>

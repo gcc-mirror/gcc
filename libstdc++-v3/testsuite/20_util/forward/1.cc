@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // 2007-07-10  Paolo Carlini  <pcarlini@suse.de>
 //

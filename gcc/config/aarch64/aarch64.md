@@ -6468,7 +6468,7 @@
 (define_expand "<optab>dihf2"
   [(set (match_operand:HF 0 "register_operand")
 	(FLOATUORS:HF (match_operand:DI 1 "register_operand")))]
-  "TARGET_FLOAT && (TARGET_FP_F16INST || TARGET_SIMD)"
+  "TARGET_FP_F16INST || TARGET_SIMD"
 {
   if (TARGET_FP_F16INST)
     emit_insn (gen_aarch64_fp16_<optab>dihf2 (operands[0], operands[1]));
@@ -6727,7 +6727,7 @@
   [(match_operand:GPF 0 "register_operand")
    (match_operand:GPF 1 "register_operand")
    (match_operand:GPF 2 "register_operand")]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
 {
   rtx bitmask = gen_reg_rtx (<V_INT_EQUIV>mode);
   emit_move_insn (bitmask, GEN_INT (HOST_WIDE_INT_M1U
@@ -6744,7 +6744,7 @@
 		     (match_operand:GPF 2 "register_operand" "w,w,0,0")
 		     (match_operand:<V_INT_EQUIV> 3 "register_operand" "0,w,w,X")]
 	 UNSPEC_COPYSIGN))]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
   "@
    bsl\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
    bit\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
@@ -6765,7 +6765,7 @@
   [(match_operand:GPF 0 "register_operand")
    (match_operand:GPF 1 "register_operand")
    (match_operand:GPF 2 "register_operand")]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
 {
 
   machine_mode imode = <V_INT_EQUIV>mode;

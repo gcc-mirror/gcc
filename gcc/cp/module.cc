@@ -2737,6 +2737,7 @@ enum tree_tag {
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_ptrmem_type,	/* Pointer to member type.  */
+  tt_nttp_var,		/* NTTP_OBJECT VAR_DECL.  */
 
   tt_parm,		/* Function parameter or result.  */
   tt_enum_value,	/* An enum value.  */
@@ -8548,6 +8549,21 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    }
 	  return false;
 	}
+
+      if (DECL_NTTP_OBJECT_P (decl))
+	{
+	  /* A NTTP parm object.  */
+	  if (streaming_p ())
+	    i (tt_nttp_var);
+	  tree_node (tparm_object_argument (decl));
+	  tree_node (DECL_NAME (decl));
+	  int tag = insert (decl);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Wrote nttp object:%d %N", tag, DECL_NAME (decl));
+	  return false;
+	}
+
       break;
 
     case TYPE_DECL:
@@ -8910,7 +8926,6 @@ trees_out::type_node (tree type)
 
     case DECLTYPE_TYPE:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
     case DEPENDENT_OPERATOR_TYPE:
       tree_node (TYPE_VALUES_RAW (type));
       if (TREE_CODE (type) == DECLTYPE_TYPE)
@@ -8918,6 +8933,12 @@ trees_out::type_node (tree type)
 	   flags.  */
 	if (streaming_p ())
 	  tree_node_bools (type);
+      break;
+
+    case TRAIT_TYPE:
+      tree_node (TRAIT_TYPE_KIND_RAW (type));
+      tree_node (TRAIT_TYPE_TYPE1 (type));
+      tree_node (TRAIT_TYPE_TYPE2 (type));
       break;
 
     case TYPE_ARGUMENT_PACK:
@@ -9434,7 +9455,6 @@ trees_in::tree_node (bool is_use)
 
 	  case DECLTYPE_TYPE:
 	  case TYPEOF_TYPE:
-	  case UNDERLYING_TYPE:
 	  case DEPENDENT_OPERATOR_TYPE:
 	    {
 	      tree expr = tree_node ();
@@ -9444,6 +9464,22 @@ trees_in::tree_node (bool is_use)
 		  TYPE_VALUES_RAW (res) = expr;
 		  if (code == DECLTYPE_TYPE)
 		    tree_node_bools (res);
+		  SET_TYPE_STRUCTURAL_EQUALITY (res);
+		}
+	    }
+	    break;
+
+	  case TRAIT_TYPE:
+	    {
+	      tree kind = tree_node ();
+	      tree type1 = tree_node ();
+	      tree type2 = tree_node ();
+	      if (!get_overrun ())
+		{
+		  res = cxx_make_type (TRAIT_TYPE);
+		  TRAIT_TYPE_KIND_RAW (res) = kind;
+		  TRAIT_TYPE_TYPE1 (res) = type1;
+		  TRAIT_TYPE_TYPE2 (res) = type2;
 		  SET_TYPE_STRUCTURAL_EQUALITY (res);
 		}
 	    }
@@ -9624,6 +9660,21 @@ trees_in::tree_node (bool is_use)
 	  }
 	else
 	  set_overrun ();
+      }
+      break;
+
+    case tt_nttp_var:
+      /* An NTTP object. */
+      {
+	tree init = tree_node ();
+	tree name = tree_node ();
+	if (!get_overrun ())
+	  {
+	    res = get_template_parm_object (init, name);
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Created nttp object:%d %N", tag, name);
+	  }
       }
       break;
 
@@ -12758,6 +12809,10 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	   || TREE_CODE (decl) == TYPE_DECL)
 	  && DECL_TINFO_P (decl))
 	/* Ignore TINFO things.  */
+	return false;
+
+      if (TREE_CODE (decl) == VAR_DECL && DECL_NTTP_OBJECT_P (decl))
+	/* Ignore NTTP objects.  */
 	return false;
 
       if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)

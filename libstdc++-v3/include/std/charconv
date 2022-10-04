@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // for error codes
+
 // As an extension we support <charconv> in C++14, but this header should not
 // be included by any other library headers in C++14 mode. This ensures that
 // the names defined in this header are not added to namespace std unless a
@@ -44,7 +46,7 @@
 #include <ext/numeric_traits.h>
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
-    && __SIZE_WIDTH__ >= 32
+    && __SIZE_WIDTH__ >= 32 && _GLIBCXX_HOSTED
 # define __cpp_lib_to_chars 201611L
 #endif
 
