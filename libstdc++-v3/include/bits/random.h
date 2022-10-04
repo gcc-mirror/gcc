@@ -198,16 +198,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Engine& _M_g;
       };
 
+    // Detect whether a template argument _Sseq is a valid seed sequence for
+    // a random number engine _Engine with result type _Res.
+    // Used to constrain _Engine::_Engine(_Sseq&) and _Engine::seed(_Sseq&)
+    // as required by [rand.eng.general].
+
     template<typename _Sseq>
       using __seed_seq_generate_t = decltype(
 	  std::declval<_Sseq&>().generate(std::declval<uint_least32_t*>(),
 					  std::declval<uint_least32_t*>()));
 
-    // Detect whether _Sseq is a valid seed sequence for
-    // a random number engine _Engine with result type _Res.
     template<typename _Sseq, typename _Engine, typename _Res,
 	     typename _GenerateCheck = __seed_seq_generate_t<_Sseq>>
-      using __is_seed_seq = __and_<
+      using _If_seed_seq_for = _Require<
         __not_<is_same<__remove_cvref_t<_Sseq>, _Engine>>,
 	is_unsigned<typename _Sseq::result_type>,
 	__not_<is_convertible<_Sseq, _Res>>
@@ -263,8 +266,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __m out of bounds");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, linear_congruential_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, linear_congruential_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -502,8 +506,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __f out of bound");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, mersenne_twister_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, mersenne_twister_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -702,8 +707,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __w out of bounds");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, subtract_with_carry_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, subtract_with_carry_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -894,8 +900,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _RandomNumberEngine::result_type result_type;
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, discard_block_engine, result_type>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, discard_block_engine,
+				       result_type>;
 
       // parameter values
       static constexpr size_t block_size = __p;
@@ -1113,8 +1120,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __w out of bounds");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, independent_bits_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, independent_bits_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -1336,8 +1344,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _RandomNumberEngine::result_type result_type;
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, shuffle_order_engine, result_type>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, shuffle_order_engine,
+				       result_type>;
 
       static constexpr size_t table_size = __k;
 
