@@ -486,9 +486,9 @@ struct FreeList(ParentAllocator,
 // Test that deallocateAll infers from parent
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
 
-    auto fl = FreeList!(Region!(), 0, 16)(Region!()(new ubyte[1024 * 64]));
+    auto fl = FreeList!(BorrowedRegion!(), 0, 16)(BorrowedRegion!()(new ubyte[1024 * 64]));
     auto b = fl.allocate(42);
     assert(b.length == 42);
     assert((() pure nothrow @safe @nogc => fl.expand(b, 48))());

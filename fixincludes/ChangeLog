@@ -1,3 +1,19 @@
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
+	glibc_cxx_floatn_3): Add to files also "*/bits/floatn.h"
+	and "*/bits/floatn-common.h".
+	* fixincl.x: Regenerated.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
+	glibc_cxx_floatn_3): New fixes.
+	* tests/base/bits/floatn.h: New file.
+	* fixincl.x: Regenerated.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

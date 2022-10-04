@@ -690,6 +690,10 @@ enum tree_index {
 			     - TI_FLOATN_NX_TYPE_FIRST		\
 			     + 1)
 
+  /* Type used by certain backends for __float128, which in C++ should be
+     distinct type from _Float128 for backwards compatibility reasons.  */
+  TI_FLOAT128T_TYPE,
+
   /* Put the complex types after their component types, so that in (sequential)
      tree streaming we can assert that their component types have already been
      handled (see tree-streamer.cc:record_common_node).  */

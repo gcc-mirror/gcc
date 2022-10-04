@@ -516,6 +516,7 @@ pru-*-*)
 riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o"
+	extra_objs="${extra_objs} riscv-vector-builtins.o"
 	d_target_objs="riscv-d.o"
 	;;
 rs6000*-*-*)
@@ -1019,6 +1020,8 @@ case ${target} in
   cxx_target_objs="${cxx_target_objs} vxworks-c.o"
   extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
   target_has_targetcm="yes"
+
+  extra_gcc_objs="vxworks-driver.o"
 
   # This private header exposes a consistent interface for checks on
   # the VxWorks version our runtime header files need to perform, based on
@@ -3941,6 +3944,9 @@ if test x$with_arch = x ; then
     mips*-*-vxworks)
       with_arch=mips2
       ;;
+    nvptx-*)
+      with_arch=sm_30
+      ;;
   esac
 
   # Avoid overriding --with-arch-32 and --with-arch-64 values.
@@ -4095,14 +4101,6 @@ case "${target}" in
 			  opt_macro="AARCH64_OPT_EXTENSION(A, B, C, D, E, F)=A, B, C, D, E, F"
 			  options_parsed="`$ac_cv_prog_CPP -D"$opt_macro" -x c \
 				${srcdir}/config/aarch64/aarch64-option-extensions.def`"
-
-			  # Match one element inside AARCH64_OPT_EXTENSION, we
-			  # consume anything that's not a ,.
-			  elem="[ 	]*\([^,]\+\)[ 	]*"
-
-			  # Repeat the pattern for the number of entries in the
-			  # AARCH64_OPT_EXTENSION, currently 6 times.
-			  sed_patt="^$elem,$elem,$elem,$elem,$elem,$elem"
 
 			  while [ x"$ext_val" != x ]
 			  do
@@ -5291,6 +5289,25 @@ case "${target}" in
 				exit 1
 				;;
 			esac
+		;;
+
+	nvptx-*)
+		supported_defaults=arch
+		TM_MULTILIB_CONFIG=$with_arch
+		#TODO 'sm_[...]' list per 'nvptx-sm.def'.
+		case $with_arch in
+			sm_30 )
+				# OK; default.
+				;;
+			sm_35 | sm_53 | sm_70 | sm_75 | sm_80 )
+				# OK, but we'd like 'sm_30', too.
+				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG sm_30"
+				;;
+			* )
+				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
+				exit 1
+				;;
+		esac
 		;;
 
 	powerpc*-*-* | rs6000-*-*)

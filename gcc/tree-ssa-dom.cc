@@ -393,7 +393,8 @@ edge_info::record_simple_equiv (tree lhs, tree rhs)
     simple_equivalences.safe_push (equiv_pair (lhs, rhs));
 }
 
-/* Free the edge_info data attached to E, if it exists.  */
+/* Free the edge_info data attached to E, if it exists and
+   clear e->aux.  */
 
 void
 free_dom_edge_info (edge e)
@@ -402,6 +403,7 @@ free_dom_edge_info (edge e)
 
   if (edge_info)
     delete edge_info;
+  e->aux = NULL;
 }
 
 /* Free all EDGE_INFO structures associated with edges in the CFG.
@@ -420,11 +422,76 @@ free_all_edge_infos (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
-        {
-	  free_dom_edge_info (e);
-	  e->aux = NULL;
+	free_dom_edge_info (e);
+    }
+}
+
+/* Return TRUE if BB has precisely two preds, one of which
+   is a backedge from a forwarder block where the forwarder
+   block is a direct successor of BB.  Being a forwarder
+   block, it has no side effects other than transfer of
+   control.  Otherwise return FALSE.  */
+
+static bool
+single_block_loop_p (basic_block bb)
+{
+  /* Two preds.  */
+  if (EDGE_COUNT (bb->preds) != 2)
+    return false;
+
+  /* One and only one of the edges must be marked with
+     EDGE_DFS_BACK.  */
+  basic_block pred = NULL;
+  unsigned int count = 0;
+  if (EDGE_PRED (bb, 0)->flags & EDGE_DFS_BACK)
+    {
+      pred = EDGE_PRED (bb, 0)->src;
+      count++;
+    }
+  if (EDGE_PRED (bb, 1)->flags & EDGE_DFS_BACK)
+    {
+      pred = EDGE_PRED (bb, 1)->src;
+      count++;
+    }
+
+  if (count != 1)
+    return false;
+
+  /* Now examine PRED.  It should have a single predecessor which
+     is BB and a single successor that is also BB.  */
+  if (EDGE_COUNT (pred->preds) != 1
+      || EDGE_COUNT (pred->succs) != 1
+      || EDGE_PRED (pred, 0)->src != bb
+      || EDGE_SUCC (pred, 0)->dest != bb)
+    return false;
+
+  /* This looks good from a CFG standpoint.  Now look at the guts
+     of PRED.  Basically we want to verify there are no PHI nodes
+     and no real statements.  */
+  if (! gimple_seq_empty_p (phi_nodes (pred)))
+    return false;
+
+  gimple_stmt_iterator gsi;
+  for (gsi = gsi_last_bb (pred); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+
+      switch (gimple_code (stmt))
+	{
+	  case GIMPLE_LABEL:
+	    if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
+	      return false;
+	    break;
+
+	  case GIMPLE_DEBUG:
+	    break;
+
+	  default:
+	    return false;
 	}
     }
+
+  return true;
 }
 
 /* We have finished optimizing BB, record any information implied by
@@ -435,6 +502,13 @@ record_edge_info (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   class edge_info *edge_info;
+
+  /* Free all the outgoing edge info data associated with
+     BB's outgoing edges.  */
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    free_dom_edge_info (e);
 
   if (! gsi_end_p (gsi))
     {
@@ -451,8 +525,6 @@ record_edge_info (basic_block bb)
 	      int i;
               int n_labels = gimple_switch_num_labels (switch_stmt);
 	      tree *info = XCNEWVEC (tree, last_basic_block_for_fn (cfun));
-	      edge e;
-	      edge_iterator ei;
 
 	      for (i = 0; i < n_labels; i++)
 		{
@@ -584,6 +656,62 @@ record_edge_info (basic_block bb)
               if (can_infer_simple_equiv && TREE_CODE (inverted) == EQ_EXPR)
 		edge_info->record_simple_equiv (op0, op1);
             }
+
+	  /* If this block is a single block loop, then we may be able to
+	     record some equivalences on the loop's exit edge.  */
+	  if (single_block_loop_p (bb))
+	    {
+	      /* We know it's a single block loop.  Now look at the loop
+		 exit condition.  What we're looking for is whether or not
+		 the exit condition is loop invariant which we can detect
+		 by checking if all the SSA_NAMEs referenced are defined
+		 outside the loop.  */
+	      if ((TREE_CODE (op0) != SSA_NAME
+		   || gimple_bb (SSA_NAME_DEF_STMT (op0)) != bb)
+		  && (TREE_CODE (op1) != SSA_NAME
+		      || gimple_bb (SSA_NAME_DEF_STMT (op1)) != bb))
+		{
+		  /* At this point we know the exit condition is loop
+		     invariant.  The only way to get out of the loop is
+		     if never traverses the backedge to begin with.  This
+		     implies that any PHI nodes create equivalances we can
+		     attach to the loop exit edge.  */
+		  int alternative
+		    = (EDGE_PRED (bb, 0)->flags & EDGE_DFS_BACK) ? 1 : 0;
+
+		  gphi_iterator gsi;
+		  for (gsi = gsi_start_phis (bb);
+		       !gsi_end_p (gsi);
+		       gsi_next (&gsi))
+		    {
+		      /* Now get the EDGE_INFO class so we can append
+			 it to our list.  We want the successor edge
+			 where the destination is not the source of
+			 an incoming edge.  */
+		      gphi *phi = gsi.phi ();
+		      tree src = PHI_ARG_DEF (phi, alternative);
+		      tree dst = PHI_RESULT (phi);
+
+		      /* If the other alternative is the same as the result,
+			 then this is a degenerate and can be ignored.  */
+		      if (dst == PHI_ARG_DEF (phi, !alternative))
+			continue;
+
+		      if (EDGE_SUCC (bb, 0)->dest
+			  != EDGE_PRED (bb, !alternative)->src)
+			edge_info = (class edge_info *)EDGE_SUCC (bb, 0)->aux;
+		      else
+			edge_info = (class edge_info *)EDGE_SUCC (bb, 1)->aux;
+
+		      /* Note that since this processing is done independently
+			 of other edge equivalency processing, we may not
+			 have an EDGE_INFO structure set up yet.  */
+		      if (edge_info == NULL)
+			edge_info = new class edge_info (false_edge);
+		      edge_info->record_simple_equiv (dst, src);
+		    }
+		}
+	    }
         }
     }
 }
@@ -1227,29 +1355,30 @@ void
 dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
 {
   edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
-
   if (!pred_e)
     return;
 
   gimple *stmt = last_stmt (pred_e->src);
-  tree name;
-  if (stmt
-      && gimple_code (stmt) == GIMPLE_COND
-      && (name = gimple_cond_lhs (stmt))
-      && TREE_CODE (name) == SSA_NAME
-      && assert_unreachable_fallthru_edge_p (pred_e)
-      && all_uses_feed_or_dominated_by_stmt (name, stmt))
-    {
-      Value_Range r (TREE_TYPE (name));
+  if (!stmt
+      || gimple_code (stmt) != GIMPLE_COND
+      || !assert_unreachable_fallthru_edge_p (pred_e))
+    return;
 
-      if (m_ranger->range_on_edge (r, pred_e, name)
-	  && !r.varying_p ()
-	  && !r.undefined_p ())
-	{
-	  set_range_info (name, r);
-	  maybe_set_nonzero_bits (pred_e, name);
-	}
-    }
+  tree name;
+  gori_compute &gori = m_ranger->gori ();
+  FOR_EACH_GORI_EXPORT_NAME (gori, pred_e->src, name)
+    if (all_uses_feed_or_dominated_by_stmt (name, stmt))
+      {
+	Value_Range r (TREE_TYPE (name));
+
+	if (m_ranger->range_on_edge (r, pred_e, name)
+	    && !r.varying_p ()
+	    && !r.undefined_p ())
+	  {
+	    set_range_info (name, r);
+	    maybe_set_nonzero_bits (pred_e, name);
+	  }
+      }
 }
 
 /* Record any equivalences created by the incoming edge to BB into

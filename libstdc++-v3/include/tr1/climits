@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_CLIMITS
 #define _GLIBCXX_TR1_CLIMITS 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <climits>
 
 #ifndef LLONG_MIN

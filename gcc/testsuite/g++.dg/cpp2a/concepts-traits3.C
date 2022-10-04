@@ -21,7 +21,7 @@ concept TriviallyAssignable = __is_trivially_assignable(T, U);
 
 template<class T, class U>
 concept NothrowAssignable = __is_nothrow_assignable(T, U);
-// { dg-message "'S' is not 'nothrow' assignable from 'int'" "" { target *-*-* } .-1  }
+// { dg-message "'S' is not nothrow assignable from 'int'" "" { target *-*-* } .-1  }
 
 template<class T, class... Args>
 concept Constructible = __is_constructible(T, Args...);
@@ -37,9 +37,9 @@ concept TriviallyConstructible = __is_trivially_constructible(T, Args...);
 
 template<class T, class... Args>
 concept NothrowConstructible = __is_nothrow_constructible(T, Args...);
-// { dg-message "'S' is not 'nothrow' default constructible" "" { target *-*-* } .-1  }
-// { dg-message "'S' is not 'nothrow' constructible from 'int'" "" { target *-*-* } .-2  }
-// { dg-message "'S' is not 'nothrow' constructible from 'int, char'" "" { target *-*-* } .-3  }
+// { dg-message "'S' is not nothrow default constructible" "" { target *-*-* } .-1  }
+// { dg-message "'S' is not nothrow constructible from 'int'" "" { target *-*-* } .-2  }
+// { dg-message "'S' is not nothrow constructible from 'int, char'" "" { target *-*-* } .-3  }
 
 template<class T>
 concept UniqueObjReps = __has_unique_object_representations(T);

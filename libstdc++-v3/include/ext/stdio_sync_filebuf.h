@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <streambuf>
 #include <cstdio>
 #include <bits/c++io.h>  // For __c_file

@@ -33,6 +33,8 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_SIMD
 #define _GLIBCXX_EXPERIMENTAL_SIMD
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201703L
 
 /** @defgroup par-ts Parallelism TS

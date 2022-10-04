@@ -7300,7 +7300,7 @@ csky_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 void
 csky_init_builtins (void)
 {
-  /* Inint fp16.  */
+  /* Init fp16.  */
   static tree csky_floatHF_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (csky_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
   layout_type (csky_floatHF_type_node);
@@ -7313,10 +7313,10 @@ csky_init_builtins (void)
 static const char *
 csky_mangle_type (const_tree type)
 {
-  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-      && DECL_NAME (TYPE_NAME (type))
-      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))), "__fp16"))
-    return "__fp16";
+  if (TREE_CODE (type) == REAL_TYPE
+      && TYPE_PRECISION (type) == 16
+      && TYPE_MAIN_VARIANT (type) != float16_type_node)
+    return "Dh";
 
   /* Use the default mangling.  */
   return NULL;

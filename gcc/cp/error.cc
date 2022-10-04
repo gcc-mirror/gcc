@@ -698,12 +698,8 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_paren (pp);
       break;
 
-    case UNDERLYING_TYPE:
-      pp_cxx_ws_string (pp, "__underlying_type");
-      pp_cxx_whitespace (pp);
-      pp_cxx_left_paren (pp);
-      dump_expr (pp, UNDERLYING_TYPE_TYPE (t), flags & ~TFF_EXPR_IN_PARENS);
-      pp_cxx_right_paren (pp);
+    case TRAIT_TYPE:
+      pp_cxx_trait (pp, t);
       break;
 
     case TYPE_PACK_EXPANSION:
@@ -971,7 +967,7 @@ dump_type_prefix (cxx_pretty_printer *pp, tree t, int flags)
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
     case DECLTYPE_TYPE:
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
@@ -1095,7 +1091,7 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
+    case TRAIT_TYPE:
     case DECLTYPE_TYPE:
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
@@ -1129,7 +1125,7 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
-  if (template_parm_object_p (t))
+  if (TREE_CODE (t) == VAR_DECL && DECL_NTTP_OBJECT_P (t))
     return dump_expr (pp, DECL_INITIAL (t), flags);
 
   if (flags & TFF_DECL_SPECIFIERS)
@@ -1692,7 +1688,13 @@ dump_lambda_function (cxx_pretty_printer *pp,
 {
   /* A lambda's signature is essentially its "type".  */
   dump_type (pp, DECL_CONTEXT (fn), flags);
-  if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn))) & TYPE_QUAL_CONST))
+  if (TREE_CODE (TREE_TYPE (fn)) == FUNCTION_TYPE)
+    {
+      pp->padding = pp_before;
+      pp_c_ws_string (pp, "static");
+    }
+  else if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn)))
+	     & TYPE_QUAL_CONST))
     {
       pp->padding = pp_before;
       pp_c_ws_string (pp, "mutable");
@@ -2950,7 +2952,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case TRAIT_EXPR:
-      pp_cxx_trait_expression (pp, t);
+      pp_cxx_trait (pp, t);
       break;
 
     case VA_ARG_EXPR:

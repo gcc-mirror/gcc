@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201103L
 
 #include <experimental/bits/fs_fwd.h>

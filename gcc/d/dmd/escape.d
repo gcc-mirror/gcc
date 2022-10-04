@@ -1423,10 +1423,7 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                  *   auto dg = () return { return &x; }
                  * Because dg.ptr points to x, this is returning dt.ptr+offset
                  */
-                if (global.params.useDIP1000 == FeatureState.enabled)
-                {
-                    sc.func.storage_class |= STC.return_ | STC.returninferred;
-                }
+                sc.func.storage_class |= STC.return_ | STC.returninferred;
             }
         }
 

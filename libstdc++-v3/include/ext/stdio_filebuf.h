@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <fstream>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)

@@ -37,8 +37,10 @@ int main()
 {
   test01<int*>();
   test01<void*>();
+#if __STDC_HOSTED__
   test01<std::shared_ptr<int>>();
   test01<std::shared_ptr<void>>();
+#endif
   test01<std::unique_ptr<int>>();
   test01<std::unique_ptr<void>>();
 }

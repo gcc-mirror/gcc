@@ -1,4 +1,6 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
+
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
 // Copyright (C) 2005-2022 Free Software Foundation, Inc.

@@ -319,6 +319,7 @@ immutable Msgtable[] msgtable =
     { "_aaApply2" },
     { "_d_arrayctor" },
     { "_d_arraysetctor" },
+    { "_d_arraysetassign" },
     { "_d_arrayassign_l" },
     { "_d_arrayassign_r" },
 
@@ -511,6 +512,7 @@ immutable Msgtable[] msgtable =
     { "wchar_t" },
 
     // for C compiler
+    { "ImportC", "__C" },
     { "__tag" },
     { "dllimport" },
     { "dllexport" },

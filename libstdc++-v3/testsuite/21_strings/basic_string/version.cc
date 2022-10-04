@@ -1,4 +1,5 @@
 // { dg-do compile { target c++17 } }
+// { dg-require-effective-target hosted }
 
 #include <version>
 

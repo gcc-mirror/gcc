@@ -1305,22 +1305,125 @@ operator_plus::wi_fold (irange &r, tree type,
   value_range_with_overflow (r, type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
+// Given addition or subtraction, determine the possible NORMAL ranges and
+// OVERFLOW ranges given an OFFSET range.  ADD_P is true for addition.
+// Return the relation that exists between the LHS and OP1 in order for the
+// NORMAL range to apply.
+// a return value of VREL_VARYING means no ranges were applicable.
+
+static relation_kind
+plus_minus_ranges (irange &r_ov, irange &r_normal, const irange &offset,
+		bool add_p)
+{
+  relation_kind kind = VREL_VARYING;
+  // For now, only deal with constant adds.  This could be extended to ranges
+  // when someone is so motivated.
+  if (!offset.singleton_p () || offset.zero_p ())
+    return kind;
+
+  // Always work with a positive offset.  ie a+ -2 -> a-2  and a- -2 > a+2
+  wide_int off = offset.lower_bound ();
+  if (wi::neg_p (off, SIGNED))
+    {
+      add_p = !add_p;
+      off = wi::neg (off);
+    }
+
+  wi::overflow_type ov;
+  tree type = offset.type ();
+  unsigned prec = TYPE_PRECISION (type);
+  wide_int ub;
+  wide_int lb;
+  // calculate the normal range and relation for the operation.
+  if (add_p)
+    {
+      //  [ 0 , INF - OFF]
+      lb = wi::zero (prec);
+      ub = wi::sub (wi::to_wide (vrp_val_max (type)), off, UNSIGNED, &ov);
+      kind = VREL_GT;
+    }
+  else
+    {
+      //  [ OFF, INF ]
+      lb = off;
+      ub = wi::to_wide (vrp_val_max (type));
+      kind = VREL_LT;
+    }
+  int_range<2> normal_range (type, lb, ub);
+  int_range<2> ov_range (type, lb, ub, VR_ANTI_RANGE);
+
+  r_ov = ov_range;
+  r_normal = normal_range;
+  return kind;
+}
+
+// Once op1 has been calculated by operator_plus or operator_minus, check
+// to see if the relation passed causes any part of the calculation to
+// be not possible.  ie
+// a_2 = b_3 + 1  with a_2 < b_3 can refine the range of b_3 to [INF, INF]
+// and that further refines a_2 to [0, 0].
+// R is the value of op1, OP2 is the offset being added/subtracted, REL is the
+// relation between LHS relatoin OP1  and ADD_P is true for PLUS, false for
+// MINUS.    IF any adjustment can be made, R will reflect it.
+
+static void
+adjust_op1_for_overflow (irange &r, const irange &op2, relation_kind rel,
+			 bool add_p)
+{
+  if (r.undefined_p ())
+    return;
+  tree type = r.type ();
+  // Check for unsigned overflow and calculate the overflow part.
+  signop s = TYPE_SIGN (type);
+  if (!TYPE_OVERFLOW_WRAPS (type) || s == SIGNED)
+    return;
+
+  // Only work with <, <=, >, >= relations.
+  if (!relation_lt_le_gt_ge_p (rel))
+    return;
+
+  // Get the ranges for this offset.
+  int_range_max normal, overflow;
+  relation_kind k = plus_minus_ranges (overflow, normal, op2, add_p);
+
+  // VREL_VARYING means there are no adjustments.
+  if (k == VREL_VARYING)
+    return;
+
+  // If the relations match use the normal range, otherwise use overflow range.
+  if (relation_intersect (k, rel) == k)
+    r.intersect (normal);
+  else
+    r.intersect (overflow);
+  return;
+}
+
 bool
 operator_plus::op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
-			  relation_kind rel ATTRIBUTE_UNUSED) const
+			  relation_kind rel) const
 {
-  return range_op_handler (MINUS_EXPR, type).fold_range (r, type, lhs, op2);
+  if (lhs.undefined_p ())
+    return false;
+  // Start with the default operation.
+  range_op_handler minus (MINUS_EXPR, type);
+  if (!minus)
+    return false;
+  bool res = minus.fold_range (r, type, lhs, op2);
+  // Check for a relation refinement.
+  if (res)
+    adjust_op1_for_overflow (r, op2, rel, true /* PLUS_EXPR */);
+  return res;
 }
 
 bool
 operator_plus::op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
-			  relation_kind rel ATTRIBUTE_UNUSED) const
+			  relation_kind rel) const
 {
-  return range_op_handler (MINUS_EXPR, type).fold_range (r, type, lhs, op1);
+  return op1_range (r, type, lhs, op1, rel);
 }
 
 
@@ -1472,7 +1575,17 @@ operator_minus::op1_range (irange &r, tree type,
 			   const irange &op2,
 			   relation_kind rel ATTRIBUTE_UNUSED) const
 {
-  return range_op_handler (PLUS_EXPR, type).fold_range (r, type, lhs, op2);
+  if (lhs.undefined_p ())
+    return false;
+  // Start with the default operation.
+  range_op_handler minus (PLUS_EXPR, type);
+  if (!minus)
+    return false;
+  bool res = minus.fold_range (r, type, lhs, op2);
+  if (res)
+    adjust_op1_for_overflow (r, op2, rel, false /* PLUS_EXPR */);
+  return res;
+
 }
 
 bool
@@ -1481,6 +1594,8 @@ operator_minus::op2_range (irange &r, tree type,
 			   const irange &op1,
 			   relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   return fold_range (r, type, op1, lhs);
 }
 
@@ -1650,6 +1765,8 @@ operator_mult::op1_range (irange &r, tree type,
 			  relation_kind rel ATTRIBUTE_UNUSED) const
 {
   tree offset;
+  if (lhs.undefined_p ())
+    return false;
 
   // We can't solve 0 = OP1 * N by dividing by N with a wrapping type.
   // For example: For 0 = OP1 * 2, OP1 could be 0, or MAXINT, whereas
@@ -1902,6 +2019,8 @@ operator_exact_divide::op1_range (irange &r, tree type,
 				  const irange &op2,
 				  relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   tree offset;
   // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
   // remainders in the endpoints, so op1 = [2,4] * [3,3] = [6,12].
@@ -2111,6 +2230,8 @@ operator_lshift::op1_range (irange &r,
 			    const irange &op2,
 			    relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   tree shift_amount;
 
   if (!lhs.contains_p (build_zero_cst (type)))
@@ -2183,6 +2304,8 @@ operator_rshift::op1_range (irange &r,
 			    relation_kind rel ATTRIBUTE_UNUSED) const
 {
   tree shift;
+  if (lhs.undefined_p ())
+    return false;
   if (op2.singleton_p (&shift))
     {
       // Ignore nonsensical shifts.
@@ -2401,6 +2524,8 @@ operator_cast::op1_range (irange &r, tree type,
 			  const irange &op2,
 			  relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   tree lhs_type = lhs.type ();
   gcc_checking_assert (types_compatible_p (op2.type(), type));
 
@@ -2936,6 +3061,8 @@ operator_bitwise_and::op1_range (irange &r, tree type,
 				 const irange &op2,
 				 relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
@@ -2951,6 +3078,15 @@ operator_bitwise_and::op1_range (irange &r, tree type,
     }
   if (r.undefined_p ())
     set_nonzero_range_from_mask (r, type, lhs);
+
+  // For 0 = op1 & MASK, op1 is ~MASK.
+  if (lhs.zero_p () && op2.singleton_p ())
+    {
+      wide_int nz = wi::bit_not (op2.get_nonzero_bits ());
+      int_range<2> tmp (type);
+      tmp.set_nonzero_bits (nz);
+      r.intersect (tmp);
+    }
   return true;
 }
 
@@ -3112,6 +3248,8 @@ operator_bitwise_or::op1_range (irange &r, tree type,
 				const irange &op2,
 				relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_or.op1_range (r, type, lhs, op2);
@@ -3361,6 +3499,8 @@ operator_trunc_mod::op1_range (irange &r, tree type,
 			       const irange &,
 			       relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   // PR 91029.
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
@@ -3385,6 +3525,8 @@ operator_trunc_mod::op2_range (irange &r, tree type,
 			       const irange &,
 			       relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   // PR 91029.
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
@@ -3513,6 +3655,8 @@ operator_bitwise_not::op1_range (irange &r, tree type,
 				 const irange &op2,
 				 relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_not.op1_range (r, type, lhs, op2);
 
@@ -3999,6 +4143,8 @@ pointer_or_operator::op1_range (irange &r, tree type,
 				const irange &op2 ATTRIBUTE_UNUSED,
 				relation_kind rel ATTRIBUTE_UNUSED) const
 {
+  if (lhs.undefined_p ())
+    return false;
   if (lhs.zero_p ())
     {
       tree zero = build_zero_cst (type);
@@ -4230,6 +4376,9 @@ range_op_handler::op1_range (vrange &r, tree type,
 			     relation_kind rel) const
 {
   gcc_checking_assert (m_valid);
+
+  if (lhs.undefined_p ())
+    return false;
   if (m_int)
     return m_int->op1_range (as_a <irange> (r), type,
 			     as_a <irange> (lhs),
@@ -4251,6 +4400,8 @@ range_op_handler::op2_range (vrange &r, tree type,
 			     relation_kind rel) const
 {
   gcc_checking_assert (m_valid);
+  if (lhs.undefined_p ())
+    return false;
   if (m_int)
     return m_int->op2_range (as_a <irange> (r), type,
 			     as_a <irange> (lhs),
@@ -4611,6 +4762,15 @@ range_op_bitwise_and_tests ()
   i1 = int_range<1> (integer_type_node);
   op_bitwise_and.op1_range (res, integer_type_node, i1, i2);
   ASSERT_TRUE (res == int_range<1> (integer_type_node));
+
+  // For 0 = x & MASK, x is ~MASK.
+  {
+    int_range<2> zero (integer_zero_node, integer_zero_node);
+    int_range<2> mask = int_range<2> (INT (7), INT (7));
+    op_bitwise_and.op1_range (res, integer_type_node, zero, mask);
+    wide_int inv = wi::shwi (~7U, TYPE_PRECISION (integer_type_node));
+    ASSERT_TRUE (res.get_nonzero_bits () == inv);
+  }
 
   // (NONZERO | X) is nonzero.
   i1.set_nonzero (integer_type_node);

@@ -1,3 +1,15 @@
+2022-09-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd d579c467c1.
+	* decl.cc (layout_struct_initializer): Update for new front-end
+	interface.
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Remove lowering of array
+	assignments.
+	(ExprVisitor::visit (NewExp *)): Add new lowering of new'ing
+	associative arrays to an _aaNew() library call.
+	* runtime.def (ARRAYSETASSIGN): Remove.
+	(AANEW): Define.
+
 2022-09-15  Richard Biener  <rguenther@suse.de>
 
 	* d-builtins.cc (d_build_c_type_nodes): Do not initialize

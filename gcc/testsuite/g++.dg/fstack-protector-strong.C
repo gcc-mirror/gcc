@@ -85,4 +85,4 @@ int foo7 (B *p)
   return p->return_slot ().a1;
 }
 
-/* { dg-final { scan-assembler-times "stack_chk_fail" 7 } } */
+/* { dg-final { scan-assembler-times "stack_chk_fail" 8 } } */

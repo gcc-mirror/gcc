@@ -30,6 +30,8 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_UTILITY
 #define _GLIBCXX_EXPERIMENTAL_UTILITY 1
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 #include <utility>
 #include <bits/uses_allocator.h>

@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // 2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 //

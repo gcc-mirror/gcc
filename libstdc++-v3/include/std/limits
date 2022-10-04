@@ -166,11 +166,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   enum float_round_style
   {
-    round_indeterminate       = -1,    /// Intermediate.
-    round_toward_zero         = 0,     /// To zero.
-    round_to_nearest          = 1,     /// To the nearest representable value.
-    round_toward_infinity     = 2,     /// To infinity.
-    round_toward_neg_infinity = 3      /// To negative infinity.
+    round_indeterminate       = -1,    ///< Intermediate.
+    round_toward_zero         = 0,     ///< To zero.
+    round_to_nearest          = 1,     ///< To the nearest representable value.
+    round_toward_infinity     = 2,     ///< To infinity.
+    round_toward_neg_infinity = 3      ///< To negative infinity.
   };
 
   /**

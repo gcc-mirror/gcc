@@ -716,7 +716,7 @@
   [(match_operand:VHSDF 0 "register_operand")
    (match_operand:VHSDF 1 "register_operand")
    (match_operand:VHSDF 2 "register_operand")]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
 {
   rtx v_bitmask = gen_reg_rtx (<V_INT_EQUIV>mode);
   int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
@@ -8097,7 +8097,7 @@
 		 (match_operand:V16QI 1 "register_operand" "%0")
 		 (match_operand:V16QI 2 "register_operand" "w"))]
          CRYPTO_AES))]
-  "TARGET_SIMD && TARGET_AES"
+  "TARGET_AES"
   "aes<aes_op>\\t%0.16b, %2.16b"
   [(set_attr "type" "crypto_aese")]
 )
@@ -8106,7 +8106,7 @@
   [(set (match_operand:V16QI 0 "register_operand" "=w")
 	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "w")]
 	 CRYPTO_AESMC))]
-  "TARGET_SIMD && TARGET_AES"
+  "TARGET_AES"
   "aes<aesmc_op>\\t%0.16b, %1.16b"
   [(set_attr "type" "crypto_aesmc")]
 )
@@ -8125,7 +8125,7 @@
 		(match_operand:V16QI 2 "register_operand" "w"))]
 	     UNSPEC_AESE)]
 	UNSPEC_AESMC))]
-  "TARGET_SIMD && TARGET_AES
+  "TARGET_AES
    && aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)"
   "aese\\t%0.16b, %2.16b\;aesmc\\t%0.16b, %0.16b"
   [(set_attr "type" "crypto_aese")
@@ -8146,7 +8146,7 @@
 			(match_operand:V16QI 2 "register_operand" "w"))]
 		UNSPEC_AESD)]
 	  UNSPEC_AESIMC))]
-  "TARGET_SIMD && TARGET_AES
+  "TARGET_AES
    && aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)"
   "aesd\\t%0.16b, %2.16b\;aesimc\\t%0.16b, %0.16b"
   [(set_attr "type" "crypto_aese")
@@ -8160,7 +8160,7 @@
         (unspec:SI [(match_operand:SI 1
                        "register_operand" "w")]
          UNSPEC_SHA1H))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha1h\\t%s0, %s1"
   [(set_attr "type" "crypto_sha1_fast")]
 )
@@ -8170,7 +8170,7 @@
 	(unspec:SI [(vec_select:SI (match_operand:V4SI 1 "register_operand" "w")
 		     (parallel [(const_int 0)]))]
 	 UNSPEC_SHA1H))]
-  "TARGET_SIMD && TARGET_SHA2 && !BYTES_BIG_ENDIAN"
+  "TARGET_SHA2 && !BYTES_BIG_ENDIAN"
   "sha1h\\t%s0, %s1"
   [(set_attr "type" "crypto_sha1_fast")]
 )
@@ -8180,7 +8180,7 @@
 	(unspec:SI [(vec_select:SI (match_operand:V4SI 1 "register_operand" "w")
 		     (parallel [(const_int 3)]))]
 	 UNSPEC_SHA1H))]
-  "TARGET_SIMD && TARGET_SHA2 && BYTES_BIG_ENDIAN"
+  "TARGET_SHA2 && BYTES_BIG_ENDIAN"
   "sha1h\\t%s0, %s1"
   [(set_attr "type" "crypto_sha1_fast")]
 )
@@ -8190,7 +8190,7 @@
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
                       (match_operand:V4SI 2 "register_operand" "w")]
          UNSPEC_SHA1SU1))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha1su1\\t%0.4s, %2.4s"
   [(set_attr "type" "crypto_sha1_fast")]
 )
@@ -8201,7 +8201,7 @@
                       (match_operand:SI 2 "register_operand" "w")
                       (match_operand:V4SI 3 "register_operand" "w")]
          CRYPTO_SHA1))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha1<sha1_op>\\t%q0, %s2, %3.4s"
   [(set_attr "type" "crypto_sha1_slow")]
 )
@@ -8212,7 +8212,7 @@
                       (match_operand:V4SI 2 "register_operand" "w")
                       (match_operand:V4SI 3 "register_operand" "w")]
          UNSPEC_SHA1SU0))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha1su0\\t%0.4s, %2.4s, %3.4s"
   [(set_attr "type" "crypto_sha1_xor")]
 )
@@ -8225,7 +8225,7 @@
                       (match_operand:V4SI 2 "register_operand" "w")
                       (match_operand:V4SI 3 "register_operand" "w")]
          CRYPTO_SHA256))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha256h<sha256_op>\\t%q0, %q2, %3.4s"
   [(set_attr "type" "crypto_sha256_slow")]
 )
@@ -8235,7 +8235,7 @@
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
                       (match_operand:V4SI 2 "register_operand" "w")]
          UNSPEC_SHA256SU0))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha256su0\\t%0.4s, %2.4s"
   [(set_attr "type" "crypto_sha256_fast")]
 )
@@ -8246,7 +8246,7 @@
                       (match_operand:V4SI 2 "register_operand" "w")
                       (match_operand:V4SI 3 "register_operand" "w")]
          UNSPEC_SHA256SU1))]
-  "TARGET_SIMD && TARGET_SHA2"
+  "TARGET_SHA2"
   "sha256su1\\t%0.4s, %2.4s, %3.4s"
   [(set_attr "type" "crypto_sha256_slow")]
 )
@@ -8259,7 +8259,7 @@
                       (match_operand:V2DI 2 "register_operand" "w")
                       (match_operand:V2DI 3 "register_operand" "w")]
          CRYPTO_SHA512))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "sha512h<sha512_op>\\t%q0, %q2, %3.2d"
   [(set_attr "type" "crypto_sha512")]
 )
@@ -8269,7 +8269,7 @@
         (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0")
                       (match_operand:V2DI 2 "register_operand" "w")]
          UNSPEC_SHA512SU0))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "sha512su0\\t%0.2d, %2.2d"
   [(set_attr "type" "crypto_sha512")]
 )
@@ -8280,7 +8280,7 @@
                       (match_operand:V2DI 2 "register_operand" "w")
                       (match_operand:V2DI 3 "register_operand" "w")]
          UNSPEC_SHA512SU1))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "sha512su1\\t%0.2d, %2.2d, %3.2d"
   [(set_attr "type" "crypto_sha512")]
 )
@@ -8294,7 +8294,7 @@
 	  (match_operand:VQ_I 2 "register_operand" "w")
 	  (match_operand:VQ_I 3 "register_operand" "w"))
 	 (match_operand:VQ_I 1 "register_operand" "w")))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "eor3\\t%0.16b, %1.16b, %2.16b, %3.16b"
   [(set_attr "type" "crypto_sha3")]
 )
@@ -8306,7 +8306,7 @@
 	  (match_operand:V2DI 2 "register_operand" "w")
 	  (const_int 1))
 	 (match_operand:V2DI 1 "register_operand" "w")))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "rax1\\t%0.2d, %1.2d, %2.2d"
   [(set_attr "type" "crypto_sha3")]
 )
@@ -8318,7 +8318,7 @@
 	  (match_operand:V2DI 1 "register_operand" "%w")
 	  (match_operand:V2DI 2 "register_operand" "w"))
 	 (match_operand:SI 3 "aarch64_simd_shift_imm_di" "Usd")))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "xar\\t%0.2d, %1.2d, %2.2d, %3"
   [(set_attr "type" "crypto_sha3")]
 )
@@ -8330,7 +8330,7 @@
 	  (not:VQ_I (match_operand:VQ_I 3 "register_operand" "w"))
 	  (match_operand:VQ_I 2 "register_operand" "w"))
 	 (match_operand:VQ_I 1 "register_operand" "w")))]
-  "TARGET_SIMD && TARGET_SHA3"
+  "TARGET_SHA3"
   "bcax\\t%0.16b, %1.16b, %2.16b, %3.16b"
   [(set_attr "type" "crypto_sha3")]
 )
@@ -8343,7 +8343,7 @@
 		      (match_operand:V4SI 2 "register_operand" "w")
 		      (match_operand:V4SI 3 "register_operand" "w")]
 	 UNSPEC_SM3SS1))]
-  "TARGET_SIMD && TARGET_SM4"
+  "TARGET_SM4"
   "sm3ss1\\t%0.4s, %1.4s, %2.4s, %3.4s"
   [(set_attr "type" "crypto_sm3")]
 )
@@ -8356,7 +8356,7 @@
 		      (match_operand:V4SI 3 "register_operand" "w")
 		      (match_operand:SI 4 "aarch64_imm2" "Ui2")]
 	 CRYPTO_SM3TT))]
-  "TARGET_SIMD && TARGET_SM4"
+  "TARGET_SM4"
   "sm3tt<sm3tt_op>\\t%0.4s, %2.4s, %3.4s[%4]"
   [(set_attr "type" "crypto_sm3")]
 )
@@ -8367,7 +8367,7 @@
 		      (match_operand:V4SI 2 "register_operand" "w")
 		      (match_operand:V4SI 3 "register_operand" "w")]
 	 CRYPTO_SM3PART))]
-  "TARGET_SIMD && TARGET_SM4"
+  "TARGET_SM4"
   "sm3partw<sm3part_op>\\t%0.4s, %2.4s, %3.4s"
   [(set_attr "type" "crypto_sm3")]
 )
@@ -8379,7 +8379,7 @@
 	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
 		      (match_operand:V4SI 2 "register_operand" "w")]
 	 UNSPEC_SM4E))]
-  "TARGET_SIMD && TARGET_SM4"
+  "TARGET_SM4"
   "sm4e\\t%0.4s, %2.4s"
   [(set_attr "type" "crypto_sm4")]
 )
@@ -8389,7 +8389,7 @@
 	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "w")
 		      (match_operand:V4SI 2 "register_operand" "w")]
 	 UNSPEC_SM4EKEY))]
-  "TARGET_SIMD && TARGET_SM4"
+  "TARGET_SM4"
   "sm4ekey\\t%0.4s, %1.4s, %2.4s"
   [(set_attr "type" "crypto_sm4")]
 )
@@ -8975,7 +8975,7 @@
         (unspec:TI  [(match_operand:DI 1 "register_operand" "w")
 		     (match_operand:DI 2 "register_operand" "w")]
 		    UNSPEC_PMULL))]
- "TARGET_SIMD && TARGET_AES"
+ "TARGET_AES"
  "pmull\\t%0.1q, %1.1d, %2.1d"
   [(set_attr "type" "crypto_pmull")]
 )
@@ -8985,7 +8985,7 @@
        (unspec:TI [(match_operand:V2DI 1 "register_operand" "w")
 		   (match_operand:V2DI 2 "register_operand" "w")]
 		  UNSPEC_PMULL2))]
-  "TARGET_SIMD && TARGET_AES"
+  "TARGET_AES"
   "pmull2\\t%0.1q, %1.2d, %2.2d"
   [(set_attr "type" "crypto_pmull")]
 )

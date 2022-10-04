@@ -6472,7 +6472,7 @@ static unsigned HOST_WIDE_INT
 loongarch_asan_shadow_offset (void)
 {
   /* We only have libsanitizer support for LOONGARCH64 at present.
-     This value is taken from the file libsanitizer/asan/asan_mappint.h.  */
+     This value is taken from the file libsanitizer/asan/asan_mapping.h.  */
   return TARGET_64BIT ? (HOST_WIDE_INT_1 << 46) : 0;
 }
 

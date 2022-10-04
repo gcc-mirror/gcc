@@ -114,9 +114,8 @@ along with GCC; see the file COPYING3.  If not see
    with an argument such as FLOAT32 to produce the enum value for the type.  If
    we are compiling for the C language with GNU extensions, we enable the name
    without the __builtin_ prefix as well as the name with the __builtin_
-   prefix.  C++ does not enable these names by default because they don't have
-   the _Float<N> and _Float<N>X keywords, and a class based library should use
-   the __builtin_ names.  */
+   prefix.  C++ does not enable these names by default because a class based
+   library should use the __builtin_ names.  */
 #undef DEF_FLOATN_BUILTIN
 #define DEF_FLOATN_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\

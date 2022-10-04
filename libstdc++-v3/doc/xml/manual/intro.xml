@@ -1163,6 +1163,15 @@ requirements of the license of GCC.
     ill-formed.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2487"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2487">2487</link>:
+       <emphasis><code>bind()</code> should be <code>const</code>-overloaded
+      not cv-overloaded
+       </emphasis>
+    </term>
+    <listitem><para>Deprecate volatile-qualified <code>operator()</code>
+    for C++17, make it ill-formed for C++20.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2499"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2499">2499</link>:
        <emphasis><code>operator>>(basic_istream&amp;, CharT*)</code> makes it hard to avoid buffer overflows
        </emphasis>

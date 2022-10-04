@@ -81,6 +81,7 @@
 #include "rtlanal.h"
 #include "tree-dfa.h"
 #include "asan.h"
+#include "aarch64-feature-deps.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2670,19 +2671,20 @@ aarch64_tuning_override_functions[] =
 /* A processor implementing AArch64.  */
 struct processor
 {
-  const char *const name;
-  enum aarch64_processor ident;
-  enum aarch64_processor sched_core;
-  enum aarch64_arch arch;
-  const uint64_t flags;
-  const struct tune_params *const tune;
+  const char *name;
+  aarch64_processor ident;
+  aarch64_processor sched_core;
+  aarch64_arch arch;
+  aarch64_feature_flags flags;
+  const tune_params *tune;
 };
 
 /* Architectures implementing AArch64.  */
-static const struct processor all_architectures[] =
+static constexpr processor all_architectures[] =
 {
-#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, FLAGS, NULL},
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, D, E) \
+  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, \
+   feature_deps::ARCH_IDENT ().enable, NULL},
 #include "aarch64-arches.def"
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
@@ -2690,12 +2692,12 @@ static const struct processor all_architectures[] =
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
-#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
-  {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
-  FLAGS, &COSTS##_tunings},
+#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, E, COSTS, G, H, I) \
+  {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH, \
+   feature_deps::cpu_##IDENT, &COSTS##_tunings},
 #include "aarch64-cores.def"
-  {"generic", generic, cortexa53, AARCH64_ARCH_8A,
-    AARCH64_FL_FOR_ARCH8, &generic_tunings},
+  {"generic", generic, cortexa53, AARCH64_ARCH_V8A,
+   feature_deps::V8A ().enable, &generic_tunings},
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
@@ -17119,7 +17121,8 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 
 static enum aarch64_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
-		    uint64_t *isa_flags, std::string *invalid_extension)
+		    aarch64_feature_flags *isa_flags,
+		    std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *arch;
@@ -17142,7 +17145,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
       if (strlen (arch->name) == len
 	  && strncmp (arch->name, to_parse, len) == 0)
 	{
-	  uint64_t isa_temp = arch->flags;
+	  auto isa_temp = arch->flags;
 
 	  if (ext != NULL)
 	    {
@@ -17174,7 +17177,8 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 
 static enum aarch64_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
-		   uint64_t *isa_flags, std::string *invalid_extension)
+		   aarch64_feature_flags *isa_flags,
+		   std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *cpu;
@@ -17196,8 +17200,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     {
       if (strlen (cpu->name) == len && strncmp (cpu->name, to_parse, len) == 0)
 	{
-	  uint64_t isa_temp = cpu->flags;
-
+	  auto isa_temp = cpu->flags;
 
 	  if (ext != NULL)
 	    {
@@ -17828,7 +17831,7 @@ aarch64_print_hint_for_extensions (const std::string &str)
 
 static bool
 aarch64_validate_mcpu (const char *str, const struct processor **res,
-		       uint64_t *isa_flags)
+		       aarch64_feature_flags *isa_flags)
 {
   std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
@@ -18042,7 +18045,7 @@ aarch64_validate_mbranch_protection (const char *const_str)
 
 static bool
 aarch64_validate_march (const char *str, const struct processor **res,
-			 uint64_t *isa_flags)
+			aarch64_feature_flags *isa_flags)
 {
   std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
@@ -18127,19 +18130,28 @@ aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits_enum value)
     return (int) value / 64;
 }
 
+/* Set the global aarch64_asm_isa_flags to FLAGS and update
+   aarch64_isa_flags accordingly.  */
+
+void
+aarch64_set_asm_isa_flags (aarch64_feature_flags flags)
+{
+  aarch64_set_asm_isa_flags (&global_options, flags);
+}
+
 /* Implement TARGET_OPTION_OVERRIDE.  This is called once in the beginning
    and is used to parse the -m{cpu,tune,arch} strings and setup the initial
    tuning structs.  In particular it must set selected_tune and
-   aarch64_isa_flags that define the available ISA features and tuning
+   aarch64_asm_isa_flags that define the available ISA features and tuning
    decisions.  It must also set selected_arch as this will be used to
    output the .arch asm tags for each function.  */
 
 static void
 aarch64_override_options (void)
 {
-  uint64_t cpu_isa = 0;
-  uint64_t arch_isa = 0;
-  aarch64_isa_flags = 0;
+  aarch64_feature_flags cpu_isa = 0;
+  aarch64_feature_flags arch_isa = 0;
+  aarch64_set_asm_isa_flags (0);
 
   const struct processor *cpu = NULL;
   const struct processor *arch = NULL;
@@ -18179,25 +18191,25 @@ aarch64_override_options (void)
 	}
 
       selected_arch = arch->arch;
-      aarch64_isa_flags = arch_isa;
+      aarch64_set_asm_isa_flags (arch_isa);
     }
   else if (cpu)
     {
       selected_arch = cpu->arch;
-      aarch64_isa_flags = cpu_isa;
+      aarch64_set_asm_isa_flags (cpu_isa);
     }
   else if (arch)
     {
       cpu = &all_cores[arch->ident];
       selected_arch = arch->arch;
-      aarch64_isa_flags = arch_isa;
+      aarch64_set_asm_isa_flags (arch_isa);
     }
   else
     {
       /* No -mcpu or -march specified, so use the default CPU.  */
       cpu = &all_cores[TARGET_CPU_DEFAULT];
       selected_arch = cpu->arch;
-      aarch64_isa_flags = cpu->flags;
+      aarch64_set_asm_isa_flags (cpu->flags);
     }
 
   selected_tune = tune ? tune->ident : cpu->ident;
@@ -18339,7 +18351,7 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
     = aarch64_get_tune_cpu (ptr->x_selected_tune);
   const struct processor *arch = aarch64_get_arch (ptr->x_selected_arch);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_isa_flags,
+    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_asm_isa_flags,
 						  arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
@@ -18447,13 +18459,15 @@ aarch64_handle_attr_arch (const char *str)
 {
   const struct processor *tmp_arch = NULL;
   std::string invalid_extension;
+  aarch64_feature_flags tmp_flags;
   enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_arch (str, &tmp_arch, &aarch64_isa_flags, &invalid_extension);
+    = aarch64_parse_arch (str, &tmp_arch, &tmp_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_arch);
       selected_arch = tmp_arch->arch;
+      aarch64_set_asm_isa_flags (tmp_flags);
       return true;
     }
 
@@ -18485,14 +18499,16 @@ aarch64_handle_attr_cpu (const char *str)
 {
   const struct processor *tmp_cpu = NULL;
   std::string invalid_extension;
+  aarch64_feature_flags tmp_flags;
   enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_cpu (str, &tmp_cpu, &aarch64_isa_flags, &invalid_extension);
+    = aarch64_parse_cpu (str, &tmp_cpu, &tmp_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_cpu);
       selected_tune = tmp_cpu->ident;
       selected_arch = tmp_cpu->arch;
+      aarch64_set_asm_isa_flags (tmp_flags);
       return true;
     }
 
@@ -18586,7 +18602,7 @@ static bool
 aarch64_handle_attr_isa_flags (char *str)
 {
   enum aarch64_parse_opt_result parse_res;
-  uint64_t isa_flags = aarch64_isa_flags;
+  auto isa_flags = aarch64_asm_isa_flags;
 
   /* We allow "+nothing" in the beginning to clear out all architectural
      features if the user wants to handpick specific features.  */
@@ -18601,7 +18617,7 @@ aarch64_handle_attr_isa_flags (char *str)
 
   if (parse_res == AARCH64_PARSE_OK)
     {
-      aarch64_isa_flags = isa_flags;
+      aarch64_set_asm_isa_flags (isa_flags);
       return true;
     }
 
@@ -18858,7 +18874,7 @@ aarch64_process_target_attr (tree args)
 	{
 	  /* Check if token is possibly an arch extension without
 	     leading '+'.  */
-	  uint64_t isa_temp = 0;
+	  aarch64_feature_flags isa_temp = 0;
 	  auto with_plus = std::string ("+") + token;
 	  enum aarch64_parse_opt_result ext_res
 	    = aarch64_parse_extension (with_plus.c_str (), &isa_temp, nullptr);
@@ -19011,8 +19027,12 @@ aarch64_can_inline_p (tree caller, tree callee)
 					   : target_option_default_node);
 
   /* Callee's ISA flags should be a subset of the caller's.  */
+  if ((caller_opts->x_aarch64_asm_isa_flags
+       & callee_opts->x_aarch64_asm_isa_flags)
+      != callee_opts->x_aarch64_asm_isa_flags)
+    return false;
   if ((caller_opts->x_aarch64_isa_flags & callee_opts->x_aarch64_isa_flags)
-       != callee_opts->x_aarch64_isa_flags)
+      != callee_opts->x_aarch64_isa_flags)
     return false;
 
   /* Allow non-strict aligned functions inlining into strict
@@ -20644,6 +20664,8 @@ aarch64_mangle_type (const_tree type)
   /* Half-precision floating point types.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
     {
+      if (TYPE_MAIN_VARIANT (type) == float16_type_node)
+	return NULL;
       if (TYPE_MODE (type) == BFmode)
 	return "u6__bf16";
       else
@@ -22474,7 +22496,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   const struct processor *this_arch
     = aarch64_get_arch (targ_options->x_selected_arch);
 
-  uint64_t isa_flags = targ_options->x_aarch64_isa_flags;
+  auto isa_flags = targ_options->x_aarch64_asm_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags,
 						  this_arch->flags);
@@ -22578,7 +22600,7 @@ aarch64_start_file (void)
 
   const struct processor *default_arch
     = aarch64_get_arch (default_options->x_selected_arch);
-  uint64_t default_isa_flags = default_options->x_aarch64_isa_flags;
+  auto default_isa_flags = default_options->x_aarch64_asm_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
 						  default_arch->flags);

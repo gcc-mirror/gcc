@@ -1,6 +1,9 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do preprocess { target c++23 } }
 
+// <stdatomic.h> is not freestanding.
+// { dg-require-effective-target hosted }
+
 #include <version>
 
 #ifndef __cpp_lib_stdatomic_h

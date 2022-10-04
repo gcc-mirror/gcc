@@ -153,9 +153,13 @@ static int warn_about_return_type;
 
 static bool undef_nested_function;
 
-/* If non-zero, implicit "omp declare target" attribute is added into the
-   attribute lists.  */
-int current_omp_declare_target_attribute;
+/* Vector of implicit "omp declare target" attributes to be added into
+   the attribute lists.  */
+vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
+
+/* If non-zero, we are inside of
+   #pragma omp begin assumes ... #pragma omp end assumes region.  */
+int current_omp_begin_assumes;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are
@@ -4476,11 +4480,34 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
     }
   return NULL_TREE;
 }
+
+/* Handle the standard [[noreturn]] attribute.  */
+
+static tree
+handle_std_noreturn_attribute (tree *node, tree name, tree args,
+			       int flags, bool *no_add_attrs)
+{
+  /* Unlike GNU __attribute__ ((noreturn)), the standard [[noreturn]]
+     only applies to functions, not function pointers.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    return handle_noreturn_attribute (node, name, args, flags, no_add_attrs);
+  else
+    {
+      pedwarn (input_location, OPT_Wattributes,
+	       "standard %qE attribute can only be applied to functions",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+}
+
 /* Table of supported standard (C2x) attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "_Noreturn", 0, 0, false, false, false, false,
+    handle_std_noreturn_attribute, NULL },
   { "deprecated", 0, 1, false, false, false, false,
     handle_deprecated_attribute, NULL },
   { "fallthrough", 0, 0, false, false, false, false,
@@ -4489,6 +4516,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_unused_attribute, NULL },
   { "nodiscard", 0, 1, false, false, false, false,
     handle_nodiscard_attribute, NULL },
+  { "noreturn", 0, 0, false, false, false, false,
+    handle_std_noreturn_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5076,7 +5105,7 @@ static tree
 c_decl_attributes (tree *node, tree attributes, int flags)
 {
   /* Add implicit "omp declare target" attribute if requested.  */
-  if (current_omp_declare_target_attribute
+  if (vec_safe_length (current_omp_declare_target_attribute)
       && ((VAR_P (*node) && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
@@ -5089,6 +5118,22 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 				  NULL_TREE, attributes);
 	  attributes = tree_cons (get_identifier ("omp declare target block"),
 				  NULL_TREE, attributes);
+	}
+      if (TREE_CODE (*node) == FUNCTION_DECL)
+	{
+	  int device_type
+	    = current_omp_declare_target_attribute->last ().device_type;
+	  device_type = MAX (device_type, 0);
+	  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0
+	      && !lookup_attribute ("omp declare target host", attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target host"),
+			   NULL_TREE, attributes);
+	  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0
+	      && !lookup_attribute ("omp declare target nohost", attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target nohost"),
+			   NULL_TREE, attributes);
 	}
     }
 

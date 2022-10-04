@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <bits/c++config.h>
 #include <bits/char_traits.h>
 #include <bits/allocator.h>

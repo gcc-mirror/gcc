@@ -1099,7 +1099,9 @@ maybe_add_lambda_conv_op (tree type)
   tree optype = TREE_TYPE (callop);
   tree fn_result = TREE_TYPE (optype);
 
-  tree thisarg = build_int_cst (TREE_TYPE (DECL_ARGUMENTS (callop)), 0);
+  tree thisarg = NULL_TREE;
+  if (TREE_CODE (optype) == METHOD_TYPE)
+    thisarg = build_int_cst (TREE_TYPE (DECL_ARGUMENTS (callop)), 0);
   if (generic_lambda_p)
     {
       ++processing_template_decl;
@@ -1109,18 +1111,25 @@ maybe_add_lambda_conv_op (tree type)
 	 return expression for a deduced return call op to allow for simple
 	 implementation of the conversion operator.  */
 
-      tree instance = cp_build_fold_indirect_ref (thisarg);
-      tree objfn = lookup_template_function (DECL_NAME (callop),
-					     DECL_TI_ARGS (callop));
-      objfn = build_min (COMPONENT_REF, NULL_TREE,
-			 instance, objfn, NULL_TREE);
-      int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
+      tree objfn;
+      int nargs = list_length (DECL_ARGUMENTS (callop));
+      if (thisarg)
+	{
+	  tree instance = cp_build_fold_indirect_ref (thisarg);
+	  objfn = lookup_template_function (DECL_NAME (callop),
+					    DECL_TI_ARGS (callop));
+	  objfn = build_min (COMPONENT_REF, NULL_TREE,
+			     instance, objfn, NULL_TREE);
+	  --nargs;
+	  call = prepare_op_call (objfn, nargs);
+	}
+      else
+	objfn = callop;
 
-      call = prepare_op_call (objfn, nargs);
       if (type_uses_auto (fn_result))
 	decltype_call = prepare_op_call (objfn, nargs);
     }
-  else
+  else if (thisarg)
     {
       direct_argvec = make_tree_vector ();
       direct_argvec->quick_push (thisarg);
@@ -1135,9 +1144,11 @@ maybe_add_lambda_conv_op (tree type)
   tree fn_args = NULL_TREE;
   {
     int ix = 0;
-    tree src = DECL_CHAIN (DECL_ARGUMENTS (callop));
+    tree src = FUNCTION_FIRST_USER_PARM (callop);
     tree tgt = NULL;
 
+    if (!thisarg && !decltype_call)
+      src = NULL_TREE;
     while (src)
       {
 	tree new_node = copy_node (src);
@@ -1160,12 +1171,15 @@ maybe_add_lambda_conv_op (tree type)
 	if (generic_lambda_p)
 	  {
 	    tree a = tgt;
-	    if (DECL_PACK_P (tgt))
+	    if (thisarg)
 	      {
-		a = make_pack_expansion (a);
-		PACK_EXPANSION_LOCAL_P (a) = true;
+		if (DECL_PACK_P (tgt))
+		  {
+		    a = make_pack_expansion (a);
+		    PACK_EXPANSION_LOCAL_P (a) = true;
+		  }
+		CALL_EXPR_ARG (call, ix) = a;
 	      }
-	    CALL_EXPR_ARG (call, ix) = a;
 
 	    if (decltype_call)
 	      {
@@ -1193,7 +1207,7 @@ maybe_add_lambda_conv_op (tree type)
 	     tf_warning_or_error);
 	}
     }
-  else
+  else if (thisarg)
     {
       /* Don't warn on deprecated or unavailable lambda declarations, unless
 	 the lambda is actually called.  */
@@ -1203,10 +1217,14 @@ maybe_add_lambda_conv_op (tree type)
 			   direct_argvec->address ());
     }
 
-  CALL_FROM_THUNK_P (call) = 1;
-  SET_EXPR_LOCATION (call, UNKNOWN_LOCATION);
+  if (thisarg)
+    {
+      CALL_FROM_THUNK_P (call) = 1;
+      SET_EXPR_LOCATION (call, UNKNOWN_LOCATION);
+    }
 
-  tree stattype = build_function_type (fn_result, FUNCTION_ARG_CHAIN (callop));
+  tree stattype
+    = build_function_type (fn_result, FUNCTION_FIRST_USER_PARMTYPE (callop));
   stattype = (cp_build_type_attribute_variant
 	      (stattype, TYPE_ATTRIBUTES (optype)));
   if (flag_noexcept_type
@@ -1248,6 +1266,41 @@ maybe_add_lambda_conv_op (tree type)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
   add_method (type, fn, false);
+
+  if (thisarg == NULL_TREE)
+    {
+      /* For static lambda, just return operator().  */
+      if (nested)
+	push_function_context ();
+      else
+	/* Still increment function_depth so that we don't GC in the
+	   middle of an expression.  */
+	++function_depth;
+
+      /* Generate the body of the conversion op.  */
+
+      start_preparsed_function (convfn, NULL_TREE,
+				SF_PRE_PARSED | SF_INCLASS_INLINE);
+      tree body = begin_function_body ();
+      tree compound_stmt = begin_compound_stmt (0);
+
+      /* decl_needed_p needs to see that it's used.  */
+      TREE_USED (callop) = 1;
+      finish_return_stmt (decay_conversion (callop, tf_warning_or_error));
+
+      finish_compound_stmt (compound_stmt);
+      finish_function_body (body);
+
+      fn = finish_function (/*inline_p=*/true);
+      if (!generic_lambda_p)
+	expand_or_defer_fn (fn);
+
+      if (nested)
+	pop_function_context ();
+      else
+	--function_depth;
+      return;
+    }
 
   /* Generic thunk code fails for varargs; we'll complain in mark_used if
      the conversion op is used.  */

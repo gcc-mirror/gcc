@@ -1,3 +1,14 @@
+2022-09-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d579c467c1.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Remove
+	rt/arrayassign.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 88aa69b14.
+	* src/Makefile.am (PHOBOS_DSOURCES): Remove std/digest/digest.d,
+	std/xml.d.
+	* src/Makefile.in: Regenerate.
+
 2022-08-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 817610b16d.

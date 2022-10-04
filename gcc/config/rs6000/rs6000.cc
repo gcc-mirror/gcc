@@ -14930,8 +14930,14 @@ rs6000_print_patchable_function_entry (FILE *file,
   if (!(TARGET_64BIT && DEFAULT_ABI != ABI_ELFv2)
       && HAVE_GAS_SECTION_LINK_ORDER)
     flags |= SECTION_LINK_ORDER;
-  default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
-					    flags);
+  bool global_entry_needed_p = rs6000_global_entry_point_prologue_needed_p ();
+  /* For a function which needs global entry point, we will emit the
+     patchable area before and after local entry point under the control of
+     cfun->machine->global_entry_emitted, see the handling in function
+     rs6000_output_function_prologue.  */
+  if (!global_entry_needed_p || cfun->machine->global_entry_emitted)
+    default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
+					      flags);
 }
 
 enum rtx_code
@@ -20269,6 +20275,9 @@ rs6000_mangle_type (const_tree type)
   if (type == pixel_type_node) return "u7__pixel";
   if (type == bool_int_type_node) return "U6__booli";
   if (type == bool_long_long_type_node) return "U6__boolx";
+
+  if (type == float128_type_node || type == float64x_type_node)
+    return NULL;
 
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";

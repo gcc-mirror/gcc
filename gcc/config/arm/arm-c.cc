@@ -202,6 +202,8 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT", TARGET_ARM_QBIT);
   def_or_undef_macro (pfile, "__ARM_FEATURE_SAT", TARGET_ARM_SAT);
   def_or_undef_macro (pfile, "__ARM_FEATURE_CRYPTO", TARGET_CRYPTO);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_AES", TARGET_CRYPTO);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_SHA2", TARGET_CRYPTO);
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_UNALIGNED", unaligned_access);
 

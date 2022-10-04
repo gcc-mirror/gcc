@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_CFLOAT
 #define _GLIBCXX_TR1_CFLOAT 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <cfloat>
 
 #ifndef DECIMAL_DIG

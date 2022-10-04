@@ -7,16 +7,16 @@ subroutine test(b,c,d)
 
   integer, target :: a(5)
 
-  !$omp target is_device_ptr(a) ! { dg-error "Non-dummy object .a. in IS_DEVICE_PTR clause" }
+  !$omp target is_device_ptr(a) ! Valid since OpenMP 5.1
   !$omp end target
 
-  !$omp target is_device_ptr(b) ! { dg-error "VALUE object .b. in IS_DEVICE_PTR clause" }
+  !$omp target is_device_ptr(b) ! Valid since OpenMP 5.1
   !$omp end target
 
-  !$omp target is_device_ptr(c) ! { dg-error "POINTER object .c. in IS_DEVICE_PTR clause" }
+  !$omp target is_device_ptr(c) ! Valid since OpenMP 5.1
   !$omp end target
 
-  !$omp target is_device_ptr(d) ! { dg-error "ALLOCATABLE object .d. in IS_DEVICE_PTR clause" }
+  !$omp target is_device_ptr(d) ! Valid since OpenMP 5.1
   !$omp end target
 
   !$omp target data map(a) use_device_addr(a)  ! Should be okay

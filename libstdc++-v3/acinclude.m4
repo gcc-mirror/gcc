@@ -2992,7 +2992,7 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
     fi
   else
     is_hosted=yes
-    hosted_define=1
+    hosted_define=__STDC_HOSTED__
   fi
   GLIBCXX_CONDITIONAL(GLIBCXX_HOSTED, test $is_hosted = yes)
   AC_DEFINE_UNQUOTED(_GLIBCXX_HOSTED, $hosted_define,

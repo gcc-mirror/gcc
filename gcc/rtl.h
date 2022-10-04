@@ -3369,6 +3369,7 @@ extern int insn_line (const rtx_insn *);
 extern const char * insn_file (const rtx_insn *);
 extern tree insn_scope (const rtx_insn *);
 extern expanded_location insn_location (const rtx_insn *);
+extern int insn_discriminator (const rtx_insn *);
 extern location_t prologue_location, epilogue_location;
 
 /* In jump.cc */

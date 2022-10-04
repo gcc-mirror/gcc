@@ -1413,6 +1413,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       tree evolution_part;
+      enum vect_induction_op_type induction_type;
 
       gphi *phi = gsi.phi ();
       stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
@@ -1429,6 +1430,15 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "reduc or virtual phi. skip.\n");
+	  continue;
+	}
+
+      induction_type = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (phi_info);
+      if (induction_type != vect_step_op_add)
+	{
+	  if (!vect_can_peel_nonlinear_iv_p (loop_vinfo, induction_type))
+	    return false;
+
 	  continue;
 	}
 

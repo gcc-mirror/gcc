@@ -6181,7 +6181,7 @@ of the excess precision explicitly added.  For\n\
 @code{EXCESS_PRECISION_TYPE_FLOAT16}, and\n\
 @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the\n\
 explicit excess precision that should be added depending on the\n\
-value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.\n\
+value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{|}16@r{]}}.\n\
 Note that unpredictable explicit excess precision does not make sense,\n\
 so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}\n\
 when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},\n\

@@ -200,6 +200,7 @@ enum scope_kind {
 			init-statement.  */
   sk_cond,	     /* The scope of the variable declared in the condition
 			of an if or switch statement.  */
+  sk_stmt_expr,	     /* GNU statement expression block.  */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
   sk_scoped_enum,    /* The scope containing the enumerators of a C++11

@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-effective-target hosted }
+
 #include <bitset>
 #include <testsuite_hooks.h>
 

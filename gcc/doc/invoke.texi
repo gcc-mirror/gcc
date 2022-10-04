@@ -1226,6 +1226,7 @@ See RS/6000 and PowerPC Options.
 -mbig-endian  -mlittle-endian @gol
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset}}
+-mcsr-check -mno-csr-check @gol
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -2928,9 +2929,16 @@ change in version 12.
 Version 14, which first appeared in G++ 10, corrects the mangling of
 the nullptr expression.
 
-Version 15, which first appeared in G++ 11, changes the mangling of
+Version 15, which first appeared in G++ 10.3, corrects G++ 10 ABI
+tag regression.
+
+Version 16, which first appeared in G++ 11, changes the mangling of
 @code{__alignof__} to be distinct from that of @code{alignof}, and
 dependent operator names.
+
+Version 17, which first appeared in G++ 12, fixes layout of classes
+that inherit from aggregate classes with default member initializers
+in C++14 and up.
 
 See also @option{-Wabi}.
 
@@ -2941,7 +2949,7 @@ works around mangling changes by creating an alias with the correct
 mangled name when defining a symbol with an incorrect mangled name.
 This switch specifies which ABI version to use for the alias.
 
-With @option{-fabi-version=0} (the default), this defaults to 11 (GCC 7
+With @option{-fabi-version=0} (the default), this defaults to 13 (GCC 8.2
 compatibility).  If another ABI version is explicitly selected, this
 defaults to 0.  For compatibility with GCC versions 3.2 through 4.9,
 use @option{-fabi-compat-version=2}.
@@ -9901,7 +9909,7 @@ security-sensitive value is written to an output file
 
 See @uref{https://cwe.mitre.org/data/definitions/532.html, CWE-532: Information Exposure Through Log Files}.
 
-@item Wanalyzer-exposure-through-uninit-copy
+@item -Wanalyzer-exposure-through-uninit-copy
 @opindex Wanalyzer-exposure-through-uninit-copy
 @opindex Wno-analyzer-exposure-through-uninit-copy
 This warning requires both @option{-fanalyzer} and the use of a plugin
@@ -16877,9 +16885,13 @@ the area size or to remove it completely on a single function.
 If @code{N=0}, no pad location is recorded.
 
 The NOP instructions are inserted at---and maybe before, depending on
-@var{M}---the function entry address, even before the prologue.
+@var{M}---the function entry address, even before the prologue.  On
+PowerPC with the ELFv2 ABI, for a function with dual entry points,
+the local entry point is this function entry address.
 
-The maximum value of @var{N} and @var{M} is 65535.
+The maximum value of @var{N} and @var{M} is 65535.  On PowerPC with the
+ELFv2 ABI, for a function with dual entry points, the supported values
+for @var{M} are 0, 2, 6 and 14.
 @end table
 
 
@@ -28058,7 +28070,9 @@ supported.
 Generate code for the specified PTX ISA target architecture
 (e.g.@: @samp{sm_35}).  Valid architecture strings are @samp{sm_30},
 @samp{sm_35}, @samp{sm_53}, @samp{sm_70}, @samp{sm_75} and
-@samp{sm_80}.  The default target architecture is sm_30.
+@samp{sm_80}.
+The default depends on how the compiler has been configured, see
+@option{--with-arch}.
 
 This option sets the value of the preprocessor macro
 @code{__PTX_SM__}; for instance, for @samp{sm_35}, it has the value
@@ -28591,6 +28605,11 @@ linker relaxations.
 @opindex mriscv-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
+
+@item -mcsr-check
+@itemx -mno-csr-check
+@opindex mcsr-check
+Enables or disables the CSR checking.
 
 @item -malign-data=@var{type}
 @opindex malign-data

@@ -148,11 +148,6 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
 
   /* Expected number of executions: calculated in profile.cc.  */
   profile_count count;
-
-  /* The discriminator for this block.  The discriminator distinguishes
-     among several basic blocks that share a common locus, allowing for
-     more accurate sample-based profiling.  */
-  int discriminator;
 };
 
 /* This ensures that struct gimple_bb_info is smaller than

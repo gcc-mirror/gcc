@@ -547,24 +547,24 @@ nothrow:
 
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
     import std.conv : emplace;
 
-    auto reg = Region!()(new ubyte[1024]);
-    auto state = reg.allocate(stateSize!(CAllocatorImpl!(Region!(), Yes.indirect)));
-    auto regObj = emplace!(CAllocatorImpl!(Region!(), Yes.indirect))(state, &reg);
+    auto reg = BorrowedRegion!()(new ubyte[1024]);
+    auto state = reg.allocate(stateSize!(CAllocatorImpl!(BorrowedRegion!(), Yes.indirect)));
+    auto regObj = emplace!(CAllocatorImpl!(BorrowedRegion!(), Yes.indirect))(state, &reg);
 
     auto rcalloc = RCIAllocator(regObj);
     auto b = rcalloc.allocate(10);
     assert(b.length == 10);
 
     // The reference counting is zero based
-    assert((cast(CAllocatorImpl!(Region!(), Yes.indirect))(rcalloc._alloc)).rc == 1);
+    assert((cast(CAllocatorImpl!(BorrowedRegion!(), Yes.indirect))(rcalloc._alloc)).rc == 1);
     {
         auto rca2 = rcalloc;
-        assert((cast(CAllocatorImpl!(Region!(), Yes.indirect))(rcalloc._alloc)).rc == 2);
+        assert((cast(CAllocatorImpl!(BorrowedRegion!(), Yes.indirect))(rcalloc._alloc)).rc == 2);
     }
-    assert((cast(CAllocatorImpl!(Region!(), Yes.indirect))(rcalloc._alloc)).rc == 1);
+    assert((cast(CAllocatorImpl!(BorrowedRegion!(), Yes.indirect))(rcalloc._alloc)).rc == 1);
 }
 
 @system unittest

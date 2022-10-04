@@ -5,6 +5,6 @@
 
 #if !defined(__cpp_char8_t)
 #  error __cpp_char8_t is not defined!
-#elif __cpp_char8_t != 201811
-#  error __cpp_char8_t != 201811
+#elif __cpp_char8_t != 202207
+#  error __cpp_char8_t != 202207
 #endif

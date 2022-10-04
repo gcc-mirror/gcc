@@ -132,6 +132,12 @@ Target Bool Var(riscv_mrelax) Init(1)
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
 
+mcsr-check
+Target Bool Var(riscv_mcsr_check) Init(0)
+Enable the CSR checking for the ISA-dependent CRS and the read-only CSR.
+The ISA-dependent CSR are only valid when the specific ISA is set.  The
+read-only CSR can not be written by the CSR instructions.
+
 Mask(64BIT)
 
 Mask(MUL)

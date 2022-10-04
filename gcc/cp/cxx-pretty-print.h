@@ -90,7 +90,7 @@ void pp_cxx_colon_colon (cxx_pretty_printer *);
 void pp_cxx_separate_with (cxx_pretty_printer *, int);
 
 void pp_cxx_canonical_template_parameter (cxx_pretty_printer *, tree);
-void pp_cxx_trait_expression (cxx_pretty_printer *, tree);
+void pp_cxx_trait (cxx_pretty_printer *, tree);
 void pp_cxx_va_arg_expression (cxx_pretty_printer *, tree);
 void pp_cxx_offsetof_expression (cxx_pretty_printer *, tree);
 void pp_cxx_addressof_expression (cxx_pretty_printer *, tree);

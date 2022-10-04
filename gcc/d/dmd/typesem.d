@@ -1388,6 +1388,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             // extended index), as we need to run semantic when `oidx` changes.
             size_t tupleOrigIdx = size_t.max;
             size_t tupleExtIdx = size_t.max;
+            bool hasDefault;
             foreach (oidx, oparam, eidx, eparam; tf.parameterList)
             {
                 // oparam (original param) will always have the default arg
@@ -1396,6 +1397,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 // position to get the offset in it later on.
                 if (oparam.defaultArg)
                 {
+                    hasDefault = true;
                     // Get the obvious case out of the way
                     if (oparam is eparam)
                         errors |= !defaultArgSemantic(eparam, argsc);
@@ -1421,6 +1423,11 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         if (te && te.exps && te.exps.length)
                             eparam.defaultArg = (*te.exps)[eidx - tupleExtIdx];
                     }
+                }
+                else if (hasDefault)
+                {
+                    .error(loc, "default argument expected for `%s`", oparam.toChars());
+                    errors = true;
                 }
 
                 // We need to know the default argument to resolve `auto ref`,
@@ -2089,10 +2096,12 @@ extern (C++) Type merge(Type type)
  *  loc = the location where the property is encountered
  *  ident = the identifier of the property
  *  flag = if flag & 1, don't report "not a property" error and just return NULL.
+ *  src = expression for type `t` or null.
  * Returns:
  *      expression representing the property, or null if not a property and (flag & 1)
  */
-Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier ident, int flag)
+Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier ident, int flag,
+    Expression src = null)
 {
     Expression visitType(Type mt)
     {
@@ -2169,7 +2178,10 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
                         error(loc, "no property `%s` for type `%s`, perhaps `import %.*s;` is needed?", ident.toChars(), mt.toChars(), cast(int)n.length, n.ptr);
                 else
                 {
-                    error(loc, "no property `%s` for type `%s`", ident.toChars(), mt.toPrettyChars(true));
+                    if (src)
+                        error(loc, "no property `%s` for `%s` of type `%s`", ident.toChars(), src.toChars(), mt.toPrettyChars(true));
+                    else
+                        error(loc, "no property `%s` for type `%s`", ident.toChars(), mt.toPrettyChars(true));
                     if (auto dsym = mt.toDsymbol(scope_))
                         if (auto sym = dsym.isAggregateDeclaration())
                         {
@@ -4457,7 +4469,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
 
 
 /************************
- * Get the the default initialization expression for a type.
+ * Get the default initialization expression for a type.
  * Params:
  *  mt = the type for which the init expression is returned
  *  loc = the location where the expression needs to be evaluated

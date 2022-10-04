@@ -5,7 +5,7 @@ constinit constinit int v1; // { dg-error "duplicate .constinit." }
 constexpr constinit int v2 = 1; // { dg-error "can use at most one of the .constinit. and .constexpr. specifiers" }
 constinit constexpr int v3 = 1; // { dg-error "an use at most one of the .constinit. and .constexpr. specifiers" }
 
-extern static constinit int v4; // { dg-error "conflicting specifiers" }
+extern static constinit int v4; // { dg-error "'static' specifier conflicts with 'extern'" }
 extern thread_local constinit int v5;
 extern constinit int v6;
 

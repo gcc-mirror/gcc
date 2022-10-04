@@ -106,21 +106,14 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_UClibc)
 {
-    version (X86)
+    version (X86_Any)
     {
         ///
         enum int FP_ILOGB0        = int.min;
         ///
         enum int FP_ILOGBNAN      = int.min;
     }
-    else version (X86_64)
-    {
-        ///
-        enum int FP_ILOGB0        = int.min;
-        ///
-        enum int FP_ILOGBNAN      = int.min;
-    }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;

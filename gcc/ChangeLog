@@ -1,3 +1,881 @@
+2022-10-03  Sergei Trofimovich  <siarheit@google.com>
+
+	* config/i386/t-i386: Add build-time dependencies against
+	i386-builtin-types.inc to i386-builtins.o, i386-expand.o,
+	i386-features.o.
+
+2022-10-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (while_ultsidi): Limit mask length using
+	operand 3.
+	* doc/md.texi (while_ult): Document new operand 3 usage.
+	* internal-fn.cc (expand_while_optab_fn): Set operand 3 when lhs_type
+	maps to a non-vector mode.
+
+2022-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107109
+	* range-op.cc (adjust_op1_for_overflow): Don't process undefined.
+
+2022-10-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vrev64q_m_<supf><mode>): Add early
+	clobber.
+	(mve_vrev64q_m_f<mode>): Likewise.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set_nonzero_bits): Do not pessimize range.
+	(range_tests_nonzero_bits): New test.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::operator==): Early bail on m_num_ranges
+	equal to 0.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::legacy_equal_p): Remove nonozero mask
+	check when comparing VR_VARYING ranges.
+
+2022-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (struct ipa_vr_ggc_hash_traits): Do not compare
+	incompatible ranges in ipa-prop.
+
+2022-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107121
+	* tree-cfg.cc (verify_gimple_call): Fix a typo in diagnostics,
+	DEFFERED_INIT -> DEFERRED_INIT.
+
+2022-10-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* config/vxworks-driver.cc: New.
+	* config.gcc (*vxworks*): Add vxworks-driver.o in extra_gcc_objs.
+	* config/t-vxworks: Add vxworks-driver.o.
+	* config/vxworks.h (GCC_DRIVER_HOST_INITIALIZATION): New.
+
+2022-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VX_CRTBEGIN_SPEC, VX_CRTEND_SPEC): If
+	HAVE_INITFINI_ARRAY_SUPPORT, pick crtstuff objects regardless
+	of ENABLE_SHARED_LIBGCC.
+
+2022-10-01  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.cc (TARGET_HAVE_TLS): Only define if
+	HAVE_AS_TLS is defined.
+
+2022-10-01  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_group_base): Fix IF_PRESENT (no_create)
+	handling.
+
+2022-10-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.md (HSI2): New iterator.
+	(eqne_invert): Similarly.
+	* config/h8300/testcompare.md (testhi_upper_z): New pattern.
+	(cmpqi_z, cmphi_z, cmpsi_z): Likewise.
+	(store_z_qi, store_z_i_qi, store_z_hi, store_z_hi_sb): New
+	define_insn_and_splits and/or define_insns.
+	(store_z_hi_neg, store_z_hi_and, store_z_<mode>): Likewise.
+	(store_z_<mode>_neg, store_z_<mode>_and, store_z): Likewise.
+
+2022-10-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* tree-ssa-dom.cc (record_edge_info): Install correct version of
+	patch.
+
+2022-10-01  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* dwarf2out.cc (add_call_src_coords_attributes): Emit discriminators for inlined call sites.
+
+2022-09-30  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* tree-ssa-dom.cc (single_block_loop_p): New function.
+	(record_edge_info): Also record equivalences for the outgoing
+	edge of a single block loop where the condition is an invariant.
+
+2022-09-30  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* tree-ssa-dom.cc (free_dom_edge_info): Clear e->aux too.
+	(free_all_edge_infos): Do not clear e->aux here.
+
+2022-09-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	* target.def (TARGET_C_EXCESS_PRECISION): Document
+	-fexcess-precision=16.
+
+2022-09-30  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/tm.texi (TARGET_C_EXCESS_PRECISION): Add 16.
+
+2022-09-30  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	PR target/106815
+	* config/riscv/riscv.cc (riscv_excess_precision): Add support
+	for EXCESS_PRECISION_TYPE_FLOAT16.
+
+2022-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107080
+	* config/arm/arm.cc (arm_mangle_type): Mangle just __fp16 as Dh
+	and _Float16 as DF16_.
+	* config/csky/csky.cc (csky_init_builtins): Fix a comment typo.
+	(csky_mangle_type): Mangle __fp16 as Dh and _Float16 as DF16_
+	rather than mangling __fp16 as __fp16.
+
+2022-09-30  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/69543
+	* tree-ssa-uninit.cc (warn_uninit): Stop stripping macro tracking
+	information away from the diagnostic location.
+	(maybe_warn_read_write_only): Likewise.
+	(maybe_warn_operand): Likewise.
+
+2022-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107080
+	* config/aarch64/aarch64.cc (aarch64_mangle_type): Mangle just __fp16
+	as Dh and _Float16 as DF16_.
+
+2022-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107080
+	* config/i386/i386.cc (ix86_mangle_type): Always return NULL
+	for float128_type_node or float64x_type_node, don't check
+	float128t_type_node later on.
+	* config/ia64/ia64.cc (ia64_mangle_type): Always return NULL
+	for float128_type_node or float64x_type_node.
+	* config/rs6000/rs6000.cc (rs6000_mangle_type): Likewise.
+	Don't check float128_type_node later on.
+	* config/s390/s390.cc (s390_mangle_type): Don't use
+	TYPE_MAIN_VARIANT on type which was set to TYPE_MAIN_VARIANT
+	a few lines earlier.
+
+2022-09-30  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* doc/sourcebuild.texi: Document new vma_equals_lma effective
+	target check.
+
+2022-09-30  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_file_start): New .option.
+	* config/riscv/riscv.opt: New options.
+	* doc/invoke.texi: New definations.
+
+2022-09-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/99888
+	PR target/105649
+	* doc/invoke.texi (option -fpatchable-function-entry): Adjust the
+	documentation for PowerPC ELFv2 ABI dual entry points.
+	* config/rs6000/rs6000-internal.h
+	(rs6000_print_patchable_function_entry): New function declaration.
+	* config/rs6000/rs6000-logue.cc (rs6000_output_function_prologue):
+	Support patchable-function-entry by emitting nops before and after
+	local entry for the function that needs global entry.
+	* config/rs6000/rs6000.cc (rs6000_print_patchable_function_entry): Skip
+	the function that needs global entry till global entry has been
+	emitted.
+	* config/rs6000/rs6000.h (struct machine_function): New bool member
+	global_entry_emitted.
+
+2022-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107095
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Use data arg
+	for .MASK_STORE size.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (plus_minus_ranges): New.
+	(adjust_op1_for_overflow): New.
+	(operator_plus::op1_range): Use new adjustment.
+	(operator_plus::op2_range): Ditto.
+	(operator_minus::op1_range): Ditto.
+	* value-relation.h (relation_lt_le_gt_ge_p): New.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::refine_using_relation): New.
+	(gori_compute::compute_operand1_range): Invoke
+	refine_using_relation when applicable.
+	(gori_compute::compute_operand2_range): Ditto.
+	* gimple-range-gori.h (class gori_compute): Adjust prototypes.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (ori_compute::compute_operand_range):
+	Create a relation record and pass it along when possible.
+	(gori_compute::compute_operand1_range): Pass relation along.
+	(gori_compute::compute_operand2_range): Ditto.
+	(gori_compute::compute_operand1_and_operand2_range): Ditto.
+	* gimple-range-gori.h (class gori_compute): Adjust prototypes.
+	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Pass
+	relation to op1_range call.
+	(gimple_range_op_handler::calc_op2): Pass relation to op2_range call.
+	* gimple-range-op.h (class gimple_range_op_handler): Adjust
+	prototypes.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (class value_relation): Move to .h file.
+	(value_relation::set_relation): Ditto.
+	(value_relation::value_relation): ditto.
+	* value-relation.h (class value_relation): Move from .cc file.
+	(value_relation::set_relation): Ditto
+	(value_relation::value_relation): Ditto.
+
+2022-09-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_minus::op2_range): Check for undefined.
+	(operator_mult::op1_range): Ditto.
+	(operator_exact_divide::op1_range): Ditto.
+	(operator_lshift::op1_range): Ditto.
+	(operator_rshift::op1_range): Ditto.
+	(operator_cast::op1_range): Ditto.
+	(operator_bitwise_and::op1_range): Ditto.
+	(operator_bitwise_or::op1_range): Ditto.
+	(operator_trunc_mod::op1_range): Ditto.
+	(operator_trunc_mod::op2_range): Ditto.
+	(operator_bitwise_not::op1_range): Ditto.
+	(pointer_or_operator::op1_range): Ditto.
+	(range_op_handler::op1_range): Ditto.
+	(range_op_handler::op2_range): Ditto.
+
+2022-09-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_simd_clone_compute_vecsize_and_simdlen):
+	Remove unused elt_bits variable.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h: Add comment on our use of
+	HAVE_INITFINI_ARRAY_SUPPORT.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/aarch64/t-aarch64-vxworks: Request multilib
+	variants for mcmodel=large.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (TARGET_FLOAT128_ENABLE_TYPE): Remove
+	resetting to 0.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (DWARF2_UNWIND_INFO): #define to 0
+	when ARM_UNWIND_INFO is set.
+
+2022-09-29  Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/107028
+	* gimplify.cc (omp_check_mapping_compatibility,
+	oacc_resolve_clause_dependencies): New functions.
+	(omp_accumulate_sibling_list): Remove redundant duplicate clause
+	detection for OpenACC.
+	(build_struct_sibling_lists): Skip deleted groups.  Don't build sibling
+	list for struct variables that are fully mapped on the same directive
+	for OpenACC.
+	(gimplify_scan_omp_clauses): Call oacc_resolve_clause_dependencies.
+
+2022-09-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR middle-end/25521
+	* varasm.cc (categorize_decl_for_section): Place `const volatile'
+	objects in read-only sections.
+	(default_select_section): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-data-ref.cc (dr_may_alias_p): Use to_poly_widest instead
+	of to_widest.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_CRYPTO, TARGET_SHA3, TARGET_SM4)
+	(TARGET_DOTPROD): Don't depend on TARGET_SIMD.
+	(TARGET_AES, TARGET_SHA2): Likewise.  Remove TARGET_CRYPTO test.
+	(TARGET_FP_F16INST): Don't depend on TARGET_FLOAT.
+	(TARGET_SVE2, TARGET_SVE_F32MM, TARGET_SVE_F64MM): Don't depend
+	on TARGET_SVE.
+	(TARGET_SVE2_AES, TARGET_SVE2_BITPERM, TARGET_SVE2_SHA3)
+	(TARGET_SVE2_SM4): Don't depend on TARGET_SVE2.
+	(TARGET_F32MM, TARGET_F64MM): Delete.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Guard
+	float macros with just TARGET_FLOAT rather than TARGET_FLOAT
+	|| TARGET_SIMD.
+	* config/aarch64/aarch64-simd.md (copysign<mode>3): Depend
+	only on TARGET_SIMD, rather than TARGET_FLOAT && TARGET_SIMD.
+	(aarch64_crypto_aes<aes_op>v16qi): Depend only on TARGET_AES,
+	rather than TARGET_SIMD && TARGET_AES.
+	(aarch64_crypto_aes<aesmc_op>v16qi): Likewise.
+	(*aarch64_crypto_aese_fused): Likewise.
+	(*aarch64_crypto_aesd_fused): Likewise.
+	(aarch64_crypto_pmulldi): Likewise.
+	(aarch64_crypto_pmullv2di): Likewise.
+	(aarch64_crypto_sha1hsi): Likewise TARGET_SHA2.
+	(aarch64_crypto_sha1hv4si): Likewise.
+	(aarch64_be_crypto_sha1hv4si): Likewise.
+	(aarch64_crypto_sha1su1v4si): Likewise.
+	(aarch64_crypto_sha1<sha1_op>v4si): Likewise.
+	(aarch64_crypto_sha1su0v4si): Likewise.
+	(aarch64_crypto_sha256h<sha256_op>v4si): Likewise.
+	(aarch64_crypto_sha256su0v4si): Likewise.
+	(aarch64_crypto_sha256su1v4si): Likewise.
+	(aarch64_crypto_sha512h<sha512_op>qv2di): Likewise TARGET_SHA3.
+	(aarch64_crypto_sha512su0qv2di): Likewise.
+	(aarch64_crypto_sha512su1qv2di, eor3q<mode>4): Likewise.
+	(aarch64_rax1qv2di, aarch64_xarqv2di, bcaxq<mode>4): Likewise.
+	(aarch64_sm3ss1qv4si): Likewise TARGET_SM4.
+	(aarch64_sm3tt<sm3tt_op>qv4si): Likewise.
+	(aarch64_sm3partw<sm3part_op>qv4si): Likewise.
+	(aarch64_sm4eqv4si, aarch64_sm4ekeyqv4si): Likewise.
+	* config/aarch64/aarch64.md (<FLOATUORS:optab>dihf2)
+	(copysign<GPF:mode>3, copysign<GPF:mode>3_insn)
+	(xorsign<mode>3): Remove redundant TARGET_FLOAT condition.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.opt (aarch64_asm_isa_flags): New variable.
+	* config/aarch64/aarch64.h (aarch64_asm_isa_flags)
+	(aarch64_isa_flags): Redefine as read-only macros.
+	(TARGET_SIMD, TARGET_FLOAT, TARGET_SVE): Don't depend on
+	!TARGET_GENERAL_REGS_ONLY.
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_set_asm_isa_flags): New function.
+	(aarch64_handle_option): Call it when updating -mgeneral-regs.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): Replace
+	m_old_isa_flags with m_old_asm_isa_flags.
+	(aarch64_set_asm_isa_flags): Declare.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_simd_switcher::aarch64_simd_switcher)
+	(aarch64_simd_switcher::~aarch64_simd_switcher): Save and restore
+	aarch64_asm_isa_flags instead of aarch64_isa_flags.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(check_required_extensions): Use aarch64_asm_isa_flags instead
+	of aarch64_isa_flags.
+	* config/aarch64/aarch64.cc (aarch64_set_asm_isa_flags): New function.
+	(aarch64_override_options, aarch64_handle_attr_arch)
+	(aarch64_handle_attr_cpu, aarch64_handle_attr_isa_flags): Use
+	aarch64_set_asm_isa_flags to set the ISA flags.
+	(aarch64_option_print, aarch64_declare_function_name)
+	(aarch64_start_file): Use aarch64_asm_isa_flags instead
+	of aarch64_isa_flags.
+	(aarch64_can_inline_p): Check aarch64_asm_isa_flags as well as
+	aarch64_isa_flags.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc (all_extensions):
+	Include the feature flag in flags_on and flags_off.
+	(aarch64_parse_extension): Update accordingly.
+	(aarch64_get_extension_string_for_isa_flags): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc: Use aarch64_feature_flags
+	for feature flags throughout.
+	* config/aarch64/aarch64-protos.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: Likewise.
+	* config/aarch64/aarch64.cc: Likewise.
+	* config/aarch64/aarch64.opt: Likewise.
+	* config/aarch64/driver-aarch64.cc: Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc (aarch64_option_extension)
+	(processor_name_to_arch, arch_to_arch_name): Remove const from
+	member variables.
+	(all_extensions, all_cores, all_architectures): Make a constexpr.
+	* config/aarch64/aarch64.cc (processor): Remove const from
+	member variables.
+	(all_architectures): Make a constexpr.
+	* config/aarch64/driver-aarch64.cc (aarch64_core_data)
+	(aarch64_arch_driver_info): Remove const from member variables.
+	(aarch64_cpu_data, aarch64_arches): Make a constexpr.
+	(get_arch_from_id): Return a pointer to const.
+	(host_detect_local_cpu): Update accordingly.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc (processor_name_to_arch)
+	(arch_to_arch_name): Use const char * instead of std::string.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(TARGET_OPTION_INIT_STRUCT): Delete.
+	(aarch64_option_extension): Remove is_synthetic_flag.
+	(all_extensions): Update accordingly.
+	(all_extensions_by_on, opt_ext, opt_ext_cmp): Delete.
+	(aarch64_option_init_struct, aarch64_contains_opt): Delete.
+	(aarch64_get_extension_string_for_isa_flags): Rewrite to use
+	all_extensions instead of all_extensions_on.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Switch to a new format.
+	* config/aarch64/aarch64-cores.def: Use the same format to specify
+	lists of features.
+	* config/aarch64/aarch64-arches.def: Likewise, moving that information
+	from aarch64.h.
+	* config/aarch64/aarch64-opts.h (aarch64_feature_flags): New typedef.
+	* config/aarch64/aarch64.h (aarch64_feature): New class enum.
+	Turn AARCH64_FL_* macros into constexprs, getting the definitions
+	from aarch64-option-extensions.def.  Remove AARCH64_FL_FOR_* macros.
+	* common/config/aarch64/aarch64-common.cc: Include
+	aarch64-feature-deps.h.
+	(all_extensions): Update for new .def format.
+	(all_extensions_by_on, all_cores, all_architectures): Likewise.
+	* config/aarch64/driver-aarch64.cc: Include aarch64-feature-deps.h.
+	(aarch64_extensions): Update for new .def format.
+	(aarch64_cpu_data, aarch64_arches): Likewise.
+	* config/aarch64/aarch64.cc: Include aarch64-feature-deps.h.
+	(all_architectures, all_cores): Update for new .def format.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(check_required_extensions): Likewise.
+	* config/aarch64/aarch64-feature-deps.h: New file.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Move crypto
+	after sha2.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (dotprod): Depend
+	on fp as well as simd.
+	(sha3): Likewise.
+	(aes): Likewise.  Make +noaes disable crypto.
+	(sha2): Likewise +nosha2.  Also make +nosha2 disable sha3 and
+	sve2-sha3.
+	(sve2-sha3): Depend on sha2 as well as sha3.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/107025
+	* config/aarch64/aarch64.h (oAARCH64_FL_RCPC8_4): Delete.
+	(AARCH64_FL_FOR_V8_4A): Update accordingly.
+	(AARCH64_ISA_RCPC8_4): Use AARCH64_FL_V8_4A directly.
+	* config/aarch64/aarch64-cores.def (thunderx3t110): Remove
+	AARCH64_FL_RCPC8_4.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Remove AARCH64_FL_FOR_<ARCH>
+	from the flags field.
+	* common/config/aarch64/aarch64-common.cc (all_cores): Add it
+	here instead.
+	* config/aarch64/aarch64.cc (all_cores): Likewise.
+	* config/aarch64/driver-aarch64.cc (all_cores): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config.gcc: Remove dead aarch64-option-extensions.def code.
+	* config/aarch64/aarch64-arches.def: Update comment.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Add a leading "V" to the
+	ARCH_IDENT fields.
+	* config/aarch64/aarch64-cores.def: Update accordingly.
+	* common/config/aarch64/aarch64-common.cc (all_cores): Likewise.
+	* config/aarch64/aarch64.cc (all_cores): Likewise.
+	* config/aarch64/driver-aarch64.cc (aarch64_arches): Skip the
+	leading "V".
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_FOR_ARCH8): Rename to...
+	(AARCH64_FL_FOR_V8A): ...this.
+	(AARCH64_FL_FOR_ARCH8_1): Rename to...
+	(AARCH64_FL_FOR_V8_1A): ...this.
+	(AARCH64_FL_FOR_ARCH8_2): Rename to...
+	(AARCH64_FL_FOR_V8_2A): ...this.
+	(AARCH64_FL_FOR_ARCH8_3): Rename to...
+	(AARCH64_FL_FOR_V8_3A): ...this.
+	(AARCH64_FL_FOR_ARCH8_4): Rename to...
+	(AARCH64_FL_FOR_V8_4A): ...this.
+	(AARCH64_FL_FOR_ARCH8_5): Rename to...
+	(AARCH64_FL_FOR_V8_5A): ...this.
+	(AARCH64_FL_FOR_ARCH8_6): Rename to...
+	(AARCH64_FL_FOR_V8_6A): ...this.
+	(AARCH64_FL_FOR_ARCH8_7): Rename to...
+	(AARCH64_FL_FOR_V8_7A): ...this.
+	(AARCH64_FL_FOR_ARCH8_8): Rename to...
+	(AARCH64_FL_FOR_V8_8A): ...this.
+	(AARCH64_FL_FOR_ARCH8_R): Rename to...
+	(AARCH64_FL_FOR_V8R): ...this.
+	(AARCH64_FL_FOR_ARCH9): Rename to...
+	(AARCH64_FL_FOR_V9A): ...this.
+	(AARCH64_FL_FOR_ARCH9_1): Rename to...
+	(AARCH64_FL_FOR_V9_1A): ...this.
+	(AARCH64_FL_FOR_ARCH9_2): Rename to...
+	(AARCH64_FL_FOR_V9_2A): ...this.
+	(AARCH64_FL_FOR_ARCH9_3): Rename to...
+	(AARCH64_FL_FOR_V9_3A): ...this.
+	* common/config/aarch64/aarch64-common.cc (all_cores): Update
+	accordingly.
+	* config/aarch64/aarch64-arches.def: Likewise.
+	* config/aarch64/aarch64-cores.def: Likewise.
+	* config/aarch64/aarch64.cc (all_cores): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_1, AARCH64_FL_V8_2)
+	(AARCH64_FL_V8_3, AARCH64_FL_V8_4, AARCH64_FL_V8_5, AARCH64_FL_V8_6)
+	(AARCH64_FL_V9, AARCH64_FL_V8_7, AARCH64_FL_V8_8, AARCH64_FL_V9_1)
+	(AARCH64_FL_V9_2, AARCH64_FL_V9_3): Add "A" to the end of the name.
+	(AARCH64_FL_V8_R): Rename to AARCH64_FL_V8R.
+	(AARCH64_FL_FOR_ARCH8_1, AARCH64_FL_FOR_ARCH8_2): Update accordingly.
+	(AARCH64_FL_FOR_ARCH8_3, AARCH64_FL_FOR_ARCH8_4): Likewise.
+	(AARCH64_FL_FOR_ARCH8_5, AARCH64_FL_FOR_ARCH8_6): Likewise.
+	(AARCH64_FL_FOR_ARCH8_7, AARCH64_FL_FOR_ARCH8_8): Likewise.
+	(AARCH64_FL_FOR_ARCH8_R, AARCH64_FL_FOR_ARCH9): Likewise.
+	(AARCH64_FL_FOR_ARCH9_1, AARCH64_FL_FOR_ARCH9_2): Likewise.
+	(AARCH64_FL_FOR_ARCH9_3, AARCH64_ISA_V8_2A, AARCH64_ISA_V8_3A)
+	(AARCH64_ISA_V8_4A, AARCH64_ISA_V8_5A, AARCH64_ISA_V8_6A): Likewise.
+	(AARCH64_ISA_V8R, AARCH64_ISA_V9A, AARCH64_ISA_V9_1A): Likewise.
+	(AARCH64_ISA_V9_2A, AARCH64_ISA_V9_3A): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_ISA_V8_2, AARCH64_ISA_V8_3)
+	(AARCH64_ISA_V8_4, AARCH64_ISA_V8_5, AARCH64_ISA_V8_6)
+	(AARCH64_ISA_V9, AARCH64_ISA_V9_1, AARCH64_ISA_V9_2)
+	(AARCH64_ISA_V9_3): Add "A" to the end of the name.
+	(AARCH64_ISA_V8_R): Rename to AARCH64_ISA_V8R.
+	(TARGET_ARMV8_3, TARGET_JSCVT, TARGET_FRINT, TARGET_MEMTAG): Update
+	accordingly.
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_extension_string_for_isa_flags): Likewise.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_define_unconditional_macros): Likewise.
+
+2022-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (GTFILES): Add OPTIONS_H_EXTRA.
+
+2022-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* cppdefault.cc (cpp_include_defaults): If SYSROOT_HEADERS_SUFFIX_SPEC
+	isn't defined, add FIXED_INCLUDE_DIR entry with multilib flag 2
+	before FIXED_INCLUDE_DIR entry with multilib flag 0.
+	* gcc.cc (do_spec_1): If multiarch_dir, add
+	include-fixed/multiarch_dir paths before include-fixed paths.
+
+2022-09-29  Martin Liska  <mliska@suse.cz>
+
+	PR driver/106897
+	* common.opt: Add -gz=zstd value.
+	* configure.ac: Detect --compress-debug-sections=zstd
+	for both linker and assembler.
+	* configure: Regenerate.
+	* gcc.cc (LINK_COMPRESS_DEBUG_SPEC): Handle -gz=zstd.
+	(ASM_COMPRESS_DEBUG_SPEC): Likewise.
+
+2022-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105646
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Pre-compute
+	the set of fallthru reachable blocks from function entry
+	and use that to determine wlims.always_executed.
+
+2022-09-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/107055
+	* tree-vect-loop-manip.cc (vect_can_advance_ivs_p): Check for
+	nonlinear induction variables.
+	* tree-vect-loop.cc (vect_can_peel_nonlinear_iv_p): New
+	functions.
+	(vectorizable_nonlinear_induction): Put part codes into
+	vect_can_peel_nonlinear_iv_p.
+	* tree-vectorizer.h (vect_can_peel_nonlinear_iv_p): Declare.
+
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* basic-block.h: Remove discriminator from basic blocks.
+	* cfghooks.cc (split_block_1): Remove discriminator from basic blocks.
+	* final.cc (final_start_function_1): Switch from per-bb to per statement
+	discriminator.
+	(final_scan_insn_1): Don't keep track of basic block discriminators.
+	(compute_discriminator): Switch from basic block discriminators to
+	instruction discriminators.
+	(insn_discriminator): New function to return instruction discriminator.
+	(notice_source_line): Use insn_discriminator.
+	* gimple-pretty-print.cc (dump_gimple_bb_header): Remove dumping of
+	basic block discriminators.
+	* gimple-streamer-in.cc (input_bb): Remove reading of basic block
+	discriminators.
+	* gimple-streamer-out.cc (output_bb): Remove writing of basic block
+	discriminators.
+	* input.cc (make_location): Pass 0 discriminator to COMBINE_LOCATION_DATA.
+	(location_with_discriminator): New function to combine locus with
+	a discriminator.
+	(has_discriminator): New function to check if a location has a discriminator.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+	* input.h: Declarations of new functions.
+	* lto-streamer-in.cc (cmp_loc): Use discriminators in location comparison.
+	(apply_location_cache): Keep track of current discriminator.
+	(input_location_and_block): Read discriminator from stream.
+	* lto-streamer-out.cc (clear_line_info): Set current discriminator to
+	UINT_MAX.
+	(lto_output_location_1): Write discriminator to stream.
+	* lto-streamer.h: Add discriminator to cached_location.
+	Add current_discr to lto_location_cache.
+	Add current_discr to output_block.
+	* print-rtl.cc (print_rtx_operand_code_i): Print discriminator.
+	* rtl.h: Add extern declaration of insn_discriminator.
+	* tree-cfg.cc (assign_discriminator): New function to assign a unique
+	discriminator value to all statements in a basic block that have the given
+	line number.
+	(assign_discriminators): Assign discriminators to statement locations.
+	* tree-pretty-print.cc (dump_location): Dump discriminators.
+	* tree.cc (set_block): Preserve discriminator when setting block.
+	(set_source_range): Preserve discriminator when setting source range.
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* config/i386/predicates.md (encodekey128_operation): Check
+	XMM4-XMM6 as clobbered.
+	(encodekey256_operation): Likewise.
+	* config/i386/sse.md (encodekey128u32): Clobber XMM4-XMM6.
+	(encodekey256u32): Likewise.
+
+2022-09-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add riscv-vector-builtins.o.
+	* config/riscv/riscv-builtins.cc (riscv_init_builtins): Add RVV builtin function.
+	* config/riscv/riscv-protos.h (riscv_v_ext_enabled_vector_mode_p): New function.
+	* config/riscv/riscv.cc (ENTRY): New macro.
+	(riscv_v_ext_enabled_vector_mode_p): New function.
+	(riscv_mangle_type): Add RVV mangle.
+	(riscv_vector_mode_supported_p): Adjust RVV machine mode.
+	(riscv_verify_type_context): Add context check for RVV.
+	(riscv_vector_alignment): Add RVV alignment target hook support.
+	(TARGET_VECTOR_MODE_SUPPORTED_P): New target hook support.
+	(TARGET_VERIFY_TYPE_CONTEXT): Ditto.
+	(TARGET_VECTOR_ALIGNMENT): Ditto.
+	* config/riscv/t-riscv: Add riscv-vector-builtins.o
+	* config/riscv/riscv-vector-builtins.cc: New file.
+	* config/riscv/riscv-vector-builtins.def: New file.
+	* config/riscv/riscv-vector-builtins.h: New file.
+	* config/riscv/riscv-vector-switch.def: New file.
+
+2022-09-28  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* var-tracking.cc (vt_add_function_parameter): Add entry values
+	up to maximal register mode.
+
+2022-09-28  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* cselib.cc (new_cselib_val): Keep track of further subvalue
+	relations.
+
+2022-09-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm-c.cc (arm_cpu_builtins): Define
+	__ARM_FEATURE_AES and __ARM_FEATURE_SHA2.
+
+2022-09-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/105414
+	* config/loongarch/loongarch.md (UNSPEC_FMAX): New unspec.
+	(UNSPEC_FMIN): Likewise.
+	(fmax<mode>3): Use UNSPEC_FMAX instead of smax.
+	(fmin<mode>3): Use UNSPEC_FMIN instead of smin.
+
+2022-09-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_asan_shadow_offset):
+	Fixed typo in "asan_mapping.h".
+
+2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/58245
+	* calls.cc: Include "tree-eh.h".
+	(expand_call): Check stack canary before throwing exception.
+
+2022-09-27  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* ipa-cp.cc (good_cloning_opportunity_p): Fix profile count comparison.
+
+2022-09-27  Kim Kuparinen  <kim.kuparinen@rightware.com>
+
+	* doc/invoke.texi: Update ABI version info.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (cfn_popcount): Calculate the popcount of a
+	singleton.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set_nonzero_bits): Set range when known.
+
+2022-09-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (irange::set): New version taking wide_int_ref.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107029
+	* tree-ssa-reassoc.cc (optimize_range_tests_cmp_bitwise): Treat
+	OFFSET_TYPE like POINTER_TYPE, except that OFFSET_TYPE may be
+	signed and so can trigger even the (b % 4) == 3 case.
+
+2022-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* cfgrtl.cc (fixup_reorder_chain): Verify that simple_return
+	and return are available before trying to use them.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* tree-core.h (enum tree_index): Add TI_FLOAT128T_TYPE
+	enumerator.
+	* tree.h (float128t_type_node): Define.
+	* tree.cc (build_common_tree_nodes): Initialize float128t_type_node.
+	* builtins.def (DEF_FLOATN_BUILTIN): Adjust comment now that
+	_Float<N> is supported in C++ too.
+	* config/i386/i386.cc (ix86_mangle_type): Only mangle as "g"
+	float128t_type_node.
+	* config/i386/i386-builtins.cc (ix86_init_builtin_types): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+	* config/i386/avx512fp16intrin.h (_mm_setzero_ph, _mm256_setzero_ph,
+	_mm512_setzero_ph, _mm_set_sh, _mm_load_sh): Use 0.0f16 instead of
+	0.0f.
+	* config/ia64/ia64.cc (ia64_init_builtins): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+	* config/rs6000/rs6000-c.cc (is_float128_p): Also return true
+	for float128t_type_node if non-NULL.
+	* config/rs6000/rs6000.cc (rs6000_mangle_type): Don't mangle
+	float128_type_node as "u9__ieee128".
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Use
+	float128t_type_node for __float128 instead of float128_type_node
+	and create it if NULL.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing dash for
+	  Wanalyzer-exposure-through-uninit-copy.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* range-op.cc (operator_bitwise_and::op1_range): Optimize 0 = x & MASK.
+	(range_op_bitwise_and_tests): New test.
+
+2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107009
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges):
+	Iterate over exports.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (with_arch) [nvptx]: Allow '--with-arch' to override
+	the default.
+	* config/nvptx/gen-multilib-matches.sh: New.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle this.
+	* doc/install.texi (Specific) <nvptx-*-none>: Document this.
+	* doc/invoke.texi (Nvidia PTX Options): Likewise.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (TM_MULTILIB_CONFIG) [nvptx]: Set to '$with_arch'.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle it.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc (with_arch) [nvptx]: Set to 'sm_30'.
+	* config/nvptx/nvptx.cc (nvptx_option_override): Assert that
+	'-misa' appeared.
+	* config/nvptx/nvptx.h (OPTION_DEFAULT_SPECS): Define.
+	* config/nvptx/nvptx.opt (misa=): Remove 'Init'.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Define.
+
+2022-09-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* cfgcleanup.cc (bb_is_just_return): No longer static.
+	* cfgcleanup.h (bb_is_just_return): Add prototype.
+	* cfgrtl.cc (fixup_reorder_chain): Do not create an
+	unconditional jump to a return block.  Conditionally
+	remove unreachable blocks.
+
+2022-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106982
+	* omp-low.cc (lower_oacc_reductions): Add some unshare_expr.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc (s390_rtx_costs): Remove dest variable
+	and use only dst.
+
+2022-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv9.1-a): Define.
+	(armv9.2-a): Likewise.
+	(armv9.3-a): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_FL_V9_1): Likewise.
+	(AARCH64_FL_V9_2): Likewise.
+	(AARCH64_FL_V9_3): Likewise.
+	(AARCH64_FL_FOR_ARCH9_1): Likewise.
+	(AARCH64_FL_FOR_ARCH9_2): Likewise.
+	(AARCH64_FL_FOR_ARCH9_3): Likewise.
+	(AARCH64_ISA_V9_1): Likewise.
+	(AARCH64_ISA_V9_2): Likewise.
+	(AARCH64_ISA_V9_3): Likewise.
+	* doc/invoke.texi (AArch64 Options): Document armv9.1-a, armv9.2-a,
+	armv9.3-a values to -march.
+
+2022-09-26  Martin Liska  <mliska@suse.cz>
+
+	* value-range.cc (tree_compare): Remove unused function.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): Update the
+	condition for adding REG_CFA_DEF_CFA reg note with
+	frame_pointer_needed_indeed.
+
+2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* config/rs6000/vector.md (vec_shr_<mode>): Replace condition
+	TARGET_ALTIVEC with VECTOR_UNIT_ALTIVEC_OR_VSX_P.
+
+2022-09-26  Hongtao Liu  <hongtao.liu@intel.com>
+	    Liwei Xu  <liwei.xu@intel.com>
+
+	PR target/53346
+	* config/i386/i386-expand.cc (expand_vec_perm_shufps_shufps):
+	New function.
+	(ix86_expand_vec_perm_const_1): Insert
+	expand_vec_perm_shufps_shufps at the end of 2-instruction
+	expand sequence.
+
 2022-09-25  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* doc/sourcebuild.texi: Fix chapter level.

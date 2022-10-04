@@ -1,4 +1,6 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
+
 // 2007-05-29 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2007-2022 Free Software Foundation, Inc.

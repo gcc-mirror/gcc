@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+crypto\+crc\+dotprod} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+crc\+dotprod\+crypto} } } */
 
 /* Test one with mixed order of feature bits.  */

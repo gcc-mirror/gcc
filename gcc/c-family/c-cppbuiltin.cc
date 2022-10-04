@@ -279,7 +279,7 @@ builtin_define_float_constants (const char *name_prefix,
   /* The difference between 1 and the least value greater than 1 that is
      representable in the given floating point type, b**(1-p).  */
   sprintf (name, "__%s_EPSILON__", name_prefix);
-  if (fmt->pnan < fmt->p)
+  if (fmt->pnan < fmt->p && (c_dialect_cxx () || !flag_isoc2x))
     /* This is an IBM extended double format, so 1.0 + any double is
        representable precisely.  */
       sprintf (buf, "0x1p%d", fmt->emin - fmt->p);
@@ -1081,6 +1081,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr=202110L");
 	  cpp_define (pfile, "__cpp_multidimensional_subscript=202110L");
 	  cpp_define (pfile, "__cpp_named_character_escapes=202207L");
+	  cpp_define (pfile, "__cpp_static_call_operator=202207L");
+	  cpp_define (pfile, "__cpp_implicit_move=202207L");
 	}
       if (flag_concepts)
         {
@@ -1112,7 +1114,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_threadsafe_statics)
 	cpp_define (pfile, "__cpp_threadsafe_static_init=200806L");
       if (flag_char8_t)
-        cpp_define (pfile, "__cpp_char8_t=201811L");
+	cpp_define (pfile, "__cpp_char8_t=202207L");
 #ifndef THREAD_MODEL_SPEC
       /* Targets that define THREAD_MODEL_SPEC need to define
 	 __STDCPP_THREADS__ in their config/XXX/XXX-c.c themselves.  */
@@ -1246,6 +1248,14 @@ c_cpp_builtins (cpp_reader *pfile)
     {
       if (FLOATN_NX_TYPE_NODE (i) == NULL_TREE)
 	continue;
+      if (c_dialect_cxx ()
+	  && cxx_dialect > cxx20
+	  && !floatn_nx_types[i].extended)
+	{
+	  char name[sizeof ("__STDCPP_FLOAT128_T__=1")];
+	  sprintf (name, "__STDCPP_FLOAT%d_T__=1", floatn_nx_types[i].n);
+	  cpp_define (pfile, name);
+	}
       char prefix[20], csuffix[20];
       sprintf (prefix, "FLT%d%s", floatn_nx_types[i].n,
 	       floatn_nx_types[i].extended ? "X" : "");

@@ -2582,8 +2582,13 @@ class Lexer
         {
             /* C11 6.4.4.2 doesn't actually care if it is not representable if it is not hex
              */
-            const char* suffix = (result == TOK.float32Literal || result == TOK.imaginary32Literal) ? "f" : "";
-            error(scanloc, "number `%s%s` is not representable", sbufptr, suffix);
+            const char* suffix = result == TOK.float32Literal ? "f" : result == TOK.float80Literal ? "L" : "";
+            const char* type = [TOK.float32Literal: "`float`".ptr,
+                                TOK.float64Literal: "`double`".ptr,
+                                TOK.float80Literal: "`real` for the current target".ptr][result];
+            error(scanloc, "number `%s%s` is not representable as a %s", sbufptr, suffix, type);
+            const char* extra = result == TOK.float64Literal ? "`real` literals can be written using the `L` suffix. " : "";
+            errorSupplemental(scanloc, "%shttps://dlang.org/spec/lex.html#floatliteral", extra);
         }
         debug
         {

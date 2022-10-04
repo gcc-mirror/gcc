@@ -892,13 +892,9 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 static void
 cp_genericize_init (tree *replace, tree from, tree to)
 {
+  tree init = NULL_TREE;
   if (TREE_CODE (from) == VEC_INIT_EXPR)
-    {
-      tree init = expand_vec_init_expr (to, from, tf_warning_or_error);
-
-      /* Make cp_gimplify_init_expr call replace_decl.  */
-      *replace = fold_convert (void_type_node, init);
-    }
+    init = expand_vec_init_expr (to, from, tf_warning_or_error);
   else if (flag_exceptions
 	   && TREE_CODE (from) == CONSTRUCTOR
 	   && TREE_SIDE_EFFECTS (from)
@@ -906,7 +902,16 @@ cp_genericize_init (tree *replace, tree from, tree to)
     {
       to = cp_stabilize_reference (to);
       replace_placeholders (from, to);
-      *replace = split_nonconstant_init (to, from);
+      init = split_nonconstant_init (to, from);
+    }
+
+  if (init)
+    {
+      if (*replace == from)
+	/* Make cp_gimplify_init_expr call replace_decl on this
+	   TARGET_EXPR_INITIAL.  */
+	init = fold_convert (void_type_node, init);
+      *replace = init;
     }
 }
 
@@ -1084,9 +1089,9 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	}
       break;
 
-      /* These are only for genericize time; they're here rather than in
-	 cp_genericize to avoid problems with the invisible reference
-	 transition.  */
+      /* cp_genericize_{init,target}_expr are only for genericize time; they're
+	 here rather than in cp_genericize to avoid problems with the invisible
+	 reference transition.  */
     case INIT_EXPR:
       if (data->genericize)
 	cp_genericize_init_expr (stmt_p);
@@ -1095,6 +1100,16 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
     case TARGET_EXPR:
       if (data->genericize)
 	cp_genericize_target_expr (stmt_p);
+
+      /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
+	 that case, use it in place of this one.  */
+      if (tree &init = TARGET_EXPR_INITIAL (stmt))
+	{
+	  cp_walk_tree (&init, cp_fold_r, data, NULL);
+	  *walk_subtrees = 0;
+	  if (TREE_CODE (init) == TARGET_EXPR)
+	    *stmt_p = init;
+	}
       break;
 
     default:

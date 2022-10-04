@@ -2900,7 +2900,7 @@ static const token_t cxx_opers[] =
   };
 
 /* Common C/C++ keywords that are expected to be quoted within the format
-   string.  Keywords like auto, inline, or volatile are exccluded because
+   string.  Keywords like auto, inline, or volatile are excluded because
    they are sometimes used in common terms like /auto variables/, /inline
    function/, or /volatile access/ where they should not be quoted.  */
 
@@ -2927,7 +2927,6 @@ static const token_t c_keywords[] =
    NAME ("noinline", NULL),
    NAME ("nonnull", NULL),
    NAME ("noreturn", NULL),
-   NAME ("nothrow", NULL),
    NAME ("offsetof", NULL),
    NAME ("readonly", "read-only"),
    NAME ("readwrite", "read-write"),

@@ -334,6 +334,10 @@ nvptx_option_override (void)
 {
   init_machine_status = nvptx_init_machine_status;
 
+  /* Via nvptx 'OPTION_DEFAULT_SPECS', '-misa' always appears on the command
+     line.  */
+  gcc_checking_assert (OPTION_SET_P (ptx_isa_option));
+
   handle_ptx_version_option ();
 
   /* Set toplevel_reorder, unless explicitly disabled.  We need

@@ -125,7 +125,7 @@ public:
     bool determineSize(const Loc &loc);
     virtual void finalizeSize() = 0;
     uinteger_t size(const Loc &loc) override final;
-    bool fill(const Loc &loc, Expressions *elements, bool ctorinit);
+    bool fill(const Loc &loc, Expressions &elements, bool ctorinit);
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
     void setDeprecated();

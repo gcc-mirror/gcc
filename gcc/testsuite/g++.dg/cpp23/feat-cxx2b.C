@@ -504,8 +504,8 @@
 
 #ifndef __cpp_char8_t
 #  error "__cpp_char8_t"
-#elif __cpp_char8_t != 201811
-#  error "__cpp_char8_t != 201811"
+#elif __cpp_char8_t != 202207
+#  error "__cpp_char8_t != 202207"
 #endif
 
 #ifndef __cpp_designated_initializers
@@ -562,4 +562,16 @@
 #  error "__cpp_named_character_escapes"
 #elif __cpp_named_character_escapes != 202207
 #  error "__cpp_named_character_escapes != 202207"
+#endif
+
+#ifndef __cpp_static_call_operator
+#  error "__cpp_static_call_operator"
+#elif __cpp_static_call_operator != 202207
+#  error "__cpp_static_call_operator != 202207"
+#endif
+
+#ifndef __cpp_implicit_move
+#  error "__cpp_implicit_move"
+#elif __cpp_implicit_move != 202207
+#  error "__cpp_implicit_move != 202207"
 #endif

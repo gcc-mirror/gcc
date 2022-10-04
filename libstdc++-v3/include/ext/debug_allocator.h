@@ -42,6 +42,8 @@
 #ifndef _DEBUG_ALLOCATOR_H
 #define _DEBUG_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <stdexcept>
 #include <bits/functexcept.h>
 #include <ext/alloc_traits.h>

@@ -2343,6 +2343,9 @@ extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 /* Nonlinear induction.  */
 extern tree vect_peel_nonlinear_iv_init (gimple_seq*, tree, tree,
 					 tree, enum vect_induction_op_type);
+extern bool
+vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
+			      enum vect_induction_op_type induction_type);
 
 /* In tree-vect-slp.cc.  */
 extern void vect_slp_init (void);

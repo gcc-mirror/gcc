@@ -170,7 +170,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 	    {
 	      ao_ref_init_from_ptr_and_size
 		  (write, gimple_call_arg (stmt, 0),
-		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 2))));
+		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 3))));
 	      return true;
 	    }
 	  break;

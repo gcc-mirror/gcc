@@ -97,9 +97,9 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/datetime/interval.d std/datetime/package.d \
 	std/datetime/stopwatch.d std/datetime/systime.d \
 	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
-	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
-	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
-	std/digest/sha.d std/encoding.d std/exception.d \
+	std/digest/hmac.d std/digest/md.d std/digest/murmurhash.d \
+	std/digest/package.d std/digest/ripemd.d std/digest/sha.d \
+	std/encoding.d std/exception.d \
 	std/experimental/allocator/building_blocks/affix_allocator.d \
 	std/experimental/allocator/building_blocks/aligned_block_list.d \
 	std/experimental/allocator/building_blocks/allocator_list.d \
@@ -156,6 +156,6 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/stdio.d std/string.d std/sumtype.d std/system.d std/traits.d \
 	std/typecons.d std/typetuple.d std/uni/package.d std/uri.d std/utf.d \
 	std/uuid.d std/variant.d std/windows/charset.d std/windows/registry.d \
-	std/windows/syserror.d std/xml.d std/zip.d std/zlib.d
+	std/windows/syserror.d std/zip.d std/zlib.d
 
 endif

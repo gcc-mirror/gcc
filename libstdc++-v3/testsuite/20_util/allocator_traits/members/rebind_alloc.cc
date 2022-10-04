@@ -24,6 +24,7 @@ using std::is_same;
 template<typename T, typename U>
   using Rebind = typename std::allocator_traits<T>::template rebind_alloc<U>;
 
+#if __STDC_HOSTED__
 template<typename T>
   struct HasRebind {
     using value_type = T;
@@ -33,6 +34,7 @@ template<typename T>
 static_assert(is_same<Rebind<HasRebind<int>, long>,
 		      std::allocator<long>>::value,
 	      "nested alias template is used");
+#endif
 
 template<typename T>
   struct NoRebind0 {

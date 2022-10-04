@@ -17,6 +17,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// std::stable_partition is not freestanding.
+// { dg-require-effective-target hosted }
+
 // 25.2.12 [lib.alg.partitions] Partitions.
 
 #include <algorithm>

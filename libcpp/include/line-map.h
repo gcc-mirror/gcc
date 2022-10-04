@@ -757,6 +757,7 @@ struct GTY(()) location_adhoc_data {
   location_t locus;
   source_range src_range;
   void * GTY((skip)) data;
+  unsigned discriminator;
 };
 
 struct htab;
@@ -1034,12 +1035,14 @@ LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
 }
 
 extern location_t get_combined_adhoc_loc (line_maps *, location_t,
-					  source_range, void *);
+					  source_range, void *, unsigned);
 extern void *get_data_from_adhoc_loc (const line_maps *, location_t);
+extern unsigned get_discriminator_from_adhoc_loc (const line_maps *, location_t);
 extern location_t get_location_from_adhoc_loc (const line_maps *,
 					       location_t);
 
 extern source_range get_range_from_loc (line_maps *set, location_t loc);
+extern unsigned get_discriminator_from_loc (line_maps *set, location_t loc);
 
 /* Get whether location LOC is a "pure" location, or
    whether it is an ad-hoc location, or embeds range information.  */
@@ -1058,9 +1061,10 @@ inline location_t
 COMBINE_LOCATION_DATA (class line_maps *set,
 		       location_t loc,
 		       source_range src_range,
-		       void *block)
+		       void *block,
+		       unsigned discriminator)
 {
-  return get_combined_adhoc_loc (set, loc, src_range, block);
+  return get_combined_adhoc_loc (set, loc, src_range, block, discriminator);
 }
 
 extern void rebuild_location_adhoc_htab (class line_maps *);

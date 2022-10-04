@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do preprocess { target c++17 } }
+// { dg-require-effective-target hosted }
 
 #include <version>
 

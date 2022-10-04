@@ -85,8 +85,7 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
-    // uClibc supports GCC IO
-    version = GCC_IO;
+    version = GENERIC_IO;
 }
 else version (OSX)
 {
@@ -589,7 +588,7 @@ Throws: `ErrnoException` if the file could not be opened.
         detach();
     }
 
-    this(this) @safe nothrow
+    this(this) @safe pure nothrow @nogc
     {
         if (!_p) return;
         assert(atomicLoad(_p.refs));

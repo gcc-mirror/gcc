@@ -22,6 +22,12 @@ type mOS struct {
 	profileTimerValid uint32
 }
 
+// setSigeventTID is written in C to set the sigev_notify_thread_id
+// field of a sigevent struct.
+//
+//go:noescape
+func setSigeventTID(*_sigevent, int32)
+
 func getProcID() uint64 {
 	return uint64(gettid())
 }
@@ -52,9 +58,12 @@ const (
 )
 
 // Atomically,
+//
 //	if(*addr == val) sleep
+//
 // Might be woken up spuriously; that's allowed.
 // Don't sleep longer than ns; ns < 0 means forever.
+//
 //go:nosplit
 func futexsleep(addr *uint32, val uint32, ns int64) {
 	// Some Linux kernels have a bug where futex of
@@ -73,6 +82,7 @@ func futexsleep(addr *uint32, val uint32, ns int64) {
 }
 
 // If any procs are sleeping on addr, wake up at most cnt.
+//
 //go:nosplit
 func futexwakeup(addr *uint32, cnt uint32) {
 	ret := futex(unsafe.Pointer(addr), _FUTEX_WAKE_PRIVATE, cnt, nil, nil, 0)
@@ -365,7 +375,7 @@ func setThreadCPUProfiler(hz int32) {
 	var sevp _sigevent
 	sevp.sigev_notify = _SIGEV_THREAD_ID
 	sevp.sigev_signo = _SIGPROF
-	*((*int32)(unsafe.Pointer(&sevp._sigev_un))) = int32(mp.procid)
+	setSigeventTID(&sevp, int32(mp.procid))
 	ret := timer_create(_CLOCK_THREAD_CPUTIME_ID, &sevp, &timerid)
 	if ret != 0 {
 		// If we cannot create a timer for this M, leave profileTimerValid false
