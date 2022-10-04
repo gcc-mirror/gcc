@@ -2515,6 +2515,14 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
       if (r.varying_p ())
 	return true;
     }
+
+  // Pass nonzero mask through the cast.
+  if (!truncating_cast_p (inner, outer))
+    {
+      wide_int nz = inner.get_nonzero_bits ();
+      nz = wide_int::from (nz, TYPE_PRECISION (type), TYPE_SIGN (inner.type ()));
+      r.set_nonzero_bits (nz);
+    }
   return true;
 }
 
