@@ -1374,6 +1374,41 @@ package body Bindgen is
    -------------------
 
    procedure Gen_CUDA_Init is
+      --  Generate call to register one function
+      procedure Gen_CUDA_Register_Function_Call
+        (Kernel_Name   : String;
+         Kernel_String : String;
+         Kernel_Proc   : String);
+
+      -------------------------------------
+      -- Gen_CUDA_Register_Function_Call --
+      -------------------------------------
+
+      procedure Gen_CUDA_Register_Function_Call
+        (Kernel_Name   : String;
+         Kernel_String : String;
+         Kernel_Proc   : String) is
+      begin
+         WBI ("      " & Kernel_String & " :=");
+         WBI ("        Interfaces.C.Strings.New_Char_Array ("""
+               & Kernel_Name
+               & """);");
+
+         --  Generate call to CUDA runtime to register function.
+         WBI ("      CUDA_Register_Function (");
+         WBI ("        Fat_Binary_Handle, ");
+         WBI ("        " & Kernel_Proc & "'Address,");
+         WBI ("        " & Kernel_String & ",");
+         WBI ("        " & Kernel_String & ",");
+         WBI ("        -1,");
+         WBI ("        System.Null_Address,");
+         WBI ("        System.Null_Address,");
+         WBI ("        System.Null_Address,");
+         WBI ("        System.Null_Address,");
+         WBI ("        System.Null_Address);");
+         WBI ("");
+      end Gen_CUDA_Register_Function_Call;
+
    begin
       if not Enable_CUDA_Expansion then
          return;
@@ -1404,25 +1439,22 @@ package body Bindgen is
                Get_Name_String (CUDA_Kernels.Table (K).Kernel_Name);
             --  Kernel_Name is the name of the kernel, after package expansion.
          begin
-            WBI ("      " & Kernel_String & " :=");
-            WBI ("        Interfaces.C.Strings.New_Char_Array ("""
-                  & Kernel_Name
-                  & """);");
-            --  Generate call to CUDA runtime to register function.
-            WBI ("      CUDA_Register_Function (");
-            WBI ("        Fat_Binary_Handle, ");
-            WBI ("        " & Kernel_Proc & "'Address,");
-            WBI ("        " & Kernel_String & ",");
-            WBI ("        " & Kernel_String & ",");
-            WBI ("        -1,");
-            WBI ("        System.Null_Address,");
-            WBI ("        System.Null_Address,");
-            WBI ("        System.Null_Address,");
-            WBI ("        System.Null_Address,");
-            WBI ("        System.Null_Address);");
-            WBI ("");
+            Gen_CUDA_Register_Function_Call
+              (Kernel_Name   => Kernel_Name,
+               Kernel_String => Kernel_String,
+               Kernel_Proc   => Kernel_Proc);
          end;
       end loop;
+
+      --  Register device-side Adainit and Adafinal
+      Gen_CUDA_Register_Function_Call
+        (Kernel_Name   => Device_Ada_Init_Link_Name,
+         Kernel_String => "Adainit_Name_String",
+         Kernel_Proc   => Device_Ada_Init_Subp_Name);
+      Gen_CUDA_Register_Function_Call
+        (Kernel_Name   => Device_Ada_Final_Link_Name,
+         Kernel_String => "Adafinal_Name_String",
+         Kernel_Proc   => Device_Ada_Final_Subp_Name);
 
       WBI ("      CUDA_Register_Fat_Binary_End (Fat_Binary_Handle);");
 
