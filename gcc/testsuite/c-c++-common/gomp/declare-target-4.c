@@ -1,8 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
 
-#pragma omp declare target device_type (any)		/* { dg-warning "directive with only 'device_type' clauses ignored" } */
-
 void f1 (void) {}
 void f2 (void);
 #pragma omp declare target to (f1) device_type (any) to (f2)
@@ -38,7 +36,3 @@ void f13 (void) {}
 void f14 (void) {}
 #pragma omp declare target device_type (nohost) to (f14)
 #pragma omp declare target device_type (any) to (f14)
-void f15 (void) {}
-#pragma omp declare target device_type (host) to (f15) device_type (nohost)
-void f16 (void) {}
-#pragma omp declare target device_type (any) to (f15) device_type (any)

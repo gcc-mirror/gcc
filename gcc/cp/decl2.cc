@@ -1625,17 +1625,40 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	  && DECL_CLASS_SCOPE_P (*decl))
 	error ("%q+D static data member inside of declare target directive",
 	       *decl);
-      else if (VAR_P (*decl)
-	       && (processing_template_decl
-		   || !omp_mappable_type (TREE_TYPE (*decl))))
-	attributes = tree_cons (get_identifier ("omp declare target implicit"),
-				NULL_TREE, attributes);
       else
 	{
-	  attributes = tree_cons (get_identifier ("omp declare target"),
-				  NULL_TREE, attributes);
-	  attributes = tree_cons (get_identifier ("omp declare target block"),
-				  NULL_TREE, attributes);
+	  if (VAR_P (*decl)
+	      && (processing_template_decl
+		  || !omp_mappable_type (TREE_TYPE (*decl))))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target implicit"),
+			   NULL_TREE, attributes);
+	  else
+	    {
+	      attributes = tree_cons (get_identifier ("omp declare target"),
+				      NULL_TREE, attributes);
+	      attributes
+		= tree_cons (get_identifier ("omp declare target block"),
+			     NULL_TREE, attributes);
+	    }
+	  if (TREE_CODE (*decl) == FUNCTION_DECL)
+	    {
+	      cp_omp_declare_target_attr &last
+		= scope_chain->omp_declare_target_attribute->last ();
+	      int device_type = MAX (last.device_type, 0);
+	      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0
+		  && !lookup_attribute ("omp declare target host",
+					attributes))
+		attributes
+		  = tree_cons (get_identifier ("omp declare target host"),
+			       NULL_TREE, attributes);
+	      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0
+		  && !lookup_attribute ("omp declare target nohost",
+					attributes))
+		attributes
+		  = tree_cons (get_identifier ("omp declare target nohost"),
+			       NULL_TREE, attributes);
+	    }
 	}
     }
 

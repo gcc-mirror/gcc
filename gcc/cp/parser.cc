@@ -40215,8 +40215,8 @@ cp_parser_omp_clause_device_type (cp_parser *parser, tree list,
     goto resync_fail;
 
   c = build_omp_clause (location, OMP_CLAUSE_DEVICE_TYPE);
-  /* check_no_duplicate_clause (list, OMP_CLAUSE_DEVICE_TYPE, "device_type",
-				location);  */
+  check_no_duplicate_clause (list, OMP_CLAUSE_DEVICE_TYPE, "device_type",
+			     location);
   OMP_CLAUSE_DEVICE_TYPE_KIND (c) = kind;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
@@ -40740,7 +40740,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  break;
 	case PRAGMA_OMP_CLAUSE_LINK:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_LINK, clauses);
-	  c_name = "to";
+	  c_name = "link";
 	  break;
 	case PRAGMA_OMP_CLAUSE_TO:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)) != 0)
@@ -46678,8 +46678,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     }
   else
     {
-      struct omp_declare_target_attr a
-	= { parser->lexer->in_omp_attribute_pragma };
+      cp_omp_declare_target_attr a
+	= { parser->lexer->in_omp_attribute_pragma, -1 };
       vec_safe_push (scope_chain->omp_declare_target_attribute, a);
       cp_parser_require_pragma_eol (parser, pragma_tok);
       return;
@@ -46704,12 +46704,17 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 					  device_type);
     }
   if (device_type && only_device_type)
-    warning_at (OMP_CLAUSE_LOCATION (clauses), 0,
-		"directive with only %<device_type%> clauses ignored");
+    error_at (OMP_CLAUSE_LOCATION (clauses),
+	      "directive with only %<device_type%> clause");
 }
 
 /* OpenMP 5.1
-   #pragma omp begin assumes clauses[optseq] new-line  */
+   # pragma omp begin assumes clauses[optseq] new-line
+
+   # pragma omp begin declare target clauses[optseq] new-line  */
+
+#define OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK			\
+	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)
 
 static void
 cp_parser_omp_begin (cp_parser *parser, cp_token *pragma_tok)
@@ -46721,16 +46726,47 @@ cp_parser_omp_begin (cp_parser *parser, cp_token *pragma_tok)
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       p = IDENTIFIER_POINTER (id);
     }
-  if (strcmp (p, "assumes") == 0)
+  if (strcmp (p, "declare") == 0)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      p = "";
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  p = IDENTIFIER_POINTER (id);
+	}
+      if (strcmp (p, "target") == 0)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  tree clauses
+	    = cp_parser_omp_all_clauses (parser,
+					 OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK,
+					 "#pragma omp begin declare target",
+					 pragma_tok);
+	  int device_type = 0;
+	  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
+	      device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+	  cp_omp_declare_target_attr a
+	    = { in_omp_attribute_pragma, device_type };
+	  vec_safe_push (scope_chain->omp_declare_target_attribute, a);
+	}
+      else
+	{
+	  cp_parser_error (parser, "expected %<target%>");
+	  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	}
+    }
+  else if (strcmp (p, "assumes") == 0)
     {
       cp_lexer_consume_token (parser->lexer);
       cp_parser_omp_assumption_clauses (parser, pragma_tok, false);
-      struct omp_begin_assumes_data a = { in_omp_attribute_pragma };
+      cp_omp_begin_assumes_data a = { in_omp_attribute_pragma };
       vec_safe_push (scope_chain->omp_begin_assumes, a);
     }
   else
     {
-      cp_parser_error (parser, "expected %<assumes%>");
+      cp_parser_error (parser, "expected %<declare target%> or %<assumes%>");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
     }
 }
@@ -46772,21 +46808,28 @@ cp_parser_omp_end (cp_parser *parser, cp_token *pragma_tok)
       if (!vec_safe_length (scope_chain->omp_declare_target_attribute))
 	error_at (pragma_tok->location,
 		  "%<#pragma omp end declare target%> without corresponding "
-		  "%<#pragma omp declare target%>");
+		  "%<#pragma omp declare target%> or "
+		  "%<#pragma omp begin declare target%>");
       else
 	{
-	  omp_declare_target_attr
+	  cp_omp_declare_target_attr
 	    a = scope_chain->omp_declare_target_attribute->pop ();
 	  if (a.attr_syntax != in_omp_attribute_pragma)
 	    {
 	      if (a.attr_syntax)
 		error_at (pragma_tok->location,
-			  "%<declare target%> in attribute syntax terminated "
-			  "with %<end declare target%> in pragma syntax");
+			  "%qs in attribute syntax terminated "
+			  "with %qs in pragma syntax",
+			  a.device_type >= 0 ? "begin declare target"
+					     : "declare target",
+			  "end declare target");
 	      else
 		error_at (pragma_tok->location,
-			  "%<declare target%> in pragma syntax terminated "
-			  "with %<end declare target%> in attribute syntax");
+			  "%qs in pragma syntax terminated "
+			  "with %qs in attribute syntax",
+			  a.device_type >= 0 ? "begin declare target"
+					     : "declare target",
+			  "end declare target");
 	    }
 	}
     }
@@ -46796,22 +46839,24 @@ cp_parser_omp_end (cp_parser *parser, cp_token *pragma_tok)
       cp_parser_require_pragma_eol (parser, pragma_tok);
       if (!vec_safe_length (scope_chain->omp_begin_assumes))
 	error_at (pragma_tok->location,
-		  "%<#pragma omp end assumes%> without corresponding "
-		  "%<#pragma omp begin assumes%>");
+		  "%qs without corresponding %qs",
+		  "#pragma omp end assumes", "#pragma omp begin assumes");
       else
 	{
-	  omp_begin_assumes_data
+	  cp_omp_begin_assumes_data
 	    a = scope_chain->omp_begin_assumes->pop ();
 	  if (a.attr_syntax != in_omp_attribute_pragma)
 	    {
 	      if (a.attr_syntax)
 		error_at (pragma_tok->location,
-			  "%<begin assumes%> in attribute syntax terminated "
-			  "with %<end assumes%> in pragma syntax");
+			  "%qs in attribute syntax terminated "
+			  "with %qs in pragma syntax",
+			  "begin assumes", "end assumes");
 	      else
 		error_at (pragma_tok->location,
-			  "%<begin assumes%> in pragma syntax terminated "
-			  "with %<end assumes%> in attribute syntax");
+			  "%qs in pragma syntax terminated "
+			  "with %qs in attribute syntax",
+			  "begin assumes", "end assumes");
 	    }
 	}
     }

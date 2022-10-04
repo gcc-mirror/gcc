@@ -3911,8 +3911,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "begin", "assumes", nullptr, PRAGMA_OMP_BEGIN,
     C_OMP_DIR_INFORMATIONAL, false },
-  /* { "begin", "declare", "target", PRAGMA_OMP_BEGIN,
-    C_OMP_DIR_DECLARATIVE, false }, */
+  { "begin", "declare", "target", PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_DECLARATIVE, false },
   /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
     C_OMP_DIR_DECLARATIVE, false }, */
   /* { "begin", "metadirective", nullptr, PRAGMA_OMP_BEGIN,

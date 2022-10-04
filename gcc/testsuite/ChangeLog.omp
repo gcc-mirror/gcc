@@ -1,3 +1,26 @@
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-target-4.c: Move tests that are now
+	rejected into declare-target-7.c.
+	* c-c++-common/gomp/declare-target-6.c: Adjust expected diagnostics.
+	* c-c++-common/gomp/declare-target-7.c: New test.
+	* c-c++-common/gomp/begin-declare-target-1.c: New test.
+	* c-c++-common/gomp/begin-declare-target-2.c: New test.
+	* c-c++-common/gomp/begin-declare-target-3.c: New test.
+	* c-c++-common/gomp/begin-declare-target-4.c: New test.
+	* g++.dg/gomp/attrs-9.C: Add begin declare target tests.
+	* g++.dg/gomp/attrs-18.C: New test.
+
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (Support begin/end declare target syntax in C/C++):
+	Mark as implemented.
 2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
