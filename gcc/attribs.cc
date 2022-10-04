@@ -251,6 +251,7 @@ handle_ignored_attributes_option (vec<char *> *v)
       /* We don't accept '::attr'.  */
       if (cln == nullptr || cln == opt)
 	{
+	  auto_diagnostic_group d;
 	  error ("wrong argument to ignored attributes");
 	  inform (input_location, "valid format is %<ns::attr%> or %<ns::%>");
 	  continue;
@@ -732,6 +733,7 @@ decl_attributes (tree *node, tree attributes, int flags,
 	      || (spec->max_length >= 0
 		  && nargs > spec->max_length))
 	    {
+	      auto_diagnostic_group d;
 	      error ("wrong number of arguments specified for %qE attribute",
 		     name);
 	      if (spec->max_length < 0)
@@ -1167,6 +1169,7 @@ common_function_versions (tree fn1, tree fn2)
 	      std::swap (fn1, fn2);
 	      attr1 = attr2;
 	    }
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (fn2),
 		    "missing %<target%> attribute for multi-versioned %qD",
 		    fn2);
