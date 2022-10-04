@@ -133,17 +133,17 @@ AARCH64_CORE("tsv110",  tsv110, tsv110, V8_2A,  (CRYPTO, F16), tsv110,   0x48, 0
 /* ARMv8.3-A Architecture Processors.  */
 
 /* Marvell cores (TX3). */
-AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, V8_3A,  (CRYPTO, RCPC, SM4, SHA3, F16FML), thunderx3t110, 0x43, 0x0b8, 0x0a)
+AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, V8_3A,  (CRYPTO, SM4, SHA3, F16FML), thunderx3t110, 0x43, 0x0b8, 0x0a)
 
 /* ARMv8.4-A Architecture Processors.  */
 
 /* Arm ('A') cores.  */
-AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, RCPC, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
-AARCH64_CORE("neoverse-v1", neoversev1, cortexa57, V8_4A,  (SVE, RCPC, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
-AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, V8_4A,  (SVE, RCPC, I8MM, BF16, PROFILE, SSBS, RNG), neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
+AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
+AARCH64_CORE("neoverse-v1", neoversev1, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
+AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("saphira",     saphira,    saphira,    V8_4A,  (CRYPTO, RCPC), saphira,   0x51, 0xC01, -1)
+AARCH64_CORE("saphira",     saphira,    saphira,    V8_4A,  (CRYPTO), saphira,   0x51, 0xC01, -1)
 
 /* ARMv8-A big.LITTLE implementations.  */
 
