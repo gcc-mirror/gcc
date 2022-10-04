@@ -1645,6 +1645,36 @@ remove_attribute (const char *attr_name, tree list)
   return list;
 }
 
+/* Similarly but also match namespace on the removed attributes.  */
+
+tree
+remove_attribute (const char *attr_ns, const char *attr_name, tree list)
+{
+  tree *p;
+  gcc_checking_assert (attr_name[0] != '_');
+  gcc_checking_assert (attr_ns == NULL || attr_ns[0] != '_');
+
+  for (p = &list; *p;)
+    {
+      tree l = *p;
+
+      tree attr = get_attribute_name (l);
+      if (is_attribute_p (attr_name, attr))
+	{
+	  tree ns = get_attribute_namespace (l);
+	  if ((ns == NULL_TREE && attr_ns == NULL)
+	      || (ns && attr_ns && is_attribute_p (attr_ns, ns)))
+	    {
+	      *p = TREE_CHAIN (l);
+	      continue;
+	    }
+	}
+      p = &TREE_CHAIN (l);
+    }
+
+  return list;
+}
+
 /* Return an attribute list that is the union of a1 and a2.  */
 
 tree
@@ -2036,6 +2066,39 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
       if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
 		       ident_len))
 	break;
+      list = TREE_CHAIN (list);
+    }
+
+  return list;
+}
+
+/* Similarly but with also attribute namespace.  */
+
+tree
+private_lookup_attribute (const char *attr_ns, const char *attr_name,
+			  size_t attr_ns_len, size_t attr_len, tree list)
+{
+  while (list)
+    {
+      tree attr = get_attribute_name (list);
+      size_t ident_len = IDENTIFIER_LENGTH (attr);
+      if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
+		       ident_len))
+	{
+	  tree ns = get_attribute_namespace (list);
+	  if (ns == NULL_TREE)
+	    {
+	      if (attr_ns == NULL)
+		break;
+	    }
+	  else if (attr_ns)
+	    {
+	      ident_len = IDENTIFIER_LENGTH (ns);
+	      if (cmp_attribs (attr_ns, attr_ns_len, IDENTIFIER_POINTER (ns),
+			       ident_len))
+		break;
+	    }
+	}
       list = TREE_CHAIN (list);
     }
 
