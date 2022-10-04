@@ -63,11 +63,6 @@ struct bounds
   mpz_t below, up;
 };
 
-static bool number_of_iterations_popcount (loop_p loop, edge exit,
-					   enum tree_code code,
-					   class tree_niter_desc *niter);
-
-
 /* Splits expression EXPR to a variable part VAR and constant OFFSET.  */
 
 static void
@@ -2031,6 +2026,200 @@ number_of_iterations_cond (class loop *loop,
   return ret;
 }
 
+/* Utility function to check if OP is defined by a stmt
+   that is a val - 1.  */
+
+static bool
+ssa_defined_by_minus_one_stmt_p (tree op, tree val)
+{
+  gimple *stmt;
+  return (TREE_CODE (op) == SSA_NAME
+	  && (stmt = SSA_NAME_DEF_STMT (op))
+	  && is_gimple_assign (stmt)
+	  && (gimple_assign_rhs_code (stmt) == PLUS_EXPR)
+	  && val == gimple_assign_rhs1 (stmt)
+	  && integer_minus_onep (gimple_assign_rhs2 (stmt)));
+}
+
+/* See if LOOP is a popcout implementation, determine NITER for the loop
+
+   We match:
+   <bb 2>
+   goto <bb 4>
+
+   <bb 3>
+   _1 = b_11 + -1
+   b_6 = _1 & b_11
+
+   <bb 4>
+   b_11 = PHI <b_5(D)(2), b_6(3)>
+
+   exit block
+   if (b_11 != 0)
+	goto <bb 3>
+   else
+	goto <bb 5>
+
+   OR we match copy-header version:
+   if (b_5 != 0)
+	goto <bb 3>
+   else
+	goto <bb 4>
+
+   <bb 3>
+   b_11 = PHI <b_5(2), b_6(3)>
+   _1 = b_11 + -1
+   b_6 = _1 & b_11
+
+   exit block
+   if (b_6 != 0)
+	goto <bb 3>
+   else
+	goto <bb 4>
+
+   If popcount pattern, update NITER accordingly.
+   i.e., set NITER to  __builtin_popcount (b)
+   return true if we did, false otherwise.
+
+ */
+
+static bool
+number_of_iterations_popcount (loop_p loop, edge exit,
+			       enum tree_code code,
+			       class tree_niter_desc *niter)
+{
+  bool adjust = true;
+  tree iter;
+  HOST_WIDE_INT max;
+  adjust = true;
+  tree fn = NULL_TREE;
+
+  /* Check loop terminating branch is like
+     if (b != 0).  */
+  gimple *stmt = last_stmt (exit->src);
+  if (!stmt
+      || gimple_code (stmt) != GIMPLE_COND
+      || code != NE_EXPR
+      || !integer_zerop (gimple_cond_rhs (stmt))
+      || TREE_CODE (gimple_cond_lhs (stmt)) != SSA_NAME)
+    return false;
+
+  gimple *and_stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
+
+  /* Depending on copy-header is performed, feeding PHI stmts might be in
+     the loop header or loop latch, handle this.  */
+  if (gimple_code (and_stmt) == GIMPLE_PHI
+      && gimple_bb (and_stmt) == loop->header
+      && gimple_phi_num_args (and_stmt) == 2
+      && (TREE_CODE (gimple_phi_arg_def (and_stmt,
+					 loop_latch_edge (loop)->dest_idx))
+	  == SSA_NAME))
+    {
+      /* SSA used in exit condition is defined by PHI stmt
+	b_11 = PHI <b_5(D)(2), b_6(3)>
+	from the PHI stmt, get the and_stmt
+	b_6 = _1 & b_11.  */
+      tree t = gimple_phi_arg_def (and_stmt, loop_latch_edge (loop)->dest_idx);
+      and_stmt = SSA_NAME_DEF_STMT (t);
+      adjust = false;
+    }
+
+  /* Make sure it is indeed an and stmt (b_6 = _1 & b_11).  */
+  if (!is_gimple_assign (and_stmt)
+      || gimple_assign_rhs_code (and_stmt) != BIT_AND_EXPR)
+    return false;
+
+  tree b_11 = gimple_assign_rhs1 (and_stmt);
+  tree _1 = gimple_assign_rhs2 (and_stmt);
+
+  /* Check that _1 is defined by _b11 + -1 (_1 = b_11 + -1).
+     Also make sure that b_11 is the same in and_stmt and _1 defining stmt.
+     Also canonicalize if _1 and _b11 are revrsed.  */
+  if (ssa_defined_by_minus_one_stmt_p (b_11, _1))
+    std::swap (b_11, _1);
+  else if (ssa_defined_by_minus_one_stmt_p (_1, b_11))
+    ;
+  else
+    return false;
+  /* Check the recurrence:
+   ... = PHI <b_5(2), b_6(3)>.  */
+  gimple *phi = SSA_NAME_DEF_STMT (b_11);
+  if (gimple_code (phi) != GIMPLE_PHI
+      || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
+      || (gimple_assign_lhs (and_stmt)
+	  != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
+    return false;
+
+  /* We found a match. Get the corresponding popcount builtin.  */
+  tree src = gimple_phi_arg_def (phi, loop_preheader_edge (loop)->dest_idx);
+  if (TYPE_PRECISION (TREE_TYPE (src)) <= TYPE_PRECISION (integer_type_node))
+    fn = builtin_decl_implicit (BUILT_IN_POPCOUNT);
+  else if (TYPE_PRECISION (TREE_TYPE (src))
+	   == TYPE_PRECISION (long_integer_type_node))
+    fn = builtin_decl_implicit (BUILT_IN_POPCOUNTL);
+  else if (TYPE_PRECISION (TREE_TYPE (src))
+	   == TYPE_PRECISION (long_long_integer_type_node)
+	   || (TYPE_PRECISION (TREE_TYPE (src))
+	       == 2 * TYPE_PRECISION (long_long_integer_type_node)))
+    fn = builtin_decl_implicit (BUILT_IN_POPCOUNTLL);
+
+  if (!fn)
+    return false;
+
+  /* Update NITER params accordingly  */
+  tree utype = unsigned_type_for (TREE_TYPE (src));
+  src = fold_convert (utype, src);
+  if (TYPE_PRECISION (TREE_TYPE (src)) < TYPE_PRECISION (integer_type_node))
+    src = fold_convert (unsigned_type_node, src);
+  tree call;
+  if (TYPE_PRECISION (TREE_TYPE (src))
+      == 2 * TYPE_PRECISION (long_long_integer_type_node))
+    {
+      int prec = TYPE_PRECISION (long_long_integer_type_node);
+      tree src1 = fold_convert (long_long_unsigned_type_node,
+				fold_build2 (RSHIFT_EXPR, TREE_TYPE (src),
+					     unshare_expr (src),
+					     build_int_cst (integer_type_node,
+							    prec)));
+      tree src2 = fold_convert (long_long_unsigned_type_node, src);
+      call = build_call_expr (fn, 1, src1);
+      call = fold_build2 (PLUS_EXPR, TREE_TYPE (call), call,
+			  build_call_expr (fn, 1, src2));
+      call = fold_convert (utype, call);
+    }
+  else
+    call = fold_convert (utype, build_call_expr (fn, 1, src));
+  if (adjust)
+    iter = fold_build2 (MINUS_EXPR, utype, call, build_int_cst (utype, 1));
+  else
+    iter = call;
+
+  if (TREE_CODE (call) == INTEGER_CST)
+    max = tree_to_uhwi (call);
+  else
+    max = TYPE_PRECISION (TREE_TYPE (src));
+  if (adjust)
+    max = max - 1;
+
+  niter->niter = iter;
+  niter->assumptions = boolean_true_node;
+
+  if (adjust)
+    {
+      tree may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node, src,
+				      build_zero_cst (TREE_TYPE (src)));
+      niter->may_be_zero
+	= simplify_using_initial_conditions (loop, may_be_zero);
+    }
+  else
+    niter->may_be_zero = boolean_false_node;
+
+  niter->max = max;
+  niter->bound = NULL_TREE;
+  niter->cmp = ERROR_MARK;
+  return true;
+}
+
 /* Substitute NEW_TREE for OLD in EXPR and fold the result.
    If VALUEIZE is non-NULL then OLD and NEW_TREE are ignored and instead
    all SSA names are replaced with the result of calling the VALUEIZE
@@ -2647,203 +2836,6 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
 
   return (!integer_zerop (niter->assumptions));
 }
-
-
-/* Utility function to check if OP is defined by a stmt
-   that is a val - 1.  */
-
-static bool
-ssa_defined_by_minus_one_stmt_p (tree op, tree val)
-{
-  gimple *stmt;
-  return (TREE_CODE (op) == SSA_NAME
-	  && (stmt = SSA_NAME_DEF_STMT (op))
-	  && is_gimple_assign (stmt)
-	  && (gimple_assign_rhs_code (stmt) == PLUS_EXPR)
-	  && val == gimple_assign_rhs1 (stmt)
-	  && integer_minus_onep (gimple_assign_rhs2 (stmt)));
-}
-
-
-/* See if LOOP is a popcout implementation, determine NITER for the loop
-
-   We match:
-   <bb 2>
-   goto <bb 4>
-
-   <bb 3>
-   _1 = b_11 + -1
-   b_6 = _1 & b_11
-
-   <bb 4>
-   b_11 = PHI <b_5(D)(2), b_6(3)>
-
-   exit block
-   if (b_11 != 0)
-	goto <bb 3>
-   else
-	goto <bb 5>
-
-   OR we match copy-header version:
-   if (b_5 != 0)
-	goto <bb 3>
-   else
-	goto <bb 4>
-
-   <bb 3>
-   b_11 = PHI <b_5(2), b_6(3)>
-   _1 = b_11 + -1
-   b_6 = _1 & b_11
-
-   exit block
-   if (b_6 != 0)
-	goto <bb 3>
-   else
-	goto <bb 4>
-
-   If popcount pattern, update NITER accordingly.
-   i.e., set NITER to  __builtin_popcount (b)
-   return true if we did, false otherwise.
-
- */
-
-static bool
-number_of_iterations_popcount (loop_p loop, edge exit,
-			       enum tree_code code,
-			       class tree_niter_desc *niter)
-{
-  bool adjust = true;
-  tree iter;
-  HOST_WIDE_INT max;
-  adjust = true;
-  tree fn = NULL_TREE;
-
-  /* Check loop terminating branch is like
-     if (b != 0).  */
-  gimple *stmt = last_stmt (exit->src);
-  if (!stmt
-      || gimple_code (stmt) != GIMPLE_COND
-      || code != NE_EXPR
-      || !integer_zerop (gimple_cond_rhs (stmt))
-      || TREE_CODE (gimple_cond_lhs (stmt)) != SSA_NAME)
-    return false;
-
-  gimple *and_stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
-
-  /* Depending on copy-header is performed, feeding PHI stmts might be in
-     the loop header or loop latch, handle this.  */
-  if (gimple_code (and_stmt) == GIMPLE_PHI
-      && gimple_bb (and_stmt) == loop->header
-      && gimple_phi_num_args (and_stmt) == 2
-      && (TREE_CODE (gimple_phi_arg_def (and_stmt,
-					 loop_latch_edge (loop)->dest_idx))
-	  == SSA_NAME))
-    {
-      /* SSA used in exit condition is defined by PHI stmt
-	b_11 = PHI <b_5(D)(2), b_6(3)>
-	from the PHI stmt, get the and_stmt
-	b_6 = _1 & b_11.  */
-      tree t = gimple_phi_arg_def (and_stmt, loop_latch_edge (loop)->dest_idx);
-      and_stmt = SSA_NAME_DEF_STMT (t);
-      adjust = false;
-    }
-
-  /* Make sure it is indeed an and stmt (b_6 = _1 & b_11).  */
-  if (!is_gimple_assign (and_stmt)
-      || gimple_assign_rhs_code (and_stmt) != BIT_AND_EXPR)
-    return false;
-
-  tree b_11 = gimple_assign_rhs1 (and_stmt);
-  tree _1 = gimple_assign_rhs2 (and_stmt);
-
-  /* Check that _1 is defined by _b11 + -1 (_1 = b_11 + -1).
-     Also make sure that b_11 is the same in and_stmt and _1 defining stmt.
-     Also canonicalize if _1 and _b11 are revrsed.  */
-  if (ssa_defined_by_minus_one_stmt_p (b_11, _1))
-    std::swap (b_11, _1);
-  else if (ssa_defined_by_minus_one_stmt_p (_1, b_11))
-    ;
-  else
-    return false;
-  /* Check the recurrence:
-   ... = PHI <b_5(2), b_6(3)>.  */
-  gimple *phi = SSA_NAME_DEF_STMT (b_11);
-  if (gimple_code (phi) != GIMPLE_PHI
-      || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
-      || (gimple_assign_lhs (and_stmt)
-	  != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
-    return false;
-
-  /* We found a match. Get the corresponding popcount builtin.  */
-  tree src = gimple_phi_arg_def (phi, loop_preheader_edge (loop)->dest_idx);
-  if (TYPE_PRECISION (TREE_TYPE (src)) <= TYPE_PRECISION (integer_type_node))
-    fn = builtin_decl_implicit (BUILT_IN_POPCOUNT);
-  else if (TYPE_PRECISION (TREE_TYPE (src))
-	   == TYPE_PRECISION (long_integer_type_node))
-    fn = builtin_decl_implicit (BUILT_IN_POPCOUNTL);
-  else if (TYPE_PRECISION (TREE_TYPE (src))
-	   == TYPE_PRECISION (long_long_integer_type_node)
-	   || (TYPE_PRECISION (TREE_TYPE (src))
-	       == 2 * TYPE_PRECISION (long_long_integer_type_node)))
-    fn = builtin_decl_implicit (BUILT_IN_POPCOUNTLL);
-
-  if (!fn)
-    return false;
-
-  /* Update NITER params accordingly  */
-  tree utype = unsigned_type_for (TREE_TYPE (src));
-  src = fold_convert (utype, src);
-  if (TYPE_PRECISION (TREE_TYPE (src)) < TYPE_PRECISION (integer_type_node))
-    src = fold_convert (unsigned_type_node, src);
-  tree call;
-  if (TYPE_PRECISION (TREE_TYPE (src))
-      == 2 * TYPE_PRECISION (long_long_integer_type_node))
-    {
-      int prec = TYPE_PRECISION (long_long_integer_type_node);
-      tree src1 = fold_convert (long_long_unsigned_type_node,
-				fold_build2 (RSHIFT_EXPR, TREE_TYPE (src),
-					     unshare_expr (src),
-					     build_int_cst (integer_type_node,
-							    prec)));
-      tree src2 = fold_convert (long_long_unsigned_type_node, src);
-      call = build_call_expr (fn, 1, src1);
-      call = fold_build2 (PLUS_EXPR, TREE_TYPE (call), call,
-			  build_call_expr (fn, 1, src2));
-      call = fold_convert (utype, call);
-    }
-  else
-    call = fold_convert (utype, build_call_expr (fn, 1, src));
-  if (adjust)
-    iter = fold_build2 (MINUS_EXPR, utype, call, build_int_cst (utype, 1));
-  else
-    iter = call;
-
-  if (TREE_CODE (call) == INTEGER_CST)
-    max = tree_to_uhwi (call);
-  else
-    max = TYPE_PRECISION (TREE_TYPE (src));
-  if (adjust)
-    max = max - 1;
-
-  niter->niter = iter;
-  niter->assumptions = boolean_true_node;
-
-  if (adjust)
-    {
-      tree may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node, src,
-				      build_zero_cst (TREE_TYPE (src)));
-      niter->may_be_zero
-	= simplify_using_initial_conditions (loop, may_be_zero);
-    }
-  else
-    niter->may_be_zero = boolean_false_node;
-
-  niter->max = max;
-  niter->bound = NULL_TREE;
-  niter->cmp = ERROR_MARK;
-  return true;
-}
-
 
 /* Like number_of_iterations_exit_assumptions, but return TRUE only if
    the niter information holds unconditionally.  */
