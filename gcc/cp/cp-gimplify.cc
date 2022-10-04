@@ -920,6 +920,7 @@ cp_genericize_init (tree *replace, tree from, tree to)
 static void
 cp_genericize_init_expr (tree *stmt_p)
 {
+  iloc_sentinel ils = EXPR_LOCATION (*stmt_p);
   tree to = TREE_OPERAND (*stmt_p, 0);
   tree from = TREE_OPERAND (*stmt_p, 1);
   if (SIMPLE_TARGET_EXPR_P (from)
@@ -935,6 +936,7 @@ cp_genericize_init_expr (tree *stmt_p)
 static void
 cp_genericize_target_expr (tree *stmt_p)
 {
+  iloc_sentinel ils = EXPR_LOCATION (*stmt_p);
   tree slot = TARGET_EXPR_SLOT (*stmt_p);
   cp_genericize_init (&TARGET_EXPR_INITIAL (*stmt_p),
 		      TARGET_EXPR_INITIAL (*stmt_p), slot);
