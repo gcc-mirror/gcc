@@ -153,9 +153,9 @@ static int warn_about_return_type;
 
 static bool undef_nested_function;
 
-/* If non-zero, implicit "omp declare target" attribute is added into the
-   attribute lists.  */
-int current_omp_declare_target_attribute;
+/* Vector of implicit "omp declare target" attributes to be added into
+   the attribute lists.  */
+vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
 
 /* If non-zero, we are inside of
    #pragma omp begin assumes ... #pragma omp end assumes region.  */
@@ -5105,7 +5105,7 @@ static tree
 c_decl_attributes (tree *node, tree attributes, int flags)
 {
   /* Add implicit "omp declare target" attribute if requested.  */
-  if (current_omp_declare_target_attribute
+  if (vec_safe_length (current_omp_declare_target_attribute)
       && ((VAR_P (*node) && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
@@ -5118,6 +5118,22 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 				  NULL_TREE, attributes);
 	  attributes = tree_cons (get_identifier ("omp declare target block"),
 				  NULL_TREE, attributes);
+	}
+      if (TREE_CODE (*node) == FUNCTION_DECL)
+	{
+	  int device_type
+	    = current_omp_declare_target_attribute->last ().device_type;
+	  device_type = MAX (device_type, 0);
+	  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0
+	      && !lookup_attribute ("omp declare target host", attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target host"),
+			   NULL_TREE, attributes);
+	  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0
+	      && !lookup_attribute ("omp declare target nohost", attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target nohost"),
+			   NULL_TREE, attributes);
 	}
     }
 

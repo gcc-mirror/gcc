@@ -3360,16 +3360,20 @@ finish_translation_unit (void)
 
   if (vec_safe_length (scope_chain->omp_declare_target_attribute))
     {
+      cp_omp_declare_target_attr
+	a = scope_chain->omp_declare_target_attribute->pop ();
       if (!errorcount)
-	error ("%<#pragma omp declare target%> without corresponding "
-	       "%<#pragma omp end declare target%>");
+	error ("%qs without corresponding %qs",
+	       a.device_type >= 0 ? "#pragma omp begin declare target"
+				  : "#pragma omp declare target",
+	       "#pragma omp end declare target");
       vec_safe_truncate (scope_chain->omp_declare_target_attribute, 0);
     }
   if (vec_safe_length (scope_chain->omp_begin_assumes))
     {
       if (!errorcount)
-	error ("%<#pragma omp begin assumes%> without corresponding "
-	       "%<#pragma omp end assumes%>");
+	error ("%qs without corresponding %qs",
+	       "#pragma omp begin assumes", "#pragma omp end assumes");
       vec_safe_truncate (scope_chain->omp_begin_assumes, 0);
     }
 }

@@ -1817,11 +1817,12 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
 };
 
 
-struct GTY(()) omp_declare_target_attr {
+struct GTY(()) cp_omp_declare_target_attr {
   bool attr_syntax;
+  int device_type;
 };
 
-struct GTY(()) omp_begin_assumes_data {
+struct GTY(()) cp_omp_begin_assumes_data {
   bool attr_syntax;
 };
 
@@ -1871,8 +1872,8 @@ struct GTY(()) saved_scope {
   cp_binding_level *bindings;
 
   hash_map<tree, tree> *GTY((skip)) x_local_specializations;
-  vec<omp_declare_target_attr, va_gc> *omp_declare_target_attribute;
-  vec<omp_begin_assumes_data, va_gc> *omp_begin_assumes;
+  vec<cp_omp_declare_target_attr, va_gc> *omp_declare_target_attribute;
+  vec<cp_omp_begin_assumes_data, va_gc> *omp_begin_assumes;
 
   struct saved_scope *prev;
 };

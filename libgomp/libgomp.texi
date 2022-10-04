@@ -345,7 +345,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Support of structured block sequences in C/C++ @tab Y @tab
 @item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
       clause @tab Y @tab
-@item Support @code{begin/end declare target} syntax in C/C++ @tab N @tab
+@item Support @code{begin/end declare target} syntax in C/C++ @tab Y @tab
 @item Pointer predetermined firstprivate getting initialized
 to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item For Fortran, diagnose placing declarative before/between @code{USE},
