@@ -2913,7 +2913,6 @@ irange::set_nonzero_bits (const wide_int_ref &bits)
 {
   gcc_checking_assert (!undefined_p ());
   unsigned prec = TYPE_PRECISION (type ());
-  gcc_checking_assert (prec == bits.get_precision ());
 
   // Drop VARYINGs with a nonzero mask to a plain range.
   if (m_kind == VR_VARYING && bits != -1)
