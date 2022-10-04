@@ -924,7 +924,7 @@ decode_omp_directive (void)
       matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
-      matcho ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
+      matchs ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
       matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
@@ -1023,7 +1023,7 @@ decode_omp_directive (void)
       matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
       break;
     case 'l':
-      matcho ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
+      matchs ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
       break;
     case 'o':
       if (gfc_match ("ordered depend (") == MATCH_YES
@@ -1070,7 +1070,7 @@ decode_omp_directive (void)
       matcho ("requires", gfc_match_omp_requires, ST_OMP_REQUIRES);
       break;
     case 's':
-      matcho ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
+      matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matcho ("scope", gfc_match_omp_scope, ST_OMP_SCOPE);
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);

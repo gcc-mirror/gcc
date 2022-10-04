@@ -2737,7 +2737,8 @@ can be omitted, to use a target-specific default value.
 @item -fopenmp
 @opindex fopenmp
 @cindex OpenMP parallel
-Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
+Enable handling of OpenMP directives @code{#pragma omp} in C/C++,
+@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
@@ -2749,9 +2750,12 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 @opindex fopenmp-simd
 @cindex OpenMP SIMD
 @cindex SIMD
-Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
-in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
-are ignored.
+Enable handling of OpenMP's @code{simd}, @code{declare simd},
+@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan},
+@code{loop} directives and combined or composite directives with
+@code{simd} as constituent with @code{#pragma omp} in C/C++,
+@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++
+and @code{!$omp} in Fortran.  Other OpenMP directives are ignored.
 
 @item -fpermitted-flt-eval-methods=@var{style}
 @opindex fpermitted-flt-eval-methods
