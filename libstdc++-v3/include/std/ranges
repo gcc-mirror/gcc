@@ -7165,18 +7165,23 @@ namespace views::__adaptor
 	_M_inner_it.template emplace<1>(std::get<1>(std::move(__i._M_inner_it)));
     }
 
-    constexpr decltype(auto)
+    constexpr common_reference_t<iter_reference_t<_InnerIter>,
+			         iter_reference_t<_PatternIter>>
     operator*() const
     {
-      using reference = common_reference_t<iter_reference_t<_InnerIter>,
-					   iter_reference_t<_PatternIter>>;
-      return std::visit([](auto& __it) -> reference { return *__it; }, _M_inner_it);
+      if (_M_inner_it.index() == 0)
+	return *std::get<0>(_M_inner_it);
+      else
+	return *std::get<1>(_M_inner_it);
     }
 
     constexpr _Iterator&
     operator++()
     {
-      std::visit([](auto& __it){ ++__it; }, _M_inner_it);
+      if (_M_inner_it.index() == 0)
+	++std::get<0>(_M_inner_it);
+      else
+	++std::get<1>(_M_inner_it);
       _M_satisfy();
       return *this;
     }
@@ -7232,7 +7237,10 @@ namespace views::__adaptor
 	    }
 	}
 
-      std::visit([](auto& __it){ --__it; }, _M_inner_it);
+      if (_M_inner_it.index() == 0)
+	--std::get<0>(_M_inner_it);
+      else
+	--std::get<1>(_M_inner_it);
       return *this;
     }
 
@@ -7253,18 +7261,35 @@ namespace views::__adaptor
 	&& equality_comparable<_OuterIter> && equality_comparable<_InnerIter>
     { return __x._M_outer_it == __y._M_outer_it && __x._M_inner_it ==__y._M_inner_it; }
 
-    friend constexpr decltype(auto)
+    friend constexpr common_reference_t<iter_rvalue_reference_t<_InnerIter>,
+					iter_rvalue_reference_t<_PatternIter>>
     iter_move(const _Iterator& __x)
     {
-      using __rval_ref = common_reference_t<iter_rvalue_reference_t<_InnerIter>,
-					    iter_rvalue_reference_t<_PatternIter>>;
-      return std::visit<__rval_ref>(ranges::iter_move, __x._M_inner_it);
+      if (__x._M_inner_it.index() == 0)
+	return ranges::iter_move(std::get<0>(__x._M_inner_it));
+      else
+	return ranges::iter_move(std::get<1>(__x._M_inner_it));
     }
 
     friend constexpr void
     iter_swap(const _Iterator& __x, const _Iterator& __y)
       requires indirectly_swappable<_InnerIter, _PatternIter>
-    { std::visit(ranges::iter_swap, __x._M_inner_it, __y._M_inner_it); }
+    {
+      if (__x._M_inner_it.index() == 0)
+	{
+	  if (__y._M_inner_it.index() == 0)
+	    ranges::iter_swap(std::get<0>(__x._M_inner_it), std::get<0>(__y._M_inner_it));
+	  else
+	    ranges::iter_swap(std::get<0>(__x._M_inner_it), std::get<1>(__y._M_inner_it));
+	}
+      else
+	{
+	  if (__y._M_inner_it.index() == 0)
+	    ranges::iter_swap(std::get<1>(__x._M_inner_it), std::get<0>(__y._M_inner_it));
+	  else
+	    ranges::iter_swap(std::get<1>(__x._M_inner_it), std::get<1>(__y._M_inner_it));
+	}
+    }
   };
 
   template<input_range _Vp, forward_range _Pattern>
