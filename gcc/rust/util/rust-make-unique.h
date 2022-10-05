@@ -19,7 +19,7 @@
 #ifndef RUST_MAKE_UNIQUE_H
 #define RUST_MAKE_UNIQUE_H
 
-#include <memory>
+#include "rust-system.h"
 
 namespace Rust {
 
