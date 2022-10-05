@@ -509,15 +509,31 @@ Dump::visit (ForLoopExpr &expr)
 
 void
 Dump::visit (IfExpr &expr)
-{}
+{
+  stream << "if ";
+  expr.vis_if_condition (*this);
+  expr.vis_if_block (*this);
+}
 
 void
 Dump::visit (IfExprConseqElse &expr)
-{}
+{
+  stream << "if ";
+  expr.vis_if_condition (*this);
+  expr.vis_if_block (*this);
+  stream << indentation << "else ";
+  expr.vis_else_block (*this);
+}
 
 void
 Dump::visit (IfExprConseqIf &expr)
-{}
+{
+  stream << "if ";
+  expr.vis_if_condition (*this);
+  expr.vis_if_block (*this);
+  stream << indentation << "else if ";
+  expr.vis_conseq_if_expr (*this);
+}
 
 void
 Dump::visit (IfExprConseqIfLet &expr)
