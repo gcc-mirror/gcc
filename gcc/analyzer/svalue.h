@@ -1113,9 +1113,9 @@ public:
   /* A support class for uniquifying instances of widening_svalue.  */
   struct key_t
   {
-    key_t (tree type, const program_point &point,
+    key_t (tree type, const function_point &point,
 	   const svalue *base_sval, const svalue *iter_sval)
-    : m_type (type), m_point (point.get_function_point ()),
+    : m_type (type), m_point (point),
       m_base_sval (base_sval), m_iter_sval (iter_sval)
     {}
 
@@ -1153,12 +1153,12 @@ public:
      DIR_UNKNOWN
     };
 
-  widening_svalue (tree type, const program_point &point,
+  widening_svalue (tree type, const function_point &point,
 		   const svalue *base_sval, const svalue *iter_sval)
   : svalue (complexity::from_pair (base_sval->get_complexity (),
 				   iter_sval->get_complexity ()),
 	    type),
-    m_point (point.get_function_point ()),
+    m_point (point),
     m_base_sval (base_sval), m_iter_sval (iter_sval)
   {
     gcc_assert (base_sval->can_have_associated_state_p ());

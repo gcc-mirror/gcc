@@ -278,7 +278,7 @@ public:
 					   const svalue *inner_svalue);
   const svalue *get_or_create_unmergeable (const svalue *arg);
   const svalue *get_or_create_widening_svalue (tree type,
-					       const program_point &point,
+					       const function_point &point,
 					       const svalue *base_svalue,
 					       const svalue *iter_svalue);
   const svalue *get_or_create_compound_svalue (tree type,
@@ -1282,6 +1282,10 @@ struct model_merger
   }
 
   bool mergeable_svalue_p (const svalue *) const;
+  const function_point &get_function_point () const
+  {
+    return m_point.get_function_point ();
+  }
 
   const region_model *m_model_a;
   const region_model *m_model_b;

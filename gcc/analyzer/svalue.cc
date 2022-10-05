@@ -207,7 +207,7 @@ svalue::can_merge_p (const svalue *other,
   if (maybe_get_constant () && other->maybe_get_constant ())
     {
       return mgr->get_or_create_widening_svalue (other->get_type (),
-						 merger->m_point,
+						 merger->get_function_point (),
 						 other, this);
     }
 
@@ -220,7 +220,7 @@ svalue::can_merge_p (const svalue *other,
 	&& binop_sval->get_arg1 ()->get_kind () == SK_CONSTANT
 	&& other->get_kind () != SK_WIDENING)
       return mgr->get_or_create_widening_svalue (other->get_type (),
-						 merger->m_point,
+						 merger->get_function_point (),
 						 other, this);
 
   /* Merge: (Widen(existing_val, V), existing_val) -> Widen (existing_val, V)

@@ -1143,10 +1143,11 @@ region_model_manager::get_or_create_unmergeable (const svalue *arg)
    and ITER_SVAL at POINT, creating it if necessary.  */
 
 const svalue *
-region_model_manager::get_or_create_widening_svalue (tree type,
-						     const program_point &point,
-						     const svalue *base_sval,
-						     const svalue *iter_sval)
+region_model_manager::
+get_or_create_widening_svalue (tree type,
+			       const function_point &point,
+			       const svalue *base_sval,
+			       const svalue *iter_sval)
 {
   gcc_assert (base_sval->get_kind () != SK_WIDENING);
   gcc_assert (iter_sval->get_kind () != SK_WIDENING);

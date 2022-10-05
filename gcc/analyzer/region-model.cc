@@ -7956,7 +7956,7 @@ static void
 test_widening_constraints ()
 {
   region_model_manager mgr;
-  program_point point (program_point::origin (mgr));
+  function_point point (program_point::origin (mgr).get_function_point ());
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_m1 = build_int_cst (integer_type_node, -1);
   tree int_1 = build_int_cst (integer_type_node, 1);
