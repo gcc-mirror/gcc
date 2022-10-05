@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "constructor.h"
 #include "version.h"
+#include "parse.h"  /* For gfc_ascii_statement.  */
 
 /* Keep track of indentation for symbol tree dumps.  */
 static int show_level = 0;
@@ -1458,6 +1459,34 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
   gfc_current_ns = ns_curr;
 }
 
+static void
+show_omp_assumes (gfc_omp_assumptions *assume)
+{
+  for (int i = 0; i < assume->n_absent; i++)
+    {
+      fputs (" ABSENT (", dumpfile);
+      fputs (gfc_ascii_statement (assume->absent[i], true), dumpfile);
+      fputc (')', dumpfile);
+    }
+  for (int i = 0; i < assume->n_contains; i++)
+    {
+      fputs (" CONTAINS (", dumpfile);
+      fputs (gfc_ascii_statement (assume->contains[i], true), dumpfile);
+      fputc (')', dumpfile);
+    }
+  for (gfc_expr_list *el = assume->holds; el; el = el->next)
+    {
+      fputs (" HOLDS (", dumpfile);
+      show_expr (el->expr);
+      fputc (')', dumpfile);
+    }
+  if (assume->no_openmp)
+    fputs (" NO_OPENMP", dumpfile);
+  if (assume->no_openmp_routines)
+    fputs (" NO_OPENMP_ROUTINES", dumpfile);
+  if (assume->no_parallelism)
+    fputs (" NO_PARALLELISM", dumpfile);
+}
 
 /* Show OpenMP or OpenACC clauses.  */
 
@@ -1998,6 +2027,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->message);
       fputc (')', dumpfile);
     }
+  if (omp_clauses->assume)
+    show_omp_assumes (omp_clauses->assume);
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -2027,6 +2058,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE: name = "CACHE"; is_oacc = true; break;
     case EXEC_OACC_ENTER_DATA: name = "ENTER DATA"; is_oacc = true; break;
     case EXEC_OACC_EXIT_DATA: name = "EXIT DATA"; is_oacc = true; break;
+    case EXEC_OMP_ASSUME: name = "ASSUME"; break;
     case EXEC_OMP_ATOMIC: name = "ATOMIC"; break;
     case EXEC_OMP_BARRIER: name = "BARRIER"; break;
     case EXEC_OMP_CANCEL: name = "CANCEL"; break;
@@ -2128,6 +2160,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OMP_ASSUME:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_DISTRIBUTE:
@@ -3353,6 +3386,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OMP_ASSUME:
     case EXEC_OMP_ATOMIC:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
@@ -3529,6 +3563,13 @@ show_namespace (gfc_namespace *ns)
 	  fprintf (dumpfile, "!$ACC DECLARE");
 	  show_omp_clauses (decl->clauses);
 	}
+    }
+
+  if (ns->omp_assumes)
+    {
+      show_indent ();
+      fprintf (dumpfile, "!$OMP ASSUMES");
+      show_omp_assumes (ns->omp_assumes);
     }
 
   fputc ('\n', dumpfile);

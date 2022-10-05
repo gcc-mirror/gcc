@@ -7487,6 +7487,8 @@ gfc_trans_omp_directive (gfc_code *code)
 {
   switch (code->op)
     {
+    case EXEC_OMP_ASSUME:
+      return gfc_trans_omp_code (code->block->next, true);
     case EXEC_OMP_ATOMIC:
       return gfc_trans_omp_atomic (code);
     case EXEC_OMP_BARRIER:
