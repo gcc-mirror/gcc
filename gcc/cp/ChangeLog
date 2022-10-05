@@ -1,3 +1,43 @@
+2022-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107154
+	* cp-gimplify.cc (cp_genericize_init_expr): Use iloc_sentinel.
+	(cp_genericize_target_expr): Likewise.
+
+2022-10-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107136
+	* Make-lang.in (CP_PLUGIN_HEADERS): Add cp-trait.def.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct omp_declare_target_attr): Rename to ...
+	(cp_omp_declare_target_attr): ... this.  Add device_type member.
+	(omp_begin_assumes_data): Rename to ...
+	(cp_omp_begin_assumes_data): ... this.
+	(struct saved_scope): Change types of omp_declare_target_attribute
+	and omp_begin_assumes.
+	* parser.cc (cp_parser_omp_clause_device_type): Uncomment
+	check_no_duplicate_clause call.
+	(cp_parser_omp_all_clauses): Fix up pasto, c_name for OMP_CLAUSE_LINK
+	should be "link" rather than "to".
+	(cp_parser_omp_declare_target): Adjust for omp_declare_target_attr
+	to cp_omp_declare_target_attr changes, push -1 as device_type.  Use
+	error_at rather than warning_at for declare target with only
+	device_type clauses.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(cp_parser_omp_begin): Add begin declare target support.  Adjust
+	for omp_begin_assumes_data to cp_omp_begin_assumes_data change.
+	(cp_parser_omp_end): Adjust for the
+	omp_declare_target_attr to cp_omp_declare_target_attr and
+	omp_begin_assumes_data to cp_omp_begin_assumes_data type changes,
+	adjust diagnostics wording and simplify format strings for easier
+	translations.
+	* semantics.cc (finish_translation_unit): Likewise.
+	* decl2.cc (cplus_decl_attributes): If device_type was present on
+	begin declare target, add "omp declare target host" and/or
+	"omp declare target nohost" attributes.
+
 2022-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (BCS_STMT_EXPR): New enumerator.

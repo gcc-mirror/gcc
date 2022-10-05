@@ -1,3 +1,8 @@
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_omp_directives): Uncomment begin declare target
+	entry.
+
 2022-10-03  Patrick Palka  <ppalka@redhat.com>
 
 	* c-common.cc (c_common_reswords): Use RID_IS_SAME instead of

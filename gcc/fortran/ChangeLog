@@ -1,3 +1,8 @@
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (decode_omp_directive): Handle '(end) loop' and 'scan'
+	also with -fopenmp-simd.
+
 2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100040

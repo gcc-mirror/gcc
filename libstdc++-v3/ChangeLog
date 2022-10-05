@@ -1,3 +1,77 @@
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/ranges/adaptors/join_with/1.cc: Remove unused
+	<sstream header.
+	(test04): Remove constexpr for old std::string ABI and test at
+	runtime.
+
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (remove_cv): Use __remove_cv built-in.
+	(remove_reference): Use __remove_reference built-in.
+	(remove_cvref): Use __remove_cvref built-in. Remove inheritance
+	for fallback implementation.
+
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (__is_seed_seq): Replace with ...
+	(_If_seed_seq_for): ... this.
+	* include/ext/random: Adjust to use _If_seed_seq_for.
+
+2022-10-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_with_view::_Iterator::operator*):
+	Replace use of std::visit with manual visitation.
+	(join_with_view::_Iterator::operator++): Likewise.
+	(join_with_view::_Iterator::operator--): Likewise.
+	(join_with_view::_Iterator::iter_move): Likewise.
+	(join_with_view::_Iterator::iter_swap): Likewise.
+
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/stable_sort/mem_check.cc: Do nto run
+	for freestanding.
+
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107139
+	* include/std/coroutine: Remove all _GLIBCXXHOSTED preprocessor
+	conditionals.
+
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107134
+	* include/c_global/cstdint [!_GLIBCXX_HOSTED]: Include
+	<stdint-gcc.h> directly.
+
+2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107135
+	* include/bits/functexcept.h [!_GLIBCXX_HOSTED]
+	(__throw_invalid_argument, __throw_out_of_range)
+	(__throw_out_of_range_fmt, __throw_runtime_error)
+	(__throw_overflow_error): Define inline.
+	* include/std/bitset (_M_copy_from_ptr) [!_GLIBCXX_HOSTED]:
+	Replace __builtin_abort with __throw_invalid_argument.
+
+2022-10-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges: Include <variant> for C++23.
+	(__detail::__compatible_joinable_ranges): Define.
+	(__detail::__bidirectional_common): Define.
+	(join_with_view): Define.
+	(join_with_view::_Iterator): Define.
+	(join_with_view::_Sentinel): Define.
+	(views::__detail::__can_join_with_view): Define.
+	(views::_JoinWith, views::join_with): Define.
+	* testsuite/std/ranges/adaptors/join_with/1.cc: New test.
+
+2022-10-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/iostream: Use ///< for inline documentation.
+	* include/std/limits: Likewise.
+	* include/experimental/internet: Likewise.
+
 2022-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update C++20 status.

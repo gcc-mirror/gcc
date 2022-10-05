@@ -1,3 +1,87 @@
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.h (remove_attribute): Declare overload with additional
+	attr_ns argument.
+	(private_lookup_attribute): Declare overload with additional
+	attr_ns and attr_ns_len arguments.
+	(lookup_attribute): New overload with additional attr_ns argument.
+	* attribs.cc (remove_attribute): New overload with additional
+	attr_ns argument.
+	(private_lookup_attribute): New overload with additional
+	attr_ns and attr_ns_len arguments.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.cc (handle_ignored_attributes_option, decl_attributes,
+	common_function_versions): Use auto_diagnostic_group.
+
+2022-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set_nonzero_bits): Remove assert.
+
+2022-10-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_ISA_RCPC): New macro.
+	* config/aarch64/aarch64-arches.def (armv8.3-a): Include RCPC.
+	* config/aarch64/aarch64-cores.def (thunderx3t110, zeus, neoverse-v1)
+	(neoverse-512tvb, saphira): Remove RCPC from these Armv8.3-A+ cores.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_RCPC when appropriate.
+
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (-fopenmp): Mention C++ attribut syntax.
+	(-fopenmp-simd): Likewise; update permitted directives.
+
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (Specific): Add missing items to bullet list.
+	(amdgcn): Update LLVM requirements, use version not date for newlib.
+	(nvptx): Use version not git hash for newlib.
+
+2022-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (irange_storage_slot::set_irange): Remove
+	special case.
+	* value-range.cc (irange::irange_set): Adjust for nonzero mask
+	being a wide int.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::verify_range): Same.
+	(irange::legacy_equal_p): Same.
+	(irange::operator==): Same.
+	(irange::contains_p): Same.
+	(irange::legacy_intersect): Same.
+	(irange::legacy_union): Same.
+	(irange::irange_single_pair_union): Call union_nonzero_bits.
+	(irange::irange_union): Same.
+	(irange::irange_intersect): Call intersect_nonzero_bits.
+	(irange::intersect): Adjust for nonzero mask being a wide int.
+	(irange::invert): Same.
+	(irange::set_nonzero_bits): Same.
+	(irange::get_nonzero_bits_from_range): New.
+	(irange::set_range_from_nonzero_bits): New.
+	(irange::get_nonzero_bits): Adjust for nonzero mask being a wide
+	int.
+	(irange::intersect_nonzero_bits): Same.
+	(irange::union_nonzero_bits): Same.
+	(range_tests_nonzero_bits): Remove test.
+	* value-range.h (irange::varying_compatible_p): Adjust for nonzero
+	mask being a wide int.
+	(gt_ggc_mx): Same.
+	(gt_pch_nx): Same.
+	(irange::set_undefined): Same.
+	(irange::set_varying): Same.
+	(irange::normalize_kind): Same.
+
+2022-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107130
+	* gimple-range-op.cc (class cfn_popcount): Call op_cfn_ffs.
+	(class cfn_ffs): New.
+	(gimple_range_op_handler::maybe_builtin_call): Separate out
+	CASE_CFN_FFS into its own case.
+
 2022-10-03  Sergei Trofimovich  <siarheit@google.com>
 
 	* config/i386/t-i386: Add build-time dependencies against
