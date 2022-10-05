@@ -274,8 +274,8 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
 	    }
 
 	  const char *p = IDENTIFIER_POINTER (name);
-	  gcc_checking_assert (attr_len == 0 || p[0] != '_');
-
+	  gcc_checking_assert (attr_len == 0 || p[0] != '_'
+			       || (ident_len > 1 && p[1] != '_'));
 	  if (strncmp (attr_name, p, attr_len) == 0)
 	    break;
 
