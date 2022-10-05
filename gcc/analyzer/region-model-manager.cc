@@ -432,6 +432,17 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 	    }
       }
       break;
+    case NEGATE_EXPR:
+      {
+	/* -(-(VAL)) is VAL, for integer types.  */
+	if (const unaryop_svalue *unaryop = arg->dyn_cast_unaryop_svalue ())
+	  if (unaryop->get_op () == NEGATE_EXPR
+	      && type == unaryop->get_type ()
+	      && type
+	      && INTEGRAL_TYPE_P (type))
+	    return unaryop->get_arg ();
+      }
+      break;
     }
 
   /* Constants.  */
