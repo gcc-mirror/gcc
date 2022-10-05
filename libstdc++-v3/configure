@@ -675,6 +675,7 @@ DOT
 DOXYGEN
 BUILD_INFO_FALSE
 BUILD_INFO_TRUE
+EH_POOL_FLAGS
 ENABLE_BACKTRACE_FALSE
 ENABLE_BACKTRACE_TRUE
 BACKTRACE_SUPPORTS_THREADS
@@ -958,6 +959,8 @@ with_default_libstdcxx_abi
 enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
 enable_libstdcxx_backtrace
+enable_libstdcxx_static_eh_pool
+with_libstdcxx_eh_pool_obj_count
 enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
@@ -1668,6 +1671,9 @@ Optional Features:
                           turns on ISO/IEC TS 18822 support [default=auto]
   --enable-libstdcxx-backtrace
                           turns on libbacktrace support [default=auto]
+  --enable-libstdcxx-static-eh-pool
+                          use a fixed-size static buffer for allocating
+                          exceptions if malloc fails
   --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
@@ -1695,6 +1701,9 @@ Optional Packages:
   --with-system-libunwind use installed libunwind
   --with-default-libstdcxx-abi
                           set the std::string ABI to use by default
+  --with-libstdcxx-eh-pool-obj-count
+                          the number of exceptions that can be allocated from
+                          the pool if malloc fails
   --with-gxx-include-dir=DIR
                           installation directory for include files
   --with-toolexeclibdir=DIR
@@ -12227,7 +12236,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12206 "configure"
+#line 12215 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12333,7 +12342,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12312 "configure"
+#line 12321 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16053,7 +16062,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16012 "configure"
+#line 16021 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16088,7 +16097,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16047 "configure"
+#line 16056 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16123,7 +16132,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16082 "configure"
+#line 16091 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16159,7 +16168,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16118 "configure"
+#line 16127 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16315,7 +16324,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16274 "configure"
+#line 16283 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16357,7 +16366,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16316 "configure"
+#line 16325 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -54268,6 +54277,17 @@ _ACEOF
 fi
 done
 
+    for ac_func in secure_getenv
+do :
+  ac_fn_c_check_func "$LINENO" "secure_getenv" "ac_cv_func_secure_getenv"
+if test "x$ac_cv_func_secure_getenv" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SECURE_GETENV 1
+_ACEOF
+
+fi
+done
+
 
 
 
@@ -71914,6 +71934,37 @@ $as_echo "4.6.0" >&6; }
 $as_echo "7.1.0" >&6; }
     fi
   fi
+
+
+# For libsupc++/eh_alloc.cc defaults.
+
+  eh_pool_static=
+  eh_pool_nobjs=
+  # Check whether --enable-libstdcxx-static-eh-pool was given.
+if test "${enable_libstdcxx_static_eh_pool+set}" = set; then :
+  enableval=$enable_libstdcxx_static_eh_pool; if test "${enableval}" = yes; then
+      eh_pool_static="-D_GLIBCXX_EH_POOL_STATIC"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: EH pool using static buffer" >&5
+$as_echo "$as_me: EH pool using static buffer" >&6;}
+    fi
+fi
+
+
+
+# Check whether --with-libstdcxx-eh-pool-obj-count was given.
+if test "${with_libstdcxx_eh_pool_obj_count+set}" = set; then :
+  withval=$with_libstdcxx_eh_pool_obj_count; if test "${withval}" -ge 0 2>/dev/null; then
+      eh_pool_obj_count="-D_GLIBCXX_EH_POOL_NOBJS=${withval}"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: EH pool object count: ${withval}" >&5
+$as_echo "$as_me: EH pool object count: ${withval}" >&6;}
+    else
+      as_fn_error $? "EH pool obj count must be a non-negative integer: $withval" "$LINENO" 5
+    fi
+fi
+
+
+  EH_POOL_FLAGS="$eh_pool_static $eh_pool_obj_count"
+
 
 
 # Define documentation rules conditionally.

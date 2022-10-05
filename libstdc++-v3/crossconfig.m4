@@ -187,6 +187,7 @@ case "${host}" in
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
     AC_CHECK_FUNCS(uselocale)
+    AC_CHECK_FUNCS(secure_getenv)
     AM_ICONV
     ;;
   *-mingw32*)

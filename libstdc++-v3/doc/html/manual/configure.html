@@ -220,7 +220,7 @@
      <span class="emphasis"><em>freestanding</em></span> environment, in which only a
      minimal set of headers are provided.  This option builds such an
      environment.
-     </p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-verbose</code></span></dt><dd><p>
+     </p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-hosted</code></span></dt><dd><p>This is an alias for <code class="code">--disable-hosted-libstdcxx</code>.</p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-verbose</code></span></dt><dd><p>
      By default, the library is configured to write descriptive messages
      to standard error for certain events such as calling a pure virtual
      function or the invocation of the standard terminate handler.  Those
@@ -271,4 +271,12 @@
       as the usual libstdc++ and libsupc++ libraries. This is enabled by
       default on select POSIX targets where it is known to work and disabled
       otherwise.
+    </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-static-eh-pool</code></span></dt><dd><p>Use a fixed-size static buffer for the emergency exception handling
+      pool (see <a class="xref" href="using_exceptions.html#intro.using.exception.alloc" title="Memory allocation">Memory allocation for exceptions</a>). The default
+      is to allocate the pool on program startup using <code class="code">malloc</code>.
+      With this option, a static buffer will be provided by libstdc++ instead.
+      This does not change the library ABI.
+    </p></dd><dt><span class="term"><code class="code">--with-libstdcxx-eh-pool-obj-count=NUM</code></span></dt><dd><p>Set the size of the emergency exception handling pool. NUM is the
+      number of simultaneous allocated exceptions to support.
+      This does not change the library ABI.
     </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="setup.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Setup </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Make</td></tr></table></div></body></html>
