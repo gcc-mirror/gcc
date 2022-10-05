@@ -16,11 +16,11 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-attributes.h"
 #include "rust-ast.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
-#include "safe-ctype.h"
 
 namespace Rust {
 namespace Analysis {
