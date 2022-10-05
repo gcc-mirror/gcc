@@ -51,9 +51,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 
-
-#if !defined(GM2TOOLS)
-
 /* Utilize some of the C build routines.  */
 
 #include "fold-const.h"
@@ -93,5 +90,3 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "stmt.h"
-
-#endif /* GM2TOOLS.  */

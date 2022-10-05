@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # utility to tidy dates and detect lack of copyright.
 

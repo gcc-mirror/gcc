@@ -32,33 +32,21 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #  include "ggc.h"
 #endif
 
-#if defined(GM2TOOLS)
-#   define START_FILE(F,L)
-#   define END_FILE()
-#   define START_LINE(N,S)
-#   define GET_LOCATION(COLUMN_START,COLUMN_END)   0
-#   define TIMEVAR_PUSH_LEX
-#   define TIMEVAR_POP_LEX
-#else
-#   include "timevar.h"
+#include "timevar.h"
 
-#   define START_FILE(F,L)   m2linemap_StartFile(F,L)
-#   define END_FILE()        m2linemap_EndFile()
-#   define START_LINE(N,S)   m2linemap_StartLine(N,S)
-#   define GET_LOCATION(COLUMN_START,COLUMN_END) \
-           m2linemap_GetLocationRange(COLUMN_START,COLUMN_END)
-#   define TIMEVAR_PUSH_LEX  timevar_push (TV_LEX)
-#   define TIMEVAR_POP_LEX   timevar_pop (TV_LEX)
-#endif
-
+#define START_FILE(F,L)   m2linemap_StartFile(F,L)
+#define END_FILE()        m2linemap_EndFile()
+#define START_LINE(N,S)   m2linemap_StartLine(N,S)
+#define GET_LOCATION(COLUMN_START,COLUMN_END) \
+        m2linemap_GetLocationRange(COLUMN_START,COLUMN_END)
+#define TIMEVAR_PUSH_LEX  timevar_push (TV_LEX)
+#define TIMEVAR_POP_LEX   timevar_pop (TV_LEX)
 
 #ifdef __cplusplus
 #define EXTERN extern "C"
 #endif
 
-  /*
-   *  m2.flex - provides a lexical analyser for GNU Modula-2
-   */
+  /* m2.flex provides a lexical analyser for GNU Modula-2.  */
 
   struct lineInfo {
     char            *linebuf;          /* line contents */

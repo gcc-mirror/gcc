@@ -27,23 +27,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "vec.h"
 
-/* Currently disabled, as Modula-2 uses WORD (unsigned int) for a set
-   type.  */
+/* These macros provide convenient access to the various statement nodes.  */
 
-#if 0
-/* Modula-2 language-specific tree codes.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
-enum m2_tree_code {
-  M2_DUMMY_TREE_CODE = LAST_C_TREE_CODE,
-#include "gm2-tree.def"
-  LAST_M2_TREE_CODE
-};
-#undef DEFTREECODE
-
-#endif
-
-/* These macros provide convenient access to the various _STMT nodes
-   created when parsing template declarations.  */
 #define TRY_STMTS(NODE)		TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
 #define TRY_HANDLERS(NODE)	TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 1)
 

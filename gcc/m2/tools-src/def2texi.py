@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # def2texi.py creates texi library documentation for all exported procedures.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
