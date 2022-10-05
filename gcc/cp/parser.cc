@@ -13731,7 +13731,8 @@ warn_for_range_copy (tree decl, tree expr)
 
   if (TYPE_REF_P (type))
     {
-      if (glvalue_p (expr) && ref_conv_binds_directly (type, expr).is_false ())
+      if (glvalue_p (expr)
+	  && ref_conv_binds_to_temporary (type, expr).is_true ())
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wrange_loop_construct,
@@ -13762,7 +13763,7 @@ warn_for_range_copy (tree decl, tree expr)
   /* If we can initialize a reference directly, suggest that to avoid the
      copy.  */
   tree rtype = cp_build_reference_type (type, /*rval*/false);
-  if (ref_conv_binds_directly (rtype, expr).is_true ())
+  if (ref_conv_binds_to_temporary (rtype, expr).is_false ())
     {
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wrange_loop_construct,

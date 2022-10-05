@@ -2233,7 +2233,7 @@ ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
   tree val = build_stub_object (from);
   if (!TYPE_REF_P (from) && TREE_CODE (from) != FUNCTION_TYPE)
     val = CLASS_TYPE_P (from) ? force_rvalue (val, tf_none) : rvalue (val);
-  return ref_conv_binds_directly (to, val, direct_init_p).is_false ();
+  return ref_conv_binds_to_temporary (to, val, direct_init_p).is_true ();
 }
 
 /* Worker for is_{,nothrow_}convertible.  Attempt to perform an implicit

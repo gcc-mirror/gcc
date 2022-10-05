@@ -9210,15 +9210,47 @@ conv_binds_ref_to_prvalue (conversion *c)
   return conv_is_prvalue (next_conversion (c));
 }
 
-/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE does
-   not involve creating a temporary.  Return tristate::TS_FALSE if converting
-   EXPR to a reference type TYPE binds the reference to a temporary.  If the
-   conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
+/* True iff C is a conversion that binds a reference to a temporary.
+   This is a superset of conv_binds_ref_to_prvalue: here we're also
+   interested in xvalues.  */
+
+static bool
+conv_binds_ref_to_temporary (conversion *c)
+{
+  if (conv_binds_ref_to_prvalue (c))
+    return true;
+  if (c->kind != ck_ref_bind)
+    return false;
+  c = next_conversion (c);
+  /* This is the case for
+       struct Base {};
+       struct Derived : Base {};
+       const Base& b(Derived{});
+     where we bind 'b' to the Base subobject of a temporary object of type
+     Derived.  The subobject is an xvalue; the whole object is a prvalue.  */
+  if (c->kind != ck_base)
+    return false;
+  c = next_conversion (c);
+  if (c->kind == ck_identity && c->u.expr)
+    {
+      tree expr = c->u.expr;
+      while (handled_component_p (expr))
+	expr = TREE_OPERAND (expr, 0);
+      if (TREE_CODE (expr) == TARGET_EXPR)
+	return true;
+    }
+  return false;
+}
+
+/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE binds
+   the reference to a temporary.  Return tristate::TS_FALSE if converting
+   EXPR to a reference type TYPE doesn't bind the reference to a temporary.  If
+   the conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
    says whether the conversion should be done in direct- or copy-initialization
    context.  */
 
 tristate
-ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
+ref_conv_binds_to_temporary (tree type, tree expr, bool direct_init_p/*=false*/)
 {
   gcc_assert (TYPE_REF_P (type));
 
@@ -9230,7 +9262,7 @@ ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
 					  /*c_cast_p=*/false, flags, tf_none);
   tristate ret (tristate::TS_UNKNOWN);
   if (conv && !conv->bad_p)
-    ret = tristate (!conv_binds_ref_to_prvalue (conv));
+    ret = tristate (conv_binds_ref_to_temporary (conv));
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
