@@ -306,6 +306,7 @@ class cfn_signbit : public range_operator_float
 {
 public:
   using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
 			   const irange &, relation_kind) const
   {
@@ -319,6 +320,25 @@ public:
 	return true;
       }
    return false;
+  }
+  virtual bool op1_range (frange &r, tree type, const irange &lhs,
+			  const frange &, relation_kind) const override
+  {
+    if (lhs.zero_p ())
+      {
+	r.set (type, dconst0, frange_val_max (type));
+	r.update_nan (false);
+	return true;
+      }
+    if (!lhs.contains_p (build_zero_cst (lhs.type ())))
+      {
+	REAL_VALUE_TYPE dconstm0 = dconst0;
+	dconstm0.sign = 1;
+	r.set (type, frange_val_min (type), dconstm0);
+	r.update_nan (true);
+	return true;
+      }
+    return false;
   }
 } op_cfn_signbit;
 
