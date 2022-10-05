@@ -72,6 +72,13 @@ void test_summarized_writes_param_to_ptr (int j)
   __analyzer_eval (y == j); /* { dg-warning "TRUE" } */
 }
 
+void test_summarized_writes_param_to_ptr_unknown (int j)
+{
+  int *p = (int *)__analyzer_get_unknown_ptr ();
+  writes_param_to_ptr (j, p);
+  __analyzer_eval (*p == j); /* { dg-warning "UNKNOWN" } */
+}
+
 int g;
 
 void writes_to_global (int i)

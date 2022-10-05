@@ -374,6 +374,16 @@ region_model::impl_call_analyzer_eval (const gcall *call,
   warning_at (call->location, 0, "%s", t.as_string ());
 }
 
+/* Handle the on_call_pre part of "__analyzer_get_unknown_ptr".  */
+
+void
+region_model::impl_call_analyzer_get_unknown_ptr (const call_details &cd)
+{
+  const svalue *ptr_sval
+    = m_mgr->get_or_create_unknown_svalue (cd.get_lhs_type ());
+  cd.maybe_set_lhs (ptr_sval);
+}
+
 /* Handle the on_call_pre part of "__builtin_expect" etc.  */
 
 void

@@ -1256,6 +1256,12 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  {
 	    /* This is handled elsewhere.  */
 	  }
+	else if (is_special_named_call_p (call, "__analyzer_get_unknown_ptr",
+					  0))
+	  {
+	    call_details cd (call, this, ctxt);
+	    impl_call_analyzer_get_unknown_ptr (cd);
+	  }
 	else
 	  *out_unknown_side_effects = on_call_pre (call, ctxt,
 						   out_terminate_path);

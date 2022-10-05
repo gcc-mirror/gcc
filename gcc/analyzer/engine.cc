@@ -172,6 +172,8 @@ void
 impl_region_model_context::on_unknown_change (const svalue *sval,
 					      bool is_mutable)
 {
+  if (!sval->can_have_associated_state_p ())
+    return;
   for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_unknown_change (sval, is_mutable, m_ext_state);
 }

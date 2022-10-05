@@ -344,6 +344,7 @@ class region_model
   void impl_call_analyzer_dump_escaped (const gcall *call);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
+  void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
   void impl_call_builtin_expect (const call_details &cd);
   void impl_call_calloc (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,

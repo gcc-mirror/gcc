@@ -3176,12 +3176,16 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	= r.convert_region_from_summary (summary_base_reg))
       {
 	const region *caller_base_reg = caller_reg->get_base_region ();
-	binding_cluster *caller_cluster
-	  = get_or_create_cluster (caller_base_reg);
-	if (summary_cluster->escaped_p ())
-	  caller_cluster->mark_as_escaped ();
-	if (summary_cluster->touched_p ())
-	  caller_cluster->m_touched = true;
+	if (caller_base_reg->tracked_p ()
+	    && !caller_base_reg->symbolic_for_unknown_ptr_p ())
+	  {
+	    binding_cluster *caller_cluster
+	      = get_or_create_cluster (caller_base_reg);
+	    if (summary_cluster->escaped_p ())
+	      caller_cluster->mark_as_escaped ();
+	    if (summary_cluster->touched_p ())
+	      caller_cluster->m_touched = true;
+	  }
       }
 
   switch (summary_base_reg->get_kind ())
