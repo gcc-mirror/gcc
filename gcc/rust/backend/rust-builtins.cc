@@ -92,6 +92,12 @@ BuiltinsContext::setup ()
 					    build_pointer_type (void_type_node),
 					    size_type_node, NULL_TREE),
 		  0);
+
+  define_builtin ("prefetch", BUILT_IN_PREFETCH, "__builtin_prefetch",
+		  "prefetch",
+		  build_varargs_function_type_list (
+		    build_pointer_type (const_ptr_type_node), NULL_TREE),
+		  builtin_const);
 }
 
 static void

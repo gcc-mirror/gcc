@@ -17,6 +17,7 @@
 #include "rust-compile-intrinsic.h"
 #include "rust-compile-context.h"
 #include "rust-compile-type.h"
+#include "rust-compile-expr.h"
 #include "rust-compile-fnparam.h"
 #include "rust-builtins.h"
 #include "rust-diagnostics.h"
@@ -27,6 +28,8 @@
 #include "print-tree.h"
 #include "fold-const.h"
 #include "langhooks.h"
+
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -43,6 +46,15 @@ static tree
 wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
 copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype);
+
+enum class Prefetch
+{
+  Read,
+  Write
+};
+
+static tree
+prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind);
 
 static inline tree
 rotate_left_handler (Context *ctx, TyTy::FnType *fntype)
@@ -70,18 +82,32 @@ wrapping_mul_handler (Context *ctx, TyTy::FnType *fntype)
 {
   return wrapping_op_handler (ctx, fntype, MULT_EXPR);
 }
+static inline tree
+prefetch_read_data (Context *ctx, TyTy::FnType *fntype)
+{
+  return prefetch_data_handler (ctx, fntype, Prefetch::Read);
+}
+static inline tree
+prefetch_write_data (Context *ctx, TyTy::FnType *fntype)
+{
+  return prefetch_data_handler (ctx, fntype, Prefetch::Write);
+}
 
 static const std::map<std::string,
 		      std::function<tree (Context *, TyTy::FnType *)>>
-  generic_intrinsics = {{"offset", &offset_handler},
-			{"size_of", &sizeof_handler},
-			{"transmute", &transmute_handler},
-			{"rotate_left", &rotate_left_handler},
-			{"rotate_right", &rotate_right_handler},
-			{"wrapping_add", &wrapping_add_handler},
-			{"wrapping_sub", &wrapping_sub_handler},
-			{"wrapping_mul", &wrapping_mul_handler},
-			{"copy_nonoverlapping", &copy_nonoverlapping_handler}};
+  generic_intrinsics = {
+    {"offset", &offset_handler},
+    {"size_of", &sizeof_handler},
+    {"transmute", &transmute_handler},
+    {"rotate_left", &rotate_left_handler},
+    {"rotate_right", &rotate_right_handler},
+    {"wrapping_add", &wrapping_add_handler},
+    {"wrapping_sub", &wrapping_sub_handler},
+    {"wrapping_mul", &wrapping_mul_handler},
+    {"copy_nonoverlapping", &copy_nonoverlapping_handler},
+    {"prefetch_read_data", &prefetch_read_data},
+    {"prefetch_write_data", &prefetch_write_data},
+};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -509,6 +535,59 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
   ctx->add_statement (copy_call);
 
   // BUILTIN copy_nonoverlapping BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
+{
+  rust_assert (fntype->get_params ().size () == 2);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // prefetching isn't pure and shouldn't be discarded after GIMPLE
+  TREE_READONLY (fndecl) = 0;
+  TREE_SIDE_EFFECTS (fndecl) = 1;
+
+  std::vector<Bvariable *> args;
+  compile_fn_params (ctx, fntype, fndecl, &args);
+
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, args))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  auto addr = ctx->get_backend ()->var_expression (args[0], Location ());
+  auto locality = ctx->get_backend ()->var_expression (args[1], Location ());
+
+  mpz_t zero;
+  mpz_t one;
+  mpz_init_set_ui (zero, 0);
+  mpz_init_set_ui (one, 1);
+
+  auto rw_flag_value = kind == Prefetch::Write ? one : zero;
+  auto rw_flag
+    = ctx->get_backend ()->integer_constant_expression (integer_type_node,
+							rw_flag_value);
+  auto prefetch_raw = NULL_TREE;
+  auto ok
+    = BuiltinsContext::get ().lookup_simple_builtin ("prefetch", &prefetch_raw);
+  rust_assert (ok);
+  auto prefetch
+    = build_fold_addr_expr_loc (Location ().gcc_location (), prefetch_raw);
+
+  auto prefetch_call
+    = ctx->get_backend ()->call_expression (prefetch, {addr, rw_flag, locality},
+					    nullptr, Location ());
+
+  ctx->add_statement (prefetch_call);
 
   finalize_intrinsic_block (ctx, fndecl);
 
