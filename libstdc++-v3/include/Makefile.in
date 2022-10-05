@@ -380,13 +380,6 @@ WARN_CXXFLAGS = \
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 
-# Regarding *_freestanding:
-# For including files in freestanding, create a new _freestanding variable, and
-# split *_headers across an ``if GLIBCXX_HOSTED'', then update install-headers
-# to account for the new directory/set being added.
-# If such a variable exists, simply add to either *_headers or *_freestanding,
-# as appropriate.
-
 # Standard C++ includes.
 std_srcdir = ${glibcxx_srcdir}/include/std
 std_builddir = .
@@ -395,20 +388,25 @@ std_freestanding = \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
 	${std_srcdir}/bit \
+	${std_srcdir}/bitset \
 	${std_srcdir}/concepts \
 	${std_srcdir}/coroutine \
+	${std_srcdir}/expected \
 	${std_srcdir}/functional \
 	${std_srcdir}/iterator \
 	${std_srcdir}/limits \
 	${std_srcdir}/memory \
 	${std_srcdir}/numbers \
+	${std_srcdir}/numeric \
 	${std_srcdir}/optional \
 	${std_srcdir}/ranges \
 	${std_srcdir}/ratio \
+	${std_srcdir}/scoped_allocator \
 	${std_srcdir}/source_location \
 	${std_srcdir}/span \
 	${std_srcdir}/tuple \
 	${std_srcdir}/type_traits \
+	${std_srcdir}/typeindex \
 	${std_srcdir}/utility \
 	${std_srcdir}/variant \
 	${std_srcdir}/version
@@ -418,7 +416,6 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_freestanding} \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/any \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/barrier \
-@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/bitset \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/charconv \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/chrono \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/codecvt \
@@ -426,7 +423,6 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/condition_variable \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/deque \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/execution \
-@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/expected \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/filesystem \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/forward_list \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/fstream \
@@ -442,12 +438,10 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/map \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/memory_resource \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/mutex \
-@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/numeric \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/ostream \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/queue \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/random \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/regex \
-@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/scoped_allocator \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/semaphore \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/set \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/shared_mutex \
@@ -463,7 +457,6 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/string_view \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/system_error \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/thread \
-@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/typeindex \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/unordered_map \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/unordered_set \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/valarray \
@@ -478,6 +471,7 @@ bits_freestanding = \
 	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/atomic_base.h \
 	${bits_srcdir}/c++0x_warning.h \
+	${bits_srcdir}/boost_concept_check.h \
 	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/enable_special_members.h \
@@ -506,6 +500,7 @@ bits_freestanding = \
 	${bits_srcdir}/stl_iterator.h \
 	${bits_srcdir}/stl_iterator_base_funcs.h \
 	${bits_srcdir}/stl_iterator_base_types.h \
+	${bits_srcdir}/stl_numeric.h \
 	${bits_srcdir}/stl_heap.h \
 	${bits_srcdir}/stl_pair.h \
 	${bits_srcdir}/stl_raw_storage_iter.h \
@@ -528,7 +523,6 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/basic_ios.tcc \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/basic_string.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/basic_string.tcc \
-@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/boost_concept_check.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/char_traits.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/charconv.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/chrono.h \
@@ -601,7 +595,6 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_map.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_multimap.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_multiset.h \
-@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_numeric.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_queue.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_relops.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/stl_set.h \
@@ -974,49 +967,53 @@ pb_headers7 = \
 
 ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
-ext_headers = \
-	${ext_srcdir}/algorithm \
+ext_freestanding = \
 	${ext_srcdir}/aligned_buffer.h \
 	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
-	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/cast.h \
-	${ext_srcdir}/cmath \
-	${ext_srcdir}/codecvt_specializations.h \
 	${ext_srcdir}/concurrence.h \
-	${ext_srcdir}/debug_allocator.h \
-	${ext_srcdir}/enc_filebuf.h \
-	${ext_srcdir}/extptr_allocator.h \
-	${ext_srcdir}/functional \
-	${ext_srcdir}/iterator \
-	${ext_srcdir}/malloc_allocator.h \
-	${ext_srcdir}/memory \
-	${ext_srcdir}/mt_allocator.h \
-	${ext_srcdir}/new_allocator.h \
-	${ext_srcdir}/numeric \
 	${ext_srcdir}/numeric_traits.h \
-	${ext_srcdir}/pod_char_traits.h \
+	${ext_srcdir}/iterator \
 	${ext_srcdir}/pointer.h \
-	${ext_srcdir}/pool_allocator.h \
-	${ext_srcdir}/random \
-	${ext_srcdir}/random.tcc \
-	${ext_srcdir}/rb_tree \
-	${ext_srcdir}/rc_string_base.h \
-	${ext_srcdir}/rope \
-	${ext_srcdir}/ropeimpl.h \
-	${ext_srcdir}/slist \
-	${ext_srcdir}/sso_string_base.h \
-	${ext_srcdir}/stdio_filebuf.h \
-	${ext_srcdir}/stdio_sync_filebuf.h \
-	${ext_srcdir}/string_conversions.h \
-	${ext_srcdir}/throw_allocator.h \
-	${ext_srcdir}/typelist.h \
 	${ext_srcdir}/type_traits.h \
-	${ext_srcdir}/vstring_fwd.h \
-	${ext_srcdir}/vstring.h \
-	${ext_srcdir}/vstring.tcc \
-	${ext_srcdir}/vstring_util.h \
-	${ext_compat_headers}
+	${ext_srcdir}/typelist.h
+
+@GLIBCXX_HOSTED_FALSE@ext_headers = ${ext_freestanding}
+@GLIBCXX_HOSTED_TRUE@ext_headers = \
+@GLIBCXX_HOSTED_TRUE@	${ext_freestanding} \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/algorithm \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/bitmap_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/cmath \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/codecvt_specializations.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/debug_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/enc_filebuf.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/extptr_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/functional \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/malloc_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/memory \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/mt_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/new_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/numeric \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/pod_char_traits.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/pool_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/random \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/random.tcc \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/rb_tree \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/rc_string_base.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/rope \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/ropeimpl.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/slist \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/sso_string_base.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/stdio_filebuf.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/stdio_sync_filebuf.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/string_conversions.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/throw_allocator.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/vstring_fwd.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/vstring.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/vstring.tcc \
+@GLIBCXX_HOSTED_TRUE@	${ext_srcdir}/vstring_util.h \
+@GLIBCXX_HOSTED_TRUE@	${ext_compat_headers}
 
 ext_compat_headers = \
 	${backward_srcdir}/hash_set \
@@ -1945,9 +1942,6 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${backward_builddir}
 	for file in ${backward_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${backward_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${ext_builddir}
-	for file in ${ext_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${ext_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
@@ -1962,6 +1956,9 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
 	for file in ${c_base_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${ext_builddir}
+	for file in ${ext_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${ext_builddir}; done
 @GLIBCXX_HOSTED_TRUE@	for dir in ${pb_subdirs}; do \
 @GLIBCXX_HOSTED_TRUE@	  $(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/$${dir} ; done
 @GLIBCXX_HOSTED_TRUE@	for file in ${pb_headers1}; do \
