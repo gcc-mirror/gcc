@@ -19,14 +19,9 @@
 #ifndef RUST_TOKEN_H
 #define RUST_TOKEN_H
 
+#include "rust-system.h"
 #include "rust-linemap.h"
 #include "rust-codepoint.h"
-
-// order: config, system, coretypes, input
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "input.h"
 
 namespace Rust {
 // "Primitive core types" in Rust - the different int and float types, as well
