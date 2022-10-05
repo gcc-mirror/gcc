@@ -82,6 +82,7 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				  item.get_mappings ().get_defid (),
 				  item.get_identifier (), ident, discim_expr);
 }
 
@@ -111,6 +112,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				  item.get_mappings ().get_defid (),
 				  item.get_identifier (), ident,
 				  item.get_discriminant_expression ().get ());
 }
@@ -159,6 +161,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				  item.get_mappings ().get_defid (),
 				  item.get_identifier (), ident,
 				  TyTy::VariantDef::VariantType::TUPLE,
 				  discim_expr, fields);
@@ -206,6 +209,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				  item.get_mappings ().get_defid (),
 				  item.get_identifier (), ident,
 				  TyTy::VariantDef::VariantType::STRUCT,
 				  discrim_expr, fields);
