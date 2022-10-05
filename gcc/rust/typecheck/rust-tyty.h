@@ -1063,9 +1063,9 @@ public:
     return "";
   }
 
-  VariantDef (HirId id, std::string identifier, RustIdent ident,
+  VariantDef (HirId id, DefId defid, std::string identifier, RustIdent ident,
 	      HIR::Expr *discriminant)
-    : id (id), identifier (identifier), ident (ident),
+    : id (id), defid (defid), identifier (identifier), ident (ident),
       discriminant (discriminant)
 
   {
@@ -1073,11 +1073,11 @@ public:
     fields = {};
   }
 
-  VariantDef (HirId id, std::string identifier, RustIdent ident,
+  VariantDef (HirId id, DefId defid, std::string identifier, RustIdent ident,
 	      VariantType type, HIR::Expr *discriminant,
 	      std::vector<StructFieldType *> fields)
-    : id (id), identifier (identifier), ident (ident), type (type),
-      discriminant (discriminant), fields (fields)
+    : id (id), defid (defid), identifier (identifier), ident (ident),
+      type (type), discriminant (discriminant), fields (fields)
   {
     rust_assert (
       (type == VariantType::NUM && fields.empty ())
@@ -1085,8 +1085,8 @@ public:
   }
 
   VariantDef (const VariantDef &other)
-    : id (other.id), identifier (other.identifier), ident (other.ident),
-      type (other.type), discriminant (other.discriminant),
+    : id (other.id), defid (other.defid), identifier (other.identifier),
+      ident (other.ident), type (other.type), discriminant (other.discriminant),
       fields (other.fields)
   {}
 
@@ -1105,7 +1105,7 @@ public:
   static VariantDef &get_error_node ()
   {
     static VariantDef node
-      = VariantDef (UNKNOWN_HIRID, "",
+      = VariantDef (UNKNOWN_HIRID, UNKNOWN_DEFID, "",
 		    {Resolver::CanonicalPath::create_empty (),
 		     Linemap::unknown_location ()},
 		    nullptr);
@@ -1116,6 +1116,7 @@ public:
   bool is_error () const { return get_id () == UNKNOWN_HIRID; }
 
   HirId get_id () const { return id; }
+  DefId get_defid () const { return defid; }
 
   VariantType get_variant_type () const { return type; }
   bool is_data_variant () const { return type != VariantType::NUM; }
@@ -1211,7 +1212,7 @@ public:
     for (auto &f : fields)
       cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-    return new VariantDef (id, identifier, ident, type, discriminant,
+    return new VariantDef (id, defid, identifier, ident, type, discriminant,
 			   cloned_fields);
   }
 
@@ -1221,7 +1222,7 @@ public:
     for (auto &f : fields)
       cloned_fields.push_back ((StructFieldType *) f->monomorphized_clone ());
 
-    return new VariantDef (id, identifier, ident, type, discriminant,
+    return new VariantDef (id, defid, identifier, ident, type, discriminant,
 			   cloned_fields);
   }
 
@@ -1229,6 +1230,7 @@ public:
 
 private:
   HirId id;
+  DefId defid;
   std::string identifier;
   RustIdent ident;
   VariantType type;

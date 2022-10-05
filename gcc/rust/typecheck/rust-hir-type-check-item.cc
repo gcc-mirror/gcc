@@ -125,7 +125,8 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   // its a single variant ADT
   std::vector<TyTy::VariantDef *> variants;
   variants.push_back (new TyTy::VariantDef (
-    struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_mappings ().get_defid (), struct_decl.get_identifier (),
     ident, TyTy::VariantDef::VariantType::TUPLE, nullptr, std::move (fields)));
 
   // Process #[repr(X)] attribute, if any
@@ -179,7 +180,8 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   // its a single variant ADT
   std::vector<TyTy::VariantDef *> variants;
   variants.push_back (new TyTy::VariantDef (
-    struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_mappings ().get_defid (), struct_decl.get_identifier (),
     ident, TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
 
   // Process #[repr(X)] attribute, if any
@@ -273,7 +275,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
   // there is only a single variant
   std::vector<TyTy::VariantDef *> variants;
   variants.push_back (new TyTy::VariantDef (
-    union_decl.get_mappings ().get_hirid (), union_decl.get_identifier (),
+    union_decl.get_mappings ().get_hirid (),
+    union_decl.get_mappings ().get_defid (), union_decl.get_identifier (),
     ident, TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
 
   TyTy::BaseType *type
