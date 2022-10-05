@@ -5620,7 +5620,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	    }
 	  break;
 	case INDIRECT_REF:
-	  {
+	  if (!TREE_ADDRESSABLE (TREE_TYPE (*from_p)))
 	    /* If we have code like
 
 	     *(const A*)(A*)&x
@@ -5629,11 +5629,13 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	     of "A"), treat the entire expression as identical to "x".
 	     This kind of code arises in C++ when an object is bound
 	     to a const reference, and if "x" is a TARGET_EXPR we want
-	     to take advantage of the optimization below.  */
-	    bool volatile_p = TREE_THIS_VOLATILE (*from_p);
-	    tree t = gimple_fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0));
-	    if (t)
+	     to take advantage of the optimization below.  But not if
+	     the type is TREE_ADDRESSABLE; then C++17 says that the
+	     TARGET_EXPR needs to be a temporary.  */
+	    if (tree t
+		= gimple_fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0)))
 	      {
+		bool volatile_p = TREE_THIS_VOLATILE (*from_p);
 		if (TREE_THIS_VOLATILE (t) != volatile_p)
 		  {
 		    if (DECL_P (t))
@@ -5646,8 +5648,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 		ret = GS_OK;
 		changed = true;
 	      }
-	    break;
-	  }
+	  break;
 
 	case TARGET_EXPR:
 	  {
