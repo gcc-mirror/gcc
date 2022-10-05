@@ -1,3 +1,11 @@
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (decode_omp_directive): Handle '(end) loop' and 'scan'
+	also with -fopenmp-simd.
+
 2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
