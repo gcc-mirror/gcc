@@ -127,6 +127,7 @@ def update_current_branch(ref_name):
             repo.git.add(datestamp_path)
             if not args.current:
                 repo.index.commit('Daily bump.')
+                origin.fetch()
                 if args.push:
                     repo.git.push('origin', branch)
                     print('branch is pushed')
@@ -149,7 +150,7 @@ else:
             print('=== Working on: %s ===' % branch, flush=True)
             branch.checkout()
             origin.pull(rebase=True)
-            print('branch pulled and checked out')
+            print('branch pulled and checked out', flush=True)
             update_current_branch(name)
             assert not repo.index.diff(None)
             print('branch is done\n', flush=True)
