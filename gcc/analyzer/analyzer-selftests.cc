@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "stringpool.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-selftests.h"
 

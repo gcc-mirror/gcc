@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_SVALUE_H
 #define GCC_ANALYZER_SVALUE_H
 
-#include "json.h"
 #include "analyzer/complexity.h"
 #include "analyzer/store.h"
 #include "analyzer/program-point.h"

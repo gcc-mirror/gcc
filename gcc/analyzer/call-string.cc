@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "tree.h"
 #include "options.h"
-#include "json.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"

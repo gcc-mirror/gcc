@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_STORE_H
 #define GCC_ANALYZER_STORE_H
 
-#include "tristate.h"
-
 /* Implementation of the region-based ternary model described in:
      "A Memory Model for Static Analysis of C Programs"
       (Zhongxing Xu, Ted Kremenek, and Jian Zhang)

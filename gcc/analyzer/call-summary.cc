@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
-#include "selftest.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-summary.h"

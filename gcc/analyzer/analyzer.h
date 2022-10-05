@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_ANALYZER_H
 
 #include "function.h"
+#include "json.h"
+#include "tristate.h"
 
 class graphviz_out;
 

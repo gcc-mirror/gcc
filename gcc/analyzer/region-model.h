@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
       (Zhongxing Xu, Ted Kremenek, and Jian Zhang)
      http://lcs.ios.ac.cn/~xuzb/canalyze/memmodel.pdf  */
 
+#include "selftest.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region.h"
 #include "analyzer/known-function-manager.h"
