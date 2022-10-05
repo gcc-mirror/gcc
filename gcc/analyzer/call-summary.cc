@@ -171,7 +171,6 @@ call_summary_replay::call_summary_replay (const call_details &cd,
 					  call_summary *summary,
 					  const extrinsic_state &ext_state)
 : m_cd (cd),
-  m_called_fn (called_fn),
   m_summary (summary),
   m_ext_state (ext_state)
 {

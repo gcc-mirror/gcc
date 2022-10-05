@@ -100,7 +100,6 @@ private:
   const region *convert_region_from_summary_1 (const region *);
 
   const call_details &m_cd;
-  function *m_called_fn;
   call_summary *m_summary;
   const extrinsic_state &m_ext_state;
 

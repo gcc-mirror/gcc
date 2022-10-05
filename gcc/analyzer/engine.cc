@@ -1439,7 +1439,6 @@ exploded_node::on_stmt (exploded_graph &eg,
 					snode,
 					as_a <const gcall *> (stmt),
 					state,
-					uncertainty,
 					path_ctxt,
 					called_fn,
 					called_fn_data,
@@ -1598,7 +1597,6 @@ exploded_node::replay_call_summaries (exploded_graph &eg,
 				      const supernode *snode,
 				      const gcall *call_stmt,
 				      program_state *state,
-				      uncertainty_t *uncertainty,
 				      path_context *path_ctxt,
 				      function *called_fn,
 				      per_function_data *called_fn_data,
@@ -1612,7 +1610,7 @@ exploded_node::replay_call_summaries (exploded_graph &eg,
 
   /* Each summary will call bifurcate on the PATH_CTXT.  */
   for (auto summary : called_fn_data->m_summaries)
-    replay_call_summary (eg, snode, call_stmt, state, uncertainty,
+    replay_call_summary (eg, snode, call_stmt, state,
 			 path_ctxt, called_fn, summary, ctxt);
   path_ctxt->terminate_path ();
 
@@ -1628,7 +1626,6 @@ exploded_node::replay_call_summary (exploded_graph &eg,
 				    const supernode *snode,
 				    const gcall *call_stmt,
 				    program_state *old_state,
-				    uncertainty_t *uncertainty,
 				    path_context *path_ctxt,
 				    function *called_fn,
 				    call_summary *summary,
