@@ -114,6 +114,11 @@ package body Bindgen is
    --  For CodePeer, introduce a wrapper subprogram which calls the
    --  user-defined main subprogram.
 
+   --  Names for local C-String variables
+
+   Adainit_String_Obj_Name  : constant String := "Adainit_Name_C_String";
+   Adafinal_String_Obj_Name : constant String := "Adafinal_Name_C_String";
+
    --  Names and link_names for CUDA device adainit/adafinal procs.
 
    Device_Subp_Name_Prefix : constant String := "imported_device_";
@@ -130,9 +135,6 @@ package body Bindgen is
 
    function Device_Ada_Init_Subp_Name return String is
      (Device_Subp_Name_Prefix & Ada_Init_Name.all);
-
-   --  Text for aspect specifications (if any) given as part of the
-   --  Adainit and Adafinal spec declarations.
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -1366,6 +1368,13 @@ package body Bindgen is
       WBI ("   pragma Import (C, " & Device_Ada_Final_Subp_Name &
              ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
 
+      --  C-string declarations for adainit and adafinal
+      WBI ("   " & Adainit_String_Obj_Name
+            & " : Interfaces.C.Strings.Chars_Ptr;");
+      WBI ("   " & Adafinal_String_Obj_Name
+            & " : Interfaces.C.Strings.Chars_Ptr;");
+      WBI ("");
+
       WBI ("");
    end Gen_CUDA_Defs;
 
@@ -1449,11 +1458,11 @@ package body Bindgen is
       --  Register device-side Adainit and Adafinal
       Gen_CUDA_Register_Function_Call
         (Kernel_Name   => Device_Ada_Init_Link_Name,
-         Kernel_String => "Adainit_Name_String",
+         Kernel_String => Adainit_String_Obj_Name,
          Kernel_Proc   => Device_Ada_Init_Subp_Name);
       Gen_CUDA_Register_Function_Call
         (Kernel_Name   => Device_Ada_Final_Link_Name,
-         Kernel_String => "Adafinal_Name_String",
+         Kernel_String => Adafinal_String_Obj_Name,
          Kernel_Proc   => Device_Ada_Final_Subp_Name);
 
       WBI ("      CUDA_Register_Fat_Binary_End (Fat_Binary_Handle);");
