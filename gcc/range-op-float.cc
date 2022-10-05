@@ -572,8 +572,7 @@ foperator_lt::fold_range (irange &r, tree type,
     {
       if (real_less (&op1.upper_bound (), &op2.lower_bound ()))
 	r = range_true (type);
-      else if (finite_operands_p (op1, op2)
-	       && !real_less (&op1.lower_bound (), &op2.upper_bound ()))
+      else if (!real_less (&op1.lower_bound (), &op2.upper_bound ()))
 	r = range_false (type);
       else
 	r = range_true_and_false (type);
@@ -688,8 +687,7 @@ foperator_le::fold_range (irange &r, tree type,
     {
       if (real_compare (LE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
 	r = range_true (type);
-      else if (finite_operands_p (op1, op2)
-	       && !real_compare (LE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
+      else if (!real_compare (LE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_false (type);
       else
 	r = range_true_and_false (type);
@@ -796,8 +794,7 @@ foperator_gt::fold_range (irange &r, tree type,
     {
       if (real_compare (GT_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_true (type);
-      else if (finite_operands_p (op1, op2)
-	       && !real_compare (GT_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
+      else if (!real_compare (GT_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
 	r = range_false (type);
       else
 	r = range_true_and_false (type);
@@ -912,8 +909,7 @@ foperator_ge::fold_range (irange &r, tree type,
     {
       if (real_compare (GE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_true (type);
-      else if (finite_operands_p (op1, op2)
-	       && !real_compare (GE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
+      else if (!real_compare (GE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
 	r = range_false (type);
       else
 	r = range_true_and_false (type);
