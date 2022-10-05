@@ -1,3 +1,12 @@
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (Specific): Add missing items to bullet list.
+	(amdgcn): Update LLVM requirements, use version not date for newlib.
+	(nvptx): Use version not git hash for newlib.
+
 2022-09-27  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/gcn-builtins.def (FABSV): New builtin.
