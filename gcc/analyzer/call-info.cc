@@ -66,7 +66,17 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-/* class call_info : public custom_eedge_info_t.  */
+/* class custom_edge_info.  */
+
+bool
+custom_edge_info::update_state (program_state *state,
+				const exploded_edge *eedge,
+				region_model_context *ctxt) const
+{
+  return update_model (state->m_region_model, eedge, ctxt);
+}
+
+/* class call_info : public custom_edge_info.  */
 
 /* Implementation of custom_edge_info::print vfunc for call_info:
    use get_desc to get a label_text, and print it to PP.  */

@@ -1275,6 +1275,33 @@ get_or_create_asm_output_svalue (tree type,
   return asm_output_sval;
 }
 
+/* Return the svalue * of type TYPE for OUTPUT_IDX of a deterministic
+   asm stmt with string ASM_STRING with NUM_OUTPUTS outputs, given
+   INPUTS as inputs.  */
+
+const svalue *
+region_model_manager::
+get_or_create_asm_output_svalue (tree type,
+				 const char *asm_string,
+				 unsigned output_idx,
+				 unsigned num_outputs,
+				 const vec<const svalue *> &inputs)
+{
+  gcc_assert (inputs.length () <= asm_output_svalue::MAX_INPUTS);
+
+  if (const svalue *folded
+	= maybe_fold_asm_output_svalue (type, inputs))
+    return folded;
+
+  asm_output_svalue::key_t key (type, asm_string, output_idx, inputs);
+  if (asm_output_svalue **slot = m_asm_output_values_map.get (key))
+    return *slot;
+  asm_output_svalue *asm_output_sval
+    = new asm_output_svalue (type, asm_string, output_idx, num_outputs, inputs);
+  RETURN_UNKNOWN_IF_TOO_COMPLEX (asm_output_sval);
+  m_asm_output_values_map.put (key, asm_output_sval);
+  return asm_output_sval;
+}
 
 /* Return the svalue * of type TYPE for the result of a call to FNDECL
    with __attribute__((const)), given INPUTS as inputs.  */

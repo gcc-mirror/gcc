@@ -529,6 +529,9 @@ class region_model
   const svalue *get_string_size (const svalue *sval) const;
   const svalue *get_string_size (const region *reg) const;
 
+  bool replay_call_summary (call_summary_replay &r,
+			    const region_model &summary);
+
   void maybe_complain_about_infoleak (const region *dst_reg,
 				      const svalue *copied_sval,
 				      const region *src_reg,
@@ -570,8 +573,6 @@ class region_model
 				  region_model_context *ctxt);
   void update_for_return_superedge (const return_superedge &return_edge,
 				    region_model_context *ctxt);
-  void update_for_call_summary (const callgraph_superedge &cg_sedge,
-				region_model_context *ctxt);
   bool apply_constraints_for_gcond (const cfg_superedge &edge,
 				    const gcond *cond_stmt,
 				    region_model_context *ctxt,

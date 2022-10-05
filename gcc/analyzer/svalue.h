@@ -21,7 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_SVALUE_H
 #define GCC_ANALYZER_SVALUE_H
 
+#include "json.h"
 #include "analyzer/complexity.h"
+#include "analyzer/store.h"
+#include "analyzer/program-point.h"
 
 using namespace ana;
 
@@ -1527,6 +1530,7 @@ public:
 
   const char *get_asm_string () const { return m_asm_string; }
   unsigned get_output_idx () const { return m_output_idx; }
+  unsigned get_num_outputs () const { return m_num_outputs; }
   unsigned get_num_inputs () const { return m_num_inputs; }
   const svalue *get_input (unsigned idx) const { return m_input_arr[idx]; }
 

@@ -81,6 +81,12 @@ public:
 				   unsigned output_idx,
 				   const vec<const svalue *> &inputs);
   const svalue *
+  get_or_create_asm_output_svalue (tree type,
+				   const char *asm_string,
+				   unsigned output_idx,
+				   unsigned num_outputs,
+				   const vec<const svalue *> &inputs);
+  const svalue *
   get_or_create_const_fn_result_svalue (tree type,
 					tree fndecl,
 					const vec<const svalue *> &inputs);

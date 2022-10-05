@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/program-state.h"
+#include "analyzer/call-summary.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "tree-object-size.h"
@@ -5038,11 +5039,8 @@ region_model::maybe_update_for_edge (const superedge &edge,
       break;
 
     case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      {
-	const callgraph_superedge *cg_sedge
-	  = as_a <const callgraph_superedge *> (&edge);
-	update_for_call_summary (*cg_sedge, ctxt);
-      }
+      /* This is a no-op for call summaries; we should already
+	 have handled the effect of the call summary at the call stmt.  */
       break;
     }
 
@@ -5140,25 +5138,34 @@ region_model::update_for_return_superedge (const return_superedge &return_edge,
   update_for_return_gcall (call_stmt, ctxt);
 }
 
-/* Update this region_model with a summary of the effect of calling
-   and returning from CG_SEDGE.
+/* Attempt to to use R to replay SUMMARY into this object.
+   Return true if it is possible.  */
 
-   TODO: Currently this is extremely simplistic: we merely set the
-   return value to "unknown".  A proper implementation would e.g. update
-   sm-state, and presumably be reworked to support multiple outcomes.  */
-
-void
-region_model::update_for_call_summary (const callgraph_superedge &cg_sedge,
-				       region_model_context *ctxt)
+bool
+region_model::replay_call_summary (call_summary_replay &r,
+				   const region_model &summary)
 {
-  /* For now, set any return value to "unknown".  */
-  const gcall *call_stmt = cg_sedge.get_call_stmt ();
-  tree lhs = gimple_call_lhs (call_stmt);
-  if (lhs)
-    mark_region_as_unknown (get_lvalue (lhs, ctxt),
-			    ctxt ? ctxt->get_uncertainty () : NULL);
+  gcc_assert (summary.get_stack_depth () == 1);
 
-  // TODO: actually implement some kind of summary here
+  m_store.replay_call_summary (r, summary.m_store);
+
+  if (!m_constraints->replay_call_summary (r, *summary.m_constraints))
+    return false;
+
+  for (auto kv : summary.m_dynamic_extents)
+    {
+      const region *summary_reg = kv.first;
+      const region *caller_reg = r.convert_region_from_summary (summary_reg);
+      if (!caller_reg)
+	continue;
+      const svalue *summary_sval = kv.second;
+      const svalue *caller_sval = r.convert_svalue_from_summary (summary_sval);
+      if (!caller_sval)
+	continue;
+      m_dynamic_extents.put (caller_reg, caller_sval);
+    }
+
+  return true;
 }
 
 /* Given a true or false edge guarded by conditional statement COND_STMT,
