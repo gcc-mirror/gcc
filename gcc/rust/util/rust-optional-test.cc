@@ -16,9 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-optional.h"
-
-#include "config.h"
 #include "selftest.h"
 
 #if CHECKING_P
