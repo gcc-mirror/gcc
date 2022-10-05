@@ -9085,6 +9085,8 @@ gfc_trans_omp_directive (gfc_code *code)
     {
     case EXEC_OMP_ALLOCATE:
       return gfc_trans_omp_allocate (code);
+    case EXEC_OMP_ASSUME:
+      return gfc_trans_omp_code (code->block->next, true);
     case EXEC_OMP_ATOMIC:
       return gfc_trans_omp_atomic (code);
     case EXEC_OMP_BARRIER:

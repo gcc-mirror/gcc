@@ -10897,6 +10897,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ROUTINE:
+	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_CRITICAL:
 	case EXEC_OMP_DISTRIBUTE:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
@@ -12350,6 +12351,7 @@ start:
 	  break;
 
 	case EXEC_OMP_ALLOCATE:
+	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OMP_BARRIER:
 	case EXEC_OMP_CANCEL:
@@ -17637,6 +17639,9 @@ gfc_resolve (gfc_namespace *ns)
   resolve_types (ns);
   component_assignment_level = 0;
   resolve_codes (ns);
+
+  if (ns->omp_assumes)
+    gfc_resolve_omp_assumptions (ns->omp_assumes);
 
   gfc_current_ns = old_ns;
   cs_base = old_cs_base;

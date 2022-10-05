@@ -4079,7 +4079,13 @@ gfc_free_namespace (gfc_namespace *&ns)
       f = f->next;
       free (current);
     }
-
+  if (ns->omp_assumes)
+    {
+      free (ns->omp_assumes->absent);
+      free (ns->omp_assumes->contains);
+      gfc_free_expr_list (ns->omp_assumes->holds);
+      free (ns->omp_assumes);
+    }
   p = ns->contained;
   free (ns);
   ns = NULL;

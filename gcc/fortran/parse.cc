@@ -889,6 +889,8 @@ decode_omp_directive (void)
   switch (c)
     {
     case 'a':
+      matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
+      matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
       matcho ("allocate", gfc_match_omp_allocate, ST_OMP_ALLOCATE);
       break;
@@ -920,6 +922,7 @@ decode_omp_directive (void)
       break;
     case 'e':
       matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
+      matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
       matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
       matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
@@ -1737,6 +1740,7 @@ next_statement (void)
   case ST_OMP_TARGET_SIMD: case ST_OMP_TASKLOOP: case ST_OMP_TASKLOOP_SIMD: \
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
+  case ST_OMP_ASSUME: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -1754,7 +1758,7 @@ next_statement (void)
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
-  case ST_OMP_DECLARE_VARIANT: \
+  case ST_OMP_DECLARE_VARIANT: case ST_OMP_ASSUMES: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* OpenMP statements that are followed by a structured block.  */
@@ -1766,7 +1770,7 @@ next_statement (void)
   case ST_OMP_SCOPE: case ST_OMP_SECTIONS: case ST_OMP_SINGLE: \
   case ST_OMP_TARGET: case ST_OMP_TARGET_DATA: case ST_OMP_TARGET_PARALLEL: \
   case ST_OMP_TARGET_TEAMS: case ST_OMP_TEAMS: case ST_OMP_TASK: \
-  case ST_OMP_TASKGROUP: \
+  case ST_OMP_TASKGROUP: case ST_OMP_ASSUME: \
   case ST_OMP_WORKSHARE: case ST_OMP_PARALLEL_WORKSHARE
 
 /* OpenMP statements that are followed by a do loop.  */
@@ -1983,10 +1987,11 @@ gfc_enclosing_unit (gfc_compile_state * result)
 }
 
 
-/* Translate a statement enum to a string.  */
+/* Translate a statement enum to a string.  If strip_sentinel is true,
+   the !$OMP/!$ACC sentinel is excluded.  */
 
 const char *
-gfc_ascii_statement (gfc_statement st)
+gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
 {
   const char *p;
 
@@ -2414,6 +2419,12 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_ALLOCATE:
       p = "!$OMP ALLOCATE";
       break;
+    case ST_OMP_ASSUME:
+      p = "!$OMP ASSUME";
+      break;
+    case ST_OMP_ASSUMES:
+      p = "!$OMP ASSUMES";
+      break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";
       break;
@@ -2464,6 +2475,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_DO_SIMD:
       p = "!$OMP DO SIMD";
+      break;
+    case ST_OMP_END_ASSUME:
+      p = "!$OMP END ASSUME";
       break;
     case ST_OMP_END_ATOMIC:
       p = "!$OMP END ATOMIC";
@@ -2670,6 +2684,10 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_ORDERED_DEPEND:
       p = "!$OMP ORDERED";
       break;
+    case ST_OMP_NOTHING:
+      /* Note: gfc_match_omp_nothing returns ST_NONE. */
+      p = "!$OMP NOTHING";
+      break;
     case ST_OMP_PARALLEL:
       p = "!$OMP PARALLEL";
       break;
@@ -2821,6 +2839,8 @@ gfc_ascii_statement (gfc_statement st)
       gfc_internal_error ("gfc_ascii_statement(): Bad statement code");
     }
 
+  if (strip_sentinel && p[0] == '!')
+    return p + strlen ("!$OMP ");
   return p;
 }
 
@@ -5295,6 +5315,8 @@ gfc_omp_end_stmt (gfc_statement omp_st,
     {
       switch (omp_st)
 	{
+	case ST_OMP_ASSUME:
+	  return ST_OMP_END_ASSUME;
 	case ST_OMP_PARALLEL:
 	  return ST_OMP_END_PARALLEL;
 	case ST_OMP_PARALLEL_MASKED:
@@ -5715,6 +5737,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		  parse_forall_block ();
 		  break;
 
+		case ST_OMP_ASSUME:
 		case ST_OMP_PARALLEL:
 		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:

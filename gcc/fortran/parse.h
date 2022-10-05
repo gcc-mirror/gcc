@@ -67,7 +67,7 @@ extern gfc_state_data *gfc_state_stack;
 int gfc_check_do_variable (gfc_symtree *);
 bool gfc_find_state (gfc_compile_state);
 gfc_state_data *gfc_enclosing_unit (gfc_compile_state *);
-const char *gfc_ascii_statement (gfc_statement);
+const char *gfc_ascii_statement (gfc_statement, bool strip_sentinel = false) ;
 gfc_statement gfc_omp_end_stmt (gfc_statement, bool = true, bool = true);
 match gfc_match_enum (void);
 match gfc_match_enumerator_def (void);

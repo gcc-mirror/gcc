@@ -1,3 +1,10 @@
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl. Status): Mark 'assume' as 'Y'.
+
 2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
