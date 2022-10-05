@@ -1982,7 +1982,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
   // trait-impl-item's definition
 
   auto root = receiver->get_root ();
-  std::vector<Resolver::PathProbeCandidate> candidates
+  auto candidates
     = Resolver::PathProbeType::Probe (root, segment, true /* probe_impls */,
 				      false /* probe_bounds */,
 				      true /* ignore_mandatory_trait_items */);
@@ -2011,7 +2011,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
       // implementation and we should just return error_mark_node
 
       rust_assert (candidates.size () == 1);
-      auto &candidate = candidates.at (0);
+      auto &candidate = *candidates.begin ();
       rust_assert (candidate.is_impl_candidate ());
       rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
       TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);

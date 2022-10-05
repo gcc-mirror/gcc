@@ -251,7 +251,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  // item so its up to us to figure out if this path should resolve
 	  // to an trait-impl-block-item or if it can be defaulted to the
 	  // trait-impl-item's definition
-	  std::vector<Resolver::PathProbeCandidate> candidates
+	  auto candidates
 	    = Resolver::PathProbeImplTrait::Probe (receiver, final_segment,
 						   trait_ref);
 	  if (candidates.size () == 0)
@@ -270,7 +270,9 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	    }
 	  else
 	    {
-	      Resolver::PathProbeCandidate &candidate = candidates.at (0);
+	      rust_assert (candidates.size () == 1);
+
+	      auto candidate = *candidates.begin ();
 	      rust_assert (candidate.is_impl_candidate ());
 
 	      HIR::ImplBlock *impl = candidate.item.impl.parent;
@@ -288,8 +290,6 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      else
 		return CompileInherentImplItem::Compile (impl_item, ctx, lookup,
 							 true, expr_locus);
-
-	      lookup->set_ty_ref (impl_item->get_impl_mappings ().get_hirid ());
 	    }
 	}
     }

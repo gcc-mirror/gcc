@@ -462,7 +462,7 @@ TypeCheckType::resolve_segments (
 	  return new TyTy::ErrorType (expr_id);
 	}
 
-      auto &candidate = candidates.at (0);
+      auto &candidate = *candidates.begin ();
       prev_segment = tyseg;
       tyseg = candidate.ty;
 
