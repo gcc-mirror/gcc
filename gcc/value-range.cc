@@ -304,13 +304,8 @@ frange::set (tree type,
   if (real_isnan (&min) || real_isnan (&max))
     {
       gcc_checking_assert (real_identical (&min, &max));
-      if (HONOR_NANS (type))
-	{
-	  bool sign = real_isneg (&min);
-	  set_nan (type, sign);
-	}
-      else
-	set_undefined ();
+      bool sign = real_isneg (&min);
+      set_nan (type, sign);
       return;
     }
 
@@ -3624,6 +3619,7 @@ range_tests_nan ()
 {
   frange r0, r1;
   REAL_VALUE_TYPE q, r;
+  bool signbit;
 
   // Equal ranges but with differing NAN bits are not equal.
   if (HONOR_NANS (float_type_node))
@@ -3735,6 +3731,26 @@ range_tests_nan ()
   r0.set_nan (float_type_node);
   r0.clear_nan ();
   ASSERT_TRUE (r0.undefined_p ());
+
+  // [10,20] NAN ^ [21,25] NAN = [NAN]
+  r0 = frange_float ("10", "20");
+  r0.update_nan ();
+  r1 = frange_float ("21", "25");
+  r1.update_nan ();
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+
+  // NAN U [5,6] should be [5,6] +-NAN.
+  r0.set_nan (float_type_node);
+  r1 = frange_float ("5", "6");
+  r1.clear_nan ();
+  r0.union_ (r1);
+  real_from_string (&q, "5");
+  real_from_string (&r, "6");
+  ASSERT_TRUE (real_identical (&q, &r0.lower_bound ()));
+  ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
+  ASSERT_TRUE (!r0.signbit_p (signbit));
+  ASSERT_TRUE (r0.maybe_isnan ());
 }
 
 static void
@@ -3742,7 +3758,6 @@ range_tests_signed_zeros ()
 {
   tree zero = build_zero_cst (float_type_node);
   tree neg_zero = fold_build1 (NEGATE_EXPR, float_type_node, zero);
-  REAL_VALUE_TYPE q, r;
   frange r0, r1;
   bool signbit;
 
@@ -3788,18 +3803,6 @@ range_tests_signed_zeros ()
   r0.intersect (r1);
   ASSERT_TRUE (r0.zero_p ());
 
-  // NAN U [5,6] should be [5,6] NAN.
-  r0.set_nan (float_type_node);
-  r1 = frange_float ("5", "6");
-  r1.clear_nan ();
-  r0.union_ (r1);
-  real_from_string (&q, "5");
-  real_from_string (&r, "6");
-  ASSERT_TRUE (real_identical (&q, &r0.lower_bound ()));
-  ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
-  ASSERT_TRUE (!r0.signbit_p (signbit));
-  ASSERT_TRUE (r0.maybe_isnan ());
-
   r0 = frange_float ("+0", "5");
   r0.clear_nan ();
   ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
@@ -3823,7 +3826,10 @@ range_tests_signed_zeros ()
   r1 = frange_float ("0", "0");
   r1.update_nan ();
   r0.intersect (r1);
-  ASSERT_TRUE (r0.known_isnan ());
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.known_isnan ());
+  else
+    ASSERT_TRUE (r0.undefined_p ());
 
   r0.set_nonnegative (float_type_node);
   ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
@@ -3863,7 +3869,8 @@ range_tests_floats ()
 {
   frange r0, r1;
 
-  range_tests_nan ();
+  if (HONOR_NANS (float_type_node))
+    range_tests_nan ();
   range_tests_signbit ();
 
   if (HONOR_SIGNED_ZEROS (float_type_node))
@@ -3935,14 +3942,6 @@ range_tests_floats ()
   r1 = frange_float ("15", "25");
   r0.intersect (r1);
   ASSERT_EQ (r0, frange_float ("15", "20"));
-
-  // [10,20] NAN ^ [21,25] NAN = [NAN]
-  r0 = frange_float ("10", "20");
-  r0.update_nan ();
-  r1 = frange_float ("21", "25");
-  r1.update_nan ();
-  r0.intersect (r1);
-  ASSERT_TRUE (r0.known_isnan ());
 
   // [10,20] ^ [21,25] = []
   r0 = frange_float ("10", "20");

@@ -1111,11 +1111,14 @@ inline void
 frange::update_nan ()
 {
   gcc_checking_assert (!undefined_p ());
-  m_pos_nan = true;
-  m_neg_nan = true;
-  normalize_kind ();
-  if (flag_checking)
-    verify_range ();
+  if (HONOR_NANS (m_type))
+    {
+      m_pos_nan = true;
+      m_neg_nan = true;
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+    }
 }
 
 // Like above, but set the sign of the NAN.
@@ -1124,11 +1127,14 @@ inline void
 frange::update_nan (bool sign)
 {
   gcc_checking_assert (!undefined_p ());
-  m_pos_nan = !sign;
-  m_neg_nan = sign;
-  normalize_kind ();
-  if (flag_checking)
-    verify_range ();
+  if (HONOR_NANS (m_type))
+    {
+      m_pos_nan = !sign;
+      m_neg_nan = sign;
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+    }
 }
 
 // Clear the NAN bit and adjust the range.
@@ -1213,12 +1219,17 @@ frange_val_is_max (const REAL_VALUE_TYPE &r, const_tree type)
 inline void
 frange::set_nan (tree type)
 {
-  m_kind = VR_NAN;
-  m_type = type;
-  m_pos_nan = true;
-  m_neg_nan = true;
-  if (flag_checking)
-    verify_range ();
+  if (HONOR_NANS (type))
+    {
+      m_kind = VR_NAN;
+      m_type = type;
+      m_pos_nan = true;
+      m_neg_nan = true;
+      if (flag_checking)
+	verify_range ();
+    }
+  else
+    set_undefined ();
 }
 
 // Build a NAN of type TYPE with SIGN.
@@ -1226,12 +1237,17 @@ frange::set_nan (tree type)
 inline void
 frange::set_nan (tree type, bool sign)
 {
-  m_kind = VR_NAN;
-  m_type = type;
-  m_neg_nan = sign;
-  m_pos_nan = !sign;
-  if (flag_checking)
-    verify_range ();
+  if (HONOR_NANS (type))
+    {
+      m_kind = VR_NAN;
+      m_type = type;
+      m_neg_nan = sign;
+      m_pos_nan = !sign;
+      if (flag_checking)
+	verify_range ();
+    }
+  else
+    set_undefined ();
 }
 
 // Return TRUE if range is known to be finite.
