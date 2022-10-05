@@ -162,6 +162,13 @@ grs_langhook_init_options_struct (struct gcc_options *opts)
    * builtins */
   opts->x_flag_wrapv = 1;
 
+  /* We need to warn on unused variables by default */
+  opts->x_warn_unused_variable = 1;
+  /* For const variables too */
+  opts->x_warn_unused_const_variable = 1;
+  /* And finally unused result for #[must_use] */
+  opts->x_warn_unused_result = 1;
+
   // nothing yet - used by frontends to change specific options for the language
   Rust::Session::get_instance ().init_options ();
 }
