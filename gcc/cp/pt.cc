@@ -21163,6 +21163,33 @@ tsubst_copy_and_build (tree t,
 		break;
 	      }
 
+	    case IFN_ASSUME:
+	      gcc_assert (nargs == 1);
+	      if (vec_safe_length (call_args) != 1)
+		{
+		  error_at (cp_expr_loc_or_input_loc (t),
+			    "wrong number of arguments to "
+			    "%<assume%> attribute");
+		  ret = error_mark_node;
+		}
+	      else
+		{
+		  tree &arg = (*call_args)[0];
+		  if (!type_dependent_expression_p (arg))
+		    arg = contextual_conv_bool (arg, tf_warning_or_error);
+		  if (error_operand_p (arg))
+		    {
+		      ret = error_mark_node;
+		      break;
+		    }
+		  ret = build_call_expr_internal_loc (EXPR_LOCATION (t),
+						      IFN_ASSUME,
+						      void_type_node, 1,
+						      arg);
+		  RETURN (ret);
+		}
+	      break;
+
 	    default:
 	      /* Unsupported internal function with arguments.  */
 	      gcc_unreachable ();

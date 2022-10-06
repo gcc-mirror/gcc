@@ -11172,42 +11172,31 @@ init_cp_semantics (void)
 }
 
 
-/* If we have a condition in conjunctive normal form (CNF), find the first
-   failing clause.  In other words, given an expression like
+/* Emit additional diagnostics for failing condition BAD.
+   Used by finish_static_assert and IFN_ASSUME constexpr diagnostics.
+   If SHOW_EXPR_P is true, print the condition (because it was
+   instantiation-dependent).  */
 
-     true && true && false && true && false
-
-   return the first 'false'.  EXPR is the expression.  */
-
-static tree
-find_failing_clause_r (tree expr)
+void
+diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p)
 {
-  if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
+  /* Nobody wants to see the artificial (bool) cast.  */
+  bad = tree_strip_nop_conversions (bad);
+
+  /* Actually explain the failure if this is a concept check or a
+     requires-expression.  */
+  if (concept_check_p (bad) || TREE_CODE (bad) == REQUIRES_EXPR)
+    diagnose_constraints (cloc, bad, NULL_TREE);
+  else if (COMPARISON_CLASS_P (bad)
+	   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
     {
-      /* First check the left side...  */
-      tree e = find_failing_clause_r (TREE_OPERAND (expr, 0));
-      if (e == NULL_TREE)
-	/* ...if we didn't find a false clause, check the right side.  */
-	e = find_failing_clause_r (TREE_OPERAND (expr, 1));
-      return e;
+      tree op0 = fold_non_dependent_expr (TREE_OPERAND (bad, 0));
+      tree op1 = fold_non_dependent_expr (TREE_OPERAND (bad, 1));
+      tree cond = build2 (TREE_CODE (bad), boolean_type_node, op0, op1);
+      inform (cloc, "the comparison reduces to %qE", cond);
     }
-  tree e = contextual_conv_bool (expr, tf_none);
-  e = fold_non_dependent_expr (e, tf_none, /*manifestly_const_eval=*/true);
-  if (integer_zerop (e))
-    /* This is the failing clause.  */
-    return expr;
-  return NULL_TREE;
-}
-
-/* Wrapper for find_failing_clause_r.  */
-
-static tree
-find_failing_clause (tree expr)
-{
-  if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
-    if (tree e = find_failing_clause_r (expr))
-      expr = e;
-  return expr;
+  else if (show_expr_p)
+    inform (cloc, "%qE evaluates to false", bad);
 }
 
 /* Build a STATIC_ASSERT for a static assertion with the condition
@@ -11274,12 +11263,12 @@ finish_static_assert (tree condition, tree message, location_t location,
 	  int len = TREE_STRING_LENGTH (message) / sz - 1;
 
 	  /* See if we can find which clause was failing (for logical AND).  */
-	  tree bad = find_failing_clause (orig_condition);
+	  tree bad = find_failing_clause (NULL, orig_condition);
 	  /* If not, or its location is unusable, fall back to the previous
 	     location.  */
 	  location_t cloc = cp_expr_loc_or_loc (bad, location);
-	  /* Nobody wants to see the artificial (bool) cast.  */
-	  bad = tree_strip_nop_conversions (bad);
+
+	  auto_diagnostic_group d;
 
           /* Report the error. */
 	  if (len == 0)
@@ -11288,21 +11277,7 @@ finish_static_assert (tree condition, tree message, location_t location,
 	    error_at (cloc, "static assertion failed: %s",
 		      TREE_STRING_POINTER (message));
 
-	  /* Actually explain the failure if this is a concept check or a
-	     requires-expression.  */
-	  if (concept_check_p (bad)
-	      || TREE_CODE (bad) == REQUIRES_EXPR)
-	    diagnose_constraints (location, bad, NULL_TREE);
-	  else if (COMPARISON_CLASS_P (bad)
-		   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
-	    {
-	      tree op0 = fold_non_dependent_expr (TREE_OPERAND (bad, 0));
-	      tree op1 = fold_non_dependent_expr (TREE_OPERAND (bad, 1));
-	      tree cond = build2 (TREE_CODE (bad), boolean_type_node, op0, op1);
-	      inform (cloc, "the comparison reduces to %qE", cond);
-	    }
-	  else if (show_expr_p)
-	    inform (cloc, "%qE evaluates to false", bad);
+	  diagnose_failing_condition (bad, cloc, show_expr_p);
 	}
       else if (condition && condition != error_mark_node)
 	{

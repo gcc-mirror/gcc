@@ -144,6 +144,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_align_attribute (tree *, tree, tree, int, bool *);
 static tree handle_assume_aligned_attribute (tree *, tree, tree, int, bool *);
+static tree handle_assume_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
@@ -530,6 +531,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_designated_init_attribute, NULL },
   { "fallthrough",	      0, 0, false, false, false, false,
 			      handle_fallthrough_attribute, NULL },
+  { "assume",		      1, 1, false, false, false, false,
+			      handle_assume_attribute, NULL },
   { "patchable_function_entry",	1, 2, true, false, false, false,
 			      handle_patchable_function_entry_attribute,
 			      NULL },
@@ -5735,6 +5738,18 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
 tree
 handle_fallthrough_attribute (tree *, tree name, tree, int,
 			      bool *no_add_attrs)
+{
+  pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored", name);
+  *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Handle a "assume" attribute; arguments as in struct
+   attribute_spec.handler.  */
+
+tree
+handle_assume_attribute (tree *, tree name, tree, int,
+			 bool *no_add_attrs)
 {
   pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored", name);
   *no_add_attrs = true;

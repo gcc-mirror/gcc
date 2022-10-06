@@ -3081,6 +3081,50 @@ process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
   return std_attrs;
 }
 
+/* If [[assume (cond)]] appears on this statement, handle it.  */
+
+tree
+process_stmt_assume_attribute (tree std_attrs, tree statement,
+			       location_t attrs_loc)
+{
+  if (std_attrs == error_mark_node)
+    return std_attrs;
+  tree attr = lookup_attribute ("gnu", "assume", std_attrs);
+  if (!attr)
+    return std_attrs;
+  /* The next token after the assume attribute is not ';'.  */
+  if (statement)
+    {
+      warning_at (attrs_loc, OPT_Wattributes,
+		  "%<assume%> attribute not followed by %<;%>");
+      attr = NULL_TREE;
+    }
+  for (; attr; attr = lookup_attribute ("gnu", "assume", TREE_CHAIN (attr)))
+    {
+      tree args = TREE_VALUE (attr);
+      int nargs = list_length (args);
+      if (nargs != 1)
+	{
+	  auto_diagnostic_group d;
+	  error_at (attrs_loc, "wrong number of arguments specified for "
+			       "%qE attribute", get_attribute_name (attr));
+	  inform (attrs_loc, "expected %i, found %i", 1, nargs);
+	}
+      else
+	{
+	  tree arg = TREE_VALUE (args);
+	  if (!type_dependent_expression_p (arg))
+	    arg = contextual_conv_bool (arg, tf_warning_or_error);
+	  if (error_operand_p (arg))
+	    continue;
+	  statement = build_call_expr_internal_loc (attrs_loc, IFN_ASSUME,
+						    void_type_node, 1, arg);
+	  finish_expr_stmt (statement);
+	}
+    }
+  return remove_attribute ("gnu", "assume", std_attrs);
+}
+
 /* Helper of fold_builtin_source_location, return the
    std::source_location::__impl type after performing verification
    on it.  LOC is used for reporting any errors.  */

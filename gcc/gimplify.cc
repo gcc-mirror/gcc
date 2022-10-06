@@ -3554,6 +3554,25 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       enum internal_fn ifn = CALL_EXPR_IFN (*expr_p);
       auto_vec<tree> vargs (nargs);
 
+      if (ifn == IFN_ASSUME)
+	{
+	  if (simple_condition_p (CALL_EXPR_ARG (*expr_p, 0)))
+	    {
+	      /* If the [[assume (cond)]]; condition is simple
+		 enough and can be evaluated unconditionally
+		 without side-effects, expand it as
+		 if (!cond) __builtin_unreachable ();  */
+	      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
+	      *expr_p = build3 (COND_EXPR, void_type_node,
+				CALL_EXPR_ARG (*expr_p, 0), void_node,
+				build_call_expr_loc (EXPR_LOCATION (*expr_p),
+						     fndecl, 0));
+	      return GS_OK;
+	    }
+	  /* FIXME: Otherwise expand it specially.  */
+	  return GS_ALL_DONE;
+	}
+
       for (i = 0; i < nargs; i++)
 	{
 	  gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p,
