@@ -100,10 +100,10 @@ foo (void)
   #pragma omp target map (always, close)
   ;
 
-  #pragma omp target map (always, always)  /* Note: 'always' appears more than once in map clauses  */
+  #pragma omp target map (always, always)  /* { dg-error "'always' appears more than once in map clauses" } */
   ;
 
-  #pragma omp target map (always, always, close)  /* Note: 'always' appears more than once in map clauses */
+  #pragma omp target map (always, always, close)  /* { dg-error "'always' appears more than once in map clauses" } */
   ;
 
   #pragma omp target map (always, close, to: always, close, b7)

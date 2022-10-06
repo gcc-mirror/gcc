@@ -1,5 +1,12 @@
 2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
+	Revert:
+	2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: Remove two dg-error.
+
+2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/gomp/depend-5.f90: Update scan-tree-dump.
 	* gfortran.dg/gomp/scope-6.f90: Likewise.
 
