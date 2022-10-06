@@ -24,6 +24,19 @@ MODULE top ;
 FROM mcOptions IMPORT handleOptions ;
 FROM mcComp IMPORT compile ;
 FROM M2RTS IMPORT ExitOnHalt ;
+FROM mcStream IMPORT removeFiles ;
+FROM libc IMPORT atexit, perror ;
+
+
+(*
+   wrapRemoveFiles - call removeFiles and return 0.
+*)
+
+PROCEDURE wrapRemoveFiles () : INTEGER ;
+BEGIN
+   removeFiles ;
+   RETURN 0
+END wrapRemoveFiles ;
 
 
 (*
@@ -33,6 +46,10 @@ FROM M2RTS IMPORT ExitOnHalt ;
 
 PROCEDURE init ;
 BEGIN
+   IF atexit (wrapRemoveFiles) # 0
+   THEN
+      perror ("atexit failed")
+   END ;
    ExitOnHalt (1) ;
    compile (handleOptions ())
 END init ;

@@ -31,7 +31,15 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GmcOptions.h"
 #   include "GmcComp.h"
 #   include "GM2RTS.h"
+#   include "GmcStream.h"
+#   include "Glibc.h"
 
+
+/*
+   wrapRemoveFiles - call removeFiles and return 0.
+*/
+
+static int wrapRemoveFiles (void);
 
 /*
    init - translate the source file after handling all the
@@ -41,11 +49,30 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 static void init (void);
 
 /*
+   wrapRemoveFiles - call removeFiles and return 0.
+*/
+
+static int wrapRemoveFiles (void);
+
+/*
    init - translate the source file after handling all the
           program arguments.
 */
 
 static void init (void);
+
+
+/*
+   wrapRemoveFiles - call removeFiles and return 0.
+*/
+
+static int wrapRemoveFiles (void)
+{
+  mcStream_removeFiles ();
+  return 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
 
 
 /*
@@ -55,6 +82,10 @@ static void init (void);
 
 static void init (void)
 {
+  if ((libc_atexit ((libc_exitP_C) wrapRemoveFiles)) != 0)
+    {
+      libc_perror ((const char *) "atexit failed", 13);
+    }
   M2RTS_ExitOnHalt (1);
   mcComp_compile (mcOptions_handleOptions ());
 }

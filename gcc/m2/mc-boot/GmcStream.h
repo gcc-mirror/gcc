@@ -65,6 +65,12 @@ EXTERN void mcStream_setDest (FIO_File f);
 */
 
 EXTERN FIO_File mcStream_combine (void);
+
+/*
+   removeFiles - remove any fragment.
+*/
+
+EXTERN void mcStream_removeFiles (void);
 #   ifdef __cplusplus
 }
 #   endif

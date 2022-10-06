@@ -68,12 +68,14 @@ END removeNow ;
 
 
 (*
-   removeFiles -
+   removeFiles - remove any fragment.
 *)
 
 PROCEDURE removeFiles ;
 BEGIN
-   alists.foreachItemInListDo (listOfFiles, removeNow)
+   alists.foreachItemInListDo (listOfFiles, removeNow) ;
+   alists.killList (listOfFiles) ;
+   listOfFiles := alists.initList ()
 END removeFiles ;
 
 

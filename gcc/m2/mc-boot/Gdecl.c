@@ -3356,6 +3356,7 @@ extern "C" void keyc_cp (void);
 extern "C" FIO_File mcStream_openFrag (unsigned int id);
 extern "C" void mcStream_setDest (FIO_File f);
 extern "C" FIO_File mcStream_combine (void);
+extern "C" void mcStream_removeFiles (void);
 extern "C" void StrIO_WriteLn (void);
 extern "C" void StrIO_ReadString (char *a, unsigned int _a_high);
 extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high);

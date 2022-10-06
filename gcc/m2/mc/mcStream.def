@@ -49,4 +49,11 @@ PROCEDURE setDest (f: File) ;
 PROCEDURE combine () : File ;
 
 
+(*
+   removeFiles - remove any fragment.
+*)
+
+PROCEDURE removeFiles ;
+
+
 END mcStream.

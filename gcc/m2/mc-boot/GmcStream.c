@@ -55,9 +55,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GSFIO.h"
 #   include "GM2RTS.h"
 
-#   define maxBuffer 4096
 typedef FIO_File *mcStream_ptrToFile;
 
+#   define maxBuffer 4096
 static alists_alist listOfFiles;
 static Indexing_Index frag;
 static FIO_File destFile;
@@ -86,6 +86,12 @@ extern "C" void mcStream_setDest (FIO_File f);
 extern "C" FIO_File mcStream_combine (void);
 
 /*
+   removeFiles - remove any fragment.
+*/
+
+extern "C" void mcStream_removeFiles (void);
+
+/*
    removeLater -
 */
 
@@ -96,12 +102,6 @@ static DynamicStrings_String removeLater (DynamicStrings_String filename);
 */
 
 static void removeNow (DynamicStrings_String s);
-
-/*
-   removeFiles -
-*/
-
-static void removeFiles (void);
 
 /*
    createTemporaryFile -
@@ -137,16 +137,6 @@ static void removeNow (DynamicStrings_String s)
 {
   if ((libc_unlink (DynamicStrings_string (s))) != 0)
     {}  /* empty.  */
-}
-
-
-/*
-   removeFiles -
-*/
-
-static void removeFiles (void)
-{
-  alists_foreachItemInListDo (listOfFiles, (alists_performOperation) {(alists_performOperation_t) removeNow});
 }
 
 
@@ -246,10 +236,22 @@ extern "C" FIO_File mcStream_combine (void)
       __builtin_unreachable ();
     }
   Indexing_ForeachIndiceInIndexDo (frag, (Indexing_IndexProcedure) {(Indexing_IndexProcedure_t) copy});
-  removeFiles ();
+  mcStream_removeFiles ();
   return destFile;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
+}
+
+
+/*
+   removeFiles - remove any fragment.
+*/
+
+extern "C" void mcStream_removeFiles (void)
+{
+  alists_foreachItemInListDo (listOfFiles, (alists_performOperation) {(alists_performOperation_t) removeNow});
+  alists_killList (&listOfFiles);
+  listOfFiles = alists_initList ();
 }
 
 extern "C" void _M2_mcStream_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
