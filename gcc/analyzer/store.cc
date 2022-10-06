@@ -3238,6 +3238,8 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 		   caller_sval, NULL /* uncertainty_t * */);
       }
       break;
+
+    case RK_HEAP_ALLOCATED:
     case RK_DECL:
       {
 	const region *caller_dest_reg
@@ -3246,6 +3248,10 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	  return;
 	const svalue *summary_sval
 	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  summary_sval = reg_mgr->get_or_create_compound_svalue
+	    (summary_base_reg->get_type (),
+	     summary_cluster->get_map ());
 	const svalue *caller_sval
 	  = r.convert_svalue_from_summary (summary_sval);
 	if (!caller_sval)
@@ -3253,34 +3259,6 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
 	set_value (mgr, caller_dest_reg,
 		   caller_sval, NULL /* uncertainty_t * */);
-      }
-      break;
-    case RK_HEAP_ALLOCATED:
-      {
-	const region *caller_dest_reg
-	  = r.convert_region_from_summary (summary_base_reg);
-	gcc_assert (caller_dest_reg);
-	binding_cluster *caller_cluster
-	  = get_or_create_cluster (caller_dest_reg);
-	auto_vec <const binding_key *> summary_keys;
-	for (auto kv : *summary_cluster)
-	  summary_keys.safe_push (kv.first);
-	summary_keys.qsort (binding_key::cmp_ptrs);
-	for (auto summary_key : summary_keys)
-	  {
-	    const binding_key *caller_key
-	      = r.convert_key_from_summary (summary_key);
-	    if (!caller_key)
-	      continue;
-	    const svalue *summary_sval
-	      = summary_cluster->get_map ().get (summary_key);
-	    const svalue *caller_sval
-	      = r.convert_svalue_from_summary (summary_sval);
-	    if (!caller_sval)
-	      caller_sval = reg_mgr->get_or_create_unknown_svalue
-		(summary_sval->get_type ());
-	    caller_cluster->bind_key (caller_key, caller_sval);
-	  }
       }
       break;
 
