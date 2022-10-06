@@ -9717,10 +9717,10 @@ package body Sem_Ch8 is
       --  we saved (we use Remove, since this list will not be used again).
 
       loop
-         Elmt := Last_Elmt (List);
+         Elmt := First_Elmt (List);
          exit when Elmt = No_Elmt;
          Set_Is_Immediately_Visible (Node (Elmt));
-         Remove_Last_Elmt (List);
+         Remove_Elmt (List, Elmt);
       end loop;
 
       --  Restore use clauses
