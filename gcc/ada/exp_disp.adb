@@ -1304,17 +1304,24 @@ package body Exp_Disp is
            and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
          then
             return;
-         end if;
 
-         --  When the type of the operand and the target interface type match,
-         --  it is generally safe to skip generating code to displace the
-         --  pointer to the object to reference the secondary dispatch table
-         --  associated with the target interface type. The exception to this
-         --  general rule is when the underlying object of the type conversion
-         --  is an object built by means of a dispatching constructor (since in
-         --  such case the expansion of the constructor call is a direct call
-         --  to an object primitive, i.e. without thunks, and the expansion of
-         --  the constructor call adds an explicit conversion to the target
+         --  When the target type is an interface type that is an ancestor of
+         --  the operand type, it is generally safe to skip generating code to
+         --  displace the pointer to the object to reference the secondary
+         --  dispatch table of the target interface type. Two scenaries are
+         --  possible here:
+         --    1) The operand type is a regular tagged type
+         --    2) The operand type is an interface type
+         --  In the former case the target interface and the regular tagged
+         --  type share the primary dispatch table of the object; in the latter
+         --  case the operand interface has all the primitives of the ancestor
+         --  interface type (and exactly in the same dispatch table slots).
+         --
+         --  The exception to this general rule is when the underlying object
+         --  is built by means of a dispatching constructor (since in such case
+         --  the expansion of the constructor call is a direct call to an
+         --  object primitive, i.e. without thunks, and the expansion of
+         --  the constructor call adds this explicit conversion to the target
          --  interface type to force the displacement of the pointer to the
          --  object to reference the corresponding secondary dispatch table
          --  (cf. Make_DT and Expand_Dispatching_Constructor_Call)).
@@ -1326,7 +1333,10 @@ package body Exp_Disp is
          --  to the object, because generic dispatching constructors are not
          --  supported.
 
-         if Opnd = Iface_Typ and then not RTE_Available (RE_Displace) then
+         elsif Is_Interface (Iface_Typ)
+           and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
+           and then not RTE_Available (RE_Displace)
+         then
             return;
          end if;
       end;
