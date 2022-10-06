@@ -157,7 +157,7 @@ the unit is not implemented.
 
 ``Ada.Directories.Hierarchical_File_Names`` *(A.16.1)*
   This package provides additional directory operations handling
-  hiearchical file names.
+  hierarchical file names.
 
 
 ``Ada.Directories.Information`` *(A.16)*

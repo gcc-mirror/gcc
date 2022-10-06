@@ -20877,7 +20877,7 @@ This package provides operations on directories.
 @item @code{Ada.Directories.Hierarchical_File_Names} `(A.16.1)'
 
 This package provides additional directory operations handling
-hiearchical file names.
+hierarchical file names.
 
 @item @code{Ada.Directories.Information} `(A.16)'
 
