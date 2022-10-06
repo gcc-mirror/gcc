@@ -2417,6 +2417,10 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_kind rel = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const irange &lhs,
+					  const irange &op1,
+					  const irange &op2,
+					  relation_kind) const;
 private:
   bool truncating_cast_p (const irange &inner, const irange &outer) const;
   bool inside_domain_p (const wide_int &min, const wide_int &max,
@@ -2424,6 +2428,35 @@ private:
   void fold_pair (irange &r, unsigned index, const irange &inner,
 			   const irange &outer) const;
 } op_convert;
+
+// Add a partial equivalence between the LHS and op1 for casts.
+
+relation_kind
+operator_cast::lhs_op1_relation (const irange &lhs,
+				 const irange &op1,
+				 const irange &op2 ATTRIBUTE_UNUSED,
+				 relation_kind) const
+{
+  if (lhs.undefined_p () || op1.undefined_p ())
+    return VREL_VARYING;
+  unsigned lhs_prec = TYPE_PRECISION (lhs.type ());
+  unsigned op1_prec = TYPE_PRECISION (op1.type ());
+  // If the result gets sign extended into a larger type check first if this
+  // qualifies as a partial equivalence.
+  if (TYPE_SIGN (op1.type ()) == SIGNED && lhs_prec > op1_prec)
+    {
+      // If the result is sign extended, and the LHS is larger than op1,
+      // check if op1's range can be negative as the sign extention will
+      // cause the upper bits to be 1 instead of 0, invalidating the PE.
+      int_range<3> negs = range_negatives (op1.type ());
+      negs.intersect (op1);
+      if (!negs.undefined_p ())
+	return VREL_VARYING;
+    }
+
+  unsigned prec = MIN (lhs_prec, op1_prec);
+  return bits_to_pe (prec);
+}
 
 // Return TRUE if casting from INNER to OUTER is a truncating cast.
 
@@ -2739,6 +2772,10 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual relation_kind lhs_op1_relation (const irange &lhs,
+					  const irange &op1,
+					  const irange &op2,
+					  relation_kind) const;
 private:
   void simple_op1_range_solver (irange &r, tree type,
 				const irange &lhs,
@@ -2784,6 +2821,34 @@ wi_optimize_signed_bitwise_op (irange &r, tree type,
   return true;
 }
 
+// An AND of 8,16, 32 or 64 bits can produce a partial equivalence between
+// the LHS and op1.
+
+relation_kind
+operator_bitwise_and::lhs_op1_relation (const irange &lhs,
+				 const irange &op1,
+				 const irange &op2,
+				 relation_kind) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+  if (!op2.singleton_p ())
+    return VREL_VARYING;
+  // if val == 0xff or 0xFFFF OR 0Xffffffff OR 0Xffffffffffffffff, return TRUE
+  int prec1 = TYPE_PRECISION (op1.type ());
+  int prec2 = TYPE_PRECISION (op2.type ());
+  int mask_prec = 0;
+  wide_int mask = op2.lower_bound ();
+  if (wi::eq_p (mask, wi::mask (8, false, prec2)))
+    mask_prec = 8;
+  else if (wi::eq_p (mask, wi::mask (16, false, prec2)))
+    mask_prec = 16;
+  else if (wi::eq_p (mask, wi::mask (32, false, prec2)))
+    mask_prec = 32;
+  else if (wi::eq_p (mask, wi::mask (64, false, prec2)))
+    mask_prec = 64;
+  return bits_to_pe (MIN (prec1, mask_prec));
+}
 
 // Optimize BIT_AND_EXPR and BIT_IOR_EXPR in terms of a mask if
 // possible.  Basically, see if we can optimize:
