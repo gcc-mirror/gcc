@@ -1170,39 +1170,6 @@ maybe_process_partial_specialization (tree type)
   return type;
 }
 
-/* Returns nonzero if we can optimize the retrieval of specializations
-   for TMPL, a TEMPLATE_DECL.  In particular, for such a template, we
-   do not use DECL_TEMPLATE_SPECIALIZATIONS at all.  */
-
-static inline bool
-optimize_specialization_lookup_p (tree tmpl)
-{
-  return (DECL_FUNCTION_TEMPLATE_P (tmpl)
-	  && DECL_CLASS_SCOPE_P (tmpl)
-	  /* DECL_CLASS_SCOPE_P holds of T::f even if T is a template
-	     parameter.  */
-	  && CLASS_TYPE_P (DECL_CONTEXT (tmpl))
-	  /* The optimized lookup depends on the fact that the
-	     template arguments for the member function template apply
-	     purely to the containing class, which is not true if the
-	     containing class is an explicit or partial
-	     specialization.  */
-	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (DECL_CONTEXT (tmpl))
-	  && !DECL_MEMBER_TEMPLATE_P (tmpl)
-	  && !DECL_CONV_FN_P (tmpl)
-	  /* It is possible to have a template that is not a member
-	     template and is not a member of a template class:
-
-	     template <typename T>
-	     struct S { friend A::f(); };
-
-	     Here, the friend function is a template, but the context does
-	     not have template information.  The optimized lookup relies
-	     on having ARGS be the template arguments for both the class
-	     and the function template.  */
-	  && !DECL_UNIQUE_FRIEND_P (DECL_TEMPLATE_RESULT (tmpl)));
-}
-
 /* Make sure ARGS doesn't use any inappropriate typedefs; we should have
    gone through coerce_template_parms by now.  */
 
@@ -1276,54 +1243,21 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
   if (lambda_fn_in_template_p (tmpl))
     return NULL_TREE;
 
-  if (optimize_specialization_lookup_p (tmpl))
-    {
-      /* The template arguments actually apply to the containing
-	 class.  Find the class specialization with those
-	 arguments.  */
-      tree class_template = CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (tmpl));
-      tree class_specialization
-	= retrieve_specialization (class_template, args, 0);
-      if (!class_specialization)
-	return NULL_TREE;
+  spec_entry elt;
+  elt.tmpl = tmpl;
+  elt.args = args;
+  elt.spec = NULL_TREE;
 
-      /* Find the instance of TMPL.  */
-      tree fns = get_class_binding (class_specialization, DECL_NAME (tmpl));
-      for (ovl_iterator iter (fns); iter; ++iter)
-	{
-	  tree fn = *iter;
-	  if (tree ti = get_template_info (fn))
-	    if (TI_TEMPLATE (ti) == tmpl
-		/* using-declarations can bring in a different
-		   instantiation of tmpl as a member of a different
-		   instantiation of tmpl's class.  We don't want those
-		   here.  */
-		&& DECL_CONTEXT (fn) == class_specialization)
-	      return fn;
-	}
-      return NULL_TREE;
-    }
+  spec_hash_table *specializations;
+  if (DECL_CLASS_TEMPLATE_P (tmpl))
+    specializations = type_specializations;
   else
-    {
-      spec_entry *found;
-      spec_entry elt;
-      spec_hash_table *specializations;
+    specializations = decl_specializations;
 
-      elt.tmpl = tmpl;
-      elt.args = args;
-      elt.spec = NULL_TREE;
-
-      if (DECL_CLASS_TEMPLATE_P (tmpl))
-	specializations = type_specializations;
-      else
-	specializations = decl_specializations;
-
-      if (hash == 0)
-	hash = spec_hasher::hash (&elt);
-      found = specializations->find_with_hash (&elt, hash);
-      if (found)
-	return found->spec;
-    }
+  if (hash == 0)
+    hash = spec_hasher::hash (&elt);
+  if (spec_entry *found = specializations->find_with_hash (&elt, hash))
+    return found->spec;
 
   return NULL_TREE;
 }
@@ -1567,8 +1501,6 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 			 hashval_t hash)
 {
   tree fn;
-  spec_entry **slot = NULL;
-  spec_entry elt;
 
   gcc_assert ((TREE_CODE (tmpl) == TEMPLATE_DECL && DECL_P (spec))
 	      || (TREE_CODE (tmpl) == FIELD_DECL
@@ -1589,25 +1521,19 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
        instantiation unless and until it is actually needed.  */
     return spec;
 
-  if (optimize_specialization_lookup_p (tmpl))
-    /* We don't put these specializations in the hash table, but we might
-       want to give an error about a mismatch.  */
-    fn = retrieve_specialization (tmpl, args, 0);
+  spec_entry elt;
+  elt.tmpl = tmpl;
+  elt.args = args;
+  elt.spec = spec;
+
+  if (hash == 0)
+    hash = spec_hasher::hash (&elt);
+
+  spec_entry **slot = decl_specializations->find_slot_with_hash (&elt, hash, INSERT);
+  if (*slot)
+    fn = (*slot)->spec;
   else
-    {
-      elt.tmpl = tmpl;
-      elt.args = args;
-      elt.spec = spec;
-
-      if (hash == 0)
-	hash = spec_hasher::hash (&elt);
-
-      slot = decl_specializations->find_slot_with_hash (&elt, hash, INSERT);
-      if (*slot)
-	fn = (*slot)->spec;
-      else
-	fn = NULL_TREE;
-    }
+    fn = NULL_TREE;
 
   /* We can sometimes try to re-register a specialization that we've
      already got.  In particular, regenerate_decl_from_template calls
@@ -1704,26 +1630,23 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       && !check_specialization_namespace (tmpl))
     DECL_CONTEXT (spec) = DECL_CONTEXT (tmpl);
 
-  if (slot != NULL /* !optimize_specialization_lookup_p (tmpl) */)
-    {
-      spec_entry *entry = ggc_alloc<spec_entry> ();
-      gcc_assert (tmpl && args && spec);
-      *entry = elt;
-      *slot = entry;
-      if ((TREE_CODE (spec) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (spec)
-	   && PRIMARY_TEMPLATE_P (tmpl)
-	   && DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (tmpl)) == NULL_TREE)
-	  || variable_template_p (tmpl))
-	/* If TMPL is a forward declaration of a template function, keep a list
-	   of all specializations in case we need to reassign them to a friend
-	   template later in tsubst_friend_function.
+  spec_entry *entry = ggc_alloc<spec_entry> ();
+  gcc_assert (tmpl && args && spec);
+  *entry = elt;
+  *slot = entry;
+  if ((TREE_CODE (spec) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (spec)
+       && PRIMARY_TEMPLATE_P (tmpl)
+       && DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (tmpl)) == NULL_TREE)
+      || variable_template_p (tmpl))
+    /* If TMPL is a forward declaration of a template function, keep a list
+       of all specializations in case we need to reassign them to a friend
+       template later in tsubst_friend_function.
 
-	   Also keep a list of all variable template instantiations so that
-	   process_partial_specialization can check whether a later partial
-	   specialization would have used it.  */
-	DECL_TEMPLATE_INSTANTIATIONS (tmpl)
-	  = tree_cons (args, spec, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
-    }
+       Also keep a list of all variable template instantiations so that
+       process_partial_specialization can check whether a later partial
+       specialization would have used it.  */
+    DECL_TEMPLATE_INSTANTIATIONS (tmpl)
+      = tree_cons (args, spec, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
 
   return spec;
 }
