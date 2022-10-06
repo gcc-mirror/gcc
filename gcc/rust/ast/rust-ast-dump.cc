@@ -281,11 +281,63 @@ Dump::visit (TypeCastExpr &expr)
 
 void
 Dump::visit (AssignmentExpr &expr)
-{}
+{
+  expr.visit_lhs (*this);
+  stream << " = ";
+  expr.visit_rhs (*this);
+}
 
 void
 Dump::visit (CompoundAssignmentExpr &expr)
-{}
+{
+  auto op = "";
+  switch (expr.get_expr_type ())
+    {
+    case CompoundAssignmentOperator::ADD:
+      op = "+";
+      break;
+
+    case CompoundAssignmentOperator::SUBTRACT:
+      op = "-";
+      break;
+
+    case CompoundAssignmentOperator::MULTIPLY:
+      op = "*";
+      break;
+
+    case CompoundAssignmentOperator::DIVIDE:
+      op = "/";
+      break;
+
+    case CompoundAssignmentOperator::MODULUS:
+      op = "%";
+      break;
+
+    case CompoundAssignmentOperator::BITWISE_AND:
+      op = "&";
+      break;
+
+    case CompoundAssignmentOperator::BITWISE_OR:
+      op = "|";
+      break;
+
+    case CompoundAssignmentOperator::BITWISE_XOR:
+      op = "^";
+      break;
+
+    case CompoundAssignmentOperator::LEFT_SHIFT:
+      op = "<<";
+      break;
+
+    case CompoundAssignmentOperator::RIGHT_SHIFT:
+      op = ">>";
+      break;
+    }
+
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << "= ";
+  expr.get_right_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (GroupedExpr &expr)
@@ -457,15 +509,31 @@ Dump::visit (ForLoopExpr &expr)
 
 void
 Dump::visit (IfExpr &expr)
-{}
+{
+  stream << "if ";
+  expr.vis_if_condition (*this);
+  expr.vis_if_block (*this);
+}
 
 void
 Dump::visit (IfExprConseqElse &expr)
-{}
+{
+  stream << "if ";
+  expr.vis_if_condition (*this);
+  expr.vis_if_block (*this);
+  stream << indentation << "else ";
+  expr.vis_else_block (*this);
+}
 
 void
 Dump::visit (IfExprConseqIf &expr)
-{}
+{
+  stream << "if ";
+  expr.vis_if_condition (*this);
+  expr.vis_if_block (*this);
+  stream << indentation << "else if ";
+  expr.vis_conseq_if_expr (*this);
+}
 
 void
 Dump::visit (IfExprConseqIfLet &expr)
