@@ -32,10 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "dominance.h"
 
-#define VREL_LAST               VREL_NE
+#define VREL_LAST               VREL_PE64
 
 static const char *kind_string[VREL_LAST + 1] =
-{ "varying", "undefined", "<", "<=", ">", ">=", "==", "!=" };
+{ "varying", "undefined", "<", "<=", ">", ">=", "==", "!=", "pe8", "pe16",
+  "pe32", "pe64" };
 
 // Print a relation_kind REL to file F.
 
@@ -302,7 +303,7 @@ equiv_chain::dump (FILE *f) const
   bitmap_iterator bi;
   unsigned i;
 
-  if (!m_names)
+  if (!m_names || bitmap_empty_p (m_names))
     return;
   fprintf (f, "Equivalence set : [");
   unsigned c = 0;
@@ -329,17 +330,123 @@ equiv_oracle::equiv_oracle ()
   obstack_init (&m_chain_obstack);
   m_self_equiv.create (0);
   m_self_equiv.safe_grow_cleared (num_ssa_names + 1);
+  m_partial.create (0);
+  m_partial.safe_grow_cleared (num_ssa_names + 1);
 }
 
 // Destruct an equivalency oracle.
 
 equiv_oracle::~equiv_oracle ()
 {
+  m_partial.release ();
   m_self_equiv.release ();
   obstack_free (&m_chain_obstack, NULL);
   m_equiv.release ();
   bitmap_obstack_release (&m_bitmaps);
 }
+
+// Add a partial equivalence R between OP1 and OP2.
+
+void
+equiv_oracle::add_partial_equiv (relation_kind r, tree op1, tree op2)
+{
+  int v1 = SSA_NAME_VERSION (op1);
+  int v2 = SSA_NAME_VERSION (op2);
+  int prec2 = TYPE_PRECISION (TREE_TYPE (op2));
+  int bits = pe_to_bits (r);
+  gcc_checking_assert (bits && prec2 >= bits);
+
+  if (v1 >= (int)m_partial.length () || v2 >= (int)m_partial.length ())
+    m_partial.safe_grow_cleared (num_ssa_names + 1);
+  gcc_checking_assert (v1 < (int)m_partial.length ()
+		       && v2 < (int)m_partial.length ());
+
+  pe_slice &pe1 = m_partial[v1];
+  pe_slice &pe2 = m_partial[v2];
+
+  if (pe1.members)
+    {
+      // If the definition pe1 already has an entry, either the stmt is
+      // being re-evaluated, or the def was used before being registered.
+      // In either case, if PE2 has an entry, we simply do nothing.
+      if (pe2.members)
+	return;
+      // PE1 is the LHS and already has members, so everything in the set
+      // should be a slice of PE2 rather than PE1.
+      pe2.code = pe_min (r, pe1.code);
+      pe2.ssa_base = op2;
+      pe2.members = pe1.members;
+      bitmap_iterator bi;
+      unsigned x;
+      EXECUTE_IF_SET_IN_BITMAP (pe1.members, 0, x, bi)
+	{
+	  m_partial[x].ssa_base = op2;
+	  m_partial[x].code = pe2.code;
+	}
+      bitmap_set_bit (pe1.members, v2);
+      return;
+    }
+  if (pe2.members)
+    {
+      pe1.ssa_base = pe2.ssa_base;
+      // If pe2 is a 16 bit value, but only an 8 bit copy, we can't be any
+      // more than an 8 bit equivalence here, so choose MIN value.
+      pe1.code = pe_min (r, pe2.code);
+      pe1.members = pe2.members;
+      bitmap_set_bit (pe1.members, v1);
+    }
+  else
+    {
+      // Neither name has an entry, simply create op1 as slice of op2.
+      pe2.code = bits_to_pe (TYPE_PRECISION (TREE_TYPE (op2)));
+      if (pe2.code == VREL_VARYING)
+	return;
+      pe2.ssa_base = op2;
+      pe2.members = BITMAP_ALLOC (&m_bitmaps);
+      bitmap_set_bit (pe2.members, v2);
+      pe1.ssa_base = op2;
+      pe1.code = r;
+      pe1.members = pe2.members;
+      bitmap_set_bit (pe1.members, v1);
+    }
+}
+
+// Return the set of partial equivalences associated with NAME.  The bitmap
+// will be NULL if there are none.
+
+const pe_slice *
+equiv_oracle::partial_equiv_set (tree name)
+{
+  int v = SSA_NAME_VERSION (name);
+  if (v >= (int)m_partial.length ())
+    return NULL;
+  return &m_partial[v];
+}
+
+// Query if there is a partial equivalence between SSA1 and SSA2.  Return
+// VREL_VARYING if there is not one.  If BASE is non-null, return the base
+// ssa-name this is a slice of.
+
+relation_kind
+equiv_oracle::partial_equiv (tree ssa1, tree ssa2, tree *base) const
+{
+  int v1 = SSA_NAME_VERSION (ssa1);
+  int v2 = SSA_NAME_VERSION (ssa2);
+
+  if (v1 >= (int)m_partial.length () || v2 >= (int)m_partial.length ())
+    return VREL_VARYING;
+
+  const pe_slice &pe1 = m_partial[v1];
+  const pe_slice &pe2 = m_partial[v2];
+  if (pe1.members && pe2.members == pe1.members)
+    {
+      if (base)
+	*base = pe1.ssa_base;
+      return pe_min (pe1.code, pe2.code);
+    }
+  return VREL_VARYING;
+}
+
 
 // Find and return the equivalency set for SSA along the dominators of BB.
 // This is the external API.
@@ -365,7 +472,7 @@ equiv_oracle::equiv_set (tree ssa, basic_block bb)
   return m_self_equiv[v];
 }
 
-// Query if thre is a relation (equivalence) between 2 SSA_NAMEs.
+// Query if there is a relation (equivalence) between 2 SSA_NAMEs.
 
 relation_kind
 equiv_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
@@ -373,7 +480,9 @@ equiv_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   // If the 2 ssa names share the same equiv set, they are equal.
   if (equiv_set (ssa1, bb) == equiv_set (ssa2, bb))
     return VREL_EQ;
-  return VREL_VARYING;
+
+  // Check if there is a partial equivalence.
+  return partial_equiv (ssa1, ssa2);
 }
 
 // Query if thre is a relation (equivalence) between 2 SSA_NAMEs.
@@ -515,6 +624,12 @@ void
 equiv_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
 				 tree ssa2)
 {
+  // Process partial equivalencies.
+  if (relation_partial_equiv_p (k))
+    {
+      add_partial_equiv (k, ssa1, ssa2);
+      return;
+    }
   // Only handle equality relations.
   if (k != VREL_EQ)
     return;
@@ -611,12 +726,34 @@ equiv_oracle::dump (FILE *f, basic_block bb) const
 {
   if (bb->index >= (int)m_equiv.length ())
     return;
-  if (!m_equiv[bb->index])
-    return;
-
-  equiv_chain *ptr = m_equiv[bb->index]->m_next;
-  for (; ptr; ptr = ptr->m_next)
-    ptr->dump (f);
+  // Process equivalences.
+  if (m_equiv[bb->index])
+    {
+      equiv_chain *ptr = m_equiv[bb->index]->m_next;
+      for (; ptr; ptr = ptr->m_next)
+	ptr->dump (f);
+    }
+  // Look for partial equivalences defined in this block..
+  for (unsigned i = 0; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      if (!gimple_range_ssa_p (name) || !SSA_NAME_DEF_STMT (name))
+	continue;
+      if (i >= m_partial.length ())
+	break;
+     tree base = m_partial[i].ssa_base;
+      if (base && name != base && gimple_bb (SSA_NAME_DEF_STMT (name)) == bb)
+	{
+	  relation_kind k = partial_equiv (name, base);
+	  if (k != VREL_VARYING)
+	    {
+	      value_relation vr (k, name, base);
+	      fprintf (f, "Partial equiv ");
+	      vr.dump (f);
+	      fputc ('\n',f);
+	    }
+	}
+    }
 }
 
 // Dump all equivalence sets known to the oracle.
@@ -906,7 +1043,7 @@ dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
     return;
 
   // Equivalencies are handled by the equivalence oracle.
-  if (k == VREL_EQ)
+  if (relation_equiv_p (k))
     equiv_oracle::register_relation (bb, k, op1, op2);
   else
     {
@@ -1209,6 +1346,10 @@ dom_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   const_bitmap equiv2 = equiv_set (ssa2, bb);
   if (bitmap_bit_p (equiv1, v2) && bitmap_bit_p (equiv2, v1))
     return VREL_EQ;
+
+  kind = partial_equiv (ssa1, ssa2);
+  if (kind != VREL_VARYING)
+    return kind;
 
   // Initially look for a direct relationship and just return that.
   kind = find_relation_dom (bb, v1, v2);
