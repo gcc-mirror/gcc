@@ -1,3 +1,8 @@
+2022-10-05  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (lvalue_kind) [VIEW_CONVERT_EXPR]: Change prvalue to
+	xvalue.
+
 2022-10-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107154

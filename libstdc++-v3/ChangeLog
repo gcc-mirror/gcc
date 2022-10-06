@@ -1,3 +1,13 @@
+2022-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.in: Regenerate.
+
+2022-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/invoke.h (__invoke_r): Check
+	__has_builtin(__reference_converts_from_temporary) before using
+	built-in.
+
 2022-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/ranges/adaptors/join_with/1.cc: Remove unused

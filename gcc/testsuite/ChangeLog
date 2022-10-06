@@ -1,3 +1,91 @@
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107158
+	* gcc.dg/analyzer/call-summaries-pr107158.c: New test.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107060
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_get_unknown_ptr):
+	New decl.
+	* gcc.dg/analyzer/call-summaries-2.c
+	(test_summarized_writes_param_to_ptr_unknown): New test.
+
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/assume-1.f90: New test.
+	* gfortran.dg/gomp/assume-2.f90: New test.
+	* gfortran.dg/gomp/assumes-1.f90: New test.
+	* gfortran.dg/gomp/assumes-2.f90: New test.
+
+2022-10-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: New test.
+	* gcc.target/riscv/rvv/base/pragma-2.c: New test.
+	* gcc.target/riscv/rvv/base/pragma-3.c: New test.
+	* gcc.target/riscv/rvv/base/user-1.c: New test.
+	* gcc.target/riscv/rvv/base/user-2.c: New test.
+	* gcc.target/riscv/rvv/base/user-3.c: New test.
+	* gcc.target/riscv/rvv/base/user-4.c: New test.
+	* gcc.target/riscv/rvv/base/user-5.c: New test.
+	* gcc.target/riscv/rvv/base/user-6.c: New test.
+	* gcc.target/riscv/rvv/base/vread_csr.c: New test.
+	* gcc.target/riscv/rvv/base/vwrite_csr.c: New test.
+
+2022-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107052
+	* gcc.dg/tree-ssa/pr107052.c: New file.
+
+2022-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto26.adb: New test.
+	* gnat.dg/lto26_pkg1.ads, gnat.dg/lto26_pkg1.adb: New helper.
+	* gnat.dg/lto26_pkg2.ads, gnat.dg/lto26_pkg2.adb: Likewise.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/106679
+	* gcc.dg/tree-prof/cmpsf-1.c: Mark as a known limitation.
+
+2022-10-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.target/arm/stack-protector-1.c: Use 'bl' instead of 'b'
+	instruction.
+	* gcc.target/arm/stack-protector-3.c: Likewise.
+
+2022-10-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* g++.dg/modules/bad-mapper-1.C: Also accept CreateProcess.
+
+2022-10-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.misc-tests/outputs.exp: Use "@nul" for Windows,
+	"@/dev/null" for other environments.
+
+2022-10-05  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/predef-1.c: Remove __riscv_cmodel_pic check.
+	* gcc.target/riscv/predef-2.c: Ditto.
+	* gcc.target/riscv/predef-3.c: Ditto.
+	* gcc.target/riscv/predef-4.c: Ditto.
+	* gcc.target/riscv/predef-5.c: Ditto.
+	* gcc.target/riscv/predef-6.c: Ditto.
+	* gcc.target/riscv/predef-7.c: Ditto.
+	* gcc.target/riscv/predef-8.c: Ditto.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107072
+	* gcc.dg/analyzer/call-summaries-2.c: New test.
+	* gcc.dg/analyzer/call-summaries-3.c: New test.
+	* gcc.dg/analyzer/call-summaries-asm-x86.c: New test.
+	* gcc.dg/analyzer/call-summaries-malloc.c: New test.
+	* gcc.dg/analyzer/call-summaries-pr107072.c: New test.
+
 2022-10-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107154

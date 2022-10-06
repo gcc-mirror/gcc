@@ -1,3 +1,88 @@
+2022-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (wD): Delete.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2022-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (vsx_extract_<mode>): Replace define_insn by a
+	define_expand.  Split the contents to...
+	(*vsx_extract_<mode>_0): ... this.  Rewrite.
+	(*vsx_extract_<mode>_1): ... and this.  Rewrite.
+
+2022-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (*vsx_extract_<mode>_store): Use "n" instead of
+	"wD" constraint.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107060
+	* doc/analyzer.texi (__analyzer_get_unknown_ptr): Document.
+
+2022-10-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add riscv_vector.h.
+	* config/riscv/riscv-builtins.cc: Add RVV builtin types support.
+	* config/riscv/riscv-c.cc (riscv_pragma_intrinsic): New function.
+	(riscv_register_pragmas): Ditto.
+	* config/riscv/riscv-protos.h (riscv_register_pragmas): Ditto.
+	(init_builtins): Move declaration from riscv-vector-builtins.h to riscv-protos.h.
+	(mangle_builtin_type): Ditto.
+	(verify_type_context): Ditto.
+	(handle_pragma_vector): New function.
+	* config/riscv/riscv-vector-builtins.cc (GTY): New variable.
+	(register_vector_type): New function.
+	(init_builtins): Add RVV builtin types support.
+	(handle_pragma_vector): New function.
+	* config/riscv/riscv-vector-builtins.h (GCC_RISCV_V_BUILTINS_H): Change
+	name according to file name.
+	(GCC_RISCV_VECTOR_BUILTINS_H): Ditto.
+	(init_builtins): Remove declaration in riscv-vector-builtins.h.
+	(mangle_builtin_type): Ditto.
+	(verify_type_context): Ditto.
+	* config/riscv/riscv.cc: Adjust for RVV builtin types support.
+	* config/riscv/riscv.h (REGISTER_TARGET_PRAGMAS): New macro.
+	* config/riscv/t-riscv: Remove redundant file including.
+	* config/riscv/riscv_vector.h: New file.
+
+2022-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_cast::fold_range): Handle truncating casts
+	for nonzero masks.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	PR c/107156
+	* attribs.h (lookup_attribute_by_prefix): Support the attribute
+	starting with underscore (_Noreturn).
+
+2022-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107052
+	* gimple-range-op.cc (cfn_popcount::fold_range): Take into account
+	nonzero bit mask.
+
+2022-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107052
+	* range-op.cc (operator_cast::fold_range): Set nonzero mask.
+
+2022-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/106698
+	* pointer-query.cc (handle_array_ref): Fix handling of low bound.
+
+2022-10-05  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins):
+	Remove __riscv_cmodel_pic, that deprecated in last version.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107072
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/call-summary.o.
+
 2022-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* attribs.h (remove_attribute): Declare overload with additional
