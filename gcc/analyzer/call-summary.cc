@@ -845,14 +845,20 @@ call_summary_replay::dump_to_pp (pretty_printer *pp, bool simple) const
   for (auto summary_reg : summary_regs)
     {
       pp_string (pp, "reg in summary: ");
-      summary_reg->dump_to_pp (pp, simple);
+      if (summary_reg)
+	summary_reg->dump_to_pp (pp, simple);
+      else
+	pp_string (pp, "(null)");
       pp_newline (pp);
 
       const region *caller_reg
 	= *((const_cast<region_map_t &>
 	     (m_map_region_from_summary_to_caller)).get (summary_reg));
       pp_string (pp, " reg in caller: ");
-      caller_reg->dump_to_pp (pp, simple);
+      if (caller_reg)
+	caller_reg->dump_to_pp (pp, simple);
+      else
+	pp_string (pp, "(null)");
       pp_newline (pp);
     }
 }
