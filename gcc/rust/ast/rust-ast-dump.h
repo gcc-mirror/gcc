@@ -97,6 +97,9 @@ private:
   std::ostream &emit_indented_string (const std::string &value,
 				      const std::string &comment = "");
 
+  // Emit formatted string for generic parameters.
+  void emit_generic_params (std::vector<std::unique_ptr<GenericParam>> &params);
+
   // rust-ast.h
   void visit (Token &tok);
   void visit (DelimTokenTree &delim_tok_tree);
