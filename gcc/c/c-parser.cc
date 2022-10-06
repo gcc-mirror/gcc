@@ -127,6 +127,8 @@ c_parse_init (void)
       mask |= D_ASM | D_EXT;
       if (!flag_isoc99)
 	mask |= D_EXT89;
+      if (!flag_isoc2x)
+	mask |= D_EXT11;
     }
   if (!c_dialect_objc ())
     mask |= D_OBJC | D_CXX_OBJC;
@@ -580,6 +582,7 @@ c_keyword_starts_typename (enum rid keyword)
     case RID_STRUCT:
     case RID_UNION:
     case RID_TYPEOF:
+    case RID_TYPEOF_UNQUAL:
     case RID_CONST:
     case RID_ATOMIC:
     case RID_VOLATILE:
@@ -757,6 +760,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_STRUCT:
 	case RID_UNION:
 	case RID_TYPEOF:
+	case RID_TYPEOF_UNQUAL:
 	case RID_CONST:
 	case RID_VOLATILE:
 	case RID_RESTRICT:
@@ -3081,6 +3085,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  declspecs_add_type (loc, specs, t);
 	  break;
 	case RID_TYPEOF:
+	case RID_TYPEOF_UNQUAL:
 	  /* ??? The old parser rejected typeof after other type
 	     specifiers, but is a syntax error the best way of
 	     handling this?  */
@@ -3768,22 +3773,38 @@ c_parser_struct_declaration (c_parser *parser)
   return decls;
 }
 
-/* Parse a typeof specifier (a GNU extension).
+/* Parse a typeof specifier (a GNU extension adopted in C2X).
 
    typeof-specifier:
      typeof ( expression )
      typeof ( type-name )
+     typeof_unqual ( expression )
+     typeof_unqual ( type-name )
 */
 
 static struct c_typespec
 c_parser_typeof_specifier (c_parser *parser)
 {
+  bool is_unqual;
+  bool is_std;
   struct c_typespec ret;
   ret.kind = ctsk_typeof;
   ret.spec = error_mark_node;
   ret.expr = NULL_TREE;
   ret.expr_const_operands = true;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_TYPEOF));
+  if (c_parser_next_token_is_keyword (parser, RID_TYPEOF))
+    {
+      is_unqual = false;
+      tree spelling = c_parser_peek_token (parser)->value;
+      is_std = (flag_isoc2x
+		&& strcmp (IDENTIFIER_POINTER (spelling), "typeof") == 0);
+    }
+  else
+    {
+      gcc_assert (c_parser_next_token_is_keyword (parser, RID_TYPEOF_UNQUAL));
+      is_unqual = true;
+      is_std = true;
+    }
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
   in_typeof++;
@@ -3825,6 +3846,24 @@ c_parser_typeof_specifier (c_parser *parser)
       pop_maybe_used (was_vm);
     }
   parens.skip_until_found_close (parser);
+  if (ret.spec != error_mark_node)
+    {
+      if (is_unqual && TYPE_QUALS (ret.spec) != TYPE_UNQUALIFIED)
+	ret.spec = TYPE_MAIN_VARIANT (ret.spec);
+      if (is_std)
+	{
+	  /* In ISO C terms, _Noreturn is not part of the type of
+	     expressions such as &abort, but in GCC it is represented
+	     internally as a type qualifier.  */
+	  if (TREE_CODE (ret.spec) == FUNCTION_TYPE
+	      && TYPE_QUALS (ret.spec) != TYPE_UNQUALIFIED)
+	    ret.spec = TYPE_MAIN_VARIANT (ret.spec);
+	  else if (FUNCTION_POINTER_TYPE_P (ret.spec)
+		   && TYPE_QUALS (TREE_TYPE (ret.spec)) != TYPE_UNQUALIFIED)
+	    ret.spec
+	      = build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (ret.spec)));
+	}
+    }
   return ret;
 }
 
@@ -11961,7 +12000,7 @@ c_parser_objc_synchronized_statement (c_parser *parser)
      identifier
      one of
        enum struct union if else while do for switch case default
-       break continue return goto asm sizeof typeof __alignof
+       break continue return goto asm sizeof typeof typeof_unqual __alignof
        unsigned long const short volatile signed restrict _Complex
        in out inout bycopy byref oneway int char float double void _Bool
        _Atomic
@@ -12001,6 +12040,7 @@ c_parser_objc_selector (c_parser *parser)
     case RID_ASM:
     case RID_SIZEOF:
     case RID_TYPEOF:
+    case RID_TYPEOF_UNQUAL:
     case RID_ALIGNOF:
     case RID_UNSIGNED:
     case RID_LONG:

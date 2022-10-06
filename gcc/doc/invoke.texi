@@ -2534,7 +2534,10 @@ this switch.  You may want to use the @option{-fno-gnu-keywords} flag
 instead, which disables @code{typeof} but not @code{asm} and
 @code{inline}.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}),
 this switch only affects the @code{asm} and @code{typeof} keywords,
-since @code{inline} is a standard keyword in ISO C99.
+since @code{inline} is a standard keyword in ISO C99.  In C2X mode
+(@option{-std=c2x} or @option{-std=gnu2x}), this switch only affects
+the @code{asm} keyword, since @code{typeof} is a standard keyword in
+ISO C2X.
 
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}

@@ -104,7 +104,8 @@ enum rid
   RID_SIZEOF,
 
   /* C extensions */
-  RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
+  RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
+  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
@@ -438,16 +439,17 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX11         0x0010	/* In C++, C++11 only.  */
 #define D_EXT		0x0020	/* GCC extension.  */
 #define D_EXT89		0x0040	/* GCC extension incorporated in C99.  */
-#define D_ASM		0x0080	/* Disabled by -fno-asm.  */
-#define D_OBJC		0x0100	/* In Objective C and neither C nor C++.  */
-#define D_CXX_OBJC	0x0200	/* In Objective C, and C++, but not C.  */
-#define D_CXXWARN	0x0400	/* In C warn with -Wcxx-compat.  */
-#define D_CXX_CONCEPTS  0x0800	/* In C++, only with concepts.  */
-#define D_TRANSMEM	0x1000	/* C++ transactional memory TS.  */
-#define D_CXX_CHAR8_T	0x2000	/* In C++, only with -fchar8_t.  */
-#define D_CXX20		0x4000  /* In C++, C++20 only.  */
-#define D_CXX_COROUTINES 0x8000  /* In C++, only with coroutines.  */
-#define D_CXX_MODULES	0x10000  /* In C++, only with modules.  */
+#define D_EXT11		0x0080	/* GCC extension incorporated in C2X.  */
+#define D_ASM		0x0100	/* Disabled by -fno-asm.  */
+#define D_OBJC		0x0200	/* In Objective C and neither C nor C++.  */
+#define D_CXX_OBJC	0x0400	/* In Objective C, and C++, but not C.  */
+#define D_CXXWARN	0x0800	/* In C warn with -Wcxx-compat.  */
+#define D_CXX_CONCEPTS  0x1000	/* In C++, only with concepts.  */
+#define D_TRANSMEM	0x2000	/* C++ transactional memory TS.  */
+#define D_CXX_CHAR8_T	0x4000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x8000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x10000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x20000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
