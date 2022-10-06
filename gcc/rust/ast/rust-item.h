@@ -634,7 +634,7 @@ public:
     : vis_type (vis_type), in_path (std::move (in_path))
   {}
 
-  VisType get_public_vis_type () const { return vis_type; }
+  VisType get_vis_type () const { return vis_type; }
 
   // Returns whether visibility is in an error state.
   bool is_error () const

@@ -36,7 +36,7 @@ translate_visibility (const AST::Visibility &vis)
   if (vis.is_error ())
     return Visibility::create_error ();
 
-  switch (vis.get_public_vis_type ())
+  switch (vis.get_vis_type ())
     {
     case AST::Visibility::PUB:
       return Visibility (Visibility::VisType::PUBLIC);

@@ -108,6 +108,31 @@ Dump::emit_attrib (const Attribute &attrib)
   stream << "]";
 }
 
+void
+Dump::emit_visibility (const Visibility &vis)
+{
+  switch (vis.get_vis_type ())
+    {
+    case Visibility::PUB:
+      stream << "pub ";
+      break;
+    case Visibility::PUB_CRATE:
+      stream << "pub(crate) ";
+      break;
+    case Visibility::PUB_SELF:
+      stream << "pub(self) ";
+      break;
+    case Visibility::PUB_SUPER:
+      stream << "pub(super) ";
+      break;
+    case Visibility::PUB_IN_PATH:
+      stream << "pub(in " << vis.get_path ().as_string () << ") ";
+      break;
+    case Visibility::PRIV:
+      break;
+    }
+}
+
 std::ostream &
 Dump::emit_indented_string (const std::string &value,
 			    const std::string &comment)
@@ -590,7 +615,10 @@ Dump::visit (TypeBoundWhereClauseItem &item)
 void
 Dump::visit (Method &method)
 {
-  stream << indentation << "fn " << method.get_method_name () << '(';
+  // FIXME: Do we really need to dump the indentation here?
+  stream << indentation;
+  emit_visibility (method.get_visibility ());
+  stream << "fn " << method.get_method_name () << '(';
 
   auto &self = method.get_self_param ();
   stream << self.as_string ();
@@ -647,6 +675,7 @@ Dump::visit (UseDeclaration &use_decl)
 void
 Dump::visit (Function &function)
 {
+  emit_visibility (function.get_visibility ());
   stream << "fn " << function.get_function_name ();
 
   if (function.has_generics ())
@@ -742,6 +771,7 @@ void
 Dump::format_function_common (std::unique_ptr<Type> &return_type,
 			      std::unique_ptr<BlockExpr> &block)
 {
+  // FIXME: This should format the `<vis> fn <name> ( [args] )` as well
   if (return_type)
     {
       stream << "-> ";
@@ -782,7 +812,13 @@ void
 Dump::visit (TraitItemMethod &item)
 {
   auto method = item.get_trait_method_decl ();
-  stream << indentation << "fn " << method.get_identifier () << '(';
+
+  // FIXME: Do we really need to dump the indentation here?
+  stream << indentation;
+
+  // FIXME: Can we have visibility here?
+  // emit_visibility (method.get_visibility ());
+  stream << "fn " << method.get_identifier () << '(';
 
   auto &self = method.get_self_param ();
   stream << self.as_string ();
@@ -821,6 +857,8 @@ Dump::visit (Trait &trait)
       emit_attrib (attr);
       stream << "\n" << indentation;
     }
+
+  emit_visibility (trait.get_visibility ());
 
   stream << "trait " << trait.get_identifier ();
 
@@ -902,6 +940,8 @@ Dump::visit (ExternalStaticItem &item)
 void
 Dump::visit (ExternalFunctionItem &function)
 {
+  emit_visibility (function.get_visibility ());
+
   stream << "fn " << function.get_identifier () << '(';
 
   for (size_t i = 0; i < function.get_function_params ().size (); i++)

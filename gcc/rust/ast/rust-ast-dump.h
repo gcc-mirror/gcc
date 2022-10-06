@@ -80,7 +80,16 @@ private:
    * Format a function's definition parameter
    */
   void format_function_param (FunctionParam &param);
+
+  /**
+   * Emit an attribute
+   */
   void emit_attrib (const Attribute &attrib);
+
+  /**
+   * Emit an item's visibility
+   */
+  void emit_visibility (const Visibility &vis);
 
   /**
    * Emit an indented string with an optional extra comment
