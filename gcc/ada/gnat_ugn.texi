@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 27, 2022
+GNAT User's Guide for Native Platforms , Nov 14, 2022
 
 AdaCore
 
@@ -17993,7 +17993,6 @@ instr.ads
 
 
 
-
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node GNAT and Program Execution,Platform-Specific Information,GNAT Utility Programs,Top
@@ -29382,8 +29381,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye
