@@ -157,6 +157,23 @@ Dump::emit_generic_params (std::vector<std::unique_ptr<GenericParam>> &params)
 }
 
 void
+Dump::format_tuple_field (TupleField &field)
+{
+  // TODO: do we need to emit outer attrs here?
+  emit_visibility (field.get_visibility ());
+  field.get_field_type ()->accept_vis (*this);
+}
+
+void
+Dump::format_struct_field (StructField &field)
+{
+  // TODO: do we need to emit outer attrs here?
+  emit_visibility (field.get_visibility ());
+  stream << field.get_field_name () << ": ";
+  field.get_field_type ()->accept_vis (*this);
+}
+
+void
 Dump::visit (Token &tok)
 {}
 
