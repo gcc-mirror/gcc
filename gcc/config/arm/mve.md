@@ -9038,7 +9038,7 @@
        (minus:SI (match_dup 2)
 		 (match_operand:SI 4 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
- "vddup.u%#<V_sz_elem>  %q0, %1, %3")
+ "vddup.u%#<V_sz_elem>\t%q0, %1, %3")
 
 ;;
 ;; [vddupq_m_n_u])
@@ -9074,7 +9074,7 @@
        (minus:SI (match_dup 3)
 		 (match_operand:SI 6 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
- "vpst\;\tvddupt.u%#<V_sz_elem>\t%q0, %2, %4"
+ "vpst\;vddupt.u%#<V_sz_elem>\t%q0, %2, %4"
  [(set_attr "length""8")])
 
 ;;
