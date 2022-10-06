@@ -115,7 +115,7 @@ arc_fallback_frame_state (struct _Unwind_Context *context,
     {
       if (register_id_for_index[i] == -1)
 	continue;
-      fs->regs.reg[register_id_for_index[i]].how = REG_SAVED_OFFSET;
+      fs->regs.how[register_id_for_index[i]] = REG_SAVED_OFFSET;
       fs->regs.reg[register_id_for_index[i]].loc.offset
 	= ((_Unwind_Ptr) &(regs[i])) - new_cfa;
     }
