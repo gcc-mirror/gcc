@@ -1,3 +1,8 @@
+2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-5.f90: Update scan-tree-dump.
+	* gfortran.dg/gomp/scope-6.f90: Likewise.
+
 2022-09-28  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	* gfortran.dg/gomp/metadirective-1.f90: Match !$OMP END METADIRECTIVE.
