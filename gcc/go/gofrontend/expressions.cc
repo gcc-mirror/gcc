@@ -10316,7 +10316,12 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_PANIC:
     case BUILTIN_SIZEOF:
     case BUILTIN_ALIGNOF:
-      this->check_one_arg();
+      if (this->check_one_arg())
+        {
+	  Expression* arg = this->one_arg();
+	  if (arg->type()->is_void_type())
+	    this->report_error(_("argument to builtin has void type"));
+        }
       break;
 
     case BUILTIN_RECOVER:
