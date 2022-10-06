@@ -2537,6 +2537,9 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
   if (!stmt)
     return false;
 
+  if (at_stmt)
+    *at_stmt = stmt;
+
   /* We want the condition for staying inside loop.  */
   code = gimple_cond_code (stmt);
   if (exit->flags & EDGE_TRUE_VALUE)
@@ -2641,9 +2644,6 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
   /* If NITER has simplified into a constant, update MAX.  */
   if (TREE_CODE (niter->niter) == INTEGER_CST)
     niter->max = wi::to_widest (niter->niter);
-
-  if (at_stmt)
-    *at_stmt = stmt;
 
   return (!integer_zerop (niter->assumptions));
 }
