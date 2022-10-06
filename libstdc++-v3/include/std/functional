@@ -46,11 +46,10 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/stl_function.h>
+#include <bits/stl_function.h> // std::equal_to, std::unary_function etc.
 
 #if __cplusplus >= 201103L
 
-#include <new>
 #include <tuple>
 #include <type_traits>
 #include <bits/functional_hash.h>
@@ -67,8 +66,8 @@
 # endif
 # include <bits/stl_algo.h> // std::search
 #endif
-#if __cplusplus > 201703L
-# include <bits/ranges_cmp.h>
+#if __cplusplus >= 202002L
+# include <bits/ranges_cmp.h> // std::identity, ranges::equal_to etc.
 # include <compare>
 #endif
 #if __cplusplus > 202002L && _GLIBCXX_HOSTED

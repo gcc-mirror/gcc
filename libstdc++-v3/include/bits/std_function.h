@@ -36,11 +36,11 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <typeinfo>
-#include <bits/stl_function.h>
-#include <bits/invoke.h>
-#include <bits/refwrap.h>
-#include <bits/functexcept.h>
+#include <new>                // placement new
+#include <typeinfo>           // typeid
+#include <bits/invoke.h>      // __invoke_r
+#include <bits/refwrap.h>     // ref wrapper, _Maybe_unary_or_binary_function
+#include <bits/functexcept.h> // __throw_bad_function_call
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
