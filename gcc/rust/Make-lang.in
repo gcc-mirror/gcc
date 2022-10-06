@@ -151,6 +151,7 @@ GRS_OBJS = \
     rust/rust-imports.o \
     rust/rust-import-archive.o \
     rust/rust-extern-crate.o \
+    rust/rust-builtins.o \
     $(END)
 # removed object files from here
 
