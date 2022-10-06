@@ -136,22 +136,18 @@ bool
 BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 {
   const Resolver::TraitReference *query = predicate.get ();
-  for (auto &bound : specified_bounds)
+  for (const auto &bound : specified_bounds)
     {
       const Resolver::TraitReference *item = bound.get ();
-      bool found = item->get_mappings ().get_defid ()
-		   == query->get_mappings ().get_defid ();
-      if (found)
+      if (item->satisfies_bound (*query))
 	return true;
     }
 
   auto probed = Resolver::TypeBoundsProbe::Probe (this);
-  for (auto &b : probed)
+  for (const auto &b : probed)
     {
       const Resolver::TraitReference *bound = b.first;
-      bool found = bound->get_mappings ().get_defid ()
-		   == query->get_mappings ().get_defid ();
-      if (found)
+      if (bound->satisfies_bound (*query))
 	return true;
     }
 
@@ -191,7 +187,6 @@ BaseType::bounds_compatible (const BaseType &other, Location locus,
 	  rust_error_at (r,
 			 "bounds not satisfied for %s %<%s%> is not satisfied",
 			 other.get_name ().c_str (), missing_preds.c_str ());
-	  // rust_assert (!emit_error);
 	}
     }
 
@@ -2956,23 +2951,15 @@ DynamicObjectType::get_object_items () const
   for (auto &bound : get_specified_bounds ())
     {
       const Resolver::TraitReference *trait = bound.get ();
-      for (auto &item : trait->get_trait_items ())
-	{
-	  if (item.get_trait_item_type ()
-		== Resolver::TraitItemReference::TraitItemType::FN
-	      && item.is_object_safe ())
-	    items.push_back ({&item, &bound});
-	}
+      std::vector<const Resolver::TraitItemReference *> trait_items;
+      trait->get_trait_items_and_supers (trait_items);
 
-      for (auto &super_trait : trait->get_super_traits ())
+      for (auto &item : trait_items)
 	{
-	  for (auto &item : super_trait->get_trait_items ())
-	    {
-	      if (item.get_trait_item_type ()
-		    == Resolver::TraitItemReference::TraitItemType::FN
-		  && item.is_object_safe ())
-		items.push_back ({&item, &bound});
-	    }
+	  if (item->get_trait_item_type ()
+		== Resolver::TraitItemReference::TraitItemType::FN
+	      && item->is_object_safe ())
+	    items.push_back ({item, &bound});
 	}
     }
   return items;
