@@ -3115,6 +3115,24 @@
     FAIL;
 })
 
+(define_expand "maddhisi4"
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI
+	  (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand"))
+		   (sign_extend:SI (match_operand:HI 2 "register_operand")))
+	  (match_operand:SI 3 "register_operand")))]
+  "TARGET_XTHEADMAC"
+)
+
+(define_expand "msubhisi4"
+  [(set (match_operand:SI 0 "register_operand")
+	(minus:SI
+	  (match_operand:SI 3 "register_operand")
+	  (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand"))
+		   (sign_extend:SI (match_operand:HI 2 "register_operand")))))]
+  "TARGET_XTHEADMAC"
+)
+
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")

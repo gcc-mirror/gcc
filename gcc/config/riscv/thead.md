@@ -138,3 +138,124 @@
    th.mveqz\t%0,%z3,%1"
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
+
+;; XTheadMac
+
+(define_insn "*th_mula<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	      (plus:X (mult:X (match_operand:X 1 "register_operand" "r")
+			      (match_operand:X 2 "register_operand" "r"))
+		      (match_operand:X 3 "register_operand" "0")))]
+  "TARGET_XTHEADMAC"
+  "th.mula\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "<MODE>")]
+)
+
+(define_insn "*th_mulawsi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+			    (match_operand:SI 2 "register_operand" "r"))
+		   (match_operand:SI 3 "register_operand" "0"))))]
+  "TARGET_XTHEADMAC && TARGET_64BIT"
+  "th.mulaw\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_mulawsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	      (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+				(match_operand:SI 2 "register_operand" "r"))
+		       (match_operand:SI 3 "register_operand" "0")))]
+  "TARGET_XTHEADMAC && TARGET_64BIT"
+  "th.mulaw\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_maddhisi4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	  (plus:SI
+	    (mult:SI
+	      (sign_extend:SI (match_operand:HI 1 "register_operand" " r"))
+	      (sign_extend:SI (match_operand:HI 2 "register_operand" " r")))
+	    (match_operand:SI 3 "register_operand" " 0")))]
+  "TARGET_XTHEADMAC"
+  "th.mulah\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_sextw_maddhisi4"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (plus:SI
+	    (mult:SI
+	      (sign_extend:SI (match_operand:HI 1 "register_operand" " r"))
+	      (sign_extend:SI (match_operand:HI 2 "register_operand" " r")))
+	    (match_operand:SI 3 "register_operand" " 0"))))]
+  "TARGET_XTHEADMAC && TARGET_64BIT"
+  "th.mulah\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_muls<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	      (minus:X (match_operand:X 3 "register_operand" "0")
+		       (mult:X (match_operand:X 1 "register_operand" "r")
+			       (match_operand:X 2 "register_operand" "r"))))]
+  "TARGET_XTHEADMAC"
+  "th.muls\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "<MODE>")]
+)
+
+(define_insn "*th_mulswsi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (minus:SI (match_operand:SI 3 "register_operand" "0")
+		    (mult:SI (match_operand:SI 1 "register_operand" "r")
+			     (match_operand:SI 2 "register_operand" "r")))))]
+  "TARGET_XTHEADMAC && TARGET_64BIT"
+  "th.mulsw\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_mulswsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_operand:SI 3 "register_operand" "0")
+		  (mult:SI (match_operand:SI 1 "register_operand" "r")
+			   (match_operand:SI 2 "register_operand" "r"))))]
+  "TARGET_XTHEADMAC && TARGET_64BIT"
+  "th.mulsw\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_msubhisi4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_operand:SI 3 "register_operand" " 0")
+	  (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" " r"))
+	    (sign_extend:SI (match_operand:HI 2 "register_operand" " r")))))]
+  "TARGET_XTHEADMAC"
+  "th.mulsh\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*th_sextw_msubhisi4"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (minus:SI (match_operand:SI 3 "register_operand" " 0")
+	    (mult:SI
+	      (sign_extend:SI (match_operand:HI 1 "register_operand" " r"))
+	      (sign_extend:SI (match_operand:HI 2 "register_operand" " r"))))))]
+  "TARGET_XTHEADMAC && TARGET_64BIT"
+  "th.mulsh\\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")]
+)
