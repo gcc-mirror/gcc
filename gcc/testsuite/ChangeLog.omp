@@ -1,3 +1,14 @@
+2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-5.f90: Update scan-tree-dump.
+	* gfortran.dg/gomp/scope-6.f90: Likewise.
+
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/affinity-clause-1.f90: Update pattern for
+	different array-reference handling in OG12.
+	* gfortran.dg/gomp/uses_allocators-3.f90: Fix dg-error string.
+
 2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
