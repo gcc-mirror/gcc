@@ -2962,6 +2962,10 @@ dnl installing only the headers required by [17.4.1.3] and the language
 dnl support library.  More than that will be built (to keep the Makefiles
 dnl conveniently clean), but not installed.
 dnl
+dnl Also define --disable-libstdcxx-hosted as an alias for
+dnl --disable-hosted-libstdcxx but fail if both are given
+dnl and their values do not agree.
+dnl
 dnl Sets:
 dnl  is_hosted  (yes/no)
 dnl
@@ -2971,7 +2975,8 @@ dnl
 AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
   AC_ARG_ENABLE([hosted-libstdcxx],
     AC_HELP_STRING([--disable-hosted-libstdcxx],
-		   [only build freestanding C++ runtime support]),,
+		   [only build freestanding C++ runtime support]),
+    [enable_hosted_libstdcxx_was_given=yes],
     [case "$host" in
 	arm*-*-symbianelf*)
 	    enable_hosted_libstdcxx=no
@@ -2980,6 +2985,21 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
 	    enable_hosted_libstdcxx=yes
 	    ;;
      esac])
+
+  # Because most configure args are --enable-libstdcxx-foo add an alias
+  # of that form for --enable-hosted-libstdcxx.
+  AC_ARG_ENABLE([libstdcxx-hosted],
+    AC_HELP_STRING([--disable-libstdcxx-hosted],
+		   [alias for --disable-hosted-libstdcxx]),
+    [if test "$enable_hosted_libstdcxx_was_given" = yes; then
+      if test "$enable_hosted_libstdcxx" != "$enableval"; then
+	AC_MSG_ERROR([--enable-libstdcxx-hosted=$enableval conflicts with --enable-hosted-libstdcxx=$enable_hosted_libstdcxx])
+      fi
+    else
+      enable_hosted_libstdcxx=${enableval}
+    fi
+    ],)
+
   freestanding_flags=
   if test "$enable_hosted_libstdcxx" = no; then
     AC_MSG_NOTICE([Only freestanding libraries will be built])
