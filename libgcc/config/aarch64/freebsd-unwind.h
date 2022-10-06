@@ -90,7 +90,7 @@ aarch64_freebsd_fallback_frame_state
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
   for (n = 0; n < 32; n++)
-    fs->regs.reg[n].how = REG_SAVED_OFFSET;
+    fs->regs.how[n] = REG_SAVED_OFFSET;
 
   for (n = 0; n < 30; n++)
     fs->regs.reg[n].loc.offset = (_Unwind_Ptr) &(sc->XREG(n)) - new_cfa;
@@ -98,7 +98,7 @@ aarch64_freebsd_fallback_frame_state
   fs->regs.reg[30].loc.offset = (_Unwind_Ptr) &(sc->REG_NAME(lr)) - new_cfa;
   fs->regs.reg[31].loc.offset = (_Unwind_Ptr) &(sc->REG_NAME(sp)) - new_cfa;
 
-  fs->regs.reg[DARC].how = REG_SAVED_OFFSET;
+  fs->regs.how[DARC] = REG_SAVED_OFFSET;
   fs->regs.reg[DARC].loc.offset = (_Unwind_Ptr) &(sc->REG_NAME(elr)) - new_cfa;
 
   fs->retaddr_column = DARC;

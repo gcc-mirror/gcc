@@ -40,7 +40,7 @@
 #ifdef __64BIT__
 #define MD_FROB_UPDATE_CONTEXT(CTX, FS)					\
   do {									\
-    if ((FS)->regs.reg[2].how == REG_UNSAVED)				\
+    if ((FS)->regs.how[2] == REG_UNSAVED)				\
       {									\
 	unsigned int *insn						\
 	  = (unsigned int *)						\
@@ -52,7 +52,7 @@
 #else
 #define MD_FROB_UPDATE_CONTEXT(CTX, FS)					\
   do {									\
-    if ((FS)->regs.reg[2].how == REG_UNSAVED)				\
+    if ((FS)->regs.how[2] == REG_UNSAVED)				\
       {									\
 	unsigned int *insn						\
 	  = (unsigned int *)						\
@@ -207,7 +207,7 @@ ucontext_for (struct _Unwind_Context *context)
 
 #define REGISTER_CFA_OFFSET_FOR(FS,REGNO,ADDR,CFA)\
 do { \
-(FS)->regs.reg[REGNO].how = REG_SAVED_OFFSET; \
+(FS)->regs.how[REGNO] = REG_SAVED_OFFSET; \
 (FS)->regs.reg[REGNO].loc.offset = (long) (ADDR) - (CFA); \
 } while (0)
 

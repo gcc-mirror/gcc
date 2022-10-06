@@ -105,11 +105,11 @@ xtensa_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (_Unwind_Ptr) &(sc->sc_a[i]) - new_cfa;
     }
 
-  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how =
+  fs->regs.how[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__] =
     REG_SAVED_VAL_OFFSET;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset =
     (_Unwind_Ptr) (sc->sc_pc) - new_cfa;
