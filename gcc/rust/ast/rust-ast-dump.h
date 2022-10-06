@@ -100,6 +100,12 @@ private:
   // Emit formatted string for generic parameters.
   void emit_generic_params (std::vector<std::unique_ptr<GenericParam>> &params);
 
+  // Format a single field of a tuple.
+  void format_tuple_field (TupleField &field);
+
+  // Format a single field of a struct.
+  void format_struct_field (StructField &field);
+
   // rust-ast.h
   void visit (Token &tok);
   void visit (DelimTokenTree &delim_tok_tree);
