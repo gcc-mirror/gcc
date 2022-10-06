@@ -23571,10 +23571,12 @@ c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 	      tree t = convert_lvalue_to_rvalue (eloc, expr, true, true).value;
 	      t = c_objc_common_truthvalue_conversion (eloc, t);
 	      t = c_fully_fold (t, false, NULL);
-	      if (is_assume)
+	      if (is_assume && t != error_mark_node)
 		{
-		  /* FIXME: Emit .ASSUME (t) call here.  */
-		  (void) t;
+		  tree fn = build_call_expr_internal_loc (eloc, IFN_ASSUME,
+							  void_type_node, 1,
+							  t);
+		  add_stmt (fn);
 		}
 	      parens.skip_until_found_close (parser);
 	    }

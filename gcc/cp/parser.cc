@@ -46023,13 +46023,15 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 	  matching_parens parens;
 	  if (parens.require_open (parser))
 	    {
+	      location_t eloc = cp_lexer_peek_token (parser->lexer)->location;
 	      tree t = cp_parser_assignment_expression (parser);
 	      if (!type_dependent_expression_p (t))
 		t = contextual_conv_bool (t, tf_warning_or_error);
-	      if (is_assume)
+	      if (is_assume && !error_operand_p (t))
 		{
-		  /* FIXME: Emit .ASSUME (t) call here.  */
-		  (void) t;
+		  t = build_call_expr_internal_loc (eloc, IFN_ASSUME,
+						    void_type_node, 1, t);
+		  finish_expr_stmt (t);
 		}
 	      if (!parens.require_close (parser))
 		cp_parser_skip_to_closing_parenthesis (parser,
