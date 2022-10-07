@@ -2509,7 +2509,7 @@ irange::irange_contains_p (const irange &r) const
       // Otherwise, check if this's pair occurs before R's.
       if (wi::lt_p (wi::to_wide (u), wi::to_wide (rl), sign))
 	{
-	  // There's still at leats one pair of R left.
+	  // There's still at least one pair of R left.
 	  if (++i >= num_pairs ())
 	    return false;
 	  l = m_base[i * 2];
