@@ -1802,12 +1802,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Primary template.
   /// make_unsigned
   template<typename _Tp>
+#if __cpp_concepts
+    requires is_integral<_Tp>::value || __is_enum(_Tp)
+#endif
     struct make_unsigned
     { typedef typename __make_unsigned_selector<_Tp>::__type type; };
 
   // Integral, but don't define.
-  template<>
-    struct make_unsigned<bool>;
+  template<> struct make_unsigned<bool>;
+  template<> struct make_unsigned<bool const>;
+  template<> struct make_unsigned<bool volatile>;
+  template<> struct make_unsigned<bool const volatile>;
 
   /// @cond undocumented
 
@@ -1932,12 +1937,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Primary template.
   /// make_signed
   template<typename _Tp>
+#if __cpp_concepts
+    requires is_integral<_Tp>::value || __is_enum(_Tp)
+#endif
     struct make_signed
     { typedef typename __make_signed_selector<_Tp>::__type type; };
 
   // Integral, but don't define.
-  template<>
-    struct make_signed<bool>;
+  template<> struct make_signed<bool>;
+  template<> struct make_signed<bool const>;
+  template<> struct make_signed<bool volatile>;
+  template<> struct make_signed<bool const volatile>;
 
 #if __cplusplus > 201103L
   /// Alias template for make_signed

@@ -21,7 +21,6 @@
 
 #include <type_traits>
 
-enum test_enum { first_selection };
 struct pod_class { };
 
 void test01()
@@ -29,22 +28,20 @@ void test01()
   using std::make_unsigned;
 
   // Negative tests.
-  typedef make_unsigned<bool>::type     	test1_type;
+  using T1 = make_unsigned<bool>::type; // { dg-error "incomplete" }
+  using T2 = make_unsigned<const bool>::type; // { dg-error "incomplete" }
+  using T3 = make_unsigned<volatile bool>::type; // { dg-error "incomplete" }
+  using T4 = make_unsigned<const volatile bool>::type; // { dg-error "incomplete" }
 
-  typedef make_unsigned<pod_class>::type     	test2_type;
+  using T5 = make_unsigned<pod_class>::type; // { dg-error "here" }
 
-  typedef make_unsigned<int[4]>::type     test3_type;
+  using T6 = make_unsigned<int[4]>::type; // { dg-error "here" }
 
-  typedef void (fn_type) ();
-  typedef make_unsigned<fn_type>::type  	test4_type;
+  using fn_type = void ();
+  using T7 = make_unsigned<fn_type>::type; // { dg-error "here" }
 
-  typedef make_unsigned<float>::type  		test5_type;
+  using T8 = make_unsigned<float>::type; // { dg-error "here" }
 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 32 }
-// { dg-error "required from here" "" { target *-*-* } 34 }
-// { dg-error "required from here" "" { target *-*-* } 36 }
-// { dg-error "required from here" "" { target *-*-* } 39 }
-// { dg-error "required from here" "" { target *-*-* } 41 }
-
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 0 }
+// { dg-error "invalid use of incomplete type" "" { target c++17_down } 0 }
+// { dg-error "constraint failure" "" { target c++20 } 0 }
