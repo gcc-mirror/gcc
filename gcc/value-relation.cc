@@ -955,7 +955,7 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
 	  ptr->dump (dump_file);
 	}
       // Check into whether we can simply replace the relation rather than
-      // intersecting it.  THis may help with some optimistic iterative
+      // intersecting it.  This may help with some optimistic iterative
       // updating algorithms.
       bool new_rel = ptr->intersect (vr);
       if (dump_file && (dump_flags & TDF_DETAILS))
