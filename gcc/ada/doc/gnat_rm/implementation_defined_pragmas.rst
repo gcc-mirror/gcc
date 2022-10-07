@@ -1389,7 +1389,7 @@ Pragma CPP_Virtual
 This pragma is now obsolete and, other than generating a warning if warnings
 on obsolescent features are enabled, is completely ignored.
 It is retained for compatibility
-purposes. It used to be required to ensure compoatibility with C++, but
+purposes. It used to be required to ensure compatibility with C++, but
 is no longer required for that purpose because GNAT generates
 the same object layout as the G++ compiler by default.
 
@@ -3870,7 +3870,7 @@ decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
 
-In a more complex form, multiple arguments can be given which are intepreted
+In a more complex form, multiple arguments can be given which are interpreted
 in a nesting lexicographic manner. For example:
 
 .. code-block:: ada
@@ -4951,7 +4951,7 @@ appear at the start of the declarations in a subprogram body
 Note: This pragma is called ``Post_Class`` rather than
 ``Post'Class`` because the latter would not be strictly
 conforming to the allowed syntax for pragmas. The motivation
-for provinding pragmas equivalent to the aspects is to allow a program
+for providing pragmas equivalent to the aspects is to allow a program
 to be written using the pragmas, and then compiled if necessary
 using an Ada compiler that does not recognize the pragmas or
 aspects, but is prepared to ignore the pragmas. The assertion
@@ -6217,7 +6217,7 @@ replacement of any dots in the unit name by the specified string literal.
 
 Note that Source_File_Name pragmas should not be used if you are using
 project files. The reason for this rule is that the project manager is not
-aware of these pragmas, and so other tools that use the projet file would not
+aware of these pragmas, and so other tools that use the project file would not
 be aware of the intended naming conventions. If you are using project files,
 file naming is controlled by Source_File_Name_Project pragmas, which are
 usually supplied automatically by the project manager. A pragma
@@ -7291,7 +7291,7 @@ configuration pragma will ensure this test is not suppressed:
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 
-Note that in addition to the checks defined in the Ada RM, GNAT recogizes a
+Note that in addition to the checks defined in the Ada RM, GNAT recognizes a
 number of implementation-defined check names. See the description of pragma
 ``Suppress`` for full details.
 
@@ -7592,7 +7592,7 @@ expression (which does not exist in Ada 83).
 Note if the second argument of ``DETAILS`` is a ``local_NAME`` then the
 second form is always understood. If the intention is to use
 the fourth form, then you can write ``NAME & ""`` to force the
-intepretation as a *static_string_EXPRESSION*.
+interpretation as a *static_string_EXPRESSION*.
 
 Note: if the first argument is a valid ``TOOL_NAME``, it will be interpreted
 that way. The use of the ``TOOL_NAME`` argument is relevant only to users

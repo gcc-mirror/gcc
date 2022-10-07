@@ -550,7 +550,7 @@ the unit is not implemented.
   This package provides the capability of associating arbitrary
   task-specific data with separate tasks.
 
-``Ada.Task_Identifification`` *(C.7.1)*
+``Ada.Task_Identification`` *(C.7.1)*
   This package provides capabilities for task identification.
 
 ``Ada.Task_Termination`` *(C.7.3)*

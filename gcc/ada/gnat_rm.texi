@@ -2787,7 +2787,7 @@ that is, they never return an object whose type is a descendant of type T.
 This pragma is now obsolete and, other than generating a warning if warnings
 on obsolescent features are enabled, is completely ignored.
 It is retained for compatibility
-purposes. It used to be required to ensure compoatibility with C++, but
+purposes. It used to be required to ensure compatibility with C++, but
 is no longer required for that purpose because GNAT generates
 the same object layout as the G++ compiler by default.
 
@@ -5387,7 +5387,7 @@ decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
 
-In a more complex form, multiple arguments can be given which are intepreted
+In a more complex form, multiple arguments can be given which are interpreted
 in a nesting lexicographic manner. For example:
 
 @example
@@ -6445,7 +6445,7 @@ appear at the start of the declarations in a subprogram body
 Note: This pragma is called @code{Post_Class} rather than
 @code{Post'Class} because the latter would not be strictly
 conforming to the allowed syntax for pragmas. The motivation
-for provinding pragmas equivalent to the aspects is to allow a program
+for providing pragmas equivalent to the aspects is to allow a program
 to be written using the pragmas, and then compiled if necessary
 using an Ada compiler that does not recognize the pragmas or
 aspects, but is prepared to ignore the pragmas. The assertion
@@ -7761,7 +7761,7 @@ replacement of any dots in the unit name by the specified string literal.
 
 Note that Source_File_Name pragmas should not be used if you are using
 project files. The reason for this rule is that the project manager is not
-aware of these pragmas, and so other tools that use the projet file would not
+aware of these pragmas, and so other tools that use the project file would not
 be aware of the intended naming conventions. If you are using project files,
 file naming is controlled by Source_File_Name_Project pragmas, which are
 usually supplied automatically by the project manager. A pragma
@@ -8820,7 +8820,7 @@ pragma Unsuppress (Duplicated_Tag_Check);
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 
-Note that in addition to the checks defined in the Ada RM, GNAT recogizes a
+Note that in addition to the checks defined in the Ada RM, GNAT recognizes a
 number of implementation-defined check names. See the description of pragma
 @code{Suppress} for full details.
 
@@ -9112,7 +9112,7 @@ expression (which does not exist in Ada 83).
 Note if the second argument of @code{DETAILS} is a @code{local_NAME} then the
 second form is always understood. If the intention is to use
 the fourth form, then you can write @code{NAME & ""} to force the
-intepretation as a `static_string_EXPRESSION'.
+interpretation as a `static_string_EXPRESSION'.
 
 Note: if the first argument is a valid @code{TOOL_NAME}, it will be interpreted
 that way. The use of the @code{TOOL_NAME} argument is relevant only to users
@@ -9928,7 +9928,7 @@ This aspect is equivalent to @ref{141,,attribute Object_Size}.
 @section Aspect Obsolescent
 
 
-@geindex Obsolsecent
+@geindex Obsolescent
 
 This aspect is equivalent to @ref{ac,,pragma Obsolescent}. Note that the
 evaluation of this aspect happens at the point of occurrence, it is not
@@ -10984,7 +10984,7 @@ this attribute.
 @code{P'Library_Level}, where P is an entity name,
 returns a Boolean value which is True if the entity is declared
 at the library level, and False otherwise. Note that within a
-generic instantition, the name of the generic unit denotes the
+generic instantiation, the name of the generic unit denotes the
 instance, which means that this attribute can be used to test
 if a generic is instantiated at the library level, as shown
 in this example:
@@ -11710,7 +11710,7 @@ an implicit dependency on this unit.
 @geindex System_Allocator_Alignment
 
 @code{Standard'System_Allocator_Alignment} (@code{Standard} is the only
-allowed prefix) provides the observable guaranted to be honored by
+allowed prefix) provides the observable guaranteed to be honored by
 the system allocator (malloc). This is a static value that can be used
 in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the
@@ -17859,7 +17859,7 @@ a distributed application.
 “The range of type System.RPC.Partition_Id.  See E.5(14).”
 @end itemize
 
-System.RPC.Partion_ID’Last is Integer’Last. See source file @code{s-rpc.ads}.
+System.RPC.Partition_ID’Last is Integer’Last. See source file @code{s-rpc.ads}.
 
 
 @itemize *
@@ -21343,7 +21343,7 @@ only the tag value.
 This package provides the capability of associating arbitrary
 task-specific data with separate tasks.
 
-@item @code{Ada.Task_Identifification} `(C.7.1)'
+@item @code{Ada.Task_Identification} `(C.7.1)'
 
 This package provides capabilities for task identification.
 

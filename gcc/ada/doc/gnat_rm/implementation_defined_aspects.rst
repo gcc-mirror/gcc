@@ -422,7 +422,7 @@ This aspect is equivalent to :ref:`attribute Object_Size<Attribute-Object_Size>`
 
 Aspect Obsolescent
 ==================
-.. index:: Obsolsecent
+.. index:: Obsolescent
 
 This aspect is equivalent to :ref:`pragma Obsolescent<Pragma_Obsolescent>`. Note that the
 evaluation of this aspect happens at the point of occurrence, it is not
