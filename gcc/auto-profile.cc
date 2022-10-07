@@ -388,7 +388,6 @@ get_inline_stack (location_t locus, inline_stack *stack)
   tree block = LOCATION_BLOCK (locus);
   if (block && TREE_CODE (block) == BLOCK)
     {
-      int level = 0;
       for (block = BLOCK_SUPERCONTEXT (block);
            block && (TREE_CODE (block) == BLOCK);
            block = BLOCK_SUPERCONTEXT (block))
@@ -401,7 +400,6 @@ get_inline_stack (location_t locus, inline_stack *stack)
           stack->safe_push (
               std::make_pair (decl, get_combined_location (locus, decl)));
           locus = tmp_locus;
-          level++;
         }
     }
   stack->safe_push (
