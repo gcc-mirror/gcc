@@ -5411,6 +5411,9 @@ trees_out::core_bools (tree t)
 
 	    case VAR_DECL:
 	      if (TREE_PUBLIC (t)
+		  && !(TREE_STATIC (t)
+		       && DECL_FUNCTION_SCOPE_P (t)
+		       && DECL_DECLARED_INLINE_P (DECL_CONTEXT (t)))
 		  && !DECL_VAR_DECLARED_INLINE_P (t))
 		is_external = true;
 	      break;
