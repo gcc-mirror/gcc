@@ -7459,6 +7459,32 @@ This warning can be disabled by @option{-Wno-if-not-aligned}.
 The @code{warn_if_not_aligned} attribute can also be used for types
 (@pxref{Common Type Attributes}.)
 
+@cindex @code{strict_flex_array} variable attribute
+@item strict_flex_array (@var{level})
+The @code{strict_flex_array} attribute should be attached to the trailing
+array field of a structure.  It controls when to treat the trailing array
+field of a structure as a flexible array member for the purposes of accessing
+the elements of such an array.
+@var{level} must be an integer betwen 0 to 3.
+
+@var{level}=0 is the least strict level, all trailing arrays of structures
+are treated as flexible array members. @var{level}=3 is the strictest level,
+only when the trailing array is declared as a flexible array member per C99
+standard onwards (@samp{[]}), it is treated as a flexible array member.
+
+There are two more levels in between 0 and 3, which are provided to support
+older codes that use GCC zero-length array extension (@samp{[0]}) or one-element
+array as flexible array members (@samp{[1]}):
+When @var{level} is 1, the trailing array is treated as a flexible array member
+when it is declared as either @samp{[]}, @samp{[0]}, or @samp{[1]};
+When @var{level} is 2, the trailing array is treated as a flexible array member
+when it is declared as either @samp{[]}, or @samp{[0]}.
+
+This attribute can be used with or without the @option{-fstrict-flex-arrays}.
+When both the attribute and the option present at the same time, the level of
+the strictness for the specific trailing array field is determined by the
+attribute.
+
 @item alloc_size (@var{position})
 @itemx alloc_size (@var{position-1}, @var{position-2})
 @cindex @code{alloc_size} variable attribute

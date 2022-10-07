@@ -229,6 +229,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       else
 	bp_pack_value (bp, DECL_FIELD_ABI_IGNORED (expr), 1);
       bp_pack_value (bp, expr->decl_common.off_align, 8);
+      bp_pack_value (bp, DECL_NOT_FLEXARRAY (expr), 1);
     }
 
   else if (VAR_P (expr))

@@ -12691,14 +12691,30 @@ array_ref_up_bound (tree exp)
 }
 
 /* Returns true if REF is an array reference, component reference,
-   or memory reference to an array at the end of a structure.
-   If this is the case, the array may be allocated larger
-   than its upper bound implies.  */
+   or memory reference to an array whose actual size might be larger
+   than its upper bound implies, there are multiple cases:
+   A. a ref to a flexible array member at the end of a structure;
+   B. a ref to an array with a different type against the original decl;
+      for example:
 
+   short a[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+   (*((char(*)[16])&a[0]))[i+8]
+
+   C. a ref to an array that was passed as a parameter;
+      for example:
+
+   int test (uint8_t *p, uint32_t t[1][1], int n) {
+   for (int i = 0; i < 4; i++, p++)
+     t[i][0] = ...;
+
+   FIXME, the name of this routine need to be changed to be more accurate.  */
 bool
 array_at_struct_end_p (tree ref)
 {
-  tree atype;
+  /* the TYPE for this array referece.  */
+  tree atype = NULL_TREE;
+  /* the FIELD_DECL for the array field in the containing structure.  */
+  tree afield_decl = NULL_TREE;
 
   if (TREE_CODE (ref) == ARRAY_REF
       || TREE_CODE (ref) == ARRAY_RANGE_REF)
@@ -12708,7 +12724,10 @@ array_at_struct_end_p (tree ref)
     }
   else if (TREE_CODE (ref) == COMPONENT_REF
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE)
-    atype = TREE_TYPE (TREE_OPERAND (ref, 1));
+    {
+      atype = TREE_TYPE (TREE_OPERAND (ref, 1));
+      afield_decl = TREE_OPERAND (ref, 1);
+    }
   else if (TREE_CODE (ref) == MEM_REF)
     {
       tree arg = TREE_OPERAND (ref, 0);
@@ -12720,6 +12739,7 @@ array_at_struct_end_p (tree ref)
 	  if (tree fld = last_field (argtype))
 	    {
 	      atype = TREE_TYPE (fld);
+	      afield_decl = fld;
 	      if (TREE_CODE (atype) != ARRAY_TYPE)
 		return false;
 	      if (VAR_P (arg) && DECL_SIZE (fld))
@@ -12773,13 +12793,16 @@ array_at_struct_end_p (tree ref)
       ref = TREE_OPERAND (ref, 0);
     }
 
-  /* The array now is at struct end.  Treat flexible arrays as
+  gcc_assert (!afield_decl
+	      || (afield_decl && TREE_CODE (afield_decl) == FIELD_DECL));
+
+  /* The array now is at struct end.  Treat flexible array member as
      always subject to extend, even into just padding constrained by
      an underlying decl.  */
   if (! TYPE_SIZE (atype)
       || ! TYPE_DOMAIN (atype)
       || ! TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
-    return true;
+    return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
 
   /* If the reference is based on a declared entity, the size of the array
      is constrained by its given domain.  (Do not trust commons PR/69368).  */
@@ -12801,9 +12824,9 @@ array_at_struct_end_p (tree ref)
       if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (atype))) != INTEGER_CST
 	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST
           || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST)
-	return true;
+	return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
       if (! get_addr_base_and_unit_offset (ref_to_array, &offset))
-	return true;
+	return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
 
       /* If at least one extra element fits it is a flexarray.  */
       if (known_le ((wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
@@ -12811,12 +12834,12 @@ array_at_struct_end_p (tree ref)
 		     + 2)
 		    * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (atype))),
 		    wi::to_offset (DECL_SIZE_UNIT (ref)) - offset))
-	return true;
+	return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
 
       return false;
     }
 
-  return true;
+  return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
 }
 
 /* Return a tree representing the offset, in bytes, of the field referenced

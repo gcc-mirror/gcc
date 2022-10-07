@@ -207,7 +207,8 @@ in the following sections.
 -fopenmp  -fopenmp-simd @gol
 -fpermitted-flt-eval-methods=@var{standard} @gol
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields @gol
--fsigned-char  -funsigned-char  -fsso-struct=@var{endianness}}
+-fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}] @gol
+-fsso-struct=@var{endianness}}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -2834,6 +2835,31 @@ make such a program work with the opposite default.
 The type @code{char} is always a distinct type from each of
 @code{signed char} or @code{unsigned char}, even though its behavior
 is always just like one of those two.
+
+@item -fstrict-flex-arrays
+@opindex fstrict-flex-arrays
+@opindex fno-strict-flex-arrays
+Control when to treat the trailing array of a structure as a flexible array
+member for the purpose of accessing the elements of such an array.
+The positive form is equivalent to @option{-fstrict-flex-arrays=3}, which is the
+strictest.  A trailing array is treated as a flexible array member only when it
+is declared as a flexible array member per C99 standard onwards.
+The negative form is equivalent to @option{-fstrict-flex-arrays=0}, which is the
+least strict.  All trailing arrays of structures are treated as flexible array
+members.
+
+@item -fstrict-flex-arrays=@var{level}
+@opindex fstrict-flex-arrays=@var{level}
+Control when to treat the trailing array of a structure as a flexible array
+member for the purpose of accessing the elements of such an array.  The value
+of @var{level} controls the level of strictness.
+
+The possible values of @var{level} are the same as for the
+@code{strict_flex_array} attribute (@pxref{Variable Attributes}).
+
+You can control this behavior for a specific trailing array field of a
+structure by using the variable attribute @code{strict_flex_array} attribute
+(@pxref{Variable Attributes}).
 
 @item -fsso-struct=@var{endianness}
 @opindex fsso-struct
