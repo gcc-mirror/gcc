@@ -629,7 +629,7 @@ package Sinfo is
    --  specified by means of an aspect or a pragma.
 
    --  The following entities may be subject to a SPARK mode. Entities marked
-   --  with * may possess two differente SPARK modes.
+   --  with * may possess two different SPARK modes.
 
    --     E_Entry
    --     E_Entry_Family
@@ -1549,7 +1549,7 @@ package Sinfo is
 
    --  Is_Analyzed_Pragma
    --    Present in N_Pragma nodes. Set for delayed pragmas that require a two
-   --    step analysis. The initial step is peformed by routine Analyze_Pragma
+   --    step analysis. The initial step is performed by routine Analyze_Pragma
    --    and verifies the overall legality of the pragma. The second step takes
    --    place in the various Analyze_xxx_In_Decl_Part routines which perform
    --    full analysis. The flag prevents the reanalysis of a delayed pragma.
@@ -1641,8 +1641,9 @@ package Sinfo is
    --      variable reference marker
    --
    --    Set when the node appears within a context which allows the generation
-   --    of run-time ABE checks. This flag detemines whether the ABE Processing
-   --    phase generates conditional ABE checks and guaranteed ABE failures.
+   --    of run-time ABE checks. This flag determines whether the ABE
+   --    Processing phase generates conditional ABE checks and guaranteed ABE
+   --    failures.
 
    --  Is_Elaboration_Code
    --    Present in assignment statements. Set for an assignment which updates
@@ -5570,7 +5571,7 @@ package Sinfo is
 
       --  The term "return statement" is defined in 6.5 to mean either a
       --  SIMPLE_RETURN_STATEMENT or an EXTENDED_RETURN_STATEMENT. We avoid
-      --  the use of this term, since it used to mean someting else in earlier
+      --  the use of this term, since it used to mean something else in earlier
       --  versions of Ada.
 
       --  N_Simple_Return_Statement
@@ -7815,7 +7816,7 @@ package Sinfo is
       --      ABE mechanism, regardless of whether expansion took place.
 
       --    * The call marker captures the target of the related call along
-      --      with other attributes which are either unavailabe or expensive
+      --      with other attributes which are either unavailable or expensive
       --      to recompute once analysis, resolution, and expansion are over.
 
       --    * The call marker aids the ABE Processing phase by signaling the
