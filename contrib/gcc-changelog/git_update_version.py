@@ -135,7 +135,7 @@ def update_current_branch(ref_name):
             repo.git.add(datestamp_path)
             if not args.current:
                 repo.index.commit('Daily bump.')
-                origin.fetch()
+                logging.info('commit is done')
                 if args.push:
                     try:
                         repo.git.push('origin', branch)
