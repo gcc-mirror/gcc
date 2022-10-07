@@ -45,6 +45,10 @@ typedef float _Float16 __attribute__ ((__mode__ (__HF__)));
 #  if !__GNUC_PREREQ (7, 0) || (defined __cplusplus && !__GNUC_PREREQ (13, 0))
 typedef __float128 _Float128;
 #  endif
+#  if 0
+#  elif !__GNUC_PREREQ (7, 0) || (defined __cplusplus && !__GNUC_PREREQ (13, 0))
+typedef __float128 _Float128;
+#  endif
 #endif  /* GLIBC_CXX_FLOATN_2_CHECK */
 
 
@@ -72,3 +76,11 @@ typedef _Complex float __cfloat128 __attribute__ ((__mode__ (__TC__)));
 #   define __CFLOAT64 _Complex _Float64
 #  endif
 #endif  /* GLIBC_CXX_FLOATN_3_CHECK */
+
+
+#if defined( GLIBC_CXX_FLOATN_4_CHECK )
+#  if __LDBL_MANT_DIG__ == 113 && defined __cplusplus && !__GNUC_PREREQ (13, 0)
+typedef long double _Float128;
+#   define __CFLOAT128 _Complex long double
+#  endif
+#endif  /* GLIBC_CXX_FLOATN_4_CHECK */
