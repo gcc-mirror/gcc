@@ -1,3 +1,80 @@
+2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107170
+	* gcc.dg/tree-ssa/pr107170.c: New test.
+
+2022-10-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107158
+	* gcc.dg/analyzer/call-summaries-pr107158-2.c: New test.
+
+2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/assume-3.f90: New test.
+	* gfortran.dg/gomp/assume-4.f90: New test.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-typeof-1.c, gcc.dg/c2x-typeof-1.c,
+	gcc.dg/c2x-typeof-2.c, gcc.dg/c2x-typeof-3.c,
+	gcc.dg/gnu11-typeof-1.c, gcc.dg/gnu11-typeof-2.c,
+	gcc.dg/gnu2x-typeof-1.c: New tests.
+
+2022-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/indirect-3_b.C: Expect that the entity
+	foo::TPL<0>::frob is tagged as a specialization instead
+	of as a declaration.
+	* g++.dg/modules/tpl-spec-8_a.H: New test.
+	* g++.dg/modules/tpl-spec-8_b.C: New test.
+
+2022-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20221006-1.c: New test.
+
+2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107115
+	* gcc.dg/torture/pr107115.c: New testcase.
+
+2022-10-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldar_2.c: New test.
+
+2022-10-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldar_1.c: New test.
+
+2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/aarch64/cpunative/info_18: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_18.c: New test.
+
+2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107107
+	* gcc.dg/pr107107.c: New testcase.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/assume-4.c: New test.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* gcc.dg/attr-assume-1.c: New test.
+	* gcc.dg/attr-assume-2.c: New test.
+	* gcc.dg/attr-assume-3.c: New test.
+	* g++.dg/cpp2a/feat-cxx2a.C: Add colon to C++20 features
+	comment, add C++20 attributes comment and move C++20
+	new features after the attributes before them.
+	* g++.dg/cpp23/feat-cxx2b.C: Likewise.  Test
+	__has_cpp_attribute(assume).
+	* g++.dg/cpp23/attr-assume1.C: New test.
+	* g++.dg/cpp23/attr-assume2.C: New test.
+	* g++.dg/cpp23/attr-assume3.C: New test.
+	* g++.dg/cpp23/attr-assume4.C: New test.
+
 2022-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107158

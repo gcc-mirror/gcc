@@ -1,3 +1,17 @@
+2022-10-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107158
+	* store.cc (store::replay_call_summary_cluster): Eliminate
+	special-casing of RK_HEAP_ALLOCATED in favor of sharing code with
+	RK_DECL, avoiding an ICE due to attempting to bind a
+	compound_svalue into a binding_cluster when an svalue in the
+	summary cluster converts to a compound_svalue in the caller.
+
+2022-10-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-summary.cc (call_summary_replay::dump_to_pp): Bulletproof
+	against NULL caller regions/svalues.
+
 2022-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* analysis-plan.cc: Simplify includes.

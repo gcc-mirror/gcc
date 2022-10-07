@@ -1,3 +1,102 @@
+2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107170
+	* vr-values.cc (vr_values::range_of_expr):  Do not die on
+	unsupported types.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-fno-asm): Update description of effects on
+	typeof keyword.
+
+2022-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-loop-jam.cc (tree_loop_unroll_and_jam): Bail out for a self
+	dependency that is a write-after-write if the access function is not
+	affine or constant.
+
+2022-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* df-scan.cc (df_ref_create_structure): Minor cleanup.
+
+2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107115
+	* expr.cc (store_expr): Check mems_same_for_tbaa_p before
+	eliding a seemingly redundant store.
+
+2022-10-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (*atomic_load<ALLX:mode>_zext<SD_HSDI:mode>):
+	New pattern.
+
+2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Update
+	Ampere-1 core entry.
+
+2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/driver-aarch64.cc (readline): Fix off-by-one.
+
+2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107107
+	* tree-ssa-sccvn.cc (visit_reference_op_store): Do not
+	affect value-numbering when doing the tail merging
+	MODIFY_EXPR lookup.
+
+2022-10-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/linux.h (LINK_SPEC): Remove max-page-size and
+	common-pave-size.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* internal-fn.def (ASSUME): New internal function.
+	* internal-fn.h (expand_ASSUME): Declare.
+	* internal-fn.cc (expand_ASSUME): Define.
+	* gimplify.cc (gimplify_call_expr): Gimplify IFN_ASSUME.
+	* fold-const.h (simple_condition_p): Declare.
+	* fold-const.cc (simple_operand_p_2): Rename to ...
+	(simple_condition_p): ... this.  Remove forward declaration.
+	No longer static.  Adjust function comment and fix a typo in it.
+	Adjust recursive call.
+	(simple_operand_p): Adjust function comment.
+	(fold_truth_andor): Adjust simple_operand_p_2 callers to call
+	simple_condition_p.
+	* doc/extend.texi: Document assume attribute.  Move fallthrough
+	attribute example to its section.
+
+2022-10-06  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/107088
+	* cselib.cc (new_cselib_val): Skip BImode while keeping track of
+	subvalue relations.
+
+2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Call set_nan unconditionally.
+	(range_tests_nan): Adjust tests.
+	(range_tests_signed_zeros): Same.
+	(range_tests_floats): Same.
+	* value-range.h (frange::update_nan): Guard with HONOR_NANS.
+	(frange::set_nan): Set undefined if !HONOR_NANS.
+
+2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_lt::fold_range): Remove extra check
+	to finite_operands_p.
+	(foperator_le::fold_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_ge::fold_range): Same.
+
+2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-pretty-print.cc (vrange_printer::print_real_value):
+	Avoid printing INF and NAN twice.
+
 2022-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md (wD): Delete.

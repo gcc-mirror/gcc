@@ -1,3 +1,57 @@
+2022-10-06  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (expand_one_await_expression): Change conversion
+	to VIEW_CONVERT_EXPR.
+	* cp-gimplify.cc (cp_genericize_r) [CONVERT_EXPR]: Add assert.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.cc (init_reswords): Handle D_EXT11.
+
+2022-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (optimize_specialization_lookup_p): Remove.
+	(retrieve_specialization): Assume the above returns false
+	and simplify accordingly.
+	(register_specialization): Likewise.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* cp-tree.h (process_stmt_assume_attribute): Implement C++23
+	P1774R8 - Portable assumptions.  Declare.
+	(diagnose_failing_condition): Declare.
+	(find_failing_clause): Likewise.
+	* parser.cc (assume_attr): New enumerator.
+	(cp_parser_parenthesized_expression_list): Handle assume_attr.
+	Remove identifier variable, for id_attr push the identifier into
+	expression_list right away instead of inserting it before all the
+	others at the end.
+	(cp_parser_conditional_expression): New function.
+	(cp_parser_constant_expression): Use it.
+	(cp_parser_statement): Handle assume attribute.
+	(cp_parser_expression_statement): Likewise.
+	(cp_parser_gnu_attribute_list): Use assume_attr for assume
+	attribute.
+	(cp_parser_std_attribute): Likewise.  Handle standard assume
+	attribute like gnu::assume.
+	* cp-gimplify.cc (process_stmt_assume_attribute): New function.
+	* constexpr.cc: Include fold-const.h.
+	(find_failing_clause_r, find_failing_clause): New functions,
+	moved from semantics.cc with ctx argument added and if non-NULL,
+	call cxx_eval_constant_expression rather than fold_non_dependent_expr.
+	(cxx_eval_internal_function): Handle IFN_ASSUME.
+	(potential_constant_expression_1): Likewise.
+	* pt.cc (tsubst_copy_and_build): Likewise.
+	* semantics.cc (diagnose_failing_condition): New function.
+	(find_failing_clause_r, find_failing_clause): Moved to constexpr.cc.
+	(finish_static_assert): Use it.  Add auto_diagnostic_group.
+
 2022-10-05  Jason Merrill  <jason@redhat.com>
 
 	* tree.cc (lvalue_kind) [VIEW_CONVERT_EXPR]: Change prvalue to

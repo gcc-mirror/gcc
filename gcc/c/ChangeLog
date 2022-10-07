@@ -1,3 +1,35 @@
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parse_init): Add D_EXT11 to mask if flag_no_asm
+	and not C2x.
+	(c_keyword_starts_typename, c_token_starts_declspecs)
+	(c_parser_declspecs, c_parser_objc_selector): Handle
+	RID_TYPEOF_UNQUAL.
+	(c_parser_typeof_specifier): Handle RID_TYPEOF_UNQUAL.
+	Distinguish typeof for C2x from __typeof__ for all standard
+	versions and typeof before C2x.
+	* c-typeck.cc (build_function_call_vec): Use unqualified version
+	of non-void return type.
+	(build_unary_op): Use unqualified type for increment and
+	decrement.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-parser.cc (handle_assume_attribute): New function.
+	(c_parser_declaration_or_fndef): Handle assume attribute.
+	(c_parser_attribute_arguments): Add assume_attr argument,
+	if true, parse first argument as conditional expression.
+	(c_parser_gnu_attribute, c_parser_std_attribute): Adjust
+	c_parser_attribute_arguments callers.
+	(c_parser_statement_after_labels) <case RID_ATTRIBUTE>: Handle
+	assume attribute.
+
 2022-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lang.h (struct c_omp_declare_target_attr): New type.
