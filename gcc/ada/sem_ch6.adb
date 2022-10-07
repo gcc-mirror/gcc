@@ -10711,13 +10711,13 @@ package body Sem_Ch6 is
          E : Entity_Id;
 
       begin
-         E := First_Entity (Prim);
+         E := First_Formal (Prim);
          while Present (E) loop
-            if Is_Formal (E) and then Is_Controlling_Formal (E) then
+            if Is_Controlling_Formal (E) then
                return E;
             end if;
 
-            Next_Entity (E);
+            Next_Formal (E);
          end loop;
 
          return Empty;
