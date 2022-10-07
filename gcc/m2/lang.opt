@@ -198,10 +198,6 @@ fm2-strict-type
 Modula-2
 experimental flag to turn on the new strict type checker
 
-fm2-version
-Modula-2
-display the GNU Modula-2 version
-
 fm2-whole-program
 Modula-2
 compile all implementation modules and program module at once
@@ -350,10 +346,6 @@ Modula-2
 ; Documented in c.opt
 
 v
-Modula-2
-; Documented in c.opt
-
-version
 Modula-2
 ; Documented in c.opt
 

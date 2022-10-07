@@ -32,7 +32,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "opts.h"
 #include "vec.h"
 
-#include "m2/gm2version.h"
 #include "m2/gm2config.h"
 
 #ifdef HAVE_DIRENT_H
@@ -669,12 +668,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  break;
 	case OPT_fmod_:
 	  seen_module_extension = true;
-	  break;
-	case OPT_version:
-	  gm2_version (true);
-	  break;
-	case OPT_fm2_version:
-	  gm2_version (false);
 	  break;
         case OPT_fpthread:
           need_pthread = decoded_options[i].value;

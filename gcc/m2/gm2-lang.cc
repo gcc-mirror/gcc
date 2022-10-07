@@ -34,7 +34,6 @@ Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "m2block.h"
 #include "dynamicstrings.h"
 #include "m2options.h"
-#include "gm2version.h"
 #include "m2convert.h"
 #include "m2linemap.h"
 #include "init.h"
@@ -384,12 +383,6 @@ gm2_langhook_handle_option (
       return 1;
     case OPT_fm2_g:
       M2Options_SetM2g (value);
-      return 1;
-    case OPT_version:
-      M2Options_DisplayVersion (FALSE);
-      return 1;
-    case OPT_fm2_version:
-      M2Options_DisplayVersion (FALSE);
       return 1;
     case OPT_O:
       M2Options_SetOptimizing (value);

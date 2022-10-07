@@ -25,7 +25,6 @@ IMPLEMENTATION MODULE M2Options ;
 IMPORT CmdArgs ;
 FROM SArgs IMPORT GetArg, Narg ;
 FROM M2Search IMPORT PrependSearchPath, SetDefExtension, SetModExtension ;
-FROM M2Version IMPORT GetGM2Version, GetGM2Date, GetGCCVersion, GetYear ;
 FROM M2Printf IMPORT printf0, printf1 ;
 FROM libc IMPORT exit ;
 FROM Debug IMPORT Halt ;
@@ -129,32 +128,6 @@ PROCEDURE GetB () : ADDRESS ;
 BEGIN
    RETURN string (Barg)
 END GetB ;
-
-
-(*
-   DisplayVersion - displays the version of the compiler.
-*)
-
-PROCEDURE DisplayVersion (mustExit: BOOLEAN) ;
-VAR
-   s: String ;
-BEGIN
-   s := Mark(GetGM2Version()) ;
-   printf1('GNU Modula-2  %s', s) ;
-   s := Mark(GetGM2Date()) ;
-   printf1('  (%s)\n', s) ;
-   s := Mark(GetGCCVersion()) ;
-   printf1('  grafted onto GCC %s\n', s) ;
-   s := Mark(GetYear()) ;
-   printf1('Copyright (C) %s Free Software Foundation, Inc.\n', s) ;
-   printf0('License GPLv2: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n') ;
-   printf0('This is free software: you are free to change and redistribute it.\n') ;
-   printf0('There is NO WARRANTY, to the extent permitted by law.\n') ;
-   IF mustExit
-   THEN
-      exit(0)
-   END
-END DisplayVersion ;
 
 
 (*

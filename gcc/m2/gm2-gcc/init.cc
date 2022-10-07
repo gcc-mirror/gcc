@@ -85,7 +85,6 @@ EXTERN void _M2_M2Pass_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Code_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2AsmUtil_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2FileName_init (int argc, char *argv[], char *envp[]);
-EXTERN void _M2_M2Version_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Students_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_StrCase_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_SymbolConversion_init (int argc, char *argv[], char *envp[]);
@@ -182,7 +181,6 @@ init_PerCompilationInit (const char *filename)
   _M2_M2Code_init (0, NULL, NULL);
   _M2_M2AsmUtil_init (0, NULL, NULL);
   _M2_M2FileName_init (0, NULL, NULL);
-  _M2_M2Version_init (0, NULL, NULL);
   _M2_M2Students_init (0, NULL, NULL);
   _M2_StrCase_init (0, NULL, NULL);
   _M2_SymbolConversion_init (0, NULL, NULL);

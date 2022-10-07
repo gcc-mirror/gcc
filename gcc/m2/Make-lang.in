@@ -40,8 +40,7 @@ TEXISRC = $(objdir)/m2/images/gnu.eps \
           m2/gm2-ebnf.texi \
           m2/SYSTEM-pim.texi \
           m2/SYSTEM-iso.texi \
-          m2/Builtins.texi \
-          m2/version.texi
+          m2/Builtins.texi
 
 # Define the names for selecting modula-2 in LANGUAGES.
 m2 modula-2 modula2: gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext) \
@@ -71,24 +70,10 @@ m2/gm2spec.o: $(srcdir)/m2/gm2spec.cc $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
                 -DPREFIX=\"$(prefix)\" \
                 -c $(srcdir)/m2/gm2spec.cc $(OUTPUT_OPTION))
 
-m2/gm2version.c: gm2version-check; @true
-
-gm2version-check:
-	$(SHELL) $(srcdir)/m2/tools-src/makeversion -p $(srcdir) m2
-	$(STAMP) gm2version-check
-
-gm2version.o: m2/gm2version.c
-	(SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
-		-DLIBSUBDIR=\"$(libsubdir)\" \
-		$(INCLUDES) m2/gm2version.c $(OUTPUT_OPTION))
-
 # Create the compiler driver for M2.
 CFLAGS-m2/m2/gm2spec.o += $(DRIVER_DEFINES)
 
-GM2_OBJS = $(GCC_OBJS) m2/gm2version.o \
-    prefix.o intl.o m2/gm2spec.o
+GM2_OBJS = $(GCC_OBJS) prefix.o intl.o m2/gm2spec.o
 
 # Create the compiler driver for gm2.
 gm2$(exeext): $(GM2_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS) \
@@ -181,12 +166,6 @@ m2/Builtins.texi:  Builtins.texi-check; @true
 Builtins.texi-check:  m2/gm2-libs/Builtins.def
 	python3 $(srcdir)/m2/tools-src/def2texi.py -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def > $(objdir)/m2/Builtins.texi
 	$(STAMP) Builtins.texi-check
-
-m2/version.texi: gm2-version.texi-check; @true
-
-gm2-version.texi-check:
-	$(SHELL) $(srcdir)/m2/tools-src/makeversion -t $(srcdir) m2
-	$(STAMP) gm2-version.texi-check
 
 $(objdir)/m2/gm2-compiler-boot:
 	test -d $@ || mkdir $@
@@ -669,7 +648,6 @@ GM2-COMP-BOOT-DEFS = \
    M2Students.def \
    M2Swig.def \
    M2System.def \
-   M2Version.def \
    NameKey.def \
    ObjectFiles.def \
    Output.def \
@@ -944,7 +922,6 @@ GM2-COMP-DEFS = \
    M2Students.def \
    M2Swig.def \
    M2System.def \
-   M2Version.def \
    NameKey.def \
    ObjectFiles.def \
    P0SymBuild.def \
@@ -1057,8 +1034,7 @@ BUILD-COMPILER-BOOT = $(BUILD-COMPILER-BOOT-H) \
                       $(GM2-COMP-BOOT-DEFS:%.def=m2/gm2-compiler-boot/$(SRC_PREFIX)%.h) \
                       $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler-boot/%.o) \
                       $(GM2-COMP-BOOT-MODS:%.mod=m2/gm2-compiler-boot/%.o) \
-                      m2/gm2-compiler-boot/m2flex.o \
-                      m2/gm2-compiler-boot/M2Version.o
+                      m2/gm2-compiler-boot/m2flex.o
 
 BUILD-BOOT-H = m2/boot-bin/mc$(exeext) \
                $(BUILD-LIBS-BOOT-H) $(BUILD-COMPILER-BOOT-H) $(TARGET_H) $(PLUGIN_HEADERS)
@@ -1385,16 +1361,6 @@ m2/gm2-compiler/m2flex.c: $(srcdir)/m2/m2.flex $(TIMEVAR_H) insn-attr-common.h
 m2/gm2-libiberty/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libiberty/%.def $(MCDEPS)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-libiberty/$*.def
 
-m2/gm2-compiler-boot/M2Version.o: m2/gm2-compiler-boot/M2Version.mod $(MCDEPS) $(BUILD-BOOT-H)
-	$(MC) -o=m2/gm2-compiler-boot/M2Version.c $<
-	$(COMPILER) -c $(ALL_CPPFLAGS) $(GM2GCC) -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -Im2/gm2-libiberty $(INCLUDES) m2/gm2-compiler-boot/M2Version.c -o $@
-
-m2/gm2-compiler-boot/M2Version.mod: M2Version-check; @true
-
-M2Version-check:
-	$(SHELL) $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler-boot
-	$(STAMP) M2Version-check
-
 # The rules to build objects in gm2-compiler and gm2-libs directories.
 
 m2/gm2-compiler/%.o: $(srcdir)/m2/gm2-compiler/%.mod
@@ -1406,9 +1372,6 @@ m2/gm2-compiler/m2flex.o: m2/gm2-compiler/m2flex.c m2/gm2-libs/gm2-libs-host.h $
 
 m2/gm2-compiler/%.o: m2/gm2-compiler/%.mod
 	$(GM2_1) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
-
-m2/gm2-compiler/M2Version.mod:
-	$(SHELL) $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler
 
 m2/gm2-libs-iso/%.o: $(srcdir)/m2/gm2-libs-iso/%.c m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -DBUILD_GM2_LIBS_TARGET -DBUILD_GM2_LIBS -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
@@ -1483,12 +1446,10 @@ $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
 
 build-compiler: $(GM2-COMP-MODS:%.mod=m2/gm2-compiler/%.o) \
                 $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler/%.o) \
-                m2/gm2-compiler/M2Version.o \
                 m2/gm2-compiler/m2flex.o
 
 m2/gm2-compiler/gm2.a: build-compiler gm2$(exeext)
 	$(AR_FOR_TARGET) cr $@ $(GM2-COMP-MODS:%.mod=m2/gm2-compiler/%.o) \
-                    m2/gm2-compiler/M2Version.o \
                     $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler/%.o)
 	$(RANLIB) $@
 
@@ -1501,8 +1462,7 @@ m2/gm2-libs-boot/libgm2.a: m2/boot-bin/mc$(exeext) $(BUILD-LIBS-BOOT)
 m2/gm2-compiler-boot/gm2.a: m2/boot-bin/mc$(exeext) m2/boot-bin/mklink$(exeext) \
                          $(BUILD-LIBS-BOOT) $(BUILD-COMPILER-BOOT)
 	$(AR) cr $@ $(GM2-COMP-BOOT-MODS:%.mod=m2/gm2-compiler-boot/%.o) \
-                    $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler-boot/%.o) \
-                    m2/gm2-compiler-boot/M2Version.o
+                    $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler-boot/%.o)
 	$(RANLIB) $@
 
 m2/gm2-compiler-boot/gm2.a: m2/boot-bin/mc$(exeext)

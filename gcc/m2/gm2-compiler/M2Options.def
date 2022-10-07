@@ -43,7 +43,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetStyle, SetPedantic, SetPedanticParamNames, SetPedanticCast,
                  SetExtendedOpaque, SetXCode, SetQuadDebugging, SetSources,
                  SetDumpSystemExports,
-                 SetSwig, DisplayVersion, SetOptimizing, SetForcedLocation,
+                 SetSwig, SetOptimizing, SetForcedLocation,
                  SetCC1Quiet, SetWholeProgram, SetDebugTraceQuad, SetDebugTraceAPI,
                  SetVerbose, SetM2g, GetM2g,
 		 GetISO, GetPIM, GetPIM2, GetPIM3, GetPIM4,
@@ -173,13 +173,6 @@ VAR
    Optimizing,
    Coding,
    Profiling               : BOOLEAN ;
-
-
-(*
-   DisplayVersion - displays the version of the compiler.
-*)
-
-PROCEDURE DisplayVersion (mustExit: BOOLEAN) ;
 
 
 (*
