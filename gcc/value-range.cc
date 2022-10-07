@@ -935,7 +935,7 @@ irange::irange_set (tree min, tree max)
   m_base[1] = max;
   m_num_ranges = 1;
   m_kind = VR_RANGE;
-  m_nonzero_mask = wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (min)));
+  m_nonzero_mask = NULL;
   normalize_kind ();
 
   if (flag_checking)
@@ -1009,7 +1009,7 @@ irange::irange_set_anti_range (tree min, tree max)
     }
 
   m_kind = VR_RANGE;
-  m_nonzero_mask = wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (min)));
+  m_nonzero_mask = NULL;
   normalize_kind ();
 
   if (flag_checking)
@@ -1066,7 +1066,7 @@ irange::set (tree min, tree max, value_range_kind kind)
       m_base[0] = min;
       m_base[1] = max;
       m_num_ranges = 1;
-      m_nonzero_mask = wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (min)));
+      m_nonzero_mask = NULL;
       return;
     }
 
@@ -1116,7 +1116,7 @@ irange::set (tree min, tree max, value_range_kind kind)
   m_base[0] = min;
   m_base[1] = max;
   m_num_ranges = 1;
-  m_nonzero_mask = wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (min)));
+  m_nonzero_mask = NULL;
   normalize_kind ();
   if (flag_checking)
     verify_range ();
@@ -1135,7 +1135,8 @@ irange::verify_range ()
     }
   if (m_kind == VR_VARYING)
     {
-      gcc_checking_assert (m_nonzero_mask == -1);
+      gcc_checking_assert (!m_nonzero_mask
+			   || wi::to_wide (m_nonzero_mask) == -1);
       gcc_checking_assert (m_num_ranges == 1);
       gcc_checking_assert (varying_compatible_p ());
       return;
@@ -1409,10 +1410,10 @@ irange::contains_p (tree cst) const
   gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
 
   // See if we can exclude CST based on the nonzero bits.
-  if (m_nonzero_mask != -1)
+  if (m_nonzero_mask)
     {
       wide_int cstw = wi::to_wide (cst);
-      if (cstw != 0 && wi::bit_and (m_nonzero_mask, cstw) == 0)
+      if (cstw != 0 && wi::bit_and (wi::to_wide (m_nonzero_mask), cstw) == 0)
 	return false;
     }
 
@@ -2776,7 +2777,7 @@ irange::invert ()
   signop sign = TYPE_SIGN (ttype);
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
-  m_nonzero_mask = wi::shwi (-1, prec);
+  m_nonzero_mask = NULL;
   if (m_num_ranges == m_max_ranges
       && lower_bound () != type_min
       && upper_bound () != type_max)
@@ -2878,20 +2879,22 @@ bool
 irange::set_range_from_nonzero_bits ()
 {
   gcc_checking_assert (!undefined_p ());
-  unsigned popcount = wi::popcount (m_nonzero_mask);
+  if (!m_nonzero_mask)
+    return false;
+  unsigned popcount = wi::popcount (wi::to_wide (m_nonzero_mask));
 
   // If we have only one bit set in the mask, we can figure out the
   // range immediately.
   if (popcount == 1)
     {
       // Make sure we don't pessimize the range.
-      if (!contains_p (wide_int_to_tree (type (), m_nonzero_mask)))
+      if (!contains_p (m_nonzero_mask))
 	return false;
 
       bool has_zero = contains_p (build_zero_cst (type ()));
-      wide_int bits = m_nonzero_mask;
-      set (type (), bits, bits);
-      m_nonzero_mask = bits;
+      tree nz = m_nonzero_mask;
+      set (nz, nz);
+      m_nonzero_mask = nz;
       if (has_zero)
 	{
 	  int_range<2> zero;
@@ -2909,11 +2912,21 @@ irange::set_nonzero_bits (const wide_int_ref &bits)
   gcc_checking_assert (!undefined_p ());
   unsigned prec = TYPE_PRECISION (type ());
 
+  if (bits == -1)
+    {
+      m_nonzero_mask = NULL;
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return;
+    }
+
   // Drop VARYINGs with a nonzero mask to a plain range.
   if (m_kind == VR_VARYING && bits != -1)
     m_kind = VR_RANGE;
 
-  m_nonzero_mask = wide_int::from (bits, prec, TYPE_SIGN (type ()));
+  wide_int nz = wide_int::from (bits, prec, TYPE_SIGN (type ()));
+  m_nonzero_mask = wide_int_to_tree (type (), nz);
   if (set_range_from_nonzero_bits ())
     return;
 
@@ -2937,7 +2950,21 @@ irange::get_nonzero_bits () const
   // the mask precisely up to date at all times.  Instead, we default
   // to -1 and set it when explicitly requested.  However, this
   // function will always return the correct mask.
-  return m_nonzero_mask & get_nonzero_bits_from_range ();
+  if (m_nonzero_mask)
+    return wi::to_wide (m_nonzero_mask) & get_nonzero_bits_from_range ();
+  else
+    return get_nonzero_bits_from_range ();
+}
+
+// Convert tree mask to wide_int.  Returns -1 for NULL masks.
+
+inline wide_int
+mask_to_wi (tree mask, tree type)
+{
+  if (mask)
+    return wi::to_wide (mask);
+  else
+    return wi::shwi (-1, TYPE_PRECISION (type));
 }
 
 // Intersect the nonzero bits in R into THIS and normalize the range.
@@ -2948,10 +2975,20 @@ irange::intersect_nonzero_bits (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  bool changed = false;
-  if (m_nonzero_mask != r.m_nonzero_mask)
+  if (!m_nonzero_mask && !r.m_nonzero_mask)
     {
-      m_nonzero_mask = get_nonzero_bits () & r.get_nonzero_bits ();
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return false;
+    }
+
+  bool changed = false;
+  tree t = type ();
+  if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
+    {
+      wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
+      m_nonzero_mask = wide_int_to_tree (t, nz);
       if (set_range_from_nonzero_bits ())
 	return true;
       changed = true;
@@ -2970,10 +3007,20 @@ irange::union_nonzero_bits (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  bool changed = false;
-  if (m_nonzero_mask != r.m_nonzero_mask)
+  if (!m_nonzero_mask && !r.m_nonzero_mask)
     {
-      m_nonzero_mask = get_nonzero_bits () | r.get_nonzero_bits ();
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return false;
+    }
+
+  bool changed = false;
+  tree t = type ();
+  if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
+    {
+      wide_int nz = get_nonzero_bits () | r.get_nonzero_bits ();
+      m_nonzero_mask = wide_int_to_tree (t, nz);
       // No need to call set_range_from_nonzero_bits, because we'll
       // never narrow the range.  Besides, it would cause endless
       // recursion because of the union_ in
