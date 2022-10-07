@@ -53,6 +53,7 @@ through the macros defined in the @file{.h} file.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
 * D Language and ABI::  Controlling D ABI changes.
+* Rust Language and ABI:: Controlling Rust ABI changes.
 * Named Address Spaces:: Adding support for named address spaces
 * Misc::                Everything else.
 @end menu
@@ -114,6 +115,14 @@ This is declared in @file{d/d-target.h}, the initializer
 initialize @code{targetdm} themselves, they should set
 @code{target_has_targetdm=yes} in @file{config.gcc}; otherwise a default
 definition is used.
+
+Similarly, there is a @code{targetrustm} variable for hooks that are
+specific to the Rust language front end, documented as ``Rust Target
+Hook''.  This is declared in @file{rust/rust-target.h}, the initializer
+@code{TARGETRUSTM_INITIALIZER} in @file{rust/rust-target-def.h}.
+If targets initialize @code{targetrustm} themselves, they should set
+@code{target_has_targetrustm=yes} in @file{config.gcc}; otherwise a
+default definition is used.
 
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
@@ -10873,6 +10882,23 @@ This flag is true if instantiated functions and variables are always COMDAT
 if they have external linkage.  If this flag is false, then instantiated
 decls will be emitted as weak symbols.  The default is @code{false}.
 @end deftypevr
+
+@node Rust Language and ABI
+@section Rust ABI parameters
+@cindex parameters, rust abi
+
+@deftypefn {Rust Target Hook} void TARGET_RUST_CPU_INFO (void)
+Declare all environmental CPU info and features relating to the target CPU
+using the function @code{rust_add_target_info}, which takes a string
+representing the feature key and a string representing the feature value.
+Configuration pairs predefined by this hook apply to all files that are being
+compiled.
+@end deftypefn
+
+@deftypefn {Rust Target Hook} void TARGET_RUST_OS_INFO (void)
+Similar to @code{TARGET_RUST_CPU_INFO}, but is used for configuration info
+relating to the target operating system.
+@end deftypefn
 
 @node Named Address Spaces
 @section Adding support for named address spaces
