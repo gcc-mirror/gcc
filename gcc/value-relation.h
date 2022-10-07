@@ -100,9 +100,6 @@ public:
   // register a relation between 2 ssa names on an edge.
   void register_edge (edge, relation_kind, tree, tree);
 
-  // Return equivalency set for an SSA name in a basic block.
-  virtual const_bitmap equiv_set (tree, basic_block) = 0;
-  virtual const class pe_slice *partial_equiv_set (tree) { return NULL; }
   // register a relation between 2 ssa names in a basic block.
   virtual void register_relation (basic_block, relation_kind, tree, tree) = 0;
   // Query for a relation between two ssa names in a basic block.
@@ -115,6 +112,11 @@ public:
   virtual void dump (FILE *) const = 0;
   void debug () const;
 protected:
+  friend class equiv_relation_iterator;
+  // Return equivalency set for an SSA name in a basic block.
+  virtual const_bitmap equiv_set (tree, basic_block) = 0;
+  // Return partial equivalency record for an SSA name.
+  virtual const class pe_slice *partial_equiv_set (tree) { return NULL; }
   void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
   // Query for a relation between two equivalency sets in a basic block.
   virtual relation_kind query_relation (basic_block, const_bitmap,
@@ -280,6 +282,39 @@ private:
   bitmap_obstack m_bitmaps;
   struct obstack m_chain_obstack;
 };
+
+// Used to assist with iterating over the equivalence list.
+class equiv_relation_iterator {
+public:
+  equiv_relation_iterator (relation_oracle *oracle, basic_block bb, tree name,
+			   bool full = true, bool partial = false);
+  void next ();
+  tree get_name (relation_kind *rel = NULL);
+protected:
+  relation_oracle *m_oracle;
+  const_bitmap m_bm;
+  const pe_slice *m_pe;
+  bitmap_iterator m_bi;
+  unsigned m_y;
+  tree m_name;
+};
+
+#define FOR_EACH_EQUIVALENCE(oracle, bb, name, equiv_name)		\
+  for (equiv_relation_iterator iter (oracle, bb, name, true, false);	\
+       ((equiv_name) = iter.get_name ());				\
+       iter.next ())
+
+#define FOR_EACH_PARTIAL_EQUIV(oracle, bb, name, equiv_name, equiv_rel)	\
+  for (equiv_relation_iterator iter (oracle, bb, name, false, true);	\
+       ((equiv_name) = iter.get_name (&equiv_rel));			\
+       iter.next ())
+
+#define FOR_EACH_PARTIAL_AND_FULL_EQUIV(oracle, bb, name, equiv_name, 	\
+						      equiv_rel)	\
+  for (equiv_relation_iterator iter (oracle, bb, name, true, true);	\
+       ((equiv_name) = iter.get_name (&equiv_rel));			\
+       iter.next ())
+
 
 // The value-relation class is used to encapsulate the represention of an
 // individual relation between 2 ssa-names, and to facilitate operating on

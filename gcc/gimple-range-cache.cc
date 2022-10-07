@@ -1220,15 +1220,9 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       // See if any equivalences can refine it.
       if (m_oracle)
 	{
-	  unsigned i;
-	  bitmap_iterator bi;
-	  // Query equivalences in read-only mode.
-	  const_bitmap equiv = m_oracle->equiv_set (name, bb);
-	  EXECUTE_IF_SET_IN_BITMAP (equiv, 0, i, bi)
+	  tree equiv_name;
+	  FOR_EACH_EQUIVALENCE (m_oracle, bb, name, equiv_name)
 	    {
-	      if (i == SSA_NAME_VERSION (name))
-		continue;
-	      tree equiv_name = ssa_name (i);
 	      basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
 
 	      // Check if the equiv has any ranges calculated.

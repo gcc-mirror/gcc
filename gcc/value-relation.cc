@@ -1641,3 +1641,81 @@ path_oracle::dump (FILE *f) const
       fprintf (f, "\n");
     }
 }
+
+// ------------------------------------------------------------------------
+//  EQUIV iterator.  Although we have bitmap iterators, don't expose that it
+//  is currently a bitmap.  Use an export iterator to hide future changes.
+
+// Construct a basic iterator over an equivalence bitmap.
+
+equiv_relation_iterator::equiv_relation_iterator (relation_oracle *oracle,
+						  basic_block bb, tree name,
+						  bool full, bool partial)
+{
+  m_name = name;
+  m_oracle = oracle;
+  m_pe = partial ? oracle->partial_equiv_set (name) : NULL;
+  m_bm = NULL;
+  if (full)
+    m_bm = oracle->equiv_set (name, bb);
+  if (!m_bm && m_pe)
+    m_bm = m_pe->members;
+  if (m_bm)
+    bmp_iter_set_init (&m_bi, m_bm, 1, &m_y);
+}
+
+// Move to the next export bitmap spot.
+
+void
+equiv_relation_iterator::next ()
+{
+  bmp_iter_next (&m_bi, &m_y);
+}
+
+// Fetch the name of the next export in the export list.  Return NULL if
+// iteration is done.
+
+tree
+equiv_relation_iterator::get_name (relation_kind *rel)
+{
+  if (!m_bm)
+    return NULL_TREE;
+
+  while (bmp_iter_set (&m_bi, &m_y))
+    {
+      // Do not return self.
+      tree t = ssa_name (m_y);
+      if (t && t != m_name)
+	{
+	  relation_kind k = VREL_EQ;
+	  if (m_pe && m_bm == m_pe->members)
+	    {
+	      const pe_slice *equiv_pe = m_oracle->partial_equiv_set (t);
+	      if (equiv_pe && equiv_pe->members == m_pe->members)
+		k = pe_min (m_pe->code, equiv_pe->code);
+	      else
+		k = VREL_VARYING;
+	    }
+	  if (relation_equiv_p (k))
+	    {
+	      if (rel)
+		*rel = k;
+	      return t;
+	    }
+	}
+      next ();
+    }
+
+  // Process partial equivs after full equivs if both were requested.
+  if (m_pe && m_bm != m_pe->members)
+    {
+      m_bm = m_pe->members;
+      if (m_bm)
+	{
+	  // Recursively call back to process First PE.
+	  bmp_iter_set_init (&m_bi, m_bm, 1, &m_y);
+	  return get_name (rel);
+	}
+    }
+  return NULL_TREE;
+}
