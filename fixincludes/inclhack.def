@@ -2131,6 +2131,23 @@ fix = {
 	EOT;
 };
 
+fix = {
+    hackname  = glibc_cxx_floatn_5;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"([ \t]*#[ \t]+error \"_Float128[xX] supported but no )";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   error "_Float128X supported but no constant suffix"
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   error "_Float128x supported but no type"
+	#  endif
+	EOT;
+};
+
 /*  glibc-2.3.5 defines pthread mutex initializers incorrectly,
  *  so we replace them with versions that correspond to the
  *  definition.

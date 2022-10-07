@@ -84,3 +84,13 @@ typedef long double _Float128;
 #   define __CFLOAT128 _Complex long double
 #  endif
 #endif  /* GLIBC_CXX_FLOATN_4_CHECK */
+
+
+#if defined( GLIBC_CXX_FLOATN_5_CHECK )
+#  if !__GNUC_PREREQ (7, 0) || (defined __cplusplus && !__GNUC_PREREQ (13, 0))
+#   error "_Float128X supported but no constant suffix"
+#  endif
+#  if !__GNUC_PREREQ (7, 0) || (defined __cplusplus && !__GNUC_PREREQ (13, 0))
+#   error "_Float128x supported but no type"
+#  endif
+#endif  /* GLIBC_CXX_FLOATN_5_CHECK */
