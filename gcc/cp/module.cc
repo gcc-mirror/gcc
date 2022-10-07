@@ -11919,7 +11919,11 @@ trees_out::mark_class_def (tree defn)
 	mark_class_member (member);
 	if (TREE_CODE (member) == FIELD_DECL)
 	  if (tree repr = DECL_BIT_FIELD_REPRESENTATIVE (member))
-	    mark_declaration (repr, false);
+	    /* If we're marking a class template definition, then
+	       this'll contain the width (as set by grokbitfield)
+	       instead of a decl.  */
+	    if (DECL_P (repr))
+	      mark_declaration (repr, false);
       }
 
   /* Mark the binfo hierarchy.  */
