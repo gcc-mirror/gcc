@@ -141,6 +141,39 @@ Dump::emit_indented_string (const std::string &value,
 }
 
 void
+Dump::emit_generic_params (std::vector<std::unique_ptr<GenericParam>> &params)
+{
+  stream << "<";
+  for (size_t i = 0; i < params.size (); i++)
+    {
+      auto &param = params.at (i);
+      param->accept_vis (*this);
+
+      bool has_next = (i + 1) < params.size ();
+      if (has_next)
+	stream << ", ";
+    }
+  stream << ">";
+}
+
+void
+Dump::format_tuple_field (TupleField &field)
+{
+  // TODO: do we need to emit outer attrs here?
+  emit_visibility (field.get_visibility ());
+  field.get_field_type ()->accept_vis (*this);
+}
+
+void
+Dump::format_struct_field (StructField &field)
+{
+  // TODO: do we need to emit outer attrs here?
+  emit_visibility (field.get_visibility ());
+  stream << field.get_field_name () << ": ";
+  field.get_field_type ()->accept_vis (*this);
+}
+
+void
 Dump::visit (Token &tok)
 {}
 
@@ -679,19 +712,7 @@ Dump::visit (Function &function)
   stream << "fn " << function.get_function_name ();
 
   if (function.has_generics ())
-    {
-      stream << "<";
-      for (size_t i = 0; i < function.get_generic_params ().size (); i++)
-	{
-	  auto &param = function.get_generic_params ().at (i);
-	  param->accept_vis (*this);
-
-	  bool has_next = (i + 1) < function.get_generic_params ().size ();
-	  if (has_next)
-	    stream << ", ";
-	}
-      stream << ">";
-    }
+    emit_generic_params (function.get_generic_params ());
 
   stream << '(';
   auto &params = function.get_function_params ();
@@ -729,35 +750,154 @@ Dump::visit (TypeAlias &type_alias)
 
 void
 Dump::visit (StructStruct &struct_item)
-{}
+{
+  stream << "struct " << struct_item.get_identifier ();
+  if (struct_item.has_generics ())
+    emit_generic_params (struct_item.get_generic_params ());
+
+  // FIXME: where-clause
+
+  stream << " {";
+
+  auto &fields = struct_item.get_fields ();
+
+  indentation.increment ();
+  for (auto &field : fields)
+    {
+      stream << '\n' << indentation;
+      format_struct_field (field);
+      stream << ',';
+    }
+  indentation.decrement ();
+
+  if (fields.size () > 0)
+    stream << '\n' << indentation;
+  stream << "}\n";
+}
 
 void
 Dump::visit (TupleStruct &tuple_struct)
-{}
+{
+  stream << "struct " << tuple_struct.get_identifier ();
+  if (tuple_struct.has_generics ())
+    emit_generic_params (tuple_struct.get_generic_params ());
+
+  // FIXME: where-clause
+
+  stream << '(';
+
+  auto &fields = tuple_struct.get_fields ();
+  if (fields.size () >= 1)
+    {
+      format_tuple_field (fields[0]);
+      for (size_t i = 1; i < fields.size (); i++)
+	{
+	  stream << ", ";
+	  format_tuple_field (fields[i]);
+	}
+    }
+  stream << ");\n";
+}
 
 void
 Dump::visit (EnumItem &item)
-{}
+{
+  stream << item.get_identifier ();
+}
 
 void
 Dump::visit (EnumItemTuple &item)
-{}
+{
+  stream << item.get_identifier () << '(';
+  auto &fields = item.get_tuple_fields ();
+  if (fields.size () >= 1)
+    {
+      format_tuple_field (fields[0]);
+      for (size_t i = 1; i < fields.size (); i++)
+	{
+	  stream << ", ";
+	  format_tuple_field (fields[i]);
+	}
+    }
+  stream << ')';
+}
 
 void
 Dump::visit (EnumItemStruct &item)
-{}
+{
+  stream << item.get_identifier () << " {";
+
+  auto &fields = item.get_struct_fields ();
+
+  indentation.increment ();
+  for (auto &field : fields)
+    {
+      stream << '\n' << indentation;
+      format_struct_field (field);
+      stream << ',';
+    }
+  indentation.decrement ();
+
+  if (fields.size () > 0)
+    stream << '\n' << indentation;
+  stream << '}';
+}
 
 void
 Dump::visit (EnumItemDiscriminant &item)
-{}
+{
+  stream << item.get_identifier () << " = ";
+  item.get_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (Enum &enum_item)
-{}
+{
+  stream << "enum " << enum_item.get_identifier ();
+  if (enum_item.has_generics ())
+    emit_generic_params (enum_item.get_generic_params ());
+
+  // FIXME: where-clause
+
+  stream << " {";
+  auto &variants = enum_item.get_variants ();
+  if (variants.size () >= 1)
+    {
+      stream << '\n';
+      indentation.increment ();
+      for (auto &var : variants)
+	{
+	  stream << indentation;
+	  var->accept_vis (*this);
+	  stream << ",\n";
+	}
+      indentation.decrement ();
+    }
+
+  stream << "}\n";
+}
 
 void
 Dump::visit (Union &union_item)
-{}
+{
+  stream << "union " << union_item.get_identifier ();
+  if (union_item.has_generics ())
+    emit_generic_params (union_item.get_generic_params ());
+
+  // FIXME: where-clause
+
+  stream << " {";
+  indentation.increment ();
+  for (auto &field : union_item.get_variants ())
+    {
+      stream << '\n' << indentation;
+      format_struct_field (field);
+      stream << ',';
+    }
+  indentation.decrement ();
+
+  stream << '\n' << indentation << "}\n";
+}
 
 void
 Dump::visit (ConstantItem &const_item)
