@@ -1308,7 +1308,7 @@ package body Exp_Disp is
          --  When the target type is an interface type that is an ancestor of
          --  the operand type, it is generally safe to skip generating code to
          --  displace the pointer to the object to reference the secondary
-         --  dispatch table of the target interface type. Two scenaries are
+         --  dispatch table of the target interface type. Two scenarios are
          --  possible here:
          --    1) The operand type is a regular tagged type
          --    2) The operand type is an interface type
