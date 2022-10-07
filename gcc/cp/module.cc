@@ -3469,6 +3469,20 @@ enum streamed_extensions {
   SE_BITS = 1
 };
 
+/* Counter indices.  */
+enum module_state_counts
+{
+  MSC_sec_lwm,
+  MSC_sec_hwm,
+  MSC_pendings,
+  MSC_entities,
+  MSC_namespaces,
+  MSC_bindings,
+  MSC_macros,
+  MSC_inits,
+  MSC_HWM
+};
+
 /********************************************************************/
 struct module_state_config;
 
@@ -3666,8 +3680,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
   bool read_config (struct module_state_config &);
-  static void write_counts (elf_out *to, unsigned [], unsigned *crc_ptr);
-  bool read_counts (unsigned []);
+  static void write_counts (elf_out *to, unsigned [MSC_HWM], unsigned *crc_ptr);
+  bool read_counts (unsigned *);
 
  public:
   void note_cmi_name ();
@@ -14540,20 +14554,6 @@ module_state::read_partitions (unsigned count)
     return false;
   return true;
 }
-
-/* Counter indices.  */
-enum module_state_counts
-{
-  MSC_sec_lwm,
-  MSC_sec_hwm,
-  MSC_pendings,
-  MSC_entities,
-  MSC_namespaces,
-  MSC_bindings,
-  MSC_macros,
-  MSC_inits,
-  MSC_HWM
-};
 
 /* Data for config reading and writing.  */
 struct module_state_config {

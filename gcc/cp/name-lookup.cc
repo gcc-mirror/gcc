@@ -6382,7 +6382,7 @@ class namespace_limit_reached : public deferred_diagnostic
 			   std::unique_ptr<deferred_diagnostic> wrapped)
   : deferred_diagnostic (loc),
     m_limit (limit), m_name (name),
-    m_wrapped (move (wrapped))
+    m_wrapped (std::move (wrapped))
   {
   }
 
