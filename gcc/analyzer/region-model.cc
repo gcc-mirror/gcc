@@ -7132,6 +7132,57 @@ test_sub_svalue_folding ()
   ASSERT_EQ (sub->get_type (), TREE_TYPE (ct.m_x_field));
 }
 
+/* Get BIT within VAL as a symbolic value within MGR.  */
+
+static const svalue *
+get_bit (region_model_manager *mgr,
+	 bit_offset_t bit,
+	 unsigned HOST_WIDE_INT val)
+{
+  const svalue *inner_svalue
+    = mgr->get_or_create_int_cst (unsigned_type_node, val);
+  return mgr->get_or_create_bits_within (boolean_type_node,
+					 bit_range (bit, 1),
+					 inner_svalue);
+}
+
+/* Verify that bits_within_svalues are folded as expected.  */
+
+static void
+test_bits_within_svalue_folding ()
+{
+  region_model_manager mgr;
+
+  const svalue *zero = mgr.get_or_create_int_cst (boolean_type_node, 0);
+  const svalue *one = mgr.get_or_create_int_cst (boolean_type_node, 1);
+
+  {
+    const unsigned val = 0x0000;
+    for (unsigned bit = 0; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+  }
+
+  {
+    const unsigned val = 0x0001;
+    ASSERT_EQ (get_bit (&mgr, 0, val), one);
+    for (unsigned bit = 1; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+  }
+
+  {
+    const unsigned val = 0x8000;
+    for (unsigned bit = 0; bit < 15; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+    ASSERT_EQ (get_bit (&mgr, 15, val), one);
+  }
+
+  {
+    const unsigned val = 0xFFFF;
+    for (unsigned bit = 0; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), one);
+  }
+}
+
 /* Test that region::descendent_of_p works as expected.  */
 
 static void
@@ -8488,6 +8539,7 @@ analyzer_region_model_cc_tests ()
   test_unaryop_svalue_folding ();
   test_binop_svalue_folding ();
   test_sub_svalue_folding ();
+  test_bits_within_svalue_folding ();
   test_descendent_of_p ();
   test_bit_range_regions ();
   test_assignment ();

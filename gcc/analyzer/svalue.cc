@@ -868,7 +868,7 @@ constant_svalue::eval_condition (const constant_svalue *lhs,
 
 const svalue *
 constant_svalue::maybe_fold_bits_within (tree type,
-					 const bit_range &,
+					 const bit_range &bits,
 					 region_model_manager *mgr) const
 {
   /* Bits within an all-zero value are also all zero.  */
@@ -879,6 +879,21 @@ constant_svalue::maybe_fold_bits_within (tree type,
       else
 	return this;
     }
+
+  /* Handle the case of extracting a single bit. */
+  if (bits.m_size_in_bits == 1
+      && TREE_CODE (m_cst_expr) == INTEGER_CST
+      && type
+      && INTEGRAL_TYPE_P (type))
+    {
+      unsigned HOST_WIDE_INT bit = bits.m_start_bit_offset.to_uhwi ();
+      unsigned HOST_WIDE_INT mask = (1 << bit);
+      unsigned HOST_WIDE_INT val_as_hwi = tree_to_uhwi (m_cst_expr);
+      unsigned HOST_WIDE_INT masked_val = val_as_hwi & mask;
+      int result = masked_val ? 1 : 0;
+      return mgr->get_or_create_int_cst (type, result);
+    }
+
   /* Otherwise, don't fold.  */
   return NULL;
 }
