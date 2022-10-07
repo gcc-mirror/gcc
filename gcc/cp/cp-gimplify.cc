@@ -3028,7 +3028,7 @@ cp_fold (tree x)
   return x;
 }
 
-/* Look up either "hot" or "cold" in attribute list LIST.  */
+/* Look up "hot", "cold", "likely" or "unlikely" in attribute list LIST.  */
 
 tree
 lookup_hotness_attribute (tree list)
@@ -3036,24 +3036,36 @@ lookup_hotness_attribute (tree list)
   for (; list; list = TREE_CHAIN (list))
     {
       tree name = get_attribute_name (list);
-      if (is_attribute_p ("hot", name)
-	  || is_attribute_p ("cold", name)
-	  || is_attribute_p ("likely", name)
-	  || is_attribute_p ("unlikely", name))
+      if ((is_attribute_p ("hot", name)
+	   || is_attribute_p ("cold", name)
+	   || is_attribute_p ("likely", name)
+	   || is_attribute_p ("unlikely", name))
+	  && is_attribute_namespace_p ("", list))
 	break;
     }
   return list;
 }
 
-/* Remove both "hot" and "cold" attributes from LIST.  */
+/* Remove "hot", "cold", "likely" and "unlikely" attributes from LIST.  */
 
 static tree
 remove_hotness_attribute (tree list)
 {
-  list = remove_attribute ("hot", list);
-  list = remove_attribute ("cold", list);
-  list = remove_attribute ("likely", list);
-  list = remove_attribute ("unlikely", list);
+  for (tree *p = &list; *p; )
+    {
+      tree l = *p;
+      tree name = get_attribute_name (l);
+      if ((is_attribute_p ("hot", name)
+	   || is_attribute_p ("cold", name)
+	   || is_attribute_p ("likely", name)
+	   || is_attribute_p ("unlikely", name))
+	  && is_attribute_namespace_p ("", l))
+	{
+	  *p = TREE_CHAIN (l);
+	  continue;
+	}
+      p = &TREE_CHAIN (l);
+    }
   return list;
 }
 

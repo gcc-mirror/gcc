@@ -1645,7 +1645,8 @@ remove_attribute (const char *attr_name, tree list)
   return list;
 }
 
-/* Similarly but also match namespace on the removed attributes.  */
+/* Similarly but also match namespace on the removed attributes.
+   ATTR_NS "" stands for NULL or "gnu" namespace.  */
 
 tree
 remove_attribute (const char *attr_ns, const char *attr_name, tree list)
@@ -1659,15 +1660,11 @@ remove_attribute (const char *attr_ns, const char *attr_name, tree list)
       tree l = *p;
 
       tree attr = get_attribute_name (l);
-      if (is_attribute_p (attr_name, attr))
+      if (is_attribute_p (attr_name, attr)
+	  && is_attribute_namespace_p (attr_ns, l))
 	{
-	  tree ns = get_attribute_namespace (l);
-	  if ((ns == NULL_TREE && attr_ns == NULL)
-	      || (ns && attr_ns && is_attribute_p (attr_ns, ns)))
-	    {
-	      *p = TREE_CHAIN (l);
-	      continue;
-	    }
+	  *p = TREE_CHAIN (l);
+	  continue;
 	}
       p = &TREE_CHAIN (l);
     }
@@ -2088,14 +2085,20 @@ private_lookup_attribute (const char *attr_ns, const char *attr_name,
 	  tree ns = get_attribute_namespace (list);
 	  if (ns == NULL_TREE)
 	    {
-	      if (attr_ns == NULL)
+	      if (attr_ns_len == 0)
 		break;
 	    }
 	  else if (attr_ns)
 	    {
 	      ident_len = IDENTIFIER_LENGTH (ns);
-	      if (cmp_attribs (attr_ns, attr_ns_len, IDENTIFIER_POINTER (ns),
-			       ident_len))
+	      if (attr_ns_len == 0)
+		{
+		  if (cmp_attribs ("gnu", strlen ("gnu"),
+				   IDENTIFIER_POINTER (ns), ident_len))
+		    break;
+		}
+	      else if (cmp_attribs (attr_ns, attr_ns_len,
+				    IDENTIFIER_POINTER (ns), ident_len))
 		break;
 	    }
 	}

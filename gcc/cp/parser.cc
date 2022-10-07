@@ -29265,7 +29265,8 @@ cp_parser_check_std_attribute (location_t loc, tree attributes, tree attribute)
   if (attributes)
     for (const auto &a : alist)
       if (is_attribute_p (a, get_attribute_name (attribute))
-	  && lookup_attribute (a, attributes))
+	  && is_attribute_namespace_p ("", attribute)
+	  && lookup_attribute ("", a, attributes))
 	{
 	  if (!from_macro_expansion_at (loc))
 	    warning_at (loc, OPT_Wattributes, "attribute %qs specified "

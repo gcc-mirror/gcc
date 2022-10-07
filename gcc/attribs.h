@@ -188,6 +188,22 @@ is_attribute_p (const char *attr_name, const_tree ident)
 		      IDENTIFIER_POINTER (ident), IDENTIFIER_LENGTH (ident));
 }
 
+/* Given an attribute ATTR and a string ATTR_NS, return true
+   if the attribute namespace is valid for the string.  ATTR_NS "" stands
+   for standard attribute (NULL get_attribute_namespace) or "gnu"
+   namespace.  */
+
+static inline bool
+is_attribute_namespace_p (const char *attr_ns, const_tree attr)
+{
+  tree ident = get_attribute_namespace (attr);
+  if (attr_ns == NULL)
+    return ident == NULL_TREE;
+  if (attr_ns[0])
+    return ident && is_attribute_p (attr_ns, ident);
+  return ident == NULL_TREE || is_attribute_p ("gnu", ident);
+}
+
 /* Given an attribute name ATTR_NAME and a list of attributes LIST,
    return a pointer to the attribute's list element if the attribute
    is part of the list, or NULL_TREE if not found.  If the attribute
@@ -217,7 +233,8 @@ lookup_attribute (const char *attr_name, tree list)
     }
 }
 
-/* Similar to lookup_attribute, but also match the attribute namespace.  */
+/* Similar to lookup_attribute, but also match the attribute namespace.
+   ATTR_NS "" stands for either standard attribute or "gnu" namespace.  */
 
 static inline tree
 lookup_attribute (const char *attr_ns, const char *attr_name, tree list)
