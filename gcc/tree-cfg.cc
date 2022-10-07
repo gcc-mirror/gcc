@@ -6926,8 +6926,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   /* Anything that is outside of the region, but was dominated by something
      inside needs to update dominance info.  */
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  /* Update the SSA web.  */
-  update_ssa (TODO_update_ssa);
 
   if (free_region_copy)
     free (region_copy);
