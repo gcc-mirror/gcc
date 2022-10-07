@@ -2124,19 +2124,20 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	    return false;
 	}
 
-      if (TREE_CODE (init) == MUST_NOT_THROW_EXPR)
-	/* We need to protect the initialization of a catch parm with a
-	   call to terminate(), which shows up as a MUST_NOT_THROW_EXPR
-	   around the TARGET_EXPR for the copy constructor.  See
-	   initialize_handler_parm.  */
+      /* We need to protect the initialization of a catch parm with a
+	 call to terminate(), which shows up as a MUST_NOT_THROW_EXPR
+	 around the TARGET_EXPR for the copy constructor.  See
+	 initialize_handler_parm.  */
+      tree *p = &init;
+      while (TREE_CODE (*p) == MUST_NOT_THROW_EXPR
+	     || TREE_CODE (*p) == CLEANUP_POINT_EXPR)
 	{
-	  TREE_OPERAND (init, 0) = build2 (INIT_EXPR, TREE_TYPE (exp), exp,
-					   TREE_OPERAND (init, 0));
-	  TREE_TYPE (init) = void_type_node;
+	  /* Avoid voidify_wrapper_expr making a temporary.  */
+	  TREE_TYPE (*p) = void_type_node;
+	  p = &TREE_OPERAND (*p, 0);
 	}
-      else
-	init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
-      TREE_SIDE_EFFECTS (init) = 1;
+      *p = build2 (INIT_EXPR, TREE_TYPE (exp), exp, *p);
+      TREE_SIDE_EFFECTS (*p) = 1;
       finish_expr_stmt (init);
       return true;
     }
