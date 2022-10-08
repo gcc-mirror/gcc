@@ -1,3 +1,55 @@
+2022-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107085
+	* call.cc (conv_binds_ref_to_temporary): New.
+	(ref_conv_binds_directly): Rename to...
+	(ref_conv_binds_to_temporary): ...this.  Use
+	conv_binds_ref_to_temporary.
+	* cp-tree.h (ref_conv_binds_directly): Rename to...
+	(ref_conv_binds_to_temporary): ...this.
+	* method.cc (ref_xes_from_temporary): Use ref_conv_binds_to_temporary.
+	* parser.cc (warn_for_range_copy): Likewise.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* module.cc (trees_out::core_bools): Stream out new bit
+	decl_not_flexarray.
+	(trees_in::core_bools): Stream in new bit decl_not_flexarray.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (trees_out::mark_class_def): Guard against
+	DECL_BIT_FIELD_REPRESENTATIVE not being a decl.
+
+2022-10-07  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (expand_default_init): Also push the INIT_EXPR inside a
+	CLEANUP_POINT_EXPR.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104433
+	* module.cc (trees_out::core_bools): Don't override
+	DECL_EXTERNAL to true for static variables from an inline
+	function.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* module.cc (enum module_state_counts): Use array size.
+	* name-lookup.cc (class namespace_limit_reached): Likewise.
+	(class module_state): Move up in the file.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_check_std_attribute): Only do checks if
+	attribute is a standard attribute or in gnu namespace and only
+	lookup other attributes in those namespaces.
+	* cp-gimplify.cc (lookup_hotness_attribute): Adjust function comment.
+	Only return true for standard attribute or gnu namespace attribute.
+	(remove_hotness_attribute): Only remove hotness attributes when
+	they are standard or in gnu namespace, implement it in a single
+	loop rather than former 4 now 8 remove_attribute calls.
+
 2022-10-06  Jason Merrill  <jason@redhat.com>
 
 	* coroutines.cc (expand_one_await_expression): Change conversion

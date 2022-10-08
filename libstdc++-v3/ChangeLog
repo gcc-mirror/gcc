@@ -1,3 +1,21 @@
+2022-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_HOSTED): Add libstdcxx-hosted
+	enable arg as an alias for hosted-libstdcxx enable arg.
+	* configure: Regenerate.
+
+2022-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h: Include <new> but do not include
+	<bits/stl_function.h>.
+	* include/std/functional: Do not include <new>.
+
+2022-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Add role="bold" attribute to
+	emphasis elements for issue titles.
+	* doc/html/manual/bugs.html: Regenerate.
+
 2022-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.in: Regenerate.

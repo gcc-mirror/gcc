@@ -1,3 +1,8 @@
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.cc (generate_static_references):
+	Remove unused variable.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* objc-act.h (objc_get_sarif_source_language): New decl.

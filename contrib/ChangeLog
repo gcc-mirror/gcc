@@ -1,3 +1,7 @@
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Remove extra fetch.
+
 2022-10-06  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Use logging module

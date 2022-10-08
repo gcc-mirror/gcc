@@ -1,3 +1,129 @@
+2022-10-07  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* tree-cfg.cc (assign_discriminators): Set discriminators for call stmts
+	on the same line within the same basic block.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/101836
+	* tree-object-size.cc (addr_object_size): Use array_at_struct_end_p
+	to determine a flexible array member reference.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Document strict_flex_array attribute.
+	* doc/invoke.texi: Document -fstrict-flex-arrays[=n] option.
+	* print-tree.cc (print_node): Print new bit decl_not_flexarray.
+	* tree-core.h (struct tree_decl_common): New bit field
+	decl_not_flexarray.
+	* tree-streamer-in.cc (unpack_ts_decl_common_value_fields): Stream
+	in new bit decl_not_flexarray.
+	* tree-streamer-out.cc (pack_ts_decl_common_value_fields): Stream
+	out new bit decl_not_flexarray.
+	* tree.cc (array_at_struct_end_p): Update it with the new bit field
+	decl_not_flexarray.
+	* tree.h (DECL_NOT_FLEXARRAY): New flag.
+
+2022-10-07  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks/_vxworks-versions.h: Use OS specific
+	paths in #include of version.h.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* opts.cc (finish_options): Print sorry message only
+	for -flive-patching=inline-only-static.
+
+2022-10-07  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.cc (gimplify_modify_expr_rhs): Don't optimize
+	x = *(A*)&<expr> to x = <expr> for a TREE_ADDRESSABLE type.
+
+2022-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107153
+	* tree-cfg.cc (gimple_duplicate_sese_tail): Do not update
+	SSA form here.
+	* tree-parloops.cc (gen_parallel_loop): Update SSA form
+	after to-exit-first transform, no PHI insertion is necessary.
+	(pass_parallelize_loops::execute): Force re-write of the
+	virtual operand SSA web.
+
+2022-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* value-range.cc (irange::irange_contains_p): Fix comment typo.
+
+2022-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.cc (thread_prologue_and_epilogue_insns): Update only
+	entry and exit blocks when not optimizing.  Remove dead statement.
+
+2022-10-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::irange_set): Convert nonzero mask to
+	tree.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::verify_range): Same.
+	(irange::contains_p): Same.
+	(irange::invert): Same.
+	(irange::set_range_from_nonzero_bits): Same.
+	(irange::set_nonzero_bits): Same.
+	(mask_to_wi): Same.
+	(irange::intersect_nonzero_bits): Same.
+	(irange::union_nonzero_bits): Same.
+	* value-range.h (irange::varying_compatible_p): Same.
+	(gt_ggc_mx): Same.
+	(gt_pch_nx): Same.
+	(irange::set_undefined): Same.
+	(irange::set_varying): Same.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-protos.h (ix86_binary_operator_ok): Add array
+	  size to function parameter.
+	(ix86_unary_operator_ok): Likewise.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* auto-profile.cc (get_inline_stack): Remove unused variable.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.h (ipa_constant_data): Fix comment typo.
+	* value-range.cc (irange::irange_contains_p): Likewise.
+	* value-relation.cc (dom_oracle::set_one_relation): Likewise.
+	* gimple-predicate-analysis.cc (predicate::simplify_4): Likewise.
+	* tree-inline.cc (remap_ssa_name): Likewise.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.h (is_attribute_namespace_p): New inline function.
+	(lookup_attribute): Document meaning of ATTR_NS equal to "".
+	* attribs.cc (remove_attribute): Use is_attribute_namespace_p.
+	(private_lookup_attribute): For ATTR_NS "" match either standard
+	attribute or "gnu" namespace one.
+
+2022-10-07  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (DWARF_VERSION_DEFAULT): Adjust from
+	4 to 3 for VxWorks >= 7.
+
+2022-10-07  Olivier Hainque  <hainque@adacore.com>
+
+	* defaults.h (DWARF_DEFAULT_VERSION): Define if not
+	defined already.
+	* common.opt (gdwarf-): Use it.
+	* doc/tm.texi.in (DWARF_DEFAULT_VERSION): Document.
+	* doc/tm.texi: Update accordingly.
+	* config/vxworks.h (DWARF_DEFAULT_VERSION): Redefine.
+	* config/vxworks.cc: Remove code setting dwarf_version, now
+	handled by the DWARF_DEFAULT_VERSION redefinition.
+
+2022-10-07  Olivier Hainque  <hainque@adacore.com>
+
+	* ginclude/stddef.h: #undef offsetof before #define.
+
 2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/107170

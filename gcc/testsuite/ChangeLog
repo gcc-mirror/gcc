@@ -1,3 +1,62 @@
+2022-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107085
+	* g++.dg/ext/reference_constructs_from_temporary1.C: Adjust expected
+	result.
+	* g++.dg/ext/reference_converts_from_temporary1.C: Likewise.
+	* g++.dg/cpp0x/elision4.C: New test.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/101836
+	* gcc.dg/pr101836.c: New test.
+	* gcc.dg/pr101836_1.c: New test.
+	* gcc.dg/pr101836_2.c: New test.
+	* gcc.dg/pr101836_3.c: New test.
+	* gcc.dg/pr101836_4.c: New test.
+	* gcc.dg/pr101836_5.c: New test.
+	* gcc.dg/strict-flex-array-2.c: New test.
+	* gcc.dg/strict-flex-array-3.c: New test.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* g++.dg/strict-flex-array-1.C: New test.
+	* gcc.dg/strict-flex-array-1.c: New test.
+
+2022-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105783
+	* gcc.dg/analyzer/pr105783.c: New test.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/bfield-3.H: New test.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/live-patching-2.c: Update scanned pattern.
+	* gcc.dg/live-patching-5.c: New test.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104433
+	* g++.dg/modules/static-2_a.H: New test.
+	* g++.dg/modules/static-2_b.C: New test.
+
+2022-10-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/elide9.C: New test.
+
+2022-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107153
+	* gcc.dg/autopar/pr107153.c: New testcase.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/fallthrough2.C: New test.
+	* g++.dg/cpp2a/attr-likely7.C: New test.
+
 2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/107170

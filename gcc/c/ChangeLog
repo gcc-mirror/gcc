@@ -1,3 +1,13 @@
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (flexible_array_member_type_p): New function.
+	(one_element_array_type_p): Likewise.
+	(zero_length_array_type_p): Likewise.
+	(add_flexible_array_elts_to_size): Call new utility
+	routine flexible_array_member_type_p.
+	(is_flexible_array_member_p): New function.
+	(finish_struct): Set the new DECL_NOT_FLEXARRAY flag.
+
 2022-10-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.cc (c_parse_init): Add D_EXT11 to mask if flag_no_asm

@@ -1,3 +1,20 @@
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_strict_flex_array_attribute): New function.
+	(c_common_attribute_table): New item for strict_flex_array.
+	* c.opt: (fstrict-flex-arrays): New option.
+	(fstrict-flex-arrays=): New option.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* name-hint.h: Use std::move.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (attribute_fallthrough_p): Lookup fallthrough attribute
+	only in gnu namespace or as standard attribute, treat fallthrough
+	attributes in other namespaces like any other unknown attribute.
+
 2022-10-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.cc (c_common_reswords): Mark typeof as D_EXT11.  Add

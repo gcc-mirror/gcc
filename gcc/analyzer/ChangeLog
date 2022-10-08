@@ -1,3 +1,12 @@
+2022-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105783
+	* region-model.cc (selftest::get_bit): New function.
+	(selftest::test_bits_within_svalue_folding): New.
+	(selfftest::analyzer_region_model_cc_tests): Call it.
+	* svalue.cc (constant_svalue::maybe_fold_bits_within): Handle the
+	case of extracting a single bit.
+
 2022-10-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107158
