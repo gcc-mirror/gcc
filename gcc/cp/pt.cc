@@ -13933,6 +13933,8 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   push_to_top_level ();
   push_access_scope (fn);
   push_deferring_access_checks (dk_no_deferred);
+  /* So in_immediate_context knows this is a default argument.  */
+  begin_scope (sk_function_parms, fn);
   start_lambda_scope (parm);
 
   /* The default argument expression may cause implicitly defined
@@ -13956,6 +13958,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
     inform (input_location,
 	    "  when instantiating default argument for call to %qD", fn);
 
+  leave_scope ();
   pop_deferring_access_checks ();
   pop_access_scope (fn);
   pop_from_top_level ();

@@ -9301,7 +9301,8 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
 }
 
 /* Return true if in an immediate function context, or an unevaluated operand,
-   or a subexpression of an immediate invocation.  */
+   or a default argument/member initializer, or a subexpression of an immediate
+   invocation.  */
 
 bool
 in_immediate_context ()
@@ -9309,8 +9310,11 @@ in_immediate_context ()
   return (cp_unevaluated_operand != 0
 	  || (current_function_decl != NULL_TREE
 	      && DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  || (current_binding_level->kind == sk_function_parms
-	      && current_binding_level->immediate_fn_ctx_p)
+	  /* DR 2631: default args and DMI aren't immediately evaluated.
+	     Return true here so immediate_invocation_p returns false.  */
+	  || current_binding_level->kind == sk_function_parms
+	  || current_binding_level->kind == sk_template_parms
+	  || parsing_nsdmi ()
 	  || in_consteval_if_p);
 }
 
@@ -9318,28 +9322,12 @@ in_immediate_context ()
    is an immediate invocation.  */
 
 static bool
-immediate_invocation_p (tree fn, int nargs)
+immediate_invocation_p (tree fn)
 {
   return (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fn)
-	  && !in_immediate_context ()
-	  /* As an exception, we defer std::source_location::current ()
-	     invocations until genericization because LWG3396 mandates
-	     special behavior for it.  */
-	  && (nargs > 1 || !source_location_current_p (fn)));
+	  && !in_immediate_context ());
 }
-
-/* temp_override for in_consteval_if_p, which can't use make_temp_override
-   because it is a bitfield.  */
-
-struct in_consteval_if_p_temp_override {
-  bool save_in_consteval_if_p;
-  in_consteval_if_p_temp_override ()
-    : save_in_consteval_if_p (in_consteval_if_p) {}
-  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
-  ~in_consteval_if_p_temp_override ()
-  { reset (); }
-};
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
@@ -9398,7 +9386,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       SET_EXPR_LOCATION (expr, input_location);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
-      if (immediate_invocation_p (fn, vec_safe_length (args)))
+      if (immediate_invocation_p (fn))
 	{
 	  tree obj_arg = NULL_TREE, exprimm = expr;
 	  if (DECL_CONSTRUCTOR_P (fn))
@@ -9543,7 +9531,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   in_consteval_if_p_temp_override icip;
   /* If the call is immediate function invocation, make sure
      taking address of immediate functions is allowed in its arguments.  */
-  if (immediate_invocation_p (STRIP_TEMPLATE (fn), nargs))
+  if (immediate_invocation_p (STRIP_TEMPLATE (fn)))
     in_consteval_if_p = true;
 
   /* The implicit parameters to a constructor are not considered by overload
@@ -10072,7 +10060,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
       tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
-      if (immediate_invocation_p (fndecl, nargs))
+      if (immediate_invocation_p (fndecl))
 	{
 	  tree obj_arg = NULL_TREE;
 	  /* Undo convert_from_reference called by build_cxx_call.  */

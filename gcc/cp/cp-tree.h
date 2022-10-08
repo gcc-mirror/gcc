@@ -2030,6 +2030,18 @@ make_temp_override (T& var, type_identity_t<T> overrider)
   return { var, overrider };
 }
 
+/* temp_override for in_consteval_if_p, which can't use make_temp_override
+   because it is a bitfield.  */
+
+struct in_consteval_if_p_temp_override {
+  bool save_in_consteval_if_p;
+  in_consteval_if_p_temp_override ()
+    : save_in_consteval_if_p (in_consteval_if_p) {}
+  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
+  ~in_consteval_if_p_temp_override ()
+  { reset (); }
+};
+
 /* The cached class binding level, from the most recently exited
    class, or NULL if none.  */
 
@@ -4200,6 +4212,25 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define FOR_EACH_AGGR_INIT_EXPR_ARG(arg, iter, call)			\
   for ((arg) = first_aggr_init_expr_arg ((call), &(iter)); (arg);	\
        (arg) = next_aggr_init_expr_arg (&(iter)))
+
+/* We have an expression tree T that represents a call, either CALL_EXPR
+   or AGGR_INIT_EXPR.  Return a reference to the Nth argument.  */
+
+static inline tree&
+get_nth_callarg (tree t, int n)
+{
+  switch (TREE_CODE (t))
+    {
+    case CALL_EXPR:
+      return CALL_EXPR_ARG (t, n);
+
+    case AGGR_INIT_EXPR:
+      return AGGR_INIT_EXPR_ARG (t, n);
+
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* VEC_INIT_EXPR accessors.  */
 #define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (VEC_INIT_EXPR_CHECK (NODE), 0)
@@ -7880,7 +7911,6 @@ extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
 extern bool array_of_unknown_bound_p		(const_tree);
-extern bool source_location_current_p		(tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);

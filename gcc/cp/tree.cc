@@ -3125,32 +3125,6 @@ array_type_nelts_total (tree type)
   return sz;
 }
 
-/* Return true if FNDECL is std::source_location::current () method.  */
-
-bool
-source_location_current_p (tree fndecl)
-{
-  gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL
-		       && DECL_IMMEDIATE_FUNCTION_P (fndecl));
-  if (DECL_NAME (fndecl) == NULL_TREE
-      || TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != RECORD_TYPE
-      || DECL_CONTEXT (fndecl) != TREE_TYPE (TREE_TYPE (fndecl))
-      || !id_equal (DECL_NAME (fndecl), "current"))
-    return false;
-
-  tree source_location = DECL_CONTEXT (fndecl);
-  if (TYPE_NAME (source_location) == NULL_TREE
-      || TREE_CODE (TYPE_NAME (source_location)) != TYPE_DECL
-      || TYPE_IDENTIFIER (source_location) == NULL_TREE
-      || !id_equal (TYPE_IDENTIFIER (source_location),
-		    "source_location")
-      || !decl_in_std_namespace_p (TYPE_NAME (source_location)))
-    return false;
-
-  return true;
-}
-
 struct bot_data
 {
   splay_tree target_remap;
@@ -3298,7 +3272,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
    variables.  */
 
 static tree
-bot_replace (tree* t, int* /*walk_subtrees*/, void* data_)
+bot_replace (tree* t, int* walk_subtrees, void* data_)
 {
   bot_data &data = *(bot_data*)data_;
   splay_tree target_remap = data.target_remap;
@@ -3328,6 +3302,27 @@ bot_replace (tree* t, int* /*walk_subtrees*/, void* data_)
 			    /*check_access=*/false, /*nonnull=*/true,
 			    tf_warning_or_error);
     }
+  else if (cxx_dialect >= cxx20
+	   && (TREE_CODE (*t) == CALL_EXPR
+	       || TREE_CODE (*t) == AGGR_INIT_EXPR)
+	   && !in_immediate_context ())
+    {
+      /* Expand immediate invocations.  */
+      if (tree fndecl = cp_get_callee_fndecl_nofold (*t))
+	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	  {
+	    /* Make in_immediate_context true within the args.  */
+	    in_consteval_if_p_temp_override ito;
+	    in_consteval_if_p = true;
+	    int nargs = call_expr_nargs (*t);
+	    for (int i = 0; i < nargs; ++i)
+	      cp_walk_tree (&get_nth_callarg (*t, i), bot_replace, data_, NULL);
+	    *t = cxx_constant_value (*t);
+	    if (*t == error_mark_node)
+	      return error_mark_node;
+	    *walk_subtrees = 0;
+	  }
+    }
 
   return NULL_TREE;
 }
@@ -3353,7 +3348,8 @@ break_out_target_exprs (tree t, bool clear_location /* = false */)
   bot_data data = { target_remap, clear_location };
   if (cp_walk_tree (&t, bot_manip, &data, NULL) == error_mark_node)
     t = error_mark_node;
-  cp_walk_tree (&t, bot_replace, &data, NULL);
+  if (cp_walk_tree (&t, bot_replace, &data, NULL) == error_mark_node)
+    t = error_mark_node;
 
   if (!--target_remap_count)
     {
