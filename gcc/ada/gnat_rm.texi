@@ -3639,6 +3639,8 @@ The Ada 202x @code{Static} aspect can be specified on Intrinsic imported
 functions and the compiler will evaluate some of these intrinsic statically,
 in particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
+An Extensions_Allowed pragma argument of “On” enables this extension.
+
 @item 
 @code{[]} aggregates
 

@@ -2200,6 +2200,8 @@ are identified below.
   functions and the compiler will evaluate some of these intrinsic statically,
   in particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
 
+  An Extensions_Allowed pragma argument of "On" enables this extension.
+
 * ``[]`` aggregates
 
   This new aggregate syntax for arrays and containers is provided under -gnatX

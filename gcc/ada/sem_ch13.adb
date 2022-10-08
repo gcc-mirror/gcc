@@ -2408,7 +2408,8 @@ package body Sem_Ch13 is
 
                   elsif Is_Imported_Intrinsic then
                      Error_Msg_GNAT_Extension
-                       ("aspect % on intrinsic function", Sloc (Aspect));
+                       ("aspect % on intrinsic function", Sloc (Aspect),
+                        Is_Core_Extension => True);
 
                   else
                      Error_Msg_N
