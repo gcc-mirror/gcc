@@ -261,6 +261,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       else
 	SET_DECL_FIELD_ABI_IGNORED (expr, val);
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
+      DECL_NOT_FLEXARRAY (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
 
   else if (VAR_P (expr))

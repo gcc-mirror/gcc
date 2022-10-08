@@ -25,9 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "fold-const.h"
 #include "gcc-rich-location.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
 #include "diagnostic-core.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-path.h"
@@ -35,10 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "sbitmap.h"
 #include "bitmap.h"
-#include "tristate.h"
 #include "ordered-hash-map.h"
-#include "selftest.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
@@ -72,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-dfa.h"
 #include "analyzer/known-function-manager.h"
+#include "analyzer/call-summary.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -171,6 +166,8 @@ void
 impl_region_model_context::on_unknown_change (const svalue *sval,
 					      bool is_mutable)
 {
+  if (!sval->can_have_associated_state_p ())
+    return;
   for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_unknown_change (sval, is_mutable, m_ext_state);
 }
@@ -1425,6 +1422,25 @@ exploded_node::on_stmt (exploded_graph &eg,
 				  &old_state, state, uncertainty,
 				  path_ctxt, stmt);
 
+  /* Handle call summaries here.  */
+  if (cgraph_edge *cgedge
+	  = supergraph_call_edge (snode->get_function (), stmt))
+    if (eg.get_analysis_plan ().use_summary_p (cgedge))
+      {
+	function *called_fn = get_ultimate_function_for_cgraph_edge (cgedge);
+	per_function_data *called_fn_data
+	  = eg.get_per_function_data (called_fn);
+	if (called_fn_data)
+	  return replay_call_summaries (eg,
+					snode,
+					as_a <const gcall *> (stmt),
+					state,
+					path_ctxt,
+					called_fn,
+					called_fn_data,
+					&ctxt);
+      }
+
   bool unknown_side_effects = false;
   bool terminate_path = false;
 
@@ -1519,6 +1535,140 @@ exploded_node::on_stmt_post (const gimple *stmt,
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
     state->m_region_model->on_call_post (call, unknown_side_effects, ctxt);
 }
+
+/* A concrete call_info subclass representing a replay of a call summary.  */
+
+class call_summary_edge_info : public call_info
+{
+public:
+  call_summary_edge_info (const call_details &cd,
+			  function *called_fn,
+			  call_summary *summary,
+			  const extrinsic_state &ext_state)
+  : call_info (cd),
+    m_called_fn (called_fn),
+    m_summary (summary),
+    m_ext_state (ext_state)
+  {}
+
+  bool update_state (program_state *state,
+		     const exploded_edge *,
+		     region_model_context *ctxt) const final override
+  {
+    /* Update STATE based on summary_end_state.  */
+    call_details cd (get_call_details (state->m_region_model, ctxt));
+    call_summary_replay r (cd, m_called_fn, m_summary, m_ext_state);
+    const program_state &summary_end_state = m_summary->get_state ();
+    return state->replay_call_summary (r, summary_end_state);
+  }
+
+  bool update_model (region_model *model,
+		     const exploded_edge *,
+		     region_model_context *ctxt) const final override
+  {
+    /* Update STATE based on summary_end_state.  */
+    call_details cd (get_call_details (model, ctxt));
+    call_summary_replay r (cd, m_called_fn, m_summary, m_ext_state);
+    const program_state &summary_end_state = m_summary->get_state ();
+    model->replay_call_summary (r, *summary_end_state.m_region_model);
+    return true;
+  }
+
+  label_text get_desc (bool /*can_colorize*/) const final override
+  {
+    return m_summary->get_desc ();
+  }
+
+private:
+  function *m_called_fn;
+  call_summary *m_summary;
+  const extrinsic_state &m_ext_state;
+};
+
+/* Use PATH_CTXT to bifurcate, which when handled will add custom edges
+   for a replay of the various feasible summaries in CALLED_FN_DATA.  */
+
+exploded_node::on_stmt_flags
+exploded_node::replay_call_summaries (exploded_graph &eg,
+				      const supernode *snode,
+				      const gcall *call_stmt,
+				      program_state *state,
+				      path_context *path_ctxt,
+				      function *called_fn,
+				      per_function_data *called_fn_data,
+				      region_model_context *ctxt)
+{
+  logger *logger = eg.get_logger ();
+  LOG_SCOPE (logger);
+
+  gcc_assert (called_fn);
+  gcc_assert (called_fn_data);
+
+  /* Each summary will call bifurcate on the PATH_CTXT.  */
+  for (auto summary : called_fn_data->m_summaries)
+    replay_call_summary (eg, snode, call_stmt, state,
+			 path_ctxt, called_fn, summary, ctxt);
+  path_ctxt->terminate_path ();
+
+  return on_stmt_flags ();
+}
+
+/* Use PATH_CTXT to bifurcate, which when handled will add a
+   custom edge for a replay of SUMMARY, if the summary's
+   conditions are feasible based on the current state.  */
+
+void
+exploded_node::replay_call_summary (exploded_graph &eg,
+				    const supernode *snode,
+				    const gcall *call_stmt,
+				    program_state *old_state,
+				    path_context *path_ctxt,
+				    function *called_fn,
+				    call_summary *summary,
+				    region_model_context *ctxt)
+{
+  logger *logger = eg.get_logger ();
+  LOG_SCOPE (logger);
+  gcc_assert (snode);
+  gcc_assert (call_stmt);
+  gcc_assert (old_state);
+  gcc_assert (called_fn);
+  gcc_assert (summary);
+
+  if (logger)
+    logger->log ("using %s as summary for call to %qE from %qE",
+		 summary->get_desc ().get (),
+		 called_fn->decl,
+		 snode->get_function ()->decl);
+  const extrinsic_state &ext_state = eg.get_ext_state ();
+  const program_state &summary_end_state = summary->get_state ();
+  if (logger)
+    {
+      pretty_printer *pp = logger->get_printer ();
+
+      logger->start_log_line ();
+      pp_string (pp, "callsite state: ");
+      old_state->dump_to_pp (ext_state, true, false, pp);
+      logger->end_log_line ();
+
+      logger->start_log_line ();
+      pp_string (pp, "summary end state: ");
+      summary_end_state.dump_to_pp (ext_state, true, false, pp);
+      logger->end_log_line ();
+    }
+
+  program_state new_state (*old_state);
+
+  call_details cd (call_stmt, new_state.m_region_model, ctxt);
+  call_summary_replay r (cd, called_fn, summary, ext_state);
+
+  if (path_ctxt)
+    path_ctxt->bifurcate (new call_summary_edge_info (cd,
+						      called_fn,
+						      summary,
+						      ext_state));
+}
+
 
 /* Consider the effect of following superedge SUCC from this node.
 
@@ -2113,6 +2263,20 @@ stats::get_total_enodes () const
   for (int i = 0; i < NUM_POINT_KINDS; i++)
     result += m_num_nodes[i];
   return result;
+}
+
+/* struct per_function_data.  */
+
+per_function_data::~per_function_data ()
+{
+  for (auto iter : m_summaries)
+    delete iter;
+}
+
+void
+per_function_data::add_call_summary (exploded_node *node)
+{
+  m_summaries.safe_push (new call_summary (this, node));
 }
 
 /* strongly_connected_components's ctor.  Tarjan's SCC algorithm.  */
@@ -3980,7 +4144,7 @@ exploded_graph::process_node (exploded_node *node)
 				NULL, // uncertainty_t *uncertainty
 				NULL, // path_context *path_ctxt
 				stmt);
-	    if (edge_info->update_model (bifurcated_new_state.m_region_model,
+	    if (edge_info->update_state (&bifurcated_new_state,
 					 NULL, /* no exploded_edge yet.  */
 					 &bifurcation_ctxt))
 	      {
@@ -5350,24 +5514,17 @@ public:
     pretty_printer *pp = gv->get_pp ();
 
     dump_dot_id (pp);
-    pp_printf (pp, " [shape=none,margin=0,style=filled,fillcolor=%s,label=<",
+    pp_printf (pp, " [shape=none,margin=0,style=filled,fillcolor=%s,label=\"",
 	       "lightgrey");
-    pp_string (pp, "<TABLE BORDER=\"0\">");
     pp_write_text_to_stream (pp);
 
-    gv->begin_trtd ();
     pp_printf (pp, "VCG: %i: %s", m_index, function_name (m_fun));
-    gv->end_tdtr ();
     pp_newline (pp);
 
-    gv->begin_trtd ();
     pp_printf (pp, "supernodes: %i\n", m_num_supernodes);
-    gv->end_tdtr ();
     pp_newline (pp);
 
-    gv->begin_trtd ();
     pp_printf (pp, "superedges: %i\n", m_num_superedges);
-    gv->end_tdtr ();
     pp_newline (pp);
 
     if (args.m_eg)
@@ -5380,9 +5537,7 @@ public:
 	    if (enode->get_point ().get_function () == m_fun)
 	      num_enodes++;
 	  }
-	gv->begin_trtd ();
 	pp_printf (pp, "enodes: %i\n", num_enodes);
-	gv->end_tdtr ();
 	pp_newline (pp);
 
 	// TODO: also show the per-callstring breakdown
@@ -5404,11 +5559,8 @@ public:
 	      }
 	    if (num_enodes > 0)
 	      {
-		gv->begin_trtd ();
 		cs->print (pp);
 		pp_printf (pp, ": %i\n", num_enodes);
-		pp_write_text_as_html_like_dot_to_stream (pp);
-		gv->end_tdtr ();
 	      }
 	  }
 
@@ -5417,14 +5569,20 @@ public:
 	if (data)
 	  {
 	    pp_newline (pp);
-	    gv->begin_trtd ();
 	    pp_printf (pp, "summaries: %i\n", data->m_summaries.length ());
-	    pp_write_text_as_html_like_dot_to_stream (pp);
-	    gv->end_tdtr ();
+	    for (auto summary : data->m_summaries)
+	      {
+		pp_printf (pp, "\nsummary: %s:\n", summary->get_desc ().get ());
+		const extrinsic_state &ext_state = args.m_eg->get_ext_state ();
+		const program_state &state = summary->get_state ();
+		state.dump_to_pp (ext_state, false, true, pp);
+		pp_newline (pp);
+	      }
 	  }
       }
 
-    pp_string (pp, "</TABLE>>];\n\n");
+    pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+    pp_string (pp, "\"];\n\n");
     pp_flush (pp);
   }
 

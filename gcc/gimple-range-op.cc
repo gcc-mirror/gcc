@@ -422,15 +422,24 @@ public:
   virtual bool fold_range (irange &r, tree type, const irange &lh,
 			   const irange &rh, relation_kind rel) const
   {
+    if (lh.undefined_p ())
+      return false;
+    unsigned prec = TYPE_PRECISION (type);
+    wide_int nz = lh.get_nonzero_bits ();
+    wide_int pop = wi::shwi (wi::popcount (nz), prec);
     // Calculating the popcount of a singleton is trivial.
     if (lh.singleton_p ())
       {
-	wide_int nz = lh.get_nonzero_bits ();
-	wide_int pop = wi::shwi (wi::popcount (nz), TYPE_PRECISION (type));
 	r.set (type, pop, pop);
 	return true;
       }
-    return cfn_ffs::fold_range (r, type, lh, rh, rel);
+    if (cfn_ffs::fold_range (r, type, lh, rh, rel))
+      {
+	int_range<2> tmp (type, wi::zero (prec), pop);
+	r.intersect (tmp);
+	return true;
+      }
+    return false;
   }
 } op_cfn_popcount;
 

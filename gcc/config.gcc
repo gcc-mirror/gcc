@@ -518,6 +518,7 @@ riscv*)
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o"
 	extra_objs="${extra_objs} riscv-vector-builtins.o"
 	d_target_objs="riscv-d.o"
+	extra_headers="riscv_vector.h"
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"

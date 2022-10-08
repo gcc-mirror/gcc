@@ -1,3 +1,40 @@
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_strict_flex_array_attribute): New function.
+	(c_common_attribute_table): New item for strict_flex_array.
+	* c.opt: (fstrict-flex-arrays): New option.
+	(fstrict-flex-arrays=): New option.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* name-hint.h: Use std::move.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (attribute_fallthrough_p): Lookup fallthrough attribute
+	only in gnu namespace or as standard attribute, treat fallthrough
+	attributes in other namespaces like any other unknown attribute.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Mark typeof as D_EXT11.  Add
+	typeof_unqual.
+	* c-common.h (enum rid): Add RID_TYPEOF_UNQUAL.
+	(D_EXT11): New macro.  Values of subsequent macros updated.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-attribs.cc (handle_assume_attribute): New function.
+	(c_common_attribute_table): Add entry for assume attribute.
+	* c-lex.cc (c_common_has_attribute): Handle
+	__have_cpp_attribute (assume).
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_omp_directives): Uncomment begin declare target
+	entry.
+
 2022-10-03  Patrick Palka  <ppalka@redhat.com>
 
 	* c-common.cc (c_common_reswords): Use RID_IS_SAME instead of

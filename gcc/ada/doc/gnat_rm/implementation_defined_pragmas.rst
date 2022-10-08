@@ -3744,10 +3744,10 @@ In addition, each protected subprogram body must satisfy:
 
 * May reference only one protected component
 * May not reference nonconstant entities outside the protected subprogram
-  scope.
+  scope
 * May not contain address representation items, allocators, or quantified
-  expressions.
-* May not contain delay, goto, loop, or procedure-call statements.
+  expressions
+* May not contain delay, goto, loop, or procedure-call statements
 * May not contain exported and imported entities
 * May not dereferenced access values
 * Function calls and attribute references must be static

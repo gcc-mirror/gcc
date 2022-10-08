@@ -378,6 +378,8 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		result = 201803;
 	      else if (is_attribute_p ("nodiscard", attr_name))
 		result = 201907;
+	      else if (is_attribute_p ("assume", attr_name))
+		result = 202207;
 	    }
 	  else
 	    {

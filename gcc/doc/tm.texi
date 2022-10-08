@@ -3423,6 +3423,12 @@ someone decided it was a good idea to use that register number to
 terminate the stack backtrace.  New ports should avoid this.
 @end defmac
 
+@defmac DWARF_VERSION_DEFAULT
+A C expression whose value is the default dwarf standard version we'll honor
+and advertise when generating dwarf debug information, in absence of
+an explicit @option{-gdwarf-@var{version}} option on the command line.
+@end defmac
+
 @deftypefn {Target Hook} void TARGET_DWARF_HANDLE_FRAME_UNSPEC (const char *@var{label}, rtx @var{pattern}, int @var{index})
 @c hook-start:TARGET_DWARF_HANDLE_FRAME_UNSPEC
 This target hook allows the backend to emit frame-related insns that

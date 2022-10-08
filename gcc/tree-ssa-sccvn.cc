@@ -5718,19 +5718,6 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 
   if (!resultsame)
     {
-      /* Only perform the following when being called from PRE
-	 which embeds tail merging.  */
-      if (default_vn_walk_kind == VN_WALK)
-	{
-	  assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
-	  vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult, false);
-	  if (vnresult)
-	    {
-	      VN_INFO (vdef)->visited = true;
-	      return set_ssa_val_to (vdef, vnresult->result_vdef);
-	    }
-	}
-
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "No store match\n");
@@ -5755,7 +5742,9 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
       if (default_vn_walk_kind == VN_WALK)
 	{
 	  assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
-	  vn_reference_insert (assign, lhs, vuse, vdef);
+	  vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult, false);
+	  if (!vnresult)
+	    vn_reference_insert (assign, lhs, vuse, vdef);
 	}
     }
   else

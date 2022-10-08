@@ -1507,6 +1507,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Tp     type; };
 
   /// remove_cv
+#if __has_builtin(__remove_cv)
+  template<typename _Tp>
+    struct remove_cv
+    { using type = __remove_cv(_Tp); };
+#else
   template<typename _Tp>
     struct remove_cv
     { using type = _Tp; };
@@ -1522,6 +1527,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct remove_cv<const volatile _Tp>
     { using type = _Tp; };
+#endif
 
   /// add_const
   template<typename _Tp>
@@ -1570,17 +1576,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Reference transformations.
 
   /// remove_reference
+#if __has_builtin(__remove_reference)
   template<typename _Tp>
     struct remove_reference
-    { typedef _Tp   type; };
+    { using type = __remove_reference(_Tp); };
+#else
+  template<typename _Tp>
+    struct remove_reference
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&>
-    { typedef _Tp   type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&&>
-    { typedef _Tp   type; };
+    { using type = _Tp; };
+#endif
 
   /// add_lvalue_reference
   template<typename _Tp>
@@ -3358,20 +3370,23 @@ template<typename _Ret, typename _Fn, typename... _Args>
    */
 #define __cpp_lib_remove_cvref 201711L
 
+#if __has_builtin(__remove_cvref)
   template<typename _Tp>
     struct remove_cvref
-    : remove_cv<_Tp>
-    { };
+    { using type = __remove_cvref(_Tp); };
+#else
+  template<typename _Tp>
+    struct remove_cvref
+    { using type = typename remove_cv<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_cvref<_Tp&>
-    : remove_cv<_Tp>
-    { };
+    { using type = typename remove_cv<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_cvref<_Tp&&>
-    : remove_cv<_Tp>
-    { };
+    { using type = typename remove_cv<_Tp>::type; };
+#endif
 
   template<typename _Tp>
     using remove_cvref_t = typename remove_cvref<_Tp>::type;

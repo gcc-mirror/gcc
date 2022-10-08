@@ -46,6 +46,8 @@
 #include "regs.h"
 #include "riscv-vector-builtins.h"
 
+using namespace riscv_vector;
+
 namespace riscv_vector {
 
 /* Information about each RVV type.  */
@@ -63,6 +65,10 @@ static GTY (()) machine_mode vector_modes[NUM_VECTOR_TYPES];
    "__rvv..._t" name.  Allow an index of NUM_VECTOR_TYPES, which always
    yields a null tree.  */
 static GTY(()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
+
+/* Same, but with the riscv_vector.h "v..._t" name.  */
+extern GTY(()) tree builtin_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
+tree builtin_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
 
 rvv_switcher::rvv_switcher ()
 {
@@ -183,6 +189,32 @@ register_builtin_types ()
     }
 }
 
+/* Register vector type TYPE under its risv_vector.h name.  */
+static void
+register_vector_type (vector_type_index type)
+{
+  tree vectype = abi_vector_types[type];
+  /* When vectype is NULL, the corresponding builtin type
+     is disabled according to '-march'.  */
+  if (!vectype)
+    return;
+  tree id = get_identifier (vector_types[type].user_name);
+  tree decl = build_decl (input_location, TYPE_DECL, id, vectype);
+  decl = lang_hooks.decls.pushdecl (decl);
+
+  /* Record the new RVV type if pushdecl succeeded without error.  Use
+     the ABI type otherwise, so that the type we record at least has the
+     right form, even if it doesn't have the right name.  This should give
+     better error recovery behavior than installing error_mark_node or
+     installing an incorrect type.  */
+  if (decl && TREE_CODE (decl) == TYPE_DECL
+      && TREE_TYPE (decl) != error_mark_node
+      && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == vectype)
+    vectype = TREE_TYPE (decl);
+
+  builtin_vector_types[0][type] = vectype;
+}
+
 /* Initialize all compiler built-ins related to RVV that should be
    defined at start-up.  */
 void
@@ -192,6 +224,8 @@ init_builtins ()
   if (!TARGET_VECTOR)
     return;
   register_builtin_types ();
+  if (in_lto_p)
+    handle_pragma_vector ();
 }
 
 /* Implement TARGET_VERIFY_TYPE_CONTEXT for RVV types.  */
@@ -274,6 +308,17 @@ verify_type_context (location_t loc, type_context_kind context, const_tree type,
     }
 
   gcc_unreachable ();
+}
+
+/* Implement #pragma riscv intrinsic vector.  */
+void
+handle_pragma_vector ()
+{
+  rvv_switcher rvv;
+
+  /* Define the vector and tuple types.  */
+  for (unsigned int type_i = 0; type_i < NUM_VECTOR_TYPES; ++type_i)
+    register_vector_type ((enum vector_type_index) type_i);
 }
 
 } // end namespace riscv_vector

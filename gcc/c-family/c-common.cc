@@ -494,7 +494,8 @@ const struct c_common_resword c_common_reswords[] =
   { "typedef",		RID_TYPEDEF,	0 },
   { "typename",		RID_TYPENAME,	D_CXXONLY | D_CXXWARN },
   { "typeid",		RID_TYPEID,	D_CXXONLY | D_CXXWARN },
-  { "typeof",		RID_TYPEOF,	D_ASM | D_EXT },
+  { "typeof",		RID_TYPEOF,	D_EXT11 },
+  { "typeof_unqual",	RID_TYPEOF_UNQUAL,	D_CONLY | D_C2X },
   { "union",		RID_UNION,	0 },
   { "unsigned",		RID_UNSIGNED,	0 },
   { "using",		RID_USING,	D_CXXONLY | D_CXXWARN },
@@ -6007,12 +6008,12 @@ attribute_fallthrough_p (tree attr)
 {
   if (attr == error_mark_node)
    return false;
-  tree t = lookup_attribute ("fallthrough", attr);
+  tree t = lookup_attribute ("", "fallthrough", attr);
   if (t == NULL_TREE)
     return false;
   /* It is no longer true that "this attribute shall appear at most once in
      each attribute-list", but we still give a warning.  */
-  if (lookup_attribute ("fallthrough", TREE_CHAIN (t)))
+  if (lookup_attribute ("", "fallthrough", TREE_CHAIN (t)))
     warning (OPT_Wattributes, "attribute %<fallthrough%> specified multiple "
 	     "times");
   /* No attribute-argument-clause shall be present.  */
@@ -6023,7 +6024,8 @@ attribute_fallthrough_p (tree attr)
   for (t = attr; t != NULL_TREE; t = TREE_CHAIN (t))
     {
       tree name = get_attribute_name (t);
-      if (!is_attribute_p ("fallthrough", name))
+      if (!is_attribute_p ("fallthrough", name)
+	  || !is_attribute_namespace_p ("", t))
 	{
 	  if (!c_dialect_cxx () && get_attribute_namespace (t) == NULL_TREE)
 	    /* The specifications of standard attributes in C mean

@@ -1078,4 +1078,6 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define TARGET_SUPPORTS_WIDE_INT 1
 
+#define REGISTER_TARGET_PRAGMAS() riscv_register_pragmas ()
+
 #endif /* ! GCC_RISCV_H */

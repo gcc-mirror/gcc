@@ -3187,6 +3187,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 
   /* fntype now gets the type of function pointed to.  */
   fntype = TREE_TYPE (fntype);
+  tree return_type = TREE_TYPE (fntype);
 
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */
@@ -3203,8 +3204,6 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
       && TREE_CODE (tem = TREE_OPERAND (tem, 0)) == FUNCTION_DECL
       && !comptypes (fntype, TREE_TYPE (tem)))
     {
-      tree return_type = TREE_TYPE (fntype);
-
       /* This situation leads to run-time undefined behavior.  We can't,
 	 therefore, simply error unless we can prove that all possible
 	 executions of the program must execute the code.  */
@@ -3229,22 +3228,25 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   bool warned_p = check_function_arguments (loc, fundecl, fntype,
 					    nargs, argarray, &arg_loc);
 
+  if (TYPE_QUALS (return_type) != TYPE_UNQUALIFIED
+      && !VOID_TYPE_P (return_type))
+    return_type = c_build_qualified_type (return_type, TYPE_UNQUALIFIED);
   if (name != NULL_TREE
       && startswith (IDENTIFIER_POINTER (name), "__builtin_"))
     {
       if (require_constant_value)
 	result
-	  = fold_build_call_array_initializer_loc (loc, TREE_TYPE (fntype),
+	  = fold_build_call_array_initializer_loc (loc, return_type,
 						   function, nargs, argarray);
       else
-	result = fold_build_call_array_loc (loc, TREE_TYPE (fntype),
+	result = fold_build_call_array_loc (loc, return_type,
 					    function, nargs, argarray);
       if (TREE_CODE (result) == NOP_EXPR
 	  && TREE_CODE (TREE_OPERAND (result, 0)) == INTEGER_CST)
 	STRIP_TYPE_NOPS (result);
     }
   else
-    result = build_call_array_loc (loc, TREE_TYPE (fntype),
+    result = build_call_array_loc (loc, return_type,
 				   function, nargs, argarray);
   /* If -Wnonnull warning has been diagnosed, avoid diagnosing it again
      later.  */
@@ -4831,6 +4833,9 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 	TREE_SIDE_EFFECTS (val) = 1;
+	if (TYPE_QUALS (TREE_TYPE (val)) != TYPE_UNQUALIFIED)
+	  TREE_TYPE (val) = c_build_qualified_type (TREE_TYPE (val),
+						    TYPE_UNQUALIFIED);
 	ret = val;
 	goto return_build_unary_op;
       }

@@ -169,7 +169,8 @@ in the following sections.
 -fopenmp  -fopenmp-simd @gol
 -fpermitted-flt-eval-methods=@var{standard} @gol
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields @gol
--fsigned-char  -funsigned-char  -fsso-struct=@var{endianness}}
+-fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}] @gol
+-fsso-struct=@var{endianness}}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -2496,7 +2497,10 @@ this switch.  You may want to use the @option{-fno-gnu-keywords} flag
 instead, which disables @code{typeof} but not @code{asm} and
 @code{inline}.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}),
 this switch only affects the @code{asm} and @code{typeof} keywords,
-since @code{inline} is a standard keyword in ISO C99.
+since @code{inline} is a standard keyword in ISO C99.  In C2X mode
+(@option{-std=c2x} or @option{-std=gnu2x}), this switch only affects
+the @code{asm} keyword, since @code{typeof} is a standard keyword in
+ISO C2X.
 
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}
@@ -2699,7 +2703,8 @@ can be omitted, to use a target-specific default value.
 @item -fopenmp
 @opindex fopenmp
 @cindex OpenMP parallel
-Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
+Enable handling of OpenMP directives @code{#pragma omp} in C/C++,
+@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
@@ -2711,9 +2716,12 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 @opindex fopenmp-simd
 @cindex OpenMP SIMD
 @cindex SIMD
-Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
-in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
-are ignored.
+Enable handling of OpenMP's @code{simd}, @code{declare simd},
+@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan},
+@code{loop} directives and combined or composite directives with
+@code{simd} as constituent with @code{#pragma omp} in C/C++,
+@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++
+and @code{!$omp} in Fortran.  Other OpenMP directives are ignored.
 
 @item -fpermitted-flt-eval-methods=@var{style}
 @opindex fpermitted-flt-eval-methods
@@ -2789,6 +2797,31 @@ make such a program work with the opposite default.
 The type @code{char} is always a distinct type from each of
 @code{signed char} or @code{unsigned char}, even though its behavior
 is always just like one of those two.
+
+@item -fstrict-flex-arrays
+@opindex fstrict-flex-arrays
+@opindex fno-strict-flex-arrays
+Control when to treat the trailing array of a structure as a flexible array
+member for the purpose of accessing the elements of such an array.
+The positive form is equivalent to @option{-fstrict-flex-arrays=3}, which is the
+strictest.  A trailing array is treated as a flexible array member only when it
+is declared as a flexible array member per C99 standard onwards.
+The negative form is equivalent to @option{-fstrict-flex-arrays=0}, which is the
+least strict.  All trailing arrays of structures are treated as flexible array
+members.
+
+@item -fstrict-flex-arrays=@var{level}
+@opindex fstrict-flex-arrays=@var{level}
+Control when to treat the trailing array of a structure as a flexible array
+member for the purpose of accessing the elements of such an array.  The value
+of @var{level} controls the level of strictness.
+
+The possible values of @var{level} are the same as for the
+@code{strict_flex_array} attribute (@pxref{Variable Attributes}).
+
+You can control this behavior for a specific trailing array field of a
+structure by using the variable attribute @code{strict_flex_array} attribute
+(@pxref{Variable Attributes}).
 
 @item -fsso-struct=@var{endianness}
 @opindex fsso-struct

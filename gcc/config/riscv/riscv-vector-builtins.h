@@ -18,10 +18,13 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_RISCV_V_BUILTINS_H
-#define GCC_RISCV_V_BUILTINS_H
+#ifndef GCC_RISCV_VECTOR_BUILTINS_H
+#define GCC_RISCV_VECTOR_BUILTINS_H
 
 namespace riscv_vector {
+
+/* This is for segment instructions.  */
+const unsigned int MAX_TUPLE_SIZE = 8;
 
 /* Static information about each vector type.  */
 struct vector_type_info
@@ -67,12 +70,6 @@ public:
 private:
   bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
 };
-
-void init_builtins ();
-const char *mangle_builtin_type (const_tree);
-#ifdef GCC_TARGET_H
-bool verify_type_context (location_t, type_context_kind, const_tree, bool);
-#endif
 
 } // end namespace riscv_vector
 

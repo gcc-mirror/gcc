@@ -348,7 +348,7 @@ struct d_print_info
      be bigger than MAX_RECURSION_COUNT.  */
   int recursion;
   /* Non-zero if we're printing a lambda argument.  A template
-     parameter reference actually means 'auto'.  */
+     parameter reference actually means 'auto', a pack expansion means T...  */
   int is_lambda_arg;
   /* The current index into any template argument packs we are using
      for printing, or -1 to print the whole pack.  */
@@ -5930,9 +5930,10 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
       {
-	int len;
-	int i;
-	struct demangle_component *a = d_find_pack (dpi, d_left (dc));
+	struct demangle_component *a = NULL;
+
+	if (!dpi->is_lambda_arg)
+	  a = d_find_pack (dpi, d_left (dc));
 	if (a == NULL)
 	  {
 	    /* d_find_pack won't find anything if the only packs involved
@@ -5940,17 +5941,20 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	       case, just print the pattern and "...".  */
 	    d_print_subexpr (dpi, options, d_left (dc));
 	    d_append_string (dpi, "...");
-	    return;
 	  }
-
-	len = d_pack_length (a);
-	dc = d_left (dc);
-	for (i = 0; i < len; ++i)
+	else
 	  {
-	    dpi->pack_index = i;
-	    d_print_comp (dpi, options, dc);
-	    if (i < len-1)
-	      d_append_string (dpi, ", ");
+	    int len = d_pack_length (a);
+	    int i;
+
+	    dc = d_left (dc);
+	    for (i = 0; i < len; ++i)
+	      {
+		if (i)
+		  d_append_string (dpi, ", ");
+		dpi->pack_index = i;
+		d_print_comp (dpi, options, dc);
+	      }
 	  }
       }
       return;

@@ -304,17 +304,27 @@ extern Boolean Compile_Time_Known_Value	(Node_Id);
 
 #define Defining_Entity			sem_util__defining_entity
 #define First_Actual			sem_util__first_actual
+#define Has_Storage_Model_Type_Aspect	sem_util__storage_model_support__has_storage_model_type_aspect
+#define Has_Designated_Storage_Model_Aspect sem_util__storage_model_support__has_designated_storage_model_aspect
 #define Is_Expression_Function		sem_util__is_expression_function
 #define Is_Variable_Size_Record 	sem_util__is_variable_size_record
 #define Needs_Secondary_Stack		sem_util__needs_secondary_stack
 #define Next_Actual			sem_util__next_actual
+#define Storage_Model_Object 		sem_util__storage_model_support__storage_model_object
+#define Storage_Model_Copy_From 	sem_util__storage_model_support__storage_model_copy_from
+#define Storage_Model_Copy_To 		sem_util__storage_model_support__storage_model_copy_to
 
 extern Entity_Id Defining_Entity		(Node_Id);
 extern Node_Id First_Actual			(Node_Id);
+extern Boolean Has_Storage_Model_Type_Aspect	(Entity_Id);
+extern Boolean Has_Designated_Storage_Model_Aspect (Entity_Id);
 extern Boolean Is_Expression_Function		(Entity_Id);
 extern Boolean Is_Variable_Size_Record 		(Entity_Id);
 extern Boolean Needs_Secondary_Stack		(Entity_Id);
 extern Node_Id Next_Actual			(Node_Id);
+extern Entity_Id Storage_Model_Object		(Entity_Id);
+extern Entity_Id Storage_Model_Copy_From	(Entity_Id);
+extern Entity_Id Storage_Model_Copy_To 		(Entity_Id);
 
 /* sinfo: */
 

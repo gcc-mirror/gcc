@@ -203,9 +203,9 @@ readline (FILE *f)
 	return std::string ();
       /* If we're not at the end of the line then override the
 	 \0 added by fgets.  */
-      last = strnlen (buf, size) - 1;
+      last = strnlen (buf, size);
     }
-  while (!feof (f) && buf[last] != '\n');
+  while (!feof (f) && last > 0 && buf[last - 1] != '\n');
 
   std::string result (buf);
   free (buf);

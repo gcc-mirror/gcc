@@ -2401,6 +2401,10 @@ tree
 build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
                  Entity_Id gnat_pool, Node_Id gnat_node, bool ignore_init_type)
 {
+  const bool pool_is_storage_model
+    = Present (gnat_pool)
+      && Has_Storage_Model_Type_Aspect (Etype (gnat_pool))
+      && Present (Storage_Model_Copy_To (gnat_pool));
   tree size, storage, storage_deref, storage_init;
 
   /* If the initializer, if present, is a NULL_EXPR, just return a new one.  */
@@ -2433,6 +2437,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 					  get_identifier ("ALLOC"), false);
       tree template_type = TREE_TYPE (TYPE_FIELDS (storage_type));
       tree storage_ptr_type = build_pointer_type (storage_type);
+      tree lhs, rhs;
 
       size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (storage_type),
 					     init);
@@ -2459,17 +2464,21 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 				  build_template (template_type, type, init));
 	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (storage_type)),
 				  init);
-	  storage_init
-	    = build_binary_op (INIT_EXPR, NULL_TREE, storage_deref,
-			       gnat_build_constructor (storage_type, v));
+
+	  lhs = storage_deref;
+	  rhs = gnat_build_constructor (storage_type, v);
 	}
       else
-	storage_init
-	  = build_binary_op (INIT_EXPR, NULL_TREE,
-			     build_component_ref (storage_deref,
-						  TYPE_FIELDS (storage_type),
-						  false),
-			     build_template (template_type, type, NULL_TREE));
+	{
+	  lhs = build_component_ref (storage_deref, TYPE_FIELDS (storage_type),
+				     false);
+	  rhs = build_template (template_type, type, NULL_TREE);
+	}
+
+      if (pool_is_storage_model)
+	storage_init = build_storage_model_store (gnat_pool, lhs, rhs);
+      else
+	storage_init = build_binary_op (INIT_EXPR, NULL_TREE, lhs, rhs);
 
       return build2 (COMPOUND_EXPR, result_type,
 		     storage_init, convert (result_type, storage));
@@ -2509,12 +2518,261 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       storage = gnat_protect_expr (storage);
       storage_deref = build_unary_op (INDIRECT_REF, NULL_TREE, storage);
       TREE_THIS_NOTRAP (storage_deref) = 1;
-      storage_init
-	= build_binary_op (INIT_EXPR, NULL_TREE, storage_deref, init);
+      if (pool_is_storage_model)
+	storage_init
+	  = build_storage_model_store (gnat_pool, storage_deref, init);
+      else
+	storage_init
+	  = build_binary_op (INIT_EXPR, NULL_TREE, storage_deref, init);
       return build2 (COMPOUND_EXPR, result_type, storage_init, storage);
     }
 
   return storage;
+}
+
+/* Build a call to a copy procedure of a storage model given by an object.
+   DEST, SRC and SIZE are as for a call to memcpy.  GNAT_SMO is the entity
+   for the storage model object and COPY_TO says which procedure to use.  */
+
+static tree
+build_storage_model_copy (Entity_Id gnat_smo, tree dest, tree src, tree size,
+			  bool copy_to)
+{
+  const Entity_Id gnat_copy_proc
+    = copy_to
+      ? Storage_Model_Copy_To (gnat_smo)
+      : Storage_Model_Copy_From (gnat_smo);
+  tree gnu_copy_proc = gnat_to_gnu (gnat_copy_proc);
+  tree gnu_param_type_list = TYPE_ARG_TYPES (TREE_TYPE (gnu_copy_proc));
+  tree t1 = TREE_VALUE (gnu_param_type_list);
+  tree t2 = TREE_VALUE (TREE_CHAIN (gnu_param_type_list));
+  tree t3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (gnu_param_type_list)));
+  tree t4
+    = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (gnu_param_type_list))));
+
+  return
+    build_call_n_expr (gnu_copy_proc,
+		       4,
+		       build_unary_op (ADDR_EXPR, t1, gnat_to_gnu (gnat_smo)),
+		       build_unary_op (ADDR_EXPR, t2, dest),
+		       build_unary_op (ADDR_EXPR, t3, src),
+		       convert (t4, size));
+}
+
+/* Build a load of SRC using the storage model of GNAT_SMO.  */
+
+tree
+build_storage_model_load (Entity_Id gnat_smo, tree src)
+{
+  tree ret = build2 (LOAD_EXPR, TREE_TYPE (src), src, NULL_TREE);
+
+  /* Unconstrained array references have no size so we need to store the
+     storage object model for future processing by the machinery.  */
+  if (TREE_CODE (src) == UNCONSTRAINED_ARRAY_REF)
+    TREE_OPERAND (ret, 1) = build_int_cst (integer_type_node, gnat_smo);
+  else
+    TREE_OPERAND (ret, 1) = build_storage_model_load (gnat_smo, src, src);
+
+  return ret;
+}
+
+/* Build a load of SRC into DEST using the storage model of GNAT_SMO.
+   If SIZE is specified, use it, otherwise use the size of SRC.  */
+
+tree
+build_storage_model_load (Entity_Id gnat_smo, tree dest, tree src, tree size)
+{
+  gcc_assert (TREE_CODE (src) != LOAD_EXPR);
+
+  if (!size)
+    {
+      size = TYPE_SIZE_UNIT (TREE_TYPE (src));
+      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, src);
+      size = INSTANTIATE_LOAD_IN_EXPR (size, gnat_smo);
+    }
+
+  return build_storage_model_copy (gnat_smo, dest, src, size, false);
+}
+
+/* Build a store of SRC into DEST using the storage model of GNAT_SMO.
+   If SIZE is specified, use it, otherwise use the size of DEST.  */
+
+tree
+build_storage_model_store (Entity_Id gnat_smo, tree dest, tree src, tree size)
+{
+  gcc_assert (TREE_CODE (src) != LOAD_EXPR);
+
+  if (!size)
+    {
+      size = TYPE_SIZE_UNIT (TREE_TYPE (dest));
+      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, dest);
+      size = INSTANTIATE_LOAD_IN_EXPR (size, gnat_smo);
+    }
+
+  return build_storage_model_copy (gnat_smo, dest, src, size, true);
+}
+
+/* Given a tree EXP, instantiate occurrences of LOAD_EXPR in it and associate
+   them with the storage model of GNAT_SMO.  */
+
+tree
+instantiate_load_in_expr (tree exp, Entity_Id gnat_smo)
+{
+  const enum tree_code code = TREE_CODE (exp);
+  tree type = TREE_TYPE (exp);
+  tree op0, op1, op2, op3;
+  tree new_tree;
+
+  /* We handle TREE_LIST and COMPONENT_REF separately.  */
+  if (code == TREE_LIST)
+    {
+      op0 = INSTANTIATE_LOAD_IN_EXPR (TREE_CHAIN (exp), gnat_smo);
+      op1 = INSTANTIATE_LOAD_IN_EXPR (TREE_VALUE (exp), gnat_smo);
+      if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
+	return exp;
+
+      return tree_cons (TREE_PURPOSE (exp), op1, op0);
+    }
+  else if (code == COMPONENT_REF)
+    {
+      /* The field.  */
+      op1 = TREE_OPERAND (exp, 1);
+
+      /* If it is a discriminant or equivalent, a LOAD_EXPR is needed.  */
+      if (DECL_DISCRIMINANT_NUMBER (op1))
+	return build_storage_model_load (gnat_smo, exp);
+
+      op0 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 0), gnat_smo);
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      new_tree = fold_build3 (COMPONENT_REF, type, op0, op1, NULL_TREE);
+   }
+  else
+    switch (TREE_CODE_CLASS (code))
+      {
+      case tcc_constant:
+      case tcc_declaration:
+	  return exp;
+
+      case tcc_expression:
+	if (code == LOAD_EXPR)
+	  return exp;
+
+	/* Fall through.  */
+
+      case tcc_exceptional:
+      case tcc_unary:
+      case tcc_binary:
+      case tcc_comparison:
+      case tcc_reference:
+	switch (TREE_CODE_LENGTH (code))
+	  {
+	  case 0:
+	    return exp;
+
+	  case 1:
+	    op0 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 0), gnat_smo);
+	    if (op0 == TREE_OPERAND (exp, 0))
+	      return exp;
+
+	    new_tree = fold_build1 (code, type, op0);
+	    break;
+
+	  case 2:
+	    op0 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 0), gnat_smo);
+	    op1 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 1), gnat_smo);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	      return exp;
+
+	    new_tree = fold_build2 (code, type, op0, op1);
+	    break;
+
+	  case 3:
+	    op0 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 0), gnat_smo);
+	    op1 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 1), gnat_smo);
+	    op2 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 2), gnat_smo);
+
+	    if (op0 == TREE_OPERAND (exp, 0)
+		&& op1 == TREE_OPERAND (exp, 1)
+		&& op2 == TREE_OPERAND (exp, 2))
+	      return exp;
+
+	    new_tree = fold_build3 (code, type, op0, op1, op2);
+	    break;
+
+	  case 4:
+	    op0 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 0), gnat_smo);
+	    op1 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 1), gnat_smo);
+	    op2 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 2), gnat_smo);
+	    op3 = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (exp, 3), gnat_smo);
+
+	    if (op0 == TREE_OPERAND (exp, 0)
+		&& op1 == TREE_OPERAND (exp, 1)
+		&& op2 == TREE_OPERAND (exp, 2)
+		&& op3 == TREE_OPERAND (exp, 3))
+	      return exp;
+
+	    new_tree = fold (build4 (code, type, op0, op1, op2, op3));
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
+	break;
+
+      case tcc_vl_exp:
+	{
+	  gcc_assert (code == CALL_EXPR);
+
+	  const int n = call_expr_nargs (exp);
+	  gcc_assert (n > 0);
+	  tree *argarray = XALLOCAVEC (tree, n);
+	  for (int i = 0; i < n; i++)
+	    argarray[i]
+	      = INSTANTIATE_LOAD_IN_EXPR (CALL_EXPR_ARG (exp, i), gnat_smo);
+
+	  for (int i = 0; i < n; i++)
+	    if (argarray[i] != CALL_EXPR_ARG (exp, i))
+	      return build_call_array (type, CALL_EXPR_FN (exp), n, argarray);
+
+	  return exp;
+	}
+
+      default:
+	gcc_unreachable ();
+      }
+
+  TREE_READONLY (new_tree) |= TREE_READONLY (exp);
+
+  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+    TREE_THIS_NOTRAP (new_tree) |= TREE_THIS_NOTRAP (exp);
+
+  return new_tree;
+}
+
+/* Given an array or slice reference, instantiate occurrences of LOAD_EXPR in
+   it and associate them with the storage model of GNAT_SMO.  */
+
+void
+instantiate_load_in_array_ref (tree ref, Entity_Id gnat_smo)
+{
+  tree domain_type = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
+  tree elem_type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (ref, 0)));
+
+  TREE_OPERAND (ref, 2)
+    = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_MIN_VALUE (domain_type), ref);
+  TREE_OPERAND (ref, 2)
+    = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (ref, 2), gnat_smo);
+
+  TREE_OPERAND (ref, 3)
+    = size_binop (EXACT_DIV_EXPR,
+		  SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (elem_type),
+						  ref),
+		  size_int (TYPE_ALIGN_UNIT (elem_type)));
+  TREE_OPERAND (ref, 3)
+    = INSTANTIATE_LOAD_IN_EXPR (TREE_OPERAND (ref, 3), gnat_smo);
 }
 
 /* Indicate that we need to take the address of T and that it therefore
@@ -2816,7 +3074,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
 		  gnat_rewrite_reference (TREE_OPERAND (ref, 0), func, data,
 					  init),
 		  func (TREE_OPERAND (ref, 1), data),
-		  TREE_OPERAND (ref, 2), NULL_TREE);
+		  TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
       break;
 
     case COMPOUND_EXPR:
@@ -2901,9 +3159,6 @@ get_inner_constant_reference (tree exp)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  {
-	    if (TREE_OPERAND (exp, 2))
-	      return NULL_TREE;
-
 	    tree array_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 	    if (!TREE_CONSTANT (TREE_OPERAND (exp, 1))
 	        || !TREE_CONSTANT (TYPE_MIN_VALUE (TYPE_DOMAIN (array_type)))
@@ -3044,8 +3299,13 @@ gnat_invariant_expr (tree expr)
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
-	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1)) || TREE_OPERAND (t, 2))
-	    return NULL_TREE;
+	  {
+	    tree array_type = TREE_TYPE (TREE_OPERAND (t, 0));
+	    if (!TREE_CONSTANT (TREE_OPERAND (t, 1))
+	        || !TREE_CONSTANT (TYPE_MIN_VALUE (TYPE_DOMAIN (array_type)))
+	        || !TREE_CONSTANT (TYPE_SIZE_UNIT (TREE_TYPE (array_type))))
+	      return NULL_TREE;
+	  }
 	  break;
 
 	case BIT_FIELD_REF:

@@ -43,6 +43,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if _GLIBCXX_HOSTED
   // Helper for exception objects in <except>
   void
   __throw_bad_exception(void) __attribute__((__noreturn__));
@@ -111,6 +112,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Helpers for exception objects in <functional>
   void
   __throw_bad_function_call() __attribute__((__noreturn__));
+
+#else // ! HOSTED
+
+  __attribute__((__noreturn__)) inline void
+  __throw_invalid_argument(const char*)
+  { std::__terminate(); }
+
+  __attribute__((__noreturn__)) inline void
+  __throw_out_of_range(const char*)
+  { std::__terminate(); }
+
+  __attribute__((__noreturn__)) inline void
+  __throw_out_of_range_fmt(const char*, ...)
+  { std::__terminate(); }
+
+  __attribute__((__noreturn__)) inline void
+  __throw_runtime_error(const char*)
+  { std::__terminate(); }
+
+  __attribute__((__noreturn__)) inline void
+  __throw_overflow_error(const char*)
+  { std::__terminate(); }
+
+#endif // HOSTED
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

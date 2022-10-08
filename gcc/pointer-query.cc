@@ -1796,14 +1796,19 @@ handle_array_ref (tree aref, gimple *stmt, bool addr, int ostype,
       orng[0] = -orng[1] - 1;
     }
 
-  /* Convert the array index range determined above to a byte
-     offset.  */
+  /* Convert the array index range determined above to a byte offset.  */
   tree lowbnd = array_ref_low_bound (aref);
-  if (!integer_zerop (lowbnd) && tree_fits_uhwi_p (lowbnd))
+  if (TREE_CODE (lowbnd) == INTEGER_CST && !integer_zerop (lowbnd))
     {
-      /* Adjust the index by the low bound of the array domain
-	 (normally zero but 1 in Fortran).  */
-      unsigned HOST_WIDE_INT lb = tree_to_uhwi (lowbnd);
+      /* Adjust the index by the low bound of the array domain (0 in C/C++,
+	 1 in Fortran and anything in Ada) by applying the same processing
+	 as in get_offset_range.  */
+      const wide_int wlb = wi::to_wide (lowbnd);
+      signop sgn = SIGNED;
+      if (TYPE_UNSIGNED (TREE_TYPE (lowbnd))
+	  && wlb.get_precision () < TYPE_PRECISION (sizetype))
+	sgn = UNSIGNED;
+      const offset_int lb = offset_int::from (wlb, sgn);
       orng[0] -= lb;
       orng[1] -= lb;
     }

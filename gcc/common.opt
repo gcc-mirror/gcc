@@ -3317,7 +3317,7 @@ Common Driver JoinedOrMissing Negative(gdwarf-)
 Generate debug information in default version of DWARF format.
 
 gdwarf-
-Common Driver Joined UInteger Var(dwarf_version) Init(5)
+Common Driver Joined UInteger Var(dwarf_version) Init(DWARF_VERSION_DEFAULT)
 Generate debug information in DWARF v2 (or later) format.
 
 gdwarf32

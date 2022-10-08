@@ -79,6 +79,7 @@ extern bool riscv_v_ext_enabled_vector_mode_p (machine_mode);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
+void riscv_register_pragmas (void);
 
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
@@ -114,5 +115,15 @@ namespace selftest {
 extern void riscv_run_selftests (void);
 } // namespace selftest
 #endif
+
+namespace riscv_vector {
+/* Routines implemented in riscv-vector-builtins.cc.  */
+extern void init_builtins (void);
+extern const char *mangle_builtin_type (const_tree);
+#ifdef GCC_TARGET_H
+extern bool verify_type_context (location_t, type_context_kind, const_tree, bool);
+#endif
+extern void handle_pragma_vector (void);
+}
 
 #endif /* ! GCC_RISCV_PROTOS_H */

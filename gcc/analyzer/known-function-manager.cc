@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-core.h"
 #include "analyzer/analyzer-logging.h"

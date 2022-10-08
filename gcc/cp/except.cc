@@ -755,7 +755,7 @@ build_throw (location_t loc, tree exp)
 	  tree tmp = decay_conversion (exp, tf_warning_or_error);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
-	  exp = build2 (INIT_EXPR, temp_type, object, tmp);
+	  exp = cp_build_init_expr (object, tmp);
 	}
 
       /* Mark any cleanups from the initialization as MUST_NOT_THROW, since

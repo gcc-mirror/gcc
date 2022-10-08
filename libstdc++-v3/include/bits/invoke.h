@@ -130,8 +130,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __result = __invoke_result<_Callable, _Args...>;
       using __type = typename __result::type;
+#if __has_builtin(__reference_converts_from_temporary)
       static_assert(!__reference_converts_from_temporary(_Res, __type),
 		    "INVOKE<R> must not create a dangling reference");
+#endif
       using __tag = typename __result::__invoke_type;
       return std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
 					std::forward<_Args>(__args)...);

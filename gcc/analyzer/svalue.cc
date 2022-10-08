@@ -38,22 +38,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
-#include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region-model.h"
+#include "diagnostic.h"
+#include "tree-diagnostic.h"
 
 #if ENABLE_ANALYZER
 
@@ -207,7 +201,7 @@ svalue::can_merge_p (const svalue *other,
   if (maybe_get_constant () && other->maybe_get_constant ())
     {
       return mgr->get_or_create_widening_svalue (other->get_type (),
-						 merger->m_point,
+						 merger->get_function_point (),
 						 other, this);
     }
 
@@ -220,7 +214,7 @@ svalue::can_merge_p (const svalue *other,
 	&& binop_sval->get_arg1 ()->get_kind () == SK_CONSTANT
 	&& other->get_kind () != SK_WIDENING)
       return mgr->get_or_create_widening_svalue (other->get_type (),
-						 merger->m_point,
+						 merger->get_function_point (),
 						 other, this);
 
   /* Merge: (Widen(existing_val, V), existing_val) -> Widen (existing_val, V)
@@ -874,7 +868,7 @@ constant_svalue::eval_condition (const constant_svalue *lhs,
 
 const svalue *
 constant_svalue::maybe_fold_bits_within (tree type,
-					 const bit_range &,
+					 const bit_range &bits,
 					 region_model_manager *mgr) const
 {
   /* Bits within an all-zero value are also all zero.  */
@@ -885,6 +879,21 @@ constant_svalue::maybe_fold_bits_within (tree type,
       else
 	return this;
     }
+
+  /* Handle the case of extracting a single bit. */
+  if (bits.m_size_in_bits == 1
+      && TREE_CODE (m_cst_expr) == INTEGER_CST
+      && type
+      && INTEGRAL_TYPE_P (type))
+    {
+      unsigned HOST_WIDE_INT bit = bits.m_start_bit_offset.to_uhwi ();
+      unsigned HOST_WIDE_INT mask = (1 << bit);
+      unsigned HOST_WIDE_INT val_as_hwi = tree_to_uhwi (m_cst_expr);
+      unsigned HOST_WIDE_INT masked_val = val_as_hwi & mask;
+      int result = masked_val ? 1 : 0;
+      return mgr->get_or_create_int_cst (type, result);
+    }
+
   /* Otherwise, don't fold.  */
   return NULL;
 }
@@ -1728,13 +1737,17 @@ unmergeable_svalue::implicitly_live_p (const svalue_set *live_svalues,
 compound_svalue::compound_svalue (tree type, const binding_map &map)
 : svalue (calc_complexity (map), type), m_map (map)
 {
-  /* All keys within the underlying binding_map are required to be concrete,
-     not symbolic.  */
 #if CHECKING_P
   for (iterator_t iter = begin (); iter != end (); ++iter)
     {
+      /* All keys within the underlying binding_map are required to be concrete,
+	 not symbolic.  */
       const binding_key *key = (*iter).first;
       gcc_assert (key->concrete_p ());
+
+      /* We don't nest compound svalues.  */
+      const svalue *sval = (*iter).second;
+      gcc_assert (sval->get_kind () != SK_COMPOUND);
     }
 #endif
 }

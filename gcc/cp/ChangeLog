@@ -1,3 +1,154 @@
+2022-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107085
+	* call.cc (conv_binds_ref_to_temporary): New.
+	(ref_conv_binds_directly): Rename to...
+	(ref_conv_binds_to_temporary): ...this.  Use
+	conv_binds_ref_to_temporary.
+	* cp-tree.h (ref_conv_binds_directly): Rename to...
+	(ref_conv_binds_to_temporary): ...this.
+	* method.cc (ref_xes_from_temporary): Use ref_conv_binds_to_temporary.
+	* parser.cc (warn_for_range_copy): Likewise.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* module.cc (trees_out::core_bools): Stream out new bit
+	decl_not_flexarray.
+	(trees_in::core_bools): Stream in new bit decl_not_flexarray.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (trees_out::mark_class_def): Guard against
+	DECL_BIT_FIELD_REPRESENTATIVE not being a decl.
+
+2022-10-07  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (expand_default_init): Also push the INIT_EXPR inside a
+	CLEANUP_POINT_EXPR.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104433
+	* module.cc (trees_out::core_bools): Don't override
+	DECL_EXTERNAL to true for static variables from an inline
+	function.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* module.cc (enum module_state_counts): Use array size.
+	* name-lookup.cc (class namespace_limit_reached): Likewise.
+	(class module_state): Move up in the file.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_check_std_attribute): Only do checks if
+	attribute is a standard attribute or in gnu namespace and only
+	lookup other attributes in those namespaces.
+	* cp-gimplify.cc (lookup_hotness_attribute): Adjust function comment.
+	Only return true for standard attribute or gnu namespace attribute.
+	(remove_hotness_attribute): Only remove hotness attributes when
+	they are standard or in gnu namespace, implement it in a single
+	loop rather than former 4 now 8 remove_attribute calls.
+
+2022-10-06  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (expand_one_await_expression): Change conversion
+	to VIEW_CONVERT_EXPR.
+	* cp-gimplify.cc (cp_genericize_r) [CONVERT_EXPR]: Add assert.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.cc (init_reswords): Handle D_EXT11.
+
+2022-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (optimize_specialization_lookup_p): Remove.
+	(retrieve_specialization): Assume the above returns false
+	and simplify accordingly.
+	(register_specialization): Likewise.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* cp-tree.h (process_stmt_assume_attribute): Implement C++23
+	P1774R8 - Portable assumptions.  Declare.
+	(diagnose_failing_condition): Declare.
+	(find_failing_clause): Likewise.
+	* parser.cc (assume_attr): New enumerator.
+	(cp_parser_parenthesized_expression_list): Handle assume_attr.
+	Remove identifier variable, for id_attr push the identifier into
+	expression_list right away instead of inserting it before all the
+	others at the end.
+	(cp_parser_conditional_expression): New function.
+	(cp_parser_constant_expression): Use it.
+	(cp_parser_statement): Handle assume attribute.
+	(cp_parser_expression_statement): Likewise.
+	(cp_parser_gnu_attribute_list): Use assume_attr for assume
+	attribute.
+	(cp_parser_std_attribute): Likewise.  Handle standard assume
+	attribute like gnu::assume.
+	* cp-gimplify.cc (process_stmt_assume_attribute): New function.
+	* constexpr.cc: Include fold-const.h.
+	(find_failing_clause_r, find_failing_clause): New functions,
+	moved from semantics.cc with ctx argument added and if non-NULL,
+	call cxx_eval_constant_expression rather than fold_non_dependent_expr.
+	(cxx_eval_internal_function): Handle IFN_ASSUME.
+	(potential_constant_expression_1): Likewise.
+	* pt.cc (tsubst_copy_and_build): Likewise.
+	* semantics.cc (diagnose_failing_condition): New function.
+	(find_failing_clause_r, find_failing_clause): Moved to constexpr.cc.
+	(finish_static_assert): Use it.  Add auto_diagnostic_group.
+
+2022-10-05  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (lvalue_kind) [VIEW_CONVERT_EXPR]: Change prvalue to
+	xvalue.
+
+2022-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107154
+	* cp-gimplify.cc (cp_genericize_init_expr): Use iloc_sentinel.
+	(cp_genericize_target_expr): Likewise.
+
+2022-10-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107136
+	* Make-lang.in (CP_PLUGIN_HEADERS): Add cp-trait.def.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct omp_declare_target_attr): Rename to ...
+	(cp_omp_declare_target_attr): ... this.  Add device_type member.
+	(omp_begin_assumes_data): Rename to ...
+	(cp_omp_begin_assumes_data): ... this.
+	(struct saved_scope): Change types of omp_declare_target_attribute
+	and omp_begin_assumes.
+	* parser.cc (cp_parser_omp_clause_device_type): Uncomment
+	check_no_duplicate_clause call.
+	(cp_parser_omp_all_clauses): Fix up pasto, c_name for OMP_CLAUSE_LINK
+	should be "link" rather than "to".
+	(cp_parser_omp_declare_target): Adjust for omp_declare_target_attr
+	to cp_omp_declare_target_attr changes, push -1 as device_type.  Use
+	error_at rather than warning_at for declare target with only
+	device_type clauses.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(cp_parser_omp_begin): Add begin declare target support.  Adjust
+	for omp_begin_assumes_data to cp_omp_begin_assumes_data change.
+	(cp_parser_omp_end): Adjust for the
+	omp_declare_target_attr to cp_omp_declare_target_attr and
+	omp_begin_assumes_data to cp_omp_begin_assumes_data type changes,
+	adjust diagnostics wording and simplify format strings for easier
+	translations.
+	* semantics.cc (finish_translation_unit): Likewise.
+	* decl2.cc (cplus_decl_attributes): If device_type was present on
+	begin declare target, add "omp declare target host" and/or
+	"omp declare target nohost" attributes.
+
 2022-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (BCS_STMT_EXPR): New enumerator.

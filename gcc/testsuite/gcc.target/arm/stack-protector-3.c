@@ -26,7 +26,7 @@ asm (
 "	.type	__stack_chk_fail, %function\n"
 "__stack_chk_fail:\n"
 "	movs	r0, #0\n"
-"	b	exit\n"
+"	bl	exit\n"
 "	.size	__stack_chk_fail, .-__stack_chk_fail"
 );
 

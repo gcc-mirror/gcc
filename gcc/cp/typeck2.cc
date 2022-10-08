@@ -649,7 +649,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		  else
 		    {
 		    build_init:
-		      code = build2 (INIT_EXPR, inner_type, sub, value);
+		      code = cp_build_init_expr (sub, value);
 		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  add_stmt (code);
@@ -764,7 +764,7 @@ split_nonconstant_init (tree dest, tree init)
 	}
       else if (init)
 	{
-	  tree ie = build2 (INIT_EXPR, void_type_node, dest, init);
+	  tree ie = cp_build_init_expr (dest, init);
 	  code = add_stmt_to_compound (ie, code);
 	}
     }
@@ -773,7 +773,7 @@ split_nonconstant_init (tree dest, tree init)
     code = build_vec_init (dest, NULL_TREE, init, /*value-init*/false,
 			   /*from array*/1, tf_warning_or_error);
   else
-    code = build2 (INIT_EXPR, TREE_TYPE (dest), dest, init);
+    code = cp_build_init_expr (dest, init);
 
   return code;
 }
@@ -1464,6 +1464,7 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
       && CP_AGGREGATE_TYPE_P (type))
     init = reshape_init (type, init, complain);
   init = digest_init_flags (type, init, flags, complain);
+  set_target_expr_eliding (init);
 
   /* We may have temporary materialization in a NSDMI, if the initializer
      has something like A{} in it.  Digesting the {} could have introduced
@@ -1542,6 +1543,7 @@ massage_init_elt (tree type, tree init, int nested, int flags,
       tree t = fold_non_dependent_init (init, complain);
       if (TREE_CONSTANT (t))
 	init = t;
+      set_target_expr_eliding (init);
     }
   return init;
 }
@@ -1771,6 +1773,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    {
 	      gcc_assert (ce->value);
 	      next = massage_init_elt (fldtype, next, nested, flags, complain);
+	      /* We can't actually elide the temporary when initializing a
+		 potentially-overlapping field from a function that returns by
+		 value.  */
+	      if (ce->index
+		  && TREE_CODE (next) == TARGET_EXPR
+		  && unsafe_copy_elision_p (ce->index, next))
+		TARGET_EXPR_ELIDING_P (next) = false;
 	      ++idx;
 	    }
 	}
@@ -1804,6 +1813,9 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	     a class, just build one up; if it's an array, recurse.  */
 	  next = build_constructor (init_list_type_node, NULL);
 	  next = massage_init_elt (fldtype, next, nested, flags, complain);
+	  if (TREE_CODE (next) == TARGET_EXPR
+	      && unsafe_copy_elision_p (field, next))
+	    TARGET_EXPR_ELIDING_P (next) = false;
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  if ((complain & tf_warning)
@@ -2726,4 +2738,42 @@ require_complete_eh_spec_types (tree fntype, tree decl)
 		   decl);
 	}
     }
+}
+
+/* Record that any TARGET_EXPR in T are going to be elided in
+   cp_gimplify_init_expr (or sooner).  */
+
+void
+set_target_expr_eliding (tree t)
+{
+  if (!t)
+    return;
+  switch (TREE_CODE (t))
+    {
+    case TARGET_EXPR:
+      TARGET_EXPR_ELIDING_P (t) = true;
+      break;
+    case COMPOUND_EXPR:
+      set_target_expr_eliding (TREE_OPERAND (t, 1));
+      break;
+    case COND_EXPR:
+      set_target_expr_eliding (TREE_OPERAND (t, 1));
+      set_target_expr_eliding (TREE_OPERAND (t, 2));
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Call the above in the process of building an INIT_EXPR.  */
+
+tree
+cp_build_init_expr (location_t loc, tree target, tree init)
+{
+  set_target_expr_eliding (init);
+  tree ie = build2_loc (loc, INIT_EXPR, TREE_TYPE (target),
+			target, init);
+  TREE_SIDE_EFFECTS (ie) = true;
+  return ie;
 }

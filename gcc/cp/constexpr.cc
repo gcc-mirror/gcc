@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "fold-const.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1818,6 +1819,52 @@ cx_error_context (void)
   return r;
 }
 
+/* If we have a condition in conjunctive normal form (CNF), find the first
+   failing clause.  In other words, given an expression like
+
+     true && true && false && true && false
+
+   return the first 'false'.  EXPR is the expression.  */
+
+static tree
+find_failing_clause_r (constexpr_ctx *ctx, tree expr)
+{
+  if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
+    {
+      /* First check the left side...  */
+      tree e = find_failing_clause_r (ctx, TREE_OPERAND (expr, 0));
+      if (e == NULL_TREE)
+	/* ...if we didn't find a false clause, check the right side.  */
+	e = find_failing_clause_r (ctx, TREE_OPERAND (expr, 1));
+      return e;
+    }
+  tree e = contextual_conv_bool (expr, tf_none);
+  if (ctx)
+    {
+      bool new_non_constant_p = false, new_overflow_p = false;
+      e = cxx_eval_constant_expression (ctx, e, vc_prvalue,
+					&new_non_constant_p,
+					&new_overflow_p);
+    }
+  else
+    e = fold_non_dependent_expr (e, tf_none, /*manifestly_const_eval=*/true);
+  if (integer_zerop (e))
+    /* This is the failing clause.  */
+    return expr;
+  return NULL_TREE;
+}
+
+/* Wrapper for find_failing_clause_r.  */
+
+tree
+find_failing_clause (constexpr_ctx *ctx, tree expr)
+{
+  if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
+    if (tree e = find_failing_clause_r (ctx, expr))
+      expr = e;
+  return expr;
+}
+
 /* Evaluate a call T to a GCC internal function when possible and return
    the evaluated result or, under the control of CTX, give an error, set
    NON_CONSTANT_P, and return the unevaluated call T otherwise.  */
@@ -1835,6 +1882,48 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
     case IFN_UBSAN_BOUNDS:
     case IFN_UBSAN_VPTR:
     case IFN_FALLTHROUGH:
+      return void_node;
+
+    case IFN_ASSUME:
+      /* For now, restrict constexpr evaluation of [[assume (cond)]]
+	 only to the cases which don't have side-effects.  Evaluating
+	 it even when it does would mean we'd need to somehow undo
+	 all the side-effects e.g. in ctx->global->values.  */
+      if (!TREE_SIDE_EFFECTS (CALL_EXPR_ARG (t, 0))
+	  /* And it needs to be a potential constant expression.  */
+	  && potential_rvalue_constant_expression (CALL_EXPR_ARG (t, 0)))
+	{
+	  constexpr_ctx new_ctx = *ctx;
+	  new_ctx.quiet = true;
+	  tree arg = CALL_EXPR_ARG (t, 0);
+	  bool new_non_constant_p = false, new_overflow_p = false;
+	  arg = cxx_eval_constant_expression (&new_ctx, arg, vc_prvalue,
+					      &new_non_constant_p,
+					      &new_overflow_p);
+	  if (!new_non_constant_p && !new_overflow_p && integer_zerop (arg))
+	    {
+	      if (!*non_constant_p && !ctx->quiet)
+		{
+		  /* See if we can find which clause was failing
+		     (for logical AND).  */
+		  tree bad = find_failing_clause (&new_ctx,
+						  CALL_EXPR_ARG (t, 0));
+		  /* If not, or its location is unusable, fall back to the
+		     previous location.  */
+		  location_t cloc = cp_expr_loc_or_loc (bad, EXPR_LOCATION (t));
+
+		  auto_diagnostic_group d;
+
+		  /* Report the error. */
+		  error_at (cloc,
+			    "failed %<assume%> attribute assumption");
+		  diagnose_failing_condition (bad, cloc, false);
+		}
+
+	      *non_constant_p = true;
+	      return t;
+	    }
+	}
       return void_node;
 
     case IFN_ADD_OVERFLOW:
@@ -8706,6 +8795,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		case IFN_UBSAN_BOUNDS:
 		case IFN_UBSAN_VPTR:
 		case IFN_FALLTHROUGH:
+		case IFN_ASSUME:
 		  return true;
 
 		case IFN_ADD_OVERFLOW:

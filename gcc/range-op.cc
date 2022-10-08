@@ -2515,6 +2515,18 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
       if (r.varying_p ())
 	return true;
     }
+
+  // Update the nonzero mask.  Truncating casts are problematic unless
+  // the conversion fits in the resulting outer type.
+  wide_int nz = inner.get_nonzero_bits ();
+  if (truncating_cast_p (inner, outer)
+      && wi::rshift (nz, wi::uhwi (TYPE_PRECISION (outer.type ()),
+				   TYPE_PRECISION (inner.type ())),
+		     TYPE_SIGN (inner.type ())) != 0)
+    return true;
+  nz = wide_int::from (nz, TYPE_PRECISION (type), TYPE_SIGN (inner.type ()));
+  r.set_nonzero_bits (nz);
+
   return true;
 }
 
