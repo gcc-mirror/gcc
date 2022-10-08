@@ -1760,6 +1760,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_UPDATE_IPA_FN_TARGET_INFO
 #define TARGET_UPDATE_IPA_FN_TARGET_INFO rs6000_update_ipa_fn_target_info
+
+#undef TARGET_CONST_ANCHOR
+#define TARGET_CONST_ANCHOR 0x8000
+
 
 
 /* Processor table.  */
