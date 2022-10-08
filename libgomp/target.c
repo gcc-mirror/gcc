@@ -897,7 +897,7 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
 
   cur_node.host_start = (uintptr_t) hostaddrs[i];
   cur_node.host_end = cur_node.host_start + sizes[i];
-  splay_tree_key n2 = splay_tree_lookup (mem_map, &cur_node);
+  splay_tree_key n2 = gomp_map_0len_lookup (mem_map, &cur_node);
   kind = get_kind (short_mapkind, kinds, i);
   implicit = get_implicit (short_mapkind, kinds, i);
   if (n2
@@ -994,8 +994,20 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 
       if ((void *) target == NULL)
 	{
-	  gomp_mutex_unlock (&devicep->lock);
-	  gomp_fatal ("attempt to attach null pointer");
+	  /* As a special case, allow attaching NULL host pointers.  This
+	     allows e.g. unassociated Fortran pointers to be mapped
+	     properly.  */
+	  data = 0;
+
+	  gomp_debug (1,
+		      "%s: attaching NULL host pointer, target %p "
+		      "(struct base %p)\n", __FUNCTION__, (void *) devptr,
+		      (void *) (n->tgt->tgt_start + n->tgt_offset));
+
+	  gomp_copy_host2dev (devicep, aq, (void *) devptr, (void *) &data,
+			      sizeof (void *), true, cbufp);
+
+	  return;
 	}
 
       if (devicep->is_usm_ptr_func
@@ -1270,7 +1282,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  tgt->list[i].key = NULL;
 		  if (!aq
 		      && gomp_to_device_kind_p (get_kind (short_mapkind, kinds, i)
-						& typemask))
+						& typemask)
+		      && sizes[i] != 0)
 		    gomp_coalesce_buf_add (&cbuf,
 					   tgt_size - cur_node.host_end
 					   + (uintptr_t) hostaddrs[i],
@@ -1711,7 +1724,17 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				    + sizes[last];
 		if (tgt->list[first].key != NULL)
 		  continue;
+		if (sizes[last] == 0)
+		  cur_node.host_end++;
 		n = splay_tree_lookup (mem_map, &cur_node);
+		if (sizes[last] == 0)
+		  cur_node.host_end--;
+		if (n == NULL && cur_node.host_start == cur_node.host_end)
+		  {
+		    gomp_mutex_unlock (&devicep->lock);
+		    gomp_fatal ("Struct pointer member not mapped (%p)",
+				(void*) hostaddrs[first]);
+		  }
 		if (n == NULL)
 		  {
 		    size_t align = (size_t) 1 << (kind >> rshift);

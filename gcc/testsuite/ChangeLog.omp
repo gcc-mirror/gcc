@@ -1,5 +1,15 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* c-c++-common/gomp/clauses-2.c: Fix error output.
+	* c-c++-common/gomp/target-implicit-map-2.c: Adjust scan output.
+	* c-c++-common/gomp/target-50.c: Adjust scan output.
+	* c-c++-common/gomp/target-enter-data-1.c: Adjust scan output.
+	* g++.dg/gomp/static-component-1.C: New test.
+	* gcc.dg/gomp/target-3.c: Adjust scan output.
+	* gfortran.dg/gomp/map-9.c.f90: Adjust scan output.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	Revert:
 	2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
 

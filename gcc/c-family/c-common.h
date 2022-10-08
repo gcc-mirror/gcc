@@ -1271,7 +1271,8 @@ enum c_omp_region_type
   C_ORT_DECLARE_SIMD		= 1 << 2,
   C_ORT_TARGET			= 1 << 3,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
-  C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET
+  C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET,
+  C_ORT_ACC_TARGET		= C_ORT_ACC | C_ORT_TARGET
 };
 
 extern tree c_finish_omp_master (location_t, tree);
@@ -1307,6 +1308,77 @@ extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern void c_oacc_annotate_loops_in_kernels_regions (tree, tree (*) (tree));
 extern void c_omp_adjust_map_clauses (tree, bool);
+
+namespace omp_addr_tokenizer { struct omp_addr_token; }
+typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;
+
+class c_omp_address_inspector
+{
+  location_t loc;
+  tree root_term;
+  bool indirections;
+  int map_supported;
+
+protected:
+  tree orig;
+
+public:
+  c_omp_address_inspector (location_t loc, tree t)
+    : loc (loc), root_term (NULL_TREE), indirections (false),
+      map_supported (-1), orig (t)
+    {
+    }
+
+  ~c_omp_address_inspector ()
+    {
+    }
+
+  virtual bool processing_template_decl_p ()
+    {
+      return false;
+    }
+
+  virtual void emit_unmappable_type_notes (tree)
+    {
+    }
+
+  virtual tree convert_from_reference (tree)
+    {
+      gcc_unreachable ();
+    }
+
+  virtual tree build_array_ref (location_t loc, tree arr, tree idx)
+    {
+      tree eltype = TREE_TYPE (TREE_TYPE (arr));
+      return build4_loc (loc, ARRAY_REF, eltype, arr, idx, NULL_TREE,
+			 NULL_TREE);
+    }
+
+  virtual bool check_clause (tree);
+  tree get_root_term (bool);
+
+  tree get_address ()
+    {
+      return orig;
+    }
+
+  tree unconverted_ref_origin ();
+  bool component_access_p ();
+
+  bool map_supported_p ();
+
+  static tree get_origin (tree);
+  static tree maybe_unconvert_ref (tree);
+
+  bool maybe_zero_length_array_section (tree);
+
+  tree expand_array_base (tree, vec<omp_addr_token *> &, tree, unsigned *,
+			  c_omp_region_type, bool);
+  tree expand_component_selector (tree, vec<omp_addr_token *> &, tree,
+				  unsigned *);
+  tree expand_map_clause (tree, tree, vec<omp_addr_token *> &,
+			  c_omp_region_type);
+};
 
 enum c_omp_directive_kind {
   C_OMP_DIR_STANDALONE,

@@ -18037,7 +18037,8 @@ c_parser_omp_clause_detach (c_parser *parser, tree list)
 
 static tree
 c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
-			   const char *where, bool finish_p = true)
+			   const char *where, bool finish_p = true,
+			   bool target = false)
 {
   tree clauses = NULL;
   bool first = true;
@@ -18238,7 +18239,8 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
   c_parser_skip_to_pragma_eol (parser);
 
   if (finish_p)
-    return c_finish_omp_clauses (clauses, C_ORT_ACC);
+    return c_finish_omp_clauses (clauses, target ? C_ORT_ACC_TARGET
+						 : C_ORT_ACC);
 
   return clauses;
 }
@@ -18979,12 +18981,13 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
   mask |= OACC_LOOP_CLAUSE_MASK;
 
   tree clauses = c_parser_oacc_all_clauses (parser, mask, p_name,
-					    cclauses == NULL);
+					    /*finish_p=*/cclauses == NULL,
+					    /*target=*/is_parallel);
   if (cclauses)
     {
       clauses = c_oacc_split_loop_clauses (clauses, cclauses, is_parallel);
       if (*cclauses)
-	*cclauses = c_finish_omp_clauses (*cclauses, C_ORT_ACC);
+	*cclauses = c_finish_omp_clauses (*cclauses, C_ORT_ACC_TARGET);
       if (clauses)
 	clauses = c_finish_omp_clauses (clauses, C_ORT_ACC);
     }
@@ -19111,7 +19114,9 @@ c_parser_oacc_compute (location_t loc, c_parser *parser,
 	}
     }
 
-  tree clauses = c_parser_oacc_all_clauses (parser, mask, p_name);
+  tree clauses = c_parser_oacc_all_clauses (parser, mask, p_name,
+					    /*finish_p=*/true,
+					    /*target=*/true);
 
   tree block = c_begin_omp_parallel ();
   add_stmt (c_parser_omp_structured_block (parser, if_p));
@@ -22642,6 +22647,7 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH_DETACH:
+	  case GOMP_MAP_ATTACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -22751,6 +22757,7 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH_DETACH:
+	  case GOMP_MAP_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;

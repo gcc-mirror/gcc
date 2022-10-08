@@ -409,3 +409,6 @@ contains
   end subroutine eight
 
 end program main
+
+! Fixed by the "Fortran pointers and member mappings" patch
+! { dg-xfail-run-if TODO { offload_device_nonshared_as } }

@@ -5106,6 +5106,54 @@ omp_privatize_field (tree t, bool shared)
   return v;
 }
 
+/* C++ specialisation of the c_omp_address_inspector class.  */
+
+class cp_omp_address_inspector : public c_omp_address_inspector
+{
+public:
+  cp_omp_address_inspector (location_t loc, tree t)
+    : c_omp_address_inspector (loc, t)
+    {
+    }
+
+  ~cp_omp_address_inspector ()
+    {
+    }
+
+  bool processing_template_decl_p ()
+    {
+      return processing_template_decl;
+    }
+
+  void emit_unmappable_type_notes (tree t)
+    {
+      if (TREE_TYPE (t) != error_mark_node
+	  && !COMPLETE_TYPE_P (TREE_TYPE (t)))
+	cxx_incomplete_type_inform (TREE_TYPE (t));
+    }
+
+  tree convert_from_reference (tree x)
+    {
+      return ::convert_from_reference (x);
+    }
+
+  tree build_array_ref (location_t loc, tree arr, tree idx)
+    {
+      return ::build_array_ref (loc, arr, idx);
+    }
+
+  bool check_clause (tree clause)
+    {
+      if (TREE_CODE (orig) == COMPONENT_REF
+	  && invalid_nonstatic_memfn_p (EXPR_LOCATION (orig), orig,
+					tf_warning_or_error))
+	return false;
+      if (!c_omp_address_inspector::check_clause (clause))
+	return false;
+      return true;
+    }
+};
+
 /* Helper function for handle_omp_array_sections.  Called recursively
    to handle multiple array-section-subscripts.  C is the clause,
    T current expression (initially OMP_CLAUSE_DECL), which is either
@@ -5134,63 +5182,27 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 			     bool &non_contiguous, enum c_omp_region_type ort)
 {
   tree ret, low_bound, length, type;
+  bool openacc = (ort & C_ORT_ACC) != 0;
   if (TREE_CODE (t) != TREE_LIST)
     {
       if (error_operand_p (t))
 	return error_mark_node;
-      if (REFERENCE_REF_P (t)
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
-	t = TREE_OPERAND (t, 0);
-      ret = t;
-      while (TREE_CODE (t) == INDIRECT_REF)
-	{
-	  t = TREE_OPERAND (t, 0);
-	  STRIP_NOPS (t);
-	  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-	    t = TREE_OPERAND (t, 0);
-	}
-      while (TREE_CODE (t) == COMPOUND_EXPR)
-	{
-	  t = TREE_OPERAND (t, 1);
-	  STRIP_NOPS (t);
-	}
-      if (TREE_CODE (t) == COMPONENT_REF
-	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
-	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM)
-	  && !type_dependent_expression_p (t))
-	{
-	  if (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
-	      && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"bit-field %qE in %qs clause",
-			t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	      return error_mark_node;
-	    }
-	  while (TREE_CODE (t) == COMPONENT_REF)
-	    {
-	      if (TREE_TYPE (TREE_OPERAND (t, 0))
-		  && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qE is a member of a union", t);
-		  return error_mark_node;
-		}
-	      t = TREE_OPERAND (t, 0);
-	      while (TREE_CODE (t) == MEM_REF
-		     || TREE_CODE (t) == INDIRECT_REF
-		     || TREE_CODE (t) == ARRAY_REF)
-		{
-		  t = TREE_OPERAND (t, 0);
-		  STRIP_NOPS (t);
-		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-		    t = TREE_OPERAND (t, 0);
-		}
-	    }
-	  if (REFERENCE_REF_P (t))
-	    t = TREE_OPERAND (t, 0);
-	}
+
+      cp_omp_address_inspector ai (OMP_CLAUSE_LOCATION (c), t);
+      tree t_refto = ai.maybe_unconvert_ref (t);
+
+      if (!ai.check_clause (c))
+	return error_mark_node;
+      else if (ai.component_access_p ()
+	       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM))
+	t = ai.get_root_term (true);
+      else
+	t = ai.unconverted_ref_origin ();
+      if (t == error_mark_node)
+	return error_mark_node;
+      ret = t_refto;
       if (TREE_CODE (t) == FIELD_DECL)
 	ret = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
       else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
@@ -5292,7 +5304,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "expected single pointer in %qs clause",
-		    user_omp_clause_code_name (c, ort == C_ORT_ACC));
+		    user_omp_clause_code_name (c, openacc));
 	  return error_mark_node;
 	}
     }
@@ -5487,8 +5499,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	      tree d_length = TREE_VALUE (d);
 	      if (d_length == NULL_TREE || !integer_onep (d_length))
 		{
-		  if (ort == C_ORT_ACC
-		      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
+		  if (openacc && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 		    {
 		      while (TREE_CODE (d) == TREE_LIST)
 			d = TREE_CHAIN (d);
@@ -5548,7 +5559,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 /* Handle array sections for clause C.  */
 
 static bool
-handle_omp_array_sections (tree c, enum c_omp_region_type ort)
+handle_omp_array_sections (tree &c, enum c_omp_region_type ort)
 {
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
@@ -5781,115 +5792,66 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  OMP_CLAUSE_SIZE (c) = size;
 	  if (TREE_CODE (t) == FIELD_DECL)
 	    t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
-	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
-	      || (TREE_CODE (t) == COMPONENT_REF
-		  && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
+
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 	    return false;
-	  switch (OMP_CLAUSE_MAP_KIND (c))
-	    {
-	    case GOMP_MAP_ALLOC:
-	    case GOMP_MAP_IF_PRESENT:
-	    case GOMP_MAP_TO:
-	    case GOMP_MAP_FROM:
-	    case GOMP_MAP_TOFROM:
-	    case GOMP_MAP_ALWAYS_TO:
-	    case GOMP_MAP_ALWAYS_FROM:
-	    case GOMP_MAP_ALWAYS_TOFROM:
-	    case GOMP_MAP_PRESENT_ALLOC:
-	    case GOMP_MAP_PRESENT_TO:
-	    case GOMP_MAP_PRESENT_FROM:
-	    case GOMP_MAP_PRESENT_TOFROM:
-	    case GOMP_MAP_ALWAYS_PRESENT_TO:
-	    case GOMP_MAP_ALWAYS_PRESENT_FROM:
-	    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
-	    case GOMP_MAP_RELEASE:
-	    case GOMP_MAP_DELETE:
-	    case GOMP_MAP_FORCE_TO:
-	    case GOMP_MAP_FORCE_FROM:
-	    case GOMP_MAP_FORCE_TOFROM:
-	    case GOMP_MAP_FORCE_PRESENT:
-	      OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
-	      break;
-	    default:
-	      break;
-	    }
-	  bool reference_always_pointer = true;
-	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-				      OMP_CLAUSE_MAP);
-	  if (TREE_CODE (t) == COMPONENT_REF)
-	    {
-	      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
 
-	      if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
-		  && TYPE_REF_P (TREE_TYPE (t)))
+	  if (TREE_CODE (first) == INDIRECT_REF)
+	    {
+	      /* Detect and skip adding extra nodes for pointer-to-member
+		 mappings.  These are unsupported for now.  */
+	      tree tmp = TREE_OPERAND (first, 0);
+
+	      if (TREE_CODE (tmp) == NON_LVALUE_EXPR)
+		tmp = TREE_OPERAND (tmp, 0);
+
+	      if (TREE_CODE (tmp) == INDIRECT_REF)
+		tmp = TREE_OPERAND (tmp, 0);
+
+	      if (TREE_CODE (tmp) == POINTER_PLUS_EXPR)
 		{
-		  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == ARRAY_TYPE)
-		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
-		  else
-		    t = convert_from_reference (t);
-
-		  reference_always_pointer = false;
+		  tree offset = TREE_OPERAND (tmp, 1);
+		  STRIP_NOPS (offset);
+		  if (TYPE_PTRMEM_P (TREE_TYPE (offset)))
+		    {
+		      sorry_at (OMP_CLAUSE_LOCATION (c),
+				"pointer-to-member mapping %qE not supported",
+				OMP_CLAUSE_DECL (c));
+		      return true;
+		    }
 		}
 	    }
-	  else if (REFERENCE_REF_P (t)
-		   && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
-	    {
-	      gomp_map_kind k;
-	      if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
-		  && TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
-		k = GOMP_MAP_ATTACH_DETACH;
-	      else
-		{
-		  t = TREE_OPERAND (t, 0);
-		  k = (ort == C_ORT_ACC
-		       ? GOMP_MAP_ATTACH_DETACH : GOMP_MAP_ALWAYS_POINTER);
-		}
-	      OMP_CLAUSE_SET_MAP_KIND (c2, k);
-	    }
-	  else
-	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
-	  OMP_CLAUSE_MAP_IMPLICIT (c2) = OMP_CLAUSE_MAP_IMPLICIT (c);
-	  if (OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
-	      && !cxx_mark_addressable (t))
-	    return false;
-	  OMP_CLAUSE_DECL (c2) = t;
-	  t = build_fold_addr_expr (first);
-	  t = fold_convert_loc (OMP_CLAUSE_LOCATION (c),
-				ptrdiff_type_node, t);
-	  tree ptr = OMP_CLAUSE_DECL (c2);
-	  ptr = convert_from_reference (ptr);
-	  if (!INDIRECT_TYPE_P (TREE_TYPE (ptr)))
-	    ptr = build_fold_addr_expr (ptr);
-	  t = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
-			       ptrdiff_type_node, t,
-			       fold_convert_loc (OMP_CLAUSE_LOCATION (c),
-						 ptrdiff_type_node, ptr));
-	  OMP_CLAUSE_SIZE (c2) = t;
-	  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
-	  OMP_CLAUSE_CHAIN (c) = c2;
 
-	  ptr = OMP_CLAUSE_DECL (c2);
-	  if (reference_always_pointer
-	      && OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
-	      && TYPE_REF_P (TREE_TYPE (ptr))
-	      && INDIRECT_TYPE_P (TREE_TYPE (TREE_TYPE (ptr))))
+	  /* FIRST represents the first item of data that we are mapping.
+	     E.g. if we're mapping an array, FIRST might resemble
+	     "foo.bar.myarray[0]".  */
+
+	  auto_vec<omp_addr_token *, 10> addr_tokens;
+
+	  if (!omp_parse_expr (addr_tokens, first))
+	    return true;
+
+	  cp_omp_address_inspector ai (OMP_CLAUSE_LOCATION (c), t);
+
+	  tree nc = ai.expand_map_clause (c, first, addr_tokens, ort);
+	  if (nc != error_mark_node)
 	    {
-	      tree c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-					  OMP_CLAUSE_MAP);
-	      OMP_CLAUSE_SET_MAP_KIND (c3, OMP_CLAUSE_MAP_KIND (c2));
-	      OMP_CLAUSE_MAP_IMPLICIT (c2) = OMP_CLAUSE_MAP_IMPLICIT (c);
-	      OMP_CLAUSE_DECL (c3) = ptr;
-	      if (OMP_CLAUSE_MAP_KIND (c2) == GOMP_MAP_ALWAYS_POINTER
-		  || OMP_CLAUSE_MAP_KIND (c2) == GOMP_MAP_ATTACH_DETACH)
-		{
-		  OMP_CLAUSE_DECL (c2) = build_simple_mem_ref (ptr);
-		  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
-		}
-	      else
-		OMP_CLAUSE_DECL (c2) = convert_from_reference (ptr);
-	      OMP_CLAUSE_SIZE (c3) = size_zero_node;
-	      OMP_CLAUSE_CHAIN (c3) = OMP_CLAUSE_CHAIN (c2);
-	      OMP_CLAUSE_CHAIN (c2) = c3;
+	      using namespace omp_addr_tokenizer;
+
+	      if (ai.maybe_zero_length_array_section (c))
+		OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+
+	      /* !!! If we're accessing a base decl via chained access
+		 methods (e.g. multiple indirections), duplicate clause
+		 detection won't work properly.  Skip it in that case.  */
+	      if ((addr_tokens[0]->type == STRUCTURE_BASE
+		   || addr_tokens[0]->type == ARRAY_BASE)
+		  && addr_tokens[0]->u.structure_base_kind == BASE_DECL
+		  && addr_tokens[1]->type == ACCESS_METHOD
+		  && omp_access_chain_p (addr_tokens, 1))
+		c = nc;
+
+	      return false;
 	    }
 	}
     }
@@ -6820,6 +6782,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bitmap_head oacc_reduction_head, is_on_device_head;
   tree c, t, *pc;
   tree safelen = NULL_TREE;
+  bool openacc = (ort & C_ORT_ACC) != 0;
   bool branch_seen = false;
   bool copyprivate_seen = false;
   bool ordered_seen = false;
@@ -6853,7 +6816,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
   bitmap_initialize (&is_on_device_head, &bitmap_default_obstack);
 
-  if (ort & C_ORT_ACC)
+  if (openacc)
     for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ASYNC)
         {
@@ -7102,7 +7065,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    t = OMP_CLAUSE_DECL (c);
 	check_dup_generic_t:
 	  if (t == current_class_ptr
-	      && ((ort != C_ORT_OMP_DECLARE_SIMD && ort != C_ORT_ACC)
+	      && ((ort != C_ORT_OMP_DECLARE_SIMD && !openacc)
 		  || (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LINEAR
 		      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_UNIFORM)))
 	    {
@@ -7127,7 +7090,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if ((ort == C_ORT_ACC
+	  else if ((openacc
 		    && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
 		   || (ort == C_ORT_OMP
 		       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
@@ -7151,7 +7114,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    ort == C_ORT_ACC
+			    openacc
 			    ? "%qD appears more than once in reduction clauses"
 			    : "%qD appears more than once in data clauses",
 			    t);
@@ -7174,7 +7137,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		    || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
 		   && bitmap_bit_p (&map_head, DECL_UID (t)))
 	    {
-	      if (ort == C_ORT_ACC)
+	      if (openacc)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears more than once in data clauses", t);
 	      else
@@ -7236,7 +7199,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    omp_note_field_privatization (t, OMP_CLAUSE_DECL (c));
 	  else
 	    t = OMP_CLAUSE_DECL (c);
-	  if (ort != C_ORT_ACC && t == current_class_ptr)
+	  if (!openacc && t == current_class_ptr)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<this%> allowed in OpenMP only in %<declare simd%>"
@@ -7272,9 +7235,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
-	  else if (bitmap_bit_p (&map_head, DECL_UID (t)))
+	  else if (bitmap_bit_p (&map_head, DECL_UID (t))
+		   || bitmap_bit_p (&map_field_head, DECL_UID (t)))
 	    {
-	      if (ort == C_ORT_ACC)
+	      if (openacc)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears more than once in data clauses", t);
 	      else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
@@ -7295,7 +7259,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    omp_note_field_privatization (t, OMP_CLAUSE_DECL (c));
 	  else
 	    t = OMP_CLAUSE_DECL (c);
-	  if (ort != C_ORT_ACC && t == current_class_ptr)
+	  if (!openacc && t == current_class_ptr)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<this%> allowed in OpenMP only in %<declare simd%>"
@@ -8201,6 +8165,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE__CACHE_:
 	  {
+	    using namespace omp_addr_tokenizer;
+	    auto_vec<omp_addr_token *, 10> addr_tokens;
+
 	    t = OMP_CLAUSE_DECL (c);
 	    if (TREE_CODE (t) == TREE_LIST)
 	      {
@@ -8227,58 +8194,73 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      }
 		    while (TREE_CODE (t) == ARRAY_REF)
 		      t = TREE_OPERAND (t, 0);
-		    if (TREE_CODE (t) == COMPONENT_REF
-			&& TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+
+		    if (type_dependent_expression_p (t))
+		      break;
+
+		    cp_omp_address_inspector ai (OMP_CLAUSE_LOCATION (c), t);
+
+		    if (!ai.map_supported_p ()
+			|| !omp_parse_expr (addr_tokens, t))
 		      {
-			do
-			  {
-			    t = TREE_OPERAND (t, 0);
-			    if (REFERENCE_REF_P (t))
-			      t = TREE_OPERAND (t, 0);
-			    if (TREE_CODE (t) == MEM_REF
-				|| TREE_CODE (t) == INDIRECT_REF)
-			      {
-				t = TREE_OPERAND (t, 0);
-				STRIP_NOPS (t);
-				if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-				  t = TREE_OPERAND (t, 0);
-			      }
-			  }
-			while (TREE_CODE (t) == COMPONENT_REF
-			       || TREE_CODE (t) == ARRAY_REF);
+			sorry_at (OMP_CLAUSE_LOCATION (c),
+				  "unsupported map expression %qE",
+				  OMP_CLAUSE_DECL (c));
+			remove = true;
+			break;
+		      }
+
+		    /* This check is to determine if this will be the only map
+		       node created for this clause.  Otherwise, we'll check
+		       the following FIRSTPRIVATE_POINTER,
+		       FIRSTPRIVATE_REFERENCE or ATTACH_DETACH node on the next
+		       iteration(s) of the loop.   */
+		    if (addr_tokens.length () >= 4
+			&& addr_tokens[0]->type == STRUCTURE_BASE
+			&& addr_tokens[0]->u.structure_base_kind == BASE_DECL
+			&& addr_tokens[1]->type == ACCESS_METHOD
+			&& addr_tokens[2]->type == COMPONENT_SELECTOR
+			&& addr_tokens[3]->type == ACCESS_METHOD
+			&& (addr_tokens[3]->u.access_kind == ACCESS_DIRECT
+			    || (addr_tokens[3]->u.access_kind
+				== ACCESS_INDEXED_ARRAY)))
+		      {
+			tree rt = addr_tokens[1]->expr;
+
+			gcc_assert (DECL_P (rt));
 
 			if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			    && OMP_CLAUSE_MAP_IMPLICIT (c)
-			    && (bitmap_bit_p (&map_head, DECL_UID (t))
-				|| bitmap_bit_p (&map_field_head, DECL_UID (t))
+			    && (bitmap_bit_p (&map_head, DECL_UID (rt))
+				|| bitmap_bit_p (&map_field_head, DECL_UID (rt))
 				|| bitmap_bit_p (&map_firstprivate_head,
-						 DECL_UID (t))))
+						 DECL_UID (rt))))
 			  {
 			    remove = true;
 			    break;
 			  }
-			if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
+			if (bitmap_bit_p (&map_field_head, DECL_UID (rt)))
 			  break;
-			if (bitmap_bit_p (&map_head, DECL_UID (t)))
+			if (bitmap_bit_p (&map_head, DECL_UID (rt)))
 			  {
 			    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 			      error_at (OMP_CLAUSE_LOCATION (c),
 					"%qD appears more than once in motion"
-					" clauses", t);
-			    else if (ort == C_ORT_ACC)
+					" clauses", rt);
+			    else if (openacc)
 			      error_at (OMP_CLAUSE_LOCATION (c),
 					"%qD appears more than once in data"
-					" clauses", t);
+					" clauses", rt);
 			    else
 			      error_at (OMP_CLAUSE_LOCATION (c),
 					"%qD appears more than once in map"
-					" clauses", t);
+					" clauses", rt);
 			    remove = true;
 			  }
 			else
 			  {
-			    bitmap_set_bit (&map_head, DECL_UID (t));
-			    bitmap_set_bit (&map_field_head, DECL_UID (t));
+			    bitmap_set_bit (&map_head, DECL_UID (rt));
+			    bitmap_set_bit (&map_field_head, DECL_UID (rt));
 			  }
 		      }
 		  }
@@ -8293,6 +8275,16 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		     clauses, reset the OMP_CLAUSE_SIZE (representing a bias)
 		     to zero here.  */
 		  OMP_CLAUSE_SIZE (c) = size_zero_node;
+		break;
+	      }
+	    else if (type_dependent_expression_p (t))
+	      break;
+	    else if (!omp_parse_expr (addr_tokens, t))
+	      {
+		sorry_at (OMP_CLAUSE_LOCATION (c),
+			  "unsupported map expression %qE",
+			  OMP_CLAUSE_DECL (c));
+		remove = true;
 		break;
 	      }
 	    if (t == error_mark_node)
@@ -8313,110 +8305,49 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		 a bias) to zero here, so it is not set erroneously to
 		 the pointer size later on in gimplify.cc.  */
 	      OMP_CLAUSE_SIZE (c) = size_zero_node;
-	    if (REFERENCE_REF_P (t)
-		&& TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
+
+	    cp_omp_address_inspector ai (OMP_CLAUSE_LOCATION (c), t);
+
+	    if (!ai.check_clause (c))
 	      {
-		t = TREE_OPERAND (t, 0);
-		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-		    && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
-		  OMP_CLAUSE_DECL (c) = t;
+		remove = true;
+		break;
 	      }
-	    while (TREE_CODE (t) == INDIRECT_REF
-		   || TREE_CODE (t) == ARRAY_REF)
+
+	    if (!ai.map_supported_p ())
 	      {
-		t = TREE_OPERAND (t, 0);
-		STRIP_NOPS (t);
-		if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-		  t = TREE_OPERAND (t, 0);
+		sorry_at (OMP_CLAUSE_LOCATION (c),
+			  "unsupported map expression %qE",
+			  OMP_CLAUSE_DECL (c));
+		remove = true;
+		break;
 	      }
-	    while (TREE_CODE (t) == COMPOUND_EXPR)
-	      {
-		t = TREE_OPERAND (t, 1);
-		STRIP_NOPS (t);
-	      }
-	    if (TREE_CODE (t) == COMPONENT_REF
-		&& invalid_nonstatic_memfn_p (EXPR_LOCATION (t), t,
-					      tf_warning_or_error))
-	      remove = true;
-	    indir_component_ref_p = false;
-	    if (TREE_CODE (t) == COMPONENT_REF
-		&& (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
-		    || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
-	      {
-		t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-		indir_component_ref_p = true;
-		STRIP_NOPS (t);
-		if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-		  t = TREE_OPERAND (t, 0);
-	      }
-	    if (TREE_CODE (t) == COMPONENT_REF
-		&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE__CACHE_)
-	      {
-		if (type_dependent_expression_p (t))
-		  break;
-		if (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
-		    && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
-		  {
-		    error_at (OMP_CLAUSE_LOCATION (c),
-			      "bit-field %qE in %qs clause",
-			      t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		    remove = true;
-		  }
-		else if (!omp_mappable_type (TREE_TYPE (t)))
-		  {
-		    error_at (OMP_CLAUSE_LOCATION (c),
-			      "%qE does not have a mappable type in %qs clause",
-			      t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		    if (TREE_TYPE (t) != error_mark_node
-			&& !COMPLETE_TYPE_P (TREE_TYPE (t)))
-		      cxx_incomplete_type_inform (TREE_TYPE (t));
-		    remove = true;
-		  }
-		while (TREE_CODE (t) == COMPONENT_REF)
-		  {
-		    if (TREE_TYPE (TREE_OPERAND (t, 0))
-			&& (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
-			    == UNION_TYPE))
-		      {
-			error_at (OMP_CLAUSE_LOCATION (c),
-				  "%qE is a member of a union", t);
-			remove = true;
-			break;
-		      }
-		    t = TREE_OPERAND (t, 0);
-		    if (TREE_CODE (t) == MEM_REF)
-		      {
-			if (maybe_ne (mem_ref_offset (t), 0))
-			  error_at (OMP_CLAUSE_LOCATION (c),
-				    "cannot dereference %qE in %qs clause", t,
-				    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-			else
-			  t = TREE_OPERAND (t, 0);
-		      }
-		    while (TREE_CODE (t) == MEM_REF
-			   || TREE_CODE (t) == INDIRECT_REF
-			   || TREE_CODE (t) == ARRAY_REF)
-		      {
-			t = TREE_OPERAND (t, 0);
-			STRIP_NOPS (t);
-			if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-			  t = TREE_OPERAND (t, 0);
-		      }
-		  }
-		if (remove)
-		  break;
-		if (REFERENCE_REF_P (t))
-		  t = TREE_OPERAND (t, 0);
-		if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
-		  {
-		    if (bitmap_bit_p (&map_field_head, DECL_UID (t))
-			|| (ort != C_ORT_ACC
-			    && bitmap_bit_p (&map_head, DECL_UID (t))))
-		      goto handle_map_references;
-		  }
-	      }
-	    if (!processing_template_decl
-		&& TREE_CODE (t) == FIELD_DECL)
+
+	    gcc_assert ((addr_tokens[0]->type == ARRAY_BASE
+			 || addr_tokens[0]->type == STRUCTURE_BASE)
+			&& addr_tokens[1]->type == ACCESS_METHOD);
+
+	    t = addr_tokens[1]->expr;
+
+	    /* This is used to prevent cxx_mark_addressable from being called
+	       on 'this' for expressions like 'this->a', i.e. typical member
+	       accesses.  */
+	    indir_component_ref_p
+	      = (addr_tokens[0]->type == STRUCTURE_BASE
+		 && addr_tokens[1]->u.access_kind != ACCESS_DIRECT);
+
+	    if (addr_tokens[0]->u.structure_base_kind != BASE_DECL)
+	      goto skip_decl_checks;
+
+	    /* For OpenMP, we can access a struct "t" and "t.d" on the same
+	       mapping.  OpenACC allows multiple fields of the same structure
+	       to be written.  */
+	    if (addr_tokens[0]->type == STRUCTURE_BASE
+		&& (bitmap_bit_p (&map_field_head, DECL_UID (t))
+		    || (!openacc && bitmap_bit_p (&map_head, DECL_UID (t)))))
+	      goto skip_decl_checks;
+
+	    if (!processing_template_decl && TREE_CODE (t) == FIELD_DECL)
 	      {
 		OMP_CLAUSE_DECL (c)
 		  = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
@@ -8454,12 +8385,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			 || (OMP_CLAUSE_MAP_KIND (c)
 			     != GOMP_MAP_FIRSTPRIVATE_POINTER))
 		     && !indir_component_ref_p
+		     && (t != current_class_ptr
+			 || OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+			 || OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
 		     && !cxx_mark_addressable (t))
 	      remove = true;
 	    else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		       && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 			   || (OMP_CLAUSE_MAP_KIND (c)
-			       == GOMP_MAP_FIRSTPRIVATE_POINTER)))
+			       == GOMP_MAP_FIRSTPRIVATE_POINTER)
+			   || (OMP_CLAUSE_MAP_KIND (c)
+			       == GOMP_MAP_ATTACH_DETACH)))
 		     && t == OMP_CLAUSE_DECL (c)
 		     && !type_dependent_expression_p (t)
 		     && !omp_mappable_type (TYPE_REF_P (TREE_TYPE (t))
@@ -8503,20 +8439,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		    remove = true;
 		  }
 		else if (bitmap_bit_p (&map_head, DECL_UID (t))
-			 && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
+			 && !bitmap_bit_p (&map_field_head, DECL_UID (t))
+			 && openacc)
 		  {
-		    if (ort == C_ORT_ACC)
-		      error_at (OMP_CLAUSE_LOCATION (c),
-				"%qD appears more than once in data clauses",
-				t);
-		    else
-		      error_at (OMP_CLAUSE_LOCATION (c),
-				"%qD appears both in data and map clauses", t);
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "%qD appears more than once in data clauses", t);
 		    remove = true;
 		  }
 		else
 		  bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
 	      }
+	    else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		     && (OMP_CLAUSE_MAP_KIND (c)
+			 == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+	      bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
 	    else if (bitmap_bit_p (&map_head, DECL_UID (t))
 		     && !bitmap_bit_p (&map_field_head, DECL_UID (t))
 		     && ort != C_ORT_OMP)
@@ -8524,7 +8460,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qD appears more than once in motion clauses", t);
-		else if (ort == C_ORT_ACC)
+		else if (openacc)
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qD appears more than once in data clauses", t);
 		else
@@ -8532,8 +8468,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    "%qD appears more than once in map clauses", t);
 		remove = true;
 	      }
-	    else if (ort == C_ORT_ACC
-		     && bitmap_bit_p (&generic_head, DECL_UID (t)))
+	    else if (openacc && bitmap_bit_p (&generic_head, DECL_UID (t)))
 	      {
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears more than once in data clauses", t);
@@ -8542,7 +8477,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    else if (bitmap_bit_p (&firstprivate_head, DECL_UID (t))
 		     || bitmap_bit_p (&is_on_device_head, DECL_UID (t)))
 	      {
-		if (ort == C_ORT_ACC)
+		if (openacc)
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qD appears more than once in data clauses", t);
 		else
@@ -8550,7 +8485,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    "%qD appears both in data and map clauses", t);
 		remove = true;
 	      }
-	    else
+	    else if (!omp_access_chain_p (addr_tokens, 1))
 	      {
 		bitmap_set_bit (&map_head, DECL_UID (t));
 
@@ -8564,49 +8499,30 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 								    0))))))
 		  bitmap_set_bit (&map_field_head, DECL_UID (t));
 	      }
-	  handle_map_references:
+
+	  skip_decl_checks:
+	    /* If we call ai.expand_map_clause in handle_omp_array_sections,
+	       the containing loop (here) iterates through the new nodes
+	       created by that expansion.  Avoid expanding those again (just
+	       by checking the node type).  */
 	    if (!remove
 		&& !processing_template_decl
 		&& ort != C_ORT_DECLARE_SIMD
-		&& TYPE_REF_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
+		&& (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+		    || (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
+			&& (OMP_CLAUSE_MAP_KIND (c)
+			    != GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+			&& OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_POINTER
+			&& OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH
+			&& OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
+			&& OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH)))
 	      {
-		t = OMP_CLAUSE_DECL (c);
-		if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
-		  {
-		    OMP_CLAUSE_DECL (c) = build_simple_mem_ref (t);
-		    if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
-		      OMP_CLAUSE_SIZE (c)
-			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (t)));
-		  }
-		else if (OMP_CLAUSE_MAP_KIND (c)
-			 != GOMP_MAP_FIRSTPRIVATE_POINTER
-			 && (OMP_CLAUSE_MAP_KIND (c)
-			     != GOMP_MAP_FIRSTPRIVATE_REFERENCE)
-			 && (OMP_CLAUSE_MAP_KIND (c)
-			     != GOMP_MAP_ALWAYS_POINTER)
-			 && (OMP_CLAUSE_MAP_KIND (c)
-			     != GOMP_MAP_ATTACH_DETACH))
-		  {
-		    grp_start_p = pc;
-		    grp_sentinel = OMP_CLAUSE_CHAIN (c);
-
-		    tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						OMP_CLAUSE_MAP);
-		    if (TREE_CODE (t) == COMPONENT_REF)
-		      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
-		    else
-		      OMP_CLAUSE_SET_MAP_KIND (c2,
-					       GOMP_MAP_FIRSTPRIVATE_REFERENCE);
-		    OMP_CLAUSE_DECL (c2) = t;
-		    OMP_CLAUSE_SIZE (c2) = size_zero_node;
-		    OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
-		    OMP_CLAUSE_CHAIN (c) = c2;
-		    OMP_CLAUSE_DECL (c) = build_simple_mem_ref (t);
-		    if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
-		      OMP_CLAUSE_SIZE (c)
-			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (t)));
-		    c = c2;
-		  }
+		grp_start_p = pc;
+		grp_sentinel = OMP_CLAUSE_CHAIN (c);
+		tree nc = ai.expand_map_clause (c, OMP_CLAUSE_DECL (c),
+						addr_tokens, ort);
+		if (nc != error_mark_node)
+		  c = nc;
 	      }
 	  }
 	  break;
@@ -9099,7 +9015,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  if (grp_start_p)
 	    {
 	      /* If we found a clause to remove, we want to remove the whole
-		 expanded group, otherwise gimplify can get confused.  */
+		 expanded group, otherwise gimplify
+		 (omp_resolve_clause_dependencies) can get confused.  */
 	      *grp_start_p = grp_sentinel;
 	      pc = grp_start_p;
 	      grp_start_p = NULL;

@@ -1,5 +1,58 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (build_struct_comp_nodes): Don't process
+	GOMP_MAP_ATTACH_DETACH "middle" nodes here.
+	(omp_mapping_group): Add REPROCESS_STRUCT and FRAGILE booleans for
+	nested struct handling.
+	(omp_strip_components_and_deref, omp_strip_indirections): Remove
+	functions.
+	(omp_gather_mapping_groups_1): Initialise reprocess_struct and fragile
+	fields.
+	(omp_group_base): Handle GOMP_MAP_ATTACH_DETACH after GOMP_MAP_STRUCT.
+	(omp_index_mapping_groups_1): Skip reprocess_struct groups.
+	(omp_get_nonfirstprivate_group, omp_directive_maps_explicitly,
+	omp_resolve_clause_dependencies, omp_expand_access_chain,
+	omp_first_chained_access_token): New functions.
+	(omp_check_mapping_compatibility): Adjust accepted node combinations
+	for changes elsewhere.
+	(omp_accumulate_sibling_list): Add GROUP_MAP, ADDR_TOKENS, FRAGILE_P,
+	REPROCESSING_STRUCT, ADDED_TAIL parameters.  Use OMP address tokenizer
+	to analyze addresses.  Reimplement nested struct handling, and
+	implement "fragile groups".
+	(omp_build_struct_sibling_lists): Adjust for changes to
+	omp_accumulate_sibling_list.  Recalculate bias for ATTACH_DETACH nodes
+	after GOMP_MAP_STRUCT nodes.
+	(gimplify_scan_omp_clauses): Call omp_resolve_clause_dependencies.  Use
+	OMP address tokenizer.
+	(gimplify_adjust_omp_clauses_1): Use build_fold_indirect_ref_loc
+	instead of build_simple_mem_ref_loc.
+	* omp-general.cc (omp-general.h): Include.
+	(omp_addr_tokenizer): New namespace.
+	(omp_addr_tokenizer::omp_addr_token): New.
+	(omp_addr_tokenizer::omp_parse_component_selector,
+	omp_addr_tokenizer::omp_parse_ref,
+	omp_addr_tokenizer::omp_parse_pointer,
+	omp_addr_tokenizer::omp_parse_access_method,
+	omp_addr_tokenizer::omp_parse_access_methods,
+	omp_addr_tokenizer::omp_parse_structure_base,
+	omp_addr_tokenizer::omp_parse_structured_expr,
+	omp_addr_tokenizer::omp_parse_array_expr,
+	omp_addr_tokenizer::omp_access_chain_p,
+	omp_addr_tokenizer::omp_accessed_addr): New functions.
+	(omp_parse_expr, debug_omp_tokenized_addr): New functions.
+	* omp-general.h (omp_addr_tokenizer::access_method_kinds,
+	omp_addr_tokenizer::structure_base_kinds,
+	omp_addr_tokenizer::token_type,
+	omp_addr_tokenizer::omp_addr_token,
+	omp_addr_tokenizer::omp_access_chain_p,
+	omp_addr_tokenizer::omp_accessed_addr): New.
+	(omp_addr_token, omp_parse_expr): New.
+	* omp-low.cc (scan_sharing_clauses): Skip error check for references
+	to pointers.
+	* tree.h (OMP_CLAUSE_ATTACHMENT_MAPPING_ERASED): New macro.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	Revert:
 	2018-08-28  Julian Brown  <julian@codesourcery.com>
 		    Cesar Philippidis  <cesar@codesourcery.com>

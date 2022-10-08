@@ -1,5 +1,25 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* target.c (gomp_map_fields_existing): Use gomp_map_0len_lookup.
+	(gomp_attach_pointer): Allow attaching null pointers (or Fortran
+	"unassociated" pointers).
+	(gomp_map_vars_internal): Handle zero-sized struct members.  Add
+	diagnostic for unmapped struct pointer members.
+	* testsuite/libgomp.c++/class-array-1.C: New test.
+	* testsuite/libgomp.c-c++-common/baseptrs-1.c: New test.
+	* testsuite/libgomp.c-c++-common/baseptrs-2.c: New test.
+	* testsuite/libgomp.c-c++-common/ptr-attach-2.c: New test.
+	* testsuite/libgomp.c++/baseptrs-3.C: New test.
+	* testsuite/libgomp.c++/baseptrs-4.C: New test.
+	* testsuite/libgomp.c++/baseptrs-5.C: New test.
+	* testsuite/libgomp.c++/target-48.C: New test.
+	* testsuite/libgomp.c++/target-49.C: New test.
+	* testsuite/libgomp.c/target-22.c: Add necessary explicit base pointer
+	mappings.
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Add XFAIL.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	Revert:
 	2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
 

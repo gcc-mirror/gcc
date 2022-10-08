@@ -1,5 +1,23 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* parser.cc (cp_parser_oacc_all_clauses): Add TARGET parameter. Use
+	to select region type for finish_omp_clauses call.
+	(cp_parser_omp_target_enter_data): Support GOMP_MAP_ATTACH kind.
+	(cp_parser_omp_target_exit_data): Support GOMP_MAP_DETACH kind.
+	(cp_parser_oacc_declare): Update call to cp_parser_oacc_all_clauses.
+	(cp_parser_oacc_loop): Update calls to cp_parser_oacc_all_clauses.
+	(cp_parser_oacc_compute): Likewise.
+	* pt.cc (tsubst_expr): Use C_ORT_ACC_TARGET for call to
+	tsubst_omp_clauses for compute regions.
+	* semantics.cc (cp_omp_address_inspector): New class, derived from
+	c_omp_address_inspector.
+	(handle_omp_array_sections_1, handle_omp_array_sections,
+	finish_omp_clauses): Use cp_omp_address_inspector class and OMP address
+	tokenizer to analyze and expand OpenMP map clause expressions.  Fix
+	some diagnostics.  Support C_ORT_ACC_TARGET.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* semantics.cc (finish_omp_clause): Add braces and reindent
 	OMP_CLAUSE_TO/OMP_CLAUSE_FROM/OMP_CLAUSE__CACHE_ stanza.
 

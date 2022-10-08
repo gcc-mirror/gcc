@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "streamer-hooks.h"
 #include "opts.h"
+#include "omp-general.h"
 #include "tree-pretty-print.h"
 
 enum omp_requires omp_requires_mask;
@@ -3541,5 +3542,428 @@ omp_runtime_api_call (const_tree fndecl)
     return false;
   return omp_runtime_api_procname (IDENTIFIER_POINTER (declname));
 }
+
+namespace omp_addr_tokenizer {
+
+/* We scan an expression by recursive descent, and build a vector of
+   "omp_addr_token *" pointers representing a "parsed" version of the
+   expression.  The grammar we use is something like this:
+
+     expr0::
+       expr [section-access]
+
+     expr::
+	 structured-expr access-method
+       | array-base access-method
+
+     structured-expr::
+       structure-base component-selector
+
+     arbitrary-expr::
+       (anything else)
+
+     structure-base::
+	 DECL access-method
+       | structured-expr access-method
+       | arbitrary-expr access-method
+
+     array-base::
+	 DECL
+       | arbitrary-expr
+
+     access-method::
+	 DIRECT
+       | REF
+       | POINTER
+       | REF_TO_POINTER
+       | POINTER_OFFSET
+       | REF_TO_POINTER_OFFSET
+       | INDEXED_ARRAY
+       | INDEXED_REF_TO_ARRAY
+       | index-expr
+
+     index-expr::
+	 INDEX_EXPR access-method
+
+     component-selector::
+	 component-selector COMPONENT_REF
+       | component-selector ARRAY_REF
+       | COMPONENT_REF
+
+   This tokenized form is then used both in parsing, for OpenMP clause
+   expansion (for C and C++) and in gimplify.cc for sibling-list handling
+   (for C, C++ and Fortran).  */
+
+omp_addr_token::omp_addr_token (token_type t, tree e)
+  : type(t), expr(e)
+{
+}
+
+omp_addr_token::omp_addr_token (access_method_kinds k, tree e)
+  : type(ACCESS_METHOD), expr(e)
+{
+  u.access_kind = k;
+}
+
+omp_addr_token::omp_addr_token (token_type t, structure_base_kinds k, tree e)
+  : type(t), expr(e)
+{
+  u.structure_base_kind = k;
+}
+
+static bool
+omp_parse_component_selector (tree *expr0)
+{
+  tree expr = *expr0;
+  tree last_component = NULL_TREE;
+
+  while (TREE_CODE (expr) == COMPONENT_REF
+	 || TREE_CODE (expr) == ARRAY_REF)
+    {
+      if (TREE_CODE (expr) == COMPONENT_REF)
+	last_component = expr;
+
+      expr = TREE_OPERAND (expr, 0);
+
+      if (TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+	break;
+    }
+
+  if (!last_component)
+    return false;
+
+  *expr0 = last_component;
+  return true;
+}
+
+/* This handles references that have had convert_from_reference called on
+   them, and also those that haven't.  */
+
+static bool
+omp_parse_ref (tree *expr0)
+{
+  tree expr = *expr0;
+
+  if (TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+    return true;
+  else if ((TREE_CODE (expr) == INDIRECT_REF
+	    || (TREE_CODE (expr) == MEM_REF
+		&& integer_zerop (TREE_OPERAND (expr, 1))))
+	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
+    {
+      *expr0 = TREE_OPERAND (expr, 0);
+      return true;
+    }
+
+  return false;
+}
+
+static bool
+omp_parse_pointer (tree *expr0, bool *has_offset)
+{
+  tree expr = *expr0;
+
+  *has_offset = false;
+
+  if ((TREE_CODE (expr) == INDIRECT_REF
+       || (TREE_CODE (expr) == MEM_REF
+	   && integer_zerop (TREE_OPERAND (expr, 1))))
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == POINTER_TYPE)
+    {
+      expr = TREE_OPERAND (expr, 0);
+
+      /* The Fortran FE sometimes emits a no-op cast here.  */
+      STRIP_NOPS (expr);
+
+      while (1)
+	{
+	  if (TREE_CODE (expr) == COMPOUND_EXPR)
+	    {
+	      expr = TREE_OPERAND (expr, 1);
+	      STRIP_NOPS (expr);
+	    }
+	  else if (TREE_CODE (expr) == SAVE_EXPR)
+	    expr = TREE_OPERAND (expr, 0);
+	  else if (TREE_CODE (expr) == POINTER_PLUS_EXPR)
+	    {
+	      *has_offset = true;
+	      expr = TREE_OPERAND (expr, 0);
+	    }
+	  else
+	    break;
+	}
+
+      STRIP_NOPS (expr);
+
+      *expr0 = expr;
+      return true;
+    }
+
+  return false;
+}
+
+static bool
+omp_parse_access_method (tree *expr0, enum access_method_kinds *kind)
+{
+  tree expr = *expr0;
+  bool has_offset;
+
+  if (omp_parse_ref (&expr))
+    *kind = ACCESS_REF;
+  else if (omp_parse_pointer (&expr, &has_offset))
+    {
+      if (omp_parse_ref (&expr))
+	*kind = has_offset ? ACCESS_REF_TO_POINTER_OFFSET
+			   : ACCESS_REF_TO_POINTER;
+      else
+	*kind = has_offset ? ACCESS_POINTER_OFFSET : ACCESS_POINTER;
+    }
+  else if (TREE_CODE (expr) == ARRAY_REF)
+    {
+      while (TREE_CODE (expr) == ARRAY_REF)
+	expr = TREE_OPERAND (expr, 0);
+      if (omp_parse_ref (&expr))
+	*kind = ACCESS_INDEXED_REF_TO_ARRAY;
+      else
+	*kind = ACCESS_INDEXED_ARRAY;
+    }
+  else
+    *kind = ACCESS_DIRECT;
+
+  STRIP_NOPS (expr);
+
+  *expr0 = expr;
+  return true;
+}
+
+static bool
+omp_parse_access_methods (vec<omp_addr_token *> &addr_tokens, tree *expr0)
+{
+  tree expr = *expr0;
+  enum access_method_kinds kind;
+  tree am_expr;
+
+  if (omp_parse_access_method (&expr, &kind))
+    am_expr = expr;
+
+  if (TREE_CODE (expr) == INDIRECT_REF
+      || TREE_CODE (expr) == MEM_REF
+      || TREE_CODE (expr) == ARRAY_REF)
+    omp_parse_access_methods (addr_tokens, &expr);
+
+  addr_tokens.safe_push (new omp_addr_token (kind, am_expr));
+
+  *expr0 = expr;
+  return true;
+}
+
+static bool omp_parse_structured_expr (vec<omp_addr_token *> &, tree *);
+
+static bool
+omp_parse_structure_base (vec<omp_addr_token *> &addr_tokens,
+			  tree *expr0, structure_base_kinds *kind,
+			  vec<omp_addr_token *> &base_access_tokens,
+			  bool allow_structured = true)
+{
+  tree expr = *expr0;
+
+  if (allow_structured)
+    omp_parse_access_methods (base_access_tokens, &expr);
+
+  if (DECL_P (expr))
+    {
+      *kind = BASE_DECL;
+      return true;
+    }
+
+  if (allow_structured && omp_parse_structured_expr (addr_tokens, &expr))
+    {
+      *kind = BASE_COMPONENT_EXPR;
+      *expr0 = expr;
+      return true;
+    }
+
+  *kind = BASE_ARBITRARY_EXPR;
+  *expr0 = expr;
+  return true;
+}
+
+static bool
+omp_parse_structured_expr (vec<omp_addr_token *> &addr_tokens, tree *expr0)
+{
+  tree expr = *expr0;
+  tree base_component = NULL_TREE;
+  structure_base_kinds struct_base_kind;
+  auto_vec<omp_addr_token *> base_access_tokens;
+
+  if (omp_parse_component_selector (&expr))
+    base_component = expr;
+  else
+    return false;
+
+  gcc_assert (TREE_CODE (expr) == COMPONENT_REF);
+  expr = TREE_OPERAND (expr, 0);
+
+  tree structure_base = expr;
+
+  if (!omp_parse_structure_base (addr_tokens, &expr, &struct_base_kind,
+				 base_access_tokens))
+    return false;
+
+  addr_tokens.safe_push (new omp_addr_token (STRUCTURE_BASE, struct_base_kind,
+					     structure_base));
+  addr_tokens.safe_splice (base_access_tokens);
+  addr_tokens.safe_push (new omp_addr_token (COMPONENT_SELECTOR,
+					     base_component));
+
+  *expr0 = expr;
+
+  return true;
+}
+
+static bool
+omp_parse_array_expr (vec<omp_addr_token *> &addr_tokens, tree *expr0)
+{
+  tree expr = *expr0;
+  structure_base_kinds s_kind;
+  auto_vec<omp_addr_token *> base_access_tokens;
+
+  if (!omp_parse_structure_base (addr_tokens, &expr, &s_kind,
+				 base_access_tokens, false))
+    return false;
+
+  addr_tokens.safe_push (new omp_addr_token (ARRAY_BASE, s_kind, expr));
+  addr_tokens.safe_splice (base_access_tokens);
+
+  *expr0 = expr;
+  return true;
+}
+
+/* Return TRUE if the ACCESS_METHOD token at index 'i' has a further
+   ACCESS_METHOD chained after it (e.g., if we're processing an expression
+   containing multiple pointer indirections).  */
+
+bool
+omp_access_chain_p (vec<omp_addr_token *> &addr_tokens, unsigned i)
+{
+  gcc_assert (addr_tokens[i]->type == ACCESS_METHOD);
+  return (i + 1 < addr_tokens.length ()
+	  && addr_tokens[i + 1]->type == ACCESS_METHOD);
+}
+
+/* Return the address of the object accessed by the ACCESS_METHOD token
+   at 'i': either of the next access method's expr, or of EXPR if we're at
+   the end of the list of tokens.  */
+
+tree
+omp_accessed_addr (vec<omp_addr_token *> &addr_tokens, unsigned i, tree expr)
+{
+  if (i + 1 < addr_tokens.length ())
+    return build_fold_addr_expr (addr_tokens[i + 1]->expr);
+  else
+    return build_fold_addr_expr (expr);
+}
+
+} /* namespace omp_addr_tokenizer.  */
+
+bool
+omp_parse_expr (vec<omp_addr_token *> &addr_tokens, tree expr)
+{
+  using namespace omp_addr_tokenizer;
+  auto_vec<omp_addr_token *> expr_access_tokens;
+
+  if (!omp_parse_access_methods (expr_access_tokens, &expr))
+    return false;
+
+  if (omp_parse_structured_expr (addr_tokens, &expr))
+    ;
+  else if (omp_parse_array_expr (addr_tokens, &expr))
+    ;
+  else
+    return false;
+
+  addr_tokens.safe_splice (expr_access_tokens);
+
+  return true;
+}
+
+DEBUG_FUNCTION void
+debug_omp_tokenized_addr (vec<omp_addr_token *> &addr_tokens,
+			  bool with_exprs)
+{
+  using namespace omp_addr_tokenizer;
+  const char *sep = with_exprs ? "  " : "";
+
+  for (auto e : addr_tokens)
+    {
+      const char *pfx = "";
+
+      fputs (sep, stderr);
+
+      switch (e->type)
+	{
+	case COMPONENT_SELECTOR:
+	  fputs ("component_selector", stderr);
+	  break;
+	case ACCESS_METHOD:
+	  switch (e->u.access_kind)
+	    {
+	    case ACCESS_DIRECT:
+	      fputs ("access_direct", stderr);
+	      break;
+	    case ACCESS_REF:
+	      fputs ("access_ref", stderr);
+	      break;
+	    case ACCESS_POINTER:
+	      fputs ("access_pointer", stderr);
+	      break;
+	    case ACCESS_POINTER_OFFSET:
+	      fputs ("access_pointer_offset", stderr);
+	      break;
+	    case ACCESS_REF_TO_POINTER:
+	      fputs ("access_ref_to_pointer", stderr);
+	      break;
+	    case ACCESS_REF_TO_POINTER_OFFSET:
+	      fputs ("access_ref_to_pointer_offset", stderr);
+	      break;
+	    case ACCESS_INDEXED_ARRAY:
+	      fputs ("access_indexed_array", stderr);
+	      break;
+	    case ACCESS_INDEXED_REF_TO_ARRAY:
+	      fputs ("access_indexed_ref_to_array", stderr);
+	      break;
+	    }
+	  break;
+	case ARRAY_BASE:
+	case STRUCTURE_BASE:
+	  pfx = e->type == ARRAY_BASE ? "array_" : "struct_";
+	  switch (e->u.structure_base_kind)
+	    {
+	    case BASE_DECL:
+	      fprintf (stderr, "%sbase_decl", pfx);
+	      break;
+	    case BASE_COMPONENT_EXPR:
+	      fputs ("base_component_expr", stderr);
+	      break;
+	    case BASE_ARBITRARY_EXPR:
+	      fprintf (stderr, "%sbase_arbitrary_expr", pfx);
+	      break;
+	    }
+	  break;
+	}
+      if (with_exprs)
+	{
+	  fputs (" [", stderr);
+	  print_generic_expr (stderr, e->expr);
+	  fputc (']', stderr);
+	  sep = ",\n  ";
+	}
+      else
+	sep = " ";
+    }
+
+  fputs ("\n", stderr);
+}
+
 
 #include "gt-omp-general.h"

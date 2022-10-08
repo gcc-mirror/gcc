@@ -1,5 +1,12 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* trans-openmp.cc (gfc_trans_omp_array_section): Add OPENMP parameter.
+	Use GOMP_MAP_ATTACH_DETACH instead of GOMP_MAP_ALWAYS_POINTER for
+	derived type components.
+	(gfc_trans_omp_clauses): Update calls to gfc_trans_omp_array_section.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	Revert:
 	* trans-openmp.cc: Handle implicit "present".
 

@@ -11,7 +11,7 @@ foo (int *p, int q, struct S t, int i, int j, int k, int l)
     bar (p);
   #pragma omp target firstprivate (p), map (p[0]) /* { dg-error "appears more than once in data clauses" } */
     bar (p);
-  #pragma omp target map (p[0]) map (p) /* { dg-error "appears both in data and map clauses" } */
+  #pragma omp target map (p[0]) map (p)
     bar (p);
   #pragma omp target map (p) , map (p[0])
     bar (p);
