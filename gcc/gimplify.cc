@@ -8952,7 +8952,8 @@ build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
 
 static tree
 extract_base_bit_offset (tree base, poly_int64 *bitposp,
-			 poly_offset_int *poffsetp)
+			 poly_offset_int *poffsetp,
+			 bool *variable_offset)
 {
   tree offset;
   poly_int64 bitsize, bitpos;
@@ -8970,10 +8971,13 @@ extract_base_bit_offset (tree base, poly_int64 *bitposp,
   if (offset && poly_int_tree_p (offset))
     {
       poffset = wi::to_poly_offset (offset);
-      offset = NULL_TREE;
+      *variable_offset = false;
     }
   else
-    poffset = 0;
+    {
+      poffset = 0;
+      *variable_offset = (offset != NULL_TREE);
+    }
 
   if (maybe_ne (bitpos, 0))
     poffset += bits_to_bytes_round_down (bitpos);
@@ -9152,6 +9156,7 @@ omp_get_attachment (omp_mapping_group *grp)
       return error_mark_node;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
     case GOMP_MAP_FORCE_DEVICEPTR:
     case GOMP_MAP_DEVICE_RESIDENT:
     case GOMP_MAP_LINK:
@@ -9237,6 +9242,7 @@ omp_group_last (tree *start_p)
       break;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
       {
 	unsigned HOST_WIDE_INT num_mappings
 	  = tree_to_uhwi (OMP_CLAUSE_SIZE (c));
@@ -9410,6 +9416,7 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
       return error_mark_node;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
       {
 	unsigned HOST_WIDE_INT num_mappings
 	  = tree_to_uhwi (OMP_CLAUSE_SIZE (node));
@@ -10054,7 +10061,8 @@ omp_directive_maps_explicitly (hash_map<tree_operand_hash_no_se,
       /* We might be called during omp_build_struct_sibling_lists, when
 	 GOMP_MAP_STRUCT might have been inserted at the start of the group.
 	 Skip over that, and also possibly the node after it.  */
-      if (OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_STRUCT)
+      if (OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_STRUCT
+	  || OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_STRUCT_UNORD)
 	{
 	  grp_first = OMP_CLAUSE_CHAIN (grp_first);
 	  if (OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_FIRSTPRIVATE_POINTER
@@ -10791,7 +10799,9 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	}
     }
 
-  tree base = extract_base_bit_offset (ocd, &cbitpos, &coffset);
+  bool variable_offset;
+  tree base
+    = extract_base_bit_offset (ocd, &cbitpos, &coffset, &variable_offset);
 
   int base_token;
   for (base_token = addr_tokens.length () - 1; base_token >= 0; base_token--)
@@ -10825,14 +10835,20 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 
   if (!struct_map_to_clause || struct_map_to_clause->get (base) == NULL)
     {
-      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
-
-      OMP_CLAUSE_SET_MAP_KIND (l, GOMP_MAP_STRUCT);
-      OMP_CLAUSE_DECL (l) = unshare_expr (base);
-      OMP_CLAUSE_SIZE (l) = size_int (1);
+      enum gomp_map_kind str_kind = GOMP_MAP_STRUCT;
 
       if (struct_map_to_clause == NULL)
 	struct_map_to_clause = new hash_map<tree_operand_hash, tree>;
+
+      if (variable_offset)
+	str_kind = GOMP_MAP_STRUCT_UNORD;
+
+      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
+
+      OMP_CLAUSE_SET_MAP_KIND (l, str_kind);
+      OMP_CLAUSE_DECL (l) = unshare_expr (base);
+      OMP_CLAUSE_SIZE (l) = size_int (1);
+
       struct_map_to_clause->put (base, l);
 
       /* On first iterating through the clause list, we insert the struct node
@@ -11072,6 +11088,11 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
     {
       tree *osc = struct_map_to_clause->get (base);
       tree *sc = NULL, *scp = NULL;
+      bool unordered = false;
+
+      if (osc && OMP_CLAUSE_MAP_KIND (*osc) == GOMP_MAP_STRUCT_UNORD)
+	unordered = true;
+
       unsigned HOST_WIDE_INT i, elems = tree_to_uhwi (OMP_CLAUSE_SIZE (*osc));
       sc = &OMP_CLAUSE_CHAIN (*osc);
       /* The struct mapping might be immediately followed by a
@@ -11112,12 +11133,20 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 			 == REFERENCE_TYPE))
 	      sc_decl = TREE_OPERAND (sc_decl, 0);
 
-	    tree base2 = extract_base_bit_offset (sc_decl, &bitpos, &offset);
+	    bool variable_offset2;
+	    tree base2 = extract_base_bit_offset (sc_decl, &bitpos, &offset,
+						  &variable_offset2);
 	    if (!base2 || !operand_equal_p (base2, base, 0))
 	      break;
 	    if (scp)
 	      continue;
-	    if ((region_type & ORT_ACC) != 0)
+	    if (variable_offset2)
+	      {
+		OMP_CLAUSE_SET_MAP_KIND (*osc, GOMP_MAP_STRUCT_UNORD);
+		unordered = true;
+		break;
+	      }
+	    else if ((region_type & ORT_ACC) != 0)
 	      {
 		/* For OpenACC, allow (ignore) duplicate struct accesses in
 		   the middle of a mapping clause, e.g. "mystruct->foo" in:
@@ -11148,6 +11177,15 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 		  break;
 	      }
 	  }
+
+      /* If this is an unordered struct, just insert the new element at the
+	 end of the list.  */
+      if (unordered)
+	{
+	  for (; i < elems; i++)
+	    sc = &OMP_CLAUSE_CHAIN (*sc);
+	  scp = NULL;
+	}
 
       OMP_CLAUSE_SIZE (*osc)
 	= size_binop (PLUS_EXPR, OMP_CLAUSE_SIZE (*osc), size_one_node);
@@ -11540,14 +11578,42 @@ omp_build_struct_sibling_lists (enum tree_code code,
 
 	/* This is the first sorted node in the struct sibling list.  Use it
 	   to recalculate the correct bias to use.
-	   (&first_node - attach_decl).  */
-	tree first_node = OMP_CLAUSE_DECL (OMP_CLAUSE_CHAIN (attach));
-	first_node = build_fold_addr_expr (first_node);
-	first_node = fold_convert (ptrdiff_type_node, first_node);
+	   (&first_node - attach_decl).
+	   For GOMP_MAP_STRUCT_UNORD, we need e.g. the
+	   min(min(min(first,second),third),fourth) element, because the
+	   elements aren't in any particular order.  */
+	tree lowest_addr;
+	if (OMP_CLAUSE_MAP_KIND (struct_node) == GOMP_MAP_STRUCT_UNORD)
+	  {
+	    tree first_node = OMP_CLAUSE_CHAIN (attach);
+	    unsigned HOST_WIDE_INT num_mappings
+	      = tree_to_uhwi (OMP_CLAUSE_SIZE (struct_node));
+	    lowest_addr = OMP_CLAUSE_DECL (first_node);
+	    lowest_addr = build_fold_addr_expr (lowest_addr);
+	    lowest_addr = fold_convert (pointer_sized_int_node, lowest_addr);
+	    tree next_node = OMP_CLAUSE_CHAIN (first_node);
+	    while (num_mappings > 1)
+	      {
+		tree tmp = OMP_CLAUSE_DECL (next_node);
+		tmp = build_fold_addr_expr (tmp);
+		tmp = fold_convert (pointer_sized_int_node, tmp);
+		lowest_addr = fold_build2 (MIN_EXPR, pointer_sized_int_node,
+					   lowest_addr, tmp);
+		next_node = OMP_CLAUSE_CHAIN (next_node);
+		num_mappings--;
+	      }
+	    lowest_addr = fold_convert (ptrdiff_type_node, lowest_addr);
+	  }
+	else
+	  {
+	    tree first_node = OMP_CLAUSE_DECL (OMP_CLAUSE_CHAIN (attach));
+	    first_node = build_fold_addr_expr (first_node);
+	    lowest_addr = fold_convert (ptrdiff_type_node, first_node);
+	  }
 	tree attach_decl = OMP_CLAUSE_DECL (attach);
 	attach_decl = fold_convert (ptrdiff_type_node, attach_decl);
 	OMP_CLAUSE_SIZE (attach)
-	  = fold_build2 (MINUS_EXPR, ptrdiff_type_node, first_node,
+	  = fold_build2 (MINUS_EXPR, ptrdiff_type_node, lowest_addr,
 			 attach_decl);
 
 	/* Remove GOMP_MAP_ATTACH node from after struct node.  */
@@ -12112,7 +12178,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 				  GOVD_FIRSTPRIVATE | GOVD_SEEN);
 	    }
 
-	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	  if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT_UNORD)
 	      && (addr_tokens[0]->type == STRUCTURE_BASE
 		  || addr_tokens[0]->type == ARRAY_BASE)
 	      && addr_tokens[0]->u.structure_base_kind == BASE_DECL)
@@ -13761,7 +13828,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    }
 		}
 	    }
-	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	  if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT_UNORD)
 	      && (code == OMP_TARGET_EXIT_DATA || code == OACC_EXIT_DATA))
 	    {
 	      remove = true;
@@ -13805,7 +13873,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		 in target block and none of the mapping has always modifier,
 		 remove all the struct element mappings, which immediately
 		 follow the GOMP_MAP_STRUCT map clause.  */
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT)
+	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT_UNORD)
 		{
 		  HOST_WIDE_INT cnt = tree_to_shwi (OMP_CLAUSE_SIZE (c));
 		  while (cnt--)
@@ -16867,6 +16936,7 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      have_clause = false;
 	      break;
 	    case GOMP_MAP_STRUCT:
+	    case GOMP_MAP_STRUCT_UNORD:
 	      have_clause = false;
 	      break;
 	    default:

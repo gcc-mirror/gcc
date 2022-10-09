@@ -1,5 +1,9 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Add GOMP_MAP_STRUCT_UNORD.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* dependency.cc (gfc_omp_expr_prefix_same): New function.
 	* dependency.h (gfc_omp_expr_prefix_same): Add prototype.
 	* gfortran.h (gfc_omp_namelist): Add "duplicate_of" field to "u2"

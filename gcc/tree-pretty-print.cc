@@ -1043,6 +1043,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_STRUCT:
 	  pp_string (pp, "struct");
 	  break;
+	case GOMP_MAP_STRUCT_UNORD:
+	  pp_string (pp, "struct_unord");
+	  break;
 	case GOMP_MAP_ALWAYS_POINTER:
 	  pp_string (pp, "always_pointer");
 	  break;

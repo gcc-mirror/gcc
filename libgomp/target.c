@@ -1258,7 +1258,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    tgt->list[i].offset = 0;
 	  continue;
 	}
-      else if ((kind & typemask) == GOMP_MAP_STRUCT)
+      else if ((kind & typemask) == GOMP_MAP_STRUCT
+	       || (kind & typemask) == GOMP_MAP_STRUCT_UNORD)
 	{
 	  size_t first = i + 1;
 	  size_t last = i + sizes[i];
@@ -1716,6 +1717,20 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    tgt->list[i].offset = OFFSET_INLINED;
 		  }
 		continue;
+	      case GOMP_MAP_STRUCT_UNORD:
+		if (sizes[i] > 1)
+		  {
+		    void *first = hostaddrs[i + 1];
+		    for (size_t j = i + 1; j < i + sizes[i]; j++)
+		      if (hostaddrs[j + 1] != first)
+			{
+			  gomp_mutex_unlock (&devicep->lock);
+			  gomp_fatal ("Mapped array elements must be the "
+				      "same (%p vs %p)", first,
+				      hostaddrs[j + 1]);
+			}
+		  }
+		/* Fallthrough.  */
 	      case GOMP_MAP_STRUCT:
 		first = i + 1;
 		last = i + sizes[i];
@@ -1846,9 +1861,40 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      k->host_end = k->host_start + sizeof (void *);
 	    splay_tree_key n = splay_tree_lookup (mem_map, k);
 	    if (n && n->refcount != REFCOUNT_LINK)
-	      gomp_map_vars_existing (devicep, aq, n, k, &tgt->list[i],
-				      kind & typemask, false, implicit, cbufp,
-				      refcount_set);
+	      {
+		if (field_tgt_clear != FIELD_TGT_EMPTY)
+		  {
+		    /* For this condition to be true, there must be a
+		       duplicate struct element mapping.  This can happen with
+		       GOMP_MAP_STRUCT_UNORD mappings, for example.  */
+		    tgt->list[i].key = n;
+		    if (openmp_p)
+		      {
+			assert ((n->refcount & REFCOUNT_STRUCTELEM) != 0);
+			assert (field_tgt_structelem_first != NULL);
+
+			if (i == field_tgt_clear)
+			  {
+			    n->refcount |= REFCOUNT_STRUCTELEM_FLAG_LAST;
+			    field_tgt_structelem_first = NULL;
+			  }
+		      }
+		    if (i == field_tgt_clear)
+		      field_tgt_clear = FIELD_TGT_EMPTY;
+		    gomp_increment_refcount (n, refcount_set);
+		    tgt->list[i].copy_from
+		      = GOMP_MAP_COPY_FROM_P (kind & typemask);
+		    tgt->list[i].always_copy_from
+		      = GOMP_MAP_ALWAYS_FROM_P (kind & typemask);
+		    tgt->list[i].is_attach = false;
+		    tgt->list[i].offset = 0;
+		    tgt->list[i].length = k->host_end - k->host_start;
+		  }
+		else
+		  gomp_map_vars_existing (devicep, aq, n, k, &tgt->list[i],
+					  kind & typemask, false, implicit,
+					  cbufp, refcount_set);
+	      }
 	    else
 	      {
 		k->aux = NULL;
@@ -4816,7 +4862,8 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
   size_t i, j;
   if ((flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)
     for (i = 0; i < mapnum; i++)
-      if ((kinds[i] & 0xff) == GOMP_MAP_STRUCT)
+      if ((kinds[i] & 0xff) == GOMP_MAP_STRUCT
+	  || (kinds[i] & 0xff) == GOMP_MAP_STRUCT_UNORD)
 	{
 	  gomp_map_vars (devicep, sizes[i] + 1, &hostaddrs[i], NULL, &sizes[i],
 			 &kinds[i], true, &refcount_set,
@@ -4914,7 +4961,8 @@ gomp_target_task_fn (void *data)
       htab_t refcount_set = htab_create (ttask->mapnum);
       if ((ttask->flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)
 	for (i = 0; i < ttask->mapnum; i++)
-	  if ((ttask->kinds[i] & 0xff) == GOMP_MAP_STRUCT)
+	  if ((ttask->kinds[i] & 0xff) == GOMP_MAP_STRUCT
+	      || (ttask->kinds[i] & 0xff) == GOMP_MAP_STRUCT_UNORD)
 	    {
 	      gomp_map_vars (devicep, ttask->sizes[i] + 1, &ttask->hostaddrs[i],
 			     NULL, &ttask->sizes[i], &ttask->kinds[i], true,

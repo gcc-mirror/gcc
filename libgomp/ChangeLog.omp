@@ -1,5 +1,19 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* oacc-mem.c (find_group_last, goacc_enter_data_internal,
+	goacc_exit_data_internal, GOACC_enter_exit_data): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* target.c (gomp_map_vars_internal): Add GOMP_MAP_STRUCT_UNORD support.
+	Detect incorrect use of variable indexing of arrays of structs.
+	(GOMP_target_enter_exit_data, gomp_target_task_fn): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-1.c: New test.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-2.c: New test.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-3.c: New test.
+	* testsuite/libgomp.fortran/map-subarray-5.f90: New test.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.fortran/map-subarray.f90: New test.
 	* testsuite/libgomp.fortran/map-subarray-2.f90: New test.
 	* testsuite/libgomp.fortran/map-subarray-3.f90: New test.

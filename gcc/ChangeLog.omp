@@ -1,5 +1,18 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (extract_base_bit_offset): Add VARIABLE_OFFSET parameter.
+	(omp_get_attachment, omp_group_last, omp_group_base,
+	omp_directive_maps_explicitly): Add GOMP_MAP_STRUCT_UNORD support.
+	(omp_accumulate_sibling_list): Update calls to extract_base_bit_offset.
+	Support GOMP_MAP_STRUCT_UNORD.
+	(omp_build_struct_sibling_lists, gimplify_scan_omp_clauses,
+	gimplify_adjust_omp_clauses, gimplify_omp_target_update): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* omp-low.cc (lower_omp_target): Add GOMP_MAP_STRUCT_UNORD support.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (omp_map_clause_descriptor_p): New function.
 	(build_omp_struct_comp_nodes, omp_get_attachment, omp_group_base): Use
 	above function.
