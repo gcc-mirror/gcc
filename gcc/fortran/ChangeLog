@@ -1,3 +1,17 @@
+2022-10-08  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100040
+	PR fortran/100029
+	* trans-expr.cc (gfc_conv_class_to_class): Add code to have
+	assumed-rank arrays recognized as full arrays and fix the type
+	of the array assignment.
+	(gfc_conv_procedure_call): Change order of code blocks such that
+	the free of ALLOCATABLE dummy arguments with INTENT(OUT) occurs
+	first.
+
 2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:
