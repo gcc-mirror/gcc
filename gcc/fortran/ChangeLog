@@ -1,3 +1,17 @@
+2022-10-08  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107000
+	* arith.cc (gfc_arith_error): Define error message for
+	ARITH_INVALID_TYPE.
+	(reduce_unary): Catch arithmetic expressions with invalid type.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Likewise.
+	(eval_intrinsic): Likewise.
+	(gfc_real2complex): Source expression must be of type REAL.
+	* gfortran.h (enum arith): Add ARITH_INVALID_TYPE.
+
 2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_assume): New.

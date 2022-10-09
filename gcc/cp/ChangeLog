@@ -1,3 +1,37 @@
+2022-10-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (TARGET_EXPR_ELIDING_P): New.
+	(unsafe_copy_elision_p, set_target_expr_eliding)
+	(cp_build_init_expr): Declare.
+	* call.cc (unsafe_copy_elision_p): No longer static.
+	(build_over_call, build_special_member_call)
+	(build_new_method_call): Use cp_build_init_expr.
+	* coroutines.cc (expand_one_await_expression)
+	(build_actor_fn, flatten_await_stmt, handle_nested_conditionals)
+	(await_statement_walker, morph_fn_to_coro): Use cp_build_init_expr.
+	* cp-gimplify.cc (cp_gimplify_init_expr)
+	(cp_gimplify_expr): Check TARGET_EXPR_ELIDING_P.
+	(cp_fold_r): Propagate it.
+	(cp_fold): Use cp_build_init_expr.
+	* decl.cc (check_initializer): Use cp_build_init_expr.
+	* except.cc (build_throw): Use cp_build_init_expr.
+	* init.cc (get_nsdmi): Call set_target_expr_eliding.
+	(perform_member_init, expand_default_init, expand_aggr_init_1)
+	(build_new_1, build_vec_init): Use cp_build_init_expr.
+	* method.cc (do_build_copy_constructor): Use cp_build_init_expr.
+	* semantics.cc (simplify_aggr_init_expr, finalize_nrv_r)
+	(finish_omp_reduction_clause): Use cp_build_init_expr.
+	* tree.cc (build_target_expr): Call set_target_expr_eliding.
+	(bot_manip): Copy TARGET_EXPR_ELIDING_P.
+	* typeck.cc (cp_build_modify_expr): Call set_target_expr_eliding.
+	(check_return_expr): Use cp_build_modify_expr.
+	* typeck2.cc (split_nonconstant_init_1)
+	(split_nonconstant_init): Use cp_build_init_expr.
+	(massage_init_elt): Call set_target_expr_eliding.
+	(process_init_constructor_record): Clear TARGET_EXPR_ELIDING_P on
+	unsafe copy elision.
+	(set_target_expr_eliding, cp_build_init_expr): New.
+
 2022-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107085
