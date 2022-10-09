@@ -1355,6 +1355,7 @@ OBJS = \
 	data-streamer.o \
 	data-streamer-in.o \
 	data-streamer-out.o \
+	dbxout.o \
 	dbgcnt.o \
 	dce.o \
 	ddg.o \

@@ -52,6 +52,7 @@
 #include "tm-preds.h"
 #include "tm-constrs.h"
 #include "langhooks.h"
+#include "dbxout.h"
 #include "cfgrtl.h"
 #include "gimple.h"
 #include "stor-layout.h"
