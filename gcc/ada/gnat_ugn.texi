@@ -16717,7 +16717,7 @@ development environments much more flexible.
 @subsection Examples of @code{gnatbind} Usage
 
 
-Here are some examples of @code{gnatbind} invovations:
+Here are some examples of @code{gnatbind} invocations:
 
 @quotation
 
@@ -20793,7 +20793,7 @@ erroneous, and the compiler would be entitled to assume that
 
 However, in practice, this would cause some existing code that
 seems to work with no optimization to start failing at high
-levels of optimzization.
+levels of optimization.
 
 What the compiler does for such cases is to assume that marking
 a variable as aliased indicates that some “funny business” may
@@ -21244,7 +21244,7 @@ To deal with the portability issue, and with the problem of
 mathematical versus run-time interpretation of the expressions in
 assertions, GNAT provides comprehensive control over the handling
 of intermediate overflow. GNAT can operate in three modes, and
-furthemore, permits separate selection of operating modes for
+furthermore, permits separate selection of operating modes for
 the expressions within assertions (here the term ‘assertions’
 is used in the technical sense, which includes preconditions and so forth)
 and for expressions appearing outside assertions.
@@ -27324,8 +27324,9 @@ change pragma Elaborate_All for unit "..." to Elaborate in unit "..."
 @end example
 
 This tactic is always suggested with the pragma @code{Elaborate_All} elimination
-tactic. It offers a different alernative of guaranteeing that the argument of
-the pragma will still be elaborated prior to the unit containing the pragma.
+tactic. It offers a different alternative of guaranteeing that the argument
+of the pragma will still be elaborated prior to the unit containing the
+pragma.
 
 The programmer should update the pragma as advised, and rebuild the program.
 
@@ -27698,7 +27699,7 @@ checks. The example above will still fail at run time with an ABE.
 
 A programmer should first compile the program with the default options, using
 none of the binder or compiler switches. If the binder succeeds in finding an
-elaboration order, then apart from possible cases involing dispatching calls
+elaboration order, then apart from possible cases involving dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
 
 If it is important for the program to be portable to compilers other than GNAT,

@@ -7403,7 +7403,7 @@ development environments much more flexible.
 Examples of ``gnatbind`` Usage
 ------------------------------
 
-Here are some examples of ``gnatbind`` invovations:
+Here are some examples of ``gnatbind`` invocations:
 
   ::
 
