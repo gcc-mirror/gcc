@@ -20896,15 +20896,11 @@ This is the default for @option{-Os}.
 
 @item -mRcq
 @opindex mRcq
-Enable @samp{Rcq} constraint handling.  
-Most short code generation depends on this.
-This is the default.
+Does nothing.  Preserved for backward compatibility.
 
 @item -mRcw
 @opindex mRcw
-Enable @samp{Rcw} constraint handling.  
-Most ccfsm condexec mostly depends on this.
-This is the default.
+Does nothing.  Preserved for backward compatibility.
 
 @item -msize-level=@var{level}
 @opindex msize-level
