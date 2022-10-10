@@ -323,6 +323,7 @@ public:
   bool known_isnan () const;
   bool known_isinf () const;
   bool maybe_isnan () const;
+  bool maybe_isnan (bool sign) const;
   bool maybe_isinf () const;
   bool signbit_p (bool &signbit) const;
 private:
@@ -1293,6 +1294,18 @@ frange::maybe_isnan () const
   if (undefined_p ())
     return false;
   return m_pos_nan || m_neg_nan;
+}
+
+// Return TRUE if range is possibly a NAN with SIGN.
+
+inline bool
+frange::maybe_isnan (bool sign) const
+{
+  if (undefined_p ())
+    return false;
+  if (sign)
+    return m_neg_nan;
+  return m_pos_nan;
 }
 
 // Return TRUE if range is a +NAN or -NAN.
