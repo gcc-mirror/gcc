@@ -9190,7 +9190,7 @@
 	 VDWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;\tvdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
+  "vpst\;vdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
