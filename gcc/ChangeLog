@@ -1,3 +1,26 @@
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106562
+	* config/pru/pru-protos.h (pru_noteq_condition): New
+	function declaration.
+	* config/pru/pru.cc (pru_noteq_condition): New function.
+	* config/pru/pru.md (cbranchdi4): Define new pattern.
+
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (lshrdi3): New expand pattern.
+	(ashldi3): Ditto.
+
+2022-10-09  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config.gcc: set with_arch to default_mips_arch if no defined.
+	* config/mips/driver-native.cc (host_detect_local_cpu):
+	  try getauxval(AT_BASE_PLATFORM) and _MIPS_ARCH, too.
+	  pass -mnan=2008 if __mips_nan2008__ is defined.
+	* config.in: define HAVE_SYS_AUXV_H and HAVE_GETAUXVAL.
+	* configure.ac: detect sys/auxv.h and getauxval.
+	* configure: regenerated.
+
 2022-10-07  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* tree-cfg.cc (assign_discriminators): Set discriminators for call stmts

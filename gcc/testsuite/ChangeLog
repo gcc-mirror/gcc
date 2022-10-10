@@ -1,3 +1,16 @@
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106562
+	* gcc.target/pru/pr106562-1.c: New test.
+	* gcc.target/pru/pr106562-2.c: New test.
+	* gcc.target/pru/pr106562-3.c: New test.
+	* gcc.target/pru/pr106562-4.c: New test.
+
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/ashiftdi-1.c: New test.
+	* gcc.target/pru/lshiftrtdi-1.c: New test.
+
 2022-10-08  Harald Anlauf  <anlauf@gmx.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
