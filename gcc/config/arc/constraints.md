@@ -452,20 +452,6 @@
 		    && !arc_ccfsm_cond_exec_p ()
 		    && IN_RANGE (REGNO (op) ^ 4, 4, 11)")))
 
-; If we need a reload, we generally want to steer reload to use three-address
-; alternatives in preference of two-address alternatives, unless the
-; three-address alternative introduces a LIMM that is unnecessary for the
-; two-address alternative.
-(define_constraint "Rcw"
-  "@internal
-   Cryptic w - for use in early alternatives with matching constraint"
-  (and (match_code "reg")
-       (match_test
-	"TARGET_Rcw
-	 && REGNO (op) < FIRST_PSEUDO_REGISTER
-	 && TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
-			       REGNO (op))")))
-
 (define_constraint "Rcb"
   "@internal
    Stack Pointer register @code{r28} - do not reload into its class"

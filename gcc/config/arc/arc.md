@@ -1991,22 +1991,22 @@ archs4x, archs4xd"
 ;; Maximum and minimum insns
 
 (define_insn "smaxsi3"
-   [(set (match_operand:SI 0 "dest_reg_operand"         "=Rcw, w,  w")
-	 (smax:SI (match_operand:SI 1 "register_operand"  "%0, c,  c")
-		  (match_operand:SI 2 "nonmemory_operand" "cL,cL,Cal")))]
+   [(set (match_operand:SI 0 "dest_reg_operand"           "=r, r,  r")
+	 (smax:SI (match_operand:SI 1 "register_operand"  "%0, r,  r")
+		  (match_operand:SI 2 "nonmemory_operand" "rL,rL,Cal")))]
   ""
-  "max%? %0,%1,%2"
+  "max%?\\t%0,%1,%2"
   [(set_attr "type" "two_cycle_core")
    (set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")]
 )
 
 (define_insn "sminsi3"
-   [(set (match_operand:SI 0 "dest_reg_operand"         "=Rcw, w,  w")
-	 (smin:SI (match_operand:SI 1 "register_operand"  "%0, c,  c")
-		  (match_operand:SI 2 "nonmemory_operand" "cL,cL,Cal")))]
+   [(set (match_operand:SI 0 "dest_reg_operand"           "=r, r,  r")
+	 (smin:SI (match_operand:SI 1 "register_operand"  "%0, r,  r")
+		  (match_operand:SI 2 "nonmemory_operand" "rL,rL,Cal")))]
   ""
-  "min%? %0,%1,%2"
+  "min%?\\t%0,%1,%2"
   [(set_attr "type" "two_cycle_core")
    (set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")]
@@ -2028,10 +2028,10 @@ archs4x, archs4xd"
 ; We avoid letting this pattern use LP_COUNT as a register by specifying
 ;  register class 'W' instead of 'w'.
 (define_insn_and_split "*addsi3_mixed"
-  ;;                                                      0       1    2    3   4   5   6     7    8   9   a    b     c   d e   f  10  11  12
-  [(set (match_operand:SI 0 "dest_reg_operand"          "=Rcq#q,Rcq,   h,!*Rsd,Rcq,Rcb,Rcq, Rcqq,Rcqq,Rcw,Rcw, Rcw,    W,  W,W,  W,Rcqq,Rcw,  W")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0,      c,   0, Rcqq,  0,  0,Rcb, Rcqq,   0,  0,  c,   0,    c,  c,0,  0,   0,  0,  c")
-		 (match_operand:SI 2 "nonmemory_operand" "cL,     0, Cm1,    L,CL2,Csp,CM4,RcqqK,  cO, cL,  0,cCca,cLCmL,Cca,I,C2a, Cal,Cal,Cal")))]
+  ;;                                                      0       1    2     3   4   5   6     7    8  9 a    b     c   d e   f   10  11  12
+  [(set (match_operand:SI 0 "dest_reg_operand"          "=Rcq#q,Rcq,   h,!*Rsd,Rcq,Rcb,Rcq, Rcqq,Rcqq, r,r,   r,    W,  W,W,  W,Rcqq,  r,  W")
+	(plus:SI (match_operand:SI 1 "register_operand" "%0,      c,   0, Rcqq,  0,  0,Rcb, Rcqq,   0, 0,r,   0,    c,  c,0,  0,   0,  0,  c")
+		 (match_operand:SI 2 "nonmemory_operand" "cL,     0, Cm1,    L,CL2,Csp,CM4,RcqqK,  cO,rL,0,rCca,cLCmL,Cca,I,C2a, Cal,Cal,Cal")))]
   ""
 {
   arc_output_addsi (operands, arc_ccfsm_cond_exec_p (), true);
@@ -2792,13 +2792,13 @@ archs4x, archs4xd"
 (define_insn "*add_f_2"
   [(set (reg:CC_C CC_REG)
 	(compare:CC_C
-	  (plus:SI (match_operand:SI 1 "register_operand" "c,0,c")
-		   (match_operand:SI 2 "nonmemory_operand" "cL,I,cCal"))
+	  (plus:SI (match_operand:SI 1 "register_operand"  "r ,0,r")
+		   (match_operand:SI 2 "nonmemory_operand" "rL,I,rCal"))
 	  (match_dup 2)))
-   (set (match_operand:SI 0 "dest_reg_operand" "=w,Rcw,w")
+   (set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "add.f %0,%1,%2"
+  "add.f\\t%0,%1,%2"
   [(set_attr "cond" "set")
    (set_attr "type" "compare")
    (set_attr "length" "4,4,8")])
@@ -2895,22 +2895,22 @@ archs4x, archs4xd"
 ; the casesi expander might generate a sub of zero, so we have to recognize it.
 ; combine should make such an insn go away.
 (define_insn_and_split "subsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"           "=Rcqq,Rcqq,Rcw,Rcw,w,w,w,  w,  w,  w")
-	(minus:SI (match_operand:SI 1 "nonmemory_operand"    "0,Rcqq,  0, cL,c,L,I,Cal,Cal,  c")
-		  (match_operand:SI 2 "nonmemory_operand" "Rcqq,Rcqq,  c,  0,c,c,0,  0,  c,Cal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"           "=Rcqq,Rcqq,r, r,r,r,r,  r,  r,  r")
+	(minus:SI (match_operand:SI 1 "nonmemory_operand"    "0,Rcqq,0,rL,r,L,I,Cal,Cal,  r")
+		  (match_operand:SI 2 "nonmemory_operand" "Rcqq,Rcqq,r, 0,r,r,0,  0,  r,Cal")))]
   "register_operand (operands[1], SImode)
    || register_operand (operands[2], SImode)"
   "@
-    sub%? %0,%1,%2%&
-    sub%? %0,%1,%2%&
-    sub%? %0,%1,%2
-    rsub%? %0,%2,%1
-    sub %0,%1,%2
-    rsub %0,%2,%1
-    rsub %0,%2,%1
-    rsub%? %0,%2,%1
-    rsub %0,%2,%1
-    sub %0,%1,%2"
+    sub%?\\t%0,%1,%2%&
+    sub%?\\t%0,%1,%2%&
+    sub%?\\t%0,%1,%2
+    rsub%?\\t%0,%2,%1
+    sub\\t%0,%1,%2
+    rsub\\t%0,%2,%1
+    rsub\\t%0,%2,%1
+    rsub%?\\t%0,%2,%1
+    rsub\\t%0,%2,%1
+    sub\\t%0,%1,%2"
   "reload_completed && get_attr_length (insn) == 8
    && satisfies_constraint_I (operands[1])
    && GET_CODE (PATTERN (insn)) != COND_EXEC"
@@ -2990,19 +2990,19 @@ archs4x, archs4xd"
 
 (define_insn "sub_f"
   [(set (reg:CC CC_REG)
-	(compare:CC (match_operand:SI 1 "nonmemory_operand" " c,L,0,I,c,Cal")
-		    (match_operand:SI 2 "nonmemory_operand" "cL,c,I,0,Cal,c")))
-   (set (match_operand:SI 0 "dest_reg_operand" "=w,w,Rcw,Rcw,w,w")
+	(compare:CC (match_operand:SI 1 "nonmemory_operand" " r,L,0,I,r,Cal")
+		    (match_operand:SI 2 "nonmemory_operand" "rL,r,I,0,Cal,r")))
+   (set (match_operand:SI 0 "dest_reg_operand" "=r,r,r,r,r,r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "register_operand (operands[1], SImode)
    || register_operand (operands[2], SImode)"
   "@
-	sub.f %0,%1,%2
-	rsub.f %0,%2,%1
-	sub.f %0,%1,%2
-	rsub.f %0,%2,%1
-	sub.f %0,%1,%2
-	sub.f %0,%1,%2"
+	sub.f\\t%0,%1,%2
+	rsub.f\\t%0,%2,%1
+	sub.f\\t%0,%1,%2
+	rsub.f\\t%0,%2,%1
+	sub.f\\t%0,%1,%2
+	sub.f\\t%0,%1,%2"
   [(set_attr "type" "compare")
    (set_attr "length" "4,4,4,4,8,8")])
 
@@ -3051,12 +3051,12 @@ archs4x, archs4xd"
 ;; N.B. sub[123] has the operands of the MINUS in the opposite order from
 ;; what synth_mult likes.
 (define_insn "*sub_n"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
-	(minus:SI (match_operand:SI 1 "nonmemory_operand" "0,c,?Cal")
-		  (ashift:SI (match_operand:SI 2 "register_operand" "c,c,c")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
+	(minus:SI (match_operand:SI 1 "nonmemory_operand" "0,r,?Cal")
+		  (ashift:SI (match_operand:SI 2 "register_operand" "r,r,r")
 			     (match_operand:SI 3 "_1_2_3_operand" ""))))]
   ""
-  "sub%c3%? %0,%1,%2"
+  "sub%c3%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
@@ -3064,12 +3064,12 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")])
 
 (define_insn "*sub_n"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
-	(minus:SI (match_operand:SI 1 "nonmemory_operand" "0,c,?Cal")
-		  (mult:SI (match_operand:SI 2 "register_operand" "c,c,c")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
+	(minus:SI (match_operand:SI 1 "nonmemory_operand" "0,r,?Cal")
+		  (mult:SI (match_operand:SI 2 "register_operand" "r,r,r")
 			   (match_operand:SI 3 "_2_4_8_operand" ""))))]
   ""
-  "sub%z3%? %0,%1,%2"
+  "sub%z3%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
@@ -3078,12 +3078,12 @@ archs4x, archs4xd"
 
 ; ??? check if combine matches this.
 (define_insn "*bset"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
 	(ior:SI (ashift:SI (const_int 1)
-			   (match_operand:SI 1 "nonmemory_operand" "cL,cL,c"))
-		(match_operand:SI 2 "nonmemory_operand" "0,c,Cal")))]
+			   (match_operand:SI 1 "nonmemory_operand" "rL,rL,r"))
+		(match_operand:SI 2 "nonmemory_operand" "0,r,Cal")))]
   ""
-  "bset%? %0,%2,%1"
+  "bset%?\\t%0,%2,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3091,12 +3091,12 @@ archs4x, archs4xd"
 
 ; ??? check if combine matches this.
 (define_insn "*bxor"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
 	(xor:SI (ashift:SI (const_int 1)
-			   (match_operand:SI 1 "nonmemory_operand" "cL,cL,c"))
-		(match_operand:SI 2 "nonmemory_operand" "0,c,Cal")))]
+			   (match_operand:SI 1 "nonmemory_operand" "rL,rL,r"))
+		(match_operand:SI 2 "nonmemory_operand" "0,r,Cal")))]
   ""
-  "bxor%? %0,%2,%1"
+  "bxor%?\\t%0,%2,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3104,12 +3104,12 @@ archs4x, archs4xd"
 
 ; ??? check if combine matches this.
 (define_insn "*bclr"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
 	(and:SI (not:SI (ashift:SI (const_int 1)
-				   (match_operand:SI 1 "nonmemory_operand" "cL,cL,c")))
-		(match_operand:SI 2 "nonmemory_operand" "0,c,Cal")))]
+				   (match_operand:SI 1 "nonmemory_operand" "rL,rL,r")))
+		(match_operand:SI 2 "nonmemory_operand" "0,r,Cal")))]
   ""
-  "bclr%? %0,%2,%1"
+  "bclr%?\\t%0,%2,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3121,15 +3121,15 @@ archs4x, archs4xd"
 
 ; see also iorsi3 for use with constant bit number.
 (define_insn "*bset_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
-	(ior:SI (match_operand:SI 1 "nonmemory_operand" "0,c,Cal")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
+	(ior:SI (match_operand:SI 1 "nonmemory_operand" "0,r,Cal")
 		(ashift:SI (const_int 1)
-			   (match_operand:SI 2 "nonmemory_operand" "cL,cL,c"))) ) ]
+			   (match_operand:SI 2 "nonmemory_operand" "rL,rL,r"))) ) ]
   ""
   "@
-     bset%? %0,%1,%2 ;;peep2, constr 1
-     bset %0,%1,%2 ;;peep2, constr 2
-     bset %0,%1,%2 ;;peep2, constr 3"
+     bset%?\\t%0,%1,%2 ;;peep2, constr 1
+     bset\\t%0,%1,%2 ;;peep2, constr 2
+     bset\\t%0,%1,%2 ;;peep2, constr 3"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3137,15 +3137,15 @@ archs4x, archs4xd"
 
 ; see also xorsi3 for use with constant bit number.
 (define_insn "*bxor_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
-	(xor:SI (match_operand:SI 1 "nonmemory_operand" "0,c,Cal")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
+	(xor:SI (match_operand:SI 1 "nonmemory_operand" "0,r,Cal")
 		(ashift:SI (const_int 1)
-			(match_operand:SI 2 "nonmemory_operand" "cL,cL,c"))) ) ]
+			(match_operand:SI 2 "nonmemory_operand" "rL,rL,r"))) ) ]
   ""
   "@
-     bxor%? %0,%1,%2
-     bxor %0,%1,%2
-     bxor %0,%1,%2"
+     bxor%?\\t%0,%1,%2
+     bxor\\t%0,%1,%2
+     bxor\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3153,15 +3153,15 @@ archs4x, archs4xd"
 
 ; see also andsi3 for use with constant bit number.
 (define_insn "*bclr_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
 	(and:SI (not:SI (ashift:SI (const_int 1)
-				   (match_operand:SI 2 "nonmemory_operand" "cL,rL,r")))
-		(match_operand:SI 1 "nonmemory_operand" "0,c,Cal")))]
+				   (match_operand:SI 2 "nonmemory_operand" "rL,rL,r")))
+		(match_operand:SI 1 "nonmemory_operand" "0,r,Cal")))]
   ""
   "@
-     bclr%? %0,%1,%2
-     bclr %0,%1,%2
-     bclr %0,%1,%2"
+     bclr%?\\t%0,%1,%2
+     bclr\\t%0,%1,%2
+     bclr\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3169,17 +3169,17 @@ archs4x, archs4xd"
 
 ; see also andsi3 for use with constant bit number.
 (define_insn "*bmsk_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
-	(and:SI (match_operand:SI 1 "nonmemory_operand" "0,c,Cal")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r,r")
+	(and:SI (match_operand:SI 1 "nonmemory_operand" "0,r,Cal")
 		(plus:SI (ashift:SI (const_int 1)
 				    (plus:SI (match_operand:SI 2 "nonmemory_operand" "rL,rL,r")
 					     (const_int 1)))
 			 (const_int -1))))]
   ""
   "@
-     bmsk%? %0,%1,%2
-     bmsk %0,%1,%2
-     bmsk %0,%1,%2"
+     bmsk%?\\t%0,%1,%2
+     bmsk\\t%0,%1,%2
+     bmsk\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3282,18 +3282,18 @@ archs4x, archs4xd"
 
 ;;bic define_insn that allows limm to be the first operand
 (define_insn "*bicsi3_insn"
-   [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcw,Rcw,Rcw,w,w,w")
- 	(and:SI	(not:SI (match_operand:SI 1 "nonmemory_operand" "Rcqq,Lc,I,Cal,Lc,Cal,c"))
- 		(match_operand:SI 2 "nonmemory_operand" "0,0,0,0,c,c,Cal")))]
+   [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,r,r,r,r,r,r")
+ 	(and:SI	(not:SI (match_operand:SI 1 "nonmemory_operand" "Rcqq,Lr,I,Cal,Lr,Cal,r"))
+ 		(match_operand:SI 2 "nonmemory_operand" "0,0,0,0,r,r,Cal")))]
   ""
   "@
-   bic%? %0, %2, %1%& ;;constraint 0
-   bic%? %0,%2,%1  ;;constraint 1
-   bic %0,%2,%1    ;;constraint 2, FIXME: will it ever get generated ???
-   bic%? %0,%2,%1  ;;constraint 3, FIXME: will it ever get generated ???
-   bic %0,%2,%1    ;;constraint 4
-   bic %0,%2,%1    ;;constraint 5, FIXME: will it ever get generated ???
-   bic %0,%2,%1    ;;constraint 6"
+   bic%?\\t%0, %2, %1%& ;;constraint 0
+   bic%?\\t%0,%2,%1  ;;constraint 1
+   bic\\t%0,%2,%1    ;;constraint 2, FIXME: will it ever get generated ???
+   bic%?\\t%0,%2,%1  ;;constraint 3, FIXME: will it ever get generated ???
+   bic\\t%0,%2,%1    ;;constraint 4
+   bic\\t%0,%2,%1    ;;constraint 5, FIXME: will it ever get generated ???
+   bic\\t%0,%2,%1    ;;constraint 6"
   [(set_attr "length" "*,4,4,8,4,8,8")
   (set_attr "iscompact" "maybe, false, false, false, false, false, false")
   (set_attr "predicable" "no,yes,no,yes,no,no,no")
@@ -3334,19 +3334,19 @@ archs4x, archs4xd"
    (set_attr "cond" "canuse,canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,canuse_limm,nocond,canuse,nocond")])
 
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "dest_reg_operand"          "=Rcqq,Rcq,Rcw,Rcw,Rcw,Rcw, w,  w,w,  w,  w")
-	(xor:SI (match_operand:SI 1 "register_operand"  "%0,   Rcq,  0,  c,  0,  0, c,  c,0,  0,  c")
-		(match_operand:SI 2 "nonmemory_operand" " Rcqq,  0, cL,  0,C0p,  I,cL,C0p,I,Cal,Cal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"          "=Rcqq,Rcq, r,r,  r,r, r,  r,r,  r,  r")
+	(xor:SI (match_operand:SI 1 "register_operand"  "%0,   Rcq, 0,r,  0,0, r,  r,0,  0,  r")
+		(match_operand:SI 2 "nonmemory_operand" " Rcqq,  0,rL,0,C0p,I,rL,C0p,I,Cal,Cal")))]
   ""
   "*
   switch (which_alternative)
     {
     case 0: case 2: case 5: case 6: case 8: case 9: case 10:
-      return \"xor%? %0,%1,%2%&\";
+      return \"xor%?\\t%0,%1,%2%&\";
     case 1: case 3:
-      return \"xor%? %0,%2,%1%&\";
+      return \"xor%?\\t%0,%2,%1%&\";
     case 4: case 7:
-      return \"bxor%? %0,%1,%z2\";
+      return \"bxor%?\\t%0,%1,%z2\";
     default:
       gcc_unreachable ();
     }
@@ -3358,10 +3358,10 @@ archs4x, archs4xd"
    (set_attr "cond" "canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,canuse_limm,canuse,nocond")])
 
 (define_insn "negsi2"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcqq,Rcw,w")
-	(neg:SI (match_operand:SI 1 "register_operand" "0,Rcqq,0,c")))]
+  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcqq,r,r")
+	(neg:SI (match_operand:SI 1 "register_operand" "0,Rcqq,0,r")))]
   ""
-  "neg%? %0,%1%&"
+  "neg%?\\t%0,%1%&"
   [(set_attr "type" "unary")
    (set_attr "iscompact" "maybe,true,false,false")
    (set_attr "predicable" "no,no,yes,no")])
@@ -3498,14 +3498,14 @@ archs4x, archs4xd"
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn "*lshrsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(lshiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCal")
-		     (match_operand:SI 2 "nonmemory_operand"  "N,  N,RcqqM, cL,cL,cCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcq,Rcqq,Rcqq, r, r,   r")
+	(lshiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0, 0, r,rCal")
+		     (match_operand:SI 2 "nonmemory_operand"  "N,  N,RcqqM,rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
        || register_operand (operands[2], SImode))"
   "*return (which_alternative <= 1 && !arc_ccfsm_cond_exec_p ()
-	    ?  \"lsr%? %0,%1%&\" : \"lsr%? %0,%1,%2%&\");"
+	    ?  \"lsr%?\\t%0,%1%&\" : \"lsr%?\\t%0,%1,%2%&\");"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,no,yes,no,no")
@@ -5153,20 +5153,20 @@ archs4x, archs4xd"
    (set_attr "predicable" "yes")])
 
 (define_insn "abssf2"
-  [(set (match_operand:SF 0 "dest_reg_operand"    "=Rcq#q,Rcw,w")
-	(abs:SF (match_operand:SF 1 "register_operand" "0,  0,c")))]
+  [(set (match_operand:SF 0 "dest_reg_operand"    "=Rcq#q,r,r")
+	(abs:SF (match_operand:SF 1 "register_operand" "0,0,r")))]
   ""
-  "bclr%? %0,%1,31%&"
+  "bclr%?\\t%0,%1,31%&"
   [(set_attr "type" "unary")
    (set_attr "iscompact" "maybe,false,false")
    (set_attr "length" "2,4,4")
    (set_attr "predicable" "no,yes,no")])
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "dest_reg_operand" "=Rcw,w")
-	(neg:SF (match_operand:SF 1 "register_operand" "0,c")))]
+  [(set (match_operand:SF 0 "dest_reg_operand" "=r,r")
+	(neg:SF (match_operand:SF 1 "register_operand" "0,r")))]
   ""
-  "bxor%? %0,%1,31"
+  "bxor%?\\t%0,%1,31"
   [(set_attr "type" "unary")
    (set_attr "predicable" "yes,no")])
 
