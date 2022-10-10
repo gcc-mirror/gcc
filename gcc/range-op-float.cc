@@ -1026,23 +1026,27 @@ bool
 foperator_unordered::op1_range (frange &r, tree type,
 				const irange &lhs,
 				const frange &op2,
-				relation_kind) const
+				relation_kind rel) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
+      if (rel == VREL_EQ)
+	r.set_nan (type);
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
-      if (!op2.maybe_isnan ())
+      else if (!op2.maybe_isnan ())
 	r.set_nan (type);
       else
 	r.set_varying (type);
       break;
 
     case BRS_FALSE:
+      if (rel == VREL_EQ)
+	r.clear_nan ();
       // A false UNORDERED means both operands are !NAN, so it's
       // impossible for op2 to be a NAN.
-      if (op2.known_isnan ())
+      else if (op2.known_isnan ())
 	r.set_undefined ();
       else
 	{
