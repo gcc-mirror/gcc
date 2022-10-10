@@ -2903,6 +2903,11 @@ irange::set_range_from_nonzero_bits ()
 	}
       return true;
     }
+  else if (popcount == 0)
+    {
+      set_zero (type ());
+      return true;
+    }
   return false;
 }
 
