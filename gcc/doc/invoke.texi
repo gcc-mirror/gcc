@@ -2973,6 +2973,9 @@ Version 17, which first appeared in G++ 12, fixes layout of classes
 that inherit from aggregate classes with default member initializers
 in C++14 and up.
 
+Version 18, which first appeard in G++ 13, fixes manglings of lambdas
+that have additional context.
+
 See also @option{-Wabi}.
 
 @item -fabi-compat-version=@var{n}

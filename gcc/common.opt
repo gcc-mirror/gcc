@@ -1004,6 +1004,9 @@ Driver Undocumented
 ;     member initializers in C++14 and up.
 ;     Default in G++ 12.
 ;
+; 18: Corrects errors in mangling of lambdas with additional context.
+;     Default in G++ 13.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
