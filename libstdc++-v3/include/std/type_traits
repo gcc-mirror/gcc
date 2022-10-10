@@ -1802,9 +1802,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Primary template.
   /// make_unsigned
   template<typename _Tp>
-#if __cpp_concepts
-    requires is_integral<_Tp>::value || __is_enum(_Tp)
-#endif
     struct make_unsigned
     { typedef typename __make_unsigned_selector<_Tp>::__type type; };
 
@@ -1937,9 +1934,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Primary template.
   /// make_signed
   template<typename _Tp>
-#if __cpp_concepts
-    requires is_integral<_Tp>::value || __is_enum(_Tp)
-#endif
     struct make_signed
     { typedef typename __make_signed_selector<_Tp>::__type type; };
 

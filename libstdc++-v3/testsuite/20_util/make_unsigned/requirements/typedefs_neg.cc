@@ -43,5 +43,4 @@ void test01()
   using T8 = make_unsigned<float>::type; // { dg-error "here" }
 }
 
-// { dg-error "invalid use of incomplete type" "" { target c++17_down } 0 }
-// { dg-error "constraint failure" "" { target c++20 } 0 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 0 }

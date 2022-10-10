@@ -46,5 +46,4 @@ test03()
   C c;
   std::ssize(c);  // { dg-error "no matching function" }
 }
-// { dg-error "incomplete type .*make_signed.*S" "" { target c++17_down } 0 }
-// { dg-error "constraint failure" "" { target c++20 } 0 }
+// { dg-error "incomplete type .*make_signed.*S" "" { target *-*-* } 0 }
