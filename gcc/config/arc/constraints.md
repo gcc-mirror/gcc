@@ -432,26 +432,6 @@
 	       && !arc_legitimate_pic_addr_p (op)
 	       && !(satisfies_constraint_I (op) && optimize_size)"))
 
-; Note that the 'cryptic' register constraints will not make reload use the
-; associated class to reload into, but this will not penalize reloading of any
-; other operands, or using an alternate part of the same alternative.
-
-; Rcq is different in three important ways from a register class constraint:
-; - It does not imply a register class, hence reload will not use it to drive
-;   reloads.
-; - It matches even when there is no register class to describe its accepted
-;   set; not having such a set again lessens the impact on register allocation.
-; - It won't match when the instruction is conditionalized by the ccfsm.
-(define_constraint "Rcq"
-  "@internal
-   Cryptic q - for short insn generation while not affecting register allocation
-   Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
-   @code{r12}-@code{r15}"
-  (and (match_code "reg")
-       (match_test "TARGET_Rcq
-		    && !arc_ccfsm_cond_exec_p ()
-		    && IN_RANGE (REGNO (op) ^ 4, 4, 11)")))
-
 (define_constraint "Rcb"
   "@internal
    Stack Pointer register @code{r28} - do not reload into its class"

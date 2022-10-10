@@ -2474,6 +2474,20 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
     }
 }
 
+/* Return TRUE if reg is ok for short instrcutions.  */
+
+static bool
+arc_check_short_reg_p (rtx op)
+{
+  if (!REG_P (op))
+    return false;
+
+  if (IN_RANGE (REGNO (op) ^ 4, 4, 11))
+    return true;
+
+  return false;
+}
+
 /* Cost functions.  */
 
 /* Provide the costs of an addressing mode that contains ADDR.
@@ -2485,7 +2499,7 @@ arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
   switch (GET_CODE (addr))
     {
     case REG :
-      return speed || satisfies_constraint_Rcq (addr) ? 0 : 1;
+      return speed || arc_check_short_reg_p (addr) ? 0 : 1;
     case PRE_INC: case PRE_DEC: case POST_INC: case POST_DEC:
     case PRE_MODIFY: case POST_MODIFY:
       return !speed;
@@ -2517,14 +2531,14 @@ arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
 		    ? COSTS_N_INSNS (1)
 		    : speed
 		    ? 0
-		    : (satisfies_constraint_Rcq (plus0)
+		    : (arc_check_short_reg_p (plus0)
 		       && satisfies_constraint_O (plus1))
 		    ? 0
 		    : 1);
 	  case REG:
 	    return (speed < 1 ? 0
-		    : (satisfies_constraint_Rcq (plus0)
-		       && satisfies_constraint_Rcq (plus1))
+		    : (arc_check_short_reg_p (plus0)
+		       && arc_check_short_reg_p (plus1))
 		    ? 0 : 1);
 	  case CONST :
 	  case SYMBOL_REF :
@@ -9003,8 +9017,8 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
   int intval = (REG_P (operands[2]) ? 1
 		: CONST_INT_P (operands[2]) ? INTVAL (operands[2]) : 0xbadc057);
   int neg_intval = -intval;
-  int short_0 = satisfies_constraint_Rcq (operands[0]);
-  int short_p = (!cond_p && short_0 && satisfies_constraint_Rcq (operands[1]));
+  int short_0 = arc_check_short_reg_p (operands[0]);
+  int short_p = (!cond_p && short_0 && arc_check_short_reg_p (operands[1]));
   int ret = 0;
 
 #define REG_H_P(OP) (REG_P (OP) && ((TARGET_V2 && REGNO (OP) <= 31	\
@@ -9037,7 +9051,7 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 	 patterns.  */
       if (short_p
 	  && ((REG_H_P (operands[2])
-	       && (match || satisfies_constraint_Rcq (operands[2])))
+	       && (match || arc_check_short_reg_p (operands[2])))
 	      || (CONST_INT_P (operands[2])
 		  && ((unsigned) intval <= (match ? 127 : 7)))))
 	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;1");
@@ -9064,7 +9078,7 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
       /* Generate add_s r0,b,u6; add_s r1,b,u6 patterns.  */
       if (TARGET_CODE_DENSITY && REG_P (operands[0]) && REG_P (operands[1])
 	  && ((REGNO (operands[0]) == 0) || (REGNO (operands[0]) == 1))
-	  && satisfies_constraint_Rcq (operands[1])
+	  && arc_check_short_reg_p (operands[1])
 	  && satisfies_constraint_L (operands[2]))
 	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;6");
     }
@@ -10033,7 +10047,7 @@ split_addsi (rtx *operands)
   /* Try for two short insns first.  Lengths being equal, we prefer
      expansions with shorter register lifetimes.  */
   if (val > 127 && val <= 255
-      && satisfies_constraint_Rcq (operands[0]))
+      && arc_check_short_reg_p (operands[0]))
     {
       operands[3] = operands[2];
       operands[4] = gen_rtx_PLUS (SImode, operands[0], operands[1]);
@@ -10057,8 +10071,8 @@ split_subsi (rtx *operands)
 
   /* Try for two short insns first.  Lengths being equal, we prefer
      expansions with shorter register lifetimes.  */
-  if (satisfies_constraint_Rcq (operands[0])
-      && satisfies_constraint_Rcq (operands[2]))
+  if (arc_check_short_reg_p (operands[0])
+      && arc_check_short_reg_p (operands[2]))
     {
       if (val >= -31 && val <= 127)
 	{
@@ -10436,12 +10450,12 @@ arc_lra_p (void)
   return arc_lra_flag;
 }
 
-/* ??? Should we define TARGET_REGISTER_PRIORITY?  We might perfer to use
-   Rcq registers, because some insn are shorter with them.  OTOH we already
-   have separate alternatives for this purpose, and other insns don't
-   mind, so maybe we should rather prefer the other registers?
-   We need more data, and we can only get that if we allow people to
-   try all options.  */
+/* ??? Should we define TARGET_REGISTER_PRIORITY?  We might perfer to
+   use q registers, because some insn are shorter with them.  OTOH we
+   already have separate alternatives for this purpose, and other
+   insns don't mind, so maybe we should rather prefer the other
+   registers?  We need more data, and we can only get that if we allow
+   people to try all options.  */
 static int
 arc_register_priority (int r)
 {
