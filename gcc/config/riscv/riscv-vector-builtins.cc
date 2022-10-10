@@ -50,10 +50,26 @@ using namespace riscv_vector;
 
 namespace riscv_vector {
 
+/* Static information about each vector type.  */
+struct vector_type_info
+{
+  /* The name of the type as declared by riscv_vector.h
+     which is recommend to use. For example: 'vint32m1_t'.  */
+  const char *name;
+
+  /* ABI name of vector type. The type is always available
+     under this name, even when riscv_vector.h isn't included.
+     For example:  '__rvv_int32m1_t'.  */
+  const char *abi_name;
+
+  /* The C++ mangling of ABI_NAME.  */
+  const char *mangled_name;
+};
+
 /* Information about each RVV type.  */
 static CONSTEXPR const vector_type_info vector_types[] = {
-#define DEF_RVV_TYPE(USER_NAME, NCHARS, ABI_NAME, ARGS...)    \
-  {#USER_NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)    \
+  {#NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
 #include "riscv-vector-builtins.def"
 };
 
@@ -151,14 +167,14 @@ register_builtin_types ()
     = TARGET_64BIT ? unsigned_intSI_type_node : long_unsigned_type_node;
 
   machine_mode mode;
-#define DEF_RVV_TYPE(USER_NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,    \
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,    \
 		     VECTOR_MODE_MIN_VLEN_32)                                  \
   mode = TARGET_MIN_VLEN > 32 ? VECTOR_MODE##mode                              \
 			      : VECTOR_MODE_MIN_VLEN_32##mode;                 \
-  scalar_types[VECTOR_TYPE_##USER_NAME]                                        \
+  scalar_types[VECTOR_TYPE_##NAME]                                        \
     = riscv_v_ext_enabled_vector_mode_p (mode) ? SCALAR_TYPE##_type_node       \
 					       : NULL_TREE;                    \
-  vector_modes[VECTOR_TYPE_##USER_NAME]                                        \
+  vector_modes[VECTOR_TYPE_##NAME]                                        \
     = riscv_v_ext_enabled_vector_mode_p (mode) ? mode : VOIDmode;
 #include "riscv-vector-builtins.def"
 
@@ -198,7 +214,7 @@ register_vector_type (vector_type_index type)
      is disabled according to '-march'.  */
   if (!vectype)
     return;
-  tree id = get_identifier (vector_types[type].user_name);
+  tree id = get_identifier (vector_types[type].name);
   tree decl = build_decl (input_location, TYPE_DECL, id, vectype);
   decl = lang_hooks.decls.pushdecl (decl);
 
