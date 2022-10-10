@@ -497,14 +497,17 @@ bool
 foperator_not_equal::op1_range (frange &r, tree type,
 				const irange &lhs,
 				const frange &op2,
-				relation_kind) const
+				relation_kind rel) const
 {
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
+      // The TRUE side of op1 != op1 implies op1 is NAN.
+      if (rel == VREL_EQ)
+	r.set_nan (type);
       // If the result is true, the only time we know anything is if
       // OP2 is a constant.
-      if (op2.singleton_p ())
+      else if (op2.singleton_p ())
 	{
 	  // This is correct even if op1 is NAN, because the following
 	  // range would be ~[tmp, tmp] with the NAN property set to
