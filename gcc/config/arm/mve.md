@@ -266,7 +266,7 @@
 	 VDUPQ_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vdup.%#<V_sz_elem>   %q0, %1"
+  "vdup.%#<V_sz_elem>\t%q0, %1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -435,7 +435,7 @@
 	 VDUPQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vdup.%#<V_sz_elem>   %q0, %1"
+  "vdup.%#<V_sz_elem>\t%q0, %1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3046,7 +3046,7 @@
 	 VDUPQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vdupt.%#<V_sz_elem>	%q0, %2"
+  "vpst\;vdupt.%#<V_sz_elem>\t%q0, %2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3991,7 +3991,7 @@
 	 VDUPQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vdupt.%#<V_sz_elem>	%q0, %2"
+  "vpst\;vdupt.%#<V_sz_elem>\t%q0, %2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
