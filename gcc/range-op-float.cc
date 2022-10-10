@@ -315,7 +315,7 @@ class foperator_identity : public range_operator_float
 {
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
-
+public:
   bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
 		   relation_kind) const final override
@@ -338,7 +338,7 @@ class foperator_equal : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
+public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_kind rel) const final override;
@@ -444,7 +444,7 @@ class foperator_not_equal : public range_operator_float
 {
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
-
+public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_kind rel) const final override;
@@ -545,7 +545,7 @@ class foperator_lt : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
+public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_kind rel) const final override;
@@ -660,7 +660,7 @@ class foperator_le : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
+public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_kind rel) const final override;
@@ -767,7 +767,7 @@ class foperator_gt : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
+public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_kind rel) const final override;
@@ -882,7 +882,7 @@ class foperator_ge : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
+public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_kind rel) const final override;
@@ -993,7 +993,6 @@ class foperator_unordered : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1071,7 +1070,6 @@ class foperator_ordered : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
-
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
