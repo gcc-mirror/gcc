@@ -824,7 +824,7 @@
 		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vcmp.<mve_cmp_type>%#<V_sz_elem>  <mve_cmp_op>, %q1, %q2"
+  "vcmp.<mve_cmp_type>%#<V_sz_elem>\t<mve_cmp_op>, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
