@@ -3356,7 +3356,7 @@ arc_save_callee_enter (uint64_t gmask,
       reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
-						 off));
+						 -off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
@@ -3370,7 +3370,7 @@ arc_save_callee_enter (uint64_t gmask,
       reg = gen_rtx_REG (SImode, regno);
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
-						  off));
+						  -off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
       gmask = gmask & ~(1ULL << regno);
@@ -3380,7 +3380,7 @@ arc_save_callee_enter (uint64_t gmask,
     {
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
-						 off));
+						 -off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
