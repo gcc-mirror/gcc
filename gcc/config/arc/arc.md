@@ -2336,11 +2336,11 @@ archs4x, archs4xd"
 ; registers, since it cannot be the destination of a multi-cycle insn
 ; like MPY or MPYU.
 (define_insn "mulsi3_700"
- [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=Rcr,r,r,Rcr,r")
-	(mult:SI (match_operand:SI 1 "register_operand"  "%0,c,0,0,c")
-		 (match_operand:SI 2 "nonmemory_operand" "cL,cL,I,Cal,Cal")))]
+ [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=r, r,r,  r,r")
+	(mult:SI (match_operand:SI 1 "register_operand"  "%0, r,0,  0,r")
+		 (match_operand:SI 2 "nonmemory_operand" "rL,rL,I,Cal,Cal")))]
  "TARGET_ARC700_MPY"
-  "mpyu%? %0,%1,%2"
+  "mpyu%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,4,8,8")
    (set_attr "type" "umulti")
    (set_attr "predicable" "yes,no,no,yes,no")
@@ -2501,15 +2501,15 @@ archs4x, archs4xd"
    (set_attr "length" "8")])
 
 (define_insn "mulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand"                  "=Rcr,r,Rcr,r")
+  [(set (match_operand:SI 0 "register_operand"                    "=r,r,r,r")
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI
-	   (sign_extend:DI (match_operand:SI 1 "register_operand" "%0,c,  0,c"))
-	   (sign_extend:DI (match_operand:SI 2 "extend_operand"    "c,c,  i,i")))
+	   (sign_extend:DI (match_operand:SI 1 "register_operand" "%0,r,0,r"))
+	   (sign_extend:DI (match_operand:SI 2 "extend_operand"    "r,r,i,i")))
 	  (const_int 32))))]
   "TARGET_MPY"
-  "mpy%+%? %0,%1,%2"
+  "mpy%+%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8")
    (set_attr "type" "multi")
    (set_attr "predicable" "yes,no,yes,no")
@@ -2518,15 +2518,15 @@ archs4x, archs4xd"
 ; Note that mpyhu has the same latency as mpy / mpyh,
 ; thus we use the type multi.
 (define_insn "*umulsi3_highpart_i"
-  [(set (match_operand:SI 0 "register_operand"                  "=Rcr,r,Rcr,r")
+  [(set (match_operand:SI 0 "register_operand"                    "=r,r,r,r")
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI
-	   (zero_extend:DI (match_operand:SI 1 "register_operand" "%0,c,  0,c"))
-	   (zero_extend:DI (match_operand:SI 2 "extend_operand"    "c,c,  i,i")))
+	   (zero_extend:DI (match_operand:SI 1 "register_operand" "%0,r,0,r"))
+	   (zero_extend:DI (match_operand:SI 2 "extend_operand"    "r,r,i,i")))
 	  (const_int 32))))]
   "TARGET_MPY"
-  "mpy%+u%? %0,%1,%2"
+  "mpy%+u%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8")
    (set_attr "type" "multi")
    (set_attr "predicable" "yes,no,yes,no")
@@ -2536,15 +2536,15 @@ archs4x, archs4xd"
 ;; need a separate pattern for immediates
 ;; ??? This is fine for combine, but not for reload.
 (define_insn "umulsi3_highpart_int"
-  [(set (match_operand:SI 0 "register_operand"            "=Rcr, r, r,Rcr,  r")
+  [(set (match_operand:SI 0 "register_operand"            "=r, r, r,r,  r")
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI
-	   (zero_extend:DI (match_operand:SI 1 "register_operand"  " 0, c, 0,  0,  c"))
-	   (match_operand:DI 2 "immediate_usidi_operand" "L, L, I, Cal, Cal"))
+	   (zero_extend:DI (match_operand:SI 1 "register_operand"  " 0, r, 0,  0,  r"))
+	   (match_operand:DI 2 "immediate_usidi_operand" "L, L, I,Cal,Cal"))
 	  (const_int 32))))]
   "TARGET_MPY"
-  "mpy%+u%? %0,%1,%2"
+  "mpy%+u%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,4,8,8")
    (set_attr "type" "multi")
    (set_attr "predicable" "yes,no,no,yes,no")
@@ -6141,7 +6141,7 @@ archs4x, archs4xd"
    (set_attr "length" "36")])
 
 (define_insn "macd"
-  [(set (match_operand:DI 0 "even_register_operand"	       "=Rcr,r,r")
+  [(set (match_operand:DI 0 "even_register_operand"	"=r,r,r")
 	(plus:DI
 	 (mult:DI
 	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%0,r,r"))
@@ -6243,7 +6243,7 @@ archs4x, archs4xd"
    (set_attr "length" "36")])
 
 (define_insn "macdu"
-  [(set (match_operand:DI 0 "even_register_operand"	       "=Rcr,r,r")
+  [(set (match_operand:DI 0 "even_register_operand"	"=r,r,r")
 	(plus:DI
 	 (mult:DI
 	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%0,r,r"))

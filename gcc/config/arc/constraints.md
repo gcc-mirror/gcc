@@ -466,16 +466,6 @@
 	 && TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
 			       REGNO (op))")))
 
-(define_constraint "Rcr"
-  "@internal
-   Cryptic r - for use in early alternatives with matching constraint"
-  (and (match_code "reg")
-       (match_test
-	"TARGET_Rcw
-	 && REGNO (op) < FIRST_PSEUDO_REGISTER
-	 && TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
-			       REGNO (op))")))
-
 (define_constraint "Rcb"
   "@internal
    Stack Pointer register @code{r28} - do not reload into its class"
