@@ -1132,6 +1132,95 @@ foperator_ordered::op1_range (frange &r, tree type,
   return true;
 }
 
+class foperator_abs : public range_operator_float
+{
+  using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
+public:
+  bool fold_range (frange &r, tree type,
+		   const frange &op1, const frange &,
+		   relation_kind) const final override;
+  bool op1_range (frange &r, tree type,
+		  const frange &lhs, const frange &op2,
+		  relation_kind rel) const final override;
+} fop_abs;
+
+bool
+foperator_abs::fold_range (frange &r, tree type,
+			   const frange &op1, const frange &op2,
+			   relation_kind) const
+{
+  if (empty_range_varying (r, type, op1, op2))
+    return true;
+  if (op1.known_isnan ())
+    {
+      r.set_nan (type, /*sign=*/false);
+      return true;
+    }
+
+  const REAL_VALUE_TYPE lh_lb = op1.lower_bound ();
+  const REAL_VALUE_TYPE lh_ub = op1.upper_bound ();
+  // Handle the easy case where everything is positive.
+  if (real_compare (GE_EXPR, &lh_lb, &dconst0)
+      && !real_iszero (&lh_lb, /*sign=*/true)
+      && !op1.maybe_isnan (/*sign=*/true))
+    {
+      r = op1;
+      return true;
+    }
+
+  REAL_VALUE_TYPE min = real_value_abs (&lh_lb);
+  REAL_VALUE_TYPE max = real_value_abs (&lh_ub);
+  // If the range contains zero then we know that the minimum value in the
+  // range will be zero.
+  if (real_compare (LE_EXPR, &lh_lb, &dconst0)
+      && real_compare (GE_EXPR, &lh_ub, &dconst0))
+    {
+      if (real_compare (GT_EXPR, &min, &max))
+	max = min;
+      min = dconst0;
+    }
+  else
+    {
+      // If the range was reversed, swap MIN and MAX.
+      if (real_compare (GT_EXPR, &min, &max))
+	std::swap (min, max);
+    }
+
+  r.set (type, min, max);
+  if (op1.maybe_isnan ())
+    r.update_nan (/*sign=*/false);
+  else
+    r.clear_nan ();
+  return true;
+}
+
+bool
+foperator_abs::op1_range (frange &r, tree type,
+			  const frange &lhs, const frange &op2,
+			  relation_kind) const
+{
+  if (empty_range_varying (r, type, lhs, op2))
+    return true;
+  if (lhs.known_isnan ())
+    {
+      r.set_nan (type);
+      return true;
+    }
+
+  // Start with the positives because negatives are an impossible result.
+  frange positives (type, dconst0, frange_val_max (type));
+  positives.update_nan (/*sign=*/false);
+  positives.intersect (lhs);
+  r = positives;
+  // Then add the negative of each pair:
+  // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
+  r.union_ (frange (type,
+		    real_value_negate (&positives.upper_bound ()),
+		    real_value_negate (&positives.lower_bound ())));
+  return true;
+}
+
 class foperator_unordered_lt : public range_operator_float
 {
   using range_operator_float::fold_range;
@@ -1502,6 +1591,8 @@ floating_op_table::floating_op_table ()
   set (UNEQ_EXPR, fop_unordered_equal);
   set (ORDERED_EXPR, fop_ordered);
   set (UNORDERED_EXPR, fop_unordered);
+
+  set (ABS_EXPR, fop_abs);
 }
 
 // Return a pointer to the range_operator_float instance, if there is
