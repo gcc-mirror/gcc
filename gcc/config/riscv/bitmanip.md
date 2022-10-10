@@ -350,6 +350,18 @@
   "bseti\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
+;; As long as the SImode operand is not a partial subreg, we can use a
+;; bseti without postprocessing, as the middle end is smart enough to
+;; stay away from the signbit.
+(define_insn "*bsetidisi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+		(match_operand 2 "single_bit_mask_operand" "i")))]
+  "TARGET_ZBS && TARGET_64BIT
+   && !partial_subreg_p (operands[2])"
+  "bseti\t%0,%1,%S2"
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*bclr<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (rotate:X (const_int -2)
