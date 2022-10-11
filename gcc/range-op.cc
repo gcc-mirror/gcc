@@ -531,6 +531,11 @@ operator_equal::op1_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
+    case BRS_TRUE:
+      // If it's true, the result is the same as OP2.
+      r = op2;
+      break;
+
     case BRS_FALSE:
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
@@ -541,11 +546,6 @@ operator_equal::op1_range (irange &r, tree type,
 	}
       else
 	r.set_varying (type);
-      break;
-
-    case BRS_TRUE:
-      // If it's true, the result is the same as OP2.
-      r = op2;
       break;
 
     default:
@@ -841,12 +841,12 @@ operator_lt::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_le (r, type, op1.upper_bound ());
-      break;
-
     case BRS_TRUE:
       build_gt (r, type, op1.lower_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_le (r, type, op1.upper_bound ());
       break;
 
     default:
@@ -952,12 +952,12 @@ operator_le::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_lt (r, type, op1.upper_bound ());
-      break;
-
     case BRS_TRUE:
       build_ge (r, type, op1.lower_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_lt (r, type, op1.upper_bound ());
       break;
 
     default:
@@ -1062,12 +1062,12 @@ operator_gt::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_ge (r, type, op1.lower_bound ());
-      break;
-
     case BRS_TRUE:
       build_lt (r, type, op1.upper_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_ge (r, type, op1.lower_bound ());
       break;
 
     default:
@@ -1173,12 +1173,12 @@ operator_ge::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_gt (r, type, op1.lower_bound ());
-      break;
-
     case BRS_TRUE:
       build_le (r, type, op1.upper_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_gt (r, type, op1.lower_bound ());
       break;
 
     default:
