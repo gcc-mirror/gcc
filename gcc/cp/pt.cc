@@ -11448,6 +11448,14 @@ tsubst_friend_function (tree decl, tree args)
 	     by duplicate_decls.  */
 	  new_friend = old_decl;
 	}
+
+      /* We've just introduced a namespace-scope function in the purview
+	 without necessarily having opened the enclosing namespace, so
+	 make sure the namespace is in the purview now too.  */
+      if (modules_p ()
+	  && DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (new_friend))
+	  && TREE_CODE (DECL_CONTEXT (new_friend)) == NAMESPACE_DECL)
+	DECL_MODULE_PURVIEW_P (DECL_CONTEXT (new_friend)) = true;
     }
   else
     {
