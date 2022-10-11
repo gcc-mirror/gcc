@@ -1132,6 +1132,52 @@ foperator_ordered::op1_range (frange &r, tree type,
   return true;
 }
 
+class foperator_negate : public range_operator_float
+{
+  using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
+public:
+  bool fold_range (frange &r, tree type,
+		   const frange &op1, const frange &op2,
+		   relation_kind = VREL_VARYING) const final override
+  {
+    if (empty_range_varying (r, type, op1, op2))
+      return true;
+    if (op1.known_isnan ())
+      {
+	bool sign;
+	if (op1.nan_signbit_p (sign))
+	  r.set_nan (type, !sign);
+	else
+	  r.set_nan (type);
+	return true;
+      }
+
+    REAL_VALUE_TYPE lh_lb = op1.lower_bound ();
+    REAL_VALUE_TYPE lh_ub = op1.upper_bound ();
+    lh_lb = real_value_negate (&lh_lb);
+    lh_ub = real_value_negate (&lh_ub);
+    r.set (type, lh_ub, lh_lb);
+    if (op1.maybe_isnan ())
+      {
+	bool sign;
+	if (op1.nan_signbit_p (sign))
+	  r.update_nan (!sign);
+	else
+	  r.update_nan ();
+      }
+    else
+      r.clear_nan ();
+    return true;
+  }
+  bool op1_range (frange &r, tree type,
+		  const frange &lhs, const frange &op2,
+		  relation_kind rel = VREL_VARYING) const final override
+  {
+    return fold_range (r, type, lhs, op2, rel);
+  }
+} fop_negate;
+
 class foperator_abs : public range_operator_float
 {
   using range_operator_float::fold_range;
@@ -1593,6 +1639,7 @@ floating_op_table::floating_op_table ()
   set (UNORDERED_EXPR, fop_unordered);
 
   set (ABS_EXPR, fop_abs);
+  set (NEGATE_EXPR, fop_negate);
 }
 
 // Return a pointer to the range_operator_float instance, if there is
@@ -1633,6 +1680,21 @@ frange_float (const char *lb, const char *ub, tree type = float_type_node)
 void
 range_op_float_tests ()
 {
+  frange r, r0, r1;
+  frange trange (float_type_node);
+
+  // negate([-5, +10]) => [-10, 5]
+  r0 = frange_float ("-5", "10");
+  fop_negate.fold_range (r, float_type_node, r0, trange);
+  ASSERT_EQ (r, frange_float ("-10", "5"));
+
+  // negate([0, 1] -NAN) => [-1, -0] +NAN
+  r0 = frange_float ("0", "1");
+  r0.update_nan (true);
+  fop_negate.fold_range (r, float_type_node, r0, trange);
+  r1 = frange_float ("-1", "-0");
+  r1.update_nan (false);
+  ASSERT_EQ (r, r1);
 }
 
 } // namespace selftest
