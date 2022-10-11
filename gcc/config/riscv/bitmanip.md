@@ -558,3 +558,40 @@
   "TARGET_ZBS"
   [(set (match_dup 0) (zero_extract:GPR (match_dup 1) (const_int 1) (match_dup 2)))
    (set (match_dup 0) (plus:GPR (match_dup 0) (const_int -1)))])
+
+;; Catch those cases where we can use a bseti/binvi + ori/xori or
+;; bseti/binvi + bseti/binvi instead of a lui + addi + or/xor sequence.
+(define_insn_and_split "*<or_optab>i<mode>_extrabit"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(any_or:X (match_operand:X 1 "register_operand" "r")
+	          (match_operand:X 2 "uimm_extra_bit_or_twobits" "i")))]
+  "TARGET_ZBS"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (<or_optab>:X (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (<or_optab>:X (match_dup 0) (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
+	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+
+	operands[3] = GEN_INT (bits &~ topbit);
+	operands[4] = GEN_INT (topbit);
+})
+
+;; Same to use blcri + andi and blcri + bclri
+(define_insn_and_split "*andi<mode>_extrabit"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (match_operand:X 1 "register_operand" "r")
+	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits" "i")))]
+  "TARGET_ZBS"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
+	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (~bits);
+
+	operands[3] = GEN_INT (bits | topbit);
+	operands[4] = GEN_INT (~topbit);
+})

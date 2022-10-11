@@ -593,6 +593,14 @@ enum reg_class
 		? (VALUE)						\
 		: ((VALUE) & ((HOST_WIDE_INT_1U << 32)-1))))
 
+/* True if VALUE can be represented as an immediate with 1 extra bit
+   set: we check that it is not a SMALL_OPERAND (as this would be true
+   for all small operands) unmodified and turns into a small operand
+   once we clear the top bit. */
+#define UIMM_EXTRA_BIT_OPERAND(VALUE)					\
+  (!SMALL_OPERAND (VALUE)						\
+   && SMALL_OPERAND (VALUE & ~(HOST_WIDE_INT_1U << floor_log2 (VALUE))))
+
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1

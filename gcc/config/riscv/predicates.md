@@ -305,11 +305,30 @@
        (match_test "ctz_hwi (INTVAL (op)) > 0")
        (match_test "SMALL_OPERAND (INTVAL (op) >> ctz_hwi (INTVAL (op)))")))
 
+;; A CONST_INT operand that has exactly two bits set.
+(define_predicate "const_twobits_operand"
+  (and (match_code "const_int")
+       (match_test "popcount_hwi (UINTVAL (op)) == 2")))
+
 ;; A CONST_INT operand that fits into the unsigned half of a
-;; signed-immediate after the top bit has been cleared.
+;; signed-immediate after the top bit has been cleared
 (define_predicate "uimm_extra_bit_operand"
   (and (match_code "const_int")
-       (not (and (match_test "SMALL_OPERAND (INTVAL (op))")
-		 (match_test "INTVAL (op) > 0")))
-       (ior (match_test "SMALL_OPERAND (UINTVAL (op) & ~(HOST_WIDE_INT_1U << floor_log2 (UINTVAL (op))))")
-	    (match_test "popcount_hwi (UINTVAL (op)) == 2"))))
+       (match_test "UIMM_EXTRA_BIT_OPERAND (UINTVAL (op))")))
+
+(define_predicate "uimm_extra_bit_or_twobits"
+  (and (match_code "const_int")
+       (ior (match_operand 0 "uimm_extra_bit_operand")
+	    (match_operand 0 "const_twobits_operand"))))
+
+;; A CONST_INT operand that fits into the negative half of a
+;; signed-immediate after a single cleared top bit has been
+;; set: i.e., a bitwise-negated uimm_extra_bit_operand
+(define_predicate "not_uimm_extra_bit_operand"
+  (and (match_code "const_int")
+       (match_test "UIMM_EXTRA_BIT_OPERAND (~UINTVAL (op))")))
+
+(define_predicate "not_uimm_extra_bit_or_nottwobits"
+  (and (match_code "const_int")
+       (ior (match_operand 0 "not_uimm_extra_bit_operand")
+	    (match_operand 0 "const_nottwobits_operand"))))
