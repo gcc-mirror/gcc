@@ -968,6 +968,14 @@ ResolveItem::visit (AST::UseDeclaration &use_item)
 {
   auto to_resolve = flatten_use_dec_to_paths (use_item);
 
+  // FIXME: I think this does not actually resolve glob use-decls and is going
+  // the wrong way about it. RFC #1560 specifies the following:
+  //
+  // > When we find a glob import, we have to record a 'back link', so that when
+  // a public name is added for the supplying module, we can add it for the
+  // importing module.
+  //
+  // Which is the opposite of what we're doing if I understand correctly?
   for (auto &path : to_resolve)
     ResolvePath::go (&path);
 }
