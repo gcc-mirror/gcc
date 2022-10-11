@@ -4302,7 +4302,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
       free_data_ref (dr);
       return opt_result::failure_at (stmt,
 				     "not vectorized:"
-				     " statement is bitfield access %G", stmt);
+				     " statement is an unsupported"
+				     " bitfield access %G", stmt);
     }
 
   if (DR_BASE_ADDRESS (dr)

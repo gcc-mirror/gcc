@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ssa.h"
 #include "expmed.h"
+#include "expr.h"
 #include "optabs-query.h"
 #include "gimple-pretty-print.h"
 #include "alias.h"
@@ -123,6 +124,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
 
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
+
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
 #define MAX_PHI_ARG_NUM \
@@ -144,6 +148,12 @@ static bool need_to_rewrite_undefined;
    be degenerated to two arguments PHI.  See more information in comment
    before phi_convertible_by_degenerating_args.  */
 static bool any_complicated_phi;
+
+/* True if we have bitfield accesses we can lower.  */
+static bool need_to_lower_bitfields;
+
+/* True if there is any ifcvting to be done.  */
+static bool need_to_ifcvt;
 
 /* Hash for struct innermost_loop_behavior.  It depends on the user to
    free the memory.  */
@@ -1410,15 +1420,6 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
     return false;
 
   calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Allow statements that can be handled during if-conversion.  */
-  ifc_bbs = get_loop_body_in_if_conv_order (loop);
-  if (!ifc_bbs)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Irreducible loop\n");
-      return false;
-    }
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -2899,18 +2900,22 @@ version_loop_for_if_conversion (class loop *loop, vec<gimple *> *preds)
   class loop *new_loop;
   gimple *g;
   gimple_stmt_iterator gsi;
-  unsigned int save_length;
+  unsigned int save_length = 0;
 
   g = gimple_build_call_internal (IFN_LOOP_VECTORIZED, 2,
 				  build_int_cst (integer_type_node, loop->num),
 				  integer_zero_node);
   gimple_call_set_lhs (g, cond);
 
-  /* Save BB->aux around loop_version as that uses the same field.  */
-  save_length = loop->inner ? loop->inner->num_nodes : loop->num_nodes;
-  void **saved_preds = XALLOCAVEC (void *, save_length);
-  for (unsigned i = 0; i < save_length; i++)
-    saved_preds[i] = ifc_bbs[i]->aux;
+  void **saved_preds = NULL;
+  if (any_complicated_phi || need_to_predicate)
+    {
+      /* Save BB->aux around loop_version as that uses the same field.  */
+      save_length = loop->inner ? loop->inner->num_nodes : loop->num_nodes;
+      saved_preds = XALLOCAVEC (void *, save_length);
+      for (unsigned i = 0; i < save_length; i++)
+	saved_preds[i] = ifc_bbs[i]->aux;
+    }
 
   initialize_original_copy_tables ();
   /* At this point we invalidate porfile confistency until IFN_LOOP_VECTORIZED
@@ -2922,8 +2927,9 @@ version_loop_for_if_conversion (class loop *loop, vec<gimple *> *preds)
 			   profile_probability::always (), true);
   free_original_copy_tables ();
 
-  for (unsigned i = 0; i < save_length; i++)
-    ifc_bbs[i]->aux = saved_preds[i];
+  if (any_complicated_phi || need_to_predicate)
+    for (unsigned i = 0; i < save_length; i++)
+      ifc_bbs[i]->aux = saved_preds[i];
 
   if (new_loop == NULL)
     return NULL;
@@ -2999,7 +3005,7 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
   auto_vec<edge> critical_edges;
 
   /* Loop is not well formed.  */
-  if (num <= 2 || loop->inner || !single_exit (loop))
+  if (loop->inner)
     return false;
 
   body = get_loop_body (loop);
@@ -3260,6 +3266,201 @@ ifcvt_hoist_invariants (class loop *loop, edge pe)
   free (body);
 }
 
+/* Returns the DECL_FIELD_BIT_OFFSET of the bitfield accesse in stmt iff its
+   type mode is not BLKmode.  If BITPOS is not NULL it will hold the poly_int64
+   value of the DECL_FIELD_BIT_OFFSET of the bitfield access and STRUCT_EXPR,
+   if not NULL, will hold the tree representing the base struct of this
+   bitfield.  */
+
+static tree
+get_bitfield_rep (gassign *stmt, bool write, tree *bitpos,
+		  tree *struct_expr)
+{
+  tree comp_ref = write ? gimple_assign_lhs (stmt)
+			: gimple_assign_rhs1 (stmt);
+
+  tree field_decl = TREE_OPERAND (comp_ref, 1);
+  tree rep_decl = DECL_BIT_FIELD_REPRESENTATIVE (field_decl);
+
+  /* Bail out if the representative is BLKmode as we will not be able to
+     vectorize this.  */
+  if (TYPE_MODE (TREE_TYPE (rep_decl)) == E_BLKmode)
+    return NULL_TREE;
+
+  /* Bail out if the DECL_SIZE of the field_decl isn't the same as the BF's
+     precision.  */
+  unsigned HOST_WIDE_INT bf_prec
+    = TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (stmt)));
+  if (compare_tree_int (DECL_SIZE (field_decl), bf_prec) != 0)
+    return NULL_TREE;
+
+  if (struct_expr)
+    *struct_expr = TREE_OPERAND (comp_ref, 0);
+
+  if (bitpos)
+    *bitpos
+      = fold_build2 (MINUS_EXPR, bitsizetype,
+		     DECL_FIELD_BIT_OFFSET (field_decl),
+		     DECL_FIELD_BIT_OFFSET (rep_decl));
+
+  return rep_decl;
+
+}
+
+/* Lowers the bitfield described by DATA.
+   For a write like:
+
+   struct.bf = _1;
+
+   lower to:
+
+   __ifc_1 = struct.<representative>;
+   __ifc_2 = BIT_INSERT_EXPR (__ifc_1, _1, bitpos);
+   struct.<representative> = __ifc_2;
+
+   For a read:
+
+   _1 = struct.bf;
+
+    lower to:
+
+    __ifc_1 = struct.<representative>;
+    _1 =  BIT_FIELD_REF (__ifc_1, bitsize, bitpos);
+
+    where representative is a legal load that contains the bitfield value,
+    bitsize is the size of the bitfield and bitpos the offset to the start of
+    the bitfield within the representative.  */
+
+static void
+lower_bitfield (gassign *stmt, bool write)
+{
+  tree struct_expr;
+  tree bitpos;
+  tree rep_decl = get_bitfield_rep (stmt, write, &bitpos, &struct_expr);
+  tree rep_type = TREE_TYPE (rep_decl);
+  tree bf_type = TREE_TYPE (gimple_assign_lhs (stmt));
+
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Lowering:\n");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      fprintf (dump_file, "to:\n");
+    }
+
+  /* REP_COMP_REF is a COMPONENT_REF for the representative.  NEW_VAL is it's
+     defining SSA_NAME.  */
+  tree rep_comp_ref = build3 (COMPONENT_REF, rep_type, struct_expr, rep_decl,
+			      NULL_TREE);
+  tree new_val = ifc_temp_var (rep_type, rep_comp_ref, &gsi);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (new_val), 0, TDF_SLIM);
+
+  if (write)
+    {
+      new_val = ifc_temp_var (rep_type,
+			      build3 (BIT_INSERT_EXPR, rep_type, new_val,
+				      unshare_expr (gimple_assign_rhs1 (stmt)),
+				      bitpos), &gsi);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (new_val), 0, TDF_SLIM);
+
+      gimple *new_stmt = gimple_build_assign (unshare_expr (rep_comp_ref),
+					      new_val);
+      gimple_move_vops (new_stmt, stmt);
+      gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	print_gimple_stmt (dump_file, new_stmt, 0, TDF_SLIM);
+    }
+  else
+    {
+      tree bfr = build3 (BIT_FIELD_REF, bf_type, new_val,
+			 build_int_cst (bitsizetype, TYPE_PRECISION (bf_type)),
+			 bitpos);
+      new_val = ifc_temp_var (bf_type, bfr, &gsi);
+
+      gimple *new_stmt = gimple_build_assign (gimple_assign_lhs (stmt),
+					      new_val);
+      gimple_move_vops (new_stmt, stmt);
+      gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	print_gimple_stmt (dump_file, new_stmt, 0, TDF_SLIM);
+    }
+
+  gsi_remove (&gsi, true);
+}
+
+/* Return TRUE if there are bitfields to lower in this LOOP.  Fill TO_LOWER
+   with data structures representing these bitfields.  */
+
+static bool
+bitfields_to_lower_p (class loop *loop,
+		      vec <gassign *> &reads_to_lower,
+		      vec <gassign *> &writes_to_lower)
+{
+  gimple_stmt_iterator gsi;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Analyzing loop %d for bitfields:\n", loop->num);
+    }
+
+  for (unsigned i = 0; i < loop->num_nodes; ++i)
+    {
+      basic_block bb = ifc_bbs[i];
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gassign *stmt = dyn_cast<gassign*> (gsi_stmt (gsi));
+	  if (!stmt)
+	    continue;
+
+	  tree op = gimple_assign_lhs (stmt);
+	  bool write = TREE_CODE (op) == COMPONENT_REF;
+
+	  if (!write)
+	    op = gimple_assign_rhs1 (stmt);
+
+	  if (TREE_CODE (op) != COMPONENT_REF)
+	    continue;
+
+	  if (DECL_BIT_FIELD_TYPE (TREE_OPERAND (op, 1)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "\t Bitfield NO OK to lower,"
+					" field type is not Integral.\n");
+		  return false;
+		}
+
+	      if (!get_bitfield_rep (stmt, write, NULL, NULL))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "\t Bitfield NOT OK to lower,"
+					" representative is BLKmode.\n");
+		  return false;
+		}
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "\tBitfield OK to lower.\n");
+	      if (write)
+		writes_to_lower.safe_push (stmt);
+	      else
+		reads_to_lower.safe_push (stmt);
+	    }
+	}
+    }
+  return !reads_to_lower.is_empty () || !writes_to_lower.is_empty ();
+}
+
+
 /* If-convert LOOP when it is legal.  For the moment this pass has no
    profitability analysis.  Returns non-zero todo flags when something
    changed.  */
@@ -3270,12 +3471,16 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   unsigned int todo = 0;
   bool aggressive_if_conv;
   class loop *rloop;
+  auto_vec <gassign *, 4> reads_to_lower;
+  auto_vec <gassign *, 4> writes_to_lower;
   bitmap exit_bbs;
   edge pe;
 
  again:
   rloop = NULL;
   ifc_bbs = NULL;
+  need_to_lower_bitfields = false;
+  need_to_ifcvt = false;
   need_to_predicate = false;
   need_to_rewrite_undefined = false;
   any_complicated_phi = false;
@@ -3291,16 +3496,42 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 	aggressive_if_conv = true;
     }
 
-  if (!ifcvt_split_critical_edges (loop, aggressive_if_conv))
+  if (!single_exit (loop))
     goto cleanup;
 
-  if (!if_convertible_loop_p (loop)
-      || !dbg_cnt (if_conversion_tree))
+  /* If there are more than two BBs in the loop then there is at least one if
+     to convert.  */
+  if (loop->num_nodes > 2
+      && !ifcvt_split_critical_edges (loop, aggressive_if_conv))
     goto cleanup;
 
-  if ((need_to_predicate || any_complicated_phi)
-      && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
-	  || loop->dont_vectorize))
+  ifc_bbs = get_loop_body_in_if_conv_order (loop);
+  if (!ifc_bbs)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Irreducible loop\n");
+      goto cleanup;
+    }
+
+  if (loop->num_nodes > 2)
+    {
+      need_to_ifcvt = true;
+
+      if (!if_convertible_loop_p (loop) || !dbg_cnt (if_conversion_tree))
+	goto cleanup;
+
+      if ((need_to_predicate || any_complicated_phi)
+	  && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
+	      || loop->dont_vectorize))
+	goto cleanup;
+    }
+
+  if ((flag_tree_loop_vectorize || loop->force_vectorize)
+      && !loop->dont_vectorize)
+    need_to_lower_bitfields = bitfields_to_lower_p (loop, reads_to_lower,
+						    writes_to_lower);
+
+  if (!need_to_ifcvt && !need_to_lower_bitfields)
     goto cleanup;
 
   /* The edge to insert invariant stmts on.  */
@@ -3311,7 +3542,8 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
      Either version this loop, or if the pattern is right for outer-loop
      vectorization, version the outer loop.  In the latter case we will
      still if-convert the original inner loop.  */
-  if (need_to_predicate
+  if (need_to_lower_bitfields
+      || need_to_predicate
       || any_complicated_phi
       || flag_tree_loop_if_convert != 1)
     {
@@ -3351,10 +3583,31 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 	pe = single_pred_edge (gimple_bb (preds->last ()));
     }
 
-  /* Now all statements are if-convertible.  Combine all the basic
-     blocks into one huge basic block doing the if-conversion
-     on-the-fly.  */
-  combine_blocks (loop);
+  if (need_to_lower_bitfields)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "-------------------------\n");
+	  fprintf (dump_file, "Start lowering bitfields\n");
+	}
+      while (!reads_to_lower.is_empty ())
+	lower_bitfield (reads_to_lower.pop (), false);
+      while (!writes_to_lower.is_empty ())
+	lower_bitfield (writes_to_lower.pop (), true);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Done lowering bitfields\n");
+	  fprintf (dump_file, "-------------------------\n");
+	}
+    }
+  if (need_to_ifcvt)
+    {
+      /* Now all statements are if-convertible.  Combine all the basic
+	 blocks into one huge basic block doing the if-conversion
+	 on-the-fly.  */
+      combine_blocks (loop);
+    }
 
   /* Perform local CSE, this esp. helps the vectorizer analysis if loads
      and stores are involved.  CSE only the loop body, not the entry
@@ -3394,6 +3647,8 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   if (rloop != NULL)
     {
       loop = rloop;
+      reads_to_lower.truncate (0);
+      writes_to_lower.truncate (0);
       goto again;
     }
 
