@@ -36,6 +36,16 @@ enum vector_type_index
   NUM_VECTOR_TYPES
 };
 
+/* Builtin types that are used to register RVV intrinsics.  */
+struct GTY (()) rvv_builtin_types_t
+{
+  tree vector;
+  tree scalar;
+  tree vector_ptr;
+  tree scalar_ptr;
+  tree scalar_const_ptr;
+};
+
 } // end namespace riscv_vector
 
 #endif
