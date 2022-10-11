@@ -2040,6 +2040,9 @@ gfc_int2int (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
 
+  if (src->ts.type != BT_INTEGER)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
 
   mpz_set (result->value.integer, src->value.integer);
@@ -2085,6 +2088,9 @@ gfc_int2real (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
 
+  if (src->ts.type != BT_INTEGER)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
   mpfr_set_z (result->value.real, src->value.integer, GFC_RND_MODE);
@@ -2115,6 +2121,9 @@ gfc_int2complex (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
+
+  if (src->ts.type != BT_INTEGER)
+    return NULL;
 
   result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
 
@@ -2149,6 +2158,9 @@ gfc_real2int (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
   bool did_warn = false;
+
+  if (src->ts.type != BT_REAL)
+    return NULL;
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
 
@@ -2195,6 +2207,9 @@ gfc_real2real (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
   bool did_warn = false;
+
+  if (src->ts.type != BT_REAL)
+    return NULL;
 
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
@@ -2310,6 +2325,9 @@ gfc_complex2int (gfc_expr *src, int kind)
   arith rc;
   bool did_warn = false;
 
+  if (src->ts.type != BT_COMPLEX)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
 
   gfc_mpfr_to_mpz (result->value.integer, mpc_realref (src->value.complex),
@@ -2371,6 +2389,9 @@ gfc_complex2real (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
   bool did_warn = false;
+
+  if (src->ts.type != BT_COMPLEX)
+    return NULL;
 
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
@@ -2439,6 +2460,9 @@ gfc_complex2complex (gfc_expr *src, int kind)
   arith rc;
   bool did_warn = false;
 
+  if (src->ts.type != BT_COMPLEX)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
 
   mpc_set (result->value.complex, src->value.complex, GFC_MPC_RND_MODE);
@@ -2504,6 +2528,9 @@ gfc_log2log (gfc_expr *src, int kind)
 {
   gfc_expr *result;
 
+  if (src->ts.type != BT_LOGICAL)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
   result->value.logical = src->value.logical;
 
@@ -2518,6 +2545,9 @@ gfc_log2int (gfc_expr *src, int kind)
 {
   gfc_expr *result;
 
+  if (src->ts.type != BT_LOGICAL)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
   mpz_set_si (result->value.integer, src->value.logical);
 
@@ -2531,6 +2561,9 @@ gfc_expr *
 gfc_int2log (gfc_expr *src, int kind)
 {
   gfc_expr *result;
+
+  if (src->ts.type != BT_INTEGER)
+    return NULL;
 
   result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
   result->value.logical = (mpz_cmp_si (src->value.integer, 0) != 0);
