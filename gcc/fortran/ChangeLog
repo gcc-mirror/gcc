@@ -1,3 +1,34 @@
+2022-10-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106817
+	* trans-expr.c (gfc_conv_procedure_call): Collect all clobbers
+	to their own separate block.  Append the block of clobbers to
+	the procedure preliminary block after the argument evaluation
+	codes for all the arguments.
+
+2022-10-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* trans-expr.c (gfc_conv_procedure_call): Retrieve variable
+	from the just calculated variable reference.
+
+2022-10-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_conv_expr_reference): Remove add_clobber
+	argument.
+	* trans-expr.c (gfc_conv_expr_reference): Ditto. Inline code
+	depending on add_clobber and conditions controlling it ...
+	(gfc_conv_procedure_call): ... to here.
+
 2022-10-08  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:
