@@ -1612,3 +1612,29 @@ floating_op_table::set (enum tree_code code, range_operator_float &op)
   gcc_checking_assert (m_range_tree[code] == NULL);
   m_range_tree[code] = &op;
 }
+
+#if CHECKING_P
+#include "selftest.h"
+
+namespace selftest
+{
+
+// Build an frange from string endpoints.
+
+inline frange
+frange_float (const char *lb, const char *ub, tree type = float_type_node)
+{
+  REAL_VALUE_TYPE min, max;
+  gcc_assert (real_from_string (&min, lb) == 0);
+  gcc_assert (real_from_string (&max, ub) == 0);
+  return frange (type, min, max);
+}
+
+void
+range_op_float_tests ()
+{
+}
+
+} // namespace selftest
+
+#endif // CHECKING_P

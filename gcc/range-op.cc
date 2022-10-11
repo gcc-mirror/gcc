@@ -4829,6 +4829,9 @@ range_op_tests ()
   range_op_bitwise_and_tests ();
   range_op_cast_tests ();
   range_relational_tests ();
+
+  extern void range_op_float_tests ();
+  range_op_float_tests ();
 }
 
 } // namespace selftest
