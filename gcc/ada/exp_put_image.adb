@@ -1039,13 +1039,13 @@ package body Exp_Put_Image is
       end if;
 
       --  In Ada 2022, T'Image calls T'Put_Image if there is an explicit
-      --  aspect_specification for Put_Image, or if U_Type'Image is illegal
-      --  in pre-2022 versions of Ada.
+      --  (or inherited) aspect_specification for Put_Image, or if
+      --  U_Type'Image is illegal in pre-2022 versions of Ada.
 
       declare
          U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
       begin
-         if Present (TSS (U_Type, TSS_Put_Image)) then
+         if Present (Find_Aspect (U_Type, Aspect_Put_Image)) then
             return True;
          end if;
 
