@@ -867,6 +867,28 @@ Mappings::lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def)
 }
 
 void
+Mappings::insert_macro_invocation (AST::MacroInvocation &invoc,
+				   AST::MacroRulesDefinition *def)
+{
+  auto it = macroInvocations.find (invoc.get_macro_node_id ());
+  rust_assert (it == macroInvocations.end ());
+
+  macroInvocations[invoc.get_macro_node_id ()] = def;
+}
+
+bool
+Mappings::lookup_macro_invocation (AST::MacroInvocation &invoc,
+				   AST::MacroRulesDefinition **def)
+{
+  auto it = macroInvocations.find (invoc.get_macro_node_id ());
+  if (it == macroInvocations.end ())
+    return false;
+
+  *def = it->second;
+  return true;
+}
+
+void
 Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
 {
   visibility_map.insert ({id, visibility});
