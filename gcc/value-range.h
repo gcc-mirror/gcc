@@ -317,6 +317,7 @@ public:
   const REAL_VALUE_TYPE &upper_bound () const;
   void update_nan ();
   void update_nan (bool sign);
+  void update_nan (tree) = delete; // Disallow silent conversion to bool.
   void clear_nan ();
 
   // fpclassify like API
