@@ -318,14 +318,14 @@ class foperator_identity : public range_operator_float
 public:
   bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
-		   relation_kind) const final override
+		   relation_kind = VREL_VARYING) const final override
   {
     r = op1;
     return true;
   }
   bool op1_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		  const frange &lhs, const frange &op2 ATTRIBUTE_UNUSED,
-		  relation_kind) const final override
+		  relation_kind = VREL_VARYING) const final override
   {
     r = lhs;
     return true;
@@ -341,17 +341,17 @@ class foperator_equal : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return equal_op1_op2_relation (lhs);
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override
+		  relation_kind rel = VREL_VARYING) const final override
   {
     return op1_range (r, type, lhs, op1, rel);
   }
@@ -447,14 +447,14 @@ class foperator_not_equal : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind rel = VREL_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return not_equal_op1_op2_relation (lhs);
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_not_equal;
 
 bool
@@ -548,17 +548,17 @@ class foperator_lt : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return lt_op1_op2_relation (lhs);
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_lt;
 
 bool
@@ -663,17 +663,17 @@ class foperator_le : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind rel = VREL_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return le_op1_op2_relation (lhs);
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind rel = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind rel = VREL_VARYING) const final override;
 } fop_le;
 
 bool
@@ -770,17 +770,17 @@ class foperator_gt : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return gt_op1_op2_relation (lhs);
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_gt;
 
 bool
@@ -885,17 +885,17 @@ class foperator_ge : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override
   {
     return ge_op1_op2_relation (lhs);
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_ge;
 
 bool
@@ -996,13 +996,13 @@ class foperator_unordered : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override
+		  relation_kind rel = VREL_VARYING) const final override
   {
     return op1_range (r, type, lhs, op1, rel);
   }
@@ -1073,13 +1073,13 @@ class foperator_ordered : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override
+		  relation_kind rel = VREL_VARYING) const final override
   {
     return op1_range (r, type, lhs, op1, rel);
   }
@@ -1139,10 +1139,10 @@ class foperator_abs : public range_operator_float
 public:
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &,
-		   relation_kind) const final override;
+		   relation_kind = VREL_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const frange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind rel = VREL_VARYING) const final override;
 } fop_abs;
 
 bool
@@ -1227,7 +1227,7 @@ class foperator_unordered_lt : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
+		   relation_kind rel = VREL_VARYING) const final override
   {
     if (op1.known_isnan () || op2.known_isnan ())
       {
@@ -1256,7 +1256,7 @@ class foperator_unordered_le : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
+		   relation_kind rel = VREL_VARYING) const final override
   {
     if (op1.known_isnan () || op2.known_isnan ())
       {
@@ -1277,10 +1277,10 @@ public:
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_unordered_le;
 
 bool
@@ -1337,7 +1337,7 @@ class foperator_unordered_gt : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
+		   relation_kind rel = VREL_VARYING) const final override
   {
     if (op1.known_isnan () || op2.known_isnan ())
       {
@@ -1358,10 +1358,10 @@ public:
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_unordered_gt;
 
 bool
@@ -1420,7 +1420,7 @@ class foperator_unordered_ge : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
+		   relation_kind rel = VREL_VARYING) const final override
   {
     if (op1.known_isnan () || op2.known_isnan ())
       {
@@ -1441,10 +1441,10 @@ public:
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
 } fop_unordered_ge;
 
 bool
@@ -1502,7 +1502,7 @@ class foperator_unordered_equal : public range_operator_float
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_kind rel) const final override
+		   relation_kind rel = VREL_VARYING) const final override
   {
     if (op1.known_isnan () || op2.known_isnan ())
       {
@@ -1523,10 +1523,10 @@ public:
   }
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
-		  relation_kind rel) const final override;
+		  relation_kind = VREL_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
-		  relation_kind rel) const final override
+		  relation_kind rel = VREL_VARYING) const final override
   {
     return op1_range (r, type, lhs, op1, rel);
   }
