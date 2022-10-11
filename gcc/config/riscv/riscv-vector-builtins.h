@@ -23,9 +23,6 @@
 
 namespace riscv_vector {
 
-/* This is for segment instructions.  */
-const unsigned int MAX_TUPLE_SIZE = 8;
-
 /* Enumerates the RVV types, together called
    "vector types" for brevity.  */
 enum vector_type_index
