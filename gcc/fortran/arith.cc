@@ -624,6 +624,9 @@ gfc_arith_plus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   arith rc;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
   switch (op1->ts.type)
@@ -657,6 +660,9 @@ gfc_arith_minus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
   arith rc;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
@@ -692,6 +698,9 @@ gfc_arith_times (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   arith rc;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
   switch (op1->ts.type)
@@ -726,6 +735,9 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
   arith rc;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   rc = ARITH_OK;
 
@@ -814,6 +826,9 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   int power_sign;
   gfc_expr *result;
   arith rc;
+
+  if (!gfc_numeric_ts (&op1->ts) || !gfc_numeric_ts (&op2->ts))
+    return ARITH_INVALID_TYPE;
 
   rc = ARITH_OK;
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
