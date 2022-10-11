@@ -308,7 +308,7 @@ public:
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_kind) const override
   {
     bool signbit;
     if (lh.signbit_p (signbit))
