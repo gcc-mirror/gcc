@@ -290,3 +290,26 @@
 (define_predicate "const_nottwobits_operand"
   (and (match_code "const_int")
        (match_test "popcount_hwi (~UINTVAL (op)) == 2")))
+
+;; A CONST_INT operand that consists of a single run of 32 consecutive
+;; set bits.
+(define_predicate "consecutive_bits32_operand"
+  (and (match_operand 0 "consecutive_bits_operand")
+       (match_test "popcount_hwi (UINTVAL (op)) == 32")))
+
+;; A CONST_INT operand that, if shifted down to start with its least
+;; significant non-zero bit, is a SMALL_OPERAND (suitable as an
+;; immediate to logical and arithmetic instructions).
+(define_predicate "shifted_const_arith_operand"
+  (and (match_code "const_int")
+       (match_test "ctz_hwi (INTVAL (op)) > 0")
+       (match_test "SMALL_OPERAND (INTVAL (op) >> ctz_hwi (INTVAL (op)))")))
+
+;; A CONST_INT operand that fits into the unsigned half of a
+;; signed-immediate after the top bit has been cleared.
+(define_predicate "uimm_extra_bit_operand"
+  (and (match_code "const_int")
+       (not (and (match_test "SMALL_OPERAND (INTVAL (op))")
+		 (match_test "INTVAL (op) > 0")))
+       (ior (match_test "SMALL_OPERAND (UINTVAL (op) & ~(HOST_WIDE_INT_1U << floor_log2 (UINTVAL (op))))")
+	    (match_test "popcount_hwi (UINTVAL (op)) == 2"))))
