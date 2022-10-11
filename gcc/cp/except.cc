@@ -1322,9 +1322,12 @@ maybe_splice_retval_cleanup (tree compound_stmt)
 {
   /* If we need a cleanup for the return value, add it in at the same level as
      pushdecl_outermost_localscope.  And also in try blocks.  */
-  bool function_body
+  const bool function_body
     = (current_binding_level->level_chain
-       && current_binding_level->level_chain->kind == sk_function_parms);
+       && current_binding_level->level_chain->kind == sk_function_parms
+      /* When we're processing a default argument, c_f_d may not have been
+	 set.  */
+       && current_function_decl);
 
   if ((function_body || current_binding_level->kind == sk_try)
       && !DECL_CONSTRUCTOR_P (current_function_decl)
