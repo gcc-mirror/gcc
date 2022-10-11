@@ -145,7 +145,7 @@ namespace
 	char data[] __attribute__((aligned));
       };
 
-#ifdef __GTHREADS
+#if _GLIBCXX_HOSTED
       // A single mutex controlling emergency allocations.
       __gnu_cxx::__mutex emergency_mutex;
       using __scoped_lock = __gnu_cxx::__scoped_lock;
@@ -236,7 +236,7 @@ namespace
 
   void *pool::allocate (std::size_t size) noexcept
     {
-      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
+      __scoped_lock sentry(emergency_mutex);
       // We need an additional size_t member plus the padding to
       // ensure proper alignment of data.
       size += offsetof (allocated_entry, data);
