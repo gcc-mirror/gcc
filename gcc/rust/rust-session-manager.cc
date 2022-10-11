@@ -38,6 +38,7 @@
 #include "rust-imports.h"
 #include "rust-extern-crate.h"
 #include "rust-attributes.h"
+#include "rust-early-name-resolver.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -783,6 +784,9 @@ Session::injection (AST::Crate &crate)
 void
 Session::expansion (AST::Crate &crate)
 {
+  /* We need to name resolve macros and imports here */
+  Resolver::EarlyNameResolver ().go (crate);
+
   rust_debug ("started expansion");
 
   /* rustc has a modification to windows PATH temporarily here, which may end

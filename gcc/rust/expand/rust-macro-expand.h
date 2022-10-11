@@ -25,6 +25,7 @@
 #include "rust-ast.h"
 #include "rust-macro.h"
 #include "rust-hir-map.h"
+#include "rust-early-name-resolver.h"
 #include "rust-name-resolver.h"
 #include "rust-macro-invoc-lexer.h"
 
@@ -323,10 +324,13 @@ struct MacroExpander
     AST::ASTFragment old_fragment = std::move (expanded_fragment);
     auto accumulator = std::vector<AST::SingleASTNode> ();
     expanded_fragment = AST::ASTFragment::create_error ();
+    auto early_name_resolver = Resolver::EarlyNameResolver ();
 
     for (auto &node : old_fragment.get_nodes ())
       {
 	expansion_depth++;
+
+	node.accept_vis (early_name_resolver);
 	node.accept_vis (vis);
 	// we'll decide the next move according to the outcome of the macro
 	// expansion

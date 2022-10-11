@@ -24,6 +24,7 @@
 #include "rust-macro-invoc-lexer.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
+#include "rust-early-name-resolver.h"
 #include "rust-attribute-visitor.h"
 
 namespace Rust {
@@ -70,9 +71,11 @@ try_expand_macro_expression (AST::Expr *expr, MacroExpander *expander)
 {
   rust_assert (expander);
 
-  auto vis = Rust::AttrVisitor (*expander);
-  expr->accept_vis (vis);
-  return expander->take_expanded_fragment (vis);
+  auto attr_visitor = Rust::AttrVisitor (*expander);
+  auto early_name_resolver = Resolver::EarlyNameResolver ();
+  expr->accept_vis (early_name_resolver);
+  expr->accept_vis (attr_visitor);
+  return expander->take_expanded_fragment (attr_visitor);
 }
 
 /* Expand and then extract a string literal from the macro */
