@@ -1,3 +1,33 @@
+2022-10-03  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-10-03  Sergei Trofimovich  <siarheit@google.com>
+
+	PR target/107064
+	* config/i386/t-i386: Add build-time dependencies against
+	i386-builtin-types.inc to i386-builtins.o, i386-expand.o,
+	i386-features.o.
+
+2022-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107061
+	* config/i386/predicates.md (encodekey128_operation): Check
+	XMM4-XMM6 as clobbered.
+	(encodekey256_operation): Likewise.
+	* config/i386/sse.md (encodekey128u32): Clobber XMM4-XMM6.
+	(encodekey256u32): Likewise.
+
+2022-09-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106982
+	* omp-low.cc (lower_oacc_reductions): Add some unshare_expr.
+
 2022-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
