@@ -281,6 +281,7 @@ public:
   frange ();
   frange (const frange &);
   frange (tree, tree, value_range_kind = VR_RANGE);
+  frange (tree type);
   frange (tree type, const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
 	  value_range_kind = VR_RANGE);
   static bool supports_p (const_tree type)
@@ -1057,6 +1058,13 @@ frange::frange (const frange &src)
 {
   m_discriminator = VR_FRANGE;
   *this = src;
+}
+
+inline
+frange::frange (tree type)
+{
+  m_discriminator = VR_FRANGE;
+  set_varying (type);
 }
 
 // frange constructor from REAL_VALUE_TYPE endpoints.
