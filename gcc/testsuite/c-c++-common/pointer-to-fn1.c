@@ -1,4 +1,5 @@
 /* PR c++/106937 */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-fcf-protection" } */
 /* { dg-additional-options "-std=c++11 -fpermissive" { target c++ } } */
 /* Test printing a pointer to function with attribute.  */
