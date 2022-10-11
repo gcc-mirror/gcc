@@ -23,6 +23,7 @@
 #include "rust-diagnostics.h"
 #include "rust-parse.h"
 #include "rust-attribute-visitor.h"
+#include "rust-early-name-resolver.h"
 
 namespace Rust {
 AST::ASTFragment
@@ -138,32 +139,17 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   //      - else is unreachable
   //  - derive container macro - unreachable
 
-  // lookup the rules for this macro
-  NodeId resolved_node = UNKNOWN_NODEID;
-  NodeId source_node = UNKNOWN_NODEID;
-  if (has_semicolon)
-    source_node = invoc.get_macro_node_id ();
-  else
-    source_node = invoc.get_pattern_node_id ();
-  auto seg
-    = Resolver::CanonicalPath::new_seg (source_node,
-					invoc_data.get_path ().as_string ());
-
-  bool found = resolver->get_macro_scope ().lookup (seg, &resolved_node);
-  if (!found)
-    {
-      rust_error_at (invoc.get_locus (), "unknown macro: [%s]",
-		     seg.get ().c_str ());
-      return;
-    }
+  auto fragment = AST::ASTFragment::create_error ();
+  invoc_data.set_expander (this);
 
   // lookup the rules
   AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
-  rust_assert (ok);
+  bool ok = mappings->lookup_macro_invocation (invoc, &rules_def);
 
-  auto fragment = AST::ASTFragment::create_error ();
-  invoc_data.set_expander (this);
+  // If there's no rule associated with the invocation, we can simply return
+  // early. The early name resolver will have already emitted an error.
+  if (!ok)
+    return;
 
   if (rules_def->is_builtin ())
     fragment
