@@ -1,3 +1,8 @@
+2022-10-10  LIU Hao  <lh_mouse@126.com>
+
+	* io/async.h (struct async_unit): Use `__gthread_t` instead
+	of `pthread_t`.
+
 2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* ieee/ieee_arithmetic.F90 (IEEE_SET_ROUNDING_MODE): Handle

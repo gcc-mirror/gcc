@@ -1,3 +1,15 @@
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (write_prefix): Add VAR_DECL & FIELD_DECL to
+	substitution table under abi=18.  Note possible mismatch.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* error.cc: Include "attribs.h".
+	(dump_type_prefix): Print only GNU attributes here.
+	(dump_type_suffix): Print standard attributes here.
+
 2022-10-08  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (TARGET_EXPR_ELIDING_P): New.

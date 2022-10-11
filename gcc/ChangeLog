@@ -1,3 +1,149 @@
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* common.opt (-fabi-version=): Document 18.
+	* doc/invoke.texi (-fabi-version): Document 18.
+
+2022-10-10  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR other/99723
+	* toplev.cc (toplev::main): Don't run self tests in case of
+	previous error.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-c.cc: Add newline to the end of file.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (class foperator_identity): Make members public.
+	(class foperator_equal): Same.
+	(class foperator_not_equal): Same.
+	(class foperator_lt): Same.
+	(class foperator_le): Same.
+	(class foperator_gt): Same.
+	(class foperator_ge): Same.
+	(class foperator_unordered): Same.
+	(class foperator_ordered): Same.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::maybe_isnan): New.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_not_equal::op1_range): Set NAN on
+	TRUE side for x != x.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_unordered::op1_range): Set NAN when
+	operands are equal and result is TRUE.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range.h (range_true): Return int_range<2>.
+	(range_false): Same.
+	(range_true_and_false): Same.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc: Add op1_range entry for __builtin_signbit.
+
+2022-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107185
+	* config/i386/i386.md (lrint<MODEF:mode><SWI48:mode>2): Swap
+	predicate of operands[0] and operands[1].
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* common/config/arc/arc-common.cc (arc_option_optimization_table):
+	Remove Rcq and Rcw options.
+	* config/arc/arc.opt (mRcq): Ignore option, preserve it for
+	backwards compatibility.
+	(mRcw): Likewise.
+	* doc/invoke.texi (mRcw, mRcq): Update document.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.cc (arc_check_short_reg_p): New function.
+	(arc_address_cost): Replace satisfies_constraint_Rcq with the
+	above new function.
+	(arc_output_addsi): Likewise.
+	(split_addsi): Likewise.
+	(split_subsi): Likewise.
+	* config/arc/arc.md (movqi_insn): Remove Rcq constraint.
+	(movhi_insn): Likewise.
+	(movsi_insn): Likewise.
+	(tst_movb): Likewise.
+	(tst): Likewise.
+	(tst_bitfield): Likewise.
+	(abssi2): Likewise.
+	(addsi3_mixed): Likewise.
+	(mulhisi3_reg): Likewise.
+	(umulhisi3_reg): Likewise.
+	(mulsi_600): Likewise.
+	(mul64): Likewise.
+	(subsi3_insn): Likewise.
+	(bicsi3_insn): Likewise.
+	(xorsi3): Likewise.
+	(negsi2): Likewise.
+	(one_cmplsi2): Likewise.
+	(lshrsi3_insn): Likewise.
+	(cmpsi_cc_insn_mixed): Likewise.
+	(cmpsi_cc_zn_insn): Likewise.
+	(btst): Likewise.
+	(cmpsi_cc_z_insn): Likewise.
+	(cmpsi_cc_c_insn): Likewise.
+	(indirect_jump): Likewise.
+	(casesi_jump): Likewise.
+	(call_i): Likewise.
+	(call_value_i): Likewise.
+	(bbit): Likewise.
+	(abssf2): Likewise.
+	(ashlsi2_cnt1): Likewise.
+	(lshrsi3_cnt1): Likewise.
+	(ashrsi3_cnt1): Likewise.
+	* config/arc/constraints.md (Rcq): Remove.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.md (smaxsi3): Remove Rcw.
+	(sminsi3): Likewise.
+	(addsi3_mixed): Likewise.
+	(add_f_2): Likewise.
+	(subsi3_insn): Likewise.
+	(sub_f): Likewise.
+	(sub_n): Likewise.
+	(bset): Likewise.
+	(bxor): Likewise.
+	(bclr): Likewise.
+	(bset_insn): Likewise.
+	(bxor_insn): Likewise.
+	(bclr_insn): Likewise.
+	(bmsk_insn): Likewise.
+	(bicsi3_insn): Likewise.
+	(xorsi3): Likewise.
+	(negsi2): Likewise.
+	(lshrsi3_insn): Likewise.
+	(abssf2): Likewise.
+	(negsf2): Likewise.
+	* config/arc/constraints.md(Rcw): Remove it.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.md(mulsi3_700): Remove Rcr.
+	(mulsi3_highpart): Likewise.
+	(umulsi3_highpart_i): Likewise.
+	(umulsi3_highpart_int): Likewise.
+	(macd): Likewise.
+	(macdu): Likewise.
+	* config/arc/constraints.md (Rcr): Remove it.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.cc (arc_save_callee_enter): Use negative offsets.
+
 2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	PR target/106562

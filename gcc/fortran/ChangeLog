@@ -1,3 +1,9 @@
+2022-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc (gfc_trans_omp_assume): Use create_tmp_var_raw
+	instead of gfc_create_var for TARGET_EXPR slot creation.  Create it
+	with boolean_type_node and convert.
+
 2022-10-08  Harald Anlauf  <anlauf@gmx.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

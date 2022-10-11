@@ -1,3 +1,20 @@
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.cc (c_common_post_options): Bump abi to 18.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* c-pretty-print.cc (pp_c_specifier_qualifier_list): Print only GNU
+	attributes here.
+	(c_pretty_printer::direct_abstract_declarator): Print the standard [[]]
+	attributes here.
+	(pp_c_attributes): Remove.
+	(pp_c_attributes_display): Print the [[]] form if appropriate.  Use
+	get_attribute_name.  Don't print a trailing space when printing the
+	[[]] form.
+	* c-pretty-print.h (pp_c_attributes): Remove.
+
 2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-attribs.cc (handle_strict_flex_array_attribute): New function.

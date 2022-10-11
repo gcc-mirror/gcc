@@ -1,3 +1,61 @@
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-ctx1-17.C: New.
+	* g++.dg/abi/lambda-ctx1-18.C: New.
+	* g++.dg/abi/lambda-ctx1-18vs17.C: New.
+	* g++.dg/abi/lambda-ctx1.h: New.
+	* g++.dg/abi/lambda-vis.C: Adjust expected mangles.
+	* g++.dg/abi/macro0.C: Adjust.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* c-c++-common/pointer-to-fn1.c: New test.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/riscv_vector.h: New.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/user-1.c: Add dg-options and drop
+	dg-skip-if.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: Add newline to the end of file.
+	* gcc.target/riscv/rvv/base/pragma-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pragma-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/vread_csr.c: Ditto.
+	* gcc.target/riscv/rvv/base/vwrite_csr.c: Ditto.
+
+2022-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107153
+	* gcc.dg/autopar/pr107153.c: Require fgraphite effective target.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-signbit-3.c: New test.
+
+2022-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107185.c: New test.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/tmac-2.c: Update test.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/enter-dw2-1.c: New file.
+
 2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	PR target/106562
