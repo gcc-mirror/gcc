@@ -30,8 +30,7 @@ const unsigned int MAX_TUPLE_SIZE = 8;
    "vector types" for brevity.  */
 enum vector_type_index
 {
-#define DEF_RVV_TYPE(NAME, ABI_NAME, NCHARS, ARGS...)    \
-  VECTOR_TYPE_##NAME,
+#define DEF_RVV_TYPE(NAME, ABI_NAME, NCHARS, ARGS...) VECTOR_TYPE_##NAME,
 #include "riscv-vector-builtins.def"
   NUM_VECTOR_TYPES
 };

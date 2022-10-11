@@ -68,7 +68,7 @@ struct vector_type_info
 
 /* Information about each RVV type.  */
 static CONSTEXPR const vector_type_info vector_types[] = {
-#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)    \
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)                          \
   {#NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
 #include "riscv-vector-builtins.def"
 };
@@ -76,7 +76,7 @@ static CONSTEXPR const vector_type_info vector_types[] = {
 /* The RVV types, with their built-in
    "__rvv..._t" name.  Allow an index of NUM_VECTOR_TYPES, which always
    yields a null tree.  */
-static GTY(()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
+static GTY (()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
 
 /* Same, but with the riscv_vector.h "v..._t" name.  */
 extern GTY (()) rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
@@ -124,8 +124,8 @@ add_vector_type_attribute (tree type, const char *mangled_name)
 {
   tree mangled_name_tree = get_identifier (mangled_name);
   tree value = tree_cons (NULL_TREE, mangled_name_tree, NULL_TREE);
-  TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("RVV type"), value,
-				      TYPE_ATTRIBUTES (type));
+  TYPE_ATTRIBUTES (type)
+    = tree_cons (get_identifier ("RVV type"), value, TYPE_ATTRIBUTES (type));
 }
 
 /* Force TYPE to be a sizeless type.  */
