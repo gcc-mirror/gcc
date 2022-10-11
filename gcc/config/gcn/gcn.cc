@@ -4361,7 +4361,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
+	rtx exec = get_exec (-1);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
