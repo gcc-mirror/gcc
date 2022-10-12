@@ -1,3 +1,43 @@
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106513
+	* gcc.dg/torture/pr106513.c: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106331
+	* gfortran.dg/pr106331.f90: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106131
+	* g++.dg/torture/pr106131.C: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106112
+	* gcc.dg/torture/pr106112.c: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106027
+	* gcc.dg/pr106027.c: New testcase.
+
 2022-10-10  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:
