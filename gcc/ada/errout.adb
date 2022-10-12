@@ -3383,23 +3383,13 @@ package body Errout is
             E := Errors.Table (E).Next;
          end loop;
 
+         --  Warnings may have been posted on subexpressions of original tree
+
          if Nkind (N) = N_Raise_Constraint_Error
            and then Is_Rewrite_Substitution (N)
            and then No (Condition (N))
          then
-            --  Warnings may have been posted on subexpressions of the original
-            --  tree. We place the original node back on the tree to remove
-            --  those warnings, whose sloc do not match those of any node in
-            --  the current tree. Given that we are in unreachable code, this
-            --  modification to the tree is harmless.
-
-            if Is_List_Member (N) then
-               Set_Condition (N, Original_Node (N));
-               Check_All_Warnings (Condition (N));
-            else
-               Rewrite (N, Original_Node (N));
-               Check_All_Warnings (N);
-            end if;
+            Check_All_Warnings (Original_Node (N));
          end if;
 
          return OK;
