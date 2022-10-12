@@ -1998,16 +1998,22 @@ package body Exp_Attr is
    --  Start of processing for Expand_N_Attribute_Reference
 
    begin
-      --  Do required validity checking, if enabled. Do not apply check to
-      --  output parameters of an Asm instruction, since the value of this
-      --  is not set till after the attribute has been elaborated, and do
-      --  not apply the check to the arguments of a 'Read or 'Input attribute
-      --  reference since the scalar argument is an OUT scalar.
+      --  Do required validity checking, if enabled.
+      --
+      --  Skip check for output parameters of an Asm instruction (since their
+      --  valuesare not set till after the attribute has been elaborated),
+      --  for the arguments of a 'Read or 'Input attribute reference (since
+      --  the scalar argument is an OUT scalar) and for the arguments of a
+      --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
+      --  considered to be reads of their prefixes and expressions, see Ada RM
+      --  13.3(73.10/3)).
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
         and then Id /= Attribute_Read
         and then Id /= Attribute_Input
+        and then Id /= Attribute_Has_Same_Storage
+        and then Id /= Attribute_Overlaps_Storage
       then
          declare
             Expr : Node_Id;
