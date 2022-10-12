@@ -1,3 +1,78 @@
+2022-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107215
+	* gfortran.dg/pr107215.f90: New test.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100134
+	* g++.dg/modules/tpl-friend-8_a.H: New test.
+	* g++.dg/modules/tpl-friend-8_b.C: New test.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99377
+	* g++.dg/modules/pr99377-2_a.C: New test.
+	* g++.dg/modules/pr99377-2_b.C: New test.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-abs-1.c: New test.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107212
+	* gcc.dg/vect/pr107212-1.c: New testcase.
+	* gcc.dg/vect/pr107212-2.c: Likewise.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/pr104464.c: Xfail on amdgcn.
+	* gcc.dg/signbit-2.c: Likewise.
+	* gcc.dg/signbit-5.c: Likewise.
+	* gcc.dg/vect/bb-slp-68.c: Likewise.
+	* gcc.dg/vect/bb-slp-cond-1.c: Change expectations on amdgcn.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Change expectations for multiple
+	vector sizes.
+	* gcc.dg/vect/pr33953.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-4.c: Likewise.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
+	* lib/target-supports.exp (available_vector_sizes): Add more sizes
+	for amdgcn.
+
+2022-10-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-bitfield-read-1.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-2.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-3.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-4.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-5.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-6.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-1.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-2.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-3.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-4.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-5.c: New test.
+
+2022-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107093.c: New test.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107195
+	* gcc.dg/tree-ssa/pr107195-1.c: New test.
+	* gcc.dg/tree-ssa/pr107195-2.c: New test.
+
+2022-10-11  Liwei Xu  <liwei.xu@intel.com>
+	    liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr54346.c: New test.
+
 2022-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/abi/lambda-ctx1-17.C: New.

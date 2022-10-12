@@ -1,3 +1,57 @@
+2022-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/107221
+	* libsupc++/eh_alloc.cc (pool): Change preprocessor condition
+	for using __mutex from __GTHREADS to _GLIBCXX_HOSTED.
+	(pool::allocate): Remove namespace qualification to use
+	pool::__scoped_lock instead of __gnu_cxx::__scoped_lock.
+
+2022-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68606
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCXX_EMERGENCY_EH_ALLOC): New macro.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_EMERGENCY_EH_ALLOC.
+	* crossconfig.m4: Check for secure_getenv.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/manual/configure.xml: Document new configure options.
+	* doc/xml/manual/evolution.xml: Document addition of tunables.
+	* doc/xml/manual/using_exceptions.xml: Document emergency
+	buffer and tunables.
+	* doc/html/*: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Use EH_POOL_FLAGS.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/eh_alloc.cc (EMERGENCY_OBJ_SIZE): Define in units
+	of sizeof(void*) not including the ABI's exception header.
+	(EMERGENCY_OBJ_COUNT): Define as target-independent calculation
+	based on word size.
+	(MAX_OBJ_COUNT): Define macro for upper limit on pool size.
+	(pool) [_GLIBCXX_EH_POOL_STATIC]: Use fixed-size buffer.
+	(pool::buffer_size_in_bytes): New static member function.
+	(pool::pool): Parse GLIBCXX_TUNABLES environment variable to set
+	pool size at runtime.
+	(pool::in_pool): Use std::less<void*> for total order.
+	(__freeres) [_GLIBCXX_EH_POOL_STATIC]: Do nothing.
+	(__cxa_free_exception, __cxa_free_dependent_exception): Add
+	[[unlikely]] attributes.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2022-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (make_signed, make_unsigned): Remove

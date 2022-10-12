@@ -1,3 +1,248 @@
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::logical_combine): Avoid
+	calling tracer.trailer().
+
+2022-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107185
+	* config/i386/i386.md (*notxor<mode>_1): Use MASK_REG_P (x) instead of
+	MASK_REGNO_P (REGNO (x)).
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (class foperator_abs): New.
+	(floating_op_table::floating_op_table): Add ABS_EXPR entry.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_unordered_le::op1_range): New.
+	(foperator_unordered_le::op2_range): New.
+	(foperator_unordered_gt::op1_range): New.
+	(foperator_unordered_gt::op2_range): New.
+	(foperator_unordered_ge::op1_range): New.
+	(foperator_unordered_ge::op2_range): New.
+	(foperator_unordered_equal::op1_range): New.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (class foperator_unordered_lt): New.
+	(class foperator_relop_unknown): Remove
+	(class foperator_unordered_le): New.
+	(class foperator_unordered_gt): New.
+	(class foperator_unordered_ge): New.
+	(class foperator_unordered_equal): New.
+	(floating_op_table::floating_op_table): Replace all UN_EXPR
+	entries with their appropriate fop_unordered_* counterpart.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_equal::op1_range): Move BRS_TRUE case up.
+	(operator_lt::op2_range): Same.
+	(operator_le::op2_range): Same.
+	(operator_gt::op2_range): Same.
+	(operator_ge::op2_range): Same.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107212
+	* tree-vect-loop.cc (vectorizable_reduction): Make sure to
+	set STMT_VINFO_REDUC_DEF for all live lanes in a SLP
+	reduction.
+	(vectorizable_live_operation): Do not pun to the SLP
+	node representative for reduction epilogue generation.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (neg<mode>2): New define_expand.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vec_init<V_ALL:mode><V_ALL_ALT:mode>): New.
+	* config/gcn/gcn.cc (GEN_VN): Add andvNsi3, subvNsi3.
+	(GEN_VNM): Add gathervNm_expr.
+	(GEN_VN_NOEXEC): Add vec_seriesvNsi.
+	(gcn_expand_vector_init): Add initialization of vectors from smaller
+	vectors.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (get_exec): Add prototypes for two variants.
+	* config/gcn/gcn-valu.md
+	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): New define_expand.
+	* config/gcn/gcn.cc (get_exec): Export the existing function. Add a
+	new overload variant.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md
+	(<cvt_name><VCVT_MODE:mode><VCVT_FMODE:mode>2<exec>): Use MODE_VF.
+	(<cvt_name><VCVT_FMODE:mode><VCVT_IMODE:mode>2<exec>): Likewise.
+	* config/gcn/gcn.h (MODE_VF): New macro.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-modes.def (VECTOR_MODE): Add new modes
+	V32QI, V32HI, V32SI, V32DI, V32TI, V32HF, V32SF, V32DF,
+	V16QI, V16HI, V16SI, V16DI, V16TI, V16HF, V16SF, V16DF,
+	V8QI, V8HI, V8SI, V8DI, V8TI, V8HF, V8SF, V8DF,
+	V4QI, V4HI, V4SI, V4DI, V4TI, V4HF, V4SF, V4DF,
+	V2QI, V2HI, V2SI, V2DI, V2TI, V2HF, V2SF, V2DF.
+	(ADJUST_ALIGNMENT): Likewise.
+	* config/gcn/gcn-protos.h (gcn_full_exec): Delete.
+	(gcn_full_exec_reg): Delete.
+	(gcn_scalar_exec): Delete.
+	(gcn_scalar_exec_reg): Delete.
+	(vgpr_1reg_mode_p): Use inner mode to identify vector registers.
+	(vgpr_2reg_mode_p): Likewise.
+	(vgpr_vector_mode_p): Use VECTOR_MODE_P.
+	* config/gcn/gcn-valu.md (V_QI, V_HI, V_HF, V_SI, V_SF, V_DI, V_DF,
+	V_QIHI, V_1REG, V_INT_1REG, V_INT_1REG_ALT, V_FP_1REG, V_2REG, V_noQI,
+	V_noHI, V_INT_noQI, V_INT_noHI, V_ALL, V_ALL_ALT, V_INT, V_FP):
+	Add additional vector modes.
+	(V64_SI, V64_DI, V64_ALL, V64_FP): New iterators.
+	(scalar_mode, SCALAR_MODE, vnsi, VnSI, vndi, VnDI, sdwa):
+	Add additional vector mode mappings.
+	(mov<mode>): Implement vector length conversions.
+	(ldexp<mode>3<exec>): Use VnSI.
+	(frexp<mode>_exp2<exec>): Likewise.
+	(VCVT_MODE, VCVT_FMODE, VCVT_IMODE): Add additional vector modes.
+	(reduc_<reduc_op>_scal_<mode>): Use V64_ALL.
+	(fold_left_plus_<mode>): Use V64_FP.
+	(*<reduc_op>_dpp_shr_<mode>): Use V64_1REG.
+	(*<reduc_op>_dpp_shr_<mode>): Use V64_DI.
+	(*plus_carry_dpp_shr_<mode>): Use V64_INT_1REG.
+	(*plus_carry_in_dpp_shr_<mode>): Use V64_SI.
+	(*plus_carry_dpp_shr_<mode>): Use V64_DI.
+	(mov_from_lane63_<mode>): Use V64_2REG.
+	* config/gcn/gcn.cc (VnMODE): New function.
+	(gcn_can_change_mode_class): Support multiple vector sizes.
+	(gcn_modes_tieable_p): Likewise.
+	(gcn_operand_part): Likewise.
+	(gcn_scalar_exec): Delete function.
+	(gcn_scalar_exec_reg): Delete function.
+	(gcn_full_exec): Delete function.
+	(gcn_full_exec_reg): Delete function.
+	(gcn_inline_fp_constant_p): Support multiple vector sizes.
+	(gcn_fp_constant_p): Likewise.
+	(A): New macro.
+	(GEN_VN_NOEXEC): New macro.
+	(GEN_VNM_NOEXEC): New macro.
+	(GEN_VN): New macro.
+	(GEN_VNM): New macro.
+	(GET_VN_FN): New macro.
+	(CODE_FOR): New macro.
+	(CODE_FOR_OP): New macro.
+	(gen_mov_with_exec): Delete function.
+	(gen_duplicate_load): Delete function.
+	(gcn_expand_vector_init): Support multiple vector sizes.
+	(strided_constant): Likewise.
+	(gcn_addr_space_legitimize_address): Likewise.
+	(gcn_expand_scalar_to_vector_address): Likewise.
+	(gcn_expand_scaled_offsets): Likewise.
+	(gcn_secondary_reload): Likewise.
+	(gcn_valid_cvt_p): Likewise.
+	(gcn_expand_builtin_1): Likewise.
+	(gcn_make_vec_perm_address): Likewise.
+	(gcn_vectorize_vec_perm_const): Likewise.
+	(gcn_vector_mode_supported_p): Likewise.
+	(gcn_autovectorize_vector_modes): New hook.
+	(gcn_related_vector_mode): Support multiple vector sizes.
+	(gcn_expand_dpp_shr_insn): Add FIXME comment.
+	(gcn_md_reorg): Support multiple vector sizes.
+	(print_reg): Likewise.
+	(print_operand): Likewise.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): New hook.
+
+2022-10-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-if-conv.cc (if_convertible_loop_p_1): Move ordering of loop bb's from
+	here...
+	(tree_if_conversion): ... to here.  Also call bitfield lowering when
+	appropriate.
+	(version_loop_for_if_conversion): Adapt to enable loop versioning when we only
+	need to lower bitfields.
+	(ifcvt_split_critical_edges): Relax condition of expected loop form as this is
+	checked earlier.
+	(get_bitfield_rep): New function.
+	(lower_bitfield): Likewise.
+	(bitfields_to_lower_p): Likewise.
+	(need_to_lower_bitfields): New global boolean.
+	(need_to_ifcvt): Likewise.
+	* tree-vect-data-refs.cc (vect_find_stmt_data_reference): Improve diagnostic
+	message.
+	* tree-vect-patterns.cc (vect_recog_temp_ssa_var): Add default value for last
+	parameter.
+	(vect_recog_bitfield_ref_pattern): New.
+	(vect_recog_bit_insert_pattern): New.
+
+2022-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107093
+	* config/i386/i386.md (*notxor<mode>_1): New post_reload
+	define_insn_and_split.
+	(*notxorqi_1): Ditto.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107195
+	* value-range.cc (irange::set_range_from_nonzero_bits): Set range
+	to [0,0] when nonzero mask is 0.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (*vxworks*): Add t-slibgcc fragment
+	if enable_shared.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VX_LGCC_EH_SO0, VX_LGCC_EH_SO1): New
+	internal macros.
+	(VXWORKS_LIBGCC_SPEC): Use them and document.
+
+2022-10-11  Martin Liska  <mliska@suse.cz>
+
+	* gimple-range-op.cc: Add override keyword.
+
+2022-10-11  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR debug/107193
+	* tree-cfg.cc (assign_discriminators): Move declaration of cur_locus_e
+	out of the loop.
+
+2022-10-11  Liwei Xu  <liwei.xu@intel.com>
+	    liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/54346
+	* match.pd: Merge the index of VCST then generates the new vec_perm.
+
+2022-10-11  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/107182
+	* cfgrtl.cc (fixup_reorder_chain): When optimizing a jump to a
+	return, clear EDGE_CROSSING on the appropriate edge.
+
+2022-10-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (struct vector_type_info): Move
+	from config/riscv/riscv-vector-builtins.h.
+	(DEF_RVV_TYPE): Change USER_NAME to NAME.
+	(register_vector_type): Change user_name to name.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE): Change
+	USER_NAME to NAME.
+	* config/riscv/riscv-vector-builtins.h (struct vector_type_info): Move
+	to riscv-vector-builtins.cc.
+	(DEF_RVV_TYPE): Change USER_NAME to NAME.
+
+2022-10-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.md: Add vsetvl instruction type.
+
 2022-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* common.opt (-fabi-version=): Document 18.

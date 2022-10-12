@@ -1,3 +1,15 @@
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100134
+	* pt.cc (tsubst_friend_function): Propagate DECL_MODULE_PURVIEW_P
+	from the introduced namespace-scope function to the namespace.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99377
+	* module.cc (lazy_load_binding): Clear processing_template_decl.
+	(lazy_load_pendings): Likewise.
+
 2022-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* mangle.cc (write_prefix): Add VAR_DECL & FIELD_DECL to

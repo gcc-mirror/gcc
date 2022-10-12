@@ -1,3 +1,11 @@
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (*vxworks*): When enable_shared, add
+	libgcc and crtstuff "shared" fragments for rtp except
+	large code model.
+	(aarch64*-wrs-vxworks7*): Remove t-slibgcc-libgcc from
+	the list of fragments.
+
 2022-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/arc/linux-unwind.h (arc_fallback_frame_state): Use

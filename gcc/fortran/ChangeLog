@@ -1,3 +1,18 @@
+2022-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107215
+	* arith.cc (gfc_int2int): Check validity of type of source expr.
+	(gfc_int2real): Likewise.
+	(gfc_int2complex): Likewise.
+	(gfc_real2int): Likewise.
+	(gfc_real2real): Likewise.
+	(gfc_complex2int): Likewise.
+	(gfc_complex2real): Likewise.
+	(gfc_complex2complex): Likewise.
+	(gfc_log2log): Likewise.
+	(gfc_log2int): Likewise.
+	(gfc_int2log): Likewise.
+
 2022-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.cc (gfc_trans_omp_assume): Use create_tmp_var_raw
