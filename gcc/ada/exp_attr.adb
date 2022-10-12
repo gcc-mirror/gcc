@@ -2002,8 +2002,8 @@ package body Exp_Attr is
       --
       --  Skip check for output parameters of an Asm instruction (since their
       --  valuesare not set till after the attribute has been elaborated),
-      --  for the arguments of a 'Read or 'Input attribute reference (since
-      --  the scalar argument is an OUT scalar) and for the arguments of a
+      --  for the arguments of a 'Read attribute reference (since the
+      --  scalar argument is an OUT scalar) and for the arguments of a
       --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
       --  considered to be reads of their prefixes and expressions, see Ada RM
       --  13.3(73.10/3)).
@@ -2011,7 +2011,6 @@ package body Exp_Attr is
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
         and then Id /= Attribute_Read
-        and then Id /= Attribute_Input
         and then Id /= Attribute_Has_Same_Storage
         and then Id /= Attribute_Overlaps_Storage
       then
