@@ -2687,6 +2687,16 @@ omp_in_final (void)
 
 ialias (omp_in_final)
 
+int
+omp_in_explicit_task (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_task *task = thr->task;
+  return task && task->kind != GOMP_TASK_IMPLICIT;
+}
+
+ialias (omp_in_explicit_task)
+
 void
 omp_fulfill_event (omp_event_handle_t event)
 {

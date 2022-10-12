@@ -360,8 +360,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
-@item @code{omp_in_explicit_task} routine and @emph{implicit-task-var} ICV
-      @tab N @tab
+@item @code{omp_in_explicit_task} routine and @emph{explicit-task-var} ICV
+      @tab Y @tab
 @item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
       namespaces @tab N/A
       @tab warning for @code{ompx/omx} sentinels@footnote{The @code{ompx}
