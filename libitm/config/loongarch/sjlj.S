@@ -104,6 +104,8 @@ GTM_longjmp:
         GPR_L  $s7, $r5, 10*SZ_GPR
         GPR_L  $s8, $r5, 11*SZ_GPR
 
+#if !defined(__loongarch_soft_float)
+        /* Callee-saved scratch FPRs (f24-f31) */
         FPR_L  $f24, $r5, 12*SZ_GPR + 0*SZ_FPR
         FPR_L  $f25, $r5, 12*SZ_GPR + 1*SZ_FPR
         FPR_L  $f26, $r5, 12*SZ_GPR + 2*SZ_FPR
@@ -112,6 +114,7 @@ GTM_longjmp:
         FPR_L  $f29, $r5, 12*SZ_GPR + 5*SZ_FPR
         FPR_L  $f30, $r5, 12*SZ_GPR + 6*SZ_FPR
         FPR_L  $f31, $r5, 12*SZ_GPR + 7*SZ_FPR
+#endif
 
         GPR_L  $r7, $r5, 2*SZ_GPR
         GPR_L  $fp, $r5, 0*SZ_GPR
