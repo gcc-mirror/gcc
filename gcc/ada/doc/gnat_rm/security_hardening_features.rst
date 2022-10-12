@@ -74,6 +74,58 @@ or a variable.)
      --  scrubbing of the stack space used by that subprogram.
 
 
+Given these declarations, Foo has its type and body modified as
+follows:
+
+.. code-block:: ada
+
+     function Foo (<WaterMark> : in out System.Address) returns Integer
+     is
+       --  ...
+     begin
+       <__strub_update> (<WaterMark>);  --  Updates the stack WaterMark.
+       --  ...
+     end;
+
+
+whereas its callers are modified from:
+
+.. code-block:: ada
+
+     X := Foo;
+
+to:
+
+.. code-block:: ada
+
+     declare
+       <WaterMark> : System.Address;
+     begin
+       <__strub_enter> (<WaterMark>);  -- Initialize <WaterMark>.
+       X := Foo (<WaterMark>);
+       <__strub_leave> (<WaterMark>);  -- Scrubs stack up to <WaterMark>.
+     end;
+
+
+As for Bar, because it is strubbed in internal mode, its callers are
+not modified.  Its definition is modified roughly as follows:
+
+.. code-block:: ada
+
+     procedure Bar is
+       <WaterMark> : System.Address;
+       procedure Strubbed_Bar (<WaterMark> : in out System.Address) is
+       begin
+         <__strub_update> (<WaterMark>);  --  Updates the stack WaterMark.
+         -- original Bar body.
+       end Strubbed_Bar;
+     begin
+       <__strub_enter> (<WaterMark>);  -- Initialize <WaterMark>.
+       Strubbed_Bar (<WaterMark>);
+       <__strub_leave> (<WaterMark>);  -- Scrubs stack up to <WaterMark>.
+     end Bar;
+
+
 There are also :switch:`-fstrub={choice}` command-line options to
 control default settings.  For usage and more details on the
 command-line options, on the ``strub`` attribute, and their use with
@@ -151,11 +203,58 @@ activated by a separate command-line option.
 
 The option :switch:`-fharden-compares` enables hardening of compares
 that compute results stored in variables, adding verification that the
-reversed compare yields the opposite result.
+reversed compare yields the opposite result, turning:
+
+.. code-block:: ada
+
+    B := X = Y;
+
+
+into:
+
+.. code-block:: ada
+
+    B := X = Y;
+    declare
+      NotB : Boolean := X /= Y; -- Computed independently of B.
+    begin
+      if B = NotB then
+        <__builtin_trap>;
+      end if;
+    end;
+
 
 The option :switch:`-fharden-conditional-branches` enables hardening
 of compares that guard conditional branches, adding verification of
-the reversed compare to both execution paths.
+the reversed compare to both execution paths, turning:
+
+.. code-block:: ada
+
+    if X = Y then
+      X := Z + 1;
+    else
+      Y := Z - 1;
+    end if;
+
+
+into:
+
+.. code-block:: ada
+
+    if X = Y then
+      if X /= Y then -- Computed independently of X = Y.
+        <__builtin_trap>;
+      end if;
+      X := Z + 1;
+    else
+      if X /= Y then -- Computed independently of X = Y.
+        null;
+      else
+        <__builtin_trap>;
+      end if;
+      Y := Z - 1;
+    end if;
+
 
 These transformations are introduced late in the compilation pipeline,
 long after boolean expressions are decomposed into separate compares,
@@ -213,19 +312,40 @@ further remove checks found to be redundant.
 For additional hardening, the ``hardbool`` :samp:`Machine_Attribute`
 pragma can be used to annotate boolean types with representation
 clauses, so that expressions of such types used as conditions are
-checked even when compiling with :switch:`-gnatVT`.
+checked even when compiling with :switch:`-gnatVT`:
 
 .. code-block:: ada
 
    pragma Machine_Attribute (HBool, "hardbool");
 
+   function To_Boolean (X : HBool) returns Boolean is (Boolean (X));
+
+
+is compiled roughly like:
+
+.. code-block:: ada
+
+   function To_Boolean (X : HBool) returns Boolean is
+   begin
+     if X not in True | False then
+       raise Constraint_Error;
+     elsif X in True then
+       return True;
+     else
+       return False;
+     end if;
+   end To_Boolean;
+
 
 Note that :switch:`-gnatVn` will disable even ``hardbool`` testing.
 
 Analogous behavior is available as a GCC extension to the C and
-Objective C programming languages, through the ``hardbool`` attribute.
-For usage and more details on that attribute, see :title:`Using the
-GNU Compiler Collection (GCC)`.
+Objective C programming languages, through the ``hardbool`` attribute,
+with the difference that, instead of raising a Constraint_Error
+exception, when a hardened boolean variable is found to hold a value
+that stands for neither True nor False, the program traps.  For usage
+and more details on that attribute, see :title:`Using the GNU Compiler
+Collection (GCC)`.
 
 
 .. Control Flow Redundancy:

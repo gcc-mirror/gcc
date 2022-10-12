@@ -810,8 +810,12 @@ gori_compute::logical_combine (vrange &r, enum tree_code code,
 	}
       else
 	res = false;
-      if (idx)
-	tracer.trailer (idx, "logical_combine", res, NULL_TREE, r);
+      if (idx && res)
+	{
+	  tracer.print (idx, "logical_combine produced ");
+	  r.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
     }
 
   switch (code)

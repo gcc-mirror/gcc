@@ -1,3 +1,415 @@
+2022-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107215
+	* gfortran.dg/pr107215.f90: New test.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100134
+	* g++.dg/modules/tpl-friend-8_a.H: New test.
+	* g++.dg/modules/tpl-friend-8_b.C: New test.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99377
+	* g++.dg/modules/pr99377-2_a.C: New test.
+	* g++.dg/modules/pr99377-2_b.C: New test.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-abs-1.c: New test.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107212
+	* gcc.dg/vect/pr107212-1.c: New testcase.
+	* gcc.dg/vect/pr107212-2.c: Likewise.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/pr104464.c: Xfail on amdgcn.
+	* gcc.dg/signbit-2.c: Likewise.
+	* gcc.dg/signbit-5.c: Likewise.
+	* gcc.dg/vect/bb-slp-68.c: Likewise.
+	* gcc.dg/vect/bb-slp-cond-1.c: Change expectations on amdgcn.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Change expectations for multiple
+	vector sizes.
+	* gcc.dg/vect/pr33953.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-4.c: Likewise.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
+	* lib/target-supports.exp (available_vector_sizes): Add more sizes
+	for amdgcn.
+
+2022-10-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-bitfield-read-1.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-2.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-3.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-4.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-5.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-6.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-1.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-2.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-3.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-4.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-5.c: New test.
+
+2022-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107093.c: New test.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107195
+	* gcc.dg/tree-ssa/pr107195-1.c: New test.
+	* gcc.dg/tree-ssa/pr107195-2.c: New test.
+
+2022-10-11  Liwei Xu  <liwei.xu@intel.com>
+	    liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr54346.c: New test.
+
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-ctx1-17.C: New.
+	* g++.dg/abi/lambda-ctx1-18.C: New.
+	* g++.dg/abi/lambda-ctx1-18vs17.C: New.
+	* g++.dg/abi/lambda-ctx1.h: New.
+	* g++.dg/abi/lambda-vis.C: Adjust expected mangles.
+	* g++.dg/abi/macro0.C: Adjust.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* c-c++-common/pointer-to-fn1.c: New test.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/riscv_vector.h: New.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/user-1.c: Add dg-options and drop
+	dg-skip-if.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: Add newline to the end of file.
+	* gcc.target/riscv/rvv/base/pragma-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pragma-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/vread_csr.c: Ditto.
+	* gcc.target/riscv/rvv/base/vwrite_csr.c: Ditto.
+
+2022-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107153
+	* gcc.dg/autopar/pr107153.c: Require fgraphite effective target.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-signbit-3.c: New test.
+
+2022-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107185.c: New test.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/tmac-2.c: Update test.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/enter-dw2-1.c: New file.
+
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106562
+	* gcc.target/pru/pr106562-1.c: New test.
+	* gcc.target/pru/pr106562-2.c: New test.
+	* gcc.target/pru/pr106562-3.c: New test.
+	* gcc.target/pru/pr106562-4.c: New test.
+
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/ashiftdi-1.c: New test.
+	* gcc.target/pru/lshiftrtdi-1.c: New test.
+
+2022-10-08  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107000
+	* gfortran.dg/pr107000.f90: New test.
+
+2022-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107085
+	* g++.dg/ext/reference_constructs_from_temporary1.C: Adjust expected
+	result.
+	* g++.dg/ext/reference_converts_from_temporary1.C: Likewise.
+	* g++.dg/cpp0x/elision4.C: New test.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/101836
+	* gcc.dg/pr101836.c: New test.
+	* gcc.dg/pr101836_1.c: New test.
+	* gcc.dg/pr101836_2.c: New test.
+	* gcc.dg/pr101836_3.c: New test.
+	* gcc.dg/pr101836_4.c: New test.
+	* gcc.dg/pr101836_5.c: New test.
+	* gcc.dg/strict-flex-array-2.c: New test.
+	* gcc.dg/strict-flex-array-3.c: New test.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* g++.dg/strict-flex-array-1.C: New test.
+	* gcc.dg/strict-flex-array-1.c: New test.
+
+2022-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105783
+	* gcc.dg/analyzer/pr105783.c: New test.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/bfield-3.H: New test.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/live-patching-2.c: Update scanned pattern.
+	* gcc.dg/live-patching-5.c: New test.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104433
+	* g++.dg/modules/static-2_a.H: New test.
+	* g++.dg/modules/static-2_b.C: New test.
+
+2022-10-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/elide9.C: New test.
+
+2022-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107153
+	* gcc.dg/autopar/pr107153.c: New testcase.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/fallthrough2.C: New test.
+	* g++.dg/cpp2a/attr-likely7.C: New test.
+
+2022-10-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107170
+	* gcc.dg/tree-ssa/pr107170.c: New test.
+
+2022-10-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107158
+	* gcc.dg/analyzer/call-summaries-pr107158-2.c: New test.
+
+2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/assume-3.f90: New test.
+	* gfortran.dg/gomp/assume-4.f90: New test.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-typeof-1.c, gcc.dg/c2x-typeof-1.c,
+	gcc.dg/c2x-typeof-2.c, gcc.dg/c2x-typeof-3.c,
+	gcc.dg/gnu11-typeof-1.c, gcc.dg/gnu11-typeof-2.c,
+	gcc.dg/gnu2x-typeof-1.c: New tests.
+
+2022-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/indirect-3_b.C: Expect that the entity
+	foo::TPL<0>::frob is tagged as a specialization instead
+	of as a declaration.
+	* g++.dg/modules/tpl-spec-8_a.H: New test.
+	* g++.dg/modules/tpl-spec-8_b.C: New test.
+
+2022-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20221006-1.c: New test.
+
+2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107115
+	* gcc.dg/torture/pr107115.c: New testcase.
+
+2022-10-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldar_2.c: New test.
+
+2022-10-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldar_1.c: New test.
+
+2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/aarch64/cpunative/info_18: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_18.c: New test.
+
+2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107107
+	* gcc.dg/pr107107.c: New testcase.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/assume-4.c: New test.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* gcc.dg/attr-assume-1.c: New test.
+	* gcc.dg/attr-assume-2.c: New test.
+	* gcc.dg/attr-assume-3.c: New test.
+	* g++.dg/cpp2a/feat-cxx2a.C: Add colon to C++20 features
+	comment, add C++20 attributes comment and move C++20
+	new features after the attributes before them.
+	* g++.dg/cpp23/feat-cxx2b.C: Likewise.  Test
+	__has_cpp_attribute(assume).
+	* g++.dg/cpp23/attr-assume1.C: New test.
+	* g++.dg/cpp23/attr-assume2.C: New test.
+	* g++.dg/cpp23/attr-assume3.C: New test.
+	* g++.dg/cpp23/attr-assume4.C: New test.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107158
+	* gcc.dg/analyzer/call-summaries-pr107158.c: New test.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107060
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_get_unknown_ptr):
+	New decl.
+	* gcc.dg/analyzer/call-summaries-2.c
+	(test_summarized_writes_param_to_ptr_unknown): New test.
+
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/assume-1.f90: New test.
+	* gfortran.dg/gomp/assume-2.f90: New test.
+	* gfortran.dg/gomp/assumes-1.f90: New test.
+	* gfortran.dg/gomp/assumes-2.f90: New test.
+
+2022-10-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: New test.
+	* gcc.target/riscv/rvv/base/pragma-2.c: New test.
+	* gcc.target/riscv/rvv/base/pragma-3.c: New test.
+	* gcc.target/riscv/rvv/base/user-1.c: New test.
+	* gcc.target/riscv/rvv/base/user-2.c: New test.
+	* gcc.target/riscv/rvv/base/user-3.c: New test.
+	* gcc.target/riscv/rvv/base/user-4.c: New test.
+	* gcc.target/riscv/rvv/base/user-5.c: New test.
+	* gcc.target/riscv/rvv/base/user-6.c: New test.
+	* gcc.target/riscv/rvv/base/vread_csr.c: New test.
+	* gcc.target/riscv/rvv/base/vwrite_csr.c: New test.
+
+2022-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107052
+	* gcc.dg/tree-ssa/pr107052.c: New file.
+
+2022-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto26.adb: New test.
+	* gnat.dg/lto26_pkg1.ads, gnat.dg/lto26_pkg1.adb: New helper.
+	* gnat.dg/lto26_pkg2.ads, gnat.dg/lto26_pkg2.adb: Likewise.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/106679
+	* gcc.dg/tree-prof/cmpsf-1.c: Mark as a known limitation.
+
+2022-10-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.target/arm/stack-protector-1.c: Use 'bl' instead of 'b'
+	instruction.
+	* gcc.target/arm/stack-protector-3.c: Likewise.
+
+2022-10-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* g++.dg/modules/bad-mapper-1.C: Also accept CreateProcess.
+
+2022-10-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX   <yvan.roux@foss.st.com>
+
+	* gcc.misc-tests/outputs.exp: Use "@nul" for Windows,
+	"@/dev/null" for other environments.
+
+2022-10-05  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/predef-1.c: Remove __riscv_cmodel_pic check.
+	* gcc.target/riscv/predef-2.c: Ditto.
+	* gcc.target/riscv/predef-3.c: Ditto.
+	* gcc.target/riscv/predef-4.c: Ditto.
+	* gcc.target/riscv/predef-5.c: Ditto.
+	* gcc.target/riscv/predef-6.c: Ditto.
+	* gcc.target/riscv/predef-7.c: Ditto.
+	* gcc.target/riscv/predef-8.c: Ditto.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107072
+	* gcc.dg/analyzer/call-summaries-2.c: New test.
+	* gcc.dg/analyzer/call-summaries-3.c: New test.
+	* gcc.dg/analyzer/call-summaries-asm-x86.c: New test.
+	* gcc.dg/analyzer/call-summaries-malloc.c: New test.
+	* gcc.dg/analyzer/call-summaries-pr107072.c: New test.
+
+2022-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107154
+	* g++.dg/debug/dwarf2/lineno-array1.C: New test.
+
+2022-10-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_1.c: Add RCPC tests.
+
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/openmp-simd-7.f90: New test.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-target-4.c: Move tests that are now
+	rejected into declare-target-7.c.
+	* c-c++-common/gomp/declare-target-6.c: Adjust expected diagnostics.
+	* c-c++-common/gomp/declare-target-7.c: New test.
+	* c-c++-common/gomp/begin-declare-target-1.c: New test.
+	* c-c++-common/gomp/begin-declare-target-2.c: New test.
+	* c-c++-common/gomp/begin-declare-target-3.c: New test.
+	* c-c++-common/gomp/begin-declare-target-4.c: New test.
+	* g++.dg/gomp/attrs-9.C: Add begin declare target tests.
+	* g++.dg/gomp/attrs-18.C: New test.
+
+2022-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107130
+	* gcc.dg/tree-ssa/pr107130.c: New test.
+
+2022-10-04  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c/91669
+	* c-c++-common/pr91669.c: New test.
+
 2022-10-03  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 	    Yvan ROUX   <yvan.roux@foss.st.com>
 

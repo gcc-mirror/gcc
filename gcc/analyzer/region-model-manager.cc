@@ -38,18 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
@@ -430,6 +423,17 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 					    binop->get_arg0 (),
 					    binop->get_arg1 ());
 	    }
+      }
+      break;
+    case NEGATE_EXPR:
+      {
+	/* -(-(VAL)) is VAL, for integer types.  */
+	if (const unaryop_svalue *unaryop = arg->dyn_cast_unaryop_svalue ())
+	  if (unaryop->get_op () == NEGATE_EXPR
+	      && type == unaryop->get_type ()
+	      && type
+	      && INTEGRAL_TYPE_P (type))
+	    return unaryop->get_arg ();
       }
       break;
     }
@@ -1143,10 +1147,11 @@ region_model_manager::get_or_create_unmergeable (const svalue *arg)
    and ITER_SVAL at POINT, creating it if necessary.  */
 
 const svalue *
-region_model_manager::get_or_create_widening_svalue (tree type,
-						     const program_point &point,
-						     const svalue *base_sval,
-						     const svalue *iter_sval)
+region_model_manager::
+get_or_create_widening_svalue (tree type,
+			       const function_point &point,
+			       const svalue *base_sval,
+			       const svalue *iter_sval)
 {
   gcc_assert (base_sval->get_kind () != SK_WIDENING);
   gcc_assert (iter_sval->get_kind () != SK_WIDENING);
@@ -1263,6 +1268,33 @@ get_or_create_asm_output_svalue (tree type,
   return asm_output_sval;
 }
 
+/* Return the svalue * of type TYPE for OUTPUT_IDX of a deterministic
+   asm stmt with string ASM_STRING with NUM_OUTPUTS outputs, given
+   INPUTS as inputs.  */
+
+const svalue *
+region_model_manager::
+get_or_create_asm_output_svalue (tree type,
+				 const char *asm_string,
+				 unsigned output_idx,
+				 unsigned num_outputs,
+				 const vec<const svalue *> &inputs)
+{
+  gcc_assert (inputs.length () <= asm_output_svalue::MAX_INPUTS);
+
+  if (const svalue *folded
+	= maybe_fold_asm_output_svalue (type, inputs))
+    return folded;
+
+  asm_output_svalue::key_t key (type, asm_string, output_idx, inputs);
+  if (asm_output_svalue **slot = m_asm_output_values_map.get (key))
+    return *slot;
+  asm_output_svalue *asm_output_sval
+    = new asm_output_svalue (type, asm_string, output_idx, num_outputs, inputs);
+  RETURN_UNKNOWN_IF_TOO_COMPLEX (asm_output_sval);
+  m_asm_output_values_map.put (key, asm_output_sval);
+  return asm_output_sval;
+}
 
 /* Return the svalue * of type TYPE for the result of a call to FNDECL
    with __attribute__((const)), given INPUTS as inputs.  */

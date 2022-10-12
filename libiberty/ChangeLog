@@ -1,3 +1,15 @@
+2022-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_prefix): 'M' components are not
+	(re-)added to the substitution table.
+	* testsuite/demangle-expected: Add tests.
+
+2022-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_comp_inner): Allow parameter packs
+	in a lambda signature.
+	* testsuite/demangle-expected: Add tests.
+
 2022-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106652

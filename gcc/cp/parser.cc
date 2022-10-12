@@ -2258,7 +2258,7 @@ static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
   (cp_parser *, int, bool, bool, bool *, location_t * = NULL,
    bool = false);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
-enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
+enum { non_attr = 0, normal_attr = 1, id_attr = 2, assume_attr = 3 };
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree, tree *, tree *);
 static cp_expr cp_parser_unary_expression
@@ -2287,6 +2287,7 @@ static cp_expr cp_parser_binary_expression
   (cp_parser *, bool, bool, enum cp_parser_prec, cp_id_kind *);
 static tree cp_parser_question_colon_clause
   (cp_parser *, cp_expr);
+static cp_expr cp_parser_conditional_expression (cp_parser *);
 static cp_expr cp_parser_assignment_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false);
 static enum tree_code cp_parser_assignment_operator_opt
@@ -8480,7 +8481,6 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 bool wrap_locations_p)
 {
   vec<tree, va_gc> *expression_list;
-  tree identifier = NULL_TREE;
   bool saved_greater_than_is_operator_p;
 
   /* Assume all the expressions will be constant.  */
@@ -8509,33 +8509,26 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	   next token is an identifier.  */
 	if (is_attribute_list == id_attr
 	    && cp_lexer_peek_token (parser->lexer)->type == CPP_NAME)
-	  {
-	    cp_token *token;
-
-	    /* Consume the identifier.  */
-	    token = cp_lexer_consume_token (parser->lexer);
-	    /* Save the identifier.  */
-	    identifier = token->u.value;
-	  }
+	  expr = cp_lexer_consume_token (parser->lexer)->u.value;
+	else if (is_attribute_list == assume_attr)
+	  expr = cp_parser_conditional_expression (parser);
 	else
-	  {
-	    expr
-	      = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
-							     allow_expansion_p,
-							     non_constant_p);
+	  expr
+	    = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
+							   allow_expansion_p,
+							   non_constant_p);
 
-	    if (wrap_locations_p)
-	      expr.maybe_add_location_wrapper ();
+	if (wrap_locations_p)
+	  expr.maybe_add_location_wrapper ();
 
-	     /* Add it to the list.  We add error_mark_node
-		expressions to the list, so that we can still tell if
-		the correct form for a parenthesized expression-list
-		is found. That gives better errors.  */
-	    vec_safe_push (expression_list, expr.get_value ());
+	/* Add it to the list.  We add error_mark_node
+	   expressions to the list, so that we can still tell if
+	   the correct form for a parenthesized expression-list
+	   is found. That gives better errors.  */
+	vec_safe_push (expression_list, expr.get_value ());
 
-	    if (expr == error_mark_node)
-	      goto skip_comma;
-	  }
+	if (expr == error_mark_node)
+	  goto skip_comma;
 
 	/* After the first item, attribute lists look the same as
 	   expression lists.  */
@@ -8576,9 +8569,6 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 
   parser->greater_than_is_operator_p
     = saved_greater_than_is_operator_p;
-
-  if (identifier)
-    vec_safe_insert (expression_list, 0, identifier);
 
   return expression_list;
 }
@@ -10310,7 +10300,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
    logical-or-expression that started the conditional-expression.
    Returns a representation of the entire conditional-expression.
 
-   This routine is used by cp_parser_assignment_expression.
+   This routine is used by cp_parser_assignment_expression
+   and cp_parser_conditional_expression.
 
      ? expression : assignment-expression
 
@@ -10375,6 +10366,28 @@ cp_parser_question_colon_clause (cp_parser* parser, cp_expr logical_or_expr)
 				   expr,
 				   assignment_expr,
                                    tf_warning_or_error);
+}
+
+/* Parse a conditional-expression.
+
+   conditional-expression:
+     logical-or-expression
+     logical-or-expression ? expression : assignment-expression
+
+   GNU Extensions:
+
+     logical-or-expression ? : assignment-expression  */
+
+static cp_expr
+cp_parser_conditional_expression (cp_parser *parser)
+{
+  cp_expr expr = cp_parser_binary_expression (parser, false, false, false,
+					      PREC_NOT_OPERATOR, NULL);
+  /* If the next token is a `?' then we're actually looking at
+     a conditional-expression; otherwise we're done.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
+    return cp_parser_question_colon_clause (parser, expr);
+  return expr;
 }
 
 /* Parse an assignment-expression.
@@ -10702,15 +10715,7 @@ cp_parser_constant_expression (cp_parser* parser,
      determine whether a particular assignment-expression is in fact
      constant.  */
   if (strict_p)
-    {
-      /* Parse the binary expressions (logical-or-expression).  */
-      expression = cp_parser_binary_expression (parser, false, false, false,
-						PREC_NOT_OPERATOR, NULL);
-      /* If the next token is a `?' then we're actually looking at
-	 a conditional-expression; otherwise we're done.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
-	expression = cp_parser_question_colon_clause (parser, expression);
-    }
+    expression = cp_parser_conditional_expression (parser);
   else
     expression = cp_parser_assignment_expression (parser);
   /* Restore the old settings.  */
@@ -12503,6 +12508,9 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
       /* Look for an expression-statement instead.  */
       statement = cp_parser_expression_statement (parser, in_statement_expr);
 
+      std_attrs = process_stmt_assume_attribute (std_attrs, statement,
+						 attrs_loc);
+
       /* Handle [[fallthrough]];.  */
       if (attribute_fallthrough_p (std_attrs))
 	{
@@ -12526,7 +12534,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   if (statement && STATEMENT_CODE_P (TREE_CODE (statement)))
     SET_EXPR_LOCATION (statement, statement_location);
 
-  /* Allow "[[fallthrough]];", but warn otherwise.  */
+  /* Allow "[[fallthrough]];" or "[[assume(cond)]];", but warn otherwise.  */
   if (std_attrs != NULL_TREE)
     warning_at (attrs_loc,
 		OPT_Wattributes,
@@ -12717,6 +12725,8 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 	  return error_mark_node;
 	}
     }
+
+  attr = process_stmt_assume_attribute (attr, statement, loc);
 
   /* Handle [[fallthrough]];.  */
   if (attribute_fallthrough_p (attr))
@@ -13721,7 +13731,8 @@ warn_for_range_copy (tree decl, tree expr)
 
   if (TYPE_REF_P (type))
     {
-      if (glvalue_p (expr) && ref_conv_binds_directly (type, expr).is_false ())
+      if (glvalue_p (expr)
+	  && ref_conv_binds_to_temporary (type, expr).is_true ())
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wrange_loop_construct,
@@ -13752,7 +13763,7 @@ warn_for_range_copy (tree decl, tree expr)
   /* If we can initialize a reference directly, suggest that to avoid the
      copy.  */
   tree rtype = cp_build_reference_type (type, /*rval*/false);
-  if (ref_conv_binds_directly (rtype, expr).is_true ())
+  if (ref_conv_binds_to_temporary (rtype, expr).is_false ())
     {
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wrange_loop_construct,
@@ -28876,6 +28887,8 @@ cp_parser_gnu_attribute_list (cp_parser* parser, bool exactly_one /* = false */)
 	      vec<tree, va_gc> *vec;
 	      int attr_flag = (attribute_takes_identifier_p (identifier)
 			       ? id_attr : normal_attr);
+	      if (is_attribute_p ("assume", identifier))
+		attr_flag = assume_attr;
 	      vec = cp_parser_parenthesized_expression_list
 		    (parser, attr_flag, /*cast_p=*/false,
 		    /*allow_expansion_p=*/false,
@@ -29127,6 +29140,9 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       /* C++17 fallthrough attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("fallthrough", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
+      /* C++23 assume attribute is equivalent to GNU's.  */
+      else if (is_attribute_p ("assume", attr_id))
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* Transactional Memory TS optimize_for_synchronized attribute is
 	 equivalent to GNU transaction_callable.  */
       else if (is_attribute_p ("optimize_for_synchronized", attr_id))
@@ -29171,8 +29187,12 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	return error_mark_node;
       }
 
-    if (attr_ns == gnu_identifier
-	&& attribute_takes_identifier_p (attr_id))
+    if (is_attribute_p ("assume", attr_id)
+	&& (attr_ns == NULL_TREE || attr_ns == gnu_identifier))
+      /* The assume attribute needs special handling of the argument.  */
+      attr_flag = assume_attr;
+    else if (attr_ns == gnu_identifier
+	     && attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
 
@@ -29246,7 +29266,8 @@ cp_parser_check_std_attribute (location_t loc, tree attributes, tree attribute)
   if (attributes)
     for (const auto &a : alist)
       if (is_attribute_p (a, get_attribute_name (attribute))
-	  && lookup_attribute (a, attributes))
+	  && is_attribute_namespace_p ("", attribute)
+	  && lookup_attribute ("", a, attributes))
 	{
 	  if (!from_macro_expansion_at (loc))
 	    warning_at (loc, OPT_Wattributes, "attribute %qs specified "
@@ -46004,13 +46025,15 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 	  matching_parens parens;
 	  if (parens.require_open (parser))
 	    {
+	      location_t eloc = cp_lexer_peek_token (parser->lexer)->location;
 	      tree t = cp_parser_assignment_expression (parser);
 	      if (!type_dependent_expression_p (t))
 		t = contextual_conv_bool (t, tf_warning_or_error);
-	      if (is_assume)
+	      if (is_assume && !error_operand_p (t))
 		{
-		  /* FIXME: Emit .ASSUME (t) call here.  */
-		  (void) t;
+		  t = build_call_expr_internal_loc (eloc, IFN_ASSUME,
+						    void_type_node, 1, t);
+		  finish_expr_stmt (t);
 		}
 	      if (!parens.require_close (parser))
 		cp_parser_skip_to_closing_parenthesis (parser,

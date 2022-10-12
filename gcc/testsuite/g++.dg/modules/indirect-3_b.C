@@ -23,7 +23,7 @@ namespace bar
 // { dg-final { scan-lang-dump {Lazily binding '::foo@foo:.::TPL'@'foo' section} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo@foo:.::template TPL@foo:.'@foo} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo@foo:.::TPL<0x0>'\n  \[1\]=specialization declaration '::foo@foo:.::TPL<0x0>::TPL<0x0>'\n(  \[.\]=[^\n]* '\n)*  \[.\]=decl definition '::foo@foo:.::TPL<0x0>::frob<0x0>'\n} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo@foo:.::TPL<0x0>'\n  \[1\]=specialization definition '::foo@foo:.::TPL<0x0>::frob<0x0>'\n  \[2\]=specialization declaration '::foo@foo:.::TPL<0x0>::TPL<0x0>'} module } }
 
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo@foo:.::X@foo:.::frob<0x0>'} module } }
 // { dg-final { scan-lang-dump {Writing:-[0-9]*'s type spec merge key \(specialization\) type_decl:'::foo@foo:.::TPL<0x0>'} module } }

@@ -3131,6 +3131,7 @@ gen_parallel_loop (class loop *loop,
 	 to the exit of the loop.  */
       transform_to_exit_first_loop (loop, reduction_list, nit);
     }
+  update_ssa (TODO_update_ssa_no_phi);
 
   /* Generate initializations for reductions.  */
   if (!reduction_list->is_empty ())
@@ -4215,6 +4216,10 @@ pass_parallelize_loops::execute (function *fun)
 
       checking_verify_loop_structure ();
 
+      /* ???  Intermediate SSA updates with no PHIs might have lost
+	 the virtual operand renaming needed by separate_decls_in_region,
+	 make sure to rename them again.  */
+      mark_virtual_operands_for_renaming (fun);
       update_ssa (TODO_update_ssa);
       if (in_loop_pipeline)
 	rewrite_into_loop_closed_ssa (NULL, 0);

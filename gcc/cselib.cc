@@ -1571,6 +1571,7 @@ new_cselib_val (unsigned int hash, machine_mode mode, rtx x)
 
   scalar_int_mode int_mode;
   if (REG_P (x) && is_int_mode (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) > 1
       && REG_VALUES (REGNO (x)) != NULL
       && (!cselib_current_insn || !DEBUG_INSN_P (cselib_current_insn)))
     {

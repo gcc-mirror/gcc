@@ -2060,16 +2060,20 @@ fix = {
 fix = {
     hackname  = glibc_cxx_floatn_2;
     files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
-    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+    select    = "^([ \t]*#[ \t]*(el)?if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
 		"(([ \t]*/\\*[^\n]*\\*/\n)?"
 		"[ \t]*typedef[ \t]+[^\n]*[ \t]+_Float(16|32|64|128)x?([ \t]+__attribute__ \\(\\(__mode__ \\(__HF__\\)\\)\\))?;)";
     c_fix     = format;
-    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%3";
     test_text = <<-EOT
 	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
 	typedef float _Float16 __attribute__ ((__mode__ (__HF__)));
 	#  endif
 	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	typedef __float128 _Float128;
+	#  endif
+	#  if 0
+	#  elif !__GNUC_PREREQ (7, 0) || defined __cplusplus
 	typedef __float128 _Float128;
 	#  endif
 	EOT;
@@ -2107,6 +2111,39 @@ fix = {
 	#   endif
 	#  else
 	#   define __CFLOAT64 _Complex _Float64
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_4;
+    files     = bits/floatn.h, "*/bits/floatn.h";
+    select    = "^([ \t]*#[ \t]*if __LDBL_MANT_DIG__ == 113 && )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\\*/\n)?"
+		"[ \t]*typedef[ \t]+[^\n]*[ \t]+_Float128;)";
+    c_fix     = format;
+    c_fix_arg = "%1defined __cplusplus && !__GNUC_PREREQ (13, 0)\n%2";
+    test_text = <<-EOT
+	#  if __LDBL_MANT_DIG__ == 113 && defined __cplusplus
+	typedef long double _Float128;
+	#   define __CFLOAT128 _Complex long double
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_5;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"([ \t]*#[ \t]+error \"_Float128[xX] supported but no )";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   error "_Float128X supported but no constant suffix"
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   error "_Float128x supported but no type"
 	#  endif
 	EOT;
 };

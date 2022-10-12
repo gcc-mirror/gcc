@@ -171,7 +171,7 @@ remap_ssa_name (tree name, copy_body_data *id)
   n = id->decl_map->get (name);
   if (n)
     {
-      /* WHen we perform edge redirection as part of CFG copy, IPA-SRA can
+      /* When we perform edge redirection as part of CFG copy, IPA-SRA can
 	 remove an unused LHS from a call statement.  Such LHS can however
 	 still appear in debug statements, but their value is lost in this
 	 function and we do not want to map them.  */

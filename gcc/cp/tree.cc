@@ -104,7 +104,17 @@ lvalue_kind (const_tree ref)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
-      return lvalue_kind (TREE_OPERAND (ref, 0));
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
+      /* As for ARRAY_REF and COMPONENT_REF, these codes turn a class prvalue
+	 into an xvalue: we need to materialize the temporary before we mess
+	 with it.  Except VIEW_CONVERT_EXPR that doesn't actually change the
+	 type, as in location wrapper and REF_PARENTHESIZED_P.	*/
+      if (op1_lvalue_kind == clk_class
+	  && !(TREE_CODE (ref) == VIEW_CONVERT_EXPR
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (TREE_TYPE (ref), TREE_TYPE (TREE_OPERAND (ref, 0))))))
+	return clk_rvalueref;
+      return op1_lvalue_kind;
 
     case ARRAY_REF:
       {
@@ -523,6 +533,9 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
       if (t == error_mark_node)
 	return error_mark_node;
     }
+
+  set_target_expr_eliding (value);
+
   t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
   if (location_t eloc = cp_expr_location (value))
     SET_EXPR_LOCATION (t, eloc);
@@ -3184,6 +3197,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
       TARGET_EXPR_IMPLICIT_P (u) = TARGET_EXPR_IMPLICIT_P (t);
       TARGET_EXPR_LIST_INIT_P (u) = TARGET_EXPR_LIST_INIT_P (t);
       TARGET_EXPR_DIRECT_INIT_P (u) = TARGET_EXPR_DIRECT_INIT_P (t);
+      TARGET_EXPR_ELIDING_P (u) = TARGET_EXPR_ELIDING_P (t);
 
       /* Map the old variable to the new one.  */
       splay_tree_insert (target_remap,

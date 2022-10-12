@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
      TARGET_MIN_VLEN > 32. Otherwise the machine mode is VNx1SImode.  */
 
 #ifndef DEF_RVV_TYPE
-#define DEF_RVV_TYPE(USER_NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,    \
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,    \
 		     VECTOR_MODE_MIN_VLEN_32)
 #endif
 

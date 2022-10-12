@@ -2076,6 +2076,13 @@ fsized-deallocation
 C++ ObjC++ Var(flag_sized_deallocation) Init(-1)
 Enable C++14 sized deallocation support.
 
+fstrict-flex-arrays
+C C++ Common Alias(fstrict-flex-arrays=,3,0)
+
+fstrict-flex-arrays=
+C C++ Common Joined RejectNegative UInteger Var(flag_strict_flex_arrays) Init(0) IntegerRange(0,3)
+-fstrict-flex-arrays=<level>    Control when to treat the trailing array of a structure as a flexible array member for the purposes of accessing the elements of such an array. The default is treating all trailing arrays of structures as flexible array members.
+
 fsquangle
 C++ ObjC++ WarnRemoved
 

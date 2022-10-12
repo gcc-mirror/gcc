@@ -9144,7 +9144,7 @@ init_by_return_slot_p (tree exp)
    Places that use this function (or _opt) to decide to elide a copy should
    probably use make_safe_copy_elision instead.  */
 
-static bool
+bool
 unsafe_copy_elision_p (tree target, tree exp)
 {
   return unsafe_return_slot_p (target) && init_by_return_slot_p (exp);
@@ -9210,15 +9210,47 @@ conv_binds_ref_to_prvalue (conversion *c)
   return conv_is_prvalue (next_conversion (c));
 }
 
-/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE does
-   not involve creating a temporary.  Return tristate::TS_FALSE if converting
-   EXPR to a reference type TYPE binds the reference to a temporary.  If the
-   conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
+/* True iff C is a conversion that binds a reference to a temporary.
+   This is a superset of conv_binds_ref_to_prvalue: here we're also
+   interested in xvalues.  */
+
+static bool
+conv_binds_ref_to_temporary (conversion *c)
+{
+  if (conv_binds_ref_to_prvalue (c))
+    return true;
+  if (c->kind != ck_ref_bind)
+    return false;
+  c = next_conversion (c);
+  /* This is the case for
+       struct Base {};
+       struct Derived : Base {};
+       const Base& b(Derived{});
+     where we bind 'b' to the Base subobject of a temporary object of type
+     Derived.  The subobject is an xvalue; the whole object is a prvalue.  */
+  if (c->kind != ck_base)
+    return false;
+  c = next_conversion (c);
+  if (c->kind == ck_identity && c->u.expr)
+    {
+      tree expr = c->u.expr;
+      while (handled_component_p (expr))
+	expr = TREE_OPERAND (expr, 0);
+      if (TREE_CODE (expr) == TARGET_EXPR)
+	return true;
+    }
+  return false;
+}
+
+/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE binds
+   the reference to a temporary.  Return tristate::TS_FALSE if converting
+   EXPR to a reference type TYPE doesn't bind the reference to a temporary.  If
+   the conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
    says whether the conversion should be done in direct- or copy-initialization
    context.  */
 
 tristate
-ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
+ref_conv_binds_to_temporary (tree type, tree expr, bool direct_init_p/*=false*/)
 {
   gcc_assert (TYPE_REF_P (type));
 
@@ -9230,7 +9262,7 @@ ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
 					  /*c_cast_p=*/false, flags, tf_none);
   tristate ret (tristate::TS_UNKNOWN);
   if (conv && !conv->bad_p)
-    ret = tristate (!conv_binds_ref_to_prvalue (conv));
+    ret = tristate (conv_binds_ref_to_temporary (conv));
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -9909,7 +9941,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	       && !unsafe)
 	{
 	  tree to = cp_build_fold_indirect_ref (fa);
-	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
+	  val = cp_build_init_expr (to, arg);
 	  return val;
 	}
     }
@@ -10068,7 +10100,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    }
 	  call = cxx_constant_value (call, obj_arg, complain);
 	  if (obj_arg && !error_operand_p (call))
-	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
+	    call = cp_build_init_expr (obj_arg, call);
 	  call = convert_from_reference (call);
 	}
     }
@@ -10733,7 +10765,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	    check_self_delegation (arg);
 	  /* Avoid change of behavior on Wunused-var-2.C.  */
 	  instance = mark_lvalue_use (instance);
-	  return build2 (INIT_EXPR, class_type, instance, arg);
+	  return cp_build_init_expr (instance, arg);
 	}
     }
 
@@ -11151,9 +11183,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	{
 	  if (is_dummy_object (instance))
 	    return get_target_expr (init, complain);
-	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
-	  TREE_SIDE_EFFECTS (init) = true;
-	  return init;
+	  return cp_build_init_expr (instance, init);
 	}
 
       /* Otherwise go ahead with overload resolution.  */
@@ -11200,9 +11230,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	      ctor = digest_init (basetype, ctor, complain);
 	      if (ctor == error_mark_node)
 		return error_mark_node;
-	      ctor = build2 (INIT_EXPR, TREE_TYPE (instance), instance, ctor);
-	      TREE_SIDE_EFFECTS (ctor) = true;
-	      return ctor;
+	      return cp_build_init_expr (instance, ctor);
 	    }
 	}
       if (complain & tf_error)

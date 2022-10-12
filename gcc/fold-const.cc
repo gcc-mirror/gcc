@@ -130,7 +130,6 @@ static tree eval_subst (location_t, tree, tree, tree, tree, tree);
 static tree optimize_bit_field_compare (location_t, enum tree_code,
 					tree, tree, tree);
 static bool simple_operand_p (const_tree);
-static bool simple_operand_p_2 (tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
 static tree range_successor (tree);
@@ -4868,8 +4867,8 @@ sign_bit_p (tree exp, const_tree val)
   return NULL_TREE;
 }
 
-/* Subroutine for fold_truth_andor_1: determine if an operand is simple enough
-   to be evaluated unconditionally.  */
+/* Subroutine for fold_truth_andor_1 and simple_condition_p: determine if an
+   operand is simple enough to be evaluated unconditionally.  */
 
 static bool
 simple_operand_p (const_tree exp)
@@ -4897,13 +4896,12 @@ simple_operand_p (const_tree exp)
 	      && (! TREE_STATIC (exp) || DECL_REGISTER (exp))));
 }
 
-/* Subroutine for fold_truth_andor: determine if an operand is simple enough
-   to be evaluated unconditionally.
-   I addition to simple_operand_p, we assume that comparisons, conversions,
+/* Determine if an operand is simple enough to be evaluated unconditionally.
+   In addition to simple_operand_p, we assume that comparisons, conversions,
    and logic-not operations are simple, if their operands are simple, too.  */
 
-static bool
-simple_operand_p_2 (tree exp)
+bool
+simple_condition_p (tree exp)
 {
   enum tree_code code;
 
@@ -4920,7 +4918,7 @@ simple_operand_p_2 (tree exp)
 	    && simple_operand_p (TREE_OPERAND (exp, 1)));
 
   if (code == TRUTH_NOT_EXPR)
-      return simple_operand_p_2 (TREE_OPERAND (exp, 0));
+    return simple_condition_p (TREE_OPERAND (exp, 0));
 
   return simple_operand_p (exp);
 }
@@ -9787,10 +9785,10 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	 side-effects, or isn't simple, then we can't add to it,
 	 as otherwise we might destroy if-sequence.  */
       if (TREE_CODE (arg0) == icode
-	  && simple_operand_p_2 (arg1)
+	  && simple_condition_p (arg1)
 	  /* Needed for sequence points to handle trappings, and
 	     side-effects.  */
-	  && simple_operand_p_2 (TREE_OPERAND (arg0, 1)))
+	  && simple_condition_p (TREE_OPERAND (arg0, 1)))
 	{
 	  tem = fold_build2_loc (loc, ncode, type, TREE_OPERAND (arg0, 1),
 				 arg1);
@@ -9800,10 +9798,10 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	/* Same as above but for (A AND[-IF] (B AND-IF C)) -> ((A AND B) AND-IF C),
 	   or (A OR[-IF] (B OR-IF C) -> ((A OR B) OR-IF C).  */
       else if (TREE_CODE (arg1) == icode
-	  && simple_operand_p_2 (arg0)
+	  && simple_condition_p (arg0)
 	  /* Needed for sequence points to handle trappings, and
 	     side-effects.  */
-	  && simple_operand_p_2 (TREE_OPERAND (arg1, 0)))
+	  && simple_condition_p (TREE_OPERAND (arg1, 0)))
 	{
 	  tem = fold_build2_loc (loc, ncode, type, 
 				 arg0, TREE_OPERAND (arg1, 0));
@@ -9814,8 +9812,8 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	 into (A OR B).
 	 For sequence point consistancy, we need to check for trapping,
 	 and side-effects.  */
-      else if (code == icode && simple_operand_p_2 (arg0)
-               && simple_operand_p_2 (arg1))
+      else if (code == icode && simple_condition_p (arg0)
+	       && simple_condition_p (arg1))
 	return fold_build2_loc (loc, ncode, type, arg0, arg1);
     }
 

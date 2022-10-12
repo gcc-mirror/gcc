@@ -1,3 +1,72 @@
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (flexible_array_member_type_p): New function.
+	(one_element_array_type_p): Likewise.
+	(zero_length_array_type_p): Likewise.
+	(add_flexible_array_elts_to_size): Call new utility
+	routine flexible_array_member_type_p.
+	(is_flexible_array_member_p): New function.
+	(finish_struct): Set the new DECL_NOT_FLEXARRAY flag.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parse_init): Add D_EXT11 to mask if flag_no_asm
+	and not C2x.
+	(c_keyword_starts_typename, c_token_starts_declspecs)
+	(c_parser_declspecs, c_parser_objc_selector): Handle
+	RID_TYPEOF_UNQUAL.
+	(c_parser_typeof_specifier): Handle RID_TYPEOF_UNQUAL.
+	Distinguish typeof for C2x from __typeof__ for all standard
+	versions and typeof before C2x.
+	* c-typeck.cc (build_function_call_vec): Use unqualified version
+	of non-void return type.
+	(build_unary_op): Use unqualified type for increment and
+	decrement.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-parser.cc (handle_assume_attribute): New function.
+	(c_parser_declaration_or_fndef): Handle assume attribute.
+	(c_parser_attribute_arguments): Add assume_attr argument,
+	if true, parse first argument as conditional expression.
+	(c_parser_gnu_attribute, c_parser_std_attribute): Adjust
+	c_parser_attribute_arguments callers.
+	(c_parser_statement_after_labels) <case RID_ATTRIBUTE>: Handle
+	assume attribute.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (struct c_omp_declare_target_attr): New type.
+	(current_omp_declare_target_attribute): Change type from
+	int to vec<c_omp_declare_target_attr, va_gc> *.
+	* c-parser.cc (c_parser_translation_unit): Adjust for that change.
+	If last pushed directive was begin declare target, use different
+	wording and simplify format strings for easier translations.
+	(c_parser_omp_clause_device_type): Uncomment
+	check_no_duplicate_clause call.
+	(c_parser_omp_declare_target): Adjust for the
+	current_omp_declare_target_attribute type change, push { -1 }.
+	Use error_at rather than warning_at for declare target with
+	only device_type clauses.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(c_parser_omp_begin): Add begin declare target support.
+	(c_parser_omp_end): Adjust for the
+	current_omp_declare_target_attribute type change, adjust
+	diagnostics wording and simplify format strings for easier
+	translations.
+	* c-decl.cc (current_omp_declare_target_attribute): Change type from
+	int to vec<c_omp_declare_target_attr, va_gc> *.
+	(c_decl_attributes): Adjust for the
+	current_omp_declare_target_attribute type change.  If device_type
+	was present on begin declare target, add "omp declare target host"
+	and/or "omp declare target nohost" attributes.
+
 2022-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (handle_std_noreturn_attribute): New function.

@@ -1,3 +1,8 @@
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	* LOCAL_PATCHES: Add commit a91f844ef44.

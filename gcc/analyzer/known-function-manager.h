@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_KNOWN_FUNCTION_MANAGER_H
 #define GCC_ANALYZER_KNOWN_FUNCTION_MANAGER_H
 
+#include "analyzer/analyzer-logging.h"
+
 namespace ana {
 
 class known_function_manager : public log_user

@@ -1,3 +1,155 @@
+2022-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-linux-sparc.ads (Support_Atomic_Primitives): New
+	constant set to True.
+
+2022-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.def (LOAD_EXPR): New expression code.
+	* gcc-interface/gigi.h (build_storage_model_load): Declare.
+	(build_storage_model_store): Likewise.
+	(instantiate_load_in_expr): Likewise.
+	(INSTANTIATE_LOAD_IN_EXPR): New macro.
+	(instantiate_load_in_array_ref): Declare.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Record_Type>: Set a
+	fake discriminant number on the fields of the template type.
+	(gnat_to_gnu_field): Use integer for DECL_DISCRIMINANT_NUMBER.
+	* gcc-interface/misc.cc (gnat_init_ts): Mark LOAD_EXPR as typed.
+	* gcc-interface/trans.cc (fold_constant_decl_in_expr) <ARRAY_REF>:
+	Also preserve the 4th operand.
+	(Attribute_to_gnu): Deal with LOAD_EXPR of unconstrained array type.
+	<Attr_Size>: Call INSTANTIATE_LOAD_IN_EXPR for a storage model.
+	<Attr_Length>: Likewise.
+	<Attr_Bit_Position>: Likewise.
+	(get_storage_model): New function.
+	(get_storage_model_access): Likewise.
+	(storage_model_access_required_p): Likewise.
+	(Call_to_gnu): Add GNAT_STORAGE_MODEL parameter and deal with it.
+	Also deal with actual parameters that have a storage model.
+	(gnat_to_gnu) <N_Object_Declaratio>: Adjust call to Call_to_gnu.
+	<N_Explicit_Dereference>: Deal with a storage model access.
+	<N_Indexed_Component>: Likewise.
+	<N_Slice>: Likewise.
+	<N_Selected_Component>: Likewise.
+	<N_Assignment_Statement>: Adjust call to Call_to_gnu.  Deal with a
+	storage model access either on the LHS, on the RHS or on both.
+	<N_Function_Cal>: Adjust call to Call_to_gnu.
+	<N_Free_Statement>: Deal with a pool that is a storage model.
+	Replace test for UNCONSTRAINED_ARRAY_REF with test on the type.
+	(gnat_gimplify_expr) <CALL_EXPR>: Tidy up.
+	<LOAD_EXPR>: New case.
+	<UNCONSTRAINED_ARRAY_REF>: Move down.
+	* gcc-interface/utils.cc (maybe_unconstrained_array): Deal with a
+	LOAD_EXPR by recursing on its first operand.
+	* gcc-interface/utils2.cc (build_allocator): Deal with a pool that
+	is a storage model.
+	(build_storage_model_copy): New function.
+	(build_storage_model_load): Likewise.
+	(build_storage_model_store): Likewise.
+	(instantiate_load_in_expr): Likewise.
+	(instantiate_load_in_array_ref): Likewise.
+	(gnat_rewrite_reference) <ARRAY_REF>: Also preserve the 4th operand.
+	(get_inner_constant_reference) <ARRAY_REF>: Remove useless test.
+	(gnat_invariant_expr) <ARRAY_REF>: Rewrite test.
+
+2022-10-06  Steve Baird  <baird@adacore.com>
+
+	* sem_ch6.adb
+	(Analyze_Procedure_Call): Replace "return;" with "goto Leave;", as
+	per comment preceding body of Analyze_Procedure_Call.
+
+2022-10-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): Reject
+	conditional goto statements.
+
+2022-10-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Lock_Free): Remove inconsistent periods that end item
+	descriptions.
+	* sem_ch9.adb
+	(Allows_Lock_Free_Implementation): Remove unnecessary guard
+	against an empty list of parameters; replace low-level entity kind
+	membership test with a high-level query; refill error message.
+	* gnat_rm.texi: Regenerate.
+
+2022-10-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst: Add examples of
+	codegen changes in hardened conditionals.
+	* gnat_rm.texi: Regenerate.
+
+2022-10-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst: Add examples of
+	codegen changes in hardened booleans. Mention that C traps where
+	Ada raises exceptions.
+	* gnat_rm.texi: Regenerate.
+
+2022-10-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst: Add examples of
+	codegen changes in stack scrubbing.
+	* gnat_rm.texi: Regenerate.
+
+2022-10-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Protected_Subprogram_Body): Replace
+	shallow copy of protected statements with a deep copy.
+
+2022-10-06  Marc Poulhiès  <poulhies@adacore.com>
+
+	* fe.h (Has_Storage_Model_Type_Aspect)
+	(Has_Designated_Storage_Model_Aspect, Storage_Model_Object)
+	(Storage_Model_Copy_From, Storage_Model_Copy_To): Add
+	declarations.
+	* sem_util.ads: Add WARNING markers for functions for which a new
+	C declaration has been added in fe.h
+
+2022-10-06  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb
+	(Get_Current_Value_Condition): Treat references occurring within
+	the condition of an if statement, an elsif, or a while loop in the
+	same way as references that occur before the start of that
+	enclosing construct.
+
+2022-10-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): Add test of Comes_From_Source on the
+	enclosing subprogram's Entity_Id for determining whether to
+	perform the compile-time accessibility check on actuals passed to
+	aliased formals in a function call occurring within a return
+	statement. That test excludes cases where the call occurs within
+	the return statement of a Pre'Class wrapper function.
+
+2022-10-06  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb
+	(Expand_Assign_Array_Loop_Or_Bitfield): Minor cleanups.
+
+2022-10-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Ignore one variant of pragma
+	Warnings in GNATprove mode.
+
+2022-10-06  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb
+	(Expand_Assign_Array_Loop_Or_Bitfield): Disable the
+	Fast_Copy_Bitfield optimization in certain cases.
+
+2022-10-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb
+	(Sig_Pragma): Change flag for pragma Refined_State to mean "not
+	significant"; this is primarily for documentation, because the
+	exact value of the flag is not really taken into account for
+	Refined_State.
+	(Is_Non_Significant_Pragma_Reference): Add special handling for
+	pragma Refined_State.
+
 2022-09-29  Ronan Desplanques  <desplanques@adacore.com>
 
 	* einfo.ads: remove documentation duplicate

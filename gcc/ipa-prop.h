@@ -78,7 +78,7 @@ struct ipa_cst_ref_desc;
 /* Structure holding data required to describe a constant jump function.  */
 struct GTY(()) ipa_constant_data
 {
-  /* THe value of the constant.  */
+  /* The value of the constant.  */
   tree value;
   /* Pointer to the structure that describes the reference.  */
   struct ipa_cst_ref_desc GTY((skip)) *rdesc;

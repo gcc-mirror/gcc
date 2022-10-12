@@ -3469,6 +3469,20 @@ enum streamed_extensions {
   SE_BITS = 1
 };
 
+/* Counter indices.  */
+enum module_state_counts
+{
+  MSC_sec_lwm,
+  MSC_sec_hwm,
+  MSC_pendings,
+  MSC_entities,
+  MSC_namespaces,
+  MSC_bindings,
+  MSC_macros,
+  MSC_inits,
+  MSC_HWM
+};
+
 /********************************************************************/
 struct module_state_config;
 
@@ -3666,8 +3680,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
   bool read_config (struct module_state_config &);
-  static void write_counts (elf_out *to, unsigned [], unsigned *crc_ptr);
-  bool read_counts (unsigned []);
+  static void write_counts (elf_out *to, unsigned [MSC_HWM], unsigned *crc_ptr);
+  bool read_counts (unsigned *);
 
  public:
   void note_cmi_name ();
@@ -5397,6 +5411,9 @@ trees_out::core_bools (tree t)
 
 	    case VAR_DECL:
 	      if (TREE_PUBLIC (t)
+		  && !(TREE_STATIC (t)
+		       && DECL_FUNCTION_SCOPE_P (t)
+		       && DECL_DECLARED_INLINE_P (DECL_CONTEXT (t)))
 		  && !DECL_VAR_DECLARED_INLINE_P (t))
 		is_external = true;
 	      break;
@@ -5416,6 +5433,7 @@ trees_out::core_bools (tree t)
       WB (t->decl_common.decl_by_reference_flag);
       WB (t->decl_common.decl_read_flag);
       WB (t->decl_common.decl_nonshareable_flag);
+      WB (t->decl_common.decl_not_flexarray);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -5560,6 +5578,7 @@ trees_in::core_bools (tree t)
       RB (t->decl_common.decl_by_reference_flag);
       RB (t->decl_common.decl_read_flag);
       RB (t->decl_common.decl_nonshareable_flag);
+      RB (t->decl_common.decl_not_flexarray);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -11902,7 +11921,11 @@ trees_out::mark_class_def (tree defn)
 	mark_class_member (member);
 	if (TREE_CODE (member) == FIELD_DECL)
 	  if (tree repr = DECL_BIT_FIELD_REPRESENTATIVE (member))
-	    mark_declaration (repr, false);
+	    /* If we're marking a class template definition, then
+	       this'll contain the width (as set by grokbitfield)
+	       instead of a decl.  */
+	    if (DECL_P (repr))
+	      mark_declaration (repr, false);
       }
 
   /* Mark the binfo hierarchy.  */
@@ -14540,20 +14563,6 @@ module_state::read_partitions (unsigned count)
     return false;
   return true;
 }
-
-/* Counter indices.  */
-enum module_state_counts
-{
-  MSC_sec_lwm,
-  MSC_sec_hwm,
-  MSC_pendings,
-  MSC_entities,
-  MSC_namespaces,
-  MSC_bindings,
-  MSC_macros,
-  MSC_inits,
-  MSC_HWM
-};
 
 /* Data for config reading and writing.  */
 struct module_state_config {
@@ -19074,6 +19083,10 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 
   timevar_start (TV_MODULE_IMPORT);
 
+  /* Make sure lazy loading from a template context behaves as if
+     from a non-template context.  */
+  processing_template_decl_sentinel ptds;
+
   /* Stop GC happening, even in outermost loads (because our caller
      could well be building up a lookup set).  */
   function_depth++;
@@ -19122,6 +19135,10 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 void
 lazy_load_pendings (tree decl)
 {
+  /* Make sure lazy loading from a template context behaves as if
+     from a non-template context.  */
+  processing_template_decl_sentinel ptds;
+
   tree key_decl;
   pending_key key;
   key.ns = find_pending_key (decl, &key_decl);

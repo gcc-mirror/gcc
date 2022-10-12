@@ -1369,7 +1369,7 @@ predicate::simplify_3 ()
 /* Implement rule 4 for the OR predicate PREDS:
 
    2) ((x AND y) != 0) OR (x != 0 AND y != 0) is equivalent to
-       (x != 0 ANd y != 0).   */
+       (x != 0 AND y != 0).   */
 
 bool
 predicate::simplify_4 ()

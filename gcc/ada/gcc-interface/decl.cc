@@ -2279,6 +2279,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					      gnu_index_type,
 					      gnu_template_type, NULL_TREE,
 					      NULL_TREE, 0, 0);
+	    /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
+	    DECL_DISCRIMINANT_NUMBER (gnu_lb_field) = integer_minus_one_node;
 	    Sloc_to_locus (Sloc (gnat_entity),
 			   &DECL_SOURCE_LOCATION (gnu_lb_field));
 
@@ -2287,6 +2289,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					      gnu_index_type,
 					      gnu_template_type, NULL_TREE,
 					      NULL_TREE, 0, 0);
+	    /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
+	    DECL_DISCRIMINANT_NUMBER (gnu_hb_field) = integer_minus_one_node;
 	    Sloc_to_locus (Sloc (gnat_entity),
 			   &DECL_SOURCE_LOCATION (gnu_hb_field));
 
@@ -7694,7 +7698,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (Ekind (gnat_field) == E_Discriminant)
     {
       DECL_DISCRIMINANT_NUMBER (gnu_field)
-	= UI_To_gnu (Discriminant_Number (gnat_field), sizetype);
+	= UI_To_gnu (Discriminant_Number (gnat_field), integer_type_node);
       DECL_INVARIANT_P (gnu_field)
 	= No (Discriminant_Default_Value (gnat_field));
       DECL_NONADDRESSABLE_P (gnu_field) = 0;

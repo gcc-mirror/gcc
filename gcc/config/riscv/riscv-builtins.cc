@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "expr.h"
 #include "langhooks.h"
-#include "riscv-vector-builtins.h"
+#include "tm_p.h"
 
 /* Macros to create an enumeration identifier for a function prototype.  */
 #define RISCV_FTYPE_NAME0(A) RISCV_##A##_FTYPE

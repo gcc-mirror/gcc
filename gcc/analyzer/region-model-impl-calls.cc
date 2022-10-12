@@ -38,18 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
@@ -372,6 +365,16 @@ region_model::impl_call_analyzer_eval (const gcall *call,
   tree t_arg = gimple_call_arg (call, 0);
   tristate t = eval_condition (t_arg, NE_EXPR, integer_zero_node, ctxt);
   warning_at (call->location, 0, "%s", t.as_string ());
+}
+
+/* Handle the on_call_pre part of "__analyzer_get_unknown_ptr".  */
+
+void
+region_model::impl_call_analyzer_get_unknown_ptr (const call_details &cd)
+{
+  const svalue *ptr_sval
+    = m_mgr->get_or_create_unknown_svalue (cd.get_lhs_type ());
+  cd.maybe_set_lhs (ptr_sval);
 }
 
 /* Handle the on_call_pre part of "__builtin_expect" etc.  */

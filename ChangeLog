@@ -1,3 +1,9 @@
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* libtool.m4 (*vxworks*): When enable_shared, set dynamic_linker
+	and friends for rtp !large. Assume the linker has the required
+	abilities and set lt_cv_deplibs_check_method.
+
 2022-09-30  Olivier Hainque  <hainque@adacore.com>
 
 	* configure.ac (*vxworks*): If enable_shared is not

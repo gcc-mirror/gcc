@@ -531,6 +531,11 @@ operator_equal::op1_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
+    case BRS_TRUE:
+      // If it's true, the result is the same as OP2.
+      r = op2;
+      break;
+
     case BRS_FALSE:
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
@@ -541,11 +546,6 @@ operator_equal::op1_range (irange &r, tree type,
 	}
       else
 	r.set_varying (type);
-      break;
-
-    case BRS_TRUE:
-      // If it's true, the result is the same as OP2.
-      r = op2;
       break;
 
     default:
@@ -841,12 +841,12 @@ operator_lt::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_le (r, type, op1.upper_bound ());
-      break;
-
     case BRS_TRUE:
       build_gt (r, type, op1.lower_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_le (r, type, op1.upper_bound ());
       break;
 
     default:
@@ -952,12 +952,12 @@ operator_le::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_lt (r, type, op1.upper_bound ());
-      break;
-
     case BRS_TRUE:
       build_ge (r, type, op1.lower_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_lt (r, type, op1.upper_bound ());
       break;
 
     default:
@@ -1062,12 +1062,12 @@ operator_gt::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_ge (r, type, op1.lower_bound ());
-      break;
-
     case BRS_TRUE:
       build_lt (r, type, op1.upper_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_ge (r, type, op1.lower_bound ());
       break;
 
     default:
@@ -1173,12 +1173,12 @@ operator_ge::op2_range (irange &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-    case BRS_FALSE:
-      build_gt (r, type, op1.lower_bound ());
-      break;
-
     case BRS_TRUE:
       build_le (r, type, op1.upper_bound ());
+      break;
+
+    case BRS_FALSE:
+      build_gt (r, type, op1.lower_bound ());
       break;
 
     default:
@@ -2515,6 +2515,18 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
       if (r.varying_p ())
 	return true;
     }
+
+  // Update the nonzero mask.  Truncating casts are problematic unless
+  // the conversion fits in the resulting outer type.
+  wide_int nz = inner.get_nonzero_bits ();
+  if (truncating_cast_p (inner, outer)
+      && wi::rshift (nz, wi::uhwi (TYPE_PRECISION (outer.type ()),
+				   TYPE_PRECISION (inner.type ())),
+		     TYPE_SIGN (inner.type ())) != 0)
+    return true;
+  nz = wide_int::from (nz, TYPE_PRECISION (type), TYPE_SIGN (inner.type ()));
+  r.set_nonzero_bits (nz);
+
   return true;
 }
 
@@ -4817,6 +4829,9 @@ range_op_tests ()
   range_op_bitwise_and_tests ();
   range_op_cast_tests ();
   range_relational_tests ();
+
+  extern void range_op_float_tests ();
+  range_op_float_tests ();
 }
 
 } // namespace selftest

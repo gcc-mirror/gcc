@@ -6207,7 +6207,9 @@ store_expr (tree exp, rtx target, int call_param_p,
 
   if ((! rtx_equal_p (temp, target)
        || (temp != target && (side_effects_p (temp)
-			      || side_effects_p (target))))
+			      || side_effects_p (target)
+			      || (MEM_P (temp)
+				  && !mems_same_for_tbaa_p (temp, target)))))
       && TREE_CODE (exp) != ERROR_MARK
       /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
 	 but TARGET is not valid memory reference, TEMP will differ

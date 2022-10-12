@@ -6249,10 +6249,15 @@ thread_prologue_and_epilogue_insns (void)
 	}
     }
 
-  /* Threading the prologue and epilogue changes the artificial refs
-     in the entry and exit blocks.  */
-  epilogue_completed = 1;
-  df_update_entry_exit_and_calls ();
+  /* Threading the prologue and epilogue changes the artificial refs in the
+     entry and exit blocks, and may invalidate DF info for tail calls.  */
+  if (optimize)
+    df_update_entry_exit_and_calls ();
+  else
+    {
+      df_update_entry_block_defs ();
+      df_update_exit_block_uses ();
+    }
 }
 
 /* Reposition the prologue-end and epilogue-begin notes after

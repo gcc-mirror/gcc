@@ -33,7 +33,7 @@
 AARCH64_ARCH("armv8-a",       generic,       V8A,       8,  (SIMD))
 AARCH64_ARCH("armv8.1-a",     generic,       V8_1A,     8,  (V8A, LSE, CRC, RDMA))
 AARCH64_ARCH("armv8.2-a",     generic,       V8_2A,     8,  (V8_1A))
-AARCH64_ARCH("armv8.3-a",     generic,       V8_3A,     8,  (V8_2A, PAUTH))
+AARCH64_ARCH("armv8.3-a",     generic,       V8_3A,     8,  (V8_2A, PAUTH, RCPC))
 AARCH64_ARCH("armv8.4-a",     generic,       V8_4A,     8,  (V8_3A, F16FML, DOTPROD, FLAGM))
 AARCH64_ARCH("armv8.5-a",     generic,       V8_5A,     8,  (V8_4A, SB, SSBS, PREDRES))
 AARCH64_ARCH("armv8.6-a",     generic,       V8_6A,     8,  (V8_5A, I8MM, BF16))

@@ -13,9 +13,11 @@ int gvar = gfoo (capture ([]{}));
 
 inline int ivar = ifoo (capture ([]{}));
 
-// { dg-final { scan-assembler {_?_Z7captureINL4svarMUlvE_EE7WrapperIT_EOS2_:} } }
-// { dg-final { scan-assembler {_?_Z7captureIN4gvarMUlvE_EE7WrapperIT_EOS2_:} } }
-// { dg-final { scan-assembler {_?_Z7captureIN4ivarMUlvE_EE7WrapperIT_EOS2_:} } }
+// These manglings change between ABIs 17 and 18 (the final
+// substitution number).
+// { dg-final { scan-assembler {_?_Z7captureINL4svarMUlvE_EE7WrapperIT_EOS3_:} } }
+// { dg-final { scan-assembler {_?_Z7captureIN4gvarMUlvE_EE7WrapperIT_EOS3_:} } }
+// { dg-final { scan-assembler {_?_Z7captureIN4ivarMUlvE_EE7WrapperIT_EOS3_:} } }
 
 // Calls to the foos are emitted.
 // { dg-final { scan-assembler {call[ \t]*_?_Z4sfooI7WrapperINL4svarMUlvE_EEEiT_} { target { i?86-*-* x86_64-*-* } } } }

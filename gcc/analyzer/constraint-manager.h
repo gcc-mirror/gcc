@@ -487,6 +487,9 @@ public:
 
   bounded_ranges_manager *get_range_manager () const;
 
+  bool replay_call_summary (call_summary_replay &r,
+			    const constraint_manager &summary);
+
   auto_delete_vec<equiv_class> m_equiv_classes;
   auto_vec<constraint> m_constraints;
   auto_vec<bounded_ranges_constraint> m_bounded_ranges_constraints;

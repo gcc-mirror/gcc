@@ -418,6 +418,14 @@ private:
 
 } // namespace ana
 
+template <>
+template <>
+inline bool
+is_a_helper <const ana::concrete_binding *>::test (const ana::binding_key *key)
+{
+  return key->concrete_p ();
+}
+
 template <> struct default_hash_traits<ana::concrete_binding>
 : public member_function_hash_traits<ana::concrete_binding>
 {
@@ -785,6 +793,12 @@ public:
   void canonicalize (store_manager *mgr);
   void loop_replay_fixup (const store *other_store,
 			  region_model_manager *mgr);
+
+  void replay_call_summary (call_summary_replay &r,
+			    const store &summary);
+  void replay_call_summary_cluster (call_summary_replay &r,
+				    const store &summary,
+				    const region *base_reg);
 
 private:
   void remove_overlapping_bindings (store_manager *mgr, const region *reg,

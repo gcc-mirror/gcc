@@ -224,14 +224,54 @@ extern void vxworks_driver_init (unsigned int *, struct cl_decoded_option **);
 #undef VXWORKS_LINK_SPEC
 #define VXWORKS_LINK_SPEC VXWORKS_BASE_LINK_SPEC " " VXWORKS_EXTRA_LINK_SPEC
 
+/* Control how to include libgcc in the link closure, handling both "shared"
+   and "non-static" in addition to "static-libgcc" when shared lib support is
+   enabled.  */
+
 #undef VXWORKS_LIBGCC_SPEC
+
+/* libgcc_eh control; libgcc_eh.a is available either together with libgcc_s
+   (mrtp and mcmodel!=large when configured with --enable-shared) or when the
+   compiler is specially setup to support dual sjlj/table-based eh.  */
+
+/* VX_LGCC_EH_SO1: The "-lgcc_eh" part we need in situations where we know a
+   shared libgcc is available (ENABLE_SHARED_LIBGCC + mrtp multilib).  */
+
+#define VX_LGCC_EH_SO1 " -lgcc_eh -lgcc"
+/* Extra -lgcc to handle functions from libgcc_eh that refer to symbols
+   exposed by libgcc and not guaranteed to be dragged in before -lgcc_eh
+   appears.  */
+
+/* VX_LGCC_EH_SO0: The "-lgcc_eh" part we need in situations where we know a
+   shared libgcc is not available (!ENABLE_SHARED_LIBGCC or !mrtp multlib).  */
+
+#if !defined(CONFIG_DUAL_EXCEPTIONS)
+
+/* No shared lib && !DUAL_EH -> no libgcc_eh available at all.  */
+#define VX_LGCC_EH_SO0
+
+#else /* CONFIG_DUAL_EXCEPTIONS  */
+
+/* No shared lib but DUAL_EH -> libgcc_eh around and spec handled by the driver
+   depending on ENABLE_SHARED_LIBGCC.  If defined, the driver expects a regular
+   sequence.  Otherwise, the driver is expected to turn -lgcc into -lgcc_eh on
+   its own and just add an instance to address possible cross refs.  */
+
+#if defined(ENABLE_SHARED_LIBGCC)
+#define VX_LGCC_EH_SO0 " -lgcc_eh -lgcc"
+#else
+#define VX_LGCC_EH_SO0 " -lgcc"
+#endif
+
+#endif /* CONFIG_DUAL_EXCEPTIONS  */
+
 #if defined(ENABLE_SHARED_LIBGCC)
 #define VXWORKS_LIBGCC_SPEC                                             \
-"%{!mrtp:-lgcc -lgcc_eh}                                                \
- %{mrtp:%{!static-libgcc:%{shared|non-static:-lgcc_s;:-lgcc -lgcc_eh}}  \
-         %{static-libgcc:-lgcc -lgcc_eh}}"
+  "%{!mrtp|mcmodel=large:-lgcc" VX_LGCC_EH_SO0 ";"			\
+  " :%{!static-libgcc:%{shared|non-static:-lgcc_s;:-lgcc" VX_LGCC_EH_SO1 "}} \
+     %{static-libgcc:-lgcc" VX_LGCC_EH_SO1 "}}"
 #else
-#define VXWORKS_LIBGCC_SPEC "-lgcc"
+#define VXWORKS_LIBGCC_SPEC "-lgcc" VX_LGCC_EH_SO0
 #endif
 
 /* Setup the crtstuff begin/end we might need for dwarf EH registration
@@ -376,11 +416,11 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
   vxworks_emit_call_builtin___clear_cache
 extern void vxworks_emit_call_builtin___clear_cache (rtx begin, rtx end);
 
-/* Default dwarf control values, for non-gdb debuggers that come with
-   VxWorks.  */
+/* Default dwarf control values, accounting for non-gdb debuggers that come
+   with VxWorks.  */
 
-#undef VXWORKS_DWARF_VERSION_DEFAULT
-#define VXWORKS_DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 4 : 2)
+#undef DWARF_VERSION_DEFAULT
+#define DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 3 : 2)
 
 #undef DWARF_GNAT_ENCODINGS_DEFAULT
 #define DWARF_GNAT_ENCODINGS_DEFAULT \

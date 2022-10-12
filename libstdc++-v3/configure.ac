@@ -538,6 +538,9 @@ GLIBCXX_CHECK_SIZE_T_MANGLING
 # Check which release added std::exception_ptr for the target
 GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER
 
+# For libsupc++/eh_alloc.cc defaults.
+GLIBCXX_EMERGENCY_EH_ALLOC
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

@@ -306,8 +306,9 @@ class cfn_signbit : public range_operator_float
 {
 public:
   using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_kind) const override
   {
     bool signbit;
     if (lh.signbit_p (signbit))
@@ -319,6 +320,25 @@ public:
 	return true;
       }
    return false;
+  }
+  virtual bool op1_range (frange &r, tree type, const irange &lhs,
+			  const frange &, relation_kind) const override
+  {
+    if (lhs.zero_p ())
+      {
+	r.set (type, dconst0, frange_val_max (type));
+	r.update_nan (false);
+	return true;
+      }
+    if (!lhs.contains_p (build_zero_cst (lhs.type ())))
+      {
+	REAL_VALUE_TYPE dconstm0 = dconst0;
+	dconstm0.sign = 1;
+	r.set (type, frange_val_min (type), dconstm0);
+	r.update_nan (true);
+	return true;
+      }
+    return false;
   }
 } op_cfn_signbit;
 
@@ -422,15 +442,24 @@ public:
   virtual bool fold_range (irange &r, tree type, const irange &lh,
 			   const irange &rh, relation_kind rel) const
   {
+    if (lh.undefined_p ())
+      return false;
+    unsigned prec = TYPE_PRECISION (type);
+    wide_int nz = lh.get_nonzero_bits ();
+    wide_int pop = wi::shwi (wi::popcount (nz), prec);
     // Calculating the popcount of a singleton is trivial.
     if (lh.singleton_p ())
       {
-	wide_int nz = lh.get_nonzero_bits ();
-	wide_int pop = wi::shwi (wi::popcount (nz), TYPE_PRECISION (type));
 	r.set (type, pop, pop);
 	return true;
       }
-    return cfn_ffs::fold_range (r, type, lh, rh, rel);
+    if (cfn_ffs::fold_range (r, type, lh, rh, rel))
+      {
+	int_range<2> tmp (type, wi::zero (prec), pop);
+	r.intersect (tmp);
+	return true;
+      }
+    return false;
   }
 } op_cfn_popcount;
 

@@ -895,6 +895,27 @@ pru_init_libfuncs (void)
   set_optab_libfunc (udivmod_optab, DImode, "__pruabi_divremull");
 }
 
+/* Given a comparison CODE, return a similar comparison but without
+   the "equals" condition.  In other words, it strips GE/GEU/LE/LEU
+   and instead returns GT/GTU/LT/LTU.  */
+
+enum rtx_code
+pru_noteq_condition (enum rtx_code code)
+{
+  switch (code)
+    {
+    case GT: return GT;
+    case GTU: return GTU;
+    case GE: return GT;
+    case GEU: return GTU;
+    case LT: return LT;
+    case LTU: return LTU;
+    case LE: return LT;
+    case LEU: return LTU;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* Emit comparison instruction if necessary, returning the expression
    that holds the compare result in the proper mode.  Return the comparison

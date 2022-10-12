@@ -80,7 +80,7 @@ aarch64_frob_update_context (struct _Unwind_Context *context,
 {
   const int reg = DWARF_REGNUM_AARCH64_RA_STATE;
   int ra_signed;
-  if (fs->regs.reg[reg].how == REG_UNSAVED)
+  if (fs->regs.how[reg] == REG_UNSAVED)
     ra_signed = fs->regs.reg[reg].loc.offset & 0x1;
   else
     ra_signed = _Unwind_GetGR (context, reg) & 0x1;

@@ -1,3 +1,18 @@
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* inclhack.def (glibc_cxx_floatn_5): New.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/floatn.h: Regenerated.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* inclhack.def (glibc_cxx_floatn_2): Handle #elif the same as #if.
+	(glibc_cxx_floatn_4): New.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/floatn.h: Regenerated.
+
 2022-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
