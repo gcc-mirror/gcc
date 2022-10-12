@@ -10830,7 +10830,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10809 "configure"
+#line 10833 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10936,7 +10936,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10915 "configure"
+#line 10939 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

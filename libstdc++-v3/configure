@@ -12236,7 +12236,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12215 "configure"
+#line 12239 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12342,7 +12342,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12321 "configure"
+#line 12345 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16062,7 +16062,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16021 "configure"
+#line 16065 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16097,7 +16097,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16056 "configure"
+#line 16100 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16132,7 +16132,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16091 "configure"
+#line 16135 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16168,7 +16168,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16127 "configure"
+#line 16171 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16324,7 +16324,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16283 "configure"
+#line 16327 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16366,7 +16366,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16325 "configure"
+#line 16369 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
