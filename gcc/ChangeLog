@@ -1,3 +1,66 @@
+2022-10-11  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vqshluq_n_s<mode>): Use
+	MVE_pred/MVE_constraint instead of mve_imm_7/Ra.
+	(mve_vqshluq_m_n_s<mode>): Likewise.
+	(mve_vqrshrnbq_n_<supf><mode>): Use MVE_pred3/MVE_constraint3
+	instead of mve_imm_8/Rb.
+	(mve_vqrshrunbq_n_s<mode>): Likewise.
+	(mve_vqrshrntq_n_<supf><mode>): Likewise.
+	(mve_vqrshruntq_n_s<mode>): Likewise.
+	(mve_vrshrnbq_n_<supf><mode>): Likewise.
+	(mve_vrshrntq_n_<supf><mode>): Likewise.
+	(mve_vqrshrnbq_m_n_<supf><mode>): Likewise.
+	(mve_vqrshrntq_m_n_<supf><mode>): Likewise.
+	(mve_vrshrnbq_m_n_<supf><mode>): Likewise.
+	(mve_vrshrntq_m_n_<supf><mode>): Likewise.
+	(mve_vqrshrunbq_m_n_s<mode>): Likewise.
+	(mve_vsriq_n_<supf><mode): Use MVE_pred2/MVE_constraint2 instead
+	of mve_imm_selective_upto_8/Rg.
+	(mve_vsriq_m_n_<supf><mode>): Likewise.
+	(cherry-picked from c3fb6658c7670e446f2fd00984404d971e416b3c)
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* tree-ssa.cc (non_rewritable_mem_ref_base): Avoid BIT_FIELD_REFs
+	of bitfields.
+	(maybe_rewrite_mem_ref_base): Likewise.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* tree-ssa-pre.cc (translate_vuse_through_block): Only
+	keep the VUSE if its def dominates PHIBLOCK.
+	(prune_clobbered_mems): Rewrite logic so we check whether
+	a value dies in a block when the VUSE def doesn't dominate it.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106892
+	* tree-predcom.cc (ref_at_iteration): Do not associate the
+	constant part of the offset into the MEM_REF offset
+	operand, across a non-zero offset.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105937
+	* tree-ssa-uninit.cc (find_uninit_use): Do not queue PHIs
+	on backedges.
+	(execute_late_warn_uninitialized): Mark backedges.
+
 2022-10-03  Sergei Trofimovich  <siarheit@google.com>
 
 	Backported from master:
