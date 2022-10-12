@@ -73,6 +73,9 @@ public:
     MUT_PTR,
     CONST_SLICE_PTR,
 
+    // functions
+    FN_ONCE,
+
     UNKNOWN,
   };
 
@@ -218,6 +221,10 @@ public:
       {
 	return ItemType::CONST_SLICE_PTR;
       }
+    else if (item.compare ("fn_once") == 0)
+      {
+	return ItemType::FN_ONCE;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -296,6 +303,8 @@ public:
 	return "mut_ptr";
       case CONST_SLICE_PTR:
 	return "const_slice_ptr";
+      case FN_ONCE:
+	return "fn_once";
 
       case UNKNOWN:
 	return "<UNKNOWN>";
