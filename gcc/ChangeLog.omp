@@ -1,5 +1,10 @@
 2022-10-14  Julian Brown  <julian@codesourcery.com>
 
+	* omp-low.cc (oacc_privatization_candidate_p): Artificial vars are not
+	privatization candidates.
+
+2022-10-14  Julian Brown  <julian@codesourcery.com>
+
 	* config/gcn/gcn.cc (gcn_detect_incoming_pointer_arg): Any pointer
 	argument forces FLAT addressing mode, not just
 	pointer-to-non-aggregate.

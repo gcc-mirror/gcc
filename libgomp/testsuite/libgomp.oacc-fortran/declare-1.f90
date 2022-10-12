@@ -25,6 +25,9 @@ module vars
 end module vars
 
 subroutine subr5 (a, b, c, d)
+  ! { dg-note {variable 'a\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+  ! { dg-note {variable 'c\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+  ! { dg-note {variable 'd\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
   implicit none
   integer, parameter :: N = 8
   integer :: i
@@ -51,6 +54,8 @@ subroutine subr5 (a, b, c, d)
 end subroutine
 
 subroutine subr4 (a, b)
+  ! { dg-note {variable 'a\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+  ! { dg-note {variable 'b\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
   implicit none
   integer, parameter :: N = 8
   integer :: i
@@ -71,6 +76,8 @@ subroutine subr4 (a, b)
 end subroutine
 
 subroutine subr3 (a, c)
+  ! { dg-note {variable 'a\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+  ! { dg-note {variable 'c\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
   implicit none
   integer, parameter :: N = 8
   integer :: i
@@ -92,6 +99,8 @@ subroutine subr3 (a, c)
 end subroutine
 
 subroutine subr2 (a, b, c)
+  ! { dg-note {variable 'a\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+  ! { dg-note {variable 'c\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
   implicit none
   integer, parameter :: N = 8
   integer :: i
@@ -115,6 +124,7 @@ subroutine subr2 (a, b, c)
 end subroutine
 
 subroutine subr1 (a)
+  ! { dg-note {variable 'a\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
   implicit none
   integer, parameter :: N = 8
   integer :: i
@@ -215,7 +225,7 @@ program main
   ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } .-1 }
   ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
   ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
-  ! { dg-note {variable 'desc\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-4 }
+  ! { dg-note {variable 'desc\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: artificial} "" { target *-*-* } .-4 }
   use vars
   use openacc
   implicit none

@@ -1,3 +1,11 @@
+2022-10-14  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: Adjust scan output.
+	* testsuite/libgomp.oacc-fortran/host_data-5.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
 2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
