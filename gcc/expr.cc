@@ -2813,50 +2813,69 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
       else
 	adj_bytelen = bytelen;
 
+      /* Deal with destination CONCATs by either storing into one of the parts
+	 or doing a copy after storing into a register or stack temporary.  */
       if (GET_CODE (dst) == CONCAT)
 	{
 	  if (known_le (bytepos + adj_bytelen,
 			GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)))))
 	    dest = XEXP (dst, 0);
+
 	  else if (known_ge (bytepos, GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)))))
 	    {
 	      bytepos -= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)));
 	      dest = XEXP (dst, 1);
 	    }
+
 	  else
 	    {
 	      machine_mode dest_mode = GET_MODE (dest);
 	      machine_mode tmp_mode = GET_MODE (tmps[i]);
-	      scalar_int_mode imode;
+	      scalar_int_mode dest_imode;
 
 	      gcc_assert (known_eq (bytepos, 0) && XVECLEN (src, 0));
 
-	      if (finish == 1
+	      /* If the source is a single scalar integer register, and the
+		 destination has a complex mode for which a same-sized integer
+		 mode exists, then we can take the left-justified part of the
+		 source in the complex mode.  */
+	      if (finish == start + 1
 		  && REG_P (tmps[i])
-		  && COMPLEX_MODE_P (dest_mode)
 		  && SCALAR_INT_MODE_P (tmp_mode)
-		  && int_mode_for_mode (dest_mode).exists (&imode))
+		  && COMPLEX_MODE_P (dest_mode)
+		  && int_mode_for_mode (dest_mode).exists (&dest_imode))
 		{
-		  if (tmp_mode != imode)
+		  const scalar_int_mode tmp_imode
+		    = as_a <scalar_int_mode> (tmp_mode);
+
+		  if (GET_MODE_BITSIZE (dest_imode)
+		      < GET_MODE_BITSIZE (tmp_imode))
 		    {
-		      rtx tmp = gen_reg_rtx (imode);
-		      emit_move_insn (tmp, gen_lowpart (imode, tmps[i]));
-		      dst = gen_lowpart (dest_mode, tmp);
+		      dest = gen_reg_rtx (dest_imode);
+		      if (BYTES_BIG_ENDIAN)
+			tmps[i] = expand_shift (RSHIFT_EXPR, tmp_mode, tmps[i],
+						GET_MODE_BITSIZE (tmp_imode)
+						- GET_MODE_BITSIZE (dest_imode),
+						NULL_RTX, 1);
+		      emit_move_insn (dest, gen_lowpart (dest_imode, tmps[i]));
+		      dst = gen_lowpart (dest_mode, dest);
 		    }
 		  else
 		    dst = gen_lowpart (dest_mode, tmps[i]);
 		}
+
+	      /* Otherwise spill the source onto the stack using the more
+		 aligned of the two modes.  */
 	      else if (GET_MODE_ALIGNMENT (dest_mode)
-		  >= GET_MODE_ALIGNMENT (tmp_mode))
+		       >= GET_MODE_ALIGNMENT (tmp_mode))
 		{
 		  dest = assign_stack_temp (dest_mode,
 					    GET_MODE_SIZE (dest_mode));
-		  emit_move_insn (adjust_address (dest,
-						  tmp_mode,
-						  bytepos),
+		  emit_move_insn (adjust_address (dest, tmp_mode, bytepos),
 				  tmps[i]);
 		  dst = dest;
 		}
+
 	      else
 		{
 		  dest = assign_stack_temp (tmp_mode,
@@ -2864,6 +2883,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 		  emit_move_insn (dest, tmps[i]);
 		  dst = adjust_address (dest, dest_mode, bytepos);
 		}
+
 	      break;
 	    }
 	}
