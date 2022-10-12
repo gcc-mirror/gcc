@@ -15698,7 +15698,10 @@ else
 	    enable_hosted_libstdcxx=no
 	    ;;
 	*)
-	    enable_hosted_libstdcxx=yes
+	    case "${with_newlib}-${with_headers}" in
+	    no-no) enable_hosted_libstdcxx=no ;;
+	    *) enable_hosted_libstdcxx=yes ;;
+	    esac
 	    ;;
      esac
 fi
@@ -16063,7 +16066,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16066 "configure"
+#line 16069 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16098,7 +16101,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16101 "configure"
+#line 16104 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16133,7 +16136,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16136 "configure"
+#line 16139 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16169,7 +16172,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16172 "configure"
+#line 16175 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16325,7 +16328,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16328 "configure"
+#line 16331 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16367,7 +16370,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16370 "configure"
+#line 16373 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
