@@ -1053,6 +1053,9 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
   target_has_targetcm="yes"
 
+  rust_target_objs="${rust_target_objs} vxworks-rust.o"
+  target_has_targetrustm=yes
+
   # This private header exposes a consistent interface for checks on
   # the VxWorks version our runtime header files need to perform, based on
   # what the system headers adverstise:
