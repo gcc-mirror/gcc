@@ -884,7 +884,8 @@ constant_svalue::maybe_fold_bits_within (tree type,
   if (bits.m_size_in_bits == 1
       && TREE_CODE (m_cst_expr) == INTEGER_CST
       && type
-      && INTEGRAL_TYPE_P (type))
+      && INTEGRAL_TYPE_P (type)
+      && tree_fits_uhwi_p (m_cst_expr))
     {
       unsigned HOST_WIDE_INT bit = bits.m_start_bit_offset.to_uhwi ();
       unsigned HOST_WIDE_INT mask = (1 << bit);
