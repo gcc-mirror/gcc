@@ -5642,9 +5642,21 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      we may end up with more than one vector result.  Here we reduce them
      to one vector.
 
+     The same is true for a SLP reduction, e.g.,
+     # a1 = phi <a2, a0>
+     # b1 = phi <b2, b0>
+     a2 = operation (a1)
+     b2 = operation (a2),
+
+     where we can end up with more than one vector as well.  We can
+     easily accumulate vectors when the number of vector elements is
+     a multiple of the SLP group size.
+
      The same is true if we couldn't use a single defuse cycle.  */
   if (REDUC_GROUP_FIRST_ELEMENT (stmt_info)
       || direct_slp_reduc
+      || (slp_reduc
+	  && constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype), group_size))
       || ncopies > 1)
     {
       gimple_seq stmts = NULL;
@@ -6233,7 +6245,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   /* Record this operation if it could be reused by the epilogue loop.  */
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == TREE_CODE_REDUCTION
-      && vec_num == 1)
+      && reduc_inputs.length () == 1)
     loop_vinfo->reusable_accumulators.put (scalar_results[0],
 					   { orig_reduc_input, reduc_info });
 
