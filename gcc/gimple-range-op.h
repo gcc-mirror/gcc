@@ -36,9 +36,9 @@ public:
   tree operand2 () const { gcc_checking_assert (m_valid); return m_op2; }
   bool calc_op1 (vrange &r, const vrange &lhs_range);
   bool calc_op1 (vrange &r, const vrange &lhs_range, const vrange &op2_range,
-		 relation_kind k = VREL_VARYING);
+		 relation_trio = TRIO_VARYING);
   bool calc_op2 (vrange &r, const vrange &lhs_range, const vrange &op1_range,
-		 relation_kind k = VREL_VARYING);
+		 relation_trio = TRIO_VARYING);
 private:
   void maybe_builtin_call ();
   gimple *m_stmt;

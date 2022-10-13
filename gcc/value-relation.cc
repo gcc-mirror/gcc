@@ -32,9 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "dominance.h"
 
-#define VREL_LAST               VREL_PE64
-
-static const char *kind_string[VREL_LAST + 1] =
+static const char *kind_string[VREL_LAST] =
 { "varying", "undefined", "<", "<=", ">", ">=", "==", "!=", "pe8", "pe16",
   "pe32", "pe64" };
 
@@ -47,7 +45,7 @@ print_relation (FILE *f, relation_kind rel)
 }
 
 // This table is used to negate the operands.  op1 REL op2 -> !(op1 REL op2).
-relation_kind rr_negate_table[VREL_LAST + 1] = {
+relation_kind rr_negate_table[VREL_LAST] = {
   VREL_VARYING, VREL_UNDEFINED, VREL_GE, VREL_GT, VREL_LE, VREL_LT, VREL_NE,
   VREL_EQ };
 
@@ -60,7 +58,7 @@ relation_negate (relation_kind r)
 }
 
 // This table is used to swap the operands.  op1 REL op2 -> op2 REL op1.
-relation_kind rr_swap_table[VREL_LAST + 1] = {
+relation_kind rr_swap_table[VREL_LAST] = {
   VREL_VARYING, VREL_UNDEFINED, VREL_GT, VREL_GE, VREL_LT, VREL_LE, VREL_EQ,
   VREL_NE };
 
@@ -74,7 +72,7 @@ relation_swap (relation_kind r)
 
 // This table is used to perform an intersection between 2 relations.
 
-relation_kind rr_intersect_table[VREL_LAST + 1][VREL_LAST + 1] = {
+relation_kind rr_intersect_table[VREL_LAST][VREL_LAST] = {
 // VREL_VARYING
   { VREL_VARYING, VREL_UNDEFINED, VREL_LT, VREL_LE, VREL_GT, VREL_GE, VREL_EQ,
     VREL_NE },
@@ -112,7 +110,7 @@ relation_intersect (relation_kind r1, relation_kind r2)
 
 // This table is used to perform a union between 2 relations.
 
-relation_kind rr_union_table[VREL_LAST + 1][VREL_LAST + 1] = {
+relation_kind rr_union_table[VREL_LAST][VREL_LAST] = {
 // VREL_VARYING
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
     VREL_VARYING, VREL_VARYING, VREL_VARYING },
@@ -150,7 +148,7 @@ relation_union (relation_kind r1, relation_kind r2)
 // This table is used to determine transitivity between 2 relations.
 // (A relation0 B) and (B relation1 C) implies  (A result C)
 
-relation_kind rr_transitive_table[VREL_LAST + 1][VREL_LAST + 1] = {
+relation_kind rr_transitive_table[VREL_LAST][VREL_LAST] = {
 // VREL_VARYING
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
     VREL_VARYING, VREL_VARYING, VREL_VARYING },
@@ -187,7 +185,7 @@ relation_transitive (relation_kind r1, relation_kind r2)
 
 // This vector maps a relation to the equivalent tree code.
 
-tree_code relation_to_code [VREL_LAST + 1] = {
+tree_code relation_to_code [VREL_LAST] = {
   ERROR_MARK, ERROR_MARK, LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EQ_EXPR,
   NE_EXPR };
 
@@ -226,7 +224,8 @@ relation_oracle::validate_relation (relation_kind rel, vrange &op1, vrange &op2)
 
   // If the relation cannot be folded for any reason, leave as is.
   Value_Range result (boolean_type_node);
-  if (!handler.fold_range (result, boolean_type_node, op1, op2, rel))
+  if (!handler.fold_range (result, boolean_type_node, op1, op2,
+			   relation_trio::op1_op2 (rel)))
     return rel;
 
   // The expression op1 REL op2 using REL should fold to [1,1].
