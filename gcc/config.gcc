@@ -872,6 +872,9 @@ case ${target} in
   ;;
 *-*-fuchsia*)
   native_system_header_dir=/include
+  tmake_file="t-fuchsia"
+  rust_target_objs="${rust_target_objs} fuchsia-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
   extra_options="$extra_options gnu-user.opt"
