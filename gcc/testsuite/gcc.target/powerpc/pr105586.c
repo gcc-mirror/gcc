@@ -1,4 +1,5 @@
 /* { dg-options "-mdejagnu-tune=power4 -O2 -fcompare-debug -fno-if-conversion -fno-guess-branch-probability" } */
+/* { dg-require-effective-target int128 } */
 
 extern int bar(int i);
 
