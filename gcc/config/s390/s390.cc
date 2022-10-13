@@ -8585,7 +8585,7 @@ print_operand_address (FILE *file, rtx addr)
     'E': print opcode suffix for branch on index instruction.
     'G': print the size of the operand in bytes.
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
-    'K': print @PLT suffix for call targets and load address values.
+    'K': print @PLT suffix for branch targets; do not use with larl.
     'M': print the second word of a TImode operand.
     'N': print the second word of a DImode operand.
     'O': print only the displacement of a memory reference or address.
@@ -8854,19 +8854,9 @@ print_operand (FILE *file, rtx x, int code)
 	 call even static functions via PLT.  ld will optimize @PLT away for
 	 normal code, and keep it for patches.
 
-	 Do not indiscriminately add @PLT in 31-bit mode due to the %r12
-	 restriction, use UNSPEC_PLT31 instead.
-
 	 @PLT only makes sense for functions, data is taken care of by
-	 -mno-pic-data-is-text-relative.
-
-	 Adding @PLT interferes with handling of weak symbols in non-PIC code,
-	 since their addresses are loaded with larl, which then always produces
-	 a non-NULL result, so skip them here as well.  */
-      if (TARGET_64BIT
-	  && GET_CODE (x) == SYMBOL_REF
-	  && SYMBOL_REF_FUNCTION_P (x)
-	  && !(SYMBOL_REF_WEAK (x) && !flag_pic))
+	 -mno-pic-data-is-text-relative.  */
+      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (x))
 	fprintf (file, "@PLT");
       return;
     }
