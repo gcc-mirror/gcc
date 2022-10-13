@@ -2948,21 +2948,6 @@ package body Sem_Warn is
 
    begin
       return Traverse (N) = Abandon;
-
-   --  If any exception occurs, then something has gone wrong, and this is
-   --  only a minor aesthetic issue anyway, so just say we did not find what
-   --  we are looking for, rather than blow up.
-
-   exception
-      when others =>
-         --  With debug flag K we will get an exception unless an error has
-         --  already occurred (useful for debugging).
-
-         if Debug_Flag_K then
-            Check_Error_Detected;
-         end if;
-
-         return False;
    end Operand_Has_Warnings_Suppressed;
 
    -----------------------------------------
@@ -3379,11 +3364,10 @@ package body Sem_Warn is
       --  determined, and Test_Result is set True/False accordingly. Otherwise
       --  False is returned, and Test_Result is unchanged.
 
-      procedure Track (N : Node_Id; Loc : Node_Id);
+      procedure Track (N : Node_Id);
       --  Adds continuation warning(s) pointing to reason (assignment or test)
       --  for the operand of the conditional having a known value (or at least
-      --  enough is known about the value to issue the warning). N is the node
-      --  which is judged to have a known value. Loc is the warning location.
+      --  enough is known about the value to issue the warning).
 
       ---------------------
       -- Is_Known_Branch --
@@ -3417,36 +3401,45 @@ package body Sem_Warn is
       -- Track --
       -----------
 
-      procedure Track (N : Node_Id; Loc : Node_Id) is
-         Nod : constant Node_Id := Original_Node (N);
+      procedure Track (N : Node_Id) is
+
+         procedure Rec (Sub_N : Node_Id);
+         --  Recursive helper to do the work of Track, so we can refer to N's
+         --  Sloc in error messages. Sub_N is initially N, and a proper subnode
+         --  when recursively walking comparison operations.
+
+         procedure Rec (Sub_N : Node_Id) is
+            Orig : constant Node_Id := Original_Node (Sub_N);
+         begin
+            if Nkind (Orig) in N_Op_Compare then
+               Rec (Left_Opnd (Orig));
+               Rec (Right_Opnd (Orig));
+
+            elsif Is_Entity_Name (Orig) and then Is_Object (Entity (Orig)) then
+               declare
+                  CV : constant Node_Id := Current_Value (Entity (Orig));
+               begin
+                  if Present (CV) then
+                     Error_Msg_Sloc := Sloc (CV);
+
+                     if Nkind (CV) not in N_Subexpr then
+                        Error_Msg_N ("\\??(see test #)", N);
+
+                     elsif Nkind (Parent (CV)) =
+                             N_Case_Statement_Alternative
+                     then
+                        Error_Msg_N ("\\??(see case alternative #)", N);
+
+                     else
+                        Error_Msg_N ("\\??(see assignment #)", N);
+                     end if;
+                  end if;
+               end;
+            end if;
+         end Rec;
 
       begin
-         if Nkind (Nod) in N_Op_Compare then
-            Track (Left_Opnd (Nod), Loc);
-            Track (Right_Opnd (Nod), Loc);
-
-         elsif Is_Entity_Name (Nod) and then Is_Object (Entity (Nod)) then
-            declare
-               CV : constant Node_Id := Current_Value (Entity (Nod));
-
-            begin
-               if Present (CV) then
-                  Error_Msg_Sloc := Sloc (CV);
-
-                  if Nkind (CV) not in N_Subexpr then
-                     Error_Msg_N ("\\??(see test #)", Loc);
-
-                  elsif Nkind (Parent (CV)) =
-                          N_Case_Statement_Alternative
-                  then
-                     Error_Msg_N ("\\??(see case alternative #)", Loc);
-
-                  else
-                     Error_Msg_N ("\\??(see assignment #)", Loc);
-                  end if;
-               end if;
-            end;
-         end if;
+         Rec (N);
       end Track;
 
       --  Local variables
@@ -3464,11 +3457,8 @@ package body Sem_Warn is
         and then Is_Known_Branch
       then
          declare
-            Atrue : Boolean;
-
+            Atrue : Boolean := Test_Result;
          begin
-            Atrue := Test_Result;
-
             if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not then
                Atrue := not Atrue;
             end if;
@@ -3550,7 +3540,6 @@ package body Sem_Warn is
             declare
                True_Branch : Boolean := Test_Result;
                Cond        : Node_Id := C;
-
             begin
                if Present (Parent (C))
                  and then Nkind (Parent (C)) = N_Op_Not
@@ -3559,37 +3548,27 @@ package body Sem_Warn is
                   Cond := Parent (C);
                end if;
 
-               --  Condition always True
+               --  Suppress warning if this is True/False of a derived boolean
+               --  type with Nonzero_Is_True, which gets rewritten as Boolean
+               --  True/False.
 
-               if True_Branch then
-                  if Is_Entity_Name (Original_Node (C))
-                    and then Nkind (Cond) /= N_Op_Not
-                  then
-                     Error_Msg_NE
-                       ("object & is always True at this point?c?",
-                        Cond, Original_Node (C));
-                     Track (Original_Node (C), Cond);
+               if Is_Entity_Name (Original_Node (C))
+                 and then Ekind (Entity (Original_Node (C)))
+                                 = E_Enumeration_Literal
+                 and then Nonzero_Is_True (Etype (Original_Node (C)))
+               then
+                  null;
 
-                  else
-                     Error_Msg_N ("condition is always True?c?", Cond);
-                     Track (Cond, Cond);
-                  end if;
-
-               --  Condition always False
+               --  Give warning for nontrivial always True/False case
 
                else
-                  if Is_Entity_Name (Original_Node (C))
-                    and then Nkind (Cond) /= N_Op_Not
-                  then
-                     Error_Msg_NE
-                       ("object & is always False at this point?c?",
-                        Cond, Original_Node (C));
-                     Track (Original_Node (C), Cond);
-
+                  if True_Branch then
+                     Error_Msg_N ("condition is always True?c?", Cond);
                   else
                      Error_Msg_N ("condition is always False?c?", Cond);
-                     Track (Cond, Cond);
                   end if;
+
+                  Track (Cond);
                end if;
             end;
          end if;
