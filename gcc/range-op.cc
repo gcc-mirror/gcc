@@ -4476,7 +4476,9 @@ range_op_handler::op1_op2_relation (const vrange &lhs) const
   gcc_checking_assert (m_valid);
   if (m_int)
     return m_int->op1_op2_relation (as_a <irange> (lhs));
-  return m_float->op1_op2_relation (as_a <irange> (lhs));
+  if (is_a <irange> (lhs))
+    return m_float->op1_op2_relation (as_a <irange> (lhs));
+  return m_float->op1_op2_relation (as_a <frange> (lhs));
 }
 
 // Cast the range in R to TYPE.
