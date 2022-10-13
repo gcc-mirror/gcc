@@ -259,19 +259,44 @@ Dump::visit (MetaItemPathLit &meta_item)
 
 void
 Dump::visit (BorrowExpr &expr)
-{}
+{
+  stream << '&';
+  if (expr.get_is_double_borrow ())
+    stream << '&';
+  if (expr.get_is_mut ())
+    stream << "mut ";
+
+  expr.get_borrowed_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (DereferenceExpr &expr)
-{}
+{
+  stream << '*';
+  expr.get_dereferenced_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ErrorPropagationExpr &expr)
-{}
+{
+  expr.get_propagating_expr ()->accept_vis (*this);
+  stream << '?';
+}
 
 void
 Dump::visit (NegationExpr &expr)
-{}
+{
+  switch (expr.get_expr_type ())
+    {
+    case NegationOperator::NEGATE:
+      stream << '-';
+      break;
+    case NegationOperator::NOT:
+      stream << '!';
+      break;
+    }
+  expr.get_negated_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ArithmeticOrLogicalExpr &expr)
@@ -381,7 +406,11 @@ Dump::visit (LazyBooleanExpr &expr)
 
 void
 Dump::visit (TypeCastExpr &expr)
-{}
+{
+  expr.get_casted_expr ()->accept_vis (*this);
+  stream << " as ";
+  expr.get_type_to_cast_to ()->accept_vis (*this);
+}
 
 void
 Dump::visit (AssignmentExpr &expr)
@@ -445,7 +474,11 @@ Dump::visit (CompoundAssignmentExpr &expr)
 
 void
 Dump::visit (GroupedExpr &expr)
-{}
+{
+  stream << '(';
+  expr.get_expr_in_parens ()->accept_vis (*this);
+  stream << ')';
+}
 
 void
 Dump::visit (ArrayElemsValues &elems)
