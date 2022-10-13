@@ -814,6 +814,8 @@ case ${target} in
   d_target_objs="${d_target_objs} dragonfly-d.o"
   tmake_file="${tmake_file} t-dragonfly"
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} dragonfly-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
