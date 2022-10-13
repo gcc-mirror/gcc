@@ -28,6 +28,10 @@ vxworks-c.o: $(srcdir)/config/vxworks-c.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+vxworks-rust.o: $(srcdir)/config/vxworks-rust.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 # We leverage $sysroot to find target system headers only, distributed
 # in a VxWorks (a)typical fashion with a different set of headers for
 # rtp vs kernel mode.  We setup SYSROOT_HEADERS_SUFFIX_SPEC to handle

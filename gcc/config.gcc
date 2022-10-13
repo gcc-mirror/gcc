@@ -1093,6 +1093,9 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
   target_has_targetcm="yes"
 
+  rust_target_objs="${rust_target_objs} vxworks-rust.o"
+  target_has_targetrustm=yes
+
   extra_gcc_objs="vxworks-driver.o"
 
   # This private header exposes a consistent interface for checks on
