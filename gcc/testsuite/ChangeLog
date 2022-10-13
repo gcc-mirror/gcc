@@ -1,3 +1,19 @@
+2022-10-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106817
+	* gfortran.dg/intent_optimize_4.f90: New test.
+
+2022-10-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* gfortran.dg/intent_out_15.f90: New test.
+
 2022-10-11  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
