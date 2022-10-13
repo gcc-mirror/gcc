@@ -28,6 +28,7 @@ extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 extern CONST_MODE_NUNITS poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];
 extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
+extern const unsigned char mode_next[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
 extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
 
@@ -760,7 +761,23 @@ GET_MODE_NUNITS (const T &mode)
 }
 #endif
 
-/* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
+/* Get the next natural mode (not narrower, eg, QI -> HI -> SI -> DI -> TI
+   or HF -> BF -> SF -> DF -> XF -> TF).  */
+
+template<typename T>
+ALWAYS_INLINE opt_mode<T>
+GET_MODE_NEXT_MODE (const T &m)
+{
+  return typename opt_mode<T>::from_int (mode_next[m]);
+}
+
+/* Get the next wider mode (eg, QI -> HI -> SI -> DI -> TI
+   or { HF, BF } -> SF -> DF -> XF -> TF).
+   This is similar to GET_MODE_NEXT_MODE, but while GET_MODE_NEXT_MODE
+   can include mode that have the same precision (e.g.
+   GET_MODE_NEXT_MODE (HFmode) can be BFmode even when both have the same
+   precision), this one will skip those.  And always VOIDmode for
+   modes whose class is !CLASS_HAS_WIDER_MODES_P.  */
 
 template<typename T>
 ALWAYS_INLINE opt_mode<T>
@@ -1098,7 +1115,33 @@ namespace mode_iterator
     return *iter != E_VOIDmode;
   }
 
-  /* Set mode iterator *ITER to the next widest mode in the same class,
+  /* Set mode iterator *ITER to the next mode in the same class,
+     if any.  */
+
+  template<typename T>
+  inline void
+  get_next (opt_mode<T> *iter)
+  {
+    *iter = GET_MODE_NEXT_MODE (iter->require ());
+  }
+
+  inline void
+  get_next (machine_mode *iter)
+  {
+    *iter = GET_MODE_NEXT_MODE (*iter).else_void ();
+  }
+
+  /* Set mode iterator *ITER to the next mode in the same class.
+     Such a mode is known to exist.  */
+
+  template<typename T>
+  inline void
+  get_known_next (T *iter)
+  {
+    *iter = GET_MODE_NEXT_MODE (*iter).require ();
+  }
+
+  /* Set mode iterator *ITER to the next wider mode in the same class,
      if any.  */
 
   template<typename T>
@@ -1114,7 +1157,7 @@ namespace mode_iterator
     *iter = GET_MODE_WIDER_MODE (*iter).else_void ();
   }
 
-  /* Set mode iterator *ITER to the next widest mode in the same class.
+  /* Set mode iterator *ITER to the next wider mode in the same class.
      Such a mode is known to exist.  */
 
   template<typename T>
@@ -1146,18 +1189,25 @@ namespace mode_iterator
 #define FOR_EACH_MODE_IN_CLASS(ITERATOR, CLASS)  \
   for (mode_iterator::start (&(ITERATOR), CLASS); \
        mode_iterator::iterate_p (&(ITERATOR)); \
-       mode_iterator::get_wider (&(ITERATOR)))
+       mode_iterator::get_next (&(ITERATOR)))
 
 /* Make ITERATOR iterate over all the modes in the range [START, END),
    in order of increasing width.  */
 #define FOR_EACH_MODE(ITERATOR, START, END) \
   for ((ITERATOR) = (START); \
        (ITERATOR) != (END); \
-       mode_iterator::get_known_wider (&(ITERATOR)))
+       mode_iterator::get_known_next (&(ITERATOR)))
 
-/* Make ITERATOR iterate over START and all wider modes in the same
+/* Make ITERATOR iterate over START and all non-narrower modes in the same
    class, in order of increasing width.  */
 #define FOR_EACH_MODE_FROM(ITERATOR, START) \
+  for ((ITERATOR) = (START); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_next (&(ITERATOR)))
+
+/* Make ITERATOR iterate over START and all wider modes in the same
+   class, in order of strictly increasing width.  */
+#define FOR_EACH_WIDER_MODE_FROM(ITERATOR, START) \
   for ((ITERATOR) = (START); \
        mode_iterator::iterate_p (&(ITERATOR)); \
        mode_iterator::get_wider (&(ITERATOR)))
@@ -1167,6 +1217,14 @@ namespace mode_iterator
    in END's class.  */
 #define FOR_EACH_MODE_UNTIL(ITERATOR, END) \
   FOR_EACH_MODE (ITERATOR, get_narrowest_mode (END), END)
+
+/* Make ITERATOR iterate over modes in the same class as MODE, in order
+   of non-decreasing width.  Start at next such mode after START,
+   or don't iterate at all if there is no such mode.  */
+#define FOR_EACH_NEXT_MODE(ITERATOR, START) \
+  for ((ITERATOR) = (START), mode_iterator::get_next (&(ITERATOR)); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_next (&(ITERATOR)))
 
 /* Make ITERATOR iterate over modes in the same class as MODE, in order
    of increasing width.  Start at the first mode wider than START,
