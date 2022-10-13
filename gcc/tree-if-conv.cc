@@ -3298,10 +3298,34 @@ get_bitfield_rep (gassign *stmt, bool write, tree *bitpos,
     *struct_expr = TREE_OPERAND (comp_ref, 0);
 
   if (bitpos)
-    *bitpos
-      = fold_build2 (MINUS_EXPR, bitsizetype,
-		     DECL_FIELD_BIT_OFFSET (field_decl),
-		     DECL_FIELD_BIT_OFFSET (rep_decl));
+    {
+      /* To calculate the bitposition of the BITFIELD_REF we have to determine
+	 where our bitfield starts in relation to the container REP_DECL. The
+	 DECL_FIELD_OFFSET of the original bitfield's member FIELD_DECL tells
+	 us how many bytes from the start of the structure there are until the
+	 start of the group of bitfield members the FIELD_DECL belongs to,
+	 whereas DECL_FIELD_BIT_OFFSET will tell us how many bits from that
+	 position our actual bitfield member starts.  For the container
+	 REP_DECL adding DECL_FIELD_OFFSET and DECL_FIELD_BIT_OFFSET will tell
+	 us the distance between the start of the structure and the start of
+	 the container, though the first is in bytes and the later other in
+	 bits.  With this in mind we calculate the bit position of our new
+	 BITFIELD_REF by subtracting the number of bits between the start of
+	 the structure and the container from the number of bits from the start
+	 of the structure and the actual bitfield member. */
+      tree bf_pos = fold_build2 (MULT_EXPR, bitsizetype,
+				 DECL_FIELD_OFFSET (field_decl),
+				 build_int_cst (bitsizetype, BITS_PER_UNIT));
+      bf_pos = fold_build2 (PLUS_EXPR, bitsizetype, bf_pos,
+			    DECL_FIELD_BIT_OFFSET (field_decl));
+      tree rep_pos = fold_build2 (MULT_EXPR, bitsizetype,
+				  DECL_FIELD_OFFSET (rep_decl),
+				  build_int_cst (bitsizetype, BITS_PER_UNIT));
+      rep_pos = fold_build2 (PLUS_EXPR, bitsizetype, rep_pos,
+			     DECL_FIELD_BIT_OFFSET (rep_decl));
+
+      *bitpos = fold_build2 (MINUS_EXPR, bitsizetype, bf_pos, rep_pos);
+    }
 
   return rep_decl;
 
