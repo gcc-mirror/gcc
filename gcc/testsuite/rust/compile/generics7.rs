@@ -3,13 +3,13 @@ struct Foo<A> {
 }
 
 impl Foo<isize> {
-    fn bar(self) -> isize { // { dg-error "duplicate definitions with name bar" }
+    fn bar(self) -> isize {
         self.a
     }
 }
 
 impl Foo<char> {
-    fn bar(self) -> char { // { dg-error "duplicate definitions with name bar" }
+    fn bar(self) -> char {
         self.a
     }
 }
@@ -23,4 +23,6 @@ impl<T> Foo<T> {
 fn main() {
     let a = Foo { a: 123 };
     a.bar();
+    // { dg-error "multiple candidates found for method .bar." "" { target *-*-* } .-1 }
+    // { dg-error "failed to type resolve expression" "" { target *-*-* } .-2 }
 }
