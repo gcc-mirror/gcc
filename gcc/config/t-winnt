@@ -20,3 +20,7 @@ winnt-c.o: config/winnt-c.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(C_TARGET_H) $(C_TARGET_DEF_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  $< $(OUTPUT_OPTION)
+
+winnt-rust.o: $(srcdir)/config/winnt-rust.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
