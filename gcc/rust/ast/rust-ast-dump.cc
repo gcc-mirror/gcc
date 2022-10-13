@@ -570,6 +570,7 @@ Dump::visit (IfExpr &expr)
 {
   stream << "if ";
   expr.vis_if_condition (*this);
+  stream << " ";
   expr.vis_if_block (*this);
 }
 
@@ -578,6 +579,7 @@ Dump::visit (IfExprConseqElse &expr)
 {
   stream << "if ";
   expr.vis_if_condition (*this);
+  stream << " ";
   expr.vis_if_block (*this);
   stream << indentation << "else ";
   expr.vis_else_block (*this);
@@ -588,8 +590,10 @@ Dump::visit (IfExprConseqIf &expr)
 {
   stream << "if ";
   expr.vis_if_condition (*this);
+  stream << " ";
   expr.vis_if_block (*this);
-  stream << indentation << "else if ";
+  stream << indentation << "else ";
+  // The "if" part of the "else if" is printed by the next visitor
   expr.vis_conseq_if_expr (*this);
 }
 
