@@ -1010,13 +1010,6 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	}
       break;
 
-    case CALL_EXPR:
-      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
-	if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
-	    && source_location_current_p (fndecl))
-	  *stmt_p = stmt = cxx_constant_value (stmt);
-      break;
-
     default:
       break;
     }

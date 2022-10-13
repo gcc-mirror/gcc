@@ -4588,11 +4588,14 @@ gfc_trans_omp_assume (gfc_code *code)
 	  t = se.expr;
 	else
 	  {
-	    tree var = gfc_create_var (TREE_TYPE (se.expr), NULL);
+	    tree var = create_tmp_var_raw (boolean_type_node);
+	    DECL_CONTEXT (var) = current_function_decl;
 	    stmtblock_t block2;
 	    gfc_init_block (&block2);
 	    gfc_add_block_to_block (&block2, &se.pre);
-	    gfc_add_modify_loc (loc, &block2, var, se.expr);
+	    gfc_add_modify_loc (loc, &block2, var,
+	    			fold_convert_loc (loc, boolean_type_node,
+						  se.expr));
 	    gfc_add_block_to_block (&block2, &se.post);
 	    t = gfc_finish_block (&block2);
 	    t = build4 (TARGET_EXPR, boolean_type_node, var, t, NULL, NULL);

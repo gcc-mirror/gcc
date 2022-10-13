@@ -4092,6 +4092,9 @@ Type_conversion_expression::do_numeric_constant_value(
 bool
 Type_conversion_expression::do_string_constant_value(std::string* val) const
 {
+  if (this->type_->is_string_type() && this->expr_->type()->is_string_type())
+    return this->expr_->string_constant_value(val);
+
   if (this->type_->is_string_type()
       && this->expr_->type()->integer_type() != NULL)
     {

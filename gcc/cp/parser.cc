@@ -11519,30 +11519,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      opening parenthesis if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      bool is_consteval = false;
-      /* For C++20, before parsing the parameter list check if there is
-	 a consteval specifier in the corresponding decl-specifier-seq.  */
-      if (cxx_dialect >= cxx20)
-	{
-	  for (size_t n = cp_parser_skip_balanced_tokens (parser, 1);
-	       cp_lexer_nth_token_is (parser->lexer, n, CPP_KEYWORD); n++)
-	    {
-	      if (cp_lexer_peek_nth_token (parser->lexer, n)->keyword
-		  == RID_CONSTEVAL)
-		{
-		  is_consteval = true;
-		  break;
-		}
-	    }
-	}
-
       matching_parens parens;
       parens.consume_open (parser);
 
       begin_scope (sk_function_parms, /*entity=*/NULL_TREE);
-
-      if (is_consteval)
-	current_binding_level->immediate_fn_ctx_p = true;
 
       /* Parse parameters.  */
       param_list
@@ -23185,10 +23165,6 @@ cp_parser_direct_declarator (cp_parser* parser,
 		}
 
 	      begin_scope (sk_function_parms, NULL_TREE);
-
-	      /* Signal we are in the immediate function context.  */
-	      if (flags & CP_PARSER_FLAGS_CONSTEVAL)
-		current_binding_level->immediate_fn_ctx_p = true;
 
 	      /* Parse the parameter-declaration-clause.  */
 	      params

@@ -5092,6 +5092,51 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
   GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" = yes])
 ])
 
+dnl
+dnl Allow the emergency EH pool to be configured.
+dnl
+dnl --enable-libstdcxx-static-eh-pool will cause a fixed-size static buffer
+dnl to be used for allocating exceptions after malloc fails. The default is
+dnl to allocate a buffer using malloc
+dnl
+dnl --with-libstdcxx-eh-pool-obj-count=N will set the default size for the
+dnl buffer. For a static buffer that size is fixed permanently. For a dynamic
+dnl buffer it's the default, but it can be overridden from the environment.
+dnl
+dnl To set the default to approximately the same values as GCC 12,
+dnl use --with-libstdcxx-eh-pool-obj-count=94 for 32-bit targets,
+dnl and --with-libstdcxx-eh-pool-obj-count=252 for 64-bit targets.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_EH_POOL_STATIC if a fixed-size static buffer should be used
+dnl  instead of allocating a buffer on startup.
+dnl  _GLIBCXX_EH_POOL_NOBJS to override the default EMERGENCY_OBJ_COUNT value.
+dnl
+AC_DEFUN([GLIBCXX_EMERGENCY_EH_ALLOC], [
+  eh_pool_static=
+  eh_pool_nobjs=
+  AC_ARG_ENABLE([libstdcxx-static-eh-pool],
+    AC_HELP_STRING([--enable-libstdcxx-static-eh-pool],
+		   [use a fixed-size static buffer for allocating exceptions if malloc fails]),
+    [if test "${enableval}" = yes; then
+      eh_pool_static="-D_GLIBCXX_EH_POOL_STATIC"
+      AC_MSG_NOTICE([EH pool using static buffer])
+    fi],)
+
+  AC_ARG_WITH([libstdcxx-eh-pool-obj-count],
+    AC_HELP_STRING([--with-libstdcxx-eh-pool-obj-count],
+		   [the number of exceptions that can be allocated from the pool if malloc fails]),
+    [if test "${withval}" -ge 0 2>/dev/null; then
+      eh_pool_obj_count="-D_GLIBCXX_EH_POOL_NOBJS=${withval}"
+      AC_MSG_NOTICE([EH pool object count: ${withval}])
+    else
+      AC_MSG_ERROR([EH pool obj count must be a non-negative integer: $withval])
+    fi],)
+
+  EH_POOL_FLAGS="$eh_pool_static $eh_pool_obj_count"
+  AC_SUBST(EH_POOL_FLAGS)
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

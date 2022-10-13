@@ -1,3 +1,185 @@
+2022-10-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/60014
+	PR preprocessor/60723
+	* gcc.dg/cpp/pr60014-1.c: New test.
+	* gcc.dg/cpp/pr60014-1.h: New test.
+	* gcc.dg/cpp/pr60014-2.c: New test.
+	* gcc.dg/cpp/pr60014-2.h: New test.
+	* gcc.dg/cpp/pr60014-3.c: New test.
+	* gcc.dg/cpp/pr60014-3.h: New test.
+
+2022-10-12  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/Wredundant-move10.C: Adjust dg-warning.
+	* g++.dg/cpp0x/Wredundant-move7.C: Likewise.
+	* g++.dg/cpp0x/move-return2.C: Remove dg-error.
+	* g++.dg/cpp0x/move-return4.C: Likewise.
+	* g++.dg/cpp0x/ref-qual20.C: Adjust expected return value.
+	* g++.dg/cpp0x/move-return5.C: New test.
+
+2022-10-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107217
+	* gfortran.dg/pr107217.f90: New test.
+
+2022-10-12  Jason Merrill  <jason@redhat.com>
+
+	DR 2631
+	* g++.dg/cpp2a/consteval-defarg3.C: New test.
+
+2022-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107215
+	* gfortran.dg/pr107215.f90: New test.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100134
+	* g++.dg/modules/tpl-friend-8_a.H: New test.
+	* g++.dg/modules/tpl-friend-8_b.C: New test.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99377
+	* g++.dg/modules/pr99377-2_a.C: New test.
+	* g++.dg/modules/pr99377-2_b.C: New test.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-abs-1.c: New test.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107212
+	* gcc.dg/vect/pr107212-1.c: New testcase.
+	* gcc.dg/vect/pr107212-2.c: Likewise.
+
+2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/pr104464.c: Xfail on amdgcn.
+	* gcc.dg/signbit-2.c: Likewise.
+	* gcc.dg/signbit-5.c: Likewise.
+	* gcc.dg/vect/bb-slp-68.c: Likewise.
+	* gcc.dg/vect/bb-slp-cond-1.c: Change expectations on amdgcn.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Change expectations for multiple
+	vector sizes.
+	* gcc.dg/vect/pr33953.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-4.c: Likewise.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
+	* lib/target-supports.exp (available_vector_sizes): Add more sizes
+	for amdgcn.
+
+2022-10-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-bitfield-read-1.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-2.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-3.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-4.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-5.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-6.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-1.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-2.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-3.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-4.c: New test.
+	* gcc.dg/vect/vect-bitfield-write-5.c: New test.
+
+2022-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107093.c: New test.
+
+2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107195
+	* gcc.dg/tree-ssa/pr107195-1.c: New test.
+	* gcc.dg/tree-ssa/pr107195-2.c: New test.
+
+2022-10-11  Liwei Xu  <liwei.xu@intel.com>
+	    liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr54346.c: New test.
+
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-ctx1-17.C: New.
+	* g++.dg/abi/lambda-ctx1-18.C: New.
+	* g++.dg/abi/lambda-ctx1-18vs17.C: New.
+	* g++.dg/abi/lambda-ctx1.h: New.
+	* g++.dg/abi/lambda-vis.C: Adjust expected mangles.
+	* g++.dg/abi/macro0.C: Adjust.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* c-c++-common/pointer-to-fn1.c: New test.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/riscv_vector.h: New.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/user-1.c: Add dg-options and drop
+	dg-skip-if.
+
+2022-10-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: Add newline to the end of file.
+	* gcc.target/riscv/rvv/base/pragma-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pragma-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/vread_csr.c: Ditto.
+	* gcc.target/riscv/rvv/base/vwrite_csr.c: Ditto.
+
+2022-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107153
+	* gcc.dg/autopar/pr107153.c: Require fgraphite effective target.
+
+2022-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-signbit-3.c: New test.
+
+2022-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107185.c: New test.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/tmac-2.c: Update test.
+
+2022-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/enter-dw2-1.c: New file.
+
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106562
+	* gcc.target/pru/pr106562-1.c: New test.
+	* gcc.target/pru/pr106562-2.c: New test.
+	* gcc.target/pru/pr106562-3.c: New test.
+	* gcc.target/pru/pr106562-4.c: New test.
+
+2022-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/ashiftdi-1.c: New test.
+	* gcc.target/pru/lshiftrtdi-1.c: New test.
+
+2022-10-08  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107000
+	* gfortran.dg/pr107000.f90: New test.
+
 2022-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107085

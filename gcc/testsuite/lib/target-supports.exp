@@ -8400,7 +8400,8 @@ proc available_vector_sizes { } {
     } elseif { [istarget sparc*-*-*] } {
 	lappend result 64
     } elseif { [istarget amdgcn*-*-*] } {
-	lappend result 4096
+        # 6 different lane counts, and 4 element sizes
+	lappend result 4096 2048 1024 512 256 128 64 32 16 8 4 2
     } else {
 	# The traditional default asumption.
 	lappend result 128

@@ -593,6 +593,18 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #define UMUL_TIME 14
 #endif
 
+#ifdef __loongarch__
+# if W_TYPE_SIZE == 32
+#  define count_leading_zeros(count, x)  ((count) = __builtin_clz (x))
+#  define count_trailing_zeros(count, x) ((count) = __builtin_ctz (x))
+#  define COUNT_LEADING_ZEROS_0 32
+# elif W_TYPE_SIZE == 64
+#  define count_leading_zeros(count, x)  ((count) = __builtin_clzll (x))
+#  define count_trailing_zeros(count, x) ((count) = __builtin_ctzll (x))
+#  define COUNT_LEADING_ZEROS_0 64
+# endif
+#endif
+
 #if defined (__M32R__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   /* The cmp clears the condition bit.  */ \

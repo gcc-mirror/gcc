@@ -1,3 +1,8 @@
+2022-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-linux-sparc.ads (Support_Atomic_Primitives): New
+	constant set to True.
+
 2022-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.def (LOAD_EXPR): New expression code.

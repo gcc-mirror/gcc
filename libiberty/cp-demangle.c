@@ -1609,12 +1609,10 @@ d_prefix (struct d_info *di, int substable)
 	}
       else if (peek == 'M')
 	{
-	  /* Initializer scope for a lambda.  We don't need to represent
-	     this; the normal code will just treat the variable as a type
-	     scope, which gives appropriate output.  */
-	  if (ret == NULL)
-	    return NULL;
+	  /* Initializer scope for a lambda.  We already added it as a
+  	     substitution candidate, don't do that again.  */
 	  d_advance (di, 1);
+	  continue;
 	}
       else
 	{

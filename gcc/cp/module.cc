@@ -19083,6 +19083,10 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 
   timevar_start (TV_MODULE_IMPORT);
 
+  /* Make sure lazy loading from a template context behaves as if
+     from a non-template context.  */
+  processing_template_decl_sentinel ptds;
+
   /* Stop GC happening, even in outermost loads (because our caller
      could well be building up a lookup set).  */
   function_depth++;
@@ -19131,6 +19135,10 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 void
 lazy_load_pendings (tree decl)
 {
+  /* Make sure lazy loading from a template context behaves as if
+     from a non-template context.  */
+  processing_template_decl_sentinel ptds;
+
   tree key_decl;
   pending_key key;
   key.ns = find_pending_key (decl, &key_decl);

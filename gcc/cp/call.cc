@@ -1272,9 +1272,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	    }
 	}
       conv = build_conv (ck_rvalue, from, conv);
-      if (flags & LOOKUP_PREFER_RVALUE)
-	/* Tell convert_like to set LOOKUP_PREFER_RVALUE.  */
-	conv->rvaluedness_matches_p = true;
       /* If we're performing copy-initialization, remember to skip
 	 explicit constructors.  */
       if (flags & LOOKUP_ONLYCONVERTING)
@@ -1572,9 +1569,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	 type.  A temporary object is created to hold the result of
 	 the conversion unless we're binding directly to a reference.  */
       conv->need_temporary_p = !(flags & LOOKUP_NO_TEMP_BIND);
-      if (flags & LOOKUP_PREFER_RVALUE)
-	/* Tell convert_like to set LOOKUP_PREFER_RVALUE.  */
-	conv->rvaluedness_matches_p = true;
       /* If we're performing copy-initialization, remember to skip
 	 explicit constructors.  */
       if (flags & LOOKUP_ONLYCONVERTING)
@@ -1883,7 +1877,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	  /* Unless it's really a C++20 lvalue being treated as an xvalue.
 	     But in C++23, such an expression is just an xvalue, not a special
 	     lvalue, so the binding is once again ill-formed.  */
-	  && !(cxx_dialect == cxx20
+	  && !(cxx_dialect <= cxx20
 	       && (gl_kind & clk_implicit_rval))
 	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
 	      || (flags & LOOKUP_NO_RVAL_BIND))
@@ -2044,9 +2038,8 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
   /* Other flags only apply to the primary function in overload
      resolution, or after we've chosen one.  */
   flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
-	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
-	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL
-	    |LOOKUP_SHORTCUT_BAD_CONVS);
+	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_NO_NARROWING
+	    |LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL|LOOKUP_SHORTCUT_BAD_CONVS);
 
   /* FIXME: actually we don't want warnings either, but we can't just
      have 'complain &= ~(tf_warning|tf_error)' because it would cause
@@ -4450,14 +4443,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   conv->cand = cand;
   if (cand->viable == -1)
     conv->bad_p = true;
-
-  /* We're performing the maybe-rvalue overload resolution and
-     a conversion function is in play.  Reject converting the return
-     value of the conversion function to a base class.  */
-  if ((flags & LOOKUP_PREFER_RVALUE) && !DECL_CONSTRUCTOR_P (cand->fn))
-    for (conversion *t = cand->second_conv; t; t = next_conversion (t))
-      if (t->kind == ck_base)
-	return NULL;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
@@ -8292,9 +8277,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	 explicit constructors.  */
       if (convs->copy_init_p)
 	flags |= LOOKUP_ONLYCONVERTING;
-      if (convs->rvaluedness_matches_p)
-	/* standard_conversion got LOOKUP_PREFER_RVALUE.  */
-	flags |= LOOKUP_PREFER_RVALUE;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && complain)
 	{
@@ -9301,7 +9283,8 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
 }
 
 /* Return true if in an immediate function context, or an unevaluated operand,
-   or a subexpression of an immediate invocation.  */
+   or a default argument/member initializer, or a subexpression of an immediate
+   invocation.  */
 
 bool
 in_immediate_context ()
@@ -9309,8 +9292,11 @@ in_immediate_context ()
   return (cp_unevaluated_operand != 0
 	  || (current_function_decl != NULL_TREE
 	      && DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  || (current_binding_level->kind == sk_function_parms
-	      && current_binding_level->immediate_fn_ctx_p)
+	  /* DR 2631: default args and DMI aren't immediately evaluated.
+	     Return true here so immediate_invocation_p returns false.  */
+	  || current_binding_level->kind == sk_function_parms
+	  || current_binding_level->kind == sk_template_parms
+	  || parsing_nsdmi ()
 	  || in_consteval_if_p);
 }
 
@@ -9318,28 +9304,12 @@ in_immediate_context ()
    is an immediate invocation.  */
 
 static bool
-immediate_invocation_p (tree fn, int nargs)
+immediate_invocation_p (tree fn)
 {
   return (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fn)
-	  && !in_immediate_context ()
-	  /* As an exception, we defer std::source_location::current ()
-	     invocations until genericization because LWG3396 mandates
-	     special behavior for it.  */
-	  && (nargs > 1 || !source_location_current_p (fn)));
+	  && !in_immediate_context ());
 }
-
-/* temp_override for in_consteval_if_p, which can't use make_temp_override
-   because it is a bitfield.  */
-
-struct in_consteval_if_p_temp_override {
-  bool save_in_consteval_if_p;
-  in_consteval_if_p_temp_override ()
-    : save_in_consteval_if_p (in_consteval_if_p) {}
-  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
-  ~in_consteval_if_p_temp_override ()
-  { reset (); }
-};
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
@@ -9398,7 +9368,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       SET_EXPR_LOCATION (expr, input_location);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
-      if (immediate_invocation_p (fn, vec_safe_length (args)))
+      if (immediate_invocation_p (fn))
 	{
 	  tree obj_arg = NULL_TREE, exprimm = expr;
 	  if (DECL_CONSTRUCTOR_P (fn))
@@ -9543,7 +9513,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   in_consteval_if_p_temp_override icip;
   /* If the call is immediate function invocation, make sure
      taking address of immediate functions is allowed in its arguments.  */
-  if (immediate_invocation_p (STRIP_TEMPLATE (fn), nargs))
+  if (immediate_invocation_p (STRIP_TEMPLATE (fn)))
     in_consteval_if_p = true;
 
   /* The implicit parameters to a constructor are not considered by overload
@@ -9571,23 +9541,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  argarray[j++] = (*args)[arg_index];
 	  ++arg_index;
 	  parm = TREE_CHAIN (parm);
-	}
-
-      if (cxx_dialect < cxx20
-	  && (cand->flags & LOOKUP_PREFER_RVALUE))
-	{
-	  /* The implicit move specified in 15.8.3/3 fails "...if the type of
-	     the first parameter of the selected constructor is not an rvalue
-	     reference to the object's type (possibly cv-qualified)...." */
-	  gcc_assert (!(complain & tf_error));
-	  tree ptype = convs[0]->type;
-	  /* Allow calling a by-value converting constructor even though it
-	     isn't permitted by the above, because we've allowed it since GCC 5
-	     (PR58051) and it's allowed in C++20.  But don't call a copy
-	     constructor.  */
-	  if ((TYPE_REF_P (ptype) && !TYPE_REF_IS_RVALUE (ptype))
-	      || CONVERSION_RANK (convs[0]) > cr_exact)
-	    return error_mark_node;
 	}
     }
   /* Bypass access control for 'this' parameter.  */
@@ -10072,7 +10025,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
       tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
-      if (immediate_invocation_p (fndecl, nargs))
+      if (immediate_invocation_p (fndecl))
 	{
 	  tree obj_arg = NULL_TREE;
 	  /* Undo convert_from_reference called by build_cxx_call.  */

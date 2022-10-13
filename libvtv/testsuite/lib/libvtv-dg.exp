@@ -12,6 +12,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+load_gcc_lib scansarif.exp
+
 proc libvtv-dg-test { prog do_what extra_tool_flags } {
     return [gcc-dg-test-1 libvtv_target_compile $prog $do_what $extra_tool_flags]
 }

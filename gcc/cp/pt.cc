@@ -11448,6 +11448,14 @@ tsubst_friend_function (tree decl, tree args)
 	     by duplicate_decls.  */
 	  new_friend = old_decl;
 	}
+
+      /* We've just introduced a namespace-scope function in the purview
+	 without necessarily having opened the enclosing namespace, so
+	 make sure the namespace is in the purview now too.  */
+      if (modules_p ()
+	  && DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (new_friend))
+	  && TREE_CODE (DECL_CONTEXT (new_friend)) == NAMESPACE_DECL)
+	DECL_MODULE_PURVIEW_P (DECL_CONTEXT (new_friend)) = true;
     }
   else
     {
@@ -13925,6 +13933,8 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   push_to_top_level ();
   push_access_scope (fn);
   push_deferring_access_checks (dk_no_deferred);
+  /* So in_immediate_context knows this is a default argument.  */
+  begin_scope (sk_function_parms, fn);
   start_lambda_scope (parm);
 
   /* The default argument expression may cause implicitly defined
@@ -13948,6 +13958,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
     inform (input_location,
 	    "  when instantiating default argument for call to %qD", fn);
 
+  leave_scope ();
   pop_deferring_access_checks ();
   pop_access_scope (fn);
   pop_from_top_level ();

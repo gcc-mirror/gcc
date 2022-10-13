@@ -779,7 +779,7 @@ frange::set_nonnegative (tree type)
 
   // Set +NAN as the only possibility.
   if (HONOR_NANS (type))
-    update_nan (/*sign=*/0);
+    update_nan (/*sign=*/false);
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -2901,6 +2901,11 @@ irange::set_range_from_nonzero_bits ()
 	  zero.set_zero (type ());
 	  union_ (zero);
 	}
+      return true;
+    }
+  else if (popcount == 0)
+    {
+      set_zero (type ());
       return true;
     }
   return false;

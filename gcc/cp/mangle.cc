@@ -1252,7 +1252,14 @@ write_prefix (const tree node)
 	{
 	  /* <data-member-prefix> := <member source-name> M */
 	  write_char ('M');
-	  return;
+
+	  /* Before ABI 18, we did not count these as substitution
+	     candidates.  This leads to incorrect demanglings (and
+	     ABI divergence to other compilers).  */
+	  if (abi_warn_or_compat_version_crosses (18))
+	    G.need_abi_warning = true;
+	  if (!abi_version_at_least (18))
+	    return;
 	}
     }
 

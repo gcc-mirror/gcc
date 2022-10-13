@@ -44,8 +44,6 @@ arc_option_init_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
 #define OPT_LEVELS_3_PLUS_SPEED_ONLY OPT_LEVELS_3_PLUS
 static const struct default_options arc_option_optimization_table[] =
   {
-    { OPT_LEVELS_ALL, OPT_mRcq, NULL, 1 },
-    { OPT_LEVELS_ALL, OPT_mRcw, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_msize_level_, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mearly_cbranchsi, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mbbit_peephole, NULL, 1 },

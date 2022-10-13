@@ -2935,6 +2935,9 @@ Version 17, which first appeared in G++ 12, fixes layout of classes
 that inherit from aggregate classes with default member initializers
 in C++14 and up.
 
+Version 18, which first appeard in G++ 13, fixes manglings of lambdas
+that have additional context.
+
 See also @option{-Wabi}.
 
 @item -fabi-compat-version=@var{n}
@@ -20858,15 +20861,11 @@ This is the default for @option{-Os}.
 
 @item -mRcq
 @opindex mRcq
-Enable @samp{Rcq} constraint handling.  
-Most short code generation depends on this.
-This is the default.
+Does nothing.  Preserved for backward compatibility.
 
 @item -mRcw
 @opindex mRcw
-Enable @samp{Rcw} constraint handling.  
-Most ccfsm condexec mostly depends on this.
-This is the default.
+Does nothing.  Preserved for backward compatibility.
 
 @item -msize-level=@var{level}
 @opindex msize-level
@@ -32016,11 +32015,11 @@ Intel sapphirerapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
 VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
-MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
-SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16
-and AVX512BF16 instruction set support.
+MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
+UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16 and AVX512BF16
+instruction set support.
 
 @item alderlake
 Intel Alderlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,

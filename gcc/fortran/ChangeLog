@@ -1,3 +1,47 @@
+2022-10-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107217
+	* arith.cc (gfc_arith_plus): Compare consistency of types of operands.
+	(gfc_arith_minus): Likewise.
+	(gfc_arith_times): Likewise.
+	(gfc_arith_divide): Likewise.
+	(arith_power): Check that both operands are of numeric type.
+
+2022-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107215
+	* arith.cc (gfc_int2int): Check validity of type of source expr.
+	(gfc_int2real): Likewise.
+	(gfc_int2complex): Likewise.
+	(gfc_real2int): Likewise.
+	(gfc_real2real): Likewise.
+	(gfc_complex2int): Likewise.
+	(gfc_complex2real): Likewise.
+	(gfc_complex2complex): Likewise.
+	(gfc_log2log): Likewise.
+	(gfc_log2int): Likewise.
+	(gfc_int2log): Likewise.
+
+2022-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc (gfc_trans_omp_assume): Use create_tmp_var_raw
+	instead of gfc_create_var for TARGET_EXPR slot creation.  Create it
+	with boolean_type_node and convert.
+
+2022-10-08  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107000
+	* arith.cc (gfc_arith_error): Define error message for
+	ARITH_INVALID_TYPE.
+	(reduce_unary): Catch arithmetic expressions with invalid type.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Likewise.
+	(eval_intrinsic): Likewise.
+	(gfc_real2complex): Source expression must be of type REAL.
+	* gfortran.h (enum arith): Add ARITH_INVALID_TYPE.
+
 2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_assume): New.

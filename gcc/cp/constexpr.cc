@@ -1324,26 +1324,6 @@ save_fundef_copy (tree fun, tree copy)
   *slot = copy;
 }
 
-/* We have an expression tree T that represents a call, either CALL_EXPR
-   or AGGR_INIT_EXPR.  Return the Nth argument.  */
-
-static inline tree
-get_nth_callarg (tree t, int n)
-{
-  switch (TREE_CODE (t))
-    {
-    case CALL_EXPR:
-      return CALL_EXPR_ARG (t, n);
-
-    case AGGR_INIT_EXPR:
-      return AGGR_INIT_EXPR_ARG (t, n);
-
-    default:
-      gcc_unreachable ();
-      return NULL;
-    }
-}
-
 /* Whether our evaluation wants a prvalue (e.g. CONSTRUCTOR or _CST),
    a glvalue (e.g. VAR_DECL or _REF), or nothing.  */
 

@@ -220,6 +220,8 @@
 
       external omp_in_final
       logical(4) omp_in_final
+      external omp_in_explicit_task
+      logical(4) omp_in_explicit_task
 
       external omp_get_cancellation
       logical(4) omp_get_cancellation

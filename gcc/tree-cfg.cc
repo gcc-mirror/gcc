@@ -1204,9 +1204,8 @@ assign_discriminators (void)
       edge e;
       edge_iterator ei;
       gimple_stmt_iterator gsi;
-      gimple *last = last_stmt (bb);
-      location_t locus = last ? gimple_location (last) : UNKNOWN_LOCATION;
       location_t curr_locus = UNKNOWN_LOCATION;
+      expanded_location curr_locus_e = {};
       int curr_discr = 0;
 
       /* Traverse the basic block, if two function calls within a basic block
@@ -1215,7 +1214,7 @@ assign_discriminators (void)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  expanded_location curr_locus_e;
+
 	  if (curr_locus == UNKNOWN_LOCATION)
 	    {
 	      curr_locus = gimple_location (stmt);
@@ -1238,6 +1237,8 @@ assign_discriminators (void)
 	    curr_discr = next_discriminator_for_locus (curr_locus);
 	}
 
+      gimple *last = last_stmt (bb);
+      location_t locus = last ? gimple_location (last) : UNKNOWN_LOCATION;
       if (locus == UNKNOWN_LOCATION)
 	continue;
 

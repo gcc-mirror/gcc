@@ -281,6 +281,7 @@ public:
   frange ();
   frange (const frange &);
   frange (tree, tree, value_range_kind = VR_RANGE);
+  frange (tree type);
   frange (tree type, const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
 	  value_range_kind = VR_RANGE);
   static bool supports_p (const_tree type)
@@ -316,6 +317,7 @@ public:
   const REAL_VALUE_TYPE &upper_bound () const;
   void update_nan ();
   void update_nan (bool sign);
+  void update_nan (tree) = delete; // Disallow silent conversion to bool.
   void clear_nan ();
 
   // fpclassify like API
@@ -323,8 +325,10 @@ public:
   bool known_isnan () const;
   bool known_isinf () const;
   bool maybe_isnan () const;
+  bool maybe_isnan (bool sign) const;
   bool maybe_isinf () const;
   bool signbit_p (bool &signbit) const;
+  bool nan_signbit_p (bool &signbit) const;
 private:
   void verify_range ();
   bool normalize_kind ();
@@ -1058,6 +1062,13 @@ frange::frange (const frange &src)
   *this = src;
 }
 
+inline
+frange::frange (tree type)
+{
+  m_discriminator = VR_FRANGE;
+  set_varying (type);
+}
+
 // frange constructor from REAL_VALUE_TYPE endpoints.
 
 inline
@@ -1295,6 +1306,18 @@ frange::maybe_isnan () const
   return m_pos_nan || m_neg_nan;
 }
 
+// Return TRUE if range is possibly a NAN with SIGN.
+
+inline bool
+frange::maybe_isnan (bool sign) const
+{
+  if (undefined_p ())
+    return false;
+  if (sign)
+    return m_neg_nan;
+  return m_pos_nan;
+}
+
 // Return TRUE if range is a +NAN or -NAN.
 
 inline bool
@@ -1334,6 +1357,22 @@ frange::signbit_p (bool &signbit) const
       return true;
     }
   return false;
+}
+
+// If range has a NAN with a known sign, set it in SIGNBIT and return
+// TRUE.
+
+inline bool
+frange::nan_signbit_p (bool &signbit) const
+{
+  if (undefined_p ())
+    return false;
+
+  if (m_pos_nan == m_neg_nan)
+    return false;
+
+  signbit = m_neg_nan;
+  return true;
 }
 
 #endif // GCC_VALUE_RANGE_H

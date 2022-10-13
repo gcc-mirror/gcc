@@ -50,25 +50,56 @@ using namespace riscv_vector;
 
 namespace riscv_vector {
 
+/* Static information about each vector type.  */
+struct vector_type_info
+{
+  /* The name of the type as declared by riscv_vector.h
+     which is recommend to use. For example: 'vint32m1_t'.  */
+  const char *name;
+
+  /* ABI name of vector type. The type is always available
+     under this name, even when riscv_vector.h isn't included.
+     For example:  '__rvv_int32m1_t'.  */
+  const char *abi_name;
+
+  /* The C++ mangling of ABI_NAME.  */
+  const char *mangled_name;
+};
+
 /* Information about each RVV type.  */
 static CONSTEXPR const vector_type_info vector_types[] = {
-#define DEF_RVV_TYPE(USER_NAME, NCHARS, ABI_NAME, ARGS...)    \
-  {#USER_NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)                          \
+  {#NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
 #include "riscv-vector-builtins.def"
 };
 
-/* The scalar type associated with each vector type.  */
-static GTY (()) tree scalar_types[NUM_VECTOR_TYPES];
-/* The machine mode associated with each vector type.  */
-static GTY (()) machine_mode vector_modes[NUM_VECTOR_TYPES];
 /* The RVV types, with their built-in
    "__rvv..._t" name.  Allow an index of NUM_VECTOR_TYPES, which always
    yields a null tree.  */
-static GTY(()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
+static GTY (()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
 
 /* Same, but with the riscv_vector.h "v..._t" name.  */
-extern GTY(()) tree builtin_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
-tree builtin_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
+extern GTY (()) rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
+rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
+
+/* RAII class for enabling enough RVV features to define the built-in
+   types and implement the riscv_vector.h pragma.
+
+   Note: According to 'TYPE_MODE' macro implementation, we need set
+   have_regs_of_mode[mode] to be true if we want to get the exact mode
+   from 'TYPE_MODE'. However, have_regs_of_mode has not been set yet in
+   targetm.init_builtins (). We need rvv_switcher to set have_regs_of_mode
+   before targetm.init_builtins () and recover back have_regs_of_mode
+   after targetm.init_builtins ().  */
+class rvv_switcher
+{
+public:
+  rvv_switcher ();
+  ~rvv_switcher ();
+
+private:
+  bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
+};
 
 rvv_switcher::rvv_switcher ()
 {
@@ -93,8 +124,8 @@ add_vector_type_attribute (tree type, const char *mangled_name)
 {
   tree mangled_name_tree = get_identifier (mangled_name);
   tree value = tree_cons (NULL_TREE, mangled_name_tree, NULL_TREE);
-  TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("RVV type"), value,
-				      TYPE_ATTRIBUTES (type));
+  TYPE_ATTRIBUTES (type)
+    = tree_cons (get_identifier ("RVV type"), value, TYPE_ATTRIBUTES (type));
 }
 
 /* Force TYPE to be a sizeless type.  */
@@ -137,6 +168,39 @@ mangle_builtin_type (const_tree type)
   return NULL;
 }
 
+/* Return a representation of "const T *".  */
+static tree
+build_const_pointer (tree t)
+{
+  return build_pointer_type (build_qualified_type (t, TYPE_QUAL_CONST));
+}
+
+/* Helper function for register a single built-in RVV ABI type.  */
+static void
+register_builtin_type (vector_type_index type, tree eltype, machine_mode mode)
+{
+  builtin_types[type].scalar = eltype;
+  builtin_types[type].scalar_ptr = build_pointer_type (eltype);
+  builtin_types[type].scalar_const_ptr = build_const_pointer (eltype);
+  if (!riscv_v_ext_enabled_vector_mode_p (mode))
+    return;
+
+  tree vectype = build_vector_type_for_mode (eltype, mode);
+  gcc_assert (VECTOR_MODE_P (TYPE_MODE (vectype)) && TYPE_MODE (vectype) == mode
+	      && TYPE_MODE_RAW (vectype) == mode && TYPE_ALIGN (vectype) <= 128
+	      && known_eq (tree_to_poly_uint64 (TYPE_SIZE (vectype)),
+			   GET_MODE_BITSIZE (mode)));
+  vectype = build_distinct_type_copy (vectype);
+  gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
+  SET_TYPE_STRUCTURAL_EQUALITY (vectype);
+  TYPE_ARTIFICIAL (vectype) = 1;
+  TYPE_INDIVISIBLE_P (vectype) = 1;
+  add_vector_type_attribute (vectype, vector_types[type].mangled_name);
+  make_type_sizeless (vectype);
+  abi_vector_types[type] = vectype;
+  lang_hooks.types.register_builtin_type (vectype, vector_types[type].abi_name);
+}
+
 /* Register the built-in RVV ABI types, such as __rvv_int32m1_t.  */
 static void
 register_builtin_types ()
@@ -151,42 +215,12 @@ register_builtin_types ()
     = TARGET_64BIT ? unsigned_intSI_type_node : long_unsigned_type_node;
 
   machine_mode mode;
-#define DEF_RVV_TYPE(USER_NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,    \
-		     VECTOR_MODE_MIN_VLEN_32)                                  \
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
+		     VECTOR_MODE_MIN_VLEN_32, ARGS...)                         \
   mode = TARGET_MIN_VLEN > 32 ? VECTOR_MODE##mode                              \
 			      : VECTOR_MODE_MIN_VLEN_32##mode;                 \
-  scalar_types[VECTOR_TYPE_##USER_NAME]                                        \
-    = riscv_v_ext_enabled_vector_mode_p (mode) ? SCALAR_TYPE##_type_node       \
-					       : NULL_TREE;                    \
-  vector_modes[VECTOR_TYPE_##USER_NAME]                                        \
-    = riscv_v_ext_enabled_vector_mode_p (mode) ? mode : VOIDmode;
+  register_builtin_type (VECTOR_TYPE_##NAME, SCALAR_TYPE##_type_node, mode);
 #include "riscv-vector-builtins.def"
-
-  for (unsigned int i = 0; i < NUM_VECTOR_TYPES; ++i)
-    {
-      tree eltype = scalar_types[i];
-      mode = vector_modes[i];
-      /* We disabled the datatypes according '-march'.  */
-      if (!eltype)
-	continue;
-
-      tree vectype = build_vector_type_for_mode (eltype, mode);
-      gcc_assert (
-	VECTOR_MODE_P (TYPE_MODE (vectype)) && TYPE_MODE (vectype) == mode
-	&& TYPE_MODE_RAW (vectype) == mode && TYPE_ALIGN (vectype) <= 128
-	&& known_eq (tree_to_poly_uint64 (TYPE_SIZE (vectype)),
-		     GET_MODE_BITSIZE (mode)));
-      vectype = build_distinct_type_copy (vectype);
-      gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
-      SET_TYPE_STRUCTURAL_EQUALITY (vectype);
-      TYPE_ARTIFICIAL (vectype) = 1;
-      TYPE_INDIVISIBLE_P (vectype) = 1;
-      add_vector_type_attribute (vectype, vector_types[i].mangled_name);
-      make_type_sizeless (vectype);
-      abi_vector_types[i] = vectype;
-      lang_hooks.types.register_builtin_type (vectype,
-					      vector_types[i].abi_name);
-    }
 }
 
 /* Register vector type TYPE under its risv_vector.h name.  */
@@ -198,7 +232,7 @@ register_vector_type (vector_type_index type)
      is disabled according to '-march'.  */
   if (!vectype)
     return;
-  tree id = get_identifier (vector_types[type].user_name);
+  tree id = get_identifier (vector_types[type].name);
   tree decl = build_decl (input_location, TYPE_DECL, id, vectype);
   decl = lang_hooks.decls.pushdecl (decl);
 
@@ -212,7 +246,8 @@ register_vector_type (vector_type_index type)
       && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == vectype)
     vectype = TREE_TYPE (decl);
 
-  builtin_vector_types[0][type] = vectype;
+  builtin_types[type].vector = vectype;
+  builtin_types[type].vector_ptr = build_pointer_type (vectype);
 }
 
 /* Initialize all compiler built-ins related to RVV that should be

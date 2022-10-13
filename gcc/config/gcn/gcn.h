@@ -678,3 +678,27 @@ enum gcn_builtin_codes
 /* Trampolines */
 #define TRAMPOLINE_SIZE 36
 #define TRAMPOLINE_ALIGNMENT 64
+
+/* MD Optimization.
+   The following are intended to be obviously constant at compile time to
+   allow genconditions to eliminate bad patterns at compile time.  */
+#define MODE_VF(M) \
+  ((M == V64QImode || M == V64HImode || M == V64HFmode || M == V64SImode \
+    || M == V64SFmode || M == V64DImode || M == V64DFmode) \
+   ? 64 \
+   : (M == V32QImode || M == V32HImode || M == V32HFmode || M == V32SImode \
+      || M == V32SFmode || M == V32DImode || M == V32DFmode) \
+   ? 32 \
+   : (M == V16QImode || M == V16HImode || M == V16HFmode || M == V16SImode \
+      || M == V16SFmode || M == V16DImode || M == V16DFmode) \
+   ? 16 \
+   : (M == V8QImode || M == V8HImode || M == V8HFmode || M == V8SImode \
+      || M == V8SFmode || M == V8DImode || M == V8DFmode) \
+   ? 8 \
+   : (M == V4QImode || M == V4HImode || M == V4HFmode || M == V4SImode \
+      || M == V4SFmode || M == V4DImode || M == V4DFmode) \
+   ? 4 \
+   : (M == V2QImode || M == V2HImode || M == V2HFmode || M == V2SImode \
+      || M == V2SFmode || M == V2DImode || M == V2DFmode) \
+   ? 2 \
+   : 1)
