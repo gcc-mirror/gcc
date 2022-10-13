@@ -757,6 +757,8 @@ gimple_range_op_handler::maybe_builtin_call ()
       break;
 
     case CFN_BUILT_IN_SIGNBIT:
+    case CFN_BUILT_IN_SIGNBITF:
+    case CFN_BUILT_IN_SIGNBITL:
       m_op1 = gimple_call_arg (call, 0);
       m_float = &op_cfn_signbit;
       m_valid = true;
