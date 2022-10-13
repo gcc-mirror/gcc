@@ -327,11 +327,57 @@ Dump::visit (ArithmeticOrLogicalExpr &expr)
 
 void
 Dump::visit (ComparisonExpr &expr)
-{}
+{
+  auto op = "";
+  switch (expr.get_expr_type ())
+    {
+    case ComparisonOperator::EQUAL:
+      op = "==";
+      break;
+    case ComparisonOperator::NOT_EQUAL:
+      op = "!=";
+      break;
+
+    case ComparisonOperator::GREATER_THAN:
+      op = ">";
+      break;
+
+    case ComparisonOperator::LESS_THAN:
+      op = "<";
+      break;
+
+    case ComparisonOperator::GREATER_OR_EQUAL:
+      op = ">=";
+      break;
+
+    case ComparisonOperator::LESS_OR_EQUAL:
+      op = "<=";
+      break;
+    }
+
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << " ";
+  expr.get_right_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (LazyBooleanExpr &expr)
-{}
+{
+  auto op = "";
+  switch (expr.get_expr_type ())
+    {
+    case LazyBooleanOperator::LOGICAL_AND:
+      op = "&&";
+      break;
+    case LazyBooleanOperator::LOGICAL_OR:
+      op = "||";
+      break;
+    }
+
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << " ";
+  expr.get_right_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (TypeCastExpr &expr)
