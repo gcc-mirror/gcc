@@ -139,15 +139,23 @@ resolve_operator_overload_fn (
     return false;
 
   auto segment = HIR::PathIdentSegment (associated_item_name);
-  auto candidate
+  auto candidates
     = MethodResolver::Probe (ty, HIR::PathIdentSegment (associated_item_name),
 			     true);
 
-  bool have_implementation_for_lang_item = !candidate.is_error ();
+  bool have_implementation_for_lang_item = !candidates.empty ();
   if (!have_implementation_for_lang_item)
     return false;
 
+  // multiple candidates?
+  if (candidates.size () > 1)
+    {
+      // error out? probably not for this case
+      return false;
+    }
+
   // Get the adjusted self
+  auto candidate = *candidates.begin ();
   Adjuster adj (ty);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 

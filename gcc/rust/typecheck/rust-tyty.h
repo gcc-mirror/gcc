@@ -135,6 +135,11 @@ protected:
   std::vector<TypeBoundPredicate> specified_bounds;
 };
 
+extern void
+set_cmp_autoderef_mode ();
+extern void
+reset_cmp_autoderef_mode ();
+
 class TyVisitor;
 class TyConstVisitor;
 class BaseType : public TypeBoundsMappings

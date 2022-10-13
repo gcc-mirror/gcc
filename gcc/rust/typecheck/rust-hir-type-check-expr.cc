@@ -1015,10 +1015,10 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
 
-  auto candidate
+  auto candidates
     = MethodResolver::Probe (receiver_tyty,
 			     expr.get_method_name ().get_segment ());
-  if (candidate.is_error ())
+  if (candidates.empty ())
     {
       rust_error_at (
 	expr.get_method_name ().get_locus (),
@@ -1027,6 +1027,19 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       return;
     }
 
+  if (candidates.size () > 1)
+    {
+      RichLocation r (expr.get_method_name ().get_locus ());
+      for (auto &c : candidates)
+	r.add_range (c.candidate.locus);
+
+      rust_error_at (
+	r, "multiple candidates found for method %<%s%>",
+	expr.get_method_name ().get_segment ().as_string ().c_str ());
+      return;
+    }
+
+  auto candidate = *candidates.begin ();
   rust_debug_loc (expr.get_method_name ().get_locus (),
 		  "resolved method to: {%u} {%s}",
 		  candidate.candidate.ty->get_ref (),
@@ -1422,14 +1435,28 @@ TypeCheckExpr::resolve_operator_overload (
     return false;
 
   auto segment = HIR::PathIdentSegment (associated_item_name);
-  auto candidate
+  auto candidates
     = MethodResolver::Probe (lhs, HIR::PathIdentSegment (associated_item_name));
 
-  bool have_implementation_for_lang_item = !candidate.is_error ();
+  bool have_implementation_for_lang_item = candidates.size () > 0;
   if (!have_implementation_for_lang_item)
     return false;
 
+  if (candidates.size () > 1)
+    {
+      // mutliple candidates
+      RichLocation r (expr.get_locus ());
+      for (auto &c : candidates)
+	r.add_range (c.candidate.locus);
+
+      rust_error_at (
+	r, "multiple candidates found for possible operator overload");
+
+      return false;
+    }
+
   // Get the adjusted self
+  auto candidate = *candidates.begin ();
   Adjuster adj (lhs);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 
