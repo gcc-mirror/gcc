@@ -285,3 +285,8 @@
        (ior (match_operand 0 "register_operand")
 	    (match_test "GET_CODE (op) == UNSPEC
 			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))
+
+;; A CONST_INT operand that has exactly two bits cleared.
+(define_predicate "const_nottwobits_operand"
+  (and (match_code "const_int")
+       (match_test "popcount_hwi (~UINTVAL (op)) == 2")))

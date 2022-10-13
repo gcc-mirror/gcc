@@ -367,6 +367,44 @@
   "bclri\t%0,%1,%T2"
   [(set_attr "type" "bitmanip")])
 
+;; In case we have "val & ~IMM" where ~IMM has 2 bits set.
+(define_insn_and_split "*bclri<mode>_nottwobits"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (match_operand:X 1 "register_operand" "r")
+	       (match_operand:X 2 "const_nottwobits_operand" "i")))]
+  "TARGET_ZBS && !paradoxical_subreg_p (operands[1])"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
+	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+
+	operands[3] = GEN_INT (~bits | topbit);
+	operands[4] = GEN_INT (~topbit);
+})
+
+;; In case of a paradoxical subreg, the sign bit and the high bits are
+;; not allowed to be changed
+(define_insn_and_split "*bclridisi_nottwobits"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (match_operand:DI 1 "register_operand" "r")
+		(match_operand:DI 2 "const_nottwobits_operand" "i")))]
+  "TARGET_64BIT && TARGET_ZBS
+   && clz_hwi (~UINTVAL (operands[2])) > 33"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (and:DI (match_dup 0) (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
+	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+
+	operands[3] = GEN_INT (~bits | topbit);
+	operands[4] = GEN_INT (~topbit);
+})
+
 (define_insn "*binv<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(xor:X (ashift:X (const_int 1)
