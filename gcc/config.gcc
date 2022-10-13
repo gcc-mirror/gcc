@@ -2171,6 +2171,8 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	d_target_objs="${d_target_objs} winnt-d.o"
 	target_has_targetcm="yes"
 	target_has_targetdm="yes"
+	rust_target_objs="${rust_target_objs} winnt-rust.o"
+	target_has_targetrustm="yes"
 	case ${target} in
 		x86_64-*-* | *-w64-*)
 			need_64bit_isa=yes
