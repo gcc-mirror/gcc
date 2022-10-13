@@ -865,6 +865,8 @@ case ${target} in
   d_target_objs="${d_target_objs} freebsd-d.o"
   tmake_file="${tmake_file} t-freebsd"
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} freebsd-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-fuchsia*)
   native_system_header_dir=/include
