@@ -449,19 +449,43 @@ Dump::visit (GroupedExpr &expr)
 
 void
 Dump::visit (ArrayElemsValues &elems)
-{}
+{
+  auto &vals = elems.get_values ();
+  if (vals.size () >= 1)
+    {
+      vals[0]->accept_vis (*this);
+      for (size_t i = 1; i < vals.size (); i++)
+	{
+	  stream << ", ";
+	  vals[i]->accept_vis (*this);
+	}
+    }
+}
 
 void
 Dump::visit (ArrayElemsCopied &elems)
-{}
+{
+  elems.get_elem_to_copy ()->accept_vis (*this);
+  stream << "; ";
+  elems.get_num_copies ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ArrayExpr &expr)
-{}
+{
+  stream << '[';
+  expr.get_array_elems ()->accept_vis (*this);
+  stream << ']';
+}
 
 void
 Dump::visit (ArrayIndexExpr &expr)
-{}
+{
+  expr.get_array_expr ()->accept_vis (*this);
+  stream << '[';
+  expr.get_index_expr ()->accept_vis (*this);
+  stream << ']';
+}
 
 void
 Dump::visit (TupleExpr &expr)
