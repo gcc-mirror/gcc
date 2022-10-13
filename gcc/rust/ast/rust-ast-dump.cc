@@ -498,11 +498,11 @@ Dump::visit (BlockExpr &expr)
     {
       stream << indentation;
       expr.get_tail_expr ()->accept_vis (*this);
-      stream << " /* tail expr */";
+      stream << " /* tail expr */\n";
     }
 
   indentation.decrement ();
-  stream << "\n" << indentation << "}\n";
+  stream << indentation << "}\n";
 }
 
 void
