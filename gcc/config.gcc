@@ -974,6 +974,8 @@ case ${target} in
       default_gnu_indirect_function=yes
       ;;
   esac
+  rust_target_objs="${rust_target_objs} netbsd-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
