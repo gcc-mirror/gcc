@@ -622,27 +622,46 @@ Dump::visit (BreakExpr &expr)
 
 void
 Dump::visit (RangeFromToExpr &expr)
-{}
+{
+  expr.get_from_expr ()->accept_vis (*this);
+  stream << "..";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (RangeFromExpr &expr)
-{}
+{
+  expr.get_from_expr ()->accept_vis (*this);
+  stream << "..";
+}
 
 void
 Dump::visit (RangeToExpr &expr)
-{}
+{
+  stream << "..";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (RangeFullExpr &expr)
-{}
+{
+  stream << "..";
+}
 
 void
 Dump::visit (RangeFromToInclExpr &expr)
-{}
+{
+  expr.get_from_expr ()->accept_vis (*this);
+  stream << "..=";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (RangeToInclExpr &expr)
-{}
+{
+  stream << "..=";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ReturnExpr &expr)
