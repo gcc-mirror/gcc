@@ -1,3 +1,83 @@
+2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (class foperator_negate): New.
+	(floating_op_table::floating_op_table): Add NEGATE_EXPR
+	(range_op_float_tests): Add negate tests.
+
+2022-10-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.h: Remove unused macro.
+
+2022-10-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_TYPE): Apply
+	clang-format.
+	(add_vector_type_attribute): Ditto.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE): Apply
+	clang-format.
+	* config/riscv/riscv-vector-builtins.h (DEF_RVV_TYPE): Apply
+	clang-format.
+
+2022-10-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (builtin_types): Redefine
+	vector types.
+	(build_const_pointer): New function.
+	(register_builtin_type): Ditto.
+	(DEF_RVV_TYPE): Simplify macro.
+	(register_vector_type): Refine implementation.
+	* config/riscv/riscv-vector-builtins.h (rvv_builtin_types_t): New.
+
+2022-10-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.h (class rvv_switcher): Move to
+	this to ....
+	* config/riscv/riscv-vector-builtins.cc (class rvv_switcher):
+	here.
+
+2022-10-12  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Move sapphirerapids out of AVX512_VP2INTERSECT.
+	* config/i386/i386.h: Remove AVX512_VP2INTERSECT from PTA_SAPPHIRERAPIDS
+	* doc/invoke.texi: Remove AVX512_VP2INTERSECT from SAPPHIRERAPIDS
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* gcov-io.cc (gcov_write_summary): Rename to ...
+	(gcov_write_object_summary): ... this.
+	* gcov-io.h (GCOV_TAG_OBJECT_SUMMARY_LENGTH): Rename from ...
+	(GCOV_TAG_SUMMARY_LENGTH): ... this.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frange_float): New.
+	(range_op_float_tests): New.
+	* range-op.cc (range_op_tests): Call range_op_float_tests.
+
+2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::nan_signbit_p): New.
+
+2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set_nonnegative): Pass bool to
+	update_nan.
+	* value-range.h: Disallow conversion to bool in update_nan().
+
+2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::frange): Add constructor taking type.
+
+2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc: Add relation_kind = VREL_VARYING to all
+	methods.
+
 2022-10-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-gori.cc (gori_compute::logical_combine): Avoid

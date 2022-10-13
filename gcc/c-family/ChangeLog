@@ -1,3 +1,12 @@
+2022-10-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/60014
+	PR preprocessor/60723
+	* c-ppoutput.cc (class token_streamer): Remove member
+	line_marker_emitted to...
+	(token_streamer::stream): ...a local variable here. Set
+	print.prev_was_system_token on all code paths.
+
 2022-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* c-opts.cc (c_common_post_options): Bump abi to 18.

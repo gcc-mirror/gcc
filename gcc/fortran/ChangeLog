@@ -1,3 +1,12 @@
+2022-10-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107217
+	* arith.cc (gfc_arith_plus): Compare consistency of types of operands.
+	(gfc_arith_minus): Likewise.
+	(gfc_arith_times): Likewise.
+	(gfc_arith_divide): Likewise.
+	(arith_power): Check that both operands are of numeric type.
+
 2022-10-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107215

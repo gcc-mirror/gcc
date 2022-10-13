@@ -1,3 +1,38 @@
+2022-10-12  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (standard_conversion): Remove LOOKUP_PREFER_RVALUE code.
+	(reference_binding): Honor clk_implicit_rval even pre-C++20.
+	(implicit_conversion_1): Remove LOOKUP_PREFER_RVALUE code.
+	(build_user_type_conversion_1): Likewise.
+	(convert_like_internal): Likewise.
+	(build_over_call): Likewise.
+	* cp-tree.h (LOOKUP_PREFER_RVALUE): Remove.
+	(LOOKUP_NO_NARROWING): Adjust definition.
+	* except.cc (build_throw): Don't perform two overload resolutions.
+	* typeck.cc (maybe_warn_pessimizing_move): Don't use
+	LOOKUP_PREFER_RVALUE.
+	(check_return_expr): Don't perform two overload resolutions.
+
+2022-10-12  Jason Merrill  <jason@redhat.com>
+
+	DR 2631
+	* cp-tree.h (source_location_current_p): Remove.
+	* name-lookup.h (struct cp_binding_level): Remove
+	immediate_fn_ctx_p.
+	* call.cc (in_immediate_context): All default args
+	and DMI are potentially immediate context.
+	(immediate_invocation_p): Don't treat source_location specially.
+	(struct in_consteval_if_p_temp_override): Move to cp-tree.h.
+	* constexpr.cc (get_nth_callarg): Move to cp-tree.h.
+	* cp-gimplify.cc (cp_fold_r): Don't fold consteval.
+	* name-lookup.cc (begin_scope): Don't set immediate_fn_ctx_p.
+	* parser.cc (cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	* pt.cc (tsubst_default_argument): Open sk_function_parms level.
+	* tree.cc (source_location_current_p): Remove.
+	(bot_replace): Fold consteval here.
+	(break_out_target_exprs): Handle errors.
+
 2022-10-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100134

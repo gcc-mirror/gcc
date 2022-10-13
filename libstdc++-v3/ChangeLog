@@ -1,3 +1,38 @@
+2022-10-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/string: Add using _Base::compare.
+	(__gnu_debug::basic_string<>::compare(const basic_string<>&)): Remove.
+	(__gnu_debug::basic_string<>::compare(size_type, size_type, const basic_string<>&)):
+	Remove.
+	(__gnu_debug::basic_string<>::compare(size_type, size_type, const basic_string<>&,
+	size_type, size_type)): Remove.
+	* testsuite/util/testsuite_string.h [_GLIBCXX_TEST_DEBUG_STRING]: Include <debug/string>.
+	* testsuite/21_strings/basic_string/operations/compare/char/1.cc: Include testsuite_string.h
+	and use __gnu_test::string.
+	* testsuite/21_strings/basic_string/operations/compare/char/13650.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/rfind/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/rfind/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/rfind/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/1.cc:
+	Include testsuite_string.h
+	and use __gnu_test::wstring.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/13650.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/2.cc: Likewise.
+
+2022-10-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (repeat_view): Define.
+	(repeat_view::_Iterator): Define.
+	(views::__detail::__can_repeat_view): Define.
+	(views::__detail::__can_bounded_repeat_view): Define.
+	(views::_Repeat, views::repeat): Define.
+	* testsuite/std/ranges/repeat/1.cc: New test.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2022-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR bootstrap/107221
