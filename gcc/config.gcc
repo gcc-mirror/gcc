@@ -919,6 +919,12 @@ case ${target} in
       gcc_cv_initfini_array=yes
       ;;
   esac
+  case $target in
+    *linux*)
+      rust_target_objs="${rust_target_objs} linux-rust.o"
+      target_has_targetrustm=yes
+      ;;
+  esac
   ;;
 *-*-netbsd*)
   tm_p_file="${tm_p_file} netbsd-protos.h"
