@@ -945,6 +945,8 @@ case ${target} in
     *-*-*linux*)
       d_target_objs="${d_target_objs} linux-d.o"
       target_has_targetdm=yes
+      rust_target_objs="${rust_target_objs} linux-rust.o"
+      target_has_targetrustm=yes
       ;;
     *-*-kfreebsd*-gnu)
       d_target_objs="${d_target_objs} kfreebsd-d.o"
