@@ -199,10 +199,6 @@ extern void assemble_end_function (tree, const char *);
    initial value (that will be done by the caller).  */
 extern void assemble_variable (tree, int, int, int);
 
-/* Put the vtable verification constructor initialization function
-   into the preinit array.  */
-extern void assemble_vtv_preinit_initializer (tree);
-
 /* Assemble everything that is needed for a variable declaration that has
    no definition in the current translation unit.  */
 extern void assemble_undefined_decl (tree);
