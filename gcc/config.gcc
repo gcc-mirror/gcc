@@ -991,6 +991,8 @@ case ${target} in
   esac
   d_target_objs="${d_target_objs} openbsd-d.o"
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} openbsd-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-phoenix*)
   gas=yes

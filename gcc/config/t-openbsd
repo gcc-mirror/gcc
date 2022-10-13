@@ -5,3 +5,8 @@ USER_H = $(EXTRA_HEADERS)
 openbsd-d.o: $(srcdir)/config/openbsd-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+# OpenBSD-specific Rust support.
+openbsd-rust.o: $(srcdir)/config/openbsd-rust.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
