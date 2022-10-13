@@ -19,3 +19,7 @@
 dragonfly-d.o: $(srcdir)/config/dragonfly-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+dragonfly-rust.o: $(srcdir)/config/dragonfly-rust.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
