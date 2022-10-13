@@ -6232,7 +6232,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     }
 
   /* Record this operation if it could be reused by the epilogue loop.  */
-  if (STMT_VINFO_REDUC_TYPE (reduc_info) == TREE_CODE_REDUCTION)
+  if (STMT_VINFO_REDUC_TYPE (reduc_info) == TREE_CODE_REDUCTION
+      && vec_num == 1)
     loop_vinfo->reusable_accumulators.put (scalar_results[0],
 					   { orig_reduc_input, reduc_info });
 
