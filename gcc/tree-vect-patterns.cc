@@ -1913,6 +1913,7 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
     return NULL;
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (bf_ref))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (container))
       || TYPE_MODE (TREE_TYPE (container)) == E_BLKmode)
     return NULL;
 
@@ -1921,25 +1922,7 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
   tree ret = gimple_assign_lhs (first_stmt);
   tree ret_type = TREE_TYPE (ret);
   bool shift_first = true;
-  tree vectype;
-
-  /* If the first operand of the BIT_FIELD_REF is not an INTEGER type, convert
-     it to one of the same width so we can perform the necessary masking and
-     shifting.  */
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (container)))
-    {
-      unsigned HOST_WIDE_INT container_size =
-	tree_to_uhwi (TYPE_SIZE (TREE_TYPE (container)));
-      tree int_type = build_nonstandard_integer_type (container_size, true);
-      pattern_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (int_type),
-			       VIEW_CONVERT_EXPR, container);
-      vectype = get_vectype_for_scalar_type (vinfo, int_type);
-      container = gimple_assign_lhs (pattern_stmt);
-      append_pattern_def_seq (vinfo, stmt_info, pattern_stmt, vectype);
-    }
-  else
-    vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (container));
+  tree vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (container));
 
   /* We move the conversion earlier if the loaded type is smaller than the
      return type to enable the use of widening loads.  */
