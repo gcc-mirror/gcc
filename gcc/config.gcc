@@ -1057,6 +1057,8 @@ case ${target} in
       ;;
   esac
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} sol2-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-*vms*)
   extra_options="${extra_options} vms/vms.opt"
