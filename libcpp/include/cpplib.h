@@ -1275,6 +1275,7 @@ struct cpp_num
 #define CPP_N_USERDEF	0x1000000 /* C++11 user-defined literal.  */
 
 #define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
+#define CPP_N_BFLOAT16	0x4000000 /* std::bfloat16_t type.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */

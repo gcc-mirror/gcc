@@ -2487,6 +2487,7 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* 33 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
 	     D_PRINT_DEFAULT },
   /* 34 */ { NL ("_Float"),	NL ("_Float"),		D_PRINT_FLOAT },
+  /* 35 */ { NL ("std::bfloat16_t"), NL ("std::bfloat16_t"), D_PRINT_FLOAT },
 };
 
 CP_STATIC_IF_GLIBCPP_V3
@@ -2751,11 +2752,22 @@ cplus_demangle_type (struct d_info *di)
 
 	case 'F':
 	  /* DF<number>_ - _Float<number>.
-	     DF<number>x - _Float<number>x.  */
+	     DF<number>x - _Float<number>x
+	     DF16b - std::bfloat16_t.  */
 	  {
 	    int arg = d_number (di);
 	    char buf[12];
 	    char suffix = 0;
+	    if (d_peek_char (di) == 'b')
+	      {
+		if (arg != 16)
+		  return NULL;
+		d_advance (di, 1);
+		ret = d_make_builtin_type (di,
+					   &cplus_demangle_builtin_types[35]);
+		di->expansion += ret->u.s_builtin.type->len;
+		break;
+	      }
 	    if (d_peek_char (di) == 'x')
 	      suffix = 'x';
 	    if (!suffix && d_peek_char (di) != '_')

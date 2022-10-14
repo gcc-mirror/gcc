@@ -1000,6 +1000,22 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  pedwarn (input_location, OPT_Wpedantic,
 		   "non-standard suffix on floating constant");
       }
+    else if ((flags & CPP_N_BFLOAT16) != 0)
+      {
+	type = bfloat16_type_node;
+	if (type == NULL_TREE)
+	  {
+	    error ("unsupported non-standard suffix on floating constant");
+	    return error_mark_node;
+	  }
+	if (!c_dialect_cxx ())
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "non-standard suffix on floating constant");
+	else if (cxx_dialect < cxx23)
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "%<bf16%> or %<BF16%> suffix on floating constant only "
+		   "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
+      }
     else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL

@@ -3416,6 +3416,22 @@ proc check_effective_target_base_quadfloat_support { } {
     return 1
 }
 
+# Return 1 if the target supports the __bf16 type, 0 otherwise.
+
+proc check_effective_target_bfloat16 {} {
+    return [check_no_compiler_messages_nocache bfloat16 object {
+	__bf16 foo (__bf16 x) { return x + x; }
+    } [add_options_for_bfloat16 ""]]
+}
+
+proc check_effective_target_bfloat16_runtime {} {
+    return [check_effective_target_bfloat16]
+}
+
+proc add_options_for_bfloat16 { flags } {
+    return "$flags"
+}
+
 # Return 1 if the target supports all four forms of fused multiply-add
 # (fma, fms, fnma, and fnms) for both float and double.
 

@@ -293,6 +293,10 @@ cp_compare_floating_point_conversion_ranks (tree t1, tree t2)
       if (mv2 == FLOATN_NX_TYPE_NODE (i))
 	extended2 = i + 1;
     }
+  if (mv1 == bfloat16_type_node)
+    extended1 = true;
+  if (mv2 == bfloat16_type_node)
+    extended2 = true;
   if (extended2 && !extended1)
     {
       int ret = cp_compare_floating_point_conversion_ranks (t2, t1);
@@ -390,7 +394,9 @@ cp_compare_floating_point_conversion_ranks (tree t1, tree t2)
   if (cnt > 1 && mv2 == long_double_type_node)
     return -2;
   /* Otherwise, they have equal rank, but extended types
-     (other than std::bfloat16_t) have higher subrank.  */
+     (other than std::bfloat16_t) have higher subrank.
+     std::bfloat16_t shouldn't have equal rank to any standard
+     floating point type.  */
   return 1;
 }
 

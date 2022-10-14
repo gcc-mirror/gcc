@@ -8741,6 +8741,8 @@ extended_float_type_p (tree type)
   for (int i = 0; i < NUM_FLOATN_NX_TYPES; ++i)
     if (type == FLOATN_TYPE_NODE (i))
       return true;
+  if (type == bfloat16_type_node)
+    return true;
   return false;
 }
 

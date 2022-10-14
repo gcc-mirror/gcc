@@ -344,7 +344,11 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
       gcc_assert ((GET_MODE_PRECISION (from_mode)
 		   != GET_MODE_PRECISION (to_mode))
 		  || (DECIMAL_FLOAT_MODE_P (from_mode)
-		      != DECIMAL_FLOAT_MODE_P (to_mode)));
+		      != DECIMAL_FLOAT_MODE_P (to_mode))
+		  || (REAL_MODE_FORMAT (from_mode) == &arm_bfloat_half_format
+		      && REAL_MODE_FORMAT (to_mode) == &ieee_half_format)
+		  || (REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+		      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format));
 
       if (GET_MODE_PRECISION (from_mode) == GET_MODE_PRECISION (to_mode))
 	/* Conversion between decimal float and binary float, same size.  */
@@ -363,6 +367,150 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 			  tab == sext_optab ? FLOAT_EXTEND : FLOAT_TRUNCATE);
 	  return;
 	}
+
+#ifdef HAVE_SFmode
+      if (REAL_MODE_FORMAT (from_mode) == &arm_bfloat_half_format
+	  && REAL_MODE_FORMAT (SFmode) == &ieee_single_format)
+	{
+	  if (GET_MODE_PRECISION (to_mode) > GET_MODE_PRECISION (SFmode))
+	    {
+	      /* To cut down on libgcc size, implement
+		 BFmode -> {DF,XF,TF}mode conversions by
+		 BFmode -> SFmode -> {DF,XF,TF}mode conversions.  */
+	      rtx temp = gen_reg_rtx (SFmode);
+	      convert_mode_scalar (temp, from, unsignedp);
+	      convert_mode_scalar (to, temp, unsignedp);
+	      return;
+	    }
+	  if (REAL_MODE_FORMAT (to_mode) == &ieee_half_format)
+	    {
+	      /* Similarly, implement BFmode -> HFmode as
+		 BFmode -> SFmode -> HFmode conversion where SFmode
+		 has superset of BFmode values.  We don't need
+		 to handle sNaNs by raising exception and turning
+		 into into qNaN though, as that can be done in the
+		 SFmode -> HFmode conversion too.  */
+	      rtx temp = gen_reg_rtx (SFmode);
+	      int save_flag_finite_math_only = flag_finite_math_only;
+	      flag_finite_math_only = true;
+	      convert_mode_scalar (temp, from, unsignedp);
+	      flag_finite_math_only = save_flag_finite_math_only;
+	      convert_mode_scalar (to, temp, unsignedp);
+	      return;
+	    }
+	  if (to_mode == SFmode
+	      && !HONOR_NANS (from_mode)
+	      && !HONOR_NANS (to_mode)
+	      && optimize_insn_for_speed_p ())
+	    {
+	      /* If we don't expect sNaNs, for BFmode -> SFmode we can just
+		 shift the bits up.  */
+	      machine_mode fromi_mode, toi_mode;
+	      if (int_mode_for_size (GET_MODE_BITSIZE (from_mode),
+				     0).exists (&fromi_mode)
+		  && int_mode_for_size (GET_MODE_BITSIZE (to_mode),
+					0).exists (&toi_mode))
+		{
+		  start_sequence ();
+		  rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+		  rtx tof = NULL_RTX;
+		  if (fromi)
+		    {
+		      rtx toi = gen_reg_rtx (toi_mode);
+		      convert_mode_scalar (toi, fromi, 1);
+		      toi
+			= maybe_expand_shift (LSHIFT_EXPR, toi_mode, toi,
+					      GET_MODE_PRECISION (to_mode)
+					      - GET_MODE_PRECISION (from_mode),
+					      NULL_RTX, 1);
+		      if (toi)
+			{
+			  tof = lowpart_subreg (to_mode, toi, toi_mode);
+			  if (tof)
+			    emit_move_insn (to, tof);
+			}
+		    }
+		  insns = get_insns ();
+		  end_sequence ();
+		  if (tof)
+		    {
+		      emit_insn (insns);
+		      return;
+		    }
+		}
+	    }
+	}
+      if (REAL_MODE_FORMAT (from_mode) == &ieee_single_format
+	  && REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+	  && !HONOR_NANS (from_mode)
+	  && !HONOR_NANS (to_mode)
+	  && !flag_rounding_math
+	  && optimize_insn_for_speed_p ())
+	{
+	  /* If we don't expect qNaNs nor sNaNs and can assume rounding
+	     to nearest, we can expand the conversion inline as
+	     (fromi + 0x7fff + ((fromi >> 16) & 1)) >> 16.  */
+	  machine_mode fromi_mode, toi_mode;
+	  if (int_mode_for_size (GET_MODE_BITSIZE (from_mode),
+				 0).exists (&fromi_mode)
+	      && int_mode_for_size (GET_MODE_BITSIZE (to_mode),
+				    0).exists (&toi_mode))
+	    {
+	      start_sequence ();
+	      rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+	      rtx tof = NULL_RTX;
+	      do
+		{
+		  if (!fromi)
+		    break;
+		  int shift = (GET_MODE_PRECISION (from_mode)
+			       - GET_MODE_PRECISION (to_mode));
+		  rtx temp1
+		    = maybe_expand_shift (RSHIFT_EXPR, fromi_mode, fromi,
+					  shift, NULL_RTX, 1);
+		  if (!temp1)
+		    break;
+		  rtx temp2
+		    = expand_binop (fromi_mode, and_optab, temp1, const1_rtx,
+				    NULL_RTX, 1, OPTAB_DIRECT);
+		  if (!temp2)
+		    break;
+		  rtx temp3
+		    = expand_binop (fromi_mode, add_optab, fromi,
+				    gen_int_mode ((HOST_WIDE_INT_1U
+						   << (shift - 1)) - 1,
+						  fromi_mode), NULL_RTX,
+				    1, OPTAB_DIRECT);
+		  if (!temp3)
+		    break;
+		  rtx temp4
+		    = expand_binop (fromi_mode, add_optab, temp3, temp2,
+				    NULL_RTX, 1, OPTAB_DIRECT);
+		  if (!temp4)
+		    break;
+		  rtx temp5 = maybe_expand_shift (RSHIFT_EXPR, fromi_mode,
+						  temp4, shift, NULL_RTX, 1);
+		  if (!temp5)
+		    break;
+		  rtx temp6 = lowpart_subreg (toi_mode, temp5, fromi_mode);
+		  if (!temp6)
+		    break;
+		  tof = lowpart_subreg (to_mode, force_reg (toi_mode, temp6),
+					toi_mode);
+		  if (tof)
+		    emit_move_insn (to, tof);
+		}
+	      while (0);
+	      insns = get_insns ();
+	      end_sequence ();
+	      if (tof)
+		{
+		  emit_insn (insns);
+		  return;
+		}
+	    }
+	}
+#endif
 
       /* Otherwise use a libcall.  */
       libcall = convert_optab_libfunc (tab, to_mode, from_mode);
