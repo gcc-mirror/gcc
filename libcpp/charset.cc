@@ -1291,7 +1291,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   valid_flags = C99 | CXX | C11 | CXX23;
   if (CPP_PEDANTIC (pfile))
     {
-      if (CPP_OPTION (pfile, cplusplus))
+      if (CPP_OPTION (pfile, xid_identifiers))
 	valid_flags = CXX23;
       else if (CPP_OPTION (pfile, c11_identifiers))
 	valid_flags = C11;
@@ -1355,7 +1355,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
       return 2;
     }
 
-  if (CPP_OPTION (pfile, cplusplus))
+  if (CPP_OPTION (pfile, xid_identifiers))
     invalid_start_flags = NXX23;
   else if (CPP_OPTION (pfile, c11_identifiers))
     invalid_start_flags = N11;
