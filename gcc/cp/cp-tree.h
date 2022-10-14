@@ -6793,8 +6793,6 @@ extern tree ocp_convert				(tree, tree, int, int,
 						 tsubst_flags_t);
 extern tree cp_convert				(tree, tree, tsubst_flags_t);
 extern tree cp_convert_and_check                (tree, tree, tsubst_flags_t);
-extern tree cp_ep_convert_and_check             (tree, tree, tree,
-						 tsubst_flags_t);
 extern tree cp_fold_convert			(tree, tree);
 extern tree cp_get_callee			(tree);
 extern tree cp_get_callee_fndecl		(tree);

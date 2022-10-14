@@ -5895,10 +5895,52 @@ build_conditional_expr (const op_location_t &loc,
 	   && (ARITHMETIC_TYPE_P (arg3_type)
 	       || UNSCOPED_ENUM_P (arg3_type)))
     {
-      /* In this case, there is always a common type.  */
-      result_type = type_after_usual_arithmetic_conversions (arg2_type,
-							     arg3_type);
+      /* A conditional expression between a floating-point
+	 type and an integer type should convert the integer type to
+	 the evaluation format of the floating-point type, with
+	 possible excess precision.  */
+      tree eptype2 = arg2_type;
+      tree eptype3 = arg3_type;
+      tree eptype;
+      if (ANY_INTEGRAL_TYPE_P (arg2_type)
+	  && (eptype = excess_precision_type (arg3_type)) != NULL_TREE)
+	{
+	  eptype3 = eptype;
+	  if (!semantic_result_type)
+	    semantic_result_type
+	      = type_after_usual_arithmetic_conversions (arg2_type, arg3_type);
+	}
+      else if (ANY_INTEGRAL_TYPE_P (arg3_type)
+	       && (eptype = excess_precision_type (arg2_type)) != NULL_TREE)
+	{
+	  eptype2 = eptype;
+	  if (!semantic_result_type)
+	    semantic_result_type
+	      = type_after_usual_arithmetic_conversions (arg2_type, arg3_type);
+	}
+      result_type = type_after_usual_arithmetic_conversions (eptype2,
+							     eptype3);
       if (result_type == error_mark_node)
+	{
+	  tree t1 = eptype2;
+	  tree t2 = eptype3;
+	  if (TREE_CODE (t1) == COMPLEX_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (TREE_CODE (t2) == COMPLEX_TYPE)
+	    t2 = TREE_TYPE (t2);
+	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
+			       && TREE_CODE (t2) == REAL_TYPE
+			       && (extended_float_type_p (t1)
+				   || extended_float_type_p (t2))
+			       && cp_compare_floating_point_conversion_ranks
+				    (t1, t2) == 3);
+	  if (complain & tf_error)
+	    error_at (loc, "operands to %<?:%> of types %qT and %qT "
+			   "have unordered conversion rank",
+		      eptype2, eptype3);
+	  return error_mark_node;
+	}
+      if (semantic_result_type == error_mark_node)
 	{
 	  tree t1 = arg2_type;
 	  tree t2 = arg3_type;
@@ -5976,10 +6018,6 @@ build_conditional_expr (const op_location_t &loc,
 	    }
 	}
 
-      if (semantic_result_type && INTEGRAL_TYPE_P (arg2_type))
-	arg2 = perform_implicit_conversion (semantic_result_type, arg2, complain);
-      else if (semantic_result_type && INTEGRAL_TYPE_P (arg3_type))
-	arg3 = perform_implicit_conversion (semantic_result_type, arg3, complain);
       arg2 = perform_implicit_conversion (result_type, arg2, complain);
       arg3 = perform_implicit_conversion (result_type, arg3, complain);
     }
@@ -8546,14 +8584,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 
   warning_sentinel w (warn_zero_as_null_pointer_constant);
   if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
-    {
-      if (issue_conversion_warnings)
-	expr = cp_ep_convert_and_check (totype, TREE_OPERAND (expr, 0),
-					TREE_TYPE (expr), complain);
-      else
-	expr = cp_convert (totype, TREE_OPERAND (expr, 0), complain);
-    }
-  else if (issue_conversion_warnings)
+    expr = TREE_OPERAND (expr, 0);
+  if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);
   else
     expr = cp_convert (totype, expr, complain);

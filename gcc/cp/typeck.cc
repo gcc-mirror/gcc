@@ -5229,6 +5229,18 @@ cp_build_binary_op (const op_location_t &location,
     case EXACT_DIV_EXPR:
       may_need_excess_precision = true;
       break;
+    case EQ_EXPR:
+    case NE_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case GT_EXPR:
+    case SPACESHIP_EXPR:
+      /* Excess precision for implicit conversions of integers to
+	 floating point.  */
+      may_need_excess_precision = (ANY_INTEGRAL_TYPE_P (type0)
+				   || ANY_INTEGRAL_TYPE_P (type1));
+      break;
     default:
       may_need_excess_precision = false;
       break;
@@ -6157,7 +6169,8 @@ cp_build_binary_op (const op_location_t &location,
 	}
     }
   if (may_need_excess_precision
-      && (orig_type0 != type0 || orig_type1 != type1))
+      && (orig_type0 != type0 || orig_type1 != type1)
+      && build_type == NULL_TREE)
     {
       gcc_assert (common);
       semantic_result_type = cp_common_type (orig_type0, orig_type1);
@@ -6460,11 +6473,9 @@ cp_build_binary_op (const op_location_t &location,
     {
       warning_sentinel w (warn_sign_conversion, short_compare);
       if (!same_type_p (TREE_TYPE (op0), result_type))
-	op0 = cp_ep_convert_and_check (result_type, op0,
-				       semantic_result_type, complain);
+	op0 = cp_convert_and_check (result_type, op0, complain);
       if (!same_type_p (TREE_TYPE (op1), result_type))
-	op1 = cp_ep_convert_and_check (result_type, op1,
-				       semantic_result_type, complain);
+	op1 = cp_convert_and_check (result_type, op1, complain);
 
       if (op0 == error_mark_node || op1 == error_mark_node)
 	return error_mark_node;

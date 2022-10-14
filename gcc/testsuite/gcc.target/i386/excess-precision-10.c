@@ -3,8 +3,14 @@
 /* { dg-do run } */
 /* { dg-options "-std=c11 -mfpmath=387 -fexcess-precision=standard" } */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
 extern void exit (int);
+#ifdef __cplusplus
+}
+#endif
 
 int
 main (void)

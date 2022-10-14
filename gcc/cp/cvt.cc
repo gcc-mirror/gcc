@@ -684,33 +684,6 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
   return result;
 }
 
-/* Similarly, but deal with excess precision.  SEMANTIC_TYPE is the type this
-   conversion would use without excess precision.  If SEMANTIC_TYPE is NULL,
-   this function is equivalent to cp_convert_and_check.  This function is
-   a wrapper that handles conversions that may be different than the usual
-   ones because of excess precision.  */
-
-tree
-cp_ep_convert_and_check (tree type, tree expr, tree semantic_type,
-			 tsubst_flags_t complain)
-{
-  if (TREE_TYPE (expr) == type)
-    return expr;
-  if (expr == error_mark_node)
-    return expr;
-  if (!semantic_type)
-    return cp_convert_and_check (type, expr, complain);
-
-  if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
-      && TREE_TYPE (expr) != semantic_type)
-    /* For integers, we need to check the real conversion, not
-       the conversion to the excess precision type.  */
-    expr = cp_convert_and_check (semantic_type, expr, complain);
-  /* Result type is the excess precision type, which should be
-     large enough, so do not check.  */
-  return cp_convert (type, expr, complain);
-}
-
 /* Conversion...
 
    FLAGS indicates how we should behave.  */
