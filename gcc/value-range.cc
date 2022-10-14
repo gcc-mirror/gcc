@@ -324,6 +324,14 @@ frange::set (tree type,
       m_neg_nan = false;
     }
 
+  if (!HONOR_SIGNED_ZEROS (m_type))
+    {
+      if (real_iszero (&m_min, 1))
+	m_min.sign = 0;
+      if (real_iszero (&m_max, 1))
+	m_max.sign = 0;
+    }
+
   // For -ffinite-math-only we can drop ranges outside the
   // representable numbers to min/max for the type.
   if (flag_finite_math_only)
