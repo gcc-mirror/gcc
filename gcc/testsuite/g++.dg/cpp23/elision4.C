@@ -1,5 +1,6 @@
 // PR c++/101165 - P2266R1 - Simpler implicit move
 // { dg-do compile { target c++23 } }
+// { dg-options "-Wdangling-reference" }
 // Test from P2266R1, $ 5.2. LibreOffice OString constructor.
 
 struct X {
@@ -33,6 +34,6 @@ T& temporary2(T&& x) { return static_cast<T&>(x); }
 void
 test ()
 {
-  int& r1 = temporary1 (42);
-  int& r2 = temporary2 (42);
+  int& r1 = temporary1 (42); // { dg-warning "dangling reference" }
+  int& r2 = temporary2 (42); // { dg-warning "dangling reference" }
 }

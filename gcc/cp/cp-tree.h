@@ -459,7 +459,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
-      (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
       TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
@@ -4566,6 +4565,9 @@ get_vec_init_expr (tree t)
 
    When appearing in a CONSTRUCTOR, the expression is an unconverted
    compound literal.
+
+   When appearing in a CALL_EXPR, it means that it is a call to
+   a constructor.
 
    When appearing in a FIELD_DECL, it means that this field
    has been duly initialized in its constructor.  */

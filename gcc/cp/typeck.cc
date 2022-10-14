@@ -11246,6 +11246,17 @@ check_return_expr (tree retval, bool *no_warning)
   if (processing_template_decl)
     return saved_retval;
 
+  /* A naive attempt to reduce the number of -Wdangling-reference false
+     positives: if we know that this function can return a variable with
+     static storage duration rather than one of its parameters, suppress
+     the warning.  */
+  if (warn_dangling_reference
+      && TYPE_REF_P (functype)
+      && bare_retval
+      && VAR_P (bare_retval)
+      && TREE_STATIC (bare_retval))
+    suppress_warning (current_function_decl, OPT_Wdangling_reference);
+
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
     retval = cp_build_init_expr (result, retval);

@@ -249,7 +249,8 @@ in the following sections.
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
--Wctor-dtor-privacy  -Wno-delete-incomplete @gol
+-Wctor-dtor-privacy  -Wdangling-reference @gol
+-Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare @gol
 -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
@@ -3626,6 +3627,54 @@ destructors in that class are private, and it has neither friends nor
 public static member functions.  Also warn if there are no non-private
 methods, and there's at least one private member function that isn't
 a constructor or destructor.
+
+@item -Wdangling-reference @r{(C++ and Objective-C++ only)}
+@opindex Wdangling-reference
+@opindex Wno-dangling-reference
+Warn when a reference is bound to a temporary whose lifetime has ended.
+For example:
+
+@smallexample
+int n = 1;
+const int& r = std::max(n - 1, n + 1); // r is dangling
+@end smallexample
+
+In the example above, two temporaries are created, one for each
+argument, and a reference to one of the temporaries is returned.
+However, both temporaries are destroyed at the end of the full
+expression, so the reference @code{r} is dangling.  This warning
+also detects dangling references in member initializer lists:
+
+@smallexample
+const int& f(const int& i) @{ return i; @}
+struct S @{
+  const int &r; // r is dangling
+  S() : r(f(10)) @{ @}
+@};
+@end smallexample
+
+Member functions are checked as well, but only their object argument:
+
+@smallexample
+struct S @{
+   const S& self () @{ return *this; @}
+@};
+const S& s = S().self(); // s is dangling
+@end smallexample
+
+Certain functions are safe in this respect, for example @code{std::use_facet}:
+they take and return a reference, but they don't return one of its arguments,
+which can fool the warning.  Such functions can be excluded from the warning
+by wrapping them in a @code{#pragma}:
+
+@smallexample
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
+const T& foo (const T&) @{ @dots{} @}
+#pragma GCC diagnostic pop
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wdelete-non-virtual-dtor

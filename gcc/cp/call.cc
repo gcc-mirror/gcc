@@ -9313,6 +9313,16 @@ conv_binds_ref_to_prvalue (conversion *c)
   return conv_is_prvalue (next_conversion (c));
 }
 
+/* True iff EXPR represents a (subobject of a) temporary.  */
+
+static bool
+expr_represents_temporary_p (tree expr)
+{
+  while (handled_component_p (expr))
+    expr = TREE_OPERAND (expr, 0);
+  return TREE_CODE (expr) == TARGET_EXPR;
+}
+
 /* True iff C is a conversion that binds a reference to a temporary.
    This is a superset of conv_binds_ref_to_prvalue: here we're also
    interested in xvalues.  */
@@ -9330,18 +9340,14 @@ conv_binds_ref_to_temporary (conversion *c)
        struct Derived : Base {};
        const Base& b(Derived{});
      where we bind 'b' to the Base subobject of a temporary object of type
-     Derived.  The subobject is an xvalue; the whole object is a prvalue.  */
-  if (c->kind != ck_base)
-    return false;
-  c = next_conversion (c);
-  if (c->kind == ck_identity && c->u.expr)
-    {
-      tree expr = c->u.expr;
-      while (handled_component_p (expr))
-	expr = TREE_OPERAND (expr, 0);
-      if (TREE_CODE (expr) == TARGET_EXPR)
-	return true;
-    }
+     Derived.  The subobject is an xvalue; the whole object is a prvalue.
+
+     The ck_base doesn't have to be present for cases like X{}.m.  */
+  if (c->kind == ck_base)
+    c = next_conversion (c);
+  if (c->kind == ck_identity && c->u.expr
+      && expr_represents_temporary_p (c->u.expr))
+    return true;
   return false;
 }
 
@@ -13428,6 +13434,121 @@ initialize_reference (tree type, tree expr,
   return expr;
 }
 
+/* Helper for maybe_warn_dangling_reference to find a problematic CALL_EXPR
+   that initializes the LHS (and at least one of its arguments represents
+   a temporary, as outlined in maybe_warn_dangling_reference), or NULL_TREE
+   if none found.  For instance:
+
+     const S& s = S().self(); // S::self (&TARGET_EXPR <...>)
+     const int& r = (42, f(1)); // f(1)
+     const int& t = b ? f(1) : f(2); // f(1)
+     const int& u = b ? f(1) : f(g); // f(1)
+     const int& v = b ? f(g) : f(2); // f(2)
+     const int& w = b ? f(g) : f(g); // NULL_TREE
+     const int& y = (f(1), 42); // NULL_TREE
+     const int& z = f(f(1)); // f(f(1))
+
+   EXPR is the initializer.  */
+
+static tree
+do_warn_dangling_reference (tree expr)
+{
+  STRIP_NOPS (expr);
+  switch (TREE_CODE (expr))
+    {
+    case CALL_EXPR:
+      {
+	tree fndecl = cp_get_callee_fndecl_nofold (expr);
+	if (!fndecl
+	    || warning_suppressed_p (fndecl, OPT_Wdangling_reference)
+	    || !warning_enabled_at (DECL_SOURCE_LOCATION (fndecl),
+				    OPT_Wdangling_reference)
+	    /* If the function doesn't return a reference, don't warn.  This
+	       can be e.g.
+		 const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
+	       which doesn't dangle: std::min here returns an int.  */
+	    || !TYPE_REF_OBJ_P (TREE_TYPE (TREE_TYPE (fndecl))))
+	  return NULL_TREE;
+
+	/* Here we're looking to see if any of the arguments is a temporary
+	   initializing a reference parameter.  */
+	for (int i = 0; i < call_expr_nargs (expr); ++i)
+	  {
+	    tree arg = CALL_EXPR_ARG (expr, i);
+	    /* Check that this argument initializes a reference, except for
+	       the argument initializing the object of a member function.  */
+	    if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+		&& !TYPE_REF_P (TREE_TYPE (arg)))
+	      continue;
+	    /* It could also be another call taking a temporary and returning
+	       it and initializing this reference parameter.  */
+	    if (do_warn_dangling_reference (arg))
+	      return expr;
+	    STRIP_NOPS (arg);
+	    if (TREE_CODE (arg) == ADDR_EXPR)
+	      arg = TREE_OPERAND (arg, 0);
+	    if (expr_represents_temporary_p (arg))
+	      return expr;
+	  /* Don't warn about member function like:
+	      std::any a(...);
+	      S& s = a.emplace<S>({0}, 0);
+	     which constructs a new object and returns a reference to it, but
+	     we still want to detect:
+	       struct S { const S& self () { return *this; } };
+	       const S& s = S().self();
+	     where 's' dangles.  If we've gotten here, the object this function
+	     is invoked on is not a temporary.  */
+	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl))
+	      break;
+	  }
+	return NULL_TREE;
+      }
+    case COMPOUND_EXPR:
+      return do_warn_dangling_reference (TREE_OPERAND (expr, 1));
+    case COND_EXPR:
+      if (tree t = do_warn_dangling_reference (TREE_OPERAND (expr, 1)))
+	return t;
+      return do_warn_dangling_reference (TREE_OPERAND (expr, 2));
+    case PAREN_EXPR:
+      return do_warn_dangling_reference (TREE_OPERAND (expr, 0));
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* Implement -Wdangling-reference, to detect cases like
+
+     int n = 1;
+     const int& r = std::max(n - 1, n + 1); // r is dangling
+
+   This creates temporaries from the arguments, returns a reference to
+   one of the temporaries, but both temporaries are destroyed at the end
+   of the full expression.
+
+   This works by checking if a reference is initialized with a function
+   that returns a reference, and at least one parameter of the function
+   is a reference that is bound to a temporary.  It assumes that such a
+   function actually returns one of its arguments.
+
+   DECL is the reference being initialized, INIT is the initializer.  */
+
+static void
+maybe_warn_dangling_reference (const_tree decl, tree init)
+{
+  if (!warn_dangling_reference)
+    return;
+  if (!TYPE_REF_P (TREE_TYPE (decl)))
+    return;
+  if (tree call = do_warn_dangling_reference (init))
+    {
+      auto_diagnostic_group d;
+      if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wdangling_reference,
+		      "possibly dangling reference to a temporary"))
+	inform (EXPR_LOCATION (call), "the temporary was destroyed at "
+		"the end of the full expression %qE", call);
+    }
+}
+
 /* If *P is an xvalue expression, prevent temporary lifetime extension if it
    gets used to initialize a reference.  */
 
@@ -13525,6 +13646,9 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups,
   tree type = TREE_TYPE (init);
   if (processing_template_decl)
     return init;
+
+  maybe_warn_dangling_reference (decl, init);
+
   if (TYPE_REF_P (type))
     init = extend_ref_init_temps_1 (decl, init, cleanups, cond_guard);
   else
