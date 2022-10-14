@@ -1,3 +1,11 @@
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/gcn.cc (VnMODE): Use 'case E_QImode:' instead of
+	'case QImode:', etc.
+
 2022-10-14  Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.cc (oacc_privatization_candidate_p): Artificial vars are not
