@@ -1,6 +1,12 @@
 2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	New.
+
+	Backported from master:
 	2022-11-02  Cesar Philippidis  <cesar@codesourcery.com>
 		    Thomas Schwinge  <thomas@codesourcery.com>
 
