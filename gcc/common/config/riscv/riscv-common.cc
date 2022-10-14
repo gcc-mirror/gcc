@@ -145,6 +145,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"c", ISA_SPEC_CLASS_20190608, 2, 0},
   {"c", ISA_SPEC_CLASS_2P2,      2, 0},
 
+  {"h",       ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
@@ -361,21 +363,18 @@ multi_letter_subset_rank (const std::string &subset)
   gcc_assert (subset.length () >= 2);
   int high_order = -1;
   int low_order = 0;
-  /* The order between multi-char extensions: s -> h -> z -> x.  */
+  /* The order between multi-char extensions: s -> z -> x.  */
   char multiletter_class = subset[0];
   switch (multiletter_class)
     {
     case 's':
       high_order = 0;
       break;
-    case 'h':
+    case 'z':
       high_order = 1;
       break;
-    case 'z':
-      high_order = 2;
-      break;
     case 'x':
-      high_order = 3;
+      high_order = 2;
       break;
     default:
       gcc_unreachable ();
@@ -671,7 +670,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbkjtpvn";
+  return "mafdqlcbkjtpvnh";
 }
 
 /* Parsing subset version.
@@ -830,7 +829,7 @@ riscv_subset_list::parse_std_ext (const char *p)
     {
       char subset[2] = {0, 0};
 
-      if (*p == 'x' || *p == 's' || *p == 'h' || *p == 'z')
+      if (*p == 'x' || *p == 's' || *p == 'z')
 	break;
 
       if (*p == '_')
@@ -955,7 +954,7 @@ riscv_subset_list::handle_combine_ext ()
 
    Arguments:
      `p`: Current parsing position.
-     `ext_type`: What kind of extensions, 's', 'h', 'z' or 'x'.
+     `ext_type`: What kind of extensions, 's', 'z' or 'x'.
      `ext_type_str`: Full name for kind of extension.  */
 
 const char *
@@ -1093,12 +1092,6 @@ riscv_subset_list::parse (const char *arch, location_t loc)
 
   /* Parsing supervisor extension.  */
   p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
-
-  if (p == NULL)
-    goto fail;
-
-  /* Parsing hypervisor extension.  */
-  p = subset_list->parse_multiletter_ext (p, "h", "hypervisor extension");
 
   if (p == NULL)
     goto fail;
