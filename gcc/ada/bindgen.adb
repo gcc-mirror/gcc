@@ -114,27 +114,25 @@ package body Bindgen is
    --  For CodePeer, introduce a wrapper subprogram which calls the
    --  user-defined main subprogram.
 
-   --  Names for local C-String variables
+   --  Name for local C-String variable
 
    Adainit_String_Obj_Name  : constant String := "Adainit_Name_C_String";
-   Adafinal_String_Obj_Name : constant String := "Adafinal_Name_C_String";
 
-   --  Names and link_names for CUDA device adainit/adafinal procs.
+   --  Name and link_name for CUDA device initialization procedure
 
-   Device_Subp_Name_Prefix : constant String := "imported_device_";
+   Device_Ada_Init_Subp_Name : constant String := "Device_Initialization";
    Device_Link_Name_Prefix : constant String := "__device_";
 
-   function Device_Ada_Final_Link_Name return String is
-     (Device_Link_Name_Prefix & Ada_Final_Name.all);
+   function Device_Link_Name (Suffix : String) return String is
+     (Device_Link_Name_Prefix &
+       (if CUDA_Device_Library_Name = null
+        then "ada" -- is this an error path?
+        else CUDA_Device_Library_Name.all) & Suffix);
 
-   function Device_Ada_Final_Subp_Name return String is
-     (Device_Subp_Name_Prefix & Ada_Final_Name.all);
-
-   function Device_Ada_Init_Link_Name return String is
-     (Device_Link_Name_Prefix & Ada_Init_Name.all);
-
-   function Device_Ada_Init_Subp_Name return String is
-     (Device_Subp_Name_Prefix & Ada_Init_Name.all);
+   function Device_Ada_Init_Link_Name return String
+     is (Device_Link_Name (Suffix => "init"));
+   function Device_Ada_Final_Link_Name return String
+     is (Device_Link_Name (Suffix => "final"));
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -521,12 +519,6 @@ package body Bindgen is
 
       else
          WBI ("      System.Standard_Library.Adafinal;");
-      end if;
-
-      --  perform device (as opposed to host) finalization
-      if Enable_CUDA_Expansion then
-         WBI ("      pragma CUDA_Execute (" &
-                Device_Ada_Final_Subp_Name & ", 1, 1);");
       end if;
 
       WBI ("   end " & Ada_Final_Name.all & ";");
@@ -1362,16 +1354,16 @@ package body Bindgen is
       end loop;
 
       WBI ("   procedure " & Device_Ada_Init_Subp_Name & ";");
-      WBI ("   pragma Import (C, " & Device_Ada_Init_Subp_Name &
+      WBI ("   pragma Export (C, " & Device_Ada_Init_Subp_Name &
              ", Link_Name => """ & Device_Ada_Init_Link_Name & """);");
-      WBI ("   procedure " & Device_Ada_Final_Subp_Name & ";");
-      WBI ("   pragma Import (C, " & Device_Ada_Final_Subp_Name &
-             ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
 
-      --  C-string declarations for adainit and adafinal
+      --  It would be nice to declare a real body that raises P_E, but
+      --  generating a subprogram body at the right point is harder
+      --  than generating a null procedure here.
+      WBI ("   procedure " & Device_Ada_Init_Subp_Name & " is null;");
+
+      --  C-string declaration for adainit
       WBI ("   " & Adainit_String_Obj_Name
-            & " : Interfaces.C.Strings.Chars_Ptr;");
-      WBI ("   " & Adafinal_String_Obj_Name
             & " : Interfaces.C.Strings.Chars_Ptr;");
       WBI ("");
 
@@ -1455,15 +1447,11 @@ package body Bindgen is
          end;
       end loop;
 
-      --  Register device-side Adainit and Adafinal
+      --  Register device-side Adainit
       Gen_CUDA_Register_Function_Call
         (Kernel_Name   => Device_Ada_Init_Link_Name,
          Kernel_String => Adainit_String_Obj_Name,
          Kernel_Proc   => Device_Ada_Init_Subp_Name);
-      Gen_CUDA_Register_Function_Call
-        (Kernel_Name   => Device_Ada_Final_Link_Name,
-         Kernel_String => Adafinal_String_Obj_Name,
-         Kernel_Proc   => Device_Ada_Final_Subp_Name);
 
       WBI ("      CUDA_Register_Fat_Binary_End (Fat_Binary_Handle);");
 
@@ -2702,7 +2690,6 @@ package body Bindgen is
       if not Cumulative_Restrictions.Set (No_Finalization) then
          WBI ("");
          WBI ("   procedure " & Ada_Final_Name.all & ";");
-
          if Enable_CUDA_Device_Expansion then
             WBI ("   pragma Export (C, " & Ada_Final_Name.all &
                    ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
