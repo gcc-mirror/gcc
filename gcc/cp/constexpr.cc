@@ -2088,7 +2088,7 @@ cxx_dynamic_cast_fn_p (tree fndecl)
 {
   return (cxx_dialect >= cxx20
 	  && id_equal (DECL_NAME (fndecl), "__dynamic_cast")
-	  && CP_DECL_CONTEXT (fndecl) == global_namespace);
+	  && CP_DECL_CONTEXT (fndecl) == abi_node);
 }
 
 /* Often, we have an expression in the form of address + offset, e.g.
