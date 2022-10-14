@@ -796,7 +796,9 @@ public:
 
   virtual const std::string trait_identifier () const = 0;
 
-  const Analysis::NodeMapping get_mappings () const { return mappings; }
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
+
+  virtual Location get_trait_locus () const = 0;
 
   virtual TraitItemKind get_item_kind () const = 0;
 
