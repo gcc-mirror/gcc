@@ -809,7 +809,23 @@ Dump::visit (Method &method)
 
 void
 Dump::visit (Module &module)
-{}
+{
+  emit_visibility (module.get_visibility ());
+  stream << "mod " << module.get_name () << " {\n";
+
+  indentation.increment ();
+
+  for (auto &item : module.get_items ())
+    {
+      stream << indentation;
+      item->accept_vis (*this);
+      stream << '\n';
+    }
+
+  indentation.decrement ();
+
+  stream << indentation << "}\n";
+}
 
 void
 Dump::visit (ExternCrate &crate)
@@ -835,8 +851,8 @@ void
 Dump::visit (Function &function)
 {
   emit_visibility (function.get_visibility ());
-  stream << "fn " << function.get_function_name ();
 
+  stream << "fn " << function.get_function_name ();
   if (function.has_generics ())
     emit_generic_params (function.get_generic_params ());
 
@@ -872,7 +888,24 @@ Dump::visit (Function &function)
 
 void
 Dump::visit (TypeAlias &type_alias)
-{}
+{
+  // Syntax:
+  // Visibility? type IDENTIFIER GenericParams? WhereClause? = Type;
+
+  // Note: Associated types are handled by `AST::TraitItemType`.
+
+  if (type_alias.has_visibility ())
+    emit_visibility (type_alias.get_visibility ());
+  stream << "type " << type_alias.get_new_type_name ();
+  if (type_alias.has_generics ())
+    emit_generic_params (type_alias.get_generic_params ());
+  if (type_alias.has_where_clause ())
+    {
+    } // FIXME: WhereClause
+  stream << " = ";
+  type_alias.get_type_aliased ()->accept_vis (*this);
+  stream << ";\n";
+}
 
 void
 Dump::visit (StructStruct &struct_item)
