@@ -55,10 +55,8 @@ private:
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 
-class TraitResolver : public TypeCheckBase, private HIR::HIRFullVisitorBase
+class TraitResolver : public TypeCheckBase
 {
-  using HIR::HIRFullVisitorBase::visit;
-
 public:
   static TraitReference *Resolve (HIR::TypePath &path);
 
@@ -75,10 +73,8 @@ private:
 
   TraitReference *lookup_path (HIR::TypePath &path);
 
-  HIR::Trait *resolved_trait_reference;
-
-public:
-  void visit (HIR::Trait &trait) override { resolved_trait_reference = &trait; }
+  bool resolve_path_to_trait (const HIR::TypePath &path,
+			      HIR::Trait **resolved) const;
 };
 
 } // namespace Resolver
