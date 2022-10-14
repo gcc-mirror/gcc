@@ -37,9 +37,12 @@ static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 bool
 c_missing_noreturn_ok_p (tree decl)
 {
-  /* A missing noreturn is not ok for freestanding implementations and
-     ok for the `main' function in hosted implementations.  */
-  return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
+  /* A missing noreturn is ok for the `main' function.  */
+  if (!MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl)))
+    return false;
+
+  return flag_hosted
+    || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl))) == integer_type_node;
 }
 
 /* Called from check_global_declaration.  */
