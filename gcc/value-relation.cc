@@ -891,7 +891,7 @@ value_relation::dump (FILE *f) const
 {
   if (!name1 || !name2)
     {
-      fprintf (f, "uninitialized");
+      fprintf (f, "no relation registered");
       return;
     }
   fputc ('(', f);
