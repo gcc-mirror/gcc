@@ -380,6 +380,16 @@ public:
     return item_refs;
   }
 
+  void get_trait_items_and_supers (
+    std::vector<const TraitItemReference *> &result) const
+  {
+    for (const auto &item : item_refs)
+      result.push_back (&item);
+
+    for (const auto &super_trait : super_traits)
+      super_trait->get_trait_items_and_supers (result);
+  }
+
   void on_resolved ()
   {
     for (auto &item : item_refs)
@@ -449,6 +459,20 @@ public:
   std::vector<TyTy::SubstitutionParamMapping> get_trait_substs () const
   {
     return trait_substs;
+  }
+
+  bool satisfies_bound (const TraitReference &reference) const
+  {
+    if (is_equal (reference))
+      return true;
+
+    for (const auto &super_trait : super_traits)
+      {
+	if (super_trait->satisfies_bound (reference))
+	  return true;
+      }
+
+    return false;
   }
 
 private:
