@@ -6048,11 +6048,13 @@ mark_forward_parm_decls (void)
    literal.  NON_CONST is true if the initializers contain something
    that cannot occur in a constant expression.  If ALIGNAS_ALIGN is nonzero,
    it is the (valid) alignment for this compound literal, as specified
-   with _Alignas.  */
+   with _Alignas.  SCSPECS are the storage class specifiers (C2x) from the
+   compound literal.  */
 
 tree
 build_compound_literal (location_t loc, tree type, tree init, bool non_const,
-			unsigned int alignas_align)
+			unsigned int alignas_align,
+			struct c_declspecs *scspecs)
 {
   /* We do not use start_decl here because we have a type, not a declarator;
      and do not use finish_decl because the decl should be stored inside
@@ -6060,15 +6062,33 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   tree decl;
   tree complit;
   tree stmt;
+  bool threadp = scspecs ? scspecs->thread_p : false;
+  enum c_storage_class storage_class = (scspecs
+					? scspecs->storage_class
+					: csc_none);
 
   if (type == error_mark_node
       || init == error_mark_node)
     return error_mark_node;
 
+  if (current_scope == file_scope && storage_class == csc_register)
+    {
+      error_at (loc, "file-scope compound literal specifies %<register%>");
+      storage_class = csc_none;
+    }
+
+  if (current_scope != file_scope && threadp && storage_class == csc_none)
+    {
+      error_at (loc, "compound literal implicitly auto and declared %qs",
+		scspecs->thread_gnu_p ? "__thread" : "_Thread_local");
+      threadp = false;
+    }
+
   decl = build_decl (loc, VAR_DECL, NULL_TREE, type);
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
-  TREE_STATIC (decl) = (current_scope == file_scope);
+  TREE_STATIC (decl) = (current_scope == file_scope
+			|| storage_class == csc_static);
   DECL_CONTEXT (decl) = current_function_decl;
   TREE_USED (decl) = 1;
   DECL_READ_P (decl) = 1;
@@ -6076,6 +6096,13 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   DECL_IGNORED_P (decl) = 1;
   C_DECL_COMPOUND_LITERAL_P (decl) = 1;
   TREE_TYPE (decl) = type;
+  if (threadp)
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
+  if (storage_class == csc_register)
+    {
+      C_DECL_REGISTER (decl) = 1;
+      DECL_REGISTER (decl) = 1;
+    }
   c_apply_type_quals_to_decl (TYPE_QUALS (strip_array_types (type)), decl);
   if (alignas_align)
     {

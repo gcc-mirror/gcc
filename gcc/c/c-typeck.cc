@@ -5114,6 +5114,11 @@ c_mark_addressable (tree exp, bool array_ref_p)
 	break;
 
       case COMPOUND_LITERAL_EXPR:
+	if (C_DECL_REGISTER (COMPOUND_LITERAL_EXPR_DECL (x)))
+	  {
+	    error ("address of register compound literal requested");
+	    return false;
+	  }
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (x)) = 1;
 	return true;
