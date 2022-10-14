@@ -35,6 +35,13 @@ struct MethodCandidate
   }
 
   bool is_error () const { return candidate.is_error (); }
+
+  DefId get_defid () const { return candidate.get_defid (); }
+
+  bool operator< (const MethodCandidate &c) const
+  {
+    return get_defid () < c.get_defid ();
+  }
 };
 
 class MethodResolver : private TypeCheckBase, protected AutoderefCycle
@@ -46,9 +53,10 @@ public:
     TyTy::FnType *fntype;
   };
 
-  static MethodCandidate Probe (const TyTy::BaseType *receiver,
-				const HIR::PathIdentSegment &segment_name,
-				bool autoderef_flag = false);
+  static std::set<MethodCandidate>
+  Probe (const TyTy::BaseType *receiver,
+	 const HIR::PathIdentSegment &segment_name,
+	 bool autoderef_flag = false);
 
   static std::vector<predicate_candidate> get_predicate_items (
     const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
@@ -68,7 +76,7 @@ private:
   std::vector<MethodResolver::predicate_candidate> predicate_items;
 
   // mutable fields
-  MethodCandidate try_result;
+  std::set<MethodCandidate> result;
 };
 
 } // namespace Resolver

@@ -25,18 +25,17 @@ namespace Resolver {
 
 MethodResolver::MethodResolver (bool autoderef_flag,
 				const HIR::PathIdentSegment &segment_name)
-  : AutoderefCycle (autoderef_flag), segment_name (segment_name),
-    try_result (MethodCandidate::get_error ())
+  : AutoderefCycle (autoderef_flag), segment_name (segment_name), result ()
 {}
 
-MethodCandidate
+std::set<MethodCandidate>
 MethodResolver::Probe (const TyTy::BaseType *receiver,
 		       const HIR::PathIdentSegment &segment_name,
 		       bool autoderef_flag)
 {
   MethodResolver resolver (autoderef_flag, segment_name);
-  bool ok = resolver.cycle (receiver);
-  return ok ? resolver.try_result : MethodCandidate::get_error ();
+  resolver.cycle (receiver);
+  return resolver.result;
 }
 
 void
@@ -177,8 +176,18 @@ MethodResolver::select (const TyTy::BaseType &receiver)
 	      (unsigned long) trait_fns.size (),
 	      (unsigned long) predicate_items.size ());
 
-  for (auto impl_item : inherent_impl_fns)
+  // see the follow for the proper fix to get rid of this we need to assemble
+  // candidates based on a match expression gathering the relevant impl blocks
+  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L580-L694
+  TyTy::set_cmp_autoderef_mode ();
+
+  bool found_possible_candidate = false;
+  for (auto &impl_item : inherent_impl_fns)
     {
+      bool is_trait_impl_block = impl_item.impl_block->has_trait_ref ();
+      if (is_trait_impl_block)
+	continue;
+
       TyTy::FnType *fn = impl_item.ty;
       rust_assert (fn->is_method ());
 
@@ -190,12 +199,49 @@ MethodResolver::select (const TyTy::BaseType &receiver)
 	{
 	  PathProbeCandidate::ImplItemCandidate c{impl_item.item,
 						  impl_item.impl_block};
-	  try_result = MethodCandidate{
+	  auto try_result = MethodCandidate{
 	    PathProbeCandidate (PathProbeCandidate::CandidateType::IMPL_FUNC,
 				fn, impl_item.item->get_locus (), c),
 	    adjustments};
-	  return true;
+	  result.insert (std::move (try_result));
+	  found_possible_candidate = true;
 	}
+    }
+  if (found_possible_candidate)
+    {
+      TyTy::reset_cmp_autoderef_mode ();
+      return true;
+    }
+
+  for (auto &impl_item : inherent_impl_fns)
+    {
+      bool is_trait_impl_block = impl_item.impl_block->has_trait_ref ();
+      if (!is_trait_impl_block)
+	continue;
+
+      TyTy::FnType *fn = impl_item.ty;
+      rust_assert (fn->is_method ());
+
+      TyTy::BaseType *fn_self = fn->get_self_type ();
+      rust_debug (
+	"dot-operator trait_impl_item fn_self={%s} can_eq receiver={%s}",
+	fn_self->debug_str ().c_str (), receiver.debug_str ().c_str ());
+      if (fn_self->can_eq (&receiver, false))
+	{
+	  PathProbeCandidate::ImplItemCandidate c{impl_item.item,
+						  impl_item.impl_block};
+	  auto try_result = MethodCandidate{
+	    PathProbeCandidate (PathProbeCandidate::CandidateType::IMPL_FUNC,
+				fn, impl_item.item->get_locus (), c),
+	    adjustments};
+	  result.insert (std::move (try_result));
+	  found_possible_candidate = true;
+	}
+    }
+  if (found_possible_candidate)
+    {
+      TyTy::reset_cmp_autoderef_mode ();
+      return true;
     }
 
   for (auto trait_item : trait_fns)
@@ -212,12 +258,18 @@ MethodResolver::select (const TyTy::BaseType &receiver)
 	  PathProbeCandidate::TraitItemCandidate c{trait_item.reference,
 						   trait_item.item_ref,
 						   nullptr};
-	  try_result = MethodCandidate{
+	  auto try_result = MethodCandidate{
 	    PathProbeCandidate (PathProbeCandidate::CandidateType::TRAIT_FUNC,
 				fn, trait_item.item->get_locus (), c),
 	    adjustments};
-	  return true;
+	  result.insert (std::move (try_result));
+	  found_possible_candidate = true;
 	}
+    }
+  if (found_possible_candidate)
+    {
+      TyTy::reset_cmp_autoderef_mode ();
+      return true;
     }
 
   for (const auto &predicate : predicate_items)
@@ -238,15 +290,17 @@ MethodResolver::select (const TyTy::BaseType &receiver)
 
 	  PathProbeCandidate::TraitItemCandidate c{trait_ref, trait_item,
 						   nullptr};
-	  try_result = MethodCandidate{
+	  auto try_result = MethodCandidate{
 	    PathProbeCandidate (PathProbeCandidate::CandidateType::TRAIT_FUNC,
 				fn->clone (), trait_item->get_locus (), c),
 	    adjustments};
-	  return true;
+	  result.insert (std::move (try_result));
+	  found_possible_candidate = true;
 	}
     }
 
-  return false;
+  TyTy::reset_cmp_autoderef_mode ();
+  return found_possible_candidate;
 }
 
 std::vector<MethodResolver::predicate_candidate>
