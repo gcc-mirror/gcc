@@ -131,8 +131,6 @@ package body Bindgen is
 
    function Device_Ada_Init_Link_Name return String
      is (Device_Link_Name (Suffix => "init"));
-   function Device_Ada_Final_Link_Name return String
-     is (Device_Link_Name (Suffix => "final"));
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -1356,11 +1354,6 @@ package body Bindgen is
       WBI ("   procedure " & Device_Ada_Init_Subp_Name & ";");
       WBI ("   pragma Export (C, " & Device_Ada_Init_Subp_Name &
              ", Link_Name => """ & Device_Ada_Init_Link_Name & """);");
-
-      --  It would be nice to declare a real body that raises P_E, but
-      --  generating a subprogram body at the right point is harder
-      --  than generating a null procedure here.
-      WBI ("   procedure " & Device_Ada_Init_Subp_Name & " is null;");
 
       --  C-string declaration for adainit
       WBI ("   " & Adainit_String_Obj_Name
@@ -2673,7 +2666,8 @@ package body Bindgen is
       WBI ("   procedure " & Ada_Init_Name.all & ";");
       if Enable_CUDA_Device_Expansion then
          WBI ("   pragma Export (C, " & Ada_Init_Name.all &
-                ", Link_Name => """ & Device_Ada_Init_Link_Name & """);");
+                ", Link_Name => """ & Device_Link_Name_Prefix
+                & Ada_Init_Name.all & """);");
          WBI ("   pragma CUDA_Global (" & Ada_Init_Name.all & ");");
       else
          WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
@@ -2692,7 +2686,8 @@ package body Bindgen is
          WBI ("   procedure " & Ada_Final_Name.all & ";");
          if Enable_CUDA_Device_Expansion then
             WBI ("   pragma Export (C, " & Ada_Final_Name.all &
-                   ", Link_Name => """ & Device_Ada_Final_Link_Name & """);");
+                   ", Link_Name => """ & Device_Link_Name_Prefix &
+                   Ada_Final_Name.all & """);");
             WBI ("   pragma CUDA_Global (" & Ada_Final_Name.all & ");");
          else
             WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
@@ -2921,6 +2916,13 @@ package body Bindgen is
       end if;
 
       Gen_Adainit (Elab_Order);
+
+      if Enable_CUDA_Expansion then
+         WBI ("   procedure " & Device_Ada_Init_Subp_Name & " is");
+         WBI ("   begin");
+         WBI ("      raise Program_Error;");
+         WBI ("   end " & Device_Ada_Init_Subp_Name & ";");
+      end if;
 
       if Bind_Main_Program then
          Gen_Main;
