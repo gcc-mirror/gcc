@@ -340,8 +340,12 @@ frange::set (tree type,
       REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
       if (real_less (&m_min, &min_repr))
 	m_min = min_repr;
+      else if (real_less (&max_repr, &m_min))
+	m_min = max_repr;
       if (real_less (&max_repr, &m_max))
 	m_max = max_repr;
+      else if (real_less (&m_max, &min_repr))
+	m_max = min_repr;
     }
 
   // Check for swapped ranges.
