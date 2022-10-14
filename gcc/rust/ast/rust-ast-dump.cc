@@ -259,19 +259,44 @@ Dump::visit (MetaItemPathLit &meta_item)
 
 void
 Dump::visit (BorrowExpr &expr)
-{}
+{
+  stream << '&';
+  if (expr.get_is_double_borrow ())
+    stream << '&';
+  if (expr.get_is_mut ())
+    stream << "mut ";
+
+  expr.get_borrowed_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (DereferenceExpr &expr)
-{}
+{
+  stream << '*';
+  expr.get_dereferenced_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ErrorPropagationExpr &expr)
-{}
+{
+  expr.get_propagating_expr ()->accept_vis (*this);
+  stream << '?';
+}
 
 void
 Dump::visit (NegationExpr &expr)
-{}
+{
+  switch (expr.get_expr_type ())
+    {
+    case NegationOperator::NEGATE:
+      stream << '-';
+      break;
+    case NegationOperator::NOT:
+      stream << '!';
+      break;
+    }
+  expr.get_negated_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ArithmeticOrLogicalExpr &expr)
@@ -327,15 +352,65 @@ Dump::visit (ArithmeticOrLogicalExpr &expr)
 
 void
 Dump::visit (ComparisonExpr &expr)
-{}
+{
+  auto op = "";
+  switch (expr.get_expr_type ())
+    {
+    case ComparisonOperator::EQUAL:
+      op = "==";
+      break;
+    case ComparisonOperator::NOT_EQUAL:
+      op = "!=";
+      break;
+
+    case ComparisonOperator::GREATER_THAN:
+      op = ">";
+      break;
+
+    case ComparisonOperator::LESS_THAN:
+      op = "<";
+      break;
+
+    case ComparisonOperator::GREATER_OR_EQUAL:
+      op = ">=";
+      break;
+
+    case ComparisonOperator::LESS_OR_EQUAL:
+      op = "<=";
+      break;
+    }
+
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << " ";
+  expr.get_right_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (LazyBooleanExpr &expr)
-{}
+{
+  auto op = "";
+  switch (expr.get_expr_type ())
+    {
+    case LazyBooleanOperator::LOGICAL_AND:
+      op = "&&";
+      break;
+    case LazyBooleanOperator::LOGICAL_OR:
+      op = "||";
+      break;
+    }
+
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << " ";
+  expr.get_right_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (TypeCastExpr &expr)
-{}
+{
+  expr.get_casted_expr ()->accept_vis (*this);
+  stream << " as ";
+  expr.get_type_to_cast_to ()->accept_vis (*this);
+}
 
 void
 Dump::visit (AssignmentExpr &expr)
@@ -399,23 +474,51 @@ Dump::visit (CompoundAssignmentExpr &expr)
 
 void
 Dump::visit (GroupedExpr &expr)
-{}
+{
+  stream << '(';
+  expr.get_expr_in_parens ()->accept_vis (*this);
+  stream << ')';
+}
 
 void
 Dump::visit (ArrayElemsValues &elems)
-{}
+{
+  auto &vals = elems.get_values ();
+  if (vals.size () >= 1)
+    {
+      vals[0]->accept_vis (*this);
+      for (size_t i = 1; i < vals.size (); i++)
+	{
+	  stream << ", ";
+	  vals[i]->accept_vis (*this);
+	}
+    }
+}
 
 void
 Dump::visit (ArrayElemsCopied &elems)
-{}
+{
+  elems.get_elem_to_copy ()->accept_vis (*this);
+  stream << "; ";
+  elems.get_num_copies ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ArrayExpr &expr)
-{}
+{
+  stream << '[';
+  expr.get_array_elems ()->accept_vis (*this);
+  stream << ']';
+}
 
 void
 Dump::visit (ArrayIndexExpr &expr)
-{}
+{
+  expr.get_array_expr ()->accept_vis (*this);
+  stream << '[';
+  expr.get_index_expr ()->accept_vis (*this);
+  stream << ']';
+}
 
 void
 Dump::visit (TupleExpr &expr)
@@ -498,11 +601,11 @@ Dump::visit (BlockExpr &expr)
     {
       stream << indentation;
       expr.get_tail_expr ()->accept_vis (*this);
-      stream << " /* tail expr */";
+      stream << " /* tail expr */\n";
     }
 
   indentation.decrement ();
-  stream << "\n" << indentation << "}\n";
+  stream << indentation << "}\n";
 }
 
 void
@@ -519,27 +622,46 @@ Dump::visit (BreakExpr &expr)
 
 void
 Dump::visit (RangeFromToExpr &expr)
-{}
+{
+  expr.get_from_expr ()->accept_vis (*this);
+  stream << "..";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (RangeFromExpr &expr)
-{}
+{
+  expr.get_from_expr ()->accept_vis (*this);
+  stream << "..";
+}
 
 void
 Dump::visit (RangeToExpr &expr)
-{}
+{
+  stream << "..";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (RangeFullExpr &expr)
-{}
+{
+  stream << "..";
+}
 
 void
 Dump::visit (RangeFromToInclExpr &expr)
-{}
+{
+  expr.get_from_expr ()->accept_vis (*this);
+  stream << "..=";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (RangeToInclExpr &expr)
-{}
+{
+  stream << "..=";
+  expr.get_to_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ReturnExpr &expr)
@@ -570,6 +692,7 @@ Dump::visit (IfExpr &expr)
 {
   stream << "if ";
   expr.vis_if_condition (*this);
+  stream << " ";
   expr.vis_if_block (*this);
 }
 
@@ -578,6 +701,7 @@ Dump::visit (IfExprConseqElse &expr)
 {
   stream << "if ";
   expr.vis_if_condition (*this);
+  stream << " ";
   expr.vis_if_block (*this);
   stream << indentation << "else ";
   expr.vis_else_block (*this);
@@ -588,8 +712,10 @@ Dump::visit (IfExprConseqIf &expr)
 {
   stream << "if ";
   expr.vis_if_condition (*this);
+  stream << " ";
   expr.vis_if_block (*this);
-  stream << indentation << "else if ";
+  stream << indentation << "else ";
+  // The "if" part of the "else if" is printed by the next visitor
   expr.vis_conseq_if_expr (*this);
 }
 
