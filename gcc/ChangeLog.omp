@@ -1,3 +1,9 @@
+2022-10-14  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_detect_incoming_pointer_arg): Any pointer
+	argument forces FLAT addressing mode, not just
+	pointer-to-non-aggregate.
+
 2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.cc (gcn_expand_builtin_1): Change gcn_full_exec_reg
