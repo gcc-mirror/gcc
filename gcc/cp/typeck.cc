@@ -439,6 +439,8 @@ cp_common_type (tree t1, tree t2)
       tree subtype
 	= type_after_usual_arithmetic_conversions (subtype1, subtype2);
 
+      if (subtype == error_mark_node)
+	return subtype;
       if (code1 == COMPLEX_TYPE && TREE_TYPE (t1) == subtype)
 	return build_type_attribute_variant (t1, attributes);
       else if (code2 == COMPLEX_TYPE && TREE_TYPE (t2) == subtype)
@@ -4603,11 +4605,17 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 	}
       else
 	{
-	  if (fndecl && magic_varargs_p (fndecl))
-	    /* Don't do ellipsis conversion for __built_in_constant_p
-	       as this will result in spurious errors for non-trivial
-	       types.  */
-	    val = require_complete_type (val, complain);
+	  int magic = fndecl ? magic_varargs_p (fndecl) : 0;
+	  if (magic)
+	    {
+	      /* Don't truncate excess precision to the semantic type.  */
+	      if (magic == 1 && TREE_CODE (val) == EXCESS_PRECISION_EXPR)
+		val = TREE_OPERAND (val, 0);
+	      /* Don't do ellipsis conversion for __built_in_constant_p
+		 as this will result in spurious errors for non-trivial
+		 types.  */
+	      val = require_complete_type (val, complain);
+	    }
 	  else
 	    val = convert_arg_to_ellipsis (val, complain);
 
@@ -5057,7 +5065,7 @@ cp_build_binary_op (const op_location_t &location,
 {
   tree op0, op1;
   enum tree_code code0, code1;
-  tree type0, type1;
+  tree type0, type1, orig_type0, orig_type1;
   const char *invalid_op_diag;
 
   /* Expression code to give to the expression when it is built.
@@ -5068,6 +5076,10 @@ cp_build_binary_op (const op_location_t &location,
   /* Data type in which the computation is to be performed.
      In the simplest cases this is the common type of the arguments.  */
   tree result_type = NULL_TREE;
+
+  /* When the computation is in excess precision, the type of the
+     final EXCESS_PRECISION_EXPR.  */
+  tree semantic_result_type = NULL;
 
   /* Nonzero means operands have already been type-converted
      in whatever way is necessary.
@@ -5115,6 +5127,10 @@ cp_build_binary_op (const op_location_t &location,
 
   /* Tree holding instrumentation expression.  */
   tree instrument_expr = NULL_TREE;
+
+  /* True means this is an arithmetic operation that may need excess
+     precision.  */
+  bool may_need_excess_precision;
 
   /* Apply default conversions.  */
   op0 = resolve_nondeduced_context (orig_op0, complain);
@@ -5167,8 +5183,8 @@ cp_build_binary_op (const op_location_t &location,
 	}
     }
 
-  type0 = TREE_TYPE (op0); 
-  type1 = TREE_TYPE (op1);
+  orig_type0 = type0 = TREE_TYPE (op0);
+  orig_type1 = type1 = TREE_TYPE (op1);
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -5200,6 +5216,47 @@ cp_build_binary_op (const op_location_t &location,
 	}
       return error_mark_node;
     }
+
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      may_need_excess_precision = true;
+      break;
+    default:
+      may_need_excess_precision = false;
+      break;
+    }
+  if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+    {
+      op0 = TREE_OPERAND (op0, 0);
+      type0 = TREE_TYPE (op0);
+    }
+  else if (may_need_excess_precision
+	   && (code0 == REAL_TYPE || code0 == COMPLEX_TYPE))
+    if (tree eptype = excess_precision_type (type0))
+      {
+	type0 = eptype;
+	op0 = convert (eptype, op0);
+      }
+  if (TREE_CODE (op1) == EXCESS_PRECISION_EXPR)
+    {
+      op1 = TREE_OPERAND (op1, 0);
+      type1 = TREE_TYPE (op1);
+    }
+  else if (may_need_excess_precision
+	   && (code1 == REAL_TYPE || code1 == COMPLEX_TYPE))
+    if (tree eptype = excess_precision_type (type1))
+      {
+	type1 = eptype;
+	op1 = convert (eptype, op1);
+      }
 
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
   if ((null_node_p (orig_op0) || null_node_p (orig_op1))
@@ -5240,7 +5297,7 @@ cp_build_binary_op (const op_location_t &location,
               op0 = convert (TREE_TYPE (type1), op0);
 	      op0 = save_expr (op0);
               op0 = build_vector_from_val (type1, op0);
-              type0 = TREE_TYPE (op0);
+	      orig_type0 = type0 = TREE_TYPE (op0);
               code0 = TREE_CODE (type0);
               converted = 1;
               break;
@@ -5250,7 +5307,7 @@ cp_build_binary_op (const op_location_t &location,
               op1 = convert (TREE_TYPE (type0), op1);
 	      op1 = save_expr (op1);
               op1 = build_vector_from_val (type0, op1);
-              type1 = TREE_TYPE (op1);
+	      orig_type1 = type1 = TREE_TYPE (op1);
               code1 = TREE_CODE (type1);
               converted = 1;
               break;
@@ -6067,12 +6124,20 @@ cp_build_binary_op (const op_location_t &location,
       && (shorten || common || short_compare))
     {
       result_type = cp_common_type (type0, type1);
-      if (result_type == error_mark_node
-	  && code0 == REAL_TYPE
-	  && code1 == REAL_TYPE
-	  && (extended_float_type_p (type0) || extended_float_type_p (type1))
-	  && cp_compare_floating_point_conversion_ranks (type0, type1) == 3)
+      if (result_type == error_mark_node)
 	{
+	  tree t1 = type0;
+	  tree t2 = type1;
+	  if (TREE_CODE (t1) == COMPLEX_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (TREE_CODE (t2) == COMPLEX_TYPE)
+	    t2 = TREE_TYPE (t2);
+	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
+			       && TREE_CODE (t2) == REAL_TYPE
+			       && (extended_float_type_p (t1)
+				   || extended_float_type_p (t2))
+			       && cp_compare_floating_point_conversion_ranks
+				    (t1, t2) == 3);
 	  if (complain & tf_error)
 	    {
 	      rich_location richloc (line_table, location);
@@ -6089,6 +6154,33 @@ cp_build_binary_op (const op_location_t &location,
 				    location);
 	  do_warn_enum_conversions (location, code, TREE_TYPE (orig_op0),
 				    TREE_TYPE (orig_op1));
+	}
+    }
+  if (may_need_excess_precision
+      && (orig_type0 != type0 || orig_type1 != type1))
+    {
+      gcc_assert (common);
+      semantic_result_type = cp_common_type (orig_type0, orig_type1);
+      if (semantic_result_type == error_mark_node)
+	{
+	  tree t1 = orig_type0;
+	  tree t2 = orig_type1;
+	  if (TREE_CODE (t1) == COMPLEX_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (TREE_CODE (t2) == COMPLEX_TYPE)
+	    t2 = TREE_TYPE (t2);
+	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
+			       && TREE_CODE (t2) == REAL_TYPE
+			       && (extended_float_type_p (t1)
+				   || extended_float_type_p (t2))
+			       && cp_compare_floating_point_conversion_ranks
+				    (t1, t2) == 3);
+	  if (complain & tf_error)
+	    {
+	      rich_location richloc (line_table, location);
+	      binary_op_error (&richloc, code, type0, type1);
+	    }
+	  return error_mark_node;
 	}
     }
 
@@ -6181,6 +6273,8 @@ cp_build_binary_op (const op_location_t &location,
 			 build_type ? build_type : result_type,
 			 NULL_TREE, op1);
       TREE_OPERAND (tmp, 0) = op0;
+      if (semantic_result_type)
+	tmp = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, tmp);
       return tmp;
     }
 
@@ -6268,6 +6362,9 @@ cp_build_binary_op (const op_location_t &location,
 		}
 	    }
 	  result = build2 (COMPLEX_EXPR, result_type, real, imag);
+	  if (semantic_result_type)
+	    result = build1 (EXCESS_PRECISION_EXPR, semantic_result_type,
+			     result);
 	  return result;
 	}
 
@@ -6363,9 +6460,11 @@ cp_build_binary_op (const op_location_t &location,
     {
       warning_sentinel w (warn_sign_conversion, short_compare);
       if (!same_type_p (TREE_TYPE (op0), result_type))
-	op0 = cp_convert_and_check (result_type, op0, complain);
+	op0 = cp_ep_convert_and_check (result_type, op0,
+				       semantic_result_type, complain);
       if (!same_type_p (TREE_TYPE (op1), result_type))
-	op1 = cp_convert_and_check (result_type, op1, complain);
+	op1 = cp_ep_convert_and_check (result_type, op1,
+				       semantic_result_type, complain);
 
       if (op0 == error_mark_node || op1 == error_mark_node)
 	return error_mark_node;
@@ -6434,6 +6533,9 @@ cp_build_binary_op (const op_location_t &location,
 
   if (resultcode == SPACESHIP_EXPR && !processing_template_decl)
     result = get_target_expr (result, complain);
+
+  if (semantic_result_type)
+    result = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, result);
 
   if (!c_inhibit_evaluation_warnings)
     {
@@ -7161,6 +7263,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
   tree arg = xarg;
   location_t location = cp_expr_loc_or_input_loc (arg);
   tree argtype = 0;
+  tree eptype = NULL_TREE;
   const char *errstring = NULL;
   tree val;
   const char *invalid_op_diag;
@@ -7179,6 +7282,12 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
       if (complain & tf_error)
 	error (invalid_op_diag);
       return error_mark_node;
+    }
+
+  if (TREE_CODE (arg) == EXCESS_PRECISION_EXPR)
+    {
+      eptype = TREE_TYPE (arg);
+      arg = TREE_OPERAND (arg, 0);
     }
 
   switch (code)
@@ -7276,8 +7385,11 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      arg = build_real_imag_expr (input_location, code, arg);
-      return arg;
+      val = build_real_imag_expr (input_location, code, arg);
+      if (eptype && TREE_CODE (eptype) == COMPLEX_EXPR)
+	val = build1_loc (input_location, EXCESS_PRECISION_EXPR,
+			  TREE_TYPE (eptype), val);
+      return val;
 
     case PREINCREMENT_EXPR:
     case POSTINCREMENT_EXPR:
@@ -7288,7 +7400,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 
       val = unary_complex_lvalue (code, arg);
       if (val != 0)
-	return val;
+	goto return_build_unary_op;
 
       arg = mark_lvalue_use (arg);
 
@@ -7304,8 +7416,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	  real = cp_build_unary_op (code, real, true, complain);
 	  if (real == error_mark_node || imag == error_mark_node)
 	    return error_mark_node;
-	  return build2 (COMPLEX_EXPR, TREE_TYPE (arg),
-			 real, imag);
+	  val = build2 (COMPLEX_EXPR, TREE_TYPE (arg), real, imag);
+	  goto return_build_unary_op;
 	}
 
       /* Report invalid types.  */
@@ -7468,7 +7580,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 
 	TREE_SIDE_EFFECTS (val) = 1;
-	return val;
+	goto return_build_unary_op;
       }
 
     case ADDR_EXPR:
@@ -7484,7 +7596,11 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
     {
       if (argtype == 0)
 	argtype = TREE_TYPE (arg);
-      return build1 (code, argtype, arg);
+      val = build1 (code, argtype, arg);
+    return_build_unary_op:
+      if (eptype)
+	val = build1 (EXCESS_PRECISION_EXPR, eptype, val);
+      return val;
     }
 
   if (complain & tf_error)
@@ -7875,6 +7991,15 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
 
+  if (TREE_CODE (lhs) == EXCESS_PRECISION_EXPR)
+    lhs = TREE_OPERAND (lhs, 0);
+  tree eptype = NULL_TREE;
+  if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+    {
+      eptype = TREE_TYPE (rhs);
+      rhs = TREE_OPERAND (rhs, 0);
+    }
+
   if (TREE_CODE (rhs) == TARGET_EXPR)
     {
       /* If the rhs is a TARGET_EXPR, then build the compound
@@ -7885,6 +8010,8 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
       init = build2 (COMPOUND_EXPR, TREE_TYPE (init), lhs, init);
       TREE_OPERAND (rhs, 1) = init;
 
+      if (eptype)
+	rhs = build1 (EXCESS_PRECISION_EXPR, eptype, rhs);
       return rhs;
     }
 
@@ -7896,7 +8023,10 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
       return error_mark_node;
     }
   
-  return build2 (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
+  tree ret = build2 (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
+  if (eptype)
+    ret = build1 (EXCESS_PRECISION_EXPR, eptype, ret);
+  return ret;
 }
 
 /* Issue a diagnostic message if casting from SRC_TYPE to DEST_TYPE
@@ -8180,7 +8310,11 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
 
      Any expression can be explicitly converted to type cv void.  */
   if (VOID_TYPE_P (type))
-    return convert_to_void (expr, ICV_CAST, complain);
+    {
+      if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+      return convert_to_void (expr, ICV_CAST, complain);
+    }
 
   /* [class.abstract]
      An abstract class shall not be used ... as the type of an explicit
@@ -8259,6 +8393,8 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
     {
       if (processing_template_decl)
 	return expr;
+      if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+	expr = TREE_OPERAND (expr, 0);
       return ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL, complain);
     }
 

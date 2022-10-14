@@ -13785,18 +13785,18 @@ default, @option{-fexcess-precision=fast} is in effect; this means that
 operations may be carried out in a wider precision than the types specified
 in the source if that would result in faster code, and it is unpredictable
 when rounding to the types specified in the source code takes place.
-When compiling C, if @option{-fexcess-precision=standard} is specified then
-excess precision follows the rules specified in ISO C99; in particular,
+When compiling C or C++, if @option{-fexcess-precision=standard} is specified
+then excess precision follows the rules specified in ISO C99 or C++; in particular,
 both casts and assignments cause values to be rounded to their
 semantic types (whereas @option{-ffloat-store} only affects
-assignments).  This option is enabled by default for C if a strict
-conformance option such as @option{-std=c99} is used.
+assignments).  This option is enabled by default for C or C++ if a strict
+conformance option such as @option{-std=c99} or @option{-std=c++17} is used.
 @option{-ffast-math} enables @option{-fexcess-precision=fast} by default
 regardless of whether a strict conformance option is used.
 
 @opindex mfpmath
 @option{-fexcess-precision=standard} is not implemented for languages
-other than C.  On the x86, it has no effect if @option{-mfpmath=sse}
+other than C or C++.  On the x86, it has no effect if @option{-mfpmath=sse}
 or @option{-mfpmath=sse+387} is specified; in the former case, IEEE
 semantics apply without excess precision, and in the latter, rounding
 is unpredictable.

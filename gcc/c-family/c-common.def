@@ -38,10 +38,9 @@ along with GCC; see the file COPYING3.  If not see
    not.  */
 DEFTREECODE (C_MAYBE_CONST_EXPR, "c_maybe_const_expr", tcc_expression, 2)
 
-/* An EXCESS_PRECISION_EXPR, currently only used for C and Objective
-   C, represents an expression evaluated in greater range or precision
-   than its type.  The type of the EXCESS_PRECISION_EXPR is the
-   semantic type while the operand represents what is actually being
+/* An EXCESS_PRECISION_EXPR represents an expression evaluated in greater
+   range or precision than its type.  The type of the EXCESS_PRECISION_EXPR
+   is the semantic type while the operand represents what is actually being
    evaluated.  */
 DEFTREECODE (EXCESS_PRECISION_EXPR, "excess_precision_expr", tcc_expression, 1)
 

@@ -1,6 +1,6 @@
 // PR c++/96862
 // { dg-do compile { target c++17 } }
-// { dg-additional-options "-frounding-math" }
+// { dg-additional-options "-frounding-math -fexcess-precision=fast" }
 
 constexpr double a = 0x1.0p+100 + 0x1.0p-100;
 const double b = 0x1.0p+100 + 0x1.0p-100;

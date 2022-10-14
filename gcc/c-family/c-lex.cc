@@ -1008,10 +1008,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     else
       type = double_type_node;
 
-  if (c_dialect_cxx ())
-    const_type = NULL_TREE;
-  else
-    const_type = excess_precision_type (type);
+  const_type = excess_precision_type (type);
   if (!const_type)
     const_type = type;
 

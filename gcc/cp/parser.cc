@@ -5583,7 +5583,9 @@ cp_parser_primary_expression (cp_parser *parser,
       /* Floating-point literals are only allowed in an integral
 	 constant expression if they are cast to an integral or
 	 enumeration type.  */
-      if (TREE_CODE (token->u.value) == REAL_CST
+      if ((TREE_CODE (token->u.value) == REAL_CST
+	   || (TREE_CODE (token->u.value) == EXCESS_PRECISION_EXPR
+	       && TREE_CODE (TREE_OPERAND (token->u.value, 0)) == REAL_CST))
 	  && parser->integral_constant_expression_p
 	  && pedantic)
 	{

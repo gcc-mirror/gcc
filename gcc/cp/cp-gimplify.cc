@@ -2515,6 +2515,11 @@ cp_fold (tree x)
 
       break;
 
+    case EXCESS_PRECISION_EXPR:
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      x = fold_convert_loc (EXPR_LOCATION (x), TREE_TYPE (x), op0);
+      break;
+
     case INDIRECT_REF:
       /* We don't need the decltype(auto) obfuscation anymore.  */
       if (REF_PARENTHESIZED_P (x))
