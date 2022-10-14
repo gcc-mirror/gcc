@@ -155,19 +155,6 @@ lookup_vector_type_attribute (const_tree type)
   return lookup_attribute ("RVV type", TYPE_ATTRIBUTES (type));
 }
 
-/* If TYPE is a built-in type defined by the RVV ABI, return the mangled name,
-   otherwise return NULL.  */
-const char *
-mangle_builtin_type (const_tree type)
-{
-  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
-    type = TREE_TYPE (TYPE_NAME (type));
-  if (tree attr = lookup_vector_type_attribute (type))
-    if (tree id = TREE_VALUE (chain_index (0, TREE_VALUE (attr))))
-      return IDENTIFIER_POINTER (id);
-  return NULL;
-}
-
 /* Return a representation of "const T *".  */
 static tree
 build_const_pointer (tree t)
@@ -248,6 +235,19 @@ register_vector_type (vector_type_index type)
 
   builtin_types[type].vector = vectype;
   builtin_types[type].vector_ptr = build_pointer_type (vectype);
+}
+
+/* If TYPE is a built-in type defined by the RVV ABI, return the mangled name,
+   otherwise return NULL.  */
+const char *
+mangle_builtin_type (const_tree type)
+{
+  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+    type = TREE_TYPE (TYPE_NAME (type));
+  if (tree attr = lookup_vector_type_attribute (type))
+    if (tree id = TREE_VALUE (chain_index (0, TREE_VALUE (attr))))
+      return IDENTIFIER_POINTER (id);
+  return NULL;
 }
 
 /* Initialize all compiler built-ins related to RVV that should be
