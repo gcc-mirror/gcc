@@ -684,11 +684,10 @@ Dump::visit (Method &method)
 void
 Dump::visit (Module &module)
 {
-  indentation.increment ();
-
-  stream << indentation;
   emit_visibility (module.get_visibility ());
-  stream << "mod" << module.get_name () << " {\n";
+  stream << "mod " << module.get_name () << " {\n";
+
+  indentation.increment ();
 
   for (auto &item : module.get_items ())
     {
@@ -698,6 +697,7 @@ Dump::visit (Module &module)
     }
 
   indentation.decrement ();
+
   stream << indentation << "}\n";
 }
 
