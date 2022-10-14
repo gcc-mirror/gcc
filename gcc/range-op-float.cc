@@ -510,12 +510,9 @@ foperator_not_equal::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      // The TRUE side of op1 != op1 implies op1 is NAN.
-      if (rel == VREL_EQ)
-	r.set_nan (type);
       // If the result is true, the only time we know anything is if
       // OP2 is a constant.
-      else if (op2.singleton_p ())
+      if (op2.singleton_p ())
 	{
 	  // This is correct even if op1 is NAN, because the following
 	  // range would be ~[tmp, tmp] with the NAN property set to
@@ -523,6 +520,9 @@ foperator_not_equal::op1_range (frange &r, tree type,
 	  REAL_VALUE_TYPE tmp = op2.lower_bound ();
 	  r.set (type, tmp, tmp, VR_ANTI_RANGE);
 	}
+      // The TRUE side of op1 != op1 implies op1 is NAN.
+      else if (rel == VREL_EQ)
+	r.set_nan (type);
       else
 	r.set_varying (type);
       break;
@@ -1045,22 +1045,18 @@ foperator_unordered::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (rel == VREL_EQ)
-	r.set_nan (type);
       // Since at least one operand must be NAN, if one of them is
       // not, the other must be.
-      else if (!op2.maybe_isnan ())
+      if (rel == VREL_EQ || !op2.maybe_isnan ())
 	r.set_nan (type);
       else
 	r.set_varying (type);
       break;
 
     case BRS_FALSE:
-      if (rel == VREL_EQ)
-	r.clear_nan ();
       // A false UNORDERED means both operands are !NAN, so it's
       // impossible for op2 to be a NAN.
-      else if (op2.known_isnan ())
+      if (op2.known_isnan ())
 	r.set_undefined ();
       else
 	{
@@ -1132,10 +1128,11 @@ foperator_ordered::op1_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      r.set_varying (type);
-      // The FALSE side of op1 ORDERED op1 implies op1 is !NAN.
+      // The FALSE side of op1 ORDERED op1 implies op1 is NAN.
       if (rel == VREL_EQ)
-	r.clear_nan ();
+	r.set_nan (type);
+      else
+	r.set_varying (type);
       break;
 
     default:
