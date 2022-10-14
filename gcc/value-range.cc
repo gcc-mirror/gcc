@@ -4014,6 +4014,11 @@ range_tests_floats ()
   r1.clear_nan ();
   r0.intersect (r1);
   ASSERT_TRUE (r0.undefined_p ());
+
+  // Make sure [-Inf, -Inf] doesn't get normalized.
+  r0 = frange_float ("-Inf", "-Inf");
+  ASSERT_TRUE (real_isinf (&r0.lower_bound (), true));
+  ASSERT_TRUE (real_isinf (&r0.upper_bound (), true));
 }
 
 void
