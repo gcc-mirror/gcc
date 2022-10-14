@@ -2877,16 +2877,6 @@ AttrVisitor::visit (AST::MacroRulesDefinition &rules_def)
       rules_def.mark_for_strip ();
       return;
     }
-
-  // I don't think any macro rules can be stripped in any way
-
-  auto path = Resolver::CanonicalPath::new_seg (rules_def.get_node_id (),
-						rules_def.get_rule_name ());
-  expander.resolver->get_macro_scope ().insert (path, rules_def.get_node_id (),
-						rules_def.get_locus ());
-  expander.mappings->insert_macro_def (&rules_def);
-  rust_debug_loc (rules_def.get_locus (), "inserting macro def: [%s]",
-		  path.get ().c_str ());
 }
 
 void

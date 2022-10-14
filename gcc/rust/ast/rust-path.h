@@ -207,6 +207,23 @@ public:
   Kind get_kind () const { return kind; }
   const Location &get_locus () const { return locus; }
 
+  void accept_vis (AST::ASTVisitor &visitor)
+  {
+    switch (get_kind ())
+      {
+      case Kind::Const:
+	get_expression ()->accept_vis (visitor);
+	break;
+      case Kind::Type:
+	get_type ()->accept_vis (visitor);
+	break;
+      case Kind::Either:
+	break;
+      case Kind::Error:
+	gcc_unreachable ();
+      }
+  }
+
   std::unique_ptr<Expr> &get_expression ()
   {
     rust_assert (kind == Kind::Const);
