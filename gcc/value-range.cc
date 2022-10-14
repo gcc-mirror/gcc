@@ -324,12 +324,19 @@ frange::set (tree type,
       m_neg_nan = false;
     }
 
-  if (!HONOR_SIGNED_ZEROS (m_type))
+  if (!MODE_HAS_SIGNED_ZEROS (TYPE_MODE (m_type)))
     {
       if (real_iszero (&m_min, 1))
 	m_min.sign = 0;
       if (real_iszero (&m_max, 1))
 	m_max.sign = 0;
+    }
+  else if (!HONOR_SIGNED_ZEROS (m_type))
+    {
+      if (real_iszero (&m_max, 1))
+	m_max.sign = 0;
+      if (real_iszero (&m_min, 0))
+	m_min.sign = 1;
     }
 
   // For -ffinite-math-only we can drop ranges outside the
