@@ -29,6 +29,30 @@
 namespace Rust {
 namespace HIR {
 
+// proxy class so we can do attribute checking on items and trait items
+class ItemWrapper
+{
+public:
+  ItemWrapper (const HIR::Item &item)
+    : mappings (item.get_mappings ()), locus (item.get_locus ()),
+      outer_attrs (item.get_outer_attrs ())
+  {}
+
+  ItemWrapper (const HIR::TraitItem &item)
+    : mappings (item.get_mappings ()), locus (item.get_trait_locus ()),
+      outer_attrs (item.get_outer_attrs ())
+  {}
+
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
+  Location get_locus () const { return locus; }
+  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
+
+private:
+  const Analysis::NodeMapping &mappings;
+  Location locus;
+  const AST::AttrVec &outer_attrs;
+};
+
 // base class to allow derivatives to overload as needed
 class ASTLoweringBase : public AST::ASTVisitor
 {
@@ -264,12 +288,12 @@ protected:
   HIR::FunctionQualifiers
   lower_qualifiers (const AST::FunctionQualifiers &qualifiers);
 
-  void handle_outer_attributes (const HIR::Item &item);
+  void handle_outer_attributes (const ItemWrapper &item);
 
-  void handle_lang_item_attribute (const HIR::Item &item,
+  void handle_lang_item_attribute (const ItemWrapper &item,
 				   const AST::Attribute &attr);
 
-  void handle_doc_item_attribute (const HIR::Item &item,
+  void handle_doc_item_attribute (const ItemWrapper &item,
 				  const AST::Attribute &attr);
 
   bool is_known_attribute (const std::string &attribute_path) const;

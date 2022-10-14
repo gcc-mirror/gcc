@@ -316,6 +316,7 @@ Mappings::insert_defid_mapping (DefId id, HIR::Item *item)
 
   rust_assert (lookup_defid (id) == nullptr);
   rust_assert (lookup_local_defid (crate_num, local_def_id) == nullptr);
+  rust_assert (lookup_trait_item_defid (id) == nullptr);
 
   defIdMappings[id] = item;
   insert_local_defid_mapping (crate_num, local_def_id, item);
@@ -326,6 +327,29 @@ Mappings::lookup_defid (DefId id)
 {
   auto it = defIdMappings.find (id);
   if (it == defIdMappings.end ())
+    return nullptr;
+
+  return it->second;
+}
+
+void
+Mappings::insert_defid_mapping (DefId id, HIR::TraitItem *item)
+{
+  CrateNum crate_num = id.crateNum;
+  LocalDefId local_def_id = id.localDefId;
+
+  rust_assert (lookup_defid (id) == nullptr);
+  rust_assert (lookup_local_defid (crate_num, local_def_id) == nullptr);
+  rust_assert (lookup_trait_item_defid (id) == nullptr);
+
+  defIdTraitItemMappings[id] = item;
+}
+
+HIR::TraitItem *
+Mappings::lookup_trait_item_defid (DefId id)
+{
+  auto it = defIdTraitItemMappings.find (id);
+  if (it == defIdTraitItemMappings.end ())
     return nullptr;
 
   return it->second;

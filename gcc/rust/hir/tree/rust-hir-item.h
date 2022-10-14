@@ -2394,6 +2394,8 @@ public:
     return outer_attrs;
   }
 
+  Location get_trait_locus () const override { return get_locus (); }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemFunc *clone_trait_item_impl () const override
@@ -2479,6 +2481,8 @@ public:
   {
     return outer_attrs;
   }
+
+  Location get_trait_locus () const override { return get_locus (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2566,6 +2570,8 @@ public:
   {
     return outer_attrs;
   }
+
+  Location get_trait_locus () const override { return get_locus (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method

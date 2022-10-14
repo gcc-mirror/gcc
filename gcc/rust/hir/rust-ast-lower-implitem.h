@@ -305,16 +305,14 @@ public:
 
     if (resolver.translated != nullptr)
       {
-	// FIXME
+	auto id = resolver.translated->get_mappings ().get_hirid ();
+	auto defid = resolver.translated->get_mappings ().get_defid ();
+	auto locus = resolver.translated->get_trait_locus ();
 
-	// auto id = resolver.translated->get_mappings ().get_hirid ();
-	// auto defid = resolver.translated->get_mappings ().get_defid ();
-	// auto locus = resolver.translated->get_locus ();
-
-	// resolver.handle_outer_attributes (*resolver.translated);
+	resolver.handle_outer_attributes (*resolver.translated);
 	resolver.mappings->insert_hir_trait_item (resolver.translated);
-	// resolver.mappings->insert_location (id, locus);
-	// resolver.mappings->insert_defid_mapping (defid, resolver.item_cast);
+	resolver.mappings->insert_location (id, locus);
+	resolver.mappings->insert_defid_mapping (defid, resolver.translated);
       }
 
     return resolver.translated;
