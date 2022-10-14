@@ -1,3 +1,13 @@
+2022-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/task-7.f90: New test.
+	* testsuite/libgomp.fortran/task-8.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-1.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-2.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-3.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-17.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-18.f90: New test.
+
 2022-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (OpenMP 5.2): Fix up allocator -> allocate directive

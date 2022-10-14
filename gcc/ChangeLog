@@ -1,3 +1,149 @@
+2022-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::check_call): Return
+	early for calls made from thunks.
+
+2022-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.cc (emit_group_stote): Fix handling of modes of different
+	sizes for big-endian targets in latest change and add commentary.
+
+2022-10-13  Martin Liska  <mliska@suse.cz>
+
+	* output.h (assemble_vtv_preinit_initializer): Remove.
+	* varasm.cc (assemble_vtv_preinit_initializer): Remove.
+
+2022-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102540
+	PR tree-optimization/102872
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache):
+	Handle partial equivs.
+	(ranger_cache::range_from_dom): Cleanup dump output.
+
+2022-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_cast::lhs_op1_relation): New.
+	(operator_bitwise_and::lhs_op1_relation): New.
+
+2022-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Use
+	iterator.
+	* value-relation.cc
+	  (equiv_relation_iterator::equiv_relation_iterator): New.
+	(equiv_relation_iterator::next): New.
+	(equiv_relation_iterator::get_name): New.
+	* value-relation.h (class relation_oracle): Privatize some methods.
+	(class equiv_relation_iterator): New.
+	(FOR_EACH_EQUIVALENCE): New.
+	(FOR_EACH_PARTIAL_EQUIV): New.
+	(FOR_EACH_PARTIAL_AND_FULL_EQUIV): New.
+
+2022-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (equiv_chain::dump): Don't print empty
+	equivalences.
+	(equiv_oracle::equiv_oracle): Allocate a partial equiv table.
+	(equiv_oracle::~equiv_oracle): Release the partial equiv table.
+	(equiv_oracle::add_partial_equiv): New.
+	(equiv_oracle::partial_equiv_set): New.
+	(equiv_oracle::partial_equiv): New.
+	(equiv_oracle::query_relation): Check for partial equivs too.
+	(equiv_oracle::dump): Also dump partial equivs.
+	(dom_oracle::register_relation): Handle partial equivs.
+	(dom_oracle::query_relation): Check for partial equivs.
+	* value-relation.h (enum relation_kind_t): Add partial equivs.
+	(relation_partial_equiv_p): New.
+	(relation_equiv_p): New.
+	(class pe_slice): New.
+	(class equiv_oracle): Add prototypes.
+	(pe_to_bits): New.
+	(bits_to_pe): New.
+	(pe_min): New.
+
+2022-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107247
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Reduce multi vector SLP reduction accumulators.  Check
+	the adjusted number of accumulator vectors against
+	one for the re-use in the epilogue.
+
+2022-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* genmodes.cc (emit_mode_wider): Emit previous content of
+	mode_wider array into mode_next array and for mode_wider
+	emit always VOIDmode for !CLASS_HAS_WIDER_MODES_P classes,
+	otherwise skip through modes with the same precision.
+	* machmode.h (mode_next): Declare.
+	(GET_MODE_NEXT_MODE): New inline function.
+	(mode_iterator::get_next, mode_iterator::get_known_next): New
+	function templates.
+	(FOR_EACH_MODE_IN_CLASS): Use get_next instead of get_wider.
+	(FOR_EACH_MODE): Use get_known_next instead of get_known_wider.
+	(FOR_EACH_MODE_FROM): Use get_next instead of get_wider.
+	(FOR_EACH_WIDER_MODE_FROM): Define.
+	(FOR_EACH_NEXT_MODE): Define.
+	* expmed.cc (emit_store_flag_1): Use FOR_EACH_WIDER_MODE_FROM
+	instead of FOR_EACH_MODE_FROM.
+	* optabs.cc (prepare_cmp_insn): Likewise.  Remove redundant
+	!CLASS_HAS_WIDER_MODES_P check.
+	(prepare_float_lib_cmp): Use FOR_EACH_WIDER_MODE_FROM instead of
+	FOR_EACH_MODE_FROM.
+	* config/i386/i386-expand.cc (get_mode_wider_vector): Use
+	GET_MODE_NEXT_MODE instead of GET_MODE_WIDER_MODE.
+
+2022-10-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/105773
+	* config/aarch64/aarch64.cc (aarch64_select_cc_mode): Allow
+	GT/LE for merging compare with zero into AND.
+	(aarch64_get_condition_code_1): Add CC_NZVmode support.
+	* config/aarch64/aarch64-modes.def: Add CC_NZV.
+	* config/aarch64/aarch64.md: Use CC_NZV in cmp+and patterns.
+
+2022-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107160
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Do not register accumulator if we failed to reduce it
+	to a single vector.
+
+2022-10-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (range_operator_float::op1_op2_relation): New.
+	(class foperator_equal): Add using.
+	(class foperator_not_equal): Same.
+	(class foperator_lt): Same.
+	(class foperator_le): Same.
+	(class foperator_gt): Same.
+	(class foperator_ge): Same.
+	* range-op.cc (range_op_handler::op1_op2_relation): New.
+	* range-op.h (range_operator_float::op1_op2_relation): New.
+
+2022-10-13  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (parser::parse_c_expr): Diagnose 'return'.
+	* match.pd: Replace 'return' statements in with expressions
+	with appropriate variants.
+
+2022-10-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/107229
+	* tree-if-conv.cc (get_bitfield_rep): Fix bitposition calculation.
+
+2022-10-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/107226
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern): Reject
+	BITFIELD_REF's with non integral typed first operands.
+
+2022-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h (FLT_IS_IEC_60559, DBL_IS_IEC_60559)
+	(LDBL_IS_IEC_60559): Update comment.
+
 2022-10-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op-float.cc (class foperator_negate): New.

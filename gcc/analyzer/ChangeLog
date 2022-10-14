@@ -1,3 +1,9 @@
+2022-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107210
+	* svalue.cc (constant_svalue::maybe_fold_bits_within): Only
+	attempt to extract individual bits when tree_fits_uhwi_p.
+
 2022-10-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105783
