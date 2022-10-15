@@ -1,3 +1,27 @@
+2022-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/eh_alloc.cc [USE_POOL]: New macro.
+	[!USE_POOL] (__gnu_cxx::__freeres, pool): Do not define.
+	[_GLIBCXX_EH_POOL_STATIC] (pool::arena): Do not use std::max.
+	(__cxxabiv1::__cxa_allocate_exception) [!USE_POOL]: Do not use
+	pool.
+	(__cxxabiv1::__cxa_free_exception) [!USE_POOL]: Likewise.
+	(__cxxabiv1::__cxa_allocate_dependent_exception) [!USE_POOL]:
+	Likewise.
+	(__cxxabiv1::__cxa_free_dependent_exception) [!USE_POOL]:
+	Likewise.
+
+2022-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/debug.cc (print_raw): Simplify.
+	(print_word): Print indentation by calling fprintf directly.
+	(_Error_formatter::_M_error): Print unindented string by calling
+	fprintf directly.
+
+2022-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/iostream: Use markdown in Doxygen comment.
+
 2022-10-12  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/string: Add using _Base::compare.

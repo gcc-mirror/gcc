@@ -1,3 +1,95 @@
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Implement distinction between
+	HONOR_SIGNED_ZEROS and MODE_HAS_SIGNED_ZEROS.
+
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (class cfn_copysign): New.
+	(gimple_range_op_handler::maybe_builtin_call): Add
+	CFN_BUILT_IN_COPYSIGN*.
+
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.h (real_isdenormal): Check rvc_normal.
+	* value-range.cc (range_tests_floats): New test.
+
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc
+	(gimple_range_op_handler::maybe_builtin_call): Replace
+	CFN_BUILTIN_SIGNBIT* cases with CASE_FLT_FN.
+
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Normalize ranges for both bounds.
+
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Drop -0.0 for !HONOR_SIGNED_ZEROS.
+
+2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc
+	(gimple_range_op_handler::maybe_builtin_call): Add
+	CFN_BUILT_IN_SIGNBIT[FL]* entries.
+
+2022-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107254
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1):
+	For permutes also analyze live lanes.
+	(vect_schedule_slp_node): For permutes also code generate
+	live lane extracts.
+
+2022-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/107248
+	* config/sparc/sparc.cc (sparc_expand_prologue): Emit a frame
+	blockage for leaf functions.
+	(sparc_flat_expand_prologue): Emit frame instead of full blockage.
+	(sparc_expand_epilogue): Emit a frame blockage for leaf functions.
+	(sparc_flat_expand_epilogue): Emit frame instead of full blockage.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum tree_index): Add TI_BFLOAT16_TYPE.
+	* tree.h (bfloat16_type_node): Define.
+	* tree.cc (excess_precision_type): Promote bfloat16_type_mode
+	like float16_type_mode.
+	(build_common_tree_nodes): Initialize bfloat16_type_node if
+	BFmode is supported.
+	* expmed.h (maybe_expand_shift): Declare.
+	* expmed.cc (maybe_expand_shift): No longer static.
+	* expr.cc (convert_mode_scalar): Don't ICE on BF -> HF or HF -> BF
+	conversions.  If there is no optab, handle BF -> {DF,XF,TF,HF}
+	conversions as separate BF -> SF -> {DF,XF,TF,HF} conversions, add
+	-ffast-math generic implementation for BF -> SF and SF -> BF
+	conversions.
+	* builtin-types.def (BT_BFLOAT16, BT_FN_BFLOAT16_CONST_STRING): New.
+	* builtins.def (BUILT_IN_NANSF16B): New builtin.
+	* fold-const-call.cc (fold_const_call): Handle CFN_BUILT_IN_NANSF16B.
+	* config/i386/i386.cc (classify_argument): Handle E_BCmode.
+	(ix86_libgcc_floating_mode_supported_p): Also return true for BFmode
+	for -msse2.
+	(ix86_mangle_type): Mangle BFmode as DF16b.
+	(ix86_invalid_conversion, ix86_invalid_unary_op,
+	ix86_invalid_binary_op): Remove.
+	(TARGET_INVALID_CONVERSION, TARGET_INVALID_UNARY_OP,
+	TARGET_INVALID_BINARY_OP): Don't redefine.
+	* config/i386/i386-builtins.cc (ix86_bf16_type_node): Remove.
+	(ix86_register_bf16_builtin_type): Use bfloat16_type_node rather than
+	ix86_bf16_type_node, only create it if still NULL.
+	* config/i386/i386-builtin-types.def (BFLOAT16): Likewise.
+	* config/i386/i386.md (cbranchbf4, cstorebf4): New expanders.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* doc/invoke.texi (-fexcess-precision=standard): Mention that the
+	option now also works in C++.
+
 2022-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-warn-access.cc (pass_waccess::check_call): Return

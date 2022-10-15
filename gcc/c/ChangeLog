@@ -1,3 +1,26 @@
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Don't promote __bf16 to
+	double.
+
+2022-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (build_compound_literal): Add parameter scspecs.
+	Handle storage class specifiers.
+	* c-parser.cc (c_token_starts_compound_literal)
+	(c_parser_compound_literal_scspecs): New.
+	(c_parser_postfix_expression_after_paren_type): Add parameter
+	scspecs.  Call pedwarn_c11 for use of storage class specifiers.
+	Update call to build_compound_literal.
+	(c_parser_cast_expression, c_parser_sizeof_expression)
+	(c_parser_alignof_expression): Handle storage class specifiers for
+	compound literals.  Update calls to
+	c_parser_postfix_expression_after_paren_type.
+	(c_parser_postfix_expression): Update syntax comment.
+	* c-tree.h (build_compound_literal): Update prototype.
+	* c-typeck.cc (c_mark_addressable): Diagnose taking address of
+	register compound literal.
+
 2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-decl.cc (flexible_array_member_type_p): New function.

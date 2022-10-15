@@ -1,3 +1,9 @@
+2022-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100971
+	* resolve.cc (resolve_transfer): Extend check for permissibility
+	of polymorphic elements in a data transfer to arrays.
+
 2022-10-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107217
