@@ -810,21 +810,44 @@ Dump::visit (Method &method)
 void
 Dump::visit (Module &module)
 {
+  //  Syntax:
+  //	mod IDENTIFIER ;
+  //     | mod IDENTIFIER {
+  //	  InnerAttribute*
+  //	  Item*
+  //	}
+
   emit_visibility (module.get_visibility ());
-  stream << "mod " << module.get_name () << " {\n";
+  stream << "mod " << module.get_name ();
 
-  indentation.increment ();
-
-  for (auto &item : module.get_items ())
+  if (module.get_kind () == Module::UNLOADED)
     {
-      stream << indentation;
-      item->accept_vis (*this);
-      stream << '\n';
+      stream << ";\n";
     }
+  else /* Module::LOADED */
+    {
+      stream << " {\n";
 
-  indentation.decrement ();
+      indentation.increment ();
 
-  stream << indentation << "}\n";
+      for (auto &item : module.get_inner_attrs ())
+	{
+	  stream << indentation;
+	  emit_attrib (item);
+	  stream << '\n';
+	}
+
+      for (auto &item : module.get_items ())
+	{
+	  stream << indentation;
+	  item->accept_vis (*this);
+	  stream << '\n';
+	}
+
+      indentation.decrement ();
+
+      stream << indentation << "}\n";
+    }
 }
 
 void
