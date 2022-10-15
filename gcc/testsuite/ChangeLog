@@ -1,3 +1,10 @@
+2022-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2022-07-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/acle/data-intrinsics.c: New test.
+
 2022-10-11  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
