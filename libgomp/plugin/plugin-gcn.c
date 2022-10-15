@@ -114,6 +114,16 @@ struct gcn_thread
   int async;
 };
 
+/* TEMPORARY IMPORT, UNTIL hsa_ext_amd.h GETS UPDATED.  */
+const static int HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED = 0x201;
+const static int HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT = 0x202;
+const static int HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG = 0;
+const static int HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED = 1;
+typedef struct hsa_amd_svm_attribute_pair_s {
+  uint64_t attribute;
+  uint64_t value;
+} hsa_amd_svm_attribute_pair_t;
+
 /* As an HSA runtime is dlopened, following structure defines function
    pointers utilized by the HSA plug-in.  */
 
@@ -196,6 +206,9 @@ struct hsa_runtime_fn_info
   hsa_status_t (*hsa_code_object_deserialize_fn)
     (void *serialized_code_object, size_t serialized_code_object_size,
      const char *options, hsa_code_object_t *code_object);
+  hsa_status_t (*hsa_amd_svm_attributes_set_fn)
+    (void* ptr, size_t size, hsa_amd_svm_attribute_pair_t* attribute_list,
+     size_t attribute_count);
 };
 
 /* Structure describing the run-time and grid properties of an HSA kernel
@@ -691,6 +704,24 @@ dump_hsa_system_info (void)
     }
   else
     GCN_WARNING ("HSA_SYSTEM_INFO_EXTENSIONS: FAILED\n");
+
+  bool svm_supported;
+  status = hsa_fns.hsa_system_get_info_fn
+    (HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED, &svm_supported);
+  if (status == HSA_STATUS_SUCCESS)
+    GCN_DEBUG ("HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED: %s\n",
+	       (svm_supported ? "TRUE" : "FALSE"));
+  else
+    GCN_WARNING ("HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED: FAILED\n");
+
+  bool svm_accessible;
+  status = hsa_fns.hsa_system_get_info_fn
+    (HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT, &svm_accessible);
+  if (status == HSA_STATUS_SUCCESS)
+    GCN_DEBUG ("HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT: %s\n",
+	       (svm_accessible ? "TRUE" : "FALSE"));
+  else
+    GCN_WARNING ("HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT: FAILED\n");
 }
 
 /* Dump information about the available hardware.  */
@@ -1364,6 +1395,8 @@ init_hsa_runtime_functions (void)
   hsa_fns.function##_fn = dlsym (handle, #function); \
   if (hsa_fns.function##_fn == NULL) \
     return false;
+#define DLSYM_OPT_FN(function) \
+  hsa_fns.function##_fn = dlsym (handle, #function);
   void *handle = dlopen (hsa_runtime_lib, RTLD_LAZY);
   if (handle == NULL)
     return false;
@@ -1398,6 +1431,7 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_signal_load_acquire)
   DLSYM_FN (hsa_queue_destroy)
   DLSYM_FN (hsa_code_object_deserialize)
+  DLSYM_OPT_FN (hsa_amd_svm_attributes_set)
   return true;
 #undef DLSYM_FN
 }
@@ -3892,15 +3926,38 @@ static struct usm_splay_tree_s usm_map = { NULL };
 
 /* Allocate memory suitable for Unified Shared Memory.
 
-   In fact, AMD memory need only be "coarse grained", which target
-   allocations already are.  We do need to track allocations so that
-   GOMP_OFFLOAD_is_usm_ptr can look them up.  */
+   Normal heap memory is already enabled for USM, but by default it is "fine-
+   grained" memory, meaning that the GPU must access it via the system bus,
+   slowly.  Changing the page to "coarse-grained" mode means that the page
+   is migrated on-demand and can therefore be accessed quickly by both CPU and
+   GPU (although care should be taken to prevent thrashing the page back and
+   forth).
+
+   GOMP_OFFLOAD_alloc also allocates coarse-grained memory, but in that case
+   the initial location is GPU memory; this function returns system memory.
+
+   We record and track allocations so that GOMP_OFFLOAD_is_usm_ptr can look
+   them up.  */
 
 void *
 GOMP_OFFLOAD_usm_alloc (int device, size_t size)
 {
-  void *ptr = GOMP_OFFLOAD_alloc (device, size);
+  void *ptr = malloc (size);
+  if (!ptr || !hsa_fns.hsa_amd_svm_attributes_set_fn)
+    return ptr;
 
+  /* Register the heap allocation as coarse grained, which implies USM.  */
+  struct hsa_amd_svm_attribute_pair_s attr = {
+    HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG,
+    HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED
+  };
+  hsa_status_t status = hsa_fns.hsa_amd_svm_attributes_set_fn (ptr, size,
+							       &attr, 1);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_fatal ("Failed to allocate Unified Shared Memory;"
+		       " please update your drivers and/or kernel");
+
+  /* Record the allocation for GOMP_OFFLOAD_is_usm_ptr.  */
   usm_splay_tree_node node = malloc (sizeof (struct usm_splay_tree_node_s));
   node->key.addr = ptr;
   node->key.size = size;
@@ -3924,7 +3981,8 @@ GOMP_OFFLOAD_usm_free (int device, void *ptr)
       free (node);
     }
 
-  return GOMP_OFFLOAD_free (device, ptr);
+  free (ptr);
+  return true;
 }
 
 /* True if the memory was allocated via GOMP_OFFLOAD_usm_alloc.  */

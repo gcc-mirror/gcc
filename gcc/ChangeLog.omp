@@ -1,3 +1,22 @@
+2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED): New.
+	(HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT): New.
+	(HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG): New.
+	(HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED): New.
+	(hsa_amd_svm_attribute_pair_t): New.
+	(struct hsa_runtime_fn_info): Add hsa_amd_svm_attributes_set_fn.
+	(dump_hsa_system_info): Dump HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED and
+	HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT.
+	(DLSYM_OPT_FN): New.
+	(init_hsa_runtime_functions): Add hsa_amd_svm_attributes_set.
+	(GOMP_OFFLOAD_usm_alloc): Use malloc and hsa_amd_svm_attributes_set.
+	(GOMP_OFFLOAD_usm_free): Use regular free.
+	* testsuite/libgomp.c/usm-1.c: Add -mxnack=on for amdgcn.
+	* testsuite/libgomp.c/usm-2.c: Likewise.
+	* testsuite/libgomp.c/usm-3.c: Likewise.
+	* testsuite/libgomp.c/usm-4.c: Likewise.
+
 2022-10-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-oacc-kernels-decompose.cc (top_level_omp_for_in_stmt,
