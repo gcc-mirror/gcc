@@ -3207,10 +3207,45 @@ package body Exp_Ch9 is
          Find_Enclosing_Context (Par, Context, Context_Id, Decls);
       end if;
 
+      --  When the enclosing context is a BIP function whose result type has
+      --  tasks, the function has an extra formal that is the master of the
+      --  tasks to be created by its returned object (that is, when its
+      --  enclosing context is a return statement). However, if the body of
+      --  the function creates tasks before its return statements, such tasks
+      --  need their own master.
+
+      if Has_Master_Entity (Context_Id)
+        and then Ekind (Context_Id) = E_Function
+        and then Is_Build_In_Place_Function (Context_Id)
+        and then Needs_BIP_Task_Actuals (Context_Id)
+      then
+         --  No need to add it again if previously added
+
+         declare
+            Master_Present : Boolean;
+
+         begin
+            --  Handle transient scopes
+
+            if Context_Id /= Current_Scope then
+               Push_Scope (Context_Id);
+               Master_Present :=
+                 Present (Current_Entity_In_Scope (Name_uMaster));
+               Pop_Scope;
+            else
+               Master_Present :=
+                 Present (Current_Entity_In_Scope (Name_uMaster));
+            end if;
+
+            if Master_Present then
+               return;
+            end if;
+         end;
+
       --  Nothing to do if the context already has a master; internally built
       --  finalizers don't need a master.
 
-      if Has_Master_Entity (Context_Id)
+      elsif Has_Master_Entity (Context_Id)
         or else Is_Finalizer (Context_Id)
       then
          return;
