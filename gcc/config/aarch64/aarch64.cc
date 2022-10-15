@@ -11274,7 +11274,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   if (y == const0_rtx && (REG_P (x) || SUBREG_P (x))
       && (code == EQ || code == NE)
       && (mode_x == HImode || mode_x == QImode))
-    return CC_NZmode;
+    return CC_Zmode;
 
   /* Similarly, comparisons of zero_extends from shorter modes can
      be performed using an ANDS with an immediate mask.  */
@@ -11282,15 +11282,29 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
       && (mode_x == SImode || mode_x == DImode)
       && (GET_MODE (XEXP (x, 0)) == HImode || GET_MODE (XEXP (x, 0)) == QImode)
       && (code == EQ || code == NE))
-    return CC_NZmode;
+    return CC_Zmode;
 
+  /* Zero extracts support equality comparisons.  */
+  if ((mode_x == SImode || mode_x == DImode)
+      && y == const0_rtx
+      && (code_x == ZERO_EXTRACT && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2)))
+      && (code == EQ || code == NE))
+    return CC_Zmode;
+
+  /* ANDS/BICS/TST support equality and all signed comparisons.  */
+  if ((mode_x == SImode || mode_x == DImode)
+      && y == const0_rtx
+      && (code_x == AND)
+      && (code == EQ || code == NE || code == LT || code == GE
+	  || code == GT || code == LE))
+    return CC_NZVmode;
+
+  /* ADDS/SUBS correctly set N and Z flags.  */
   if ((mode_x == SImode || mode_x == DImode)
       && y == const0_rtx
       && (code == EQ || code == NE || code == LT || code == GE)
-      && (code_x == PLUS || code_x == MINUS || code_x == AND
-	  || code_x == NEG
-	  || (code_x == ZERO_EXTRACT && CONST_INT_P (XEXP (x, 1))
-	      && CONST_INT_P (XEXP (x, 2)))))
+      && (code_x == PLUS || code_x == MINUS || code_x == NEG))
     return CC_NZmode;
 
   /* A compare with a shifted operand.  Because of canonicalization,
@@ -11423,6 +11437,19 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 	case GTU: return AARCH64_HI; /* = pmore */
 	case LEU: return AARCH64_LS; /* = plast */
 	case LTU: return AARCH64_CC; /* = last */
+	default: return -1;
+	}
+      break;
+
+    case E_CC_NZVmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_NE;
+	case EQ: return AARCH64_EQ;
+	case GE: return AARCH64_PL;
+	case LT: return AARCH64_MI;
+	case GT: return AARCH64_GT;
+	case LE: return AARCH64_LE;
 	default: return -1;
 	}
       break;

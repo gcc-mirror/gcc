@@ -1189,8 +1189,9 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 {
   edge_iterator ei;
   edge e;
-  Value_Range block_result (TREE_TYPE (name));
-  Value_Range undefined (TREE_TYPE (name));
+  tree type = TREE_TYPE (name);
+  Value_Range block_result (type);
+  Value_Range undefined (type);
 
   // At this point we shouldn't be looking at the def, entry or exit block.
   gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
@@ -1220,16 +1221,16 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       // See if any equivalences can refine it.
       if (m_oracle)
 	{
-	  unsigned i;
-	  bitmap_iterator bi;
-	  // Query equivalences in read-only mode.
-	  const_bitmap equiv = m_oracle->equiv_set (name, bb);
-	  EXECUTE_IF_SET_IN_BITMAP (equiv, 0, i, bi)
+	  tree equiv_name;
+	  relation_kind rel;
+	  int prec = TYPE_PRECISION (type);
+	  FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_oracle, bb, name, equiv_name, rel)
 	    {
-	      if (i == SSA_NAME_VERSION (name))
-		continue;
-	      tree equiv_name = ssa_name (i);
 	      basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
+
+	      // Ignore partial equivs that are smaller than this object.
+	      if (rel != VREL_EQ && prec > pe_to_bits (rel))
+		continue;
 
 	      // Check if the equiv has any ranges calculated.
 	      if (!m_gori.has_edge_range_p (equiv_name))
@@ -1240,16 +1241,32 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 		  (equiv_bb && !dominated_by_p (CDI_DOMINATORS, bb, equiv_bb)))
 		continue;
 
+	      if (DEBUG_RANGE_CACHE)
+		{
+		  if (rel == VREL_EQ)
+		    fprintf (dump_file, "Checking Equivalence (");
+		  else
+		    fprintf (dump_file, "Checking Partial equiv (");
+		  print_relation (dump_file, rel);
+		  fprintf (dump_file, ") ");
+		  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
 	      Value_Range equiv_range (TREE_TYPE (equiv_name));
 	      if (range_from_dom (equiv_range, equiv_name, bb, RFD_READ_ONLY))
 		{
+		  if (rel != VREL_EQ)
+		    range_cast (equiv_range, type);
 		  if (block_result.intersect (equiv_range))
 		    {
 		      if (DEBUG_RANGE_CACHE)
 			{
-			  fprintf (dump_file, "Equivalence update! :  ");
+			  if (rel == VREL_EQ)
+			    fprintf (dump_file, "Equivalence update! :  ");
+			  else
+			    fprintf (dump_file, "Partial equiv update! :  ");
 			  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
-			  fprintf (dump_file, "had range  :  ");
+			  fprintf (dump_file, " has range  :  ");
 			  equiv_range.dump (dump_file);
 			  fprintf (dump_file, " refining range to :");
 			  block_result.dump (dump_file);
@@ -1464,7 +1481,9 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 
   if (DEBUG_RANGE_CACHE)
     {
-      fprintf (dump_file, "CACHE: BB %d DOM query, found ", start_bb->index);
+      fprintf (dump_file, "CACHE: BB %d DOM query for ", start_bb->index);
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ", found ");
       r.dump (dump_file);
       if (bb)
 	fprintf (dump_file, " at BB%d\n", bb->index);

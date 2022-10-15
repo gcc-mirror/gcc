@@ -1,3 +1,27 @@
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): If bfloat16_type_node,
+	predefine __BFLT16_*__ macros and for C++23 also
+	__STDCPP_BFLOAT16_T__.  Predefine bfloat16_type_node related
+	macros for -fbuilding-libgcc.
+	* c-lex.cc (interpret_float): Handle CPP_N_BFLOAT16.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* c-common.def (EXCESS_PRECISION_EXPR): Remove comment part about
+	the tree being specific to C/ObjC.
+	* c-opts.cc (c_common_post_options): Handle flag_excess_precision
+	in C++ the same as in C.
+	* c-lex.cc (interpret_float): Set const_type to excess_precision ()
+	even for C++.
+
+2022-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not use
+	value 2 for *_IS_IEC_60559.
+
 2022-10-12  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/60014

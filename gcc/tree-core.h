@@ -665,6 +665,9 @@ enum tree_index {
   TI_DOUBLE_TYPE,
   TI_LONG_DOUBLE_TYPE,
 
+  /* __bf16 type if supported (used in C++ as std::bfloat16_t).  */
+  TI_BFLOAT16_TYPE,
+
   /* The _FloatN and _FloatNx types must be consecutive, and in the
      same sequence as the corresponding complex types, which must also
      be consecutive; _FloatN must come before _FloatNx; the order must

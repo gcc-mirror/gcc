@@ -160,6 +160,12 @@ range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) cons
   return VREL_VARYING;
 }
 
+relation_kind
+range_operator_float::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) const
+{
+  return VREL_VARYING;
+}
+
 // Return TRUE if OP1 is known to be free of NANs.
 
 static inline bool
@@ -338,6 +344,7 @@ class foperator_equal : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
+  using range_operator_float::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -444,6 +451,7 @@ class foperator_not_equal : public range_operator_float
 {
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
+  using range_operator_float::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -545,6 +553,7 @@ class foperator_lt : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
+  using range_operator_float::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -660,6 +669,7 @@ class foperator_le : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
+  using range_operator_float::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -767,6 +777,7 @@ class foperator_gt : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
+  using range_operator_float::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -882,6 +893,7 @@ class foperator_ge : public range_operator_float
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   using range_operator_float::op2_range;
+  using range_operator_float::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,

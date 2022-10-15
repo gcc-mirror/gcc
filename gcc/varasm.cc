@@ -2419,23 +2419,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     }
 }
 
-
-/* Given a function declaration (FN_DECL), this function assembles the
-   function into the .preinit_array section.  */
-
-void
-assemble_vtv_preinit_initializer (tree fn_decl)
-{
-  section *sect;
-  unsigned flags = SECTION_WRITE;
-  rtx symbol = XEXP (DECL_RTL (fn_decl), 0);
-
-  flags |= SECTION_NOTYPE;
-  sect = get_section (".preinit_array", flags, fn_decl);
-  switch_to_section (sect);
-  assemble_addr_to_section (symbol, sect);
-}
-
 /* Return 1 if type TYPE contains any pointers.  */
 
 static int

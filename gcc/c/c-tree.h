@@ -734,7 +734,7 @@ extern void set_init_label (location_t, tree, location_t, struct obstack *);
 extern void process_init_element (location_t, struct c_expr, bool,
 				  struct obstack *);
 extern tree build_compound_literal (location_t, tree, tree, bool,
-				    unsigned int);
+				    unsigned int, struct c_declspecs *);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
 extern tree c_start_switch (location_t, location_t, tree, bool);
 extern void c_finish_switch (tree, tree);

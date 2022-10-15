@@ -70,7 +70,11 @@ typedef enum relation_kind_t
   VREL_GT,		// r1 > r2
   VREL_GE,		// r1 >= r2
   VREL_EQ,		// r1 == r2
-  VREL_NE		// r1 != r2
+  VREL_NE,		// r1 != r2
+  VREL_PE8,		// 8 bit partial equivalency
+  VREL_PE16,		// 16 bit partial equivalency
+  VREL_PE32,		// 32 bit partial equivalency
+  VREL_PE64		// 64 bit partial equivalency
 } relation_kind;
 
 // General relation kind transformations.
@@ -79,7 +83,12 @@ relation_kind relation_intersect (relation_kind r1, relation_kind r2);
 relation_kind relation_negate (relation_kind r);
 relation_kind relation_swap (relation_kind r);
 inline bool relation_lt_le_gt_ge_p (relation_kind r)
-				    { return (r >= VREL_LT && r <= VREL_GE); }
+		      { return (r >= VREL_LT && r <= VREL_GE); }
+inline bool relation_partial_equiv_p (relation_kind r)
+		      { return (r >= VREL_PE8 && r <= VREL_PE64); }
+inline bool relation_equiv_p (relation_kind r)
+		      { return r == VREL_EQ || relation_partial_equiv_p (r); }
+
 void print_relation (FILE *f, relation_kind rel);
 
 class relation_oracle
@@ -91,8 +100,6 @@ public:
   // register a relation between 2 ssa names on an edge.
   void register_edge (edge, relation_kind, tree, tree);
 
-  // Return equivalency set for an SSA name in a basic block.
-  virtual const_bitmap equiv_set (tree, basic_block) = 0;
   // register a relation between 2 ssa names in a basic block.
   virtual void register_relation (basic_block, relation_kind, tree, tree) = 0;
   // Query for a relation between two ssa names in a basic block.
@@ -105,6 +112,11 @@ public:
   virtual void dump (FILE *) const = 0;
   void debug () const;
 protected:
+  friend class equiv_relation_iterator;
+  // Return equivalency set for an SSA name in a basic block.
+  virtual const_bitmap equiv_set (tree, basic_block) = 0;
+  // Return partial equivalency record for an SSA name.
+  virtual const class pe_slice *partial_equiv_set (tree) { return NULL; }
   void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
   // Query for a relation between two equivalency sets in a basic block.
   virtual relation_kind query_relation (basic_block, const_bitmap,
@@ -125,6 +137,14 @@ public:
   equiv_chain *find (unsigned ssa);
 };
 
+class pe_slice
+{
+public:
+  tree ssa_base;  	// Slice of this name.
+  relation_kind code;	// bits that are equivalent.
+  bitmap members;	// Other members in the partial equivalency.
+};
+
 // The equivalency oracle maintains equivalencies using the dominator tree.
 // Equivalencies apply to an entire basic block.  Equivalencies on edges
 // can be represented only on edges whose destination is a single-pred block,
@@ -137,9 +157,12 @@ public:
   ~equiv_oracle ();
 
   const_bitmap equiv_set (tree ssa, basic_block bb) final override;
+  const pe_slice *partial_equiv_set (tree name) final override;
   void register_relation (basic_block bb, relation_kind k, tree ssa1,
 			  tree ssa2) override;
 
+  void add_partial_equiv (relation_kind, tree, tree);
+  relation_kind partial_equiv (tree ssa1, tree ssa2, tree *base = NULL) const;
   relation_kind query_relation (basic_block, tree, tree) override;
   relation_kind query_relation (basic_block, const_bitmap, const_bitmap)
     override;
@@ -153,6 +176,7 @@ private:
   bitmap m_equiv_set;	// Index by ssa-name. true if an equivalence exists.
   vec <equiv_chain *> m_equiv;	// Index by BB.  list of equivalences.
   vec <bitmap> m_self_equiv;  // Index by ssa-name, self equivalency set.
+  vec <pe_slice> m_partial;  // Partial equivalencies.
 
   void limit_check (basic_block bb = NULL);
   equiv_chain *find_equiv_block (unsigned ssa, int bb) const;
@@ -259,6 +283,39 @@ private:
   struct obstack m_chain_obstack;
 };
 
+// Used to assist with iterating over the equivalence list.
+class equiv_relation_iterator {
+public:
+  equiv_relation_iterator (relation_oracle *oracle, basic_block bb, tree name,
+			   bool full = true, bool partial = false);
+  void next ();
+  tree get_name (relation_kind *rel = NULL);
+protected:
+  relation_oracle *m_oracle;
+  const_bitmap m_bm;
+  const pe_slice *m_pe;
+  bitmap_iterator m_bi;
+  unsigned m_y;
+  tree m_name;
+};
+
+#define FOR_EACH_EQUIVALENCE(oracle, bb, name, equiv_name)		\
+  for (equiv_relation_iterator iter (oracle, bb, name, true, false);	\
+       ((equiv_name) = iter.get_name ());				\
+       iter.next ())
+
+#define FOR_EACH_PARTIAL_EQUIV(oracle, bb, name, equiv_name, equiv_rel)	\
+  for (equiv_relation_iterator iter (oracle, bb, name, false, true);	\
+       ((equiv_name) = iter.get_name (&equiv_rel));			\
+       iter.next ())
+
+#define FOR_EACH_PARTIAL_AND_FULL_EQUIV(oracle, bb, name, equiv_name, 	\
+						      equiv_rel)	\
+  for (equiv_relation_iterator iter (oracle, bb, name, true, true);	\
+       ((equiv_name) = iter.get_name (&equiv_rel));			\
+       iter.next ())
+
+
 // The value-relation class is used to encapsulate the represention of an
 // individual relation between 2 ssa-names, and to facilitate operating on
 // the relation.
@@ -315,4 +372,56 @@ value_relation::value_relation (relation_kind kind, tree n1, tree n2)
   set_relation (kind, n1, n2);
 }
 
+// Return the number of bits associated with partial equivalency T.
+// Return 0 if this is not a supported partial equivalency relation.
+
+inline int
+pe_to_bits (relation_kind t)
+{
+  switch (t)
+  {
+    case VREL_PE8:
+      return 8;
+    case VREL_PE16:
+      return 16;
+    case VREL_PE32:
+      return 32;
+    case VREL_PE64:
+      return 64;
+    default:
+      return 0;
+  }
+}
+
+// Return the partial equivalency code associated with the number of BITS.
+// return VREL_VARYING if there is no exact match.
+
+inline relation_kind
+bits_to_pe (int bits)
+{
+  switch (bits)
+  {
+    case 8:
+      return VREL_PE8;
+    case 16:
+      return VREL_PE16;
+    case 32:
+      return VREL_PE32;
+    case 64:
+      return VREL_PE64;
+    default:
+      return VREL_VARYING;
+  }
+}
+
+// Given partial equivalencies T1 and T2, return the snmallest kind.
+
+inline relation_kind
+pe_min (relation_kind t1, relation_kind t2)
+{
+  gcc_checking_assert (relation_partial_equiv_p (t1));
+  gcc_checking_assert (relation_partial_equiv_p (t2));
+  // VREL_PE are declared small to large, so simple min will suffice.
+  return MIN (t1, t2);
+}
 #endif  /* GCC_VALUE_RELATION_H */

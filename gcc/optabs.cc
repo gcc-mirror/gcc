@@ -4384,7 +4384,6 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   machine_mode mode = *pmode;
   rtx libfunc, test;
   machine_mode cmp_mode;
-  enum mode_class mclass;
 
   /* The other methods are not needed.  */
   gcc_assert (methods == OPTAB_DIRECT || methods == OPTAB_WIDEN
@@ -4490,9 +4489,8 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       return;
     }
 
-  mclass = GET_MODE_CLASS (mode);
   test = gen_rtx_fmt_ee (comparison, VOIDmode, x, y);
-  FOR_EACH_MODE_FROM (cmp_mode, mode)
+  FOR_EACH_WIDER_MODE_FROM (cmp_mode, mode)
     {
       enum insn_code icode;
       icode = optab_handler (cbranch_optab, cmp_mode);
@@ -4515,7 +4513,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	  delete_insns_since (last);
 	}
 
-      if (methods == OPTAB_DIRECT || !CLASS_HAS_WIDER_MODES_P (mclass))
+      if (methods == OPTAB_DIRECT)
 	break;
     }
 
@@ -4711,7 +4709,7 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
   bool reversed_p = false;
   scalar_int_mode cmp_mode = targetm.libgcc_cmp_return_mode ();
 
-  FOR_EACH_MODE_FROM (mode, orig_mode)
+  FOR_EACH_WIDER_MODE_FROM (mode, orig_mode)
     {
       if (code_to_optab (comparison)
 	  && (libfunc = optab_libfunc (code_to_optab (comparison), mode)))

@@ -1,3 +1,99 @@
+2022-10-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106304
+	* constexpr.cc (cxx_dynamic_cast_fn_p): Check for abi_node
+	instead of global_namespace.
+	* rtti.cc (build_dynamic_cast_1): Set DECL_CONTEXT and
+	DECL_SOURCE_LOCATION when building dynamic_cast_node.  Push
+	it into the namespace.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (extended_float_type_p): Return true for
+	bfloat16_type_node.
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): Set
+	extended{1,2} if mv{1,2} is bfloat16_type_node.  Adjust comment.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82071
+	PR c/87390
+	PR c++/107097
+	* cp-tree.h (cp_ep_convert_and_check): Remove.
+	* cvt.cc (cp_ep_convert_and_check): Remove.
+	* call.cc (build_conditional_expr): Use excess precision for ?: with
+	one arm floating and another integral.  Don't convert first to
+	semantic result type from integral types.
+	(convert_like_internal): Don't call cp_ep_convert_and_check, instead
+	just strip EXCESS_PRECISION_EXPR before calling cp_convert_and_check
+	or cp_convert.
+	* typeck.cc (cp_build_binary_op): Set may_need_excess_precision
+	for comparisons or SPACESHIP_EXPR with at least one operand integral.
+	Don't compute semantic_result_type if build_type is non-NULL.  Call
+	cp_convert_and_check instead of cp_ep_convert_and_check.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* parser.cc (cp_parser_primary_expression): Handle
+	EXCESS_PRECISION_EXPR with REAL_CST operand the same as REAL_CST.
+	* cvt.cc (cp_ep_convert_and_check): New function.
+	* call.cc (build_conditional_expr): Add excess precision support.
+	When type_after_usual_arithmetic_conversions returns error_mark_node,
+	use gcc_checking_assert that it is because of uncomparable floating
+	point ranks instead of checking all those conditions and make it
+	work also with complex types.
+	(convert_like_internal): Likewise.  Add NESTED_P argument, pass true
+	to recursive calls to convert_like.
+	(convert_like): Add NESTED_P argument, pass it through to
+	convert_like_internal.  For other overload pass false to it.
+	(convert_like_with_context): Pass false to NESTED_P.
+	(convert_arg_to_ellipsis): Add excess precision support.
+	(magic_varargs_p): For __builtin_is{finite,inf,inf_sign,nan,normal}
+	and __builtin_fpclassify return 2 instead of 1, document what it
+	means.
+	(build_over_call): Don't handle former magic 2 which is no longer
+	used, instead for magic 1 remove EXCESS_PRECISION_EXPR.
+	(perform_direct_initialization_if_possible): Pass false to NESTED_P
+	convert_like argument.
+	* constexpr.cc (cxx_eval_constant_expression): Handle
+	EXCESS_PRECISION_EXPR.
+	(potential_constant_expression_1): Likewise.
+	* pt.cc (tsubst_copy, tsubst_copy_and_build): Likewise.
+	* cp-tree.h (cp_ep_convert_and_check): Declare.
+	* cp-gimplify.cc (cp_fold): Handle EXCESS_PRECISION_EXPR.
+	* typeck.cc (cp_common_type): For COMPLEX_TYPEs, return error_mark_node
+	if recursive call returned it.
+	(convert_arguments): For magic 1 remove EXCESS_PRECISION_EXPR.
+	(cp_build_binary_op): Add excess precision support.  When
+	cp_common_type returns error_mark_node, use gcc_checking_assert that
+	it is because of uncomparable floating point ranks instead of checking
+	all those conditions and make it work also with complex types.
+	(cp_build_unary_op): Likewise.
+	(cp_build_compound_expr): Likewise.
+	(build_static_cast_1): Remove EXCESS_PRECISION_EXPR.
+
+2022-10-13  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Fix whitespace.
+	* parser.h: Fix whitespace.
+	* decl.cc: Fix whitespace.
+	* parser.cc: Fix whitespace.
+	* pt.cc: Fix whitespace.
+
+2022-10-13  Martin Liska  <mliska@suse.cz>
+
+	* vtable-class-hierarchy.cc (vtv_generate_init_routine): Emit
+	an artificial variable that would be put into .preinit_array
+	section.
+
+2022-10-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106925
+	* except.cc (maybe_splice_retval_cleanup): Check current_function_decl.
+	Make the bool const.
+
 2022-10-12  Marek Polacek  <polacek@redhat.com>
 
 	* call.cc (standard_conversion): Remove LOOKUP_PREFER_RVALUE code.

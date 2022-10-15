@@ -812,17 +812,9 @@ c_common_post_options (const char **pfilename)
   C_COMMON_OVERRIDE_OPTIONS;
 #endif
 
-  /* Excess precision other than "fast" requires front-end
-     support.  */
-  if (c_dialect_cxx ())
-    {
-      if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
-	sorry ("%<-fexcess-precision=standard%> for C++");
-      flag_excess_precision = EXCESS_PRECISION_FAST;
-    }
-  else if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = (flag_iso ? EXCESS_PRECISION_STANDARD
-				      : EXCESS_PRECISION_FAST);
+			     : EXCESS_PRECISION_FAST);
 
   /* ISO C restricts floating-point expression contraction to within
      source-language expressions (-ffp-contract=on, currently an alias

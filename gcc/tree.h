@@ -4291,6 +4291,7 @@ tree_strip_any_location_wrapper (tree exp)
 #define float_type_node			global_trees[TI_FLOAT_TYPE]
 #define double_type_node		global_trees[TI_DOUBLE_TYPE]
 #define long_double_type_node		global_trees[TI_LONG_DOUBLE_TYPE]
+#define bfloat16_type_node		global_trees[TI_BFLOAT16_TYPE]
 
 /* Nodes for particular _FloatN and _FloatNx types in sequence.  */
 #define FLOATN_TYPE_NODE(IDX)		global_trees[TI_FLOATN_TYPE_FIRST + (IDX)]

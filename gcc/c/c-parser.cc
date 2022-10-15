@@ -666,6 +666,30 @@ c_parser_next_tokens_start_typename (c_parser *parser, enum c_lookahead_kind la)
   return false;
 }
 
+/* Return true if TOKEN, after an open parenthesis, can start a
+   compound literal (either a storage class specifier allowed in that
+   context, or a type name), false otherwise.  */
+static bool
+c_token_starts_compound_literal (c_token *token)
+{
+  switch (token->type)
+    {
+    case CPP_KEYWORD:
+      switch (token->keyword)
+	{
+	case RID_REGISTER:
+	case RID_STATIC:
+	case RID_THREAD:
+	  return true;
+	default:
+	  break;
+	}
+      /* Fall through.  */
+    default:
+      return c_token_starts_typename (token);
+    }
+}
+
 /* Return true if TOKEN is a type qualifier, false otherwise.  */
 static bool
 c_token_is_qualifier (c_token *token)
@@ -1563,6 +1587,7 @@ static struct c_expr c_parser_sizeof_expression (c_parser *);
 static struct c_expr c_parser_alignof_expression (c_parser *);
 static struct c_expr c_parser_postfix_expression (c_parser *);
 static struct c_expr c_parser_postfix_expression_after_paren_type (c_parser *,
+								   struct c_declspecs *,
 								   struct c_type_name *,
 								   location_t);
 static struct c_expr c_parser_postfix_expression_after_primary (c_parser *,
@@ -8237,6 +8262,34 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 #undef POP
 }
 
+/* Parse any storage class specifiers after an open parenthesis in a
+   context where a compound literal is permitted.  */
+
+static struct c_declspecs *
+c_parser_compound_literal_scspecs (c_parser *parser)
+{
+  bool seen_scspec = false;
+  struct c_declspecs *specs = build_null_declspecs ();
+  while (c_parser_next_token_is (parser, CPP_KEYWORD))
+    {
+      switch (c_parser_peek_token (parser)->keyword)
+	{
+	case RID_REGISTER:
+	case RID_STATIC:
+	case RID_THREAD:
+	  seen_scspec = true;
+	  declspecs_add_scspec (c_parser_peek_token (parser)->location,
+				specs, c_parser_peek_token (parser)->value);
+	  c_parser_consume_token (parser);
+	  break;
+	default:
+	  goto out;
+	}
+    }
+ out:
+  return seen_scspec ? specs : NULL;
+}
+
 /* Parse a cast expression (C90 6.3.4, C99 6.5.4, C11 6.5.4).  If AFTER
    is not NULL then it is an Objective-C message expression which is the
    primary-expression starting the expression as an initializer.
@@ -8260,13 +8313,15 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
      an unary expression.  Full detection of unknown typenames here
      would require a 3-token lookahead.  */
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
-      && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
+      && c_token_starts_compound_literal (c_parser_peek_2nd_token (parser)))
     {
+      struct c_declspecs *scspecs;
       struct c_type_name *type_name;
       struct c_expr ret;
       struct c_expr expr;
       matching_parens parens;
       parens.consume_open (parser);
+      scspecs = c_parser_compound_literal_scspecs (parser);
       type_name = c_parser_type_name (parser, true);
       parens.skip_until_found_close (parser);
       if (type_name == NULL)
@@ -8281,8 +8336,11 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       used_types_insert (type_name->specs->type);
 
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-	return c_parser_postfix_expression_after_paren_type (parser, type_name,
+	return c_parser_postfix_expression_after_paren_type (parser, scspecs,
+							     type_name,
 							     cast_loc);
+      if (scspecs)
+	error_at (cast_loc, "storage class specifier in cast");
       if (type_name->specs->alignas_p)
 	error_at (type_name->specs->locations[cdw_alignas],
 		  "alignment specified for type name in cast");
@@ -8485,14 +8543,16 @@ c_parser_sizeof_expression (c_parser *parser)
   c_inhibit_evaluation_warnings++;
   in_sizeof++;
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
-      && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
+      && c_token_starts_compound_literal (c_parser_peek_2nd_token (parser)))
     {
       /* Either sizeof ( type-name ) or sizeof unary-expression
 	 starting with a compound literal.  */
+      struct c_declspecs *scspecs;
       struct c_type_name *type_name;
       matching_parens parens;
       parens.consume_open (parser);
       expr_loc = c_parser_peek_token (parser)->location;
+      scspecs = c_parser_compound_literal_scspecs (parser);
       type_name = c_parser_type_name (parser, true);
       parens.skip_until_found_close (parser);
       finish = parser->tokens_buf[0].location;
@@ -8508,13 +8568,15 @@ c_parser_sizeof_expression (c_parser *parser)
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	{
-	  expr = c_parser_postfix_expression_after_paren_type (parser,
+	  expr = c_parser_postfix_expression_after_paren_type (parser, scspecs,
 							       type_name,
 							       expr_loc);
 	  finish = expr.get_finish ();
 	  goto sizeof_expr;
 	}
       /* sizeof ( type-name ).  */
+      if (scspecs)
+	error_at (expr_loc, "storage class specifier in %<sizeof%>");
       if (type_name->specs->alignas_p)
 	error_at (type_name->specs->locations[cdw_alignas],
 		  "alignment specified for type name in %<sizeof%>");
@@ -8572,16 +8634,18 @@ c_parser_alignof_expression (c_parser *parser)
   c_inhibit_evaluation_warnings++;
   in_alignof++;
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
-      && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
+      && c_token_starts_compound_literal (c_parser_peek_2nd_token (parser)))
     {
       /* Either __alignof__ ( type-name ) or __alignof__
 	 unary-expression starting with a compound literal.  */
       location_t loc;
+      struct c_declspecs *scspecs;
       struct c_type_name *type_name;
       struct c_expr ret;
       matching_parens parens;
       parens.consume_open (parser);
       loc = c_parser_peek_token (parser)->location;
+      scspecs = c_parser_compound_literal_scspecs (parser);
       type_name = c_parser_type_name (parser, true);
       end_loc = c_parser_peek_token (parser)->location;
       parens.skip_until_found_close (parser);
@@ -8597,12 +8661,14 @@ c_parser_alignof_expression (c_parser *parser)
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	{
-	  expr = c_parser_postfix_expression_after_paren_type (parser,
+	  expr = c_parser_postfix_expression_after_paren_type (parser, scspecs,
 							       type_name,
 							       loc);
 	  goto alignof_expr;
 	}
       /* alignof ( type-name ).  */
+      if (scspecs)
+	error_at (loc, "storage class specifier in %qE", alignof_spelling);
       if (type_name->specs->alignas_p)
 	error_at (type_name->specs->locations[cdw_alignas],
 		  "alignment specified for type name in %qE",
@@ -9140,8 +9206,8 @@ c_parser_predefined_identifier (c_parser *parser)
      postfix-expression -> identifier
      postfix-expression ++
      postfix-expression --
-     ( type-name ) { initializer-list }
-     ( type-name ) { initializer-list , }
+     ( storage-class-specifiers[opt] type-name ) { initializer-list[opt] }
+     ( storage-class-specifiers[opt] type-name ) { initializer-list , }
 
    argument-expression-list:
      argument-expression
@@ -10483,6 +10549,7 @@ c_parser_postfix_expression (c_parser *parser)
 
 static struct c_expr
 c_parser_postfix_expression_after_paren_type (c_parser *parser,
+					      struct c_declspecs *scspecs,
 					      struct c_type_name *type_name,
 					      location_t type_loc)
 {
@@ -10515,7 +10582,11 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
       type = error_mark_node;
     }
 
-  pedwarn_c90 (start_loc, OPT_Wpedantic, "ISO C90 forbids compound literals");
+  if (!pedwarn_c90 (start_loc, OPT_Wpedantic,
+		    "ISO C90 forbids compound literals") && scspecs)
+    pedwarn_c11 (start_loc, OPT_Wpedantic,
+		 "ISO C forbids storage class specifiers in compound literals "
+		 "before C2X");
   non_const = ((init.value && TREE_CODE (init.value) == CONSTRUCTOR)
 	       ? CONSTRUCTOR_NON_CONST (init.value)
 	       : init.original_code == C_MAYBE_CONST_EXPR);
@@ -10534,7 +10605,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 	}
     }
   expr.value = build_compound_literal (start_loc, type, init.value, non_const,
-				       alignas_align);
+				       alignas_align, scspecs);
   set_c_expr_source_range (&expr, init.src_range);
   expr.m_decimal = 0;
   expr.original_code = ERROR_MARK;

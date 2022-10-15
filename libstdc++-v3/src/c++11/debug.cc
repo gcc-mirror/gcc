@@ -37,6 +37,7 @@
 #include <cstdlib>	// for std::abort
 #include <cctype>	// for std::isspace.
 #include <cstring>	// for std::strstr.
+#include <climits>	// for INT_MAX
 
 #include <algorithm>	// for std::min.
 
@@ -609,14 +610,11 @@ namespace
     { print_word(ctx, word, Length - 1); }
 
   void
-  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc = -1)
+  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc)
   {
-    if (nbc != 0)
-      {
-	ctx._M_column += (nbc > 0)
-	  ? fprintf(stderr, "%.*s", (int)nbc, str)
-	  : fprintf(stderr, "%s", str);
-      }
+    if (nbc == -1)
+      nbc = INT_MAX;
+    ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
   }
 
   void
@@ -645,12 +643,9 @@ namespace
 	|| (ctx._M_column + visual_length < ctx._M_max_length)
 	|| (visual_length >= ctx._M_max_length && ctx._M_column == 1))
       {
-	// If this isn't the first line, indent
+	// If this isn't the first line, indent.
 	if (ctx._M_column == 1 && !ctx._M_first_line)
-	  {
-	    const char spacing[PrintContext::_S_indent + 1] = "    ";
-	    print_raw(ctx, spacing, PrintContext::_S_indent);
-	  }
+	  ctx._M_column += fprintf(stderr, "%*c", PrintContext::_S_indent, ' ');
 
 	int written = fprintf(stderr, "%.*s", (int)length, word);
 
@@ -1166,7 +1161,7 @@ namespace __gnu_debug
     PrintContext ctx;
     if (_M_file)
       {
-	print_raw(ctx, _M_file);
+	ctx._M_column += fprintf(stderr, "%s", _M_file);
 	print_literal(ctx, ":");
 	go_to_next_line = true;
       }

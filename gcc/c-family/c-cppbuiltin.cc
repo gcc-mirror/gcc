@@ -1260,6 +1260,13 @@ c_cpp_builtins (cpp_reader *pfile)
       builtin_define_float_constants (prefix, ggc_strdup (csuffix), "%s",
 				      csuffix, FLOATN_NX_TYPE_NODE (i));
     }
+  if (bfloat16_type_node)
+    {
+      if (c_dialect_cxx () && cxx_dialect > cxx20)
+	cpp_define (pfile, "__STDCPP_BFLOAT16_T__=1");
+      builtin_define_float_constants ("BFLT16", "BF16", "%s",
+				      "BF16", bfloat16_type_node);
+    }
 
   /* For float.h.  */
   if (targetm.decimal_float_supported_p ())
@@ -1370,6 +1377,12 @@ c_cpp_builtins (cpp_reader *pfile)
 	      suffix[0] = 'l';
 	      memcpy (float_h_prefix, "LDBL", 5);
 	    }
+	  else if (bfloat16_type_node
+		   && mode == TYPE_MODE (bfloat16_type_node))
+	    {
+	      memcpy (suffix, "bf16", 5);
+	      memcpy (float_h_prefix, "BFLT16", 7);
+	    }
 	  else
 	    {
 	      bool found_suffix = false;
@@ -1396,22 +1409,28 @@ c_cpp_builtins (cpp_reader *pfile)
 	  machine_mode float16_type_mode = (float16_type_node
 					    ? TYPE_MODE (float16_type_node)
 					    : VOIDmode);
+	  machine_mode bfloat16_type_mode = (bfloat16_type_node
+					     ? TYPE_MODE (bfloat16_type_node)
+					     : VOIDmode);
 	  switch (targetm.c.excess_precision
 		    (EXCESS_PRECISION_TYPE_IMPLICIT))
 	    {
 	    case FLT_EVAL_METHOD_UNPREDICTABLE:
 	    case FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE:
 	      excess_precision = (mode == float16_type_mode
+				  || mode == bfloat16_type_mode
 				  || mode == TYPE_MODE (float_type_node)
 				  || mode == TYPE_MODE (double_type_node));
 	      break;
 
 	    case FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE:
 	      excess_precision = (mode == float16_type_mode
+				  || mode == bfloat16_type_mode
 				  || mode == TYPE_MODE (float_type_node));
 	      break;
 	    case FLT_EVAL_METHOD_PROMOTE_TO_FLOAT:
-	      excess_precision = mode == float16_type_mode;
+	      excess_precision = (mode == float16_type_mode
+				  || mode == bfloat16_type_mode);
 	      break;
 	    case FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16:
 	      excess_precision = false;

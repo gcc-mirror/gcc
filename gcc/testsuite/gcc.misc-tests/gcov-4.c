@@ -110,6 +110,29 @@ lab2:
   return 8;				/* count(1) */
 }
 
+int
+test_goto3 (int i, int j)
+{
+    if (j) goto else_;		/* count(1) */
+
+top:
+    if (i)			/* count(1) */
+      {
+	i = do_something (i);
+      }
+    else
+      {
+else_:				/* count(1) */
+	j = do_something (j);	/* count(2) */
+	if (j)			/* count(2) */
+	  {
+	    j = 0;		/* count(1) */
+	    goto top;		/* count(1) */
+	  }
+      }
+    return 16;
+}
+
 void
 call_goto ()
 {
@@ -117,6 +140,7 @@ call_goto ()
   goto_val += test_goto1 (1);
   goto_val += test_goto2 (3);
   goto_val += test_goto2 (30);
+  goto_val += test_goto3 (0, 1);
 }
 
 /* Check nested if-then-else statements. */
@@ -221,7 +245,7 @@ test_switch (int i, int j)
     {
       case 1:
         result = do_something (2);	/* count(1) */
-        break;
+        break;				/* count(1) */
       case 2:
         result = do_something (1024);
         break;
@@ -230,7 +254,7 @@ test_switch (int i, int j)
         if (j == 2)			/* count(3) */
           return do_something (4);	/* count(1) */
         result = do_something (8);	/* count(2) */
-        break;
+        break;				/* count(2) */
       default:
 	result = do_something (32);	/* count(1) */
 	switch_m++;			/* count(1) */
@@ -260,7 +284,7 @@ main()
   call_unref ();
   if ((for_val1 != 12)
       || (for_val2 != 87)
-      || (goto_val != 15)
+      || (goto_val != 31)
       || (ifelse_val1 != 31)
       || (ifelse_val2 != 23)
       || (ifelse_val3 != 246)

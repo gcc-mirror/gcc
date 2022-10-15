@@ -324,6 +324,21 @@ frange::set (tree type,
       m_neg_nan = false;
     }
 
+  if (!MODE_HAS_SIGNED_ZEROS (TYPE_MODE (m_type)))
+    {
+      if (real_iszero (&m_min, 1))
+	m_min.sign = 0;
+      if (real_iszero (&m_max, 1))
+	m_max.sign = 0;
+    }
+  else if (!HONOR_SIGNED_ZEROS (m_type))
+    {
+      if (real_iszero (&m_max, 1))
+	m_max.sign = 0;
+      if (real_iszero (&m_min, 0))
+	m_min.sign = 1;
+    }
+
   // For -ffinite-math-only we can drop ranges outside the
   // representable numbers to min/max for the type.
   if (flag_finite_math_only)
@@ -332,8 +347,12 @@ frange::set (tree type,
       REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
       if (real_less (&m_min, &min_repr))
 	m_min = min_repr;
+      else if (real_less (&max_repr, &m_min))
+	m_min = max_repr;
       if (real_less (&max_repr, &m_max))
 	m_max = max_repr;
+      else if (real_less (&m_max, &min_repr))
+	m_max = min_repr;
     }
 
   // Check for swapped ranges.
@@ -4002,6 +4021,11 @@ range_tests_floats ()
   r1.clear_nan ();
   r0.intersect (r1);
   ASSERT_TRUE (r0.undefined_p ());
+
+  // Make sure [-Inf, -Inf] doesn't get normalized.
+  r0 = frange_float ("-Inf", "-Inf");
+  ASSERT_TRUE (real_isinf (&r0.lower_bound (), true));
+  ASSERT_TRUE (real_isinf (&r0.upper_bound (), true));
 }
 
 void

@@ -496,6 +496,10 @@ struct cpp_options
      in C11.  */
   unsigned char c11_identifiers;
 
+  /* Nonzero means extended identifiers allow the characters specified
+     by Unicode XID_Start and XID_Continue properties.  */
+  unsigned char xid_identifiers;
+
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 
@@ -1275,6 +1279,7 @@ struct cpp_num
 #define CPP_N_USERDEF	0x1000000 /* C++11 user-defined literal.  */
 
 #define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
+#define CPP_N_BFLOAT16	0x4000000 /* std::bfloat16_t type.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */

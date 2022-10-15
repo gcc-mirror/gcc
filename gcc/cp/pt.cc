@@ -1581,6 +1581,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		 there were no definition, and vice versa.  */
 	      DECL_INITIAL (fn) = NULL_TREE;
 	      duplicate_decls (spec, fn, /*hiding=*/is_friend);
+
 	      /* The call to duplicate_decls will have applied
 		 [temp.expl.spec]:
 
@@ -12185,6 +12186,7 @@ instantiate_class_template (tree type)
 	      r = tsubst (t, args, tf_error, NULL_TREE);
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
 		--processing_template_decl;
+
 	      set_current_access_from_decl (r);
 	      finish_member_declaration (r);
 	      /* Instantiate members marked with attribute used.  */
@@ -17020,7 +17022,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* This can happen for a parameter name used later in a function
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
-	  gcc_assert (cp_unevaluated_operand != 0);
+	  gcc_assert (cp_unevaluated_operand);
 	  r = tsubst_decl (t, args, complain);
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
@@ -17410,6 +17412,18 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    && DECL_IMMEDIATE_FUNCTION_P (op0))
 	  SET_EXPR_LOCATION (r, input_location);
 	return r;
+      }
+
+    case EXCESS_PRECISION_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+	  {
+	    gcc_checking_assert (same_type_p (type, TREE_TYPE (op0)));
+	    return op0;
+	  }
+	return build1_loc (EXPR_LOCATION (t), code, type, op0);
       }
 
     case COMPONENT_REF:
@@ -20440,6 +20454,16 @@ tsubst_copy_and_build (tree t,
 				templated_operator_saved_lookups (t),
 				complain|decltype_flag));
 
+    case EXCESS_PRECISION_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+	  RETURN (op0);
+	RETURN (build1_loc (EXPR_LOCATION (t), EXCESS_PRECISION_EXPR,
+			    type, op0));
+      }
+
     case FIX_TRUNC_EXPR:
       /* convert_like should have created an IMPLICIT_CONV_EXPR.  */
       gcc_unreachable ();
@@ -21918,6 +21942,7 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 	}
       return error_mark_node;
     }
+
   return fndecl;
 }
 
@@ -26183,12 +26208,9 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 {
   /* The arguments used to instantiate DECL, from the most general
      template.  */
-  tree code_pattern;
+  tree code_pattern = DECL_TEMPLATE_RESULT (tmpl);
 
-  code_pattern = DECL_TEMPLATE_RESULT (tmpl);
-
-  /* Make sure that we can see identifiers, and compute access
-     correctly.  */
+  /* Make sure that we can see identifiers, and compute access correctly.  */
   push_access_scope (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)

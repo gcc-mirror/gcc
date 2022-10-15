@@ -160,6 +160,7 @@ public:
 					  const frange &op2,
 					  relation_kind = VREL_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  virtual relation_kind op1_op2_relation (const frange &lhs) const;
 };
 
 class range_op_handler
