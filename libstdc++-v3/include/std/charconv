@@ -50,6 +50,10 @@
 # define __cpp_lib_to_chars 201611L
 #endif
 
+#if __cplusplus > 202002L
+# define __cpp_lib_constexpr_charconv 202202L
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -119,7 +123,7 @@ namespace __detail
 
   // Generic implementation for arbitrary bases.
   template<typename _Tp>
-    to_chars_result
+    constexpr to_chars_result
     __to_chars(char* __first, char* __last, _Tp __val, int __base) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
@@ -138,7 +142,7 @@ namespace __detail
 
       unsigned __pos = __len - 1;
 
-      static constexpr char __digits[] = {
+      constexpr char __digits[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
 	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
@@ -160,7 +164,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    __integer_to_chars_result_type<_Tp>
+    constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_16(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
@@ -177,7 +181,7 @@ namespace __detail
 	  return __res;
 	}
 
-      static constexpr char __digits[] = {
+      constexpr char __digits[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'a', 'b', 'c', 'd', 'e', 'f'
       };
@@ -207,7 +211,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    inline __integer_to_chars_result_type<_Tp>
+    constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_10(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
@@ -231,7 +235,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    __integer_to_chars_result_type<_Tp>
+    constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_8(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
@@ -285,7 +289,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    __integer_to_chars_result_type<_Tp>
+    constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_2(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
@@ -322,7 +326,7 @@ namespace __detail
 } // namespace __detail
 
   template<typename _Tp>
-    __detail::__integer_to_chars_result_type<_Tp>
+    constexpr __detail::__integer_to_chars_result_type<_Tp>
     __to_chars_i(char* __first, char* __last, _Tp __value, int __base = 10)
     {
       __glibcxx_assert(2 <= __base && __base <= 36);
@@ -361,7 +365,7 @@ namespace __detail
     }
 
 #define _GLIBCXX_TO_CHARS(T) \
-  inline to_chars_result \
+  _GLIBCXX23_CONSTEXPR inline to_chars_result \
   to_chars(char* __first, char* __last, T __value, int __base = 10) \
   { return std::__to_chars_i<T>(__first, __last, __value, __base); }
 _GLIBCXX_TO_CHARS(char)
@@ -400,7 +404,7 @@ _GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_3)
 namespace __detail
 {
   template<typename _Tp>
-    bool
+    constexpr bool
     __raise_and_add(_Tp& __val, int __base, unsigned char __c)
     {
       if (__builtin_mul_overflow(__val, __base, &__val)
@@ -429,18 +433,27 @@ namespace __detail
     return __table;
   }
 
+#if __cpp_lib_constexpr_charconv
+  template<bool _DecOnly>
+    inline constexpr auto __table = __from_chars_alnum_to_val_table();
+#endif
+
   // If _DecOnly is true: if the character is a decimal digit, then
   // return its corresponding base-10 value, otherwise return a value >= 127.
   // If _DecOnly is false: if the character is an alphanumeric digit, then
   // return its corresponding base-36 value, otherwise return a value >= 127.
   template<bool _DecOnly = false>
-    unsigned char
+    _GLIBCXX23_CONSTEXPR unsigned char
     __from_chars_alnum_to_val(unsigned char __c)
     {
       if _GLIBCXX17_CONSTEXPR (_DecOnly)
 	return static_cast<unsigned char>(__c - '0');
       else
 	{
+#if __cpp_lib_constexpr_charconv
+	  if (std::__is_constant_evaluated())
+	    return __table<_DecOnly>.__data[__c];
+#endif
 	  // This initializer is deliberately made dependent in order to work
 	  // around modules bug PR105322.
 	  static constexpr auto __table = (_DecOnly, __from_chars_alnum_to_val_table());
@@ -451,7 +464,7 @@ namespace __detail
   /// std::from_chars implementation for integers in a power-of-two base.
   /// If _DecOnly is true, then we may assume __base is at most 8.
   template<bool _DecOnly, typename _Tp>
-    bool
+    _GLIBCXX23_CONSTEXPR bool
     __from_chars_pow2_base(const char*& __first, const char* __last, _Tp& __val,
 			   int __base)
     {
@@ -508,7 +521,7 @@ namespace __detail
   /// std::from_chars implementation for integers in any base.
   /// If _DecOnly is true, then we may assume __base is at most 10.
   template<bool _DecOnly, typename _Tp>
-    bool
+    constexpr bool
     __from_chars_alnum(const char*& __first, const char* __last, _Tp& __val,
 		       int __base)
     {
@@ -548,7 +561,7 @@ namespace __detail
 
   /// std::from_chars for integral types.
   template<typename _Tp>
-    __detail::__integer_from_chars_result_type<_Tp>
+    _GLIBCXX23_CONSTEXPR __detail::__integer_from_chars_result_type<_Tp>
     from_chars(const char* __first, const char* __last, _Tp& __value,
 	       int __base = 10)
     {
