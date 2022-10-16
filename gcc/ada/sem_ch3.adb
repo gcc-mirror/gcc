@@ -1318,7 +1318,8 @@ package body Sem_Ch3 is
 
       Check_Restriction (No_Access_Subprograms, T_Def);
 
-      Create_Extra_Formals (Desig_Type);
+      --  Addition of extra formals must be delayed till the freeze point so
+      --  that we know the convention.
    end Access_Subprogram_Declaration;
 
    ----------------------------
@@ -11788,11 +11789,9 @@ package body Sem_Ch3 is
          Insert_Before (Typ_Decl, Decl);
          Analyze (Decl);
 
-         --  If an access to subprogram, create the extra formals
-
-         if Present (Acc_Def) then
-            Create_Extra_Formals (Designated_Type (Anon_Access));
-         end if;
+         --  At first sight we could add here the extra formals of an access to
+         --  subprogram; however, it must delayed till the freeze point so that
+         --  we know the convention.
 
          if Nkind (Comp_Def) = N_Component_Definition then
             Rewrite (Comp_Def,
@@ -16053,12 +16052,12 @@ package body Sem_Ch3 is
          Next_Formal (Formal);
       end loop;
 
-      --  Extra formals are shared between the parent subprogram and the
-      --  derived subprogram (implicit in the above copy of formals), unless
-      --  the parent type is a limited interface type; hence we must inherit
-      --  also the reference to the first extra formal. When the parent type is
-      --  an interface the extra formals will be added when the subprogram is
-      --  frozen (see Freeze.Freeze_Subprogram).
+      --  Extra formals are shared between the parent subprogram and this
+      --  internal entity built by Derive_Subprogram (implicit in the above
+      --  copy of formals), unless the parent type is a limited interface type;
+      --  hence we must inherit also the reference to the first extra formal.
+      --  When the parent type is an interface, the extra formals will be added
+      --  when the tagged type is frozen (see Expand_Freeze_Record_Type).
 
       if not Is_Limited_Interface (Parent_Type) then
          Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
@@ -16099,7 +16098,7 @@ package body Sem_Ch3 is
       Copy_Strub_Mode (New_Subp, Alias (New_Subp));
 
       --  Derived subprograms of a tagged type must inherit the convention
-      --  of the parent subprogram (a requirement of AI-117). Derived
+      --  of the parent subprogram (a requirement of AI95-117). Derived
       --  subprograms of untagged types simply get convention Ada by default.
 
       --  If the derived type is a tagged generic formal type with unknown
