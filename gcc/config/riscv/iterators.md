@@ -221,6 +221,10 @@
   [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ; bitmanip code attributes
+(define_code_attr minmax_optab [(smin "smin")
+				(smax "smax")
+				(umin "umin")
+				(umax "umax")])
 (define_code_attr bitmanip_optab [(smin "smin")
 				  (smax "smax")
 				  (umin "umin")

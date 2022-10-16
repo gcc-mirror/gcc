@@ -368,6 +368,24 @@
   "<bitmanip_insn>\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; Optimize the common case of a SImode min/max against a constant
+;; that is safe both for sign- and zero-extension.
+(define_insn_and_split "*minmax"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (subreg:SI
+	    (bitmanip_minmax:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+						(match_operand:DI 2 "immediate_operand" "i"))
+	   0)))
+   (clobber (match_scratch:DI 3 "=&r"))
+   (clobber (match_scratch:DI 4 "=&r"))]
+  "TARGET_64BIT && TARGET_ZBB && sext_hwi (INTVAL (operands[2]), 32) >= 0"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 3) (sign_extend:DI (match_dup 1)))
+   (set (match_dup 4) (match_dup 2))
+   (set (match_dup 0) (<minmax_optab>:DI (match_dup 3) (match_dup 4)))])
+
 ;; ZBS extension.
 
 (define_insn "*bset<mode>"
