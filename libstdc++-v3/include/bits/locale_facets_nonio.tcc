@@ -1474,8 +1474,8 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       // calls.  So e.g. if __fmt is "%p %I:%M:%S", we can't handle it
       // properly, because we first handle the %p am/pm specifier and only
       // later the 12-hour format specifier.
-      if ((void*)(this->*(&time_get::do_get)) == (void*)(&time_get::do_get))
-	__use_state = true;
+      if ((void*)(this->*(&time_get::do_get)) == (&time_get::do_get))	
+        __use_state = true;
 #pragma GCC diagnostic pop
 #endif
       __time_get_state __state = __time_get_state();
