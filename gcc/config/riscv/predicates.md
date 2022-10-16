@@ -310,6 +310,11 @@
   (and (match_code "const_int")
        (match_test "popcount_hwi (UINTVAL (op)) == 2")))
 
+(define_predicate "const_twobits_not_arith_operand"
+  (and (match_code "const_int")
+       (and (not (match_operand 0 "arith_operand"))
+	    (match_operand 0 "const_twobits_operand"))))
+
 ;; A CONST_INT operand that fits into the unsigned half of a
 ;; signed-immediate after the top bit has been cleared
 (define_predicate "uimm_extra_bit_operand"

@@ -595,3 +595,45 @@
 	operands[3] = GEN_INT (bits | topbit);
 	operands[4] = GEN_INT (~topbit);
 })
+
+;; IF_THEN_ELSE: test for 2 bits of opposite polarity
+(define_insn_and_split "*branch<X:mode>_mask_twobits_equals_singlebit"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 1 "equality_operator"
+	    [(and:X (match_operand:X 2 "register_operand" "r")
+		    (match_operand:X 3 "const_twobits_not_arith_operand" "i"))
+	     (match_operand:X 4 "single_bit_mask_operand" "i")])
+	 (label_ref (match_operand 0 "" ""))
+	 (pc)))
+   (clobber (match_scratch:X 5 "=&r"))
+   (clobber (match_scratch:X 6 "=&r"))]
+  "TARGET_ZBS && TARGET_ZBB"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 5) (zero_extract:X (match_dup 2)
+				      (const_int 1)
+				      (match_dup 8)))
+   (set (match_dup 6) (zero_extract:X (match_dup 2)
+				      (const_int 1)
+				      (match_dup 9)))
+   (set (match_dup 6) (and:X (not:X (match_dup 6)) (match_dup 5)))
+   (set (pc) (if_then_else (match_op_dup 1 [(match_dup 6) (const_int 0)])
+			   (label_ref (match_dup 0))
+			   (pc)))]
+{
+   unsigned HOST_WIDE_INT twobits_mask = UINTVAL (operands[3]);
+   unsigned HOST_WIDE_INT singlebit_mask = UINTVAL (operands[4]);
+
+   /* We should never see an unsatisfiable condition.  */
+   gcc_assert (twobits_mask & singlebit_mask);
+
+   int setbit = ctz_hwi (singlebit_mask);
+   int clearbit = ctz_hwi (twobits_mask & ~singlebit_mask);
+
+   operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == NE ? EQ : NE,
+				 <X:MODE>mode, operands[6], GEN_INT(0));
+
+   operands[8] = GEN_INT (setbit);
+   operands[9] = GEN_INT (clearbit);
+})
