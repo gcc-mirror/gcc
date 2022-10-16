@@ -422,6 +422,9 @@ gfc_arith_not (gfc_expr *op1, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, op1->ts.kind, &op1->where);
   result->value.logical = !op1->value.logical;
   *resultp = result;
@@ -434,6 +437,9 @@ static arith
 gfc_arith_and (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
@@ -449,6 +455,9 @@ gfc_arith_or (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
   result->value.logical = op1->value.logical || op2->value.logical;
@@ -463,6 +472,9 @@ gfc_arith_eqv (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
   result->value.logical = op1->value.logical == op2->value.logical;
@@ -476,6 +488,9 @@ static arith
 gfc_arith_neqv (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
@@ -1187,6 +1202,9 @@ gfc_arith_eq (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
   result->value.logical = (op1->ts.type == BT_COMPLEX)
@@ -1202,6 +1220,9 @@ static arith
 gfc_arith_ne (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
@@ -1219,6 +1240,9 @@ gfc_arith_gt (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_GT) > 0);
@@ -1232,6 +1256,9 @@ static arith
 gfc_arith_ge (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
@@ -1247,6 +1274,9 @@ gfc_arith_lt (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_LT) < 0);
@@ -1260,6 +1290,9 @@ static arith
 gfc_arith_le (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
