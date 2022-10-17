@@ -380,7 +380,7 @@ equiv_oracle::add_partial_equiv (relation_kind r, tree op1, tree op2)
       EXECUTE_IF_SET_IN_BITMAP (pe1.members, 0, x, bi)
 	{
 	  m_partial[x].ssa_base = op2;
-	  m_partial[x].code = pe2.code;
+	  m_partial[x].code = pe_min (m_partial[x].code, pe2.code);
 	}
       bitmap_set_bit (pe1.members, v2);
       return;
