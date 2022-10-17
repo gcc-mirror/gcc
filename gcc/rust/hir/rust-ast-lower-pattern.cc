@@ -22,6 +22,24 @@
 namespace Rust {
 namespace HIR {
 
+ASTLoweringPattern::ASTLoweringPattern () : translated (nullptr) {}
+
+HIR::Pattern *
+ASTLoweringPattern::translate (AST::Pattern *pattern)
+{
+  ASTLoweringPattern resolver;
+  pattern->accept_vis (resolver);
+
+  rust_assert (resolver.translated != nullptr);
+
+  resolver.mappings->insert_hir_pattern (resolver.translated);
+  resolver.mappings->insert_location (
+    resolver.translated->get_pattern_mappings ().get_hirid (),
+    pattern->get_locus ());
+
+  return resolver.translated;
+}
+
 void
 ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
 {

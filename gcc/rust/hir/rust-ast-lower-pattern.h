@@ -29,39 +29,19 @@ class ASTLoweringPattern : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Pattern *translate (AST::Pattern *pattern)
-  {
-    ASTLoweringPattern resolver;
-    pattern->accept_vis (resolver);
-
-    rust_assert (resolver.translated != nullptr);
-
-    resolver.mappings->insert_hir_pattern (resolver.translated);
-    resolver.mappings->insert_location (
-      resolver.translated->get_pattern_mappings ().get_hirid (),
-      pattern->get_locus ());
-
-    return resolver.translated;
-  }
+  static HIR::Pattern *translate (AST::Pattern *pattern);
 
   void visit (AST::IdentifierPattern &pattern) override;
-
   void visit (AST::PathInExpression &pattern) override;
-
   void visit (AST::StructPattern &pattern) override;
-
   void visit (AST::TupleStructPattern &pattern) override;
-
   void visit (AST::WildcardPattern &pattern) override;
-
   void visit (AST::TuplePattern &pattern) override;
-
   void visit (AST::LiteralPattern &pattern) override;
-
   void visit (AST::RangePattern &pattern) override;
 
 private:
-  ASTLoweringPattern () : translated (nullptr) {}
+  ASTLoweringPattern ();
 
   HIR::Pattern *translated;
 };
