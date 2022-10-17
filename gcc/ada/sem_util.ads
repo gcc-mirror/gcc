@@ -1881,7 +1881,8 @@ package Sem_Util is
    function Is_Attribute_Update (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Update
 
-   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
+   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean
+     with Inline;
    --  Determine whether node N denotes a body or a package declaration
 
    function Is_Bounded_String (T : Entity_Id) return Boolean;
