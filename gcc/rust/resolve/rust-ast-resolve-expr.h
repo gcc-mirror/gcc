@@ -75,6 +75,11 @@ public:
   void visit (AST::RangeToExpr &expr) override;
   void visit (AST::RangeFullExpr &expr) override;
   void visit (AST::RangeFromToInclExpr &expr) override;
+  void visit (AST::ClosureExprInner &expr) override;
+  void visit (AST::ClosureExprInnerTyped &expr) override;
+
+protected:
+  void resolve_closure_param (AST::ClosureParam &param);
 
 private:
   ResolveExpr (const CanonicalPath &prefix,
