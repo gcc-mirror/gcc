@@ -1380,6 +1380,7 @@ typedef struct gfc_omp_namelist
       gfc_namespace *ns;
       gfc_expr *allocator;
       struct gfc_symbol *traits_sym;
+      struct gfc_omp_namelist *duplicate_of;
     } u2;
   struct gfc_omp_namelist *next;
   locus where;

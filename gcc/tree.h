@@ -1831,6 +1831,10 @@ class auto_suppress_location_wrappers
    same directive.  */
 #define OMP_CLAUSE_ATTACHMENT_MAPPING_ERASED(NODE) \
   TREE_STATIC (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+/* Nonzero if this is a release/delete node which refers to a (Fortran) array
+   descriptor.  */
+#define OMP_CLAUSE_RELEASE_DESCRIPTOR(NODE) \
+  TREE_NOTHROW (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
 /* Flag that 'OMP_CLAUSE_DECL (NODE)' is to be made addressable during OMP
    lowering.  */

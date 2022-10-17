@@ -1050,6 +1050,15 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 	      pp_string (pp, " [bias: ");
 	      break;
+	    case GOMP_MAP_RELEASE:
+	    case GOMP_MAP_DELETE:
+	      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+		  && OMP_CLAUSE_RELEASE_DESCRIPTOR (clause))
+		{
+		  pp_string (pp, " [pointer set, len: ");
+		  break;
+		}
+	      /* Fallthrough.  */
 	    default:
 	      pp_string (pp, " [len: ");
 	      break;
