@@ -8266,7 +8266,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
     if (ref->type == REF_COMPONENT)
       as = ref->u.ar.as;
 
-  if (as->type == AS_DEFERRED)
+  if (!as || as->type == AS_DEFERRED)
     return NULL;
 
   /* "valid sequence of cosubscripts" are required; thus, return 0 unless
