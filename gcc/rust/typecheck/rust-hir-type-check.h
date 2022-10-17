@@ -381,6 +381,19 @@ public:
     return querys_in_progress.find (id) != querys_in_progress.end ();
   }
 
+  void insert_trait_query (DefId id) { trait_queries_in_progress.insert (id); }
+
+  void trait_query_completed (DefId id)
+  {
+    trait_queries_in_progress.erase (id);
+  }
+
+  bool trait_query_in_progress (DefId id) const
+  {
+    return trait_queries_in_progress.find (id)
+	   != trait_queries_in_progress.end ();
+  }
+
 private:
   TypeCheckContext ();
 
@@ -418,12 +431,28 @@ private:
 
   // query context lookups
   std::set<HirId> querys_in_progress;
+  std::set<DefId> trait_queries_in_progress;
 };
 
 class TypeResolution
 {
 public:
   static void Resolve (HIR::Crate &crate);
+};
+
+class TraitQueryGuard
+{
+public:
+  TraitQueryGuard (DefId id) : id (id), ctx (*TypeCheckContext::get ())
+  {
+    ctx.insert_trait_query (id);
+  }
+
+  ~TraitQueryGuard () { ctx.trait_query_completed (id); }
+
+private:
+  DefId id;
+  TypeCheckContext &ctx;
 };
 
 } // namespace Resolver
