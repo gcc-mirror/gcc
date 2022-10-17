@@ -116,9 +116,6 @@ The runtime support library for transactional memory.
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 
-@item liboffloadmic
-A library to allow OpenMP to Intel MIC targets.
-
 @item libphobos
 The D standard and runtime library.  The bulk of this library is mirrored
 from the @uref{https://github.com/@/dlang, master D repositories}.

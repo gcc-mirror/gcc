@@ -1136,12 +1136,6 @@ if test x"$enable_as_accelerator_for" != x; then
   AC_DEFINE(ACCEL_COMPILER, 1,
     [Define if this compiler should be built as the offload target compiler.])
   enable_as_accelerator=yes
-  case "${target}" in
-    *-intelmicemul-*)
-      # In this case we expect offload compiler to be built as native, so we
-      # need to rename the driver to avoid clashes with host's drivers.
-      program_transform_name="s&^&${target}-&" ;;
-  esac
   sedscript="s#${target_noncanonical}#${enable_as_accelerator_for}-accel-${target_noncanonical}#"
   program_transform_name=`echo $program_transform_name | sed $sedscript`
   accel_dir_suffix=/accel/${target_noncanonical}
@@ -1156,10 +1150,6 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
 
   enable_offloading=1
   case "$tgt" in
-    *-intelmic-* | *-intelmicemul-*)
-  	omp_device_property=omp-device-properties-i386
-  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
-  	;;
     amdgcn*)
   	omp_device_property=omp-device-properties-gcn
   	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"

@@ -3552,14 +3552,6 @@ case ${target} in
 	;;
 esac
 
-# Build mkoffload tool
-case ${target} in
-*-intelmic-* | *-intelmicemul-*)
-	tmake_file="${tmake_file} i386/t-intelmic"
-	tm_file="${tm_file} i386/intelmic-offload.h"
-	;;
-esac
-
 if [ "$target_has_targetcm" = "no" ]; then
   c_target_objs="$c_target_objs default-c.o"
   cxx_target_objs="$cxx_target_objs default-c.o"

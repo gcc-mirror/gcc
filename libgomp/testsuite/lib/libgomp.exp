@@ -119,18 +119,6 @@ proc libgomp_init { args } {
     # Compute what needs to be put into LD_LIBRARY_PATH
     set always_ld_library_path ".:${blddir}/.libs"
 
-    # Add liboffloadmic build directory in LD_LIBRARY_PATH to support
-    # Intel MIC offloading testing.
-    global offload_plugins
-    if { [string match "*,intelmic,*" ",$offload_plugins,"] } {
-	append always_ld_library_path ":${blddir}/../liboffloadmic/.libs"
-	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
-	# libstdc++ is required by liboffloadmic
-	append always_ld_library_path ":${blddir}/../libstdc++-v3/src/.libs"
-	# libgcc_s is required by libstdc++
-	append always_ld_library_path ":${blddir}/../libgcc"
-    }
-
     global offload_additional_lib_paths
     if { $offload_additional_lib_paths != "" } {
 	append always_ld_library_path "${offload_additional_lib_paths}"
@@ -313,9 +301,6 @@ proc offload_target_to_openacc_device_type { offload_target } {
 	disable {
 	    return "host"
 	}
-	*-intelmic* {
-	    return ""
-	}
 	nvptx* {
 	    return "nvidia"
 	}
@@ -447,28 +432,6 @@ proc check_effective_target_openacc_nvidia_accel_selected { } {
     }
     global openacc_device_type
     return [string match "nvidia" $openacc_device_type]
-}
-
-# Return 1 if using Intel MIC offload device.
-proc check_effective_target_offload_device_intel_mic { } {
-    return [check_runtime_nocache offload_device_intel_mic {
-      #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
-      int main ()
-	{
-	  return !on_device_arch_intel_mic ();
-	}
-    } ]
-}
-
-# Return 1 if any Intel MIC offload device is available.
-proc check_effective_target_offload_device_any_intel_mic { } {
-    return [check_runtime_nocache offload_device_any_intel_mic {
-      #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
-      int main ()
-	{
-	  return !any_device_arch_intel_mic ();
-	}
-    } ]
 }
 
 # Return 1 if the OpenACC 'host' device type is selected.

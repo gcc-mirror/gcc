@@ -2337,7 +2337,7 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
 
 @smallexample
 % @var{srcdir}/configure \
-    --enable-offload-targets=x86_64-intelmicemul-linux-gnu=/path/to/x86_64/compiler,nvptx-none
+    --enable-offload-targets=amdgcn-amdhsa,nvptx-none
 @end smallexample
 
 @item --enable-offload-defaulted
