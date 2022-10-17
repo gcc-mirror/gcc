@@ -8,7 +8,7 @@ export module foo;
 // { dg-module-cmi foo }
 
 export int violation_count{0};
-export void handle_contract_violation(const std::contract_violation &violation)
+extern "C++" export void handle_contract_violation(const std::contract_violation &violation)
 {
   violation_count++;
   printf("violation_count: %d\n", violation_count);
