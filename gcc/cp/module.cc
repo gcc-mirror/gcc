@@ -11553,34 +11553,13 @@ trees_out::write_function_def (tree decl)
   tree_node (DECL_FRIEND_CONTEXT (decl));
 
   constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl);
-  int tag = 0;
+
+  if (streaming_p ())
+    u (cexpr != nullptr);
   if (cexpr)
     {
-      if (cexpr->result == error_mark_node)
-	/* We'll stream the RESULT_DECL naturally during the
-	   serialization.  We never need to fish it back again, so
-	   that's ok.  */
-	tag = 0;
-      else
-	tag = insert (cexpr->result);
-    }
-  if (streaming_p ())
-    {
-      i (tag);
-      if (tag)
-	dump (dumper::TREE)
-	  && dump ("Constexpr:%d result %N", tag, cexpr->result);
-    }
-  if (tag)
-    {
-      unsigned ix = 0;
-      for (tree parm = cexpr->parms; parm; parm = DECL_CHAIN (parm), ix++)
-	{
-	  tag = insert (parm);
-	  if (streaming_p ())
-	    dump (dumper::TREE)
-	      && dump ("Constexpr:%d parm:%u %N", tag, ix, parm);
-	}
+      chained_decls (cexpr->parms);
+      tree_node (cexpr->result);
       tree_node (cexpr->body);
     }
 
@@ -11613,32 +11592,10 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
   bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
 
-  if (int wtag = i ())
+  if (u ())
     {
-      int tag = 1;
-      cexpr.result = error_mark_node;
-
-      cexpr.result = copy_decl (result);
-      tag = insert (cexpr.result);
-
-      if (wtag != tag)
-	set_overrun ();
-      dump (dumper::TREE)
-	&& dump ("Constexpr:%d result %N", tag, cexpr.result);
-
-      cexpr.parms = NULL_TREE;
-      tree *chain = &cexpr.parms;
-      unsigned ix = 0;
-      for (tree parm = DECL_ARGUMENTS (maybe_dup ? maybe_dup : decl);
-	   parm; parm = DECL_CHAIN (parm), ix++)
-	{
-	  tree p = copy_decl (parm);
-	  tag = insert (p);
-	  dump (dumper::TREE)
-	    && dump ("Constexpr:%d parm:%u %N", tag, ix, p);
-	  *chain = p;
-	  chain = &DECL_CHAIN (p);
-	}
+      cexpr.parms = chained_decls ();
+      cexpr.result = tree_node ();
       cexpr.body = tree_node ();
       cexpr.decl = decl;
     }
