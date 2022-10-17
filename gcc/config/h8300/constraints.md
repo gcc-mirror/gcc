@@ -211,8 +211,33 @@
   (and (match_code "const_int")
        (match_test "exact_log2 (ival & 0xff) != -1")))
 
-(define_constraint "Z"
+(define_constraint "Zz"
   "@internal"
   (and (match_test "TARGET_H8300SX")
        (match_code "mem")
        (match_test "CONSTANT_P (XEXP (op, 0))")))
+
+(define_register_constraint "Z0" "NOT_R0_REGS"
+  "@internal")
+
+(define_register_constraint "Z1" "NOT_R1_REGS"
+  "@internal")
+
+(define_register_constraint "Z2" "NOT_R2_REGS"
+  "@internal")
+
+(define_register_constraint "Z3" "NOT_R3_REGS"
+  "@internal")
+
+(define_register_constraint "Z4" "NOT_R4_REGS"
+  "@internal")
+
+(define_register_constraint "Z5" "NOT_R5_REGS"
+  "@internal")
+
+(define_register_constraint "Z6" "NOT_R6_REGS"
+  "@internal")
+
+(define_register_constraint "Z7" "NOT_SP_REGS"
+  "@internal")
+

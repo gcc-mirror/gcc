@@ -1082,6 +1082,11 @@ case ${target} in
   # Assume that newlib is being used and so __cxa_atexit is provided.
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
+
+  case "${with_newlib}-${with_headers}" in
+  no-no) use_gcc_stdint=provide ;;
+  *) ;;
+  esac
   ;;
 esac
 

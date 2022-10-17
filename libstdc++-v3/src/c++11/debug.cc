@@ -610,14 +610,6 @@ namespace
     { print_word(ctx, word, Length - 1); }
 
   void
-  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc)
-  {
-    if (nbc == -1)
-      nbc = INT_MAX;
-    ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
-  }
-
-  void
   print_word(PrintContext& ctx, const char* word, ptrdiff_t nbc = -1)
   {
     size_t length = nbc >= 0 ? nbc : __builtin_strlen(word);
@@ -1092,6 +1084,14 @@ namespace
   { print_string(ctx, str, nbc, nullptr, 0); }
 
 #if _GLIBCXX_HAVE_STACKTRACE
+  void
+  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc)
+  {
+    if (nbc == -1)
+      nbc = INT_MAX;
+    ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
+  }
+
   int
   print_backtrace(void* data, __UINTPTR_TYPE__ pc, const char* filename,
 		  int lineno, const char* function)

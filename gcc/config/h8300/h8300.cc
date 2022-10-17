@@ -1140,7 +1140,7 @@ static int
 h8300_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
                          reg_class_t from, reg_class_t to)
 {
-  if (from == MAC_REGS || to == MAC_REG)
+  if (from == MAC_REGS || to == MAC_REGS)
     return 6;
   else
     return 3;

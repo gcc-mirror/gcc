@@ -28,7 +28,7 @@
   [(set (attr "length") (symbol_ref "compute_mov_length (operands)"))])
 
 (define_insn_and_split "*movqi_h8sx"
-  [(set (match_operand:QI 0 "general_operand_dst" "=Z,rQ")
+  [(set (match_operand:QI 0 "general_operand_dst" "=Zz,rQ")
 	(match_operand:QI 1 "general_operand_src" "P4>X,rQi"))]
   "TARGET_H8300SX"
   "#"
@@ -37,7 +37,7 @@
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*movqi_h8sx<cczn>"
-  [(set (match_operand:QI 0 "general_operand_dst" "=Z,rQ")
+  [(set (match_operand:QI 0 "general_operand_dst" "=Zz,rQ")
 	(match_operand:QI 1 "general_operand_src" "P4>X,rQi"))
    (clobber (reg:CC CC_REG))]
   "TARGET_H8300SX"
@@ -113,7 +113,7 @@
   [(set (attr "length") (symbol_ref "compute_mov_length (operands)"))])
 
 (define_insn_and_split "*movhi_h8sx"
-  [(set (match_operand:HI 0 "general_operand_dst" "=r,r,Z,Q,rQ")
+  [(set (match_operand:HI 0 "general_operand_dst" "=r,r,Zz,Q,rQ")
 	(match_operand:HI 1 "general_operand_src" "I,P3>X,P4>X,IP8>X,rQi"))]
   "TARGET_H8300SX"
   "#"
@@ -122,7 +122,7 @@
 	      (clobber (reg:CC CC_REG))])])
   
 (define_insn "*movhi_h8sx<cczn>"
-  [(set (match_operand:HI 0 "general_operand_dst" "=r,r,Z,Q,rQ")
+  [(set (match_operand:HI 0 "general_operand_dst" "=r,r,Zz,Q,rQ")
 	(match_operand:HI 1 "general_operand_src" "I,P3>X,P4>X,IP8>X,rQi"))
    (clobber (reg:CC CC_REG))]
   "TARGET_H8300SX"

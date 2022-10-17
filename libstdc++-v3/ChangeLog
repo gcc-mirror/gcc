@@ -1,3 +1,34 @@
+2022-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/debug.cc (print_raw): Move inside #if block.
+
+2022-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/charconv.h (__to_chars_10_impl): Add constexpr
+	for C++23. Remove 'static' from array.
+	* include/std/charconv (__cpp_lib_constexpr_charconv): Define.
+	(__to_chars, __to_chars_16): Remove 'static' from array, add
+	constexpr.
+	(__to_chars_10, __to_chars_8, __to_chars_2, __to_chars_i)
+	(to_chars, __raise_and_add, __from_chars_pow2_base)
+	(__from_chars_alnum, from_chars): Add constexpr.
+	(__from_chars_alnum_to_val): Avoid local static during constant
+	evaluation. Add constexpr.
+	* include/std/version (__cpp_lib_constexpr_charconv): Define.
+	* testsuite/20_util/from_chars/constexpr.cc: New test.
+	* testsuite/20_util/to_chars/constexpr.cc: New test.
+	* testsuite/20_util/to_chars/version.cc: New test.
+
+2022-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h (map::insert(Pair&&)): Use
+	remove_const_t on argument to __is_pair.
+	* include/bits/stl_pair.h (__is_pair<const pair<T,U>>): Remove
+	partial specialization.
+	* include/bits/uses_allocator_args.h (_Std_pair): Use
+	remove_cv_t as per LWG 3677.
+	* testsuite/20_util/uses_allocator/lwg3677.cc: New test.
+
 2022-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/eh_alloc.cc [USE_POOL]: New macro.

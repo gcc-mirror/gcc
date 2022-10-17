@@ -1,3 +1,22 @@
+2022-10-16  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/constraints.md (Z0..Z7): New register
+	constraints.
+	* config/h8300/h8300.h (reg_class): Add new classes.
+	(REG_CLASS_NAMES): Similarly.
+	(REG_CLASS_CONTENTS): Similarly.
+
+2022-10-16  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/constraints.md (Zz constraint): Renamed
+	from "z".
+	* config/h8300/movepush.md (movqi_h8sx, movhi_h8sx): Adjust
+	constraint to use Zz instead of Z.
+
+2022-10-16  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.cc (h8300_register_move_cost): Fix typo.
+
 2022-10-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (frange::set): Implement distinction between
