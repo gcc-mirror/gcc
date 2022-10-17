@@ -141,6 +141,14 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
       return tref;
     }
 
+  DefId trait_id = trait_reference->get_mappings ().get_defid ();
+  if (context->trait_query_in_progress (trait_id))
+    {
+      rust_error_at (trait_reference->get_locus (), "trait cycle detected");
+      return &TraitReference::error_node ();
+    }
+
+  TraitQueryGuard guard (trait_id);
   TyTy::BaseType *self = nullptr;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   for (auto &generic_param : trait_reference->get_generic_params ())
@@ -201,8 +209,10 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	      HIR::TraitBound *b
 		= static_cast<HIR::TraitBound *> (bound.get ());
 
-	      // FIXME this might be recursive we need a check for that
 	      auto predicate = get_predicate_from_bound (b->get_path ());
+	      if (predicate.is_error ())
+		return &TraitReference::error_node ();
+
 	      specified_bounds.push_back (predicate);
 	      super_traits.push_back (predicate.get ());
 	    }
