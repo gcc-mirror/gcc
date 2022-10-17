@@ -824,7 +824,7 @@ ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
 }
 
 void
-ASTLoweringBase::handle_outer_attributes (const HIR::Item &item)
+ASTLoweringBase::handle_outer_attributes (const ItemWrapper &item)
 {
   for (const auto &attr : item.get_outer_attrs ())
     {
@@ -855,7 +855,7 @@ ASTLoweringBase::handle_outer_attributes (const HIR::Item &item)
 }
 
 void
-ASTLoweringBase::handle_doc_item_attribute (const HIR::Item &item,
+ASTLoweringBase::handle_doc_item_attribute (const ItemWrapper &item,
 					    const AST::Attribute &attr)
 {
   auto simple_doc_comment = attr.has_attr_input ()
@@ -878,7 +878,7 @@ ASTLoweringBase::handle_doc_item_attribute (const HIR::Item &item,
 }
 
 void
-ASTLoweringBase::handle_lang_item_attribute (const HIR::Item &item,
+ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
 					     const AST::Attribute &attr)
 {
   auto &literal = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());

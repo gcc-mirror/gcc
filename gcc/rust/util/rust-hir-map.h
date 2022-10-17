@@ -104,6 +104,8 @@ public:
 
   void insert_defid_mapping (DefId id, HIR::Item *item);
   HIR::Item *lookup_defid (DefId id);
+  void insert_defid_mapping (DefId id, HIR::TraitItem *item);
+  HIR::TraitItem *lookup_trait_item_defid (DefId id);
 
   void insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				   HIR::Item *item);
@@ -307,6 +309,7 @@ private:
   std::map<CrateNum, AST::Crate *> ast_crate_mappings;
   std::map<CrateNum, HIR::Crate *> hir_crate_mappings;
   std::map<DefId, HIR::Item *> defIdMappings;
+  std::map<DefId, HIR::TraitItem *> defIdTraitItemMappings;
   std::map<CrateNum, std::map<LocalDefId, HIR::Item *>> localDefIdMappings;
 
   std::map<HirId, HIR::Module *> hirModuleMappings;
