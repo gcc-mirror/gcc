@@ -116,6 +116,8 @@ public:
   void visit (AST::RangeToExpr &expr) override;
   void visit (AST::RangeFullExpr &expr) override;
   void visit (AST::RangeFromToInclExpr &expr) override;
+  void visit (AST::ClosureExprInner &expr) override;
+  void visit (AST::ClosureExprInnerTyped &expr) override;
 
 private:
   ASTLoweringExpr ();

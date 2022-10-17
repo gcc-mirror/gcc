@@ -197,7 +197,7 @@ void
 Dump::visit (FieldAccessExpr &)
 {}
 void
-Dump::visit (ClosureExprInner &)
+Dump::visit (ClosureExpr &)
 {}
 void
 Dump::visit (BlockExpr &block_expr)
@@ -212,9 +212,7 @@ Dump::visit (BlockExpr &block_expr)
   stream << "]";
   indent--;
 }
-void
-Dump::visit (ClosureExprInnerTyped &)
-{}
+
 void
 Dump::visit (ContinueExpr &)
 {}

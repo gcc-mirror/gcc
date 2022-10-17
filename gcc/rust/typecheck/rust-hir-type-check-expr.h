@@ -69,10 +69,9 @@ public:
   void visit (HIR::RangeFullExpr &expr) override;
   void visit (HIR::RangeFromToInclExpr &expr) override;
   void visit (HIR::WhileLoopExpr &expr) override;
+  void visit (HIR::ClosureExpr &expr) override;
 
   // TODO
-  void visit (HIR::ClosureExprInnerTyped &) override {}
-  void visit (HIR::ClosureExprInner &expr) override {}
   void visit (HIR::ErrorPropagationExpr &expr) override {}
   void visit (HIR::RangeToInclExpr &expr) override {}
   void visit (HIR::WhileLetLoopExpr &expr) override {}

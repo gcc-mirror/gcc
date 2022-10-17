@@ -408,7 +408,7 @@ PrivacyReporter::visit (HIR::FieldAccessExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::ClosureExprInner &expr)
+PrivacyReporter::visit (HIR::ClosureExpr &expr)
 {
   // Not handled yet
 }
@@ -422,12 +422,6 @@ PrivacyReporter::visit (HIR::BlockExpr &expr)
   auto &last_expr = expr.get_final_expr ();
   if (last_expr)
     last_expr->accept_vis (*this);
-}
-
-void
-PrivacyReporter::visit (HIR::ClosureExprInnerTyped &expr)
-{
-  // Not handled yet
 }
 
 void

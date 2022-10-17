@@ -753,5 +753,58 @@ ASTLoweringExpr::visit (AST::RangeFromToInclExpr &expr)
 				    expr.get_locus ());
 }
 
+void
+ASTLoweringExpr::visit (AST::ClosureExprInner &expr)
+{
+  HIR::Expr *closure_expr
+    = ASTLoweringExpr::translate (expr.get_definition_expr ().get ());
+
+  std::vector<HIR::ClosureParam> closure_params;
+  for (auto &param : expr.get_params ())
+    {
+      HIR::ClosureParam p = lower_closure_param (param);
+      closure_params.push_back (std::move (p));
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::ClosureExpr (mapping, std::move (closure_params),
+			    nullptr /* closure_return_type */,
+			    std::unique_ptr<HIR::Expr> (closure_expr),
+			    expr.get_has_move (), expr.get_outer_attrs (),
+			    expr.get_locus ());
+}
+
+void
+ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
+{
+  HIR::Type *closure_return_type = nullptr;
+  HIR::Expr *closure_expr
+    = ASTLoweringExpr::translate (expr.get_definition_block ().get ());
+
+  std::vector<HIR::ClosureParam> closure_params;
+  for (auto &param : expr.get_params ())
+    {
+      HIR::ClosureParam p = lower_closure_param (param);
+      closure_params.push_back (std::move (p));
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::ClosureExpr (mapping, std::move (closure_params),
+			    std::unique_ptr<HIR::Type> (closure_return_type),
+			    std::unique_ptr<HIR::Expr> (closure_expr),
+			    expr.get_has_move (), expr.get_outer_attrs (),
+			    expr.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust

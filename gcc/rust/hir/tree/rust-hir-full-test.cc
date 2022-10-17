@@ -1133,15 +1133,8 @@ ClosureExpr::as_string () const
 	}
     }
 
-  return str;
-}
-
-std::string
-ClosureExprInnerTyped::as_string () const
-{
-  std::string str = ClosureExpr::as_string ();
-
-  str += "\n Return type: " + return_type->as_string ();
+  str += "\n Return type: "
+	 + (has_return_type () ? return_type->as_string () : "none");
 
   str += "\n Body: " + expr->as_string ();
 
@@ -1513,16 +1506,6 @@ UnsafeBlockExpr::as_string () const
   str += "\n" + indent_spaces (stay) + Expr::as_string ();
 
   return str + "\n" + indent_spaces (out) + "}\n" + expr->as_string ();
-}
-
-std::string
-ClosureExprInner::as_string () const
-{
-  std::string str = ClosureExpr::as_string ();
-
-  str += "\n Expression: " + closure_inner->as_string ();
-
-  return str;
 }
 
 std::string
@@ -4038,19 +4021,13 @@ FieldAccessExpr::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-ClosureExprInner::accept_vis (HIRFullVisitor &vis)
+ClosureExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }
 
 void
 BlockExpr::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ClosureExprInnerTyped::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4986,7 +4963,7 @@ IfExpr::accept_vis (HIRExpressionVisitor &vis)
 }
 
 void
-ClosureExprInner::accept_vis (HIRExpressionVisitor &vis)
+ClosureExpr::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -5071,12 +5048,6 @@ ReturnExpr::accept_vis (HIRExpressionVisitor &vis)
 
 void
 QualifiedPathInExpression::accept_vis (HIRPatternVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ClosureExprInnerTyped::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }

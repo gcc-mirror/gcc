@@ -1418,6 +1418,12 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
     }
 }
 
+void
+TypeCheckExpr::visit (HIR::ClosureExpr &expr)
+{
+  gcc_unreachable ();
+}
+
 bool
 TypeCheckExpr::resolve_operator_overload (
   Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
