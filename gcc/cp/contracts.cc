@@ -329,7 +329,7 @@ handle_OPT_fcontract_build_level_ (const char *arg)
 {
   if (contracts_p1332_default || contracts_p1332_review || contracts_p1429)
     {
-      error ("-fcontract-build-level= cannot be mixed with p1332/p1429");
+      error ("%<-fcontract-build-level=%> cannot be mixed with p1332/p1429");
       return;
     }
   else
@@ -342,7 +342,7 @@ handle_OPT_fcontract_build_level_ (const char *arg)
   else if (strcmp (arg, "audit") == 0)
     flag_contract_build_level = AUDIT;
   else
-    error ("-fcontract-build-level= must be off|default|audit");
+    error ("%<-fcontract-build-level=%> must be off|default|audit");
 
   setup_default_contract_role ();
 }
@@ -352,7 +352,7 @@ handle_OPT_fcontract_assumption_mode_ (const char *arg)
 {
   if (contracts_p1332_default || contracts_p1332_review || contracts_p1429)
     {
-      error ("-fcontract-assumption-mode= cannot be mixed with p1332/p1429");
+      error ("%<-fcontract-assumption-mode=%> cannot be mixed with p1332/p1429");
       return;
     }
   else
@@ -363,7 +363,7 @@ handle_OPT_fcontract_assumption_mode_ (const char *arg)
   else if (strcmp (arg, "off") == 0)
     flag_contract_assumption_mode = false;
   else
-    error ("-fcontract-assumption-mode= must be %<on%> or %<off%>");
+    error ("%<-fcontract-assumption-mode=%> must be %<on%> or %<off%>");
 
   setup_default_contract_role ();
 }
@@ -373,7 +373,7 @@ handle_OPT_fcontract_continuation_mode_ (const char *arg)
 {
   if (contracts_p1332_default || contracts_p1332_review || contracts_p1429)
     {
-      error ("-fcontract-continuation-mode= cannot be mixed with p1332/p1429");
+      error ("%<-fcontract-continuation-mode=%> cannot be mixed with p1332/p1429");
       return;
     }
   else
@@ -384,7 +384,7 @@ handle_OPT_fcontract_continuation_mode_ (const char *arg)
   else if (strcmp (arg, "off") == 0)
     flag_contract_continuation_mode = false;
   else
-    error ("-fcontract-continuation-mode= must be %<on%> or %<off%>");
+    error ("%<-fcontract-continuation-mode=%> must be %<on%> or %<off%>");
 
   setup_default_contract_role ();
 }
@@ -396,7 +396,7 @@ handle_OPT_fcontract_role_ (const char *arg)
   const char *vals = strchr (name, ':');
   if (vals == NULL)
     {
-      error ("-fcontract-role= must be in the form role:semantics");
+      error ("%<-fcontract-role=%> must be in the form role:semantics");
       return;
     }
 
@@ -407,7 +407,7 @@ handle_OPT_fcontract_role_ (const char *arg)
   aus = strchr (des, ',');
   if (aus == NULL)
     {
-      error ("-fcontract-role= semantics must include default,audit,axiom values");
+      error ("%<-fcontract-role=%> semantics must include default,audit,axiom values");
       goto validate;
     }
   *aus = '\0'; // null terminate des
@@ -416,7 +416,7 @@ handle_OPT_fcontract_role_ (const char *arg)
   axs = strchr (aus, ',');
   if (axs == NULL)
     {
-      error ("-fcontract-role= semantics must include default,audit,axiom values");
+      error ("%<-fcontract-role=%> semantics must include default,audit,axiom values");
       goto validate;
     }
   *axs = '\0'; // null terminate aus
@@ -435,7 +435,7 @@ validate:
   bool is_std_role = is_defalult_role || is_review_role;
   if ((contracts_std && is_std_role) || (contracts_p1429 && is_defalult_role))
     {
-      error ("-fcontract-role= cannot be mixed with std/p1429 contract flags");
+      error ("%<-fcontract-role=%> cannot be mixed with std/p1429 contract flags");
       return;
     }
   else if (is_std_role)
@@ -449,7 +449,7 @@ validate:
   if (role == NULL)
     {
       // TODO: not enough space?
-      error ("-fcontract-level= too many custom roles");
+      error ("%<-fcontract-level=%> too many custom roles");
       return;
     }
   else
@@ -461,13 +461,13 @@ handle_OPT_fcontract_semantic_ (const char *arg)
 {
   if (!strchr (arg, ':'))
     {
-      error ("-fcontract-semantic= must be in the form level:semantic");
+      error ("%<-fcontract-semantic=%> must be in the form level:semantic");
       return;
     }
 
   if (contracts_std || contracts_p1332_default)
     {
-      error ("-fcontract-semantic= cannot be mixed with std/p1332 contract flags");
+      error ("%<-fcontract-semantic=%> cannot be mixed with std/p1332 contract flags");
       return;
     }
   contracts_p1429 = true;
@@ -475,7 +475,7 @@ handle_OPT_fcontract_semantic_ (const char *arg)
   contract_role *role = get_contract_role ("default");
   if (!role)
     {
-      error ("-fcontract-semantic= cannot find default role");
+      error ("%<-fcontract-semantic=%> cannot find default role");
       return;
     }
 
@@ -491,7 +491,7 @@ handle_OPT_fcontract_semantic_ (const char *arg)
   else if (strncmp ("axiom:", arg, 6) == 0)
     role->axiom_semantic = sem;
   else
-    error ("-fcontract-semantic= level must be default, audit, or axiom");
+    error ("%<-fcontract-semantic=%> level must be default, audit, or axiom");
   validate_contract_role (role);
 }
 
