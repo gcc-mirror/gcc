@@ -75,6 +75,7 @@ public:
 
     // functions
     FN_ONCE,
+    FN_ONCE_OUTPUT,
 
     UNKNOWN,
   };
@@ -225,6 +226,10 @@ public:
       {
 	return ItemType::FN_ONCE;
       }
+    else if (item.compare ("fn_once_output") == 0)
+      {
+	return ItemType::FN_ONCE_OUTPUT;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -305,6 +310,8 @@ public:
 	return "const_slice_ptr";
       case FN_ONCE:
 	return "fn_once";
+      case FN_ONCE_OUTPUT:
+	return "fn_once_output";
 
       case UNKNOWN:
 	return "<UNKNOWN>";
