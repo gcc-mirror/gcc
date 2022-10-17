@@ -1,5 +1,22 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (omp_map_clause_descriptor_p): New function.
+	(build_omp_struct_comp_nodes, omp_get_attachment, omp_group_base): Use
+	above function.
+	(omp_tsort_mapping_groups): Process nodes that have
+	OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P set after those that don't.  Add
+	enter_exit_data parameter.
+	(omp_resolve_clause_dependencies): Remove GOMP_MAP_TO_PSET mappings if
+	we're mapping the whole containing derived-type variable.
+	(omp_accumulate_sibling_list): Adjust GOMP_MAP_TO_PSET handling.
+	Remove GOMP_MAP_ALWAYS_POINTER handling.
+	(gimplify_scan_omp_clauses): Pass enter_exit argument to
+	omp_tsort_mapping_groups.  Don't adjust/remove GOMP_MAP_TO_PSET
+	mappings for derived-type components here.
+	* tree.h (OMP_CLAUSE_RELEASE_DESCRIPTOR): New macro.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (omp_accumulate_sibling_list): Don't require
 	explicitly-mapped base pointer for compute regions.
 

@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
+#include "dependency.h"
 
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_tdiag__
@@ -3939,36 +3940,23 @@ gfc_trans_omp_array_section (stmtblock_t *block, gfc_exec_op op,
     }
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
     {
-      tree desc_node;
       tree type = TREE_TYPE (decl);
       ptr2 = gfc_conv_descriptor_data_get (decl);
-      desc_node = build_omp_clause (input_location, OMP_CLAUSE_MAP);
-      OMP_CLAUSE_DECL (desc_node) = decl;
-      OMP_CLAUSE_SIZE (desc_node) = TYPE_SIZE_UNIT (type);
-      if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_DELETE)
+      node2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_DECL (node2) = decl;
+      OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
+      if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_DELETE
+	  || OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_RELEASE
+	  || op == EXEC_OMP_TARGET_EXIT_DATA)
 	{
-	  OMP_CLAUSE_SET_MAP_KIND (desc_node, GOMP_MAP_DELETE);
-	  node2 = desc_node;
-	}
-      else if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_RELEASE
-	       || op == EXEC_OMP_TARGET_EXIT_DATA)
-	{
-	  OMP_CLAUSE_SET_MAP_KIND (desc_node, GOMP_MAP_RELEASE);
-	  node2 = desc_node;
-	}
-      else if (ptr_kind == GOMP_MAP_ALWAYS_POINTER)
-	{
-	  OMP_CLAUSE_SET_MAP_KIND (desc_node, GOMP_MAP_TO);
-	  node2 = node;
-	  node = desc_node;  /* Needs to come first.  */
+	  gomp_map_kind map_kind
+	    = (op == EXEC_OMP_TARGET_EXIT_DATA) ? GOMP_MAP_RELEASE
+						: OMP_CLAUSE_MAP_KIND (node);
+	  OMP_CLAUSE_SET_MAP_KIND (node2, map_kind);
+	  OMP_CLAUSE_RELEASE_DESCRIPTOR (node2) = 1;
 	}
       else
-	{
-	  OMP_CLAUSE_SET_MAP_KIND (desc_node, GOMP_MAP_TO_PSET);
-	  node2 = desc_node;
-	}
-      if (op == EXEC_OMP_TARGET_EXIT_DATA)
-	return;
+	OMP_CLAUSE_SET_MAP_KIND (node2, GOMP_MAP_TO_PSET);
       node3 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (node3, ptr_kind);
       OMP_CLAUSE_DECL (node3) = gfc_conv_descriptor_data_get (decl);
@@ -4072,6 +4060,73 @@ handle_iterator (gfc_namespace *ns, stmtblock_t *iter_block, tree block)
   return list;
 }
 
+/* To alleviate quadratic behaviour in checking each entry of a
+   gfc_omp_namelist against every other entry, we build a hashtable indexed by
+   gfc_symbol pointer, which we can use in the usual case that a map
+   expression has a symbol as its root term.  Return a namelist based on the
+   root symbol used by N, building a new table in SYM_ROOTED_NL using the
+   gfc_omp_namelist N2 (all clauses) if we haven't done so already.  */
+
+static gfc_omp_namelist *
+get_symbol_rooted_namelist (hash_map<gfc_symbol *,
+				     gfc_omp_namelist *> *&sym_rooted_nl,
+			    gfc_omp_namelist *n,
+			    gfc_omp_namelist *n2, bool *sym_based)
+{
+  /* Early-out if we have a NULL clause list (e.g. for OpenACC).  */
+  if (!n2)
+    return NULL;
+
+  gfc_symbol *use_sym = NULL;
+
+  /* We're only interested in cases where we have an expression, e.g. a
+     component access.  */
+  if (n->expr && n->expr->expr_type == EXPR_VARIABLE && n->expr->symtree)
+    use_sym = n->expr->symtree->n.sym;
+
+  *sym_based = false;
+
+  if (!use_sym)
+    return n2;
+
+  if (!sym_rooted_nl)
+    {
+      sym_rooted_nl = new hash_map<gfc_symbol *, gfc_omp_namelist *> ();
+
+      for (; n2 != NULL; n2 = n2->next)
+	{
+	  if (!n2->expr
+	      || n2->expr->expr_type != EXPR_VARIABLE
+	      || !n2->expr->symtree)
+	    continue;
+
+	  gfc_omp_namelist *nl_copy = gfc_get_omp_namelist ();
+	  memcpy (nl_copy, n2, sizeof *nl_copy);
+	  nl_copy->u2.duplicate_of = n2;
+	  nl_copy->next = NULL;
+
+	  gfc_symbol *idx_sym = n2->expr->symtree->n.sym;
+
+	  bool existed;
+	  gfc_omp_namelist *&entry
+	    = sym_rooted_nl->get_or_insert (idx_sym, &existed);
+	  if (existed)
+	    nl_copy->next = entry;
+	  entry = nl_copy;
+	}
+    }
+
+  gfc_omp_namelist **n2_sym = sym_rooted_nl->get (use_sym);
+
+  if (n2_sym)
+    {
+      *sym_based = true;
+      return *n2_sym;
+    }
+
+  return NULL;
+}
+
 static tree
 gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		       locus where, bool declare_simd = false,
@@ -4088,6 +4143,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses == NULL)
     return NULL_TREE;
+
+  hash_map<gfc_symbol *, gfc_omp_namelist *> *sym_rooted_nl = NULL;
 
   for (list = 0; list < OMP_LIST_NUM; list++)
     {
@@ -5202,6 +5259,54 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			      goto finalize_map_clause;
 			    }
 
+			  gfc_omp_namelist *n2
+			    = openacc ? NULL : clauses->lists[OMP_LIST_MAP];
+
+			  bool sym_based;
+			  n2 = get_symbol_rooted_namelist (sym_rooted_nl, n,
+							   n2, &sym_based);
+
+			  /* If the last reference is a pointer to a derived
+			     type ("foo%dt_ptr"), check if any subcomponents
+			     of the same derived type member are being mapped
+			     elsewhere in the clause list ("foo%dt_ptr%x",
+			     etc.).  If we have such subcomponent mappings,
+			     we only create an ALLOC node for the pointer
+			     itself, and inhibit mapping the whole derived
+			     type.  */
+
+			  for (; n2 != NULL; n2 = n2->next)
+			    {
+			      if ((!sym_based && n == n2)
+				  || (sym_based && n == n2->u2.duplicate_of)
+				  || !n2->expr)
+				continue;
+
+			      if (!gfc_omp_expr_prefix_same (n->expr,
+							     n2->expr))
+				continue;
+
+			      gfc_ref *ref1 = n->expr->ref;
+			      gfc_ref *ref2 = n2->expr->ref;
+
+			      while (ref1->next && ref2->next)
+				{
+				  ref1 = ref1->next;
+				  ref2 = ref2->next;
+				}
+
+			      if (ref2->next)
+				{
+				  inner = build_fold_addr_expr (inner);
+				  OMP_CLAUSE_SET_MAP_KIND (node,
+							   GOMP_MAP_ALLOC);
+				  OMP_CLAUSE_DECL (node) = inner;
+				  OMP_CLAUSE_SIZE (node)
+				    = TYPE_SIZE_UNIT (TREE_TYPE (inner));
+				  goto finalize_map_clause;
+				}
+			    }
+
 			  tree data, size;
 
 			  if (lastref->u.c.component->ts.type == BT_CLASS)
@@ -5273,7 +5378,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (inner)))
 			{
 			  gomp_map_kind map_kind;
-			  tree desc_node;
 			  tree type = TREE_TYPE (inner);
 			  tree ptr = gfc_conv_descriptor_data_get (inner);
 			  ptr = build_fold_indirect_ref (ptr);
@@ -5316,21 +5420,19 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  OMP_CLAUSE_SIZE (node)
 			    = fold_build2 (MULT_EXPR, gfc_array_index_type,
 					   OMP_CLAUSE_SIZE (node), elemsz);
-			  desc_node = build_omp_clause (input_location,
-							OMP_CLAUSE_MAP);
-			  if (openacc)
-			    OMP_CLAUSE_SET_MAP_KIND (desc_node,
+			  node2 = build_omp_clause (input_location,
+						    OMP_CLAUSE_MAP);
+			  if (openacc
+			      || (map_kind != GOMP_MAP_RELEASE
+				  && map_kind != GOMP_MAP_DELETE))
+			    OMP_CLAUSE_SET_MAP_KIND (node2,
 						     GOMP_MAP_TO_PSET);
 			  else
-			    OMP_CLAUSE_SET_MAP_KIND (desc_node, map_kind);
-			  OMP_CLAUSE_DECL (desc_node) = inner;
-			  OMP_CLAUSE_SIZE (desc_node) = TYPE_SIZE_UNIT (type);
-			  if (openacc)
-			    node2 = desc_node;
-			  else
+			    OMP_CLAUSE_SET_MAP_KIND (node2, map_kind);
+			  OMP_CLAUSE_DECL (node2) = inner;
+			  OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
+			  if (!openacc)
 			    {
-			      node2 = node;
-			      node = desc_node;  /* Put first.  */
 			      if (n->expr->ts.type == BT_DERIVED
 				  && n->expr->ts.u.derived->attr.alloc_comp)
 				{
@@ -5338,18 +5440,73 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 				     in gfc_omp_deep_mapping{,_p,_cnt}; force
 				     evaluate to ensure that it is
 				     not gimplified + is a decl.  */
-				  tree tmp = OMP_CLAUSE_SIZE (node2);
+				  tree tmp = OMP_CLAUSE_SIZE (node);
 				  tree var = gfc_create_var (TREE_TYPE (tmp),
 							     NULL);
 				  gfc_add_modify_loc (input_location, block,
 						      var, tmp);
-				  OMP_CLAUSE_SIZE (node2) = var;
+				  OMP_CLAUSE_SIZE (node) = var;
 				  gfc_allocate_lang_decl (var);
 				  GFC_DECL_SAVED_DESCRIPTOR (var) = inner;
 				}
+
+			      gfc_omp_namelist *n2
+				= clauses->lists[OMP_LIST_MAP];
+
+			      /* If we don't have a mapping of a smaller part
+				 of the array -- or we can't prove that we do
+				 statically -- set this flag.  If there is a
+				 mapping of a smaller part of the array after
+				 all, this will turn into a no-op at
+				 runtime.  */
+			      OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (node) = 1;
+
+			      bool sym_based;
+			      n2 = get_symbol_rooted_namelist (sym_rooted_nl,
+							       n, n2,
+							       &sym_based);
+
+			      bool drop_mapping = false;
+
+			      for (; n2 != NULL; n2 = n2->next)
+				{
+				  if ((!sym_based && n == n2)
+				      || (sym_based && n == n2->u2.duplicate_of)
+				      || !n2->expr)
+				    continue;
+
+				  if (!gfc_omp_expr_prefix_same (n->expr,
+								 n2->expr))
+				    continue;
+
+				  gfc_ref *ref1 = n->expr->ref;
+				  gfc_ref *ref2 = n2->expr->ref;
+
+				  /* We know ref1 and ref2 overlap.  We're
+				     interested in whether ref2 describes a
+				     smaller part of the array than ref1, which
+				     we already know refers to the full
+				     array.  */
+
+				  while (ref1->next && ref2->next)
+				    {
+				      ref1 = ref1->next;
+				      ref2 = ref2->next;
+				    }
+
+				  if (ref2->next
+				      || (ref2->type == REF_ARRAY
+					  && (ref2->u.ar.type == AR_ELEMENT
+					      || (ref2->u.ar.type
+						  == AR_SECTION))))
+				    {
+				      drop_mapping = true;
+				      break;
+				    }
+				}
+			      if (drop_mapping)
+				continue;
 			    }
-			  if (op == EXEC_OMP_TARGET_EXIT_DATA)
-			    goto finalize_map_clause;
 			  node3 = build_omp_clause (input_location,
 						    OMP_CLAUSE_MAP);
 			  OMP_CLAUSE_SET_MAP_KIND (node3,
@@ -5525,6 +5682,23 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	default:
 	  break;
 	}
+    }
+
+  /* Free hashmap if we built it.  */
+  if (sym_rooted_nl)
+    {
+      typedef hash_map<gfc_symbol *, gfc_omp_namelist *>::iterator hti;
+      for (hti it = sym_rooted_nl->begin (); it != sym_rooted_nl->end (); ++it)
+	{
+	  gfc_omp_namelist *&nl = (*it).second;
+	  while (nl)
+	    {
+	      gfc_omp_namelist *next = nl->next;
+	      free (nl);
+	      nl = next;
+	    }
+	}
+      delete sym_rooted_nl;
     }
 
   if (clauses->if_expr)
@@ -6397,7 +6571,7 @@ gfc_trans_oacc_executable_directive (gfc_code *code)
 
   gfc_start_block (&block);
   oacc_clauses = gfc_trans_omp_clauses (&block, clauses, code->loc,
-					false, true);
+					false, true, code->op);
   stmt = build1_loc (input_location, construct_code, void_type_node, 
 		     oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);

@@ -1,5 +1,18 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.fortran/map-subarray.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-2.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-3.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-4.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-6.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-7.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-8.f90: New test.
+	* testsuite/libgomp.fortran/map-subcomponents.f90: New test.
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Adjust for
+	descriptor-mapping changes.  Remove XFAIL.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/target-implicit-map-2.c: Fix missing
 	"free".
 	* testsuite/libgomp.c-c++-common/target-implicit-map-3.c: New test.

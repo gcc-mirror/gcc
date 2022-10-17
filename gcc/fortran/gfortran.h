@@ -1378,6 +1378,7 @@ typedef struct gfc_omp_namelist
     {
       struct gfc_omp_namelist_udr *udr;
       gfc_namespace *ns;
+      struct gfc_omp_namelist *duplicate_of;
     } u2;
   struct gfc_symbol *memspace_sym;
   struct gfc_symbol *traits_sym;

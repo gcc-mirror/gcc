@@ -1,5 +1,23 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* dependency.cc (gfc_omp_expr_prefix_same): New function.
+	* dependency.h (gfc_omp_expr_prefix_same): Add prototype.
+	* gfortran.h (gfc_omp_namelist): Add "duplicate_of" field to "u2"
+	union.
+	* trans-openmp.cc (dependency.h): Include.
+	(gfc_trans_omp_array_section): Adjust mapping node arrangement for
+	array descriptors.  Use GOMP_MAP_TO_PSET or
+	GOMP_MAP_RELEASE/GOMP_MAP_DELETE with the OMP_CLAUSE_RELEASE_DESCRIPTOR
+	flag set.
+	(gfc_symbol_rooted_namelist): New function.
+	(gfc_trans_omp_clauses): Check subcomponent and subarray/element
+	accesses elsewhere in the clause list for pointers to derived types or
+	array descriptors, and adjust or drop mapping nodes appropriately.
+	Adjust for changes to mapping node arrangement.
+	(gfc_trans_oacc_executable_directive): Pass code op through.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* trans-openmp.cc (gfc_trans_omp_array_section): Add OPENMP parameter.
 	Use GOMP_MAP_ATTACH_DETACH instead of GOMP_MAP_ALWAYS_POINTER for
 	derived type components.
