@@ -4135,6 +4135,32 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
   switch (letter)
     {
+      case 'm': {
+	if (code == CONST_INT)
+	  {
+	    /* LMUL. Define the bitmap rule as follows:
+	       |      4       | 3 2 1 0 |
+	       | fractional_p | factor  |
+	    */
+	    bool fractional_p = (UINTVAL (op) >> 4) & 0x1;
+	    unsigned int factor = UINTVAL (op) & 0xf;
+	    asm_fprintf (file, "%s%d", fractional_p ? "mf" : "m", factor);
+	  }
+	else
+	  output_operand_lossage ("invalid vector constant");
+	break;
+      }
+      case 'p': {
+	if (code == CONST_INT)
+	  {
+	    /* Tail && Mask policy.  */
+	    bool agnostic_p = UINTVAL (op) & 0x1;
+	    asm_fprintf (file, "%s", agnostic_p ? "a" : "u");
+	  }
+	else
+	  output_operand_lossage ("invalid vector constant");
+	break;
+      }
     case 'h':
       if (code == HIGH)
 	op = XEXP (op, 0);

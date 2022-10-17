@@ -45,6 +45,8 @@
 #include "targhooks.h"
 #include "regs.h"
 #include "riscv-vector-builtins.h"
+#include "riscv-vector-builtins-shapes.h"
+#include "riscv-vector-builtins-bases.h"
 
 using namespace riscv_vector;
 
@@ -113,6 +115,49 @@ const char *const predication_suffixes[NUM_PRED_TYPES] = {
   "", /* PRED_TYPE_none.  */
 #define DEF_RVV_PRED_TYPE(NAME) "_" # NAME,
 #include "riscv-vector-builtins.def"
+};
+
+/* A list of all signed integer will be registered for intrinsic functions.  */
+static const rvv_type_info i_ops[] = {
+#define DEF_RVV_I_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
+  = rvv_arg_type_info (NUM_BASE_TYPES);
+
+/* A list of args for size_t func (void) function.  */
+static CONSTEXPR const rvv_arg_type_info void_args[]
+  = {rvv_arg_type_info (RVV_BASE_void), rvv_arg_type_info_end};
+
+/* A list of args for size_t func (size_t) function.  */
+static CONSTEXPR const rvv_arg_type_info size_args[]
+  = {rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+/* A list of none preds that will be registered for intrinsic functions.  */
+static CONSTEXPR const predication_type_index none_preds[]
+  = {PRED_TYPE_none, NUM_PRED_TYPES};
+
+/* A static operand information for size_t func (void) function registration. */
+static CONSTEXPR const rvv_op_info i_none_size_void_ops
+  = {i_ops,				/* Types */
+     OP_TYPE_none,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_size), /* Return type */
+     void_args /* Args */};
+
+/* A static operand information for size_t func (size_t) function registration.
+ */
+static CONSTEXPR const rvv_op_info i_none_size_size_ops
+  = {i_ops,				/* Types */
+     OP_TYPE_none,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_size), /* Return type */
+     size_args /* Args */};
+
+/* A list of all RVV intrinsic functions.  */
+static function_group_info function_groups[] = {
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO},
+#include "riscv-vector-builtins-functions.def"
 };
 
 /* The RVV types, with their built-in
@@ -787,11 +832,22 @@ verify_type_context (location_t loc, type_context_kind context, const_tree type,
 void
 handle_pragma_vector ()
 {
+  if (function_table)
+    {
+      error ("duplicate definition of %qs", "riscv_vector.h");
+      return;
+    }
   rvv_switcher rvv;
 
   /* Define the vector and tuple types.  */
   for (unsigned int type_i = 0; type_i < NUM_VECTOR_TYPES; ++type_i)
     register_vector_type ((enum vector_type_index) type_i);
+
+  /* Define the functions.  */
+  function_table = new hash_table<registered_function_hasher> (1023);
+  function_builder builder;
+  for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
+    builder.register_function_group (function_groups[i]);
 }
 
 /* Return the function decl with RVV function subcode CODE, or error_mark_node
